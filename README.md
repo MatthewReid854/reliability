@@ -8,4 +8,4 @@
 pip install reliability
 ```
 ## Documentation
-Check out [readthedocs] for user guides and examples (https://test-project854.readthedocs.io/en/latest/)
+Check out [readthedocs](https://test-project854.readthedocs.io/en/latest/) for user guides and examples.
