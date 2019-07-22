@@ -33,5 +33,5 @@ Installation
 Source code and issue tracker
 ------------------------------
 
-Available on Github, `MatthewReid854/test_project <https://github.com/MatthewReid854/test_project/>`_.
+Available on Github, `MatthewReid854/reliability <https://github.com/MatthewReid854/reliability/>`_.
 Please report all errors, bugs, issues and requested feature extensions there.
