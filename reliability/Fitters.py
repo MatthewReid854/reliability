@@ -42,8 +42,8 @@ import pandas as pd
 from scipy.optimize import minimize
 import scipy.stats as ss
 import warnings
-from Distributions import Weibull_Distribution, Gamma_Distribution, Beta_Distribution, Exponential_Distribution, Normal_Distribution, Lognormal_Distribution
-from Nonparametric import KaplanMeier
+from reliability.Distributions import Weibull_Distribution, Gamma_Distribution, Beta_Distribution, Exponential_Distribution, Normal_Distribution, Lognormal_Distribution
+from reliability.Nonparametric import KaplanMeier
 import autograd.numpy as anp
 from autograd import value_and_grad
 from autograd.scipy.special import gamma as agamma

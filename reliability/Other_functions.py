@@ -12,8 +12,6 @@ sequential_sampling_chart - plots the accept/reject boundaries for a given set o
 reliability_growth - uses the Duane method to find the instantaneous MTBF and produce a reliability growth plot.
 optimal_replacement_time - Calculates the cost model to determine how cost varies with replacement time. The cost model assumes Power Law NHPP
 '''
-import scipy.stats as ss
-
 def one_sample_proportion(trials=None,successes=None,CI=0.95):
     '''
     Calculates the upper and lower bounds of reliability for a given number of trials and successes.
@@ -26,6 +24,7 @@ def one_sample_proportion(trials=None,successes=None,CI=0.95):
     returns: lower, upper - Confidence interval limits.
         will return nan for lower or upper if only one sided CI is calculated (ie. when successes=0 or successes=trials).
     '''
+    import scipy.stats as ss
     if trials is None or successes is None:
         raise ValueError('You must specify the number of trials and successes.')
     if successes>trials:
@@ -64,6 +63,7 @@ def two_proportion_test(sample_1_trials=None,sample_1_successes=None,sample_2_tr
     returns:
     lower,upper,result - lower and upper are bounds on the difference. If the bounds include 0 then it is a statistically significant difference.
     '''
+    import scipy.stats as ss
     if CI<0.5 or CI>=1:
         raise ValueError('CI must be between 0.5 and 1. Default is 0.95')
     if sample_1_trials is None or sample_1_successes is None or sample_2_trials is None or sample_2_successes is None:

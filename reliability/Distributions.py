@@ -49,7 +49,7 @@ values = dist.random_samples(number_of_samples=10000)
     >> random values will be generated from the distribution
 '''
 
-import Plotting
+from reliability import Plotting
 import scipy.stats as ss
 import numpy as np
 from scipy import integrate

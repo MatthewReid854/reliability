@@ -6,7 +6,7 @@ Probability_of_failure - works with any distributions and uses a monte carlo sim
 Probability_of_failure_normdist - works only when both the stress and strength distributions are Normal Distributions.
     Uses an exact method (formula) rather than monte carlo simulation. Use this function if you have two Normal Distributions.
 '''
-from Distributions import Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution
+from reliability.Distributions import Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution
 import scipy.stats as ss
 import numpy as np
 import matplotlib.pyplot as plt
