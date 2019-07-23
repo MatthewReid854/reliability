@@ -290,3 +290,69 @@ def optimal_replacement_time(Cf, Cr,weibull_alpha,weibull_beta,xmin=None,xmax=No
         plt.ylabel('Total cost')
         plt.title('Optimal replacement time estimation')
     return [t_min,cost_min]
+
+def convert_labels_to_binary(input_list=None,values_to_make_1=None):
+    '''
+    Converts values in a list or array to binary values to represent failures and censored data
+
+    inputs:
+    input_list - array or list to be converted
+    values_to_make_1: array or list of values which will be converted to 1. Everything else will be converted to 0.
+        Remember that in reliability, 1 is used to represent failure and 0 is used to represent censored data
+
+    outputs:
+    array of converted values
+
+    example usage:
+    outcome = ['cens','censored','Censored','Failure']
+    outcome_new = convert_labels_to_binary(input_list=outcome, values_to_make_1='Failure')
+    print(outcome_new) >>> [0, 0, 0, 1]
+
+    '''
+    if values_to_make_1 is None:
+        raise ValueError('you must specify values_to_make_1. This can be either a single item or a list of items.')
+    if input_list is None:
+        raise ValueError('you must specify the input_list to be converted')
+    if type(input_list) not in [np.ndarray, list]:
+        raise ValueError('input_list must be an array or list')
+
+    output_list = []
+    for item in input_list:
+        if item in values_to_make_1:
+            output_list.append(1)
+        else:
+            output_list.append(0)
+    return output_list
+
+def convert_dataframe_to_grouped_lists(input_dataframe):
+    '''
+    Accepts a dataframe containing 2 columns
+    This function assumes the identifying column is the left column
+    returns:
+    lists , names - lists is a list of the grouped lists
+                  - names is the identifying values used to group the lists from the first column
+
+    Example usage:
+
+    #create sample data
+    data = {'outcome': ['Failed', 'Censored', 'Failed', 'Failed', 'Censored'],
+        'cycles': [1253,1500,1342,1489,1500]}
+    df = pd.DataFrame(data, columns = ['outcome', 'cycles'])
+
+    #usage of the function
+    lists,names = convert_dataframe_to_grouped_lists(df)
+    print(names[1]) >>> Failed
+    print(lists[1]) >>> [1253, 1342, 1489]
+    '''
+
+    df = input_dataframe
+    column_names = df.columns.values
+    if len(column_names)>2:
+        raise ValueError('Dataframe contains more than 2 columns. There should only be 2 columns with the first column containing the labels to group by and the second containing the values to be returned in groups.')
+    grouped_lists = []
+    group_list_names = []
+    for key, items in df.groupby(column_names[0]):
+        values = list(items.iloc[:,1].values)
+        grouped_lists.append(values)
+        group_list_names.append(key)
+    return grouped_lists,group_list_names
