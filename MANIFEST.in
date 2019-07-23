@@ -2,4 +2,4 @@ include README.md
 include LICENSE
 include MANIFEST.in
 
-recursive-include code *
+recursive-include reliability *
