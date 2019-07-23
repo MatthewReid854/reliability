@@ -1,5 +1,5 @@
 '''
-Other Functions and Tests
+Other Functions
 
 This is a collection of many tools that did not otherwise fit within their own module.
 Included functions are:
@@ -11,6 +11,8 @@ sequential_sampling_chart - plots the accept/reject boundaries for a given set o
     are also plotted on the chart.
 reliability_growth - uses the Duane method to find the instantaneous MTBF and produce a reliability growth plot.
 optimal_replacement_time - Calculates the cost model to determine how cost varies with replacement time. The cost model assumes Power Law NHPP
+convert_labels_to_binary - Converts values in a list or array to binary values to represent failures and censored data
+convert_dataframe_to_grouped_lists - groups values in a 2-column dataframe based on the values in the left column and returns those groups in a list of lists
 '''
 def one_sample_proportion(trials=None,successes=None,CI=0.95):
     '''
@@ -309,6 +311,8 @@ def convert_labels_to_binary(input_list=None,values_to_make_1=None):
     print(outcome_new) >>> [0, 0, 0, 1]
 
     '''
+    import numpy as np
+    
     if values_to_make_1 is None:
         raise ValueError('you must specify values_to_make_1. This can be either a single item or a list of items.')
     if input_list is None:
@@ -344,7 +348,7 @@ def convert_dataframe_to_grouped_lists(input_dataframe):
     print(names[1]) >>> Failed
     print(lists[1]) >>> [1253, 1342, 1489]
     '''
-
+    import pandas as pd
     df = input_dataframe
     column_names = df.columns.values
     if len(column_names)>2:
