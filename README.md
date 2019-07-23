@@ -21,3 +21,4 @@ pip install reliability
 ```
 ## Documentation
 Check out [readthedocs](https://reliability.readthedocs.io/en/latest/) for detailed documentation and examples.
+If you find any errors, or would like to request that something be added, please raise an [issue](https://github.com/MatthewReid854/reliability/issues) in GitHub.
