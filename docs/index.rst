@@ -34,8 +34,4 @@ Source code and issue tracker
 ------------------------------
 
 Available on Github, `MatthewReid854/reliability <https://github.com/MatthewReid854/reliability/>`_.
-If you find any errors, bugs, or would like to request any feature extensions, please raise an `issue <https://github.com/MatthewReid854/reliability/>`_. on GitHub
-
-<https://github.com/MatthewReid854/reliability/issues/>
-
-
+If you find any errors, bugs, or would like to request any feature extensions, please raise an `issue <https://github.com/MatthewReid854/reliability/issues/>`_ on GitHub
