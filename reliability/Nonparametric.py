@@ -48,12 +48,12 @@ class KaplanMeier:
             raise TypeError('Incorrect type for data. Data must be numpy array or list.')
 
         if d != sorted(d):
-            if censoring==None: #automatic sorting is done only if there is no censoring
+            if censoring is None: #automatic sorting is done only if there is no censoring
                 d = sorted(d)
             else:
                 raise ValueError('Data input must be sorted in ascending order. Due to complications that may arise from pairing censoring codes with data, automatic sorting is not implemented if censoring is specified.')
 
-        if censoring==None:
+        if censoring is None:
             censoring = list(np.ones(len(d)))
 
         if type(censoring)== np.ndarray:
