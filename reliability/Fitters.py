@@ -1369,8 +1369,3 @@ class Fit_Beta_2P:
         LL_rc += Fit_Beta_2P.logR(T_rc, params[0], params[1]).sum() #right censored times
         LL_lc += Fit_Beta_2P.logF(T_lc, params[0], params[1]).sum() #left censored times
         return -(LL_f+LL_rc+LL_lc)
-
-failures = [23,45,67,78,89,99]
-rc = [111,111,111,111]
-lc = [10,10,10]
-Fit_Everything(failures=failures,show_quantile_plot=False)
