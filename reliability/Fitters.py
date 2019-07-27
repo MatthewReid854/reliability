@@ -32,7 +32,7 @@ using scipy. If the distribution is an extremely bad fit or is heavily censored 
 Generally the fit achieved by autograd is highly successful.
 
 A special thanks goes to Cameron Davidson-Pilon (author of the Python library "lifelines" and website "dataorigami.net") for providing help with getting
-autograd to work, and for writing the python library "autograd-gamma", without which it would be impossible to fit the beta or gamma distributions using
+autograd to work, and for writing the python library "autograd-gamma", without which it would be impossible to fit the Beta or Gamma distributions using
 autograd.
 '''
 
@@ -63,12 +63,12 @@ class Fit_Everything:
     failures - an array or list of the failure times (this does not need to be sorted).
     left_censored - an array or list of the left failure times (this does not need to be sorted).
     right_censored - an array or list of the right failure times (this does not need to be sorted).
-    sort_by - goodness of fit test to sort results by. Must be either 'BIC', 'AICc', or 'SQD'(default).
-            SQD is "sum of quantile differences". It a goodness of fit test created by the author.
+    sort_by - goodness of fit test to sort results by. Must be either 'BIC' or 'AIC'. Default is BIC.
     show_plot - True/False. Defaults to True
     print_results - True/False. Defaults to True. Will show the results of the fitted parameters and the goodness of fit
         tests in a dataframe.
-    show_quantile_plot - True/False. Defaults to True. Provides a comparison of parametric vs non-parametric fit.
+    show_quantile_plot - True/False. Defaults to True unless there is left censored data in which case Kaplan Meier cannot be applied.
+        Provides a comparison of parametric vs non-parametric fit.
 
     outputs:
     results - the dataframe of results. Fitted parameters in this dataframe may be accessed by name. See below example.
@@ -93,11 +93,9 @@ class Fit_Everything:
     value, the better the fit of the distribution to the data.
 
     Confidence intervals for each of the fitted parameters are not supported. This feature may be incorporated in
-    future releases, however, the need has not been identified. JMP Pro software has this functionality if required.
+    future releases, however, the need has not been identified. See the python library "lifelines" or JMP Pro software if this is required.
     Whilst Minitab uses the Anderson-Darling statistic for the goodness of fit, it is generally recognised that AICc and BIC
     are more accurate measures as they take into account the number of parameters in the distribution.
-    SQD is used as the default because it provides a better relationship with what is seen on the quantile plot. The formula used for SQD is
-    SQD = sum(abs(nonparametric CDF - parametric CDF))*(number of distribution parameters)
 
     Example Usage:
     X = [0.95892,1.43249,1.04221,0.67583,3.28411,1.03072,0.05826,1.81387,2.06383,0.59762,5.99005,1.92145,1.35179,0.50391]
@@ -107,13 +105,13 @@ class Fit_Everything:
     print('Weibull Alpha =',output.Weibull_2P_alpha,'\nWeibull Beta =',output.Weibull_2P_beta)
 
     '''
-    def __init__(self,failures=None,right_censored=None,left_censored=None, sort_by='SQD', show_plot=True, print_results=True,show_quantile_plot=True):
+    def __init__(self,failures=None,right_censored=None,left_censored=None, sort_by='BIC', show_plot=True, print_results=True,show_quantile_plot=True):
         if failures is None or len(failures)<3:
             raise ValueError('Maximum likelihood estimates could not be calculated for these data. There must be at least three failures to calculate 3 parameter models.')
         if right_censored is not None and left_censored is not None: #check that a mix of left and right censoring is not entered
             raise ValueError('You have specified both left and right censoring. You can specify either but not both.')
-        if sort_by not in ['AIC','BIC','SQD']:
-            raise ValueError('sort_by must be either AIC, BIC, or SQD. Defaults to SQD')
+        if sort_by not in ['AIC','BIC']:
+            raise ValueError('sort_by must be either AIC or BIC. Defaults to BIC')
         if show_plot not in [True,False]:
             raise  ValueError('show_plot must be either True of False. Defaults to True.')
         if print_results not in [True, False]:
@@ -128,20 +126,21 @@ class Fit_Everything:
             LC = []
         else:
             LC = left_censored
+            show_quantile_plot = False #can't do Kaplan-Meier estimates with left censored data
         if right_censored is None:
             RC = []
         else:
             RC = right_censored
         self._all_data = np.hstack([failures, LC, RC])
 
-        #These are all used for scaling the histogram and Q-Q plots when there is censored data
+        #These are all used for scaling the histogram when there is censored data
         self._frac_fail = len(failures) / len(self._all_data)
         self._frac_fail_L = len(failures) / len(np.hstack([failures, LC]))
-        self._left_cens_ratio = len(LC) / len(failures)
+        # self._left_cens_ratio = len(LC) / len(failures)
 
-        # Kaplan-Meier estimate of quantiles. Used in Q-Q plot and for calculating SQD goodness of fit.
-        d = sorted(self.failures)  # sorting the failure data is necessary for plotting quantiles in order
-        nonparametric = KaplanMeier(d, print_results=False, show_plot=False)
+        # Kaplan-Meier estimate of quantiles. Used in Q-Q plot.
+        d = sorted(self._all_data)  # sorting the failure data is necessary for plotting quantiles in order
+        nonparametric = KaplanMeier(failures=failures,right_censored=right_censored, print_results=False, show_plot=False)
         self._nonparametric_CDF = 1 - np.array(nonparametric.KM)  # change SF into CDF
 
         #parametric models
@@ -155,9 +154,8 @@ class Fit_Everything:
             self.Weibull_3P_gamma = Weibull_3P_params.gamma
             self.Weibull_3P_BIC = Weibull_Distribution(alpha=self.Weibull_3P_alpha, beta=self.Weibull_3P_beta,gamma=self.Weibull_3P_gamma).BIC(AIC_BIC_metric)
             self.Weibull_3P_AIC = Weibull_Distribution(alpha=self.Weibull_3P_alpha, beta=self.Weibull_3P_beta,gamma=self.Weibull_3P_gamma).AICc(AIC_BIC_metric)
-            parametric_CDF_Weibull_3P = Weibull_Distribution(alpha=self.Weibull_3P_alpha, beta=self.Weibull_3P_beta, gamma=self.Weibull_3P_gamma).CDF(xvals=d, show_plot=False)
-            self._parametric_CDF_Weibull_3P_adjusted = parametric_CDF_Weibull_3P / self._frac_fail - self._left_cens_ratio
-            self.Weibull_3P_SQD = sum(np.abs(self._nonparametric_CDF - self._parametric_CDF_Weibull_3P_adjusted)) * 3
+            self._parametric_CDF_Weibull_3P = Weibull_Distribution(alpha=self.Weibull_3P_alpha, beta=self.Weibull_3P_beta, gamma=self.Weibull_3P_gamma).CDF(xvals=d, show_plot=False)
+
 
             Gamma_3P_params = Fit_Gamma_3P(failures=failures, right_censored=right_censored)
             self.Gamma_3P_alpha = Gamma_3P_params.alpha
@@ -165,18 +163,16 @@ class Fit_Everything:
             self.Gamma_3P_gamma = Gamma_3P_params.gamma
             self.Gamma_3P_BIC = Gamma_Distribution(alpha=self.Gamma_3P_alpha, beta=self.Gamma_3P_beta,gamma=self.Gamma_3P_gamma).BIC(AIC_BIC_metric)
             self.Gamma_3P_AIC = Gamma_Distribution(alpha=self.Gamma_3P_alpha, beta=self.Gamma_3P_beta,gamma=self.Gamma_3P_gamma).AICc(AIC_BIC_metric)
-            parametric_CDF_Gamma_3P = Gamma_Distribution(alpha=self.Gamma_3P_alpha, beta=self.Gamma_3P_beta, gamma=self.Gamma_3P_gamma).CDF(xvals=d, show_plot=False)
-            self._parametric_CDF_Gamma_3P_adjusted = parametric_CDF_Gamma_3P / self._frac_fail - self._left_cens_ratio
-            self.Gamma_3P_SQD = sum(np.abs(self._nonparametric_CDF - self._parametric_CDF_Gamma_3P_adjusted)) * 3
+            self._parametric_CDF_Gamma_3P = Gamma_Distribution(alpha=self.Gamma_3P_alpha, beta=self.Gamma_3P_beta, gamma=self.Gamma_3P_gamma).CDF(xvals=d, show_plot=False)
+
 
             Expon_2P_params = Fit_Expon_2P(failures=failures,right_censored=right_censored)
             self.Expon_2P_lambda = Expon_2P_params.Lambda
             self.Expon_2P_gamma = Expon_2P_params.gamma
             self.Expon_2P_BIC = Exponential_Distribution(Lambda=self.Expon_2P_lambda, gamma=self.Expon_2P_gamma).BIC(AIC_BIC_metric)
             self.Expon_2P_AIC = Exponential_Distribution(Lambda=self.Expon_2P_lambda, gamma=self.Expon_2P_gamma).AICc(AIC_BIC_metric)
-            parametric_CDF_Exponential_2P = Exponential_Distribution(Lambda=self.Expon_2P_lambda, gamma=self.Expon_2P_gamma).CDF(xvals=d, show_plot=False)
-            self._parametric_CDF_Exponential_2P_adjusted = parametric_CDF_Exponential_2P / self._frac_fail - self._left_cens_ratio
-            self.Expon_2P_SQD = sum(np.abs(self._nonparametric_CDF - self._parametric_CDF_Exponential_2P_adjusted)) * 2
+            self._parametric_CDF_Exponential_2P = Exponential_Distribution(Lambda=self.Expon_2P_lambda, gamma=self.Expon_2P_gamma).CDF(xvals=d, show_plot=False)
+
 
         else: #fills the non-calculated distributions with zeros so we don't get an error when these values are entered in the dataframe
             self._left_cens = True  # used by plot distributions to tell what parameters were calculated
@@ -185,62 +181,49 @@ class Fit_Everything:
             self.Weibull_3P_gamma = 0
             self.Weibull_3P_BIC = 0
             self.Weibull_3P_AIC = 0
-            self.Weibull_3P_SQD = 0
             self.Gamma_3P_alpha = 0
             self.Gamma_3P_beta = 0
             self.Gamma_3P_gamma = 0
             self.Gamma_3P_BIC = 0
             self.Gamma_3P_AIC = 0
-            self.Gamma_3P_SQD = 0
             self.Expon_2P_lambda = 0
             self.Expon_2P_gamma = 0
             self.Expon_2P_BIC = 0
             self.Expon_2P_AIC = 0
-            self.Expon_2P_SQD = 0
 
         Normal_2P_params = Fit_Normal_2P(failures=failures, right_censored=right_censored,left_censored=left_censored)
         self.Normal_2P_mu = Normal_2P_params.mu
         self.Normal_2P_sigma = Normal_2P_params.sigma
         self.Normal_2P_BIC = Normal_Distribution(mu=self.Normal_2P_mu, sigma=self.Normal_2P_sigma).BIC(AIC_BIC_metric)
         self.Normal_2P_AIC = Normal_Distribution(mu=self.Normal_2P_mu, sigma=self.Normal_2P_sigma).AICc(AIC_BIC_metric)
-        parametric_CDF_Normal_2P = Normal_Distribution(mu=self.Normal_2P_mu, sigma=self.Normal_2P_sigma).CDF(xvals=d, show_plot=False)
-        self._parametric_CDF_Normal_2P_adjusted = parametric_CDF_Normal_2P / self._frac_fail - self._left_cens_ratio
-        self.Normal_2P_SQD = sum(np.abs(self._nonparametric_CDF - self._parametric_CDF_Normal_2P_adjusted)) * 2
+        self._parametric_CDF_Normal_2P = Normal_Distribution(mu=self.Normal_2P_mu, sigma=self.Normal_2P_sigma).CDF(xvals=d, show_plot=False)
 
         Lognormal_2P_params = Fit_Lognormal_2P(failures=failures,right_censored=right_censored,left_censored=left_censored)
         self.Lognormal_2P_mu = Lognormal_2P_params.mu
         self.Lognormal_2P_sigma = Lognormal_2P_params.sigma
         self.Lognormal_2P_BIC = Lognormal_Distribution(mu=self.Lognormal_2P_mu, sigma=self.Lognormal_2P_sigma).BIC(AIC_BIC_metric)
         self.Lognormal_2P_AIC = Lognormal_Distribution(mu=self.Lognormal_2P_mu, sigma=self.Lognormal_2P_sigma).AICc(AIC_BIC_metric)
-        parametric_CDF_Lognormal_2P = Lognormal_Distribution(mu=self.Lognormal_2P_mu, sigma=self.Lognormal_2P_sigma).CDF(xvals=d, show_plot=False)
-        self._parametric_CDF_Lognormal_2P_adjusted = parametric_CDF_Lognormal_2P / self._frac_fail - self._left_cens_ratio
-        self.Lognormal_2P_SQD = sum(np.abs(self._nonparametric_CDF - self._parametric_CDF_Lognormal_2P_adjusted)) * 2
+        self._parametric_CDF_Lognormal_2P = Lognormal_Distribution(mu=self.Lognormal_2P_mu, sigma=self.Lognormal_2P_sigma).CDF(xvals=d, show_plot=False)
 
         Weibull_2P_params = Fit_Weibull_2P(failures=failures,right_censored=right_censored,left_censored=left_censored)
         self.Weibull_2P_alpha = Weibull_2P_params.alpha
         self.Weibull_2P_beta = Weibull_2P_params.beta
         self.Weibull_2P_BIC = Weibull_Distribution(alpha=self.Weibull_2P_alpha, beta=self.Weibull_2P_beta).BIC(AIC_BIC_metric)
         self.Weibull_2P_AIC = Weibull_Distribution(alpha=self.Weibull_2P_alpha, beta=self.Weibull_2P_beta).AICc(AIC_BIC_metric)
-        parametric_CDF_Weibull_2P = Weibull_Distribution(alpha=self.Weibull_2P_alpha, beta=self.Weibull_2P_beta).CDF(xvals=d, show_plot=False)
-        self._parametric_CDF_Weibull_2P_adjusted = parametric_CDF_Weibull_2P / self._frac_fail - self._left_cens_ratio
-        self.Weibull_2P_SQD = sum(np.abs(self._nonparametric_CDF - self._parametric_CDF_Weibull_2P_adjusted)) * 2
+        self._parametric_CDF_Weibull_2P = Weibull_Distribution(alpha=self.Weibull_2P_alpha, beta=self.Weibull_2P_beta).CDF(xvals=d, show_plot=False)
 
         Gamma_2P_params = Fit_Gamma_2P(failures=failures,right_censored=right_censored,left_censored=left_censored)
         self.Gamma_2P_alpha = Gamma_2P_params.alpha
         self.Gamma_2P_beta = Gamma_2P_params.beta
         self.Gamma_2P_BIC = Gamma_Distribution(alpha=self.Gamma_2P_alpha, beta=self.Gamma_2P_beta).BIC(AIC_BIC_metric)
         self.Gamma_2P_AIC = Gamma_Distribution(alpha=self.Gamma_2P_alpha, beta=self.Gamma_2P_beta).AICc(AIC_BIC_metric)
-        parametric_CDF_Gamma_2P = Gamma_Distribution(alpha=self.Gamma_2P_alpha, beta=self.Gamma_2P_beta).CDF(xvals=d, show_plot=False)
-        self._parametric_CDF_Gamma_2P_adjusted = parametric_CDF_Gamma_2P / self._frac_fail - self._left_cens_ratio
-        self.Gamma_2P_SQD = sum(np.abs(self._nonparametric_CDF - self._parametric_CDF_Gamma_2P_adjusted)) * 2
+        self._parametric_CDF_Gamma_2P = Gamma_Distribution(alpha=self.Gamma_2P_alpha, beta=self.Gamma_2P_beta).CDF(xvals=d, show_plot=False)
 
         Expon_1P_params = Fit_Expon_1P(failures=failures,right_censored=right_censored,left_censored=left_censored)
         self.Expon_1P_lambda = Expon_1P_params.Lambda
         self.Expon_1P_BIC = Exponential_Distribution(Lambda=self.Expon_1P_lambda).BIC(AIC_BIC_metric)
         self.Expon_1P_AIC = Exponential_Distribution(Lambda=self.Expon_1P_lambda).AICc(AIC_BIC_metric)
-        parametric_CDF_Exponential_1P = Exponential_Distribution(Lambda=self.Expon_1P_lambda).CDF(xvals=d, show_plot=False)
-        self._parametric_CDF_Exponential_1P_adjusted = parametric_CDF_Exponential_1P / self._frac_fail - self._left_cens_ratio
-        self.Expon_1P_SQD = sum(np.abs(self._nonparametric_CDF - self._parametric_CDF_Exponential_1P_adjusted)) * 1  # SQD is "sum of quantile differences". It is a goodness of fit measure created by the author
+        self._parametric_CDF_Exponential_1P = Exponential_Distribution(Lambda=self.Expon_1P_lambda).CDF(xvals=d, show_plot=False)
 
         if max(failures)<=1:
             Beta_2P_params = Fit_Beta_2P(failures=failures, right_censored=right_censored, left_censored=left_censored)
@@ -248,15 +231,12 @@ class Fit_Everything:
             self.Beta_2P_beta = Beta_2P_params.beta
             self.Beta_2P_BIC = Beta_Distribution(alpha=self.Beta_2P_alpha, beta=self.Beta_2P_beta).BIC(AIC_BIC_metric)
             self.Beta_2P_AIC = Beta_Distribution(alpha=self.Beta_2P_alpha, beta=self.Beta_2P_beta).AICc(AIC_BIC_metric)
-            parametric_CDF_Beta_2P = Beta_Distribution(alpha=self.Beta_2P_alpha, beta=self.Beta_2P_beta).CDF(xvals=d, show_plot=False)
-            self._parametric_CDF_Beta_2P_adjusted = parametric_CDF_Beta_2P / self._frac_fail - self._left_cens_ratio
-            self.Beta_2P_SQD = sum(np.abs(self._nonparametric_CDF - self._parametric_CDF_Beta_2P_adjusted)) * 2
+            self._parametric_CDF_Beta_2P = Beta_Distribution(alpha=self.Beta_2P_alpha, beta=self.Beta_2P_beta).CDF(xvals=d, show_plot=False)
         else:
             self.Beta_2P_alpha = 0
             self.Beta_2P_beta = 0
             self.Beta_2P_BIC = 0
             self.Beta_2P_AIC = 0
-            self.Beta_2P_SQD = 0
 
         #assemble the output dataframe
         DATA = {'Distribution': ['Weibull_3P','Weibull_2P','Normal_2P','Exponential_1P','Exponential_2P','Lognormal_2P','Gamma_2P','Gamma_3P','Beta_2P'],
@@ -267,19 +247,16 @@ class Fit_Everything:
                 'Sigma':['','',self.Normal_2P_sigma,'','',self.Lognormal_2P_sigma,'','',''],
                 'Lambda':['','','',self.Expon_1P_lambda,self.Expon_2P_lambda,'','','',''],
                 'AICc':[self.Weibull_3P_AIC, self.Weibull_2P_AIC, self.Normal_2P_AIC, self.Expon_1P_AIC, self.Expon_2P_AIC, self.Lognormal_2P_AIC, self.Gamma_2P_AIC, self.Gamma_3P_AIC, self.Beta_2P_AIC],
-                'BIC':[self.Weibull_3P_BIC, self.Weibull_2P_BIC, self.Normal_2P_BIC, self.Expon_1P_BIC, self.Expon_2P_BIC, self.Lognormal_2P_BIC, self.Gamma_2P_BIC, self.Gamma_3P_BIC, self.Beta_2P_BIC],
-                'SQD':[self.Weibull_3P_SQD, self.Weibull_2P_SQD, self.Normal_2P_SQD, self.Expon_1P_SQD, self.Expon_2P_SQD, self.Lognormal_2P_SQD, self.Gamma_2P_SQD, self.Gamma_3P_SQD, self.Beta_2P_SQD]}
+                'BIC':[self.Weibull_3P_BIC, self.Weibull_2P_BIC, self.Normal_2P_BIC, self.Expon_1P_BIC, self.Expon_2P_BIC, self.Lognormal_2P_BIC, self.Gamma_2P_BIC, self.Gamma_3P_BIC, self.Beta_2P_BIC]}
 
-        df = pd.DataFrame(DATA,columns = ['Distribution','Alpha','Beta','Gamma','Mu','Sigma','Lambda','AICc','BIC','SQD'])
+        df = pd.DataFrame(DATA,columns = ['Distribution','Alpha','Beta','Gamma','Mu','Sigma','Lambda','AICc','BIC'])
         #sort the dataframe by BIC of AICc and replace na and 0 values with spaces. Most negative AICc or BIC is better fit
-        if sort_by=='SQD':
-            df2 = df.reindex(df.SQD.sort_values().index)
-        elif sort_by=='BIC':
+        if sort_by in ['BIC','bic']:
             df2 = df.reindex(df.BIC.sort_values().index)
-        elif sort_by == 'AICc':
+        elif sort_by in ['AICc','AIC','aic']:
             df2 = df.reindex(df.AICc.sort_values().index)
         else:
-            raise ValueError('Invalid input to sort_by. Options are SQD or BIC or AICc. Default is SQD')
+            raise ValueError('Invalid input to sort_by. Options are BIC or AIC. Default is BIC')
         df3 = df2.set_index('Distribution').fillna('').replace(to_replace=0,value='')
         if self.Beta_2P_BIC == 0: #remove beta if it was not fitted (due to data being outside of 0 to 1 range)
             df3 = df3.drop('Beta_2P',axis=0)
@@ -319,7 +296,7 @@ class Fit_Everything:
             Fit_Everything.plot_distributions(self) #plotting occurs by default
 
         if show_quantile_plot==True:
-            Fit_Everything.Q_Q_plot(self) #plotting occurs by default
+            Fit_Everything.Q_Q_plot(self) #plotting occurs by default unless there is left censored data
 
         if show_plot==True or show_quantile_plot==True:
             plt.show()
@@ -328,7 +305,7 @@ class Fit_Everything:
         X = self.failures
         # define plotting limits
         delta = max(X) - min(X)
-        xmin = 0#min(X) - 0.3 * delta
+        xmin = 0
         xmax = max(X) + delta
         xvals = np.linspace(xmin, xmax, 1000)
 
@@ -387,19 +364,16 @@ class Fit_Everything:
 
     def Q_Q_plot(self): #quantile-quantile plot of parametric vs non-parametric
 
-        if self._left_cens == False:
-            plot_id = 251 #set dimensions of plot
-            fig_size = (10, 5)
-        else:
-            plot_id = 231
-            fig_size = (6, 5)
+        plot_id = 251 #set dimensions of plot
+        fig_size = (10, 5)
 
         #plot each of the results
         plt.figure(figsize=fig_size)
         plt.suptitle('Quantile-Quantile plots of Parametric (x-axis)\nvs Non-Parametric (y-axis) for all distributions')
         plt.subplot(plot_id)
-        plt.plot(self._nonparametric_CDF,self._parametric_CDF_Exponential_1P_adjusted,'b',alpha=0.8,linewidth=2)
-        plt.plot([0,1],[0,1],'r',alpha=0.7)
+        xlim = max(np.hstack([self._nonparametric_CDF,self._parametric_CDF_Exponential_1P]))
+        plt.plot(self._nonparametric_CDF,self._parametric_CDF_Exponential_1P,'b',alpha=0.8,linewidth=2)
+        plt.plot([0,xlim],[0,xlim],'r',alpha=0.7)
         plt.axis('square')
         plt.title('Exponential')
         plt.yticks([])
@@ -407,8 +381,9 @@ class Fit_Everything:
         plot_id+=1
 
         plt.subplot(plot_id)
-        plt.plot(self._nonparametric_CDF,self._parametric_CDF_Weibull_2P_adjusted,'b',alpha=0.8,linewidth=2)
-        plt.plot([0,1],[0,1],'r',alpha=0.7)
+        xlim = max(np.hstack([self._nonparametric_CDF,self._parametric_CDF_Weibull_2P]))
+        plt.plot(self._nonparametric_CDF,self._parametric_CDF_Weibull_2P,'b',alpha=0.8,linewidth=2)
+        plt.plot([0,xlim],[0,xlim],'r',alpha=0.7)
         plt.axis('square')
         plt.title('Weibull')
         plt.yticks([])
@@ -416,8 +391,9 @@ class Fit_Everything:
         plot_id += 1
 
         plt.subplot(plot_id)
-        plt.plot(self._nonparametric_CDF,self._parametric_CDF_Gamma_2P_adjusted,'b',alpha=0.8,linewidth=2)
-        plt.plot([0,1],[0,1],'r',alpha=0.7)
+        xlim = max(np.hstack([self._nonparametric_CDF,self._parametric_CDF_Gamma_2P]))
+        plt.plot(self._nonparametric_CDF,self._parametric_CDF_Gamma_2P,'b',alpha=0.8,linewidth=2)
+        plt.plot([0,xlim],[0,xlim],'r',alpha=0.7)
         plt.axis('square')
         plt.title('Gamma')
         plt.yticks([])
@@ -425,8 +401,9 @@ class Fit_Everything:
         plot_id += 1
 
         plt.subplot(plot_id)
-        plt.plot(self._nonparametric_CDF,self._parametric_CDF_Normal_2P_adjusted,'b',alpha=0.8,linewidth=2)
-        plt.plot([0,1],[0,1],'r',alpha=0.7)
+        xlim = max(np.hstack([self._nonparametric_CDF,self._parametric_CDF_Normal_2P]))
+        plt.plot(self._nonparametric_CDF,self._parametric_CDF_Normal_2P,'b',alpha=0.8,linewidth=2)
+        plt.plot([0,xlim],[0,xlim],'r',alpha=0.7)
         plt.axis('square')
         plt.title('Normal')
         plt.yticks([])
@@ -434,46 +411,50 @@ class Fit_Everything:
         plot_id+=1
 
         plt.subplot(plot_id)
-        plt.plot(self._nonparametric_CDF,self._parametric_CDF_Lognormal_2P_adjusted,'b',alpha=0.8,linewidth=2)
-        plt.plot([0,1],[0,1],'r',alpha=0.7)
+        xlim = max(np.hstack([self._nonparametric_CDF,self._parametric_CDF_Lognormal_2P]))
+        plt.plot(self._nonparametric_CDF,self._parametric_CDF_Lognormal_2P,'b',alpha=0.8,linewidth=2)
+        plt.plot([0,xlim],[0,xlim],'r',alpha=0.7)
         plt.axis('square')
         plt.title('Lognormal')
         plt.yticks([])
         plt.xticks([])
         plot_id+=1
 
-        if self._left_cens == False:
-            plt.subplot(plot_id)
-            plt.plot(self._nonparametric_CDF,self._parametric_CDF_Exponential_2P_adjusted,'b',alpha=0.8,linewidth=2)
-            plt.plot([0,1],[0,1],'r',alpha=0.7)
-            plt.axis('square')
-            plt.title('Exponential\n(2 parameter)')
-            plt.yticks([])
-            plt.xticks([])
-            plot_id+=1
+        plt.subplot(plot_id)
+        xlim = max(np.hstack([self._nonparametric_CDF,self._parametric_CDF_Exponential_2P]))
+        plt.plot(self._nonparametric_CDF,self._parametric_CDF_Exponential_2P,'b',alpha=0.8,linewidth=2)
+        plt.plot([0,xlim],[0,xlim],'r',alpha=0.7)
+        plt.axis('square')
+        plt.title('Exponential\n(2 parameter)')
+        plt.yticks([])
+        plt.xticks([])
+        plot_id+=1
 
-            plt.subplot(plot_id)
-            plt.plot(self._nonparametric_CDF,self._parametric_CDF_Weibull_3P_adjusted,'b',alpha=0.8,linewidth=2)
-            plt.plot([0,1],[0,1],'r',alpha=0.7)
-            plt.axis('square')
-            plt.title('Weibull\n(3 parameter)')
-            plt.yticks([])
-            plt.xticks([])
-            plot_id+=1
+        plt.subplot(plot_id)
+        xlim = max(np.hstack([self._nonparametric_CDF,self._parametric_CDF_Weibull_3P]))
+        plt.plot(self._nonparametric_CDF,self._parametric_CDF_Weibull_3P,'b',alpha=0.8,linewidth=2)
+        plt.plot([0,xlim],[0,xlim],'r',alpha=0.7)
+        plt.axis('square')
+        plt.title('Weibull\n(3 parameter)')
+        plt.yticks([])
+        plt.xticks([])
+        plot_id+=1
 
-            plt.subplot(plot_id)
-            plt.plot(self._nonparametric_CDF,self._parametric_CDF_Gamma_3P_adjusted,'b',alpha=0.8,linewidth=2)
-            plt.plot([0,1],[0,1],'r',alpha=0.7)
-            plt.axis('square')
-            plt.title('Gamma\n(3 parameter)')
-            plt.yticks([])
-            plt.xticks([])
-            plot_id+=1
+        plt.subplot(plot_id)
+        xlim = max(np.hstack([self._nonparametric_CDF,self._parametric_CDF_Gamma_3P]))
+        plt.plot(self._nonparametric_CDF,self._parametric_CDF_Gamma_3P,'b',alpha=0.8,linewidth=2)
+        plt.plot([0,xlim],[0,xlim],'r',alpha=0.7)
+        plt.axis('square')
+        plt.title('Gamma\n(3 parameter)')
+        plt.yticks([])
+        plt.xticks([])
+        plot_id+=1
 
         if max(self.failures)<=1:
             plt.subplot(plot_id)
-            plt.plot(self._nonparametric_CDF,self._parametric_CDF_Beta_2P_adjusted,'b',alpha=0.8,linewidth=2)
-            plt.plot([0,1],[0,1],'r',alpha=0.7)
+            xlim = max(np.hstack([self._nonparametric_CDF,self._parametric_CDF_Beta_2P]))
+            plt.plot(self._nonparametric_CDF,self._parametric_CDF_Beta_2P,'b',alpha=0.8,linewidth=2)
+            plt.plot([0,xlim],[0,xlim],'r',alpha=0.7)
             plt.axis('square')
             plt.title('Beta')
             plt.yticks([])
@@ -1384,3 +1365,4 @@ class Fit_Beta_2P:
         LL_rc += Fit_Beta_2P.logR(T_rc, params[0], params[1]).sum() #right censored times
         LL_lc += Fit_Beta_2P.logF(T_lc, params[0], params[1]).sum() #left censored times
         return -(LL_f+LL_rc+LL_lc)
+
