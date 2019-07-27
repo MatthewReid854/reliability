@@ -1,12 +1,12 @@
 .. _code_directive:
 
-insert image here
+.. image:: https://i.imgur.com/P7sjQ0C.png
 
 -------------------------------------
 
 
-Quickstart
-''''''''''
+Quickstart for reliability
+''''''''''''''''''''''''''
 
 
 Installation
