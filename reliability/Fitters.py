@@ -126,10 +126,10 @@ class Fit_Everything:
                 show_quantile_plot=True
         else:
             LC = left_censored
-            if show_quantile_plot is None:
+            if show_quantile_plot is True:
+                warnings.warn('show_quantile_plot has been changed to False because left censored data has been supplied')
                 show_quantile_plot = False #can't do Kaplan-Meier estimates with left censored data
             else:
-                warnings.warn('show_quantile_plot has been changed to False because left censored data has been supplied')
                 show_quantile_plot = False #can't do Kaplan-Meier estimates with left censored data
         if right_censored is None:
             RC = []
