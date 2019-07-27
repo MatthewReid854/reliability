@@ -105,7 +105,7 @@ class Fit_Everything:
     print('Weibull Alpha =',output.Weibull_2P_alpha,'\nWeibull Beta =',output.Weibull_2P_beta)
 
     '''
-    def __init__(self,failures=None,right_censored=None,left_censored=None, sort_by='BIC', show_plot=True, print_results=True,show_quantile_plot=True):
+    def __init__(self,failures=None,right_censored=None,left_censored=None, sort_by='BIC', show_plot=True, print_results=True,show_quantile_plot=None):
         if failures is None or len(failures)<3:
             raise ValueError('Maximum likelihood estimates could not be calculated for these data. There must be at least three failures to calculate 3 parameter models.')
         if right_censored is not None and left_censored is not None: #check that a mix of left and right censoring is not entered
@@ -113,26 +113,32 @@ class Fit_Everything:
         if sort_by not in ['AIC','BIC']:
             raise ValueError('sort_by must be either AIC or BIC. Defaults to BIC')
         if show_plot not in [True,False]:
-            raise  ValueError('show_plot must be either True of False. Defaults to True.')
+            raise  ValueError('show_plot must be either True or False. Defaults to True.')
         if print_results not in [True, False]:
-            raise ValueError('print_results must be either True of False. Defaults to True.')
-        if show_quantile_plot not in [True, False]:
-            raise ValueError('show_quantile_plot must be either True of False. Defaults to True.')
-        if min(failures)<=0:
-            raise ValueError('All failure times must be greater than zero.')
+            raise ValueError('print_results must be either True or False. Defaults to True.')
+        if show_quantile_plot not in [True, False, None]:
+            raise ValueError('show_quantile_plot must be either True or False. Defaults to True unless left censored data is provided.')
 
         self.failures = failures
         if left_censored is None:
             LC = []
+            if show_quantile_plot is None:
+                show_quantile_plot=True
         else:
             LC = left_censored
-            show_quantile_plot = False #can't do Kaplan-Meier estimates with left censored data
+            if show_quantile_plot is None
+                show_quantile_plot = False #can't do Kaplan-Meier estimates with left censored data
+            else:
+                warnings.warn('show_quantile_plot has been changed to False because left censored data has been supplied')
+                show_quantile_plot = False #can't do Kaplan-Meier estimates with left censored data
         if right_censored is None:
             RC = []
         else:
             RC = right_censored
         self._all_data = np.hstack([failures, LC, RC])
-
+        if min(self._all_data)<=0:
+            raise ValueError('All failure and censoring times must be greater than zero.')
+        
         #These are all used for scaling the histogram when there is censored data
         self._frac_fail = len(failures) / len(self._all_data)
         self._frac_fail_L = len(failures) / len(np.hstack([failures, LC]))
@@ -1100,11 +1106,9 @@ class Fit_Lognormal_2P:
             self.sigma = sp[0]
 
     def logf(t,mu,sigma): #Log PDF (Lognormal)
-        # return anp.log(anp.exp(-0.5*(((t-mu)/sigma)**2)))-anp.log((sigma*(2*anp.pi)**0.5))
         return anp.log(anp.exp(-0.5 * (((anp.log(t) - mu) / sigma) ** 2)) / (t * sigma * (2 * anp.pi) ** 0.5))
 
     def logF(t,mu,sigma): #Log CDF (Lognormal)
-        # return anp.log((1 + erf(((t-mu)/sigma) / 2**0.5)) / 2)
         return anp.log(0.5 + 0.5 * erf((anp.log(t) - mu) / (sigma * 2 ** 0.5)))
 
     def logR(t,mu,sigma): #Log SF (Lognormal)
