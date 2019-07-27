@@ -11,7 +11,6 @@ sequential_sampling_chart - plots the accept/reject boundaries for a given set o
     are also plotted on the chart.
 reliability_growth - uses the Duane method to find the instantaneous MTBF and produce a reliability growth plot.
 optimal_replacement_time - Calculates the cost model to determine how cost varies with replacement time. The cost model assumes Power Law NHPP
-convert_labels_to_binary - Converts values in a list or array to binary values to represent failures and censored data
 convert_dataframe_to_grouped_lists - groups values in a 2-column dataframe based on the values in the left column and returns those groups in a list of lists
 '''
 def one_sample_proportion(trials=None,successes=None,CI=0.95):
@@ -292,41 +291,6 @@ def optimal_replacement_time(Cf, Cr,weibull_alpha,weibull_beta,xmin=None,xmax=No
         plt.ylabel('Total cost')
         plt.title('Optimal replacement time estimation')
     return [t_min,cost_min]
-
-def convert_labels_to_binary(input_list=None,values_to_make_1=None):
-    '''
-    Converts values in a list or array to binary values to represent failures and censored data
-
-    inputs:
-    input_list - array or list to be converted
-    values_to_make_1: array or list of values which will be converted to 1. Everything else will be converted to 0.
-        Remember that in reliability, 1 is used to represent failure and 0 is used to represent censored data
-
-    outputs:
-    array of converted values
-
-    example usage:
-    outcome = ['cens','censored','Censored','Failure']
-    outcome_new = convert_labels_to_binary(input_list=outcome, values_to_make_1='Failure')
-    print(outcome_new) >>> [0, 0, 0, 1]
-
-    '''
-    import numpy as np
-    
-    if values_to_make_1 is None:
-        raise ValueError('you must specify values_to_make_1. This can be either a single item or a list of items.')
-    if input_list is None:
-        raise ValueError('you must specify the input_list to be converted')
-    if type(input_list) not in [np.ndarray, list]:
-        raise ValueError('input_list must be an array or list')
-
-    output_list = []
-    for item in input_list:
-        if item in values_to_make_1:
-            output_list.append(1)
-        else:
-            output_list.append(0)
-    return output_list
 
 def convert_dataframe_to_grouped_lists(input_dataframe):
     '''
