@@ -23,7 +23,7 @@ Install via ``pip``:
 
 A quick example:
 
-.. image:: https://github.com/MatthewReid854/reliability/blob/master/images/parametric_vs_nonparametric.png
+.. image:: images/parametric_vs_nonparametric.png
 
 
 
