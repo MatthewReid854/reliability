@@ -22,6 +22,51 @@ Contents:
   Quickstart for reliability
   Introduction to the field of reliability engineering
 
+.. toctree::
+  :maxdepth: 1
+  :caption: Parametric Models
+
+  Creating and plotting distributions
+  Accessing distribution properties
+  Fitting a specific distribution to data
+  Fitting all available distributions to data
+  Fitting distributions to censored data
+  Weibull mixture models
+
+.. toctree::
+  :maxdepth: 1
+  :caption: Non-parametric models
+
+  Kaplan-Meier estimate of reliability
+
+.. toctree::
+  :maxdepth: 1
+  :caption: Stress-Strength Interference
+  
+  Stress-Strength interference for any distributions
+  Stress-Strength interference for normal distributions
+
+.. toctree::
+  :maxdepth: 1
+  :caption: Other functions
+  
+  One sample proportion
+  Two proportion test
+  Sample size required for no failures
+  Sequential sampling chart
+  Reliability growth
+  Optimal replacement time
+  Convert dataframe to grouped lists
+  
+.. toctree::
+  :maxdepth: 1
+  :caption: Administration
+  
+  Citing reliability in your work
+  How to request or contribute a new feature
+  How to get help
+  About the author
+
 
 Installation
 ------------------------------
