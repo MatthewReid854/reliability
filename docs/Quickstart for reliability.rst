@@ -17,3 +17,13 @@ Install via ``pip``:
 .. code-block:: console
 
     pip install reliability
+
+
+
+
+A quick example:
+
+.. image:: https://github.com/MatthewReid854/reliability/blob/master/images/parametric_vs_nonparametric.png
+
+
+
