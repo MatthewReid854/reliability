@@ -1,6 +1,6 @@
 .. _code_directive:
 
-.. image:: https://i.imgur.com/P7sjQ0C.png
+.. image:: images/logo.png
 
 -------------------------------------
 
