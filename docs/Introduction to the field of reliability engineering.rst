@@ -7,5 +7,5 @@ Everyone is acutely aware of the importance of reliability, particularly when so
 
 Much of reliability engineering involves the analysis of data (such as time to failure), to uncover the patterns in how failures occur and to use those patterns to forecast how the failures will occur throughtout the lifetime of a population of items, or the lifetime of one or more repairable items. It is the data analysis part of reliability engineering that this python library is designed to help with.
 
-Further reading is available on `Wikipedia <https://en.wikipedia.org/wiki/Reliability_engineering/>`_and in numerous `textbooks <https://www.weibull.com/knowledge/books.htm/>`_. 
+Further reading is available on `Wikipedia <https://en.wikipedia.org/wiki/Reliability_engineering/>`_ and in numerous `textbooks <https://www.weibull.com/knowledge/books.htm/>`_. 
 
