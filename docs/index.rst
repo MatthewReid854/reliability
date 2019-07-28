@@ -3,8 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-.. image:: https://i.imgur.com/P7sjQ0C.png
-
+.. image:: images/logo.png
 -------------------------------------
 
 reliability
