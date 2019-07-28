@@ -24,7 +24,7 @@ Install via ``pip``:
 A quick example:
 ----------------
 
-In this example, we will create a Weibull Distribution, and from that distribuion we will draw 100 random samples. Using those samples we will obtain a non-parametric estimate of the survival function using the Kaplan-Meier method. Finally, we will plot the parametric and non-parametric distribuions together to see how they compare.
+In this example, we will create a Weibull Distribution, and from that distribution we will draw 100 random samples. Using those samples we will obtain a non-parametric estimate of the survival function using the Kaplan-Meier method. Finally, we will plot the parametric and non-parametric distribuions together to see how they compare.
 
 .. code-block:: console
 
@@ -41,10 +41,7 @@ In this example, we will create a Weibull Distribution, and from that distribuio
     plt.legend()
     plt.show()
 
-
-
 .. image:: images/parametric_vs_nonparametric.png
-
 
 A key feature of ``reliability`` is that probability distributions are created as objects, and these objects have many properties (such as the mean) that are set once the parameters of the distribution are defined. Using the dot operator allows us to access these properties as well as a large number of methods (such as drawing random samples as seen in the example above).
 
