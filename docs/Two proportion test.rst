@@ -5,8 +5,8 @@
 -------------------------------------
 
 
-Kaplan-Meier estimate of reliability
-''''''''''''''''''''''''''''''''''''
+Two proportion test
+'''''''''''''''''''
 
 
 Section title

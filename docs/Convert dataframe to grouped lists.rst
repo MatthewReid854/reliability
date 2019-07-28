@@ -5,8 +5,8 @@
 -------------------------------------
 
 
-Kaplan-Meier estimate of reliability
-''''''''''''''''''''''''''''''''''''
+Convert dataframe to grouped lists
+''''''''''''''''''''''''''''''''''
 
 
 Section title

@@ -5,8 +5,8 @@
 -------------------------------------
 
 
-Kaplan-Meier estimate of reliability
-''''''''''''''''''''''''''''''''''''
+Accessing distribution properties
+'''''''''''''''''''''''''''''''''
 
 
 Section title

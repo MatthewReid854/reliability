@@ -5,8 +5,8 @@
 -------------------------------------
 
 
-Kaplan-Meier estimate of reliability
-''''''''''''''''''''''''''''''''''''
+How to request or contribute a new feature
+''''''''''''''''''''''''''''''''''''''''''
 
 
 Section title

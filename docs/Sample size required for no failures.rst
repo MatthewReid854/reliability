@@ -5,7 +5,7 @@
 -------------------------------------
 
 
-Kaplan-Meier estimate of reliability
+Sample size required for no failures
 ''''''''''''''''''''''''''''''''''''
 
 

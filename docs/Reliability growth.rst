@@ -5,8 +5,8 @@
 -------------------------------------
 
 
-Kaplan-Meier estimate of reliability
-''''''''''''''''''''''''''''''''''''
+Reliability growth
+''''''''''''''''''
 
 
 Section title

@@ -5,8 +5,8 @@
 -------------------------------------
 
 
-Kaplan-Meier estimate of reliability
-''''''''''''''''''''''''''''''''''''
+Fitting distributions to censored data
+''''''''''''''''''''''''''''''''''''''
 
 
 Section title

@@ -5,8 +5,8 @@
 -------------------------------------
 
 
-Kaplan-Meier estimate of reliability
-''''''''''''''''''''''''''''''''''''
+Citing reliability in your work
+'''''''''''''''''''''''''''''''
 
 
 Section title

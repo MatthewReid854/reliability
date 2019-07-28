@@ -5,8 +5,8 @@
 -------------------------------------
 
 
-Kaplan-Meier estimate of reliability
-''''''''''''''''''''''''''''''''''''
+Stress-Strength interference for normal distributions
+'''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 
 Section title

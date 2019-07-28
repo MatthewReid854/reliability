@@ -5,8 +5,8 @@
 -------------------------------------
 
 
-Kaplan-Meier estimate of reliability
-''''''''''''''''''''''''''''''''''''
+Optimal replacement time
+''''''''''''''''''''''''
 
 
 Section title

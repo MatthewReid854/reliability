@@ -5,8 +5,8 @@
 -------------------------------------
 
 
-Title here
-''''''''''
+Creating and plotting distributions
+'''''''''''''''''''''''''''''''''''
 
 
 Section title

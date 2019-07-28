@@ -5,8 +5,8 @@
 -------------------------------------
 
 
-Kaplan-Meier estimate of reliability
-''''''''''''''''''''''''''''''''''''
+Fitting all available distributions to data
+'''''''''''''''''''''''''''''''''''''''''''
 
 
 Section title

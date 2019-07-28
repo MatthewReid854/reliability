@@ -5,8 +5,8 @@
 -------------------------------------
 
 
-Kaplan-Meier estimate of reliability
-''''''''''''''''''''''''''''''''''''
+Sequential sampling chart
+'''''''''''''''''''''''''
 
 
 Section title
