@@ -11,11 +11,11 @@ Creating and plotting distributions
 Probability distributions within ``reliability`` are Python objects, which allows us to specify just the type of distribution and parameters. Once the distribution object is created, we can access a large number of methods, some of which will require additional input. There are 6 different probability distributions available in ``reliability``. These are:
 
 -   Weibull Distribution (α, β, γ)
--   Exponential Distribution (λ,γ)
--   Gamma Distribution (α,β,γ)
--   Normal Distribution (μ,σ)
--   Lognormal Distribution (μ,σ)
--   Beta Distribution (α,β)
+-   Exponential Distribution (λ, γ)
+-   Gamma Distribution (α, β, γ)
+-   Normal Distribution (μ, σ)
+-   Lognormal Distribution (μ, σ)
+-   Beta Distribution (α, β)
 
 In all of the distributions which use γ, the γ parameter is used to location shift the distribution to the right. The Beta distribution is only defined in the range {0,1}.
 
