@@ -8,9 +8,9 @@
 Creating and plotting distributions
 '''''''''''''''''''''''''''''''''''
 
-Probability distributions within ``reliability`` are Python objects, which allows us to specify just the type of distribution and parameters, and from that we can access a large number of methods, some of which will require additional input. There are 6 different probability distributions available in ``reliability``. These are:
+Probability distributions within ``reliability`` are Python objects, which allows us to specify just the type of distribution and parameters. Once the distribution object is created, we can access a large number of methods, some of which will require additional input. There are 6 different probability distributions available in ``reliability``. These are:
 
--   Weibull Distribution
+-   Weibull Distribution ( \alpha )
 -   Exponential Distribution
 -   Gamma Distribution
 -   Normal Distribution
