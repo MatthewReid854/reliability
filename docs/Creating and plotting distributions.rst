@@ -29,8 +29,8 @@ Understanding how to create and plot distributions is easiest with an example. T
 
 The following methods are available for all distributions:
 
--   parameter names - varies by distribution
--   parameters - returns an array of parameters
+-   parameter names - varies by distribution. Eg. dist.mu will provide the mu parameter in the above example.
+-   parameters - returns an array of parameters. These are in alphabetical order, so for Lognormal it would be [mu,sigma].
 -   mean
 -   variance
 -   standard_deviation
@@ -39,16 +39,16 @@ The following methods are available for all distributions:
 -   excess_kurtosis
 -   median
 -   mode
--   plot() - plots all functions (PDF,CDF,SF,HF,CHF)
--   PDF() - plots the probability density function
--   CDF() - plots the cumulative distribution function
--   SF() - plots the survival function (also known as reliability function)
--   HF() - plots the hazard function
--   CHF() - plots the cumulative hazard function
--   quantile() - Calculates the quantile (time until a fraction has failed) for a given fraction failing. Also known as 'b' life where b5 is the time at which 5% have failed.
--   mean_residual_life() - Average residual lifetime of an item given that the item has survived up to a given time. Effectively the mean of the remaining amount (right side) of a distribution at a given time.
+-   plot() - plots all functions (PDF,CDF,SF,HF,CHF). No additional arguments are accepted.
+-   PDF() - plots the probability density function. Plotting keywords (such as xlabel, title, color) are accepted and used. If not specified they are preset.
+-   CDF() - plots the cumulative distribution function.  Plotting keywords (such as xlabel, title, color) are accepted and used. If not specified they are preset.
+-   SF() - plots the survival function (also known as reliability function).  Plotting keywords (such as xlabel, title, color) are accepted and used. If not specified they are preset.
+-   HF() - plots the hazard function.  Plotting keywords (such as xlabel, title, color) are accepted and used. If not specified they are preset.
+-   CHF() - plots the cumulative hazard function.  Plotting keywords (such as xlabel, title, color) are accepted and used. If not specified they are preset.
+-   quantile() - Calculates the quantile (time until a fraction has failed) for a given fraction failing. Also known as 'b' life where b5 is the time at which 5% have failed. Eg. dist.quantile(0.05) will give the b5 life.
+-   mean_residual_life() - Average residual lifetime of an item given that the item has survived up to a given time. Effectively the mean of the remaining amount (right side) of a distribution at a given time. You must specify the x-value at which to calculate MRL. Eg. dist.MRL(10)
 -   stats() - prints all the descriptive statistics. Same as the statistics shown using .plot() but printed to console.
--   random_samples() - draws random samples from the distribution to which it is applied. Same as rvs in scipy.stats.
+-   random_samples() - draws random samples from the distribution to which it is applied. Same as rvs in scipy.stats. You must specify the number of samples. Eg. data = dist.random_samples(100) will set data as a list of 100 random samples from the distribution.
 
 
 Section title
