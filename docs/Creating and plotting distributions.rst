@@ -54,6 +54,7 @@ The following methods are available for all distributions:
 -   stats() - prints all the descriptive statistics. Same as the statistics shown using .plot() but printed to console.
 -   random_samples() - draws random samples from the distribution to which it is applied. Same as rvs in scipy.stats. You must specify the number of samples. Eg. data = dist.random_samples(100) will set data as a list of 100 random samples from the distribution.
 
+Note that .plot() does not require plt.show() to be used as it will automatically show, however the other 5 plotting function will not be displayed until plt.show() is used. This is to allow the use to overlay multiple plots on the figure as required.
 Further detail about all of the functions is available using the help function within Python. Simply type:
 
 .. code:: python
