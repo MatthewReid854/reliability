@@ -26,7 +26,6 @@ Contents:
   :caption: Parametric Models
 
   Creating and plotting distributions
-  Accessing distribution properties
   Fitting a specific distribution to data
   Fitting all available distributions to data
   Fitting distributions to censored data
