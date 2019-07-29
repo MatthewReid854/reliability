@@ -17,7 +17,7 @@ Probability distributions within ``reliability`` are Python objects, which allow
 -   Lognormal Distribution (μ, σ)
 -   Beta Distribution (α, β)
 
-In all of the distributions which use γ, the γ parameter is used to location shift the distribution to the right. The Beta distribution is only defined in the range {0,1}.
+In all of the distributions which use γ, the γ parameter is used to location shift the distribution to the right. The Beta distribution is only defined in the range {0,1} .
 
 Understanding how to create and plot distributions is easiest with an example. The following code will create a Lognormal Distribution with parameters mu=5 and sigma=1. From this distribution, we will use the plot() method which provides a quick way to visualise the five functions and also provides a summary of the descriptive statistics.
 
