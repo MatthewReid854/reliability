@@ -33,7 +33,7 @@ Understanding how to create and plot distributions is easiest with an example. T
 The following methods are available for all distributions:
 
 -   parameter names - varies by distribution. Eg. dist.mu will provide the mu parameter in the above example.
--   parameters - returns an array of parameters. These are in alphabetical order, so for Lognormal it would return [mu,sigma].
+-   parameters - returns an array of parameters. These are in the order specified in the bullet points above, so for Lognormal it would return [mu,sigma].
 -   mean
 -   variance
 -   standard_deviation
