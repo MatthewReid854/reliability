@@ -74,15 +74,11 @@ As another example, we will create a bathtub curve by creating and layering seve
     plt.plot(xvals,random_failures,label='random failures',color='green')
     plt.plot(xvals,bathtub,'r',label='total',linestyle='--')
     plt.legend()
+    plt.xlabel('Cycles')
     plt.title('Example of how bathtub curve is constructed')
     plt.show()
 
-
-
-
-
-
-
+.. image:: images/bathtub_curve.png
 
 Further detail about all of the functions is available using the help function within Python. Simply type:
 
