@@ -14,7 +14,7 @@ Probability distributions within ``reliability`` are Python objects, which allow
 -   Exponential Distribution (λ, γ)
 -   Gamma Distribution (α, β, γ)
 -   Normal Distribution (μ, σ)
--   Lognormal Distribution (μ, σ)
+-   Lognormal Distribution (μ, σ, γ)
 -   Beta Distribution (α, β)
 
 In all of the distributions which use γ, the γ parameter is used to location shift the distribution to the right.
