@@ -43,11 +43,11 @@ The following methods are available for all distributions:
 -   median
 -   mode
 -   plot() - plots all functions (PDF, CDF, SF, HF, CHF). No additional arguments are accepted.
--   PDF() - plots the probability density function. Plotting keywords (such as xlabel, title, color) are accepted and used. If not specified they are preset.
--   CDF() - plots the cumulative distribution function.  Plotting keywords (such as xlabel, title, color) are accepted and used. If not specified they are preset.
--   SF() - plots the survival function (also known as reliability function).  Plotting keywords (such as xlabel, title, color) are accepted and used. If not specified they are preset.
--   HF() - plots the hazard function.  Plotting keywords (such as xlabel, title, color) are accepted and used. If not specified they are preset.
--   CHF() - plots the cumulative hazard function.  Plotting keywords (such as xlabel, title, color) are accepted and used. If not specified they are preset.
+-   PDF() - plots the probability density function.
+-   CDF() - plots the cumulative distribution function.
+-   SF() - plots the survival function (also known as reliability function).
+-   HF() - plots the hazard function.
+-   CHF() - plots the cumulative hazard function.
 -   quantile() - Calculates the quantile (time until a fraction has failed) for a given fraction failing. Also known as 'b' life where b5 is the time at which 5% have failed. Eg. dist.quantile(0.05) will give the b5 life.
 -   AICc() - Akaike Information Criterion - This is a goodness of fit measure that is used by Fitters.Fit_Everything to compare goodness of fit. Input requires a list of the x-values for which to calculate the AICc.
 -   BIC() - Bayesian Information Criterion - This is a goodness of fit measure that is used by Fitters.Fit_Everything to compare goodness of fit. Input requires a list of the x-values for which to calculate the BIC.
@@ -55,7 +55,35 @@ The following methods are available for all distributions:
 -   stats() - prints all the descriptive statistics. Same as the statistics shown using .plot() but printed to console.
 -   random_samples() - draws random samples from the distribution to which it is applied. Same as rvs in scipy.stats. You must specify the number of samples. Eg. data = dist.random_samples(100) will set data as a list of 100 random samples from the distribution.
 
+For all of the individual plotting functions (PDF, CDF, SF, HF, CHF), all standard matplotlib plotting keywords (such as xlabel, title, color, etc.) are accepted and used. If not specified they are preset. In specifying the plotting positions for the x-axis, there are optional keywords to be used. The first of these is 'xvals' which accepts a list of x-values to use for the horizontal axis. Alternatively, the user may specify 'xmin' and 'xmax' and the axis will be created using np.linspace(xmin, xmax, 1000).
+
 Note that .plot() does not require plt.show() to be used as it will automatically show, however the other 5 plotting functions will not be displayed until plt.show() is used. This is to allow the user to overlay multiple plots on the figure or change titles, labels, and legends as required.
+
+As another example, we will create a bathtub curve by creating and layering several distributions.
+
+.. code:: python
+
+    from reliability import Distributions
+    import numpy as np
+    import matplotlib.pyplot as plt
+    xvals=np.linspace(0,50,1000)
+    wear_in = Distributions.Exponential_Distribution(Lambda=0.3).PDF(xvals=xvals,label='wear in',color='blue')
+    random_failures = np.ones_like(xvals)*0.05
+    wear_out = Distributions.Normal_Distribution(mu=50,sigma=3).PDF(xvals=xvals,label='wear out',color='orange')
+    bathtub = wear_in+random_failures+wear_out
+    plt.plot(xvals,random_failures,label='random failures',color='green')
+    plt.plot(xvals,bathtub,'r',label='total',linestyle='--')
+    plt.legend()
+    plt.title('Example of how bathtub curve is constructed')
+    plt.show()
+
+
+
+
+
+
+
+
 Further detail about all of the functions is available using the help function within Python. Simply type:
 
 .. code:: python
