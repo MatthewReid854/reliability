@@ -20,7 +20,7 @@ The supported distributions for failures and right censored data are:
 -   Lognormal_2P
 -   Normal_2P
 -   Beta_2P
--   Weibull_Mixture (see the `section <https://reliability.readthedocs.io/en/latest/Fitting%20all%20available%20distributions%20to%20data.html>`_ on this)
+-   Weibull_Mixture (see the `section <https://reliability.readthedocs.io/en/latest/Weibull%20mixture%20models.html>`_ on this)
 
 The supported distributions for failures and left censored data are:
 
@@ -30,10 +30,10 @@ The supported distributions for failures and left censored data are:
 -   Lognormal_2P
 -   Normal_2P
 -   Beta_2P
--   Weibull_Mixture
+-   Weibull_Mixture (see the `section <https://reliability.readthedocs.io/en/latest/Weibull%20mixture%20models.html>`_ on this)
 
 Note that the Beta distribution is only for data in the range {0,1}.
-If you do not know which distribution you want to fit, then please see the section on using the Fit_Everything function.
+If you do not know which distribution you want to fit, then please see the `section <https://reliability.readthedocs.io/en/latest/Fitting%20all%20available%20distributions%20to%20data.html>`_ on using the Fit_Everything function.
 
 To learn how we can fit a distribution, we will use an example. In this example, we are creating some data from a Weibull distribution and then we will right censor all of the data above our chosen threshold. Then we are fitting a Weibull_3P distribution to the data.
 
