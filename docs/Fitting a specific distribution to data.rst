@@ -7,7 +7,7 @@
 Fitting a specific distribution to data
 '''''''''''''''''''''''''''''''''''''''
 
-The module ``reliability.Fitters`` provides many probability distribution fitting functions. Many of these functions can accept left or right censored data, although the location shifted distributions (any distribution with γ>0) will not accept left censored data. A discussion on why this is the case is presented at the end of this section. All distributions in the Fitters module are named with their number of parameters. I.e. Weibull_2P uses α,β, whereas Weibull_3P uses α,β,γ. This is intended to remove ambiguity about what distribution you are fitting. A list of the available distribution fitters is provided below.
+The module ``reliability.Fitters`` provides many probability distribution fitting functions. Many of these functions can accept left or right censored data, although the location shifted distributions (any distribution with γ>0) will not accept left censored data. A discussion on why this is the case is presented at the end of this section. All distributions in the Fitters module are named with their number of parameters. I.e. Weibull_2P uses α,β, whereas Weibull_3P uses α,β,γ. This is intended to remove ambiguity about what distribution you are fitting.
 
 The supported distributions for failures and right censored data are:
 
