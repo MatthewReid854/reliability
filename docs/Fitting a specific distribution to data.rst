@@ -50,9 +50,9 @@ To learn how we can fit a distribution, we will use an example. In this example,
     uncensored_failure_data = Weibull_Distribution(alpha=a, beta=b, gamma=g).random_samples(500) #create some data
     cens = []
     fail = []
-    thresh = 55 #censoring cutoff
+    threshold = 55 #censoring cutoff
     for item in uncensored_failure_data:
-        if item>=thresh: #this will right censor any value above thresh
+        if item>=threshold: #this will right censor any value above the threshold
             cens.append(thresh)
         else:
             fail.append(item)
@@ -61,7 +61,7 @@ To learn how we can fit a distribution, we will use an example. In this example,
     print('Fit_Weibull_3P parameters:\nAlpha:', wb.alpha, '\nBeta:', wb.beta, '\nGamma', wb.gamma)
     xvals = np.linspace(0,150,1000)
     N,bins,patches = plt.hist(uncensored_failure_data, density=True, alpha=0.2, color='k', bins=30, edgecolor='k') #histogram of the data
-    for i in range(np.argmin(abs(np.array(bins)-thresh)),len(patches)): #this is to shade the censored part of the histogram as white
+    for i in range(np.argmin(abs(np.array(bins)-threshold)),len(patches)): #this is to shade the censored part of the histogram as white
         patches[i].set_facecolor('white')
     Weibull_Distribution(alpha=a,beta=b,gamma=g).PDF(xvals=xvals,label='True Distribution') #plots the true distribution
     Weibull_Distribution(alpha=wb.alpha, beta=wb.beta, gamma=wb.gamma).PDF(xvals=xvals, label='Fit_Weibull_3P',linestyle='--') #plots the fitted Weibull_3P
@@ -99,9 +99,9 @@ As a second example, we will fit a Gamma_2P distribution to some partially left 
         uncensored_failure_data = Gamma_Distribution(alpha=a, beta=b).random_samples(t) #create some data
         cens = []
         fail = []
-        thresh = 100 #censoring cutoff
+        threshold = 100 #censoring cutoff
         for item in uncensored_failure_data:
-            if item<=thresh: #this will right censor any value above thresh
+            if item<=threshold: #this will left censor any value below the threshold
                 cens.append(thresh)
             else:
                 fail.append(item)
@@ -110,7 +110,7 @@ As a second example, we will fit a Gamma_2P distribution to some partially left 
         plt.subplot(subplot_id)
         num_bins = min(int(len(fail)/2),30)
         N,bins,patches = plt.hist(uncensored_failure_data, density=True, alpha=0.2, color='k', bins=num_bins, edgecolor='k') #histogram of the data
-        for i in range(0,np.argmin(abs(np.array(bins)-thresh))): #this is to shade the censored part of the histogram as white
+        for i in range(0,np.argmin(abs(np.array(bins)-threshold))): #this is to shade the censored part of the histogram as white
             patches[i].set_facecolor('white')
         Gamma_Distribution(alpha=a,beta=b).PDF(xvals=xvals,label='True') #plots the true distribution
         Gamma_Distribution(alpha=wb.alpha, beta=wb.beta).PDF(xvals=xvals,label='Fitted',linestyle='--') #plots the fitted Gamma_2P
