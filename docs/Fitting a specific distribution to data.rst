@@ -20,7 +20,7 @@ The supported distributions for failures and right censored data are:
 -   Lognormal_2P
 -   Normal_2P
 -   Beta_2P
--   Weibull_Mixture (see the section on this)
+-   Weibull_Mixture (see the `section<https://reliability.readthedocs.io/en/latest/Fitting%20all%20available%20distributions%20to%20data.html>`_ on this)
 
 The supported distributions for failures and left censored data are:
 
@@ -53,4 +53,4 @@ How do these work?
 
 All functions in this module work using a Python library called `autograd <https://github.com/HIPS/autograd/blob/master/README.md/>`_ to find the derivative of the log-likelihood function. In this way, the code only needs to specify the log PDF, log CDF, and log SF in order to obtain the fitted parameters. Initial guesses of the parameters are essential for autograd and are obtained using scipy.stats on all the data as if it wasn't censored (since scipy doesn't accept censored data). If the distribution is an extremely bad fit or is heavily censored then these guesses may be poor and the fit might not be successful. In this case, the Scipy fit is used which will be incorrect if there is any censored data. Generally the fit achieved by autograd is highly successful.
 
-A special thanks goes to Cameron Davidson-Pilon (author of the Python library `lifelines <https://github.com/CamDavidsonPilon/lifelines/blob/master/README.md/>`_ and website `dataorigami.net <https://dataorigami.net/>`_ for providing help with getting autograd to work, and for writing the python library "autograd-gamma", without which it would be impossible to fit the Beta or Gamma distributions using autograd.
+A special thanks goes to Cameron Davidson-Pilon (author of the Python library `lifelines <https://github.com/CamDavidsonPilon/lifelines/blob/master/README.md/>`_ and website `dataorigami.net <https://dataorigami.net/>`_ for providing help with getting autograd to work, and for writing the python library `autograd-gamma<https://github.com/CamDavidsonPilon/autograd-gamma/blob/master/README.md/>`_, without which it would be impossible to fit the Beta or Gamma distributions using autograd.
