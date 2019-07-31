@@ -28,7 +28,6 @@ Contents:
   Creating and plotting distributions
   Fitting a specific distribution to data
   Fitting all available distributions to data
-  Fitting distributions to censored data
   Weibull mixture models
 
 .. toctree::
