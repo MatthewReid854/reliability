@@ -35,7 +35,22 @@ The supported distributions for failures and left censored data are:
 Note that the Beta distribution is only for data in the range {0,1}.
 If you do not know which distribution you want to fit, then please see the `section <https://reliability.readthedocs.io/en/latest/Fitting%20all%20available%20distributions%20to%20data.html>`_ on using the Fit_Everything function.
 
-To learn how we can fit a distribution, we will use an example. In this example, we are creating some data from a Weibull distribution and then we will right censor all of the data above our chosen threshold. Then we are fitting a Weibull_3P distribution to the data.
+To learn how we can fit a distribution, we will start by using a simple example with 10 failure times. These times were generated from a Weibull distribution with α=5, β=2.
+
+.. code:: python
+
+    from reliability.Fitters import Fit_Weibull_2P
+    data = [4.21605147, 5.10479599, 4.1424553, 3.50159047, 8.73087644, 3.07435371, 5.22003467, 3.59354271, 7.18373629, 5.9171129]
+    wb = Fit_Weibull_2P(failures=data)
+    print('Fit_Weibull_2P parameters:\nAlpha:', wb.alpha, '\nBeta:', wb.beta)
+
+    '''
+    Fit_Weibull_2P parameters:
+    Alpha: 5.668221303512732 
+    Beta: 3.1416809960726626
+    '''
+
+It is beneficial to see the effectiveness of the fitted distribution in comparison to the original distribution. In this second example, we are creating 500 samples from a Weibull distribution and then we will right censor all of the data above our chosen threshold. Then we are fitting a Weibull_3P distribution to the data.
 
 .. code:: python
 
@@ -79,7 +94,7 @@ To learn how we can fit a distribution, we will use an example. In this example,
 
 .. image:: images/Fit_Weibull_3P_right_cens.png
 
-As a second example, we will fit a Gamma_2P distribution to some partially left censored data. To provide a comparison of the fitting accuracy as the number of samples increases, we will do the same experiment with varying sample sizes.
+As a final example, we will fit a Gamma_2P distribution to some partially left censored data. To provide a comparison of the fitting accuracy as the number of samples increases, we will do the same experiment with varying sample sizes. The results highlight that the accuracy of the fit is proportional to the amount of samples, so you should always try to obtain more data if possible.
 
 .. code:: python
 
