@@ -53,7 +53,7 @@ To learn how we can fit a distribution, we will use an example. In this example,
     threshold = 55 #censoring cutoff
     for item in uncensored_failure_data:
         if item>=threshold: #this will right censor any value above the threshold
-            cens.append(thresh)
+            cens.append(threshold)
         else:
             fail.append(item)
     print('There are',len(cens),'censored items.')
@@ -102,7 +102,7 @@ As a second example, we will fit a Gamma_2P distribution to some partially left 
         threshold = 100 #censoring cutoff
         for item in uncensored_failure_data:
             if item<=threshold: #this will left censor any value below the threshold
-                cens.append(thresh)
+                cens.append(threshold)
             else:
                 fail.append(item)
         wb = Fit_Gamma_2P(failures=fail, left_censored=cens) #fit the Gamma_2P distribution
