@@ -37,18 +37,18 @@ To learn how we can fit a distribution, we will use an example. In this example,
 
 .. code:: python
 
+    more to come tomorrow :)
     from reliability.Distributions import Weibull_Distribution
 
 
 Why can't I fit a location shifted distribution to my left censored data?
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
-This is because
-
+This is because left censored data could occur anywhere to the left of the shifted start point (the gamma value), making the true location of a censored datapoint an impossibility if the gamma parameter is larger than the data. To think of it another way, for the same reason that we can't have a negative failure time on a Weibull_2P distribution, we can't have a failure time less than gamma on a Weibull_3P distribution. While it is certainly possible that left censored data come from a location shifted distribution, we cannot accurately determine what gamma is without a known minimum. In the case of no censoring or right censored data, the gamma parameter is simply set as the lowest failure time, but this convenience breaks down for left censored data.
 
 How do these work?
 ''''''''''''''''''
 
-All functions in this module work using a Python library called `autograd <https://github.com/HIPS/autograd/blob/master/README.md/>`_ to find the derivative of the log-likelihood function. In this way, the code only needs to specify the log PDF, log CDF, and log SF in order to obtain the fitted parameters. Initial guesses of the parameters are essential for autograd and are obtained using scipy.stats. If the distribution is an extremely bad fit or is heavily censored then these guesses may be poor and the fit might not be successful. In this case, the Scipy fit ws used which will be incorrect if there is any censored data. Generally the fit achieved by autograd is highly successful.
+All functions in this module work using a Python library called `autograd <https://github.com/HIPS/autograd/blob/master/README.md/>`_ to find the derivative of the log-likelihood function. In this way, the code only needs to specify the log PDF, log CDF, and log SF in order to obtain the fitted parameters. Initial guesses of the parameters are essential for autograd and are obtained using scipy.stats on all the data as if it wasn't censored (since scipy doesn't accept censored data). If the distribution is an extremely bad fit or is heavily censored then these guesses may be poor and the fit might not be successful. In this case, the Scipy fit is used which will be incorrect if there is any censored data. Generally the fit achieved by autograd is highly successful.
 
 A special thanks goes to Cameron Davidson-Pilon (author of the Python library `lifelines <https://github.com/CamDavidsonPilon/lifelines/blob/master/README.md/>`_ and website `dataorigami.net <https://dataorigami.net/>`_ for providing help with getting autograd to work, and for writing the python library "autograd-gamma", without which it would be impossible to fit the Beta or Gamma distributions using autograd.
