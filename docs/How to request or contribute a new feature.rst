@@ -14,5 +14,5 @@ Please raise an `issue <https://github.com/MatthewReid854/reliability/issues/>`_
 -   any references such as academic papers or textbooks which describe the necessary steps
 -   screenshots from other programs (such as Minitab, JMP Pro, Reliasoft) which show the feature in use
 
-Remember to upgrade ``reliability`` to the newest version and double check that the requested feature is not in there, as the codebase is constantly changing.
+Remember to upgrade ``reliability`` to the newest version and double check that the requested feature is not in there, as the codebase is constantly evolving.
 
