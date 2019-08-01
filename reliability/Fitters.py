@@ -670,6 +670,9 @@ class Fit_Weibull_Mixture:
     beta_2 - the fitted Weibull_2P beta parameter for the second (right) group
     proportion_1 - the fitted proportion of the first (left) group
     proportion_2 - the fitted proportion of the second (right) group. Same as 1-proportion_1
+    loglik2 - LogLikelihood*-2
+    AICc - Akaike Information Criterion
+    BIC - Bayesian Information Criterion
     '''
     def __init__(self,failures=None,right_censored=None,left_censored=None,show_plot=False,print_results=False):
         if failures is None or len(failures) < 4:  # it is possible to fit a mixture model with as few as 4 samples but it is inappropriate to do so. You should have at least 10, and preferably a lot more (>20) samples before using a mixture model.
@@ -754,6 +757,14 @@ class Fit_Weibull_Mixture:
         self.beta_2 = params[3]
         self.proportion_1 = params[4]
         self.proportion_2 = 1-params[4]
+
+        params = [self.alpha_1, self.beta_1, self.alpha_2, self.beta_2, self.proportion_1]
+        k = len(params)
+        n = len(all_data)
+        LL2 = 2 * Fit_Weibull_Mixture.LL(params, failures, right_censored, left_censored)
+        self.loglik2=LL2
+        self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
+        self.BIC = np.log(n) * k + LL2
 
         if print_results==True:
             print('Parameters:', '\nAlpha 1:', self.alpha_1, '\nBeta 1:', self.beta_1, '\nAlpha 2:', self.alpha_2, '\nBeta 2:', self.beta_2, '\nProportion 1:', self.proportion_1)
