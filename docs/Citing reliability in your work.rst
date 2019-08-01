@@ -17,8 +17,8 @@ If you would like to use another referencing style, the details you may need are
 - **Year published:** 2019
 - **Title:** Reliability – a Python library for reliability engineering
 - **Version:** 0.1.16
-- **Operating system:* Python
-- **Available from:* https://pypi.org/project/reliability/
+- **Operating system:** Python
+- **Available from:** https://pypi.org/project/reliability/
 
 Note that the version number is constantly changing so please check `pyPI <https://pypi.org/project/reliability/>`_ for the current version.
 
