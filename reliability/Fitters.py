@@ -82,8 +82,7 @@ class Fit_Everything:
         Weibull_3P_beta
         Weibull_3P_gamma
         Weibull_3P_BIC
-        Weibull_3P_AIC
-        Weibull_3P_SQD
+        Weibull_3P_AICc
 
     All parametric models have the number of parameters in the name. For example, Weibull_2P used alpha and beta, whereas Weibull_3P
     uses alpha, beta, and gamma. This is applied even for Normal_2P for consistency in naming conventions.
@@ -142,7 +141,6 @@ class Fit_Everything:
         #These are all used for scaling the histogram when there is censored data
         self._frac_fail = len(failures) / len(self._all_data)
         self._frac_fail_L = len(failures) / len(np.hstack([failures, LC]))
-        # self._left_cens_ratio = len(LC) / len(failures)
 
         # Kaplan-Meier estimate of quantiles. Used in Q-Q plot.
         d = sorted(self._all_data)  # sorting the failure data is necessary for plotting quantiles in order
@@ -150,35 +148,30 @@ class Fit_Everything:
         self._nonparametric_CDF = 1 - np.array(nonparametric.KM)  # change SF into CDF
 
         #parametric models
-        AIC_BIC_metric = self._all_data
-        if left_censored is None: #This section includes location shifted (gamma>0) distributions. We can only fit 3P distributions when there is no left censored data
-            self._left_cens = False
-            #used by plot distributions to tell what parameters were calculated
+        if left_censored is None: #This section includes location shifted (gamma>0) distributions. We can only fit location shifted distributions when there is no left censored data
+            self._left_cens = False #used by plot distributions to tell what parameters were calculated
             Weibull_3P_params = Fit_Weibull_3P(failures=failures, right_censored=right_censored)
             self.Weibull_3P_alpha = Weibull_3P_params.alpha
             self.Weibull_3P_beta = Weibull_3P_params.beta
             self.Weibull_3P_gamma = Weibull_3P_params.gamma
-            self.Weibull_3P_BIC = Weibull_Distribution(alpha=self.Weibull_3P_alpha, beta=self.Weibull_3P_beta,gamma=self.Weibull_3P_gamma).BIC(AIC_BIC_metric)
-            self.Weibull_3P_AIC = Weibull_Distribution(alpha=self.Weibull_3P_alpha, beta=self.Weibull_3P_beta,gamma=self.Weibull_3P_gamma).AICc(AIC_BIC_metric)
+            self.Weibull_3P_BIC = Weibull_3P_params.BIC
+            self.Weibull_3P_AICc = Weibull_3P_params.AICc
             self._parametric_CDF_Weibull_3P = Weibull_Distribution(alpha=self.Weibull_3P_alpha, beta=self.Weibull_3P_beta, gamma=self.Weibull_3P_gamma).CDF(xvals=d, show_plot=False)
-
 
             Gamma_3P_params = Fit_Gamma_3P(failures=failures, right_censored=right_censored)
             self.Gamma_3P_alpha = Gamma_3P_params.alpha
             self.Gamma_3P_beta = Gamma_3P_params.beta
             self.Gamma_3P_gamma = Gamma_3P_params.gamma
-            self.Gamma_3P_BIC = Gamma_Distribution(alpha=self.Gamma_3P_alpha, beta=self.Gamma_3P_beta,gamma=self.Gamma_3P_gamma).BIC(AIC_BIC_metric)
-            self.Gamma_3P_AIC = Gamma_Distribution(alpha=self.Gamma_3P_alpha, beta=self.Gamma_3P_beta,gamma=self.Gamma_3P_gamma).AICc(AIC_BIC_metric)
+            self.Gamma_3P_BIC = Gamma_3P_params.BIC
+            self.Gamma_3P_AICc = Gamma_3P_params.AICc
             self._parametric_CDF_Gamma_3P = Gamma_Distribution(alpha=self.Gamma_3P_alpha, beta=self.Gamma_3P_beta, gamma=self.Gamma_3P_gamma).CDF(xvals=d, show_plot=False)
-
 
             Expon_2P_params = Fit_Expon_2P(failures=failures,right_censored=right_censored)
             self.Expon_2P_lambda = Expon_2P_params.Lambda
             self.Expon_2P_gamma = Expon_2P_params.gamma
-            self.Expon_2P_BIC = Exponential_Distribution(Lambda=self.Expon_2P_lambda, gamma=self.Expon_2P_gamma).BIC(AIC_BIC_metric)
-            self.Expon_2P_AIC = Exponential_Distribution(Lambda=self.Expon_2P_lambda, gamma=self.Expon_2P_gamma).AICc(AIC_BIC_metric)
+            self.Expon_2P_BIC = Expon_2P_params.BIC
+            self.Expon_2P_AICc = Expon_2P_params.AICc
             self._parametric_CDF_Exponential_2P = Exponential_Distribution(Lambda=self.Expon_2P_lambda, gamma=self.Expon_2P_gamma).CDF(xvals=d, show_plot=False)
-
 
         else: #fills the non-calculated distributions with zeros so we don't get an error when these values are entered in the dataframe
             self._left_cens = True  # used by plot distributions to tell what parameters were calculated
@@ -186,63 +179,63 @@ class Fit_Everything:
             self.Weibull_3P_beta = 0
             self.Weibull_3P_gamma = 0
             self.Weibull_3P_BIC = 0
-            self.Weibull_3P_AIC = 0
+            self.Weibull_3P_AICc = 0
             self.Gamma_3P_alpha = 0
             self.Gamma_3P_beta = 0
             self.Gamma_3P_gamma = 0
             self.Gamma_3P_BIC = 0
-            self.Gamma_3P_AIC = 0
+            self.Gamma_3P_AICc = 0
             self.Expon_2P_lambda = 0
             self.Expon_2P_gamma = 0
             self.Expon_2P_BIC = 0
-            self.Expon_2P_AIC = 0
+            self.Expon_2P_AICc = 0
 
         Normal_2P_params = Fit_Normal_2P(failures=failures, right_censored=right_censored,left_censored=left_censored)
         self.Normal_2P_mu = Normal_2P_params.mu
         self.Normal_2P_sigma = Normal_2P_params.sigma
-        self.Normal_2P_BIC = Normal_Distribution(mu=self.Normal_2P_mu, sigma=self.Normal_2P_sigma).BIC(AIC_BIC_metric)
-        self.Normal_2P_AIC = Normal_Distribution(mu=self.Normal_2P_mu, sigma=self.Normal_2P_sigma).AICc(AIC_BIC_metric)
+        self.Normal_2P_BIC = Normal_2P_params.BIC
+        self.Normal_2P_AICc = Normal_2P_params.AICc
         self._parametric_CDF_Normal_2P = Normal_Distribution(mu=self.Normal_2P_mu, sigma=self.Normal_2P_sigma).CDF(xvals=d, show_plot=False)
 
         Lognormal_2P_params = Fit_Lognormal_2P(failures=failures,right_censored=right_censored,left_censored=left_censored)
         self.Lognormal_2P_mu = Lognormal_2P_params.mu
         self.Lognormal_2P_sigma = Lognormal_2P_params.sigma
-        self.Lognormal_2P_BIC = Lognormal_Distribution(mu=self.Lognormal_2P_mu, sigma=self.Lognormal_2P_sigma).BIC(AIC_BIC_metric)
-        self.Lognormal_2P_AIC = Lognormal_Distribution(mu=self.Lognormal_2P_mu, sigma=self.Lognormal_2P_sigma).AICc(AIC_BIC_metric)
+        self.Lognormal_2P_BIC = Lognormal_2P_params.BIC
+        self.Lognormal_2P_AICc = Lognormal_2P_params.AICc
         self._parametric_CDF_Lognormal_2P = Lognormal_Distribution(mu=self.Lognormal_2P_mu, sigma=self.Lognormal_2P_sigma).CDF(xvals=d, show_plot=False)
 
         Weibull_2P_params = Fit_Weibull_2P(failures=failures,right_censored=right_censored,left_censored=left_censored)
         self.Weibull_2P_alpha = Weibull_2P_params.alpha
         self.Weibull_2P_beta = Weibull_2P_params.beta
-        self.Weibull_2P_BIC = Weibull_Distribution(alpha=self.Weibull_2P_alpha, beta=self.Weibull_2P_beta).BIC(AIC_BIC_metric)
-        self.Weibull_2P_AIC = Weibull_Distribution(alpha=self.Weibull_2P_alpha, beta=self.Weibull_2P_beta).AICc(AIC_BIC_metric)
+        self.Weibull_2P_BIC = Weibull_2P_params.BIC
+        self.Weibull_2P_AICc = Weibull_2P_params.AICc
         self._parametric_CDF_Weibull_2P = Weibull_Distribution(alpha=self.Weibull_2P_alpha, beta=self.Weibull_2P_beta).CDF(xvals=d, show_plot=False)
 
         Gamma_2P_params = Fit_Gamma_2P(failures=failures,right_censored=right_censored,left_censored=left_censored)
         self.Gamma_2P_alpha = Gamma_2P_params.alpha
         self.Gamma_2P_beta = Gamma_2P_params.beta
-        self.Gamma_2P_BIC = Gamma_Distribution(alpha=self.Gamma_2P_alpha, beta=self.Gamma_2P_beta).BIC(AIC_BIC_metric)
-        self.Gamma_2P_AIC = Gamma_Distribution(alpha=self.Gamma_2P_alpha, beta=self.Gamma_2P_beta).AICc(AIC_BIC_metric)
+        self.Gamma_2P_BIC = Gamma_2P_params.BIC
+        self.Gamma_2P_AICc = Gamma_2P_params.AICc
         self._parametric_CDF_Gamma_2P = Gamma_Distribution(alpha=self.Gamma_2P_alpha, beta=self.Gamma_2P_beta).CDF(xvals=d, show_plot=False)
 
         Expon_1P_params = Fit_Expon_1P(failures=failures,right_censored=right_censored,left_censored=left_censored)
         self.Expon_1P_lambda = Expon_1P_params.Lambda
-        self.Expon_1P_BIC = Exponential_Distribution(Lambda=self.Expon_1P_lambda).BIC(AIC_BIC_metric)
-        self.Expon_1P_AIC = Exponential_Distribution(Lambda=self.Expon_1P_lambda).AICc(AIC_BIC_metric)
+        self.Expon_1P_BIC = Expon_1P_params.BIC
+        self.Expon_1P_AICc = Expon_1P_params.AICc
         self._parametric_CDF_Exponential_1P = Exponential_Distribution(Lambda=self.Expon_1P_lambda).CDF(xvals=d, show_plot=False)
 
         if max(failures)<=1:
             Beta_2P_params = Fit_Beta_2P(failures=failures, right_censored=right_censored, left_censored=left_censored)
             self.Beta_2P_alpha = Beta_2P_params.alpha
             self.Beta_2P_beta = Beta_2P_params.beta
-            self.Beta_2P_BIC = Beta_Distribution(alpha=self.Beta_2P_alpha, beta=self.Beta_2P_beta).BIC(AIC_BIC_metric)
-            self.Beta_2P_AIC = Beta_Distribution(alpha=self.Beta_2P_alpha, beta=self.Beta_2P_beta).AICc(AIC_BIC_metric)
+            self.Beta_2P_BIC = Beta_2P_params.BIC
+            self.Beta_2P_AICc = Beta_2P_params.AICc
             self._parametric_CDF_Beta_2P = Beta_Distribution(alpha=self.Beta_2P_alpha, beta=self.Beta_2P_beta).CDF(xvals=d, show_plot=False)
         else:
             self.Beta_2P_alpha = 0
             self.Beta_2P_beta = 0
             self.Beta_2P_BIC = 0
-            self.Beta_2P_AIC = 0
+            self.Beta_2P_AICc = 0
 
         #assemble the output dataframe
         DATA = {'Distribution': ['Weibull_3P','Weibull_2P','Normal_2P','Exponential_1P','Exponential_2P','Lognormal_2P','Gamma_2P','Gamma_3P','Beta_2P'],
@@ -252,11 +245,11 @@ class Fit_Everything:
                 'Mu':['','',self.Normal_2P_mu,'','',self.Lognormal_2P_mu,'','',''],
                 'Sigma':['','',self.Normal_2P_sigma,'','',self.Lognormal_2P_sigma,'','',''],
                 'Lambda':['','','',self.Expon_1P_lambda,self.Expon_2P_lambda,'','','',''],
-                'AICc':[self.Weibull_3P_AIC, self.Weibull_2P_AIC, self.Normal_2P_AIC, self.Expon_1P_AIC, self.Expon_2P_AIC, self.Lognormal_2P_AIC, self.Gamma_2P_AIC, self.Gamma_3P_AIC, self.Beta_2P_AIC],
+                'AICc':[self.Weibull_3P_AICc, self.Weibull_2P_AICc, self.Normal_2P_AICc, self.Expon_1P_AICc, self.Expon_2P_AICc, self.Lognormal_2P_AICc, self.Gamma_2P_AICc, self.Gamma_3P_AICc, self.Beta_2P_AICc],
                 'BIC':[self.Weibull_3P_BIC, self.Weibull_2P_BIC, self.Normal_2P_BIC, self.Expon_1P_BIC, self.Expon_2P_BIC, self.Lognormal_2P_BIC, self.Gamma_2P_BIC, self.Gamma_3P_BIC, self.Beta_2P_BIC]}
 
         df = pd.DataFrame(DATA,columns = ['Distribution','Alpha','Beta','Gamma','Mu','Sigma','Lambda','AICc','BIC'])
-        #sort the dataframe by BIC of AICc and replace na and 0 values with spaces. Most negative AICc or BIC is better fit
+        #sort the dataframe by BIC or AICc and replace na and 0 values with spaces. Smallest AICc or BIC is better fit
         if sort_by in ['BIC','bic']:
             df2 = df.reindex(df.BIC.sort_values().index)
         elif sort_by in ['AICc','AIC','aic']:
@@ -486,6 +479,9 @@ class Fit_Weibull_2P:
         another distribution.
     alpha - the fitted Weibull_2P alpha parameter
     beta - the fitted Weibull_2P beta parameter
+    loglik2 - LogLikelihood*-2
+    AICc - Akaike Information Criterion
+    BIC - Bayesian Information Criterion
     '''
     def __init__(self,failures=None,right_censored=None,left_censored=None):
         if failures is None or len(failures)<2:
@@ -532,6 +528,14 @@ class Fit_Weibull_2P:
             self.alpha = sp[2]
             self.beta = sp[0]
 
+        params = [self.alpha, self.beta]
+        k = len(params)
+        n = len(all_data)
+        LL2 = 2 * Fit_Weibull_2P.LL(params, failures, right_censored, left_censored)
+        self.loglik2=LL2
+        self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
+        self.BIC = np.log(n) * k + LL2
+
     def logf(t,a,b): #Log PDF (2 parameter Weibull)
         return (b - 1) * anp.log(t/a) + anp.log(b/a) - (t / a) ** b
 
@@ -573,6 +577,9 @@ class Fit_Weibull_3P:
     alpha - the fitted Weibull_3P alpha parameter
     beta - the fitted Weibull_3P beta parameter
     gamma - the fitted Weibull_3P gamma parameter
+    loglik2 - LogLikelihood*-2
+    AICc - Akaike Information Criterion
+    BIC - Bayesian Information Criterion
     '''
     def __init__(self,failures=None,right_censored=None):
         if failures is None or len(failures)<3:
@@ -611,6 +618,14 @@ class Fit_Weibull_3P:
             self.alpha = sp[2]
             self.beta = sp[0]
             self.gamma = sp[1]
+
+        params = [self.alpha, self.beta]
+        k = len(params)
+        n = len(all_data)
+        LL2 = 2 * Fit_Weibull_3P.LL(params, failures-shift, right_censored-shift)
+        self.loglik2=LL2
+        self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
+        self.BIC = np.log(n) * k + LL2
 
     def logf(t,a,b): #Log PDF (2 parameter Weibull)
         return (b - 1) * anp.log(t/a) + anp.log(b/a) - (t / a) ** b
@@ -819,6 +834,9 @@ class Fit_Expon_1P:
         if it occurs, it is likely that the distribution is an extremely bad fit for the data. Try scaling your data, removing extreme values, or using
         another distribution.
     Lambda - the fitted Expon_1P lambda parameter
+    loglik2 - LogLikelihood*-2
+    AICc - Akaike Information Criterion
+    BIC - Bayesian Information Criterion
     '''
 
     def __init__(self,failures=None,right_censored=None,left_censored=None):
@@ -863,6 +881,14 @@ class Fit_Expon_1P:
             warnings.warn('Fitting using Autograd FAILED for Expon_1P. The fit from Scipy was used instead so results may not be accurate.')
             self.Lambda = 1/sp[1]
 
+        params = [self.Lambda]
+        k = len(params)
+        n = len(all_data)
+        LL2 = 2 * Fit_Expon_1P.LL(params, failures, right_censored, left_censored)
+        self.loglik2=LL2
+        self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
+        self.BIC = np.log(n) * k + LL2
+
     def logf(t,L): #Log PDF (1 parameter Expon)
         return anp.log(L) - L*t
 
@@ -902,6 +928,9 @@ class Fit_Expon_2P:
         another distribution.
     Lambda - the fitted Expon_2P lambda parameter
     gamma - the fitted Expon_2P gamma parameter
+    loglik2 - LogLikelihood*-2
+    AICc - Akaike Information Criterion
+    BIC - Bayesian Information Criterion
     '''
     def __init__(self,failures=None,right_censored=None):
         if failures is None or len(failures)<2:
@@ -939,6 +968,14 @@ class Fit_Expon_2P:
             self.Lambda = 1/sp[1]
             self.gamma = sp[0]
 
+        params = [self.Lambda]
+        k = len(params)
+        n = len(all_data)
+        LL2 = 2 * Fit_Expon_2P.LL(params, failures-shift, right_censored-shift)
+        self.loglik2=LL2
+        self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
+        self.BIC = np.log(n) * k + LL2
+
     def logf(t,L): #Log PDF (1 parameter Expon)
         return anp.log(L) - L*t
 
@@ -975,6 +1012,9 @@ class Fit_Normal_2P:
         another distribution.
     mu - the fitted Normal_2P mu parameter
     sigma - the fitted Normal_2P sigma parameter
+    loglik2 - LogLikelihood*-2
+    AICc - Akaike Information Criterion
+    BIC - Bayesian Information Criterion
     '''
     def __init__(self,failures=None,right_censored=None,left_censored=None):
         if failures is None or len(failures)<2:
@@ -1020,6 +1060,14 @@ class Fit_Normal_2P:
             self.mu = sp[0]
             self.sigma = sp[1]
 
+        params = [self.mu, self.sigma]
+        k = len(params)
+        n = len(all_data)
+        LL2 = 2 * Fit_Normal_2P.LL(params, failures, right_censored, left_censored)
+        self.loglik2=LL2
+        self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
+        self.BIC = np.log(n) * k + LL2
+
     def logf(t,mu,sigma): #Log PDF (Normal)
         return anp.log(anp.exp(-0.5*(((t-mu)/sigma)**2)))-anp.log((sigma*(2*anp.pi)**0.5))
 
@@ -1058,6 +1106,9 @@ class Fit_Lognormal_2P:
         another distribution.
     mu - the fitted Lognormal_2P mu parameter
     sigma - the fitted Lognormal_2P sigma parameter
+    loglik2 - LogLikelihood*-2
+    AICc - Akaike Information Criterion
+    BIC - Bayesian Information Criterion
     '''
     def __init__(self,failures=None,right_censored=None,left_censored=None):
         if failures is None or len(failures)<2:
@@ -1105,6 +1156,14 @@ class Fit_Lognormal_2P:
             self.mu = np.log(sp[2])
             self.sigma = sp[0]
 
+        params = [self.mu, self.sigma]
+        k = len(params)
+        n = len(all_data)
+        LL2 = 2 * Fit_Lognormal_2P.LL(params, failures, right_censored, left_censored)
+        self.loglik2=LL2
+        self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
+        self.BIC = np.log(n) * k + LL2
+
     def logf(t,mu,sigma): #Log PDF (Lognormal)
         return anp.log(anp.exp(-0.5 * (((anp.log(t) - mu) / sigma) ** 2)) / (t * sigma * (2 * anp.pi) ** 0.5))
 
@@ -1143,6 +1202,9 @@ class Fit_Gamma_2P:
         another distribution.
     alpha - the fitted Gamma_2P alpha parameter
     beta - the fitted Gamma_2P beta parameter
+    loglik2 - LogLikelihood*-2
+    AICc - Akaike Information Criterion
+    BIC - Bayesian Information Criterion
     '''
     def __init__(self,failures=None,right_censored=None,left_censored=None):
         if failures is None or len(failures)<2:
@@ -1189,6 +1251,14 @@ class Fit_Gamma_2P:
             self.beta = sp[0]
             self.gamma = sp[1]
 
+        params = [self.alpha, self.beta]
+        k = len(params)
+        n = len(all_data)
+        LL2 = 2 * Fit_Gamma_2P.LL(params, failures, right_censored, left_censored)
+        self.loglik2=LL2
+        self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
+        self.BIC = np.log(n) * k + LL2
+
     def logf(t,a,b): #Log PDF (2 parameter Gamma)
         return anp.log(t**(b-1)) -anp.log((a**b) * agamma(b)) - (t/a)
 
@@ -1229,6 +1299,9 @@ class Fit_Gamma_3P:
     alpha - the fitted Gamma_3P alpha parameter
     beta - the fitted Gamma_3P beta parameter
     gamma - the fitted Gamma_3P gamma parameter
+    loglik2 - LogLikelihood*-2
+    AICc - Akaike Information Criterion
+    BIC - Bayesian Information Criterion
     '''
     def __init__(self,failures=None,right_censored=None):
         if failures is None or len(failures)<3:
@@ -1270,6 +1343,14 @@ class Fit_Gamma_3P:
             self.beta = sp[0]
             self.gamma = sp[1]
 
+        params = [self.alpha, self.beta]
+        k = len(params)
+        n = len(all_data)
+        LL2 = 2 * Fit_Gamma_3P.LL(params, failures-shift, right_censored-shift)
+        self.loglik2=LL2
+        self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
+        self.BIC = np.log(n) * k + LL2
+
     def logf(t,a,b): #Log PDF (2 parameter Gamma)
         return anp.log(t**(b-1)) -anp.log((a**b) * agamma(b)) - (t/a)
 
@@ -1304,6 +1385,9 @@ class Fit_Beta_2P:
         another distribution.
     alpha - the fitted Beta_2P alpha parameter
     beta - the fitted Beta_2P beta parameter
+    loglik2 - LogLikelihood*-2
+    AICc - Akaike Information Criterion
+    BIC - Bayesian Information Criterion
     '''
     def __init__(self,failures=None,right_censored=None,left_censored=None):
         if failures is None or len(failures)<2:
@@ -1351,6 +1435,14 @@ class Fit_Beta_2P:
             warnings.warn('Fitting using Autograd FAILED for Beta_2P. The fit from Scipy was used instead so results may not be accurate.')
             self.alpha = sp[0]
             self.beta = sp[1]
+
+        params = [self.alpha, self.beta]
+        k = len(params)
+        n = len(all_data)
+        LL2 = 2 * Fit_Beta_2P.LL(params, failures, right_censored, left_censored)
+        self.loglik2=LL2
+        self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
+        self.BIC = np.log(n) * k + LL2
 
     def logf(t,a,b): #Log PDF (2 parameter Beta)
         return anp.log(((t ** (a - 1)) * ((1 - t) ** (b - 1)))) - anp.log(abeta(a, b))

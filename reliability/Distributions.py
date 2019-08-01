@@ -80,8 +80,6 @@ class Weibull_Distribution:
     SF() - plots the survival function (also known as reliability function)
     HF() - plots the hazard function
     CHF() - plots the cumulative hazard function
-    AICc() - Akaike Information Criterion
-    BIC() - Bayesian Information Criterion
     quantile() - Calculates the quantile (time until a fraction has failed) for a given fraction failing.
                  Also known as b life where b5 is the time at which 5% have failed.
     mean_residual_life() - Average residual lifetime of an item given that the item has survived up to a given time.
@@ -173,40 +171,6 @@ class Weibull_Distribution:
         integral_R,error = integrate.quad(R,t,np.inf)
         MRL = integral_R/R(t)
         return MRL
-    def BIC(self,data):
-        '''
-        Bayesian Information Criterion
-        A goodness of fit measure.
-        :param data: the sample data against which the distribution is to be assessed
-        :return: BIC. A more negative value indicates a better fit. Should be used in comparison with other distribution's scores as
-            the BIC will change depending on the data.
-        '''
-        if self.gamma==0:
-            k = 2
-        else:
-            k = 3
-        n = len(data)
-        BIC_weibull = np.log(n)*k - 2*(np.sum(ss.weibull_min.logpdf(data, self.beta, scale=self.alpha, loc=self.gamma)))
-        return BIC_weibull
-    def AICc(self,data):
-        '''
-        Akaike Information Criterion corrected
-        A goodness of fit measure.
-        :param data: the sample data against which the distribution is to be assessed
-        :return: AICc. A more negative value indicates a better fit. Should be used in comparison with other distribution's scores as
-            the AICc will change depending on the data.
-        '''
-        if self.gamma==0:
-            k = 2
-        else:
-            k = 3
-        n = len(data)
-        if n-k-1<1:
-            print('AICc cannot be measured because distribution is poorly constrained. Try again with more data.')
-            AIC_weibull = ''
-        else:
-            AIC_weibull = -2*(np.sum(ss.weibull_min.logpdf(data, self.beta, scale=self.alpha, loc=self.gamma))) + 2*k + 2*k*(k+1)/(n-k-1)
-        return AIC_weibull
     def stats(self):
         if self.gamma==0:
             print('Descriptive statistics for Weibull distribution with alpha =',self.alpha,'and beta =',self.beta)
@@ -253,8 +217,6 @@ class Normal_Distribution:
     SF() - plots the survival function (also known as reliability function)
     HF() - plots the hazard function
     CHF() - plots the cumulative hazard function
-    AICc() - Akaike Information Criterion
-    BIC() - Bayesian Information Criterion
     quantile() - Calculates the quantile (time until a fraction has failed) for a given fraction failing.
                  Also known as b life where b5 is the time at which 5% have failed.
     mean_residual_life() - Average residual lifetime of an item given that the item has survived up to a given time.
@@ -341,34 +303,6 @@ class Normal_Distribution:
         integral_R,error = integrate.quad(R,t,np.inf)
         MRL = integral_R/R(t)
         return MRL
-    def BIC(self,data):
-        '''
-        Bayesian Information Criterion
-        A goodness of fit measure.
-        :param data: the sample data against which the distribution is to be assessed
-        :return: BIC. A more negative value indicates a better fit. Should be used in comparison with other distribution's scores as
-            the BIC will change depending on the data.
-        '''
-        k = 2
-        n = len(data)
-        BIC_normal = np.log(n)*k - 2*(np.sum(ss.norm.logpdf(data, loc=self.mu, scale=self.sigma)))
-        return BIC_normal
-    def AICc(self,data):
-        '''
-        Akaike Information Criterion corrected
-        A goodness of fit measure.
-        :param data: the sample data against which the distribution is to be assessed
-        :return: AICc. A more negative value indicates a better fit. Should be used in comparison with other distribution's scores as
-            the AICc will change depending on the data.
-        '''
-        k = 2
-        n = len(data)
-        if n-k-1<1:
-            print('AICc cannot be measured because distribution is poorly constrained. Try again with more data.')
-            AIC_normal = ''
-        else:
-            AIC_normal = -2*(np.sum(ss.norm.logpdf(data, loc=self.mu, scale=self.sigma))) + 2*k + 2*k*(k+1)/(n-k-1)
-        return AIC_normal
     def stats(self):
         print('Descriptive statistics for Normal distribution with mu =',self.mu,'and sigma =',self.sigma)
         print('Mean = ',self.mean)
@@ -412,8 +346,6 @@ class Lognormal_Distribution:
     SF() - plots the survival function (also known as reliability function)
     HF() - plots the hazard function
     CHF() - plots the cumulative hazard function
-    AICc() - Akaike Information Criterion
-    BIC() - Bayesian Information Criterion
     quantile() - Calculates the quantile (time until a fraction has failed) for a given fraction failing.
                  Also known as b life where b5 is the time at which 5% have failed.
     mean_residual_life() - Average residual lifetime of an item given that the item has survived up to a given time.
@@ -502,40 +434,6 @@ class Lognormal_Distribution:
         integral_R,error = integrate.quad(R,t,np.inf)
         MRL = integral_R/R(t)
         return MRL
-    def BIC(self,data):
-        '''
-        Bayesian Information Criterion
-        A goodness of fit measure.
-        :param data: the sample data against which the distribution is to be assessed
-        :return: BIC. A more negative value indicates a better fit. Should be used in comparison with other distribution's scores as
-            the BIC will change depending on the data.
-        '''
-        if self.gamma==0:
-            k = 2
-        else:
-            k = 3
-        n = len(data)
-        BIC_lognormal = np.log(n)*k - 2*(np.sum(ss.lognorm.logpdf(data, self.sigma, self.gamma, np.exp(self.mu))))
-        return BIC_lognormal
-    def AICc(self,data):
-        '''
-        Akaike Information Criterion corrected
-        A goodness of fit measure.
-        :param data: the sample data against which the distribution is to be assessed
-        :return: AICc. A more negative value indicates a better fit. Should be used in comparison with other distribution's scores as
-            the AICc will change depending on the data.
-        '''
-        if self.gamma==0:
-            k = 2
-        else:
-            k = 3
-        n = len(data)
-        if n-k-1<1:
-            print('AICc cannot be measured because distribution is poorly constrained. Try again with more data.')
-            AIC_lognormal = ''
-        else:
-            AIC_lognormal = -2*(np.sum(ss.lognorm.logpdf(data, self.sigma, self.gamma, np.exp(self.mu)))) + 2*k + 2*k*(k+1)/(n-k-1)
-        return AIC_lognormal
     def stats(self):
         if self.gamma==0:
             print('Descriptive statistics for Lognormal distribution with mu =',self.mu,'and sigma =',self.sigma)
@@ -581,8 +479,6 @@ class Exponential_Distribution:
     SF() - plots the survival function (also known as reliability function)
     HF() - plots the hazard function
     CHF() - plots the cumulative hazard function
-    AICc() - Akaike Information Criterion
-    BIC() - Bayesian Information Criterion
     quantile() - Calculates the quantile (time until a fraction has failed) for a given fraction failing.
                  Also known as b life where b5 is the time at which 5% have failed.
     mean_residual_life() - Average residual lifetime of an item given that the item has survived up to a given time.
@@ -670,40 +566,6 @@ class Exponential_Distribution:
         integral_R,error = integrate.quad(R,t,np.inf)
         MRL = integral_R/R(t)
         return MRL
-    def BIC(self,data):
-        '''
-        Bayesian Information Criterion
-        A goodness of fit measure.
-        :param data: the sample data against which the distribution is to be assessed
-        :return: BIC. A more negative value indicates a better fit. Should be used in comparison with other distribution's scores as
-            the BIC will change depending on the data.
-        '''
-        if self.gamma==0:
-            k = 1
-        else:
-            k = 2
-        n = len(data)
-        BIC_exponential = np.log(n)*k - 2*(np.sum(ss.expon.logpdf(data, scale=1/self.Lambda, loc=self.gamma)))
-        return BIC_exponential
-    def AICc(self,data):
-        '''
-        Akaike Information Criterion corrected
-        A goodness of fit measure.
-        :param data: the sample data against which the distribution is to be assessed
-        :return: AICc. A more negative value indicates a better fit. Should be used in comparison with other distribution's scores as
-            the AICc will change depending on the data.
-        '''
-        if self.gamma==0:
-            k = 1
-        else:
-            k = 2
-        n = len(data)
-        if n-k-1<1:
-            print('AICc cannot be measured because distribution is poorly constrained. Try again with more data.')
-            AIC_exponential = ''
-        else:
-            AIC_exponential = -2*(np.sum(ss.expon.logpdf(data, scale=1/self.Lambda, loc=self.gamma))) + 2*k + 2*k*(k+1)/(n-k-1)
-        return AIC_exponential
     def stats(self):
         if self.gamma==0:
             print('Descriptive statistics for Exponential distribution with lambda =',self.Lambda)
@@ -750,8 +612,6 @@ class Gamma_Distribution:
     SF() - plots the survival function (also known as reliability function)
     HF() - plots the hazard function
     CHF() - plots the cumulative hazard function
-    AICc() - Akaike Information Criterion
-    BIC() - Bayesian Information Criterion
     quantile() - Calculates the quantile (time until a fraction has failed) for a given fraction failing.
                  Also known as b life where b5 is the time at which 5% have failed.
     mean_residual_life() - Average residual lifetime of an item given that the item has survived up to a given time.
@@ -843,40 +703,6 @@ class Gamma_Distribution:
         integral_R,error = integrate.quad(R,t,np.inf)
         MRL = integral_R/R(t)
         return MRL
-    def BIC(self,data):
-        '''
-        Bayesian Information Criterion
-        A goodness of fit measure.
-        :param data: the sample data against which the distribution is to be assessed
-        :return: BIC. A more negative value indicates a better fit. Should be used in comparison with other distribution's scores as
-            the BIC will change depending on the data.
-        '''
-        if self.gamma==0:
-            k = 2
-        else:
-            k = 3
-        n = len(data)
-        BIC_gamma = np.log(n)*k - 2*(np.sum(ss.gamma.logpdf(data, self.beta, scale=self.alpha, loc=self.gamma)))
-        return BIC_gamma
-    def AICc(self,data):
-        '''
-        Akaike Information Criterion corrected
-        A goodness of fit measure.
-        :param data: the sample data against which the distribution is to be assessed
-        :return: AICc. A more negative value indicates a better fit. Should be used in comparison with other distribution's scores as
-            the AICc will change depending on the data.
-        '''
-        if self.gamma==0:
-            k = 2
-        else:
-            k = 3
-        n = len(data)
-        if n-k-1<1:
-            print('AICc cannot be measured because distribution is poorly constrained. Try again with more data.')
-            AIC_gamma = ''
-        else:
-            AIC_gamma = -2*(np.sum(ss.gamma.logpdf(data, self.beta, scale=self.alpha, loc=self.gamma))) + 2*k + 2*k*(k+1)/(n-k-1)
-        return AIC_gamma
     def stats(self):
         if self.gamma==0:
             print('Descriptive statistics for Gamma distribution with alpha =',self.alpha,'and beta =',self.beta)
@@ -922,8 +748,6 @@ class Beta_Distribution:
     SF() - plots the survival function (also known as reliability function)
     HF() - plots the hazard function
     CHF() - plots the cumulative hazard function
-    AICc() - Akaike Information Criterion
-    BIC() - Bayesian Information Criterion
     quantile() - Calculates the quantile (time until a fraction has failed) for a given fraction failing.
                  Also known as b life where b5 is the time at which 5% have failed.
     mean_residual_life() - Average residual lifetime of an item given that the item has survived up to a given time.
@@ -1014,34 +838,6 @@ class Beta_Distribution:
         integral_R,error = integrate.quad(R,t,np.inf)
         MRL = integral_R/R(t)
         return MRL
-    def BIC(self,data):
-        '''
-        Bayesian Information Criterion
-        A goodness of fit measure.
-        :param data: the sample data against which the distribution is to be assessed
-        :return: BIC. A more negative value indicates a better fit. Should be used in comparison with other distribution's scores as
-            the BIC will change depending on the data.
-        '''
-        k = 2
-        n = len(data)
-        BIC_beta = np.log(n)*k - 2*(np.sum(ss.beta.logpdf(data, self.alpha, self.beta, 0, 1)))
-        return BIC_beta
-    def AICc(self,data):
-        '''
-        Akaike Information Criterion corrected
-        A goodness of fit measure.
-        :param data: the sample data against which the distribution is to be assessed
-        :return: AICc. A more negative value indicates a better fit. Should be used in comparison with other distribution's scores as
-            the AICc will change depending on the data.
-        '''
-        k = 2
-        n = len(data)
-        if n-k-1<1:
-            print('AICc cannot be measured because distribution is poorly constrained. Try again with more data.')
-            AIC_beta = ''
-        else:
-            AIC_beta = -2*(np.sum(ss.beta.logpdf(data, self.alpha, self.beta, 0, 1))) + 2*k + 2*k*(k+1)/(n-k-1)
-        return AIC_beta
     def stats(self):
         print('Descriptive statistics for Beta distribution with alpha =',self.alpha,'and beta =',self.beta)
         print('Mean = ',self.mean)
