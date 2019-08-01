@@ -58,6 +58,10 @@ In this second example, we will create some right censored data and use Fit_Ever
     #fit everything
     results = Fit_Everything(failures=failures,right_censored=censored)
     print('The best fitting distribution was',results.best_distribution_name,'which had parameters',results.best_distribution.parameters)
+    
+    '''
+    The best fitting distribution was Weibull_2P which had parameters [11.27727274  3.30293237  0.        ]
+    '''
 
 .. image:: images/Fit_everything_histogram.png
 
