@@ -22,8 +22,8 @@ In this first example, we will use Fit_Everything on some data and will return o
 .. code:: python
 
     from reliability.Fitters import Fit_Everything
-    data = [4,4,2,4,7,4,1,2,7,1,4,3,6,6,6,3,2,3,4,3,2,3,2,4,6,5,5,2,4,3] # this data was created from alpha=5, beta=2, and rounded to nearest int
-    Fit_Everything(data, show_plot=False, show_quantile_plot=False)
+    data = [4,4,2,4,7,4,1,2,7,1,4,3,6,6,6,3,2,3,4,3,2,3,2,4,6,5,5,2,4,3] # created using Weibull_Distribution(alpha=5,beta=2), and rounded to nearest int
+    Fit_Everything(failures=data, show_plot=False, show_quantile_plot=False)
 
     '''
                            Alpha     Beta  Gamma       Mu     Sigma    Lambda     AICc      BIC
