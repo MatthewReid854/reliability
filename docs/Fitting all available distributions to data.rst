@@ -60,6 +60,17 @@ In this second example, we will create some right censored data and use Fit_Ever
     print('The best fitting distribution was',results.best_distribution_name,'which had parameters',results.best_distribution.parameters)
     
     '''
+                      Alpha     Beta    Gamma       Mu     Sigma     Lambda     AICc      BIC
+    Distribution                                                                             
+    Weibull_2P      11.2773  3.30293                                         488.041  493.128
+    Normal_2P                                  10.1192    3.3742             489.082  494.169
+    Gamma_2P        1.42315  7.21352                                         490.594   495.68
+    Lognormal_2P                               2.26518  0.406349             495.694   500.78
+    Weibull_3P       8.2661  2.00287  2.82002                                496.887  501.974
+    Gamma_3P        3.21732  2.38197  2.82002                                508.779  513.866
+    Exponential_2P                    2.82902                      0.121715  536.287  538.852
+    Exponential_1P                                                0.0870033  594.034  596.598
+    
     The best fitting distribution was Weibull_2P which had parameters [11.27727274  3.30293237  0.        ]
     '''
 
