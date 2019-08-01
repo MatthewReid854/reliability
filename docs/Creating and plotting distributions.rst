@@ -49,8 +49,6 @@ The following methods are available for all distributions:
 -   HF() - plots the hazard function.
 -   CHF() - plots the cumulative hazard function.
 -   quantile() - Calculates the quantile (time until a fraction has failed) for a given fraction failing. Also known as 'b' life where b5 is the time at which 5% have failed. Eg. dist.quantile(0.05) will give the b5 life.
--   AICc() - Akaike Information Criterion - This is a goodness of fit measure that is used by Fitters.Fit_Everything to compare goodness of fit. Input requires a list of the x-values for which to calculate the AICc.
--   BIC() - Bayesian Information Criterion - This is a goodness of fit measure that is used by Fitters.Fit_Everything to compare goodness of fit. Input requires a list of the x-values for which to calculate the BIC.
 -   mean_residual_life() - Average residual lifetime of an item given that the item has survived up to a given time. Effectively the mean of the remaining amount (right side) of a distribution at a given time. You must specify the x-value at which to calculate MRL. Eg. dist.mean_residual_life(10)
 -   stats() - prints all the descriptive statistics. Same as the statistics shown using .plot() but printed to console.
 -   random_samples() - draws random samples from the distribution to which it is applied. Same as rvs in scipy.stats. You must specify the number of samples. Eg. data = dist.random_samples(100) will set data as a list of 100 random samples from the distribution.
