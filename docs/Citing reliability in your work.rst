@@ -8,6 +8,7 @@ Citing reliability in your work
 '''''''''''''''''''''''''''''''
 
 The following reference is using APA (6th edition):
+
 Reid, M. (2019). Reliability – a Python library for reliability engineering (Version 0.1.16) [Python].
 
 If you would like to use another referencing style, the details you may need are:
