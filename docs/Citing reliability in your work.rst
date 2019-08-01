@@ -20,6 +20,6 @@ If you would like to use another referencing style, the details you may need are
 - **Platform:** Python
 - **Available from:** https://pypi.org/project/reliability/
 
-Note that the version number is constantly changing so please check `pyPI <https://pypi.org/project/reliability/>`_ for the current version.
+Note that the version number is constantly changing so please check `PyPI <https://pypi.org/project/reliability/>`_ for the current version.
 
 If you have used reliability in any published academic work, I would love to hear about it. Depending on the usage, I may provide a link to your work on the reliability documentation page. Please email me using the details on my GitHub profile if you've published any papers that cite reliability.
