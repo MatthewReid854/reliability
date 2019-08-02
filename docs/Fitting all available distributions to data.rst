@@ -28,7 +28,7 @@ Outputs:
 -   best_distribution_name - the name of the best fitting distribution. E.g. 'Weibull_3P'
 -   parameters and goodness of fit tests for each fitted distribution. For example, the Weibull_3P distribution values are: Weibull_3P_alpha, Weibull_3P_beta, Weibull_3P_gamma, Weibull_3P_BIC, Weibull_3P_AICc.
 
-Confidence intervals for each of the fitted parameters are not supported. This feature may be incorporated in future releases, however, the need has not been identified. See the python library "lifelines" or JMP Pro software if this is required. Whilst Minitab uses the Anderson-Darling statistic for the goodness of fit, it is generally recognised that AICc and BIC are more accurate measures as they take into account the number of parameters in the distribution.
+Confidence intervals for each of the fitted parameters are not supported. This feature may be incorporated in future releases, however, the need has not been identified. See the python library `lifelines <https://lifelines.readthedocs.io/en/latest/jupyter_notebooks/Piecewise%20Exponential%20Models%20and%20Creating%20Custom%20Models.html>`_ or JMP Pro software if this is required. You may not find all of the models from ``reliability`` in these other programs. Whilst Minitab uses the Anderson-Darling statistic for the goodness of fit, it is generally recognised that AICc and BIC are more accurate measures as they take into account the number of parameters in the distribution.
 
 In this first example, we will use Fit_Everything on some data and will return only the dataframe of results.
 
