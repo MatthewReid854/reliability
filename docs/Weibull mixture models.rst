@@ -57,4 +57,56 @@ In this first example, we will create some data using two Weibull distributions 
 
 .. image:: images/Weibull Mixture_1.png
 
-In this second example, we will compare how well the Weibull Mixture performs vs a standard Weibull.
+In this second example, we will compare how well the Weibull Mixture performs vs a standard Weibull_2P. Firstly, we generate some data from two weibull distributions, combine the data, and right censor it above our chosen threshold. Next, we fit the Mixture and Weibull_2P distributions. Then we build the mixture PDF using components of the fitted weibull components. Everything is then plotted and a goodness of fit measure is used to check whether the Weibull_Mixture is really a much better fit than a standard Weibull_2P distribution.
+
+.. code:: python
+  
+    from reliability.Fitters import Fit_Weibull_Mixture, Fit_Weibull_2P
+    from reliability.Distributions import Weibull_Distribution
+    import numpy as np
+    import matplotlib.pyplot as plt
+    #create some failures and right censored data
+    np.random.seed(2) #this is just for repeatability for this tutorial
+    group_1 = Weibull_Distribution(alpha=10,beta=2).random_samples(700)
+    group_2 = Weibull_Distribution(alpha=30,beta=3).random_samples(300)
+    all_data = np.hstack([group_1,group_2])
+    failures = []
+    censored = []
+    threshold = 30
+    for item in all_data:
+        if item>threshold:
+            censored.append(threshold)
+        else:
+            failures.append(item)
+
+    #fit the Weibull Mixture and Weibull_2P
+    mixture = Fit_Weibull_Mixture(failures=failures,right_censored=censored)
+    single = Fit_Weibull_2P(failures=all_data,right_censored=censored)
+
+    #plot the histogram of all the data and shade the censored part white
+    N,bins,patches = plt.hist(all_data, density=True, alpha=0.2, color='k', bins=30, edgecolor='k')
+    for i in range(np.argmin(abs(np.array(bins)-threshold)),len(patches)): #this is to shade the censored part of the histogram as white
+        patches[i].set_facecolor('white')
+    
+    #extract the y_vals from the mixture and build the Mixture PDF using the proportions
+    xvals = np.linspace(0,60,1000)
+    part_1 = Weibull_Distribution(alpha=mixture.alpha_1,beta=mixture.beta_1).PDF(xvals=xvals,show_plot=False)
+    part_2 = Weibull_Distribution(alpha=mixture.alpha_2,beta=mixture.beta_2).PDF(xvals=xvals,show_plot=False)
+    Mixture_PDF = part_1*mixture.proportion_1+part_2*mixture.proportion_2
+    
+    #plot the Mixture and Weibull_2P
+    plt.plot(xvals,Mixture_PDF,label='Weibull_Mixture')
+    Weibull_Distribution(alpha=single.alpha,beta=single.beta).PDF(xvals=xvals,label='Weibull_2P')
+    plt.title('Comparison of Weibull_2P with Weibull Mixture')
+    plt.legend()
+    plt.show()
+    
+    #print the goodness of fit measure
+    print('Weibull_Mixture BIC:',mixture.BIC,'\nWeibull_2P BIC:',single.BIC)
+
+    '''
+    Weibull_Mixture BIC: 6422.214522142318 
+    Weibull_2P BIC: 7571.421531337183
+    '''
+
+.. image:: images/Weibull_mixture_vs_Weibull_2P
