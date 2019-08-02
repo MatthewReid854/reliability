@@ -22,6 +22,7 @@ inputs:
 - show_plot - True/False. This will show the PDF and CDF of the Weibull mixture with a histogram of the data. Default is False.
  
 outputs:
+
 - alpha_1 - the fitted Weibull_2P alpha parameter for the first (left) group
 - beta_1 - the fitted Weibull_2P beta parameter for the first (left) group
 - alpha_2 - the fitted Weibull_2P alpha parameter for the second (right) group
