@@ -78,4 +78,4 @@ In this second example, we will create some right censored data and use Fit_Ever
 
 .. image:: images/Fit_everything_quantile_plot.png
 
-More to come
+The histogram is scaled based on the amount of censored data. If your censored data is all above or below your failure data then the histogram bars should line up well with the fitted distributions (assuming you have enough data). However, if your censored data is not always greater or less than the max and min of your failure data then the heights of the histogram bars will be scaled down and the plot won't look right. This is to be expected as the histogram is only a plot of the failure data and the totals will not add to 100% if there is censored data.
