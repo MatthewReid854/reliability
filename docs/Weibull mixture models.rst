@@ -7,9 +7,9 @@
 Weibull mixture models
 ''''''''''''''''''''''
 
-Mixture models are formed using two or more distributions added together. Each of the mixture's components must be multiplied by a proportion, and the sum of all the proprotions is equal to 1. Mixture models are useful when there is more than one failure mode that is generating the failure data. This can be recognised by the shape of the PDF and CDF being outside of what any single distribution can accurately model. You should not use a mixture model just because it can fit almost anything really well, but you should use a mixture model if you suspect that there are multiple failure modes contributing to the failure data you are observing.
+Mixture models are formed using two or more distributions added together. Each of the mixture's components must be multiplied by a proportion, and the sum of all the proportions is equal to 1. Mixture models are useful when there is more than one failure mode that is generating the failure data. This can be recognised by the shape of the PDF and CDF being outside of what any single distribution can accurately model. You should not use a mixture model just because it can fit almost anything really well, but you should use a mixture model if you suspect that there are multiple failure modes contributing to the failure data you are observing.
 
-Currently the only mixture model implemented in ``reliability`` is a Weibull mixture model consisting of 2 x Weibull_2P distributions (this does not fit the gamma parameter). Just as with all of the other distributions in Fitters, censoring is supported (left or right but not both), though care should be taken to ensure that there still appears to be two groups when plotting only the failure data. A second group cannot be made from a mostly or totally censored set of samples.
+Currently the only mixture model implemented in ``reliability`` is a Weibull mixture model consisting of 2 x Weibull_2P distributions (this does not fit the gamma parameter). Just as with all of the other distributions in ``reliability.Fitters``, censoring is supported (left or right but not both), though care should be taken to ensure that there still appears to be two groups when plotting only the failure data. A second group cannot be made from a mostly or totally censored set of samples.
 
 Whilst some failure modes may not be fitted as well by a Weibull distribution as they may be by another distribution, it is unlikely that a mixture of data from two distributions (particularly if they are overlapping) will be fitted noticeably better by other types of mixtures than would be achieved by a Weibull mixture. For this reason, other types of mixtures are not implemented.
  
@@ -57,7 +57,7 @@ In this first example, we will create some data using two Weibull distributions 
 
 .. image:: images/Weibull_Mixture_1.png
 
-In this second example, we will compare how well the Weibull Mixture performs vs a standard Weibull_2P. Firstly, we generate some data from two Weibull distributions, combine the data, and right censor it above our chosen threshold. Next, we will fit the Mixture and Weibull_2P distributions. Then we will build the mixture PDF using the components of the fitted Weibull distributions. Everything is then plotted and a goodness of fit measure is used to check whether the Weibull_Mixture is really a much better fit than a standard Weibull_2P distribution (which it is due to the lower BIC).
+In this second example, we will compare how well the Weibull Mixture performs vs a single Weibull_2P. Firstly, we generate some data from two Weibull distributions, combine the data, and right censor it above our chosen threshold. Next, we will fit the Mixture and Weibull_2P distributions. Then we will build the mixture PDF using the components of the fitted Weibull distributions. Everything is then plotted and a goodness of fit measure is used to check whether the Weibull_Mixture is really a much better fit than a single Weibull_2P distribution (which it is due to the lower BIC).
 
 .. code:: python
   
