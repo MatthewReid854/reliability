@@ -63,7 +63,7 @@ class Fit_Everything:
     failures - an array or list of the failure times (this does not need to be sorted).
     left_censored - an array or list of the left failure times (this does not need to be sorted).
     right_censored - an array or list of the right failure times (this does not need to be sorted).
-    sort_by - goodness of fit test to sort results by. Must be either 'BIC' or 'AIC'. Default is BIC.
+    sort_by - goodness of fit test to sort results by. Must be either 'BIC' or 'AICc'. Default is BIC.
     show_plot - True/False. Defaults to True
     print_results - True/False. Defaults to True. Will show the results of the fitted parameters and the goodness of fit
         tests in a dataframe.
@@ -109,8 +109,8 @@ class Fit_Everything:
             raise ValueError('Maximum likelihood estimates could not be calculated for these data. There must be at least three failures to calculate 3 parameter models.')
         if right_censored is not None and left_censored is not None: #check that a mix of left and right censoring is not entered
             raise ValueError('You have specified both left and right censoring. You can specify either but not both.')
-        if sort_by not in ['AIC','BIC']:
-            raise ValueError('sort_by must be either AIC or BIC. Defaults to BIC')
+        if sort_by not in ['AICc','BIC']:
+            raise ValueError('sort_by must be either AICc or BIC. Defaults to BIC')
         if show_plot not in [True,False]:
             raise  ValueError('show_plot must be either True or False. Defaults to True.')
         if print_results not in [True, False]:
@@ -252,10 +252,10 @@ class Fit_Everything:
         #sort the dataframe by BIC or AICc and replace na and 0 values with spaces. Smallest AICc or BIC is better fit
         if sort_by in ['BIC','bic']:
             df2 = df.reindex(df.BIC.sort_values().index)
-        elif sort_by in ['AICc','AIC','aic']:
+        elif sort_by in ['AICc','AIC','aic','aicc']:
             df2 = df.reindex(df.AICc.sort_values().index)
         else:
-            raise ValueError('Invalid input to sort_by. Options are BIC or AIC. Default is BIC')
+            raise ValueError('Invalid input to sort_by. Options are BIC or AICc. Default is BIC')
         df3 = df2.set_index('Distribution').fillna('').replace(to_replace=0,value='')
         if self.Beta_2P_BIC == 0: #remove beta if it was not fitted (due to data being outside of 0 to 1 range)
             df3 = df3.drop('Beta_2P',axis=0)
