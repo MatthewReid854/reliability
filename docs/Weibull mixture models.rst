@@ -57,7 +57,7 @@ In this first example, we will create some data using two Weibull distributions 
 
 .. image:: images/Weibull Mixture_1.png
 
-In this second example, we will compare how well the Weibull Mixture performs vs a standard Weibull_2P. Firstly, we generate some data from two weibull distributions, combine the data, and right censor it above our chosen threshold. Next, we fit the Mixture and Weibull_2P distributions. Then we build the mixture PDF using components of the fitted weibull components. Everything is then plotted and a goodness of fit measure is used to check whether the Weibull_Mixture is really a much better fit than a standard Weibull_2P distribution.
+In this second example, we will compare how well the Weibull Mixture performs vs a standard Weibull_2P. Firstly, we generate some data from two weibull distributions, combine the data, and right censor it above our chosen threshold. Next, we fit the Mixture and Weibull_2P distributions. Then we build the mixture PDF using components of the fitted weibull components. Everything is then plotted and a goodness of fit measure is used to check whether the Weibull_Mixture is really a much better fit than a standard Weibull_2P distribution, which it is due to the lower BIC.
 
 .. code:: python
   
