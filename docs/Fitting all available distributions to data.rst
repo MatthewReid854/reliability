@@ -9,13 +9,26 @@ Fitting all available distributions to data
 
 To fit all of the `distributions available <https://reliability.readthedocs.io/en/latest/Fitting%20a%20specific%20distribution%20to%20data.html>`_ in ``reliability``, is a similar process to fitting a specific distribution. The user needs to specify the failures and any right or left censored data. Based on what is specified, the Fit_Everything function will fit what can be fitted. For example, if you specify data that is in the range {0,1} and does not contain left censored data, then Fit_Everything will fit all of the distributions implemented, however if you specify failure data and left censored data then Fit_Everything will not fit a Beta distribution or any of the location shifted distributions. Selection of what can be fitted is all done automatically based on the data provided.
 
-Fit_Everything has 3 outputs which are all displayed by default. These outputs are:
+Inputs:
 
--   a dataframe of the fitted distributions and their parameters, along with the AICc and BIC goodness of fit statistics. This is sorted automatically to provide the best fit first. Use the sort_by='BIC' to change the sort between AICc and BIC. Default sort is BIC.
+-   failures - an array or list of the failure times (this does not need to be sorted).
+-   left_censored - an array or list of the left failure times (this does not need to be sorted).
+-   right_censored - an array or list of the right failure times (this does not need to be sorted).
+-   sort_by - goodness of fit test to sort results by. Must be either 'BIC' or 'AIC'. Default is BIC.
+-   show_plot - True/False. Defaults to True
+-   print_results - True/False. Defaults to True. Will show the results of the fitted parameters and the goodness of fit tests in a dataframe.
+-   show_quantile_plot - True/False. Defaults to True unless there is left censored data in which case Kaplan Meier cannot be applied. This plot provides a comparison of parametric vs non-parametric fit.
+
+Outputs:
+
+-   results - a dataframe of the fitted distributions and their parameters, along with the AICc and BIC goodness of fit statistics. This is sorted automatically to provide the best fit first. Use the sort_by='BIC' to change the sort between AICc and BIC. Default sort is BIC. print_results controls whether this is printed. In displaying these results, the pandas dataframe is designed to use the common greek letter parametrisations rather than the scale, shape, location, threshold parametrisations which can become confusing for some distributions.
 -   a plot of the PDF and CDF of each fitted distribution along with a histogram of the failure data. The legend is not in any particular order.
 -   a quantile plot of parametric vs non-parametric (a better fit is will lie on the red diagonal).
+-   best_distribution - a distribution object created based on the parameters of the best fitting distribution. The best distribution is created as a distribution object that can be used like any of the other `distribution <https://reliability.readthedocs.io/en/latest/Creating%20and%20plotting%20distributions.html>`_ objects. See the examples below for how this can be used.
+-   best_distribution_name - the name of the best fitting distribution. E.g. 'Weibull_3P'
+-   parameters and goodness of fit tests for each fitted distribution. For example, the Weibull_3P distribution values are: Weibull_3P_alpha, Weibull_3P_beta, Weibull_3P_gamma, Weibull_3P_BIC, Weibull_3P_AICc.
 
-Fit_Everything will also return an object with all of the parameters and goodness of fit scores so you can access them later. The best distribution is created as a distribution object that can be used like any of the other `distribution <https://reliability.readthedocs.io/en/latest/Creating%20and%20plotting%20distributions.html>`_ objects. See the examples below for how this can be used.
+Confidence intervals for each of the fitted parameters are not supported. This feature may be incorporated in future releases, however, the need has not been identified. See the python library "lifelines" or JMP Pro software if this is required. Whilst Minitab uses the Anderson-Darling statistic for the goodness of fit, it is generally recognised that AICc and BIC are more accurate measures as they take into account the number of parameters in the distribution.
 
 In this first example, we will use Fit_Everything on some data and will return only the dataframe of results.
 
