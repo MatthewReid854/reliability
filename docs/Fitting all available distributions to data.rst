@@ -11,9 +11,9 @@ To fit all of the `distributions available <https://reliability.readthedocs.io/e
 
 Inputs:
 
--   failures - an array or list of the failure times (this does not need to be sorted).
--   left_censored - an array or list of the left failure times (this does not need to be sorted).
--   right_censored - an array or list of the right failure times (this does not need to be sorted).
+-   failures - an array or list of the failure times.
+-   left_censored - an array or list of the left failure times.
+-   right_censored - an array or list of the right failure times.
 -   sort_by - goodness of fit test to sort results by. Must be either 'BIC' or 'AIC'. Default is BIC.
 -   show_plot - True/False. Defaults to True
 -   print_results - True/False. Defaults to True. Will show the results of the fitted parameters and the goodness of fit tests in a dataframe.
