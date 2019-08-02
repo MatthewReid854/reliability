@@ -15,7 +15,7 @@ Inputs:
 -   left_censored - an array or list of the left failure times.
 -   right_censored - an array or list of the right failure times.
 -   sort_by - goodness of fit test to sort results by. Must be either 'BIC' or 'AIC'. Default is BIC.
--   show_plot - True/False. Defaults to True
+-   show_plot - True/False. Defaults to True. Will show the PDF and CDF of the fitted distributions along with a histogram of the failure data.
 -   print_results - True/False. Defaults to True. Will show the results of the fitted parameters and the goodness of fit tests in a dataframe.
 -   show_quantile_plot - True/False. Defaults to True unless there is left censored data in which case Kaplan Meier cannot be applied. This plot provides a comparison of parametric vs non-parametric fit.
 
