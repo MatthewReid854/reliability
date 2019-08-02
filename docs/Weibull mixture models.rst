@@ -14,22 +14,23 @@ Currently the only mixture model implemented in ``reliability`` is a Weibull mix
 Whilst some failure modes may not be fitted as well by a Weibull distribution as they may be by another distribution, it is unlikely that a mixture of data from two distributions (particularly if they are overlapping) will be fitted noticeably better by other types of mixtures than would be achieved by a Weibull mixture. For this reason, other types of mixtures are not implemented.
  
 inputs:
-failures - an array or list of the failure data. There must be at least 4 failures, but it is highly recommended to use another model if you have less than 20 failures.
-left_censored - an array or list of left censored data
-right_censored - an array or list of right censored data
-print_results - True/False. This will print results to console. Default is False
-show_plot - True/False. This will show the PDF and CDF of the Weibull mixture with a histogram of the data. Default is False.
+
+- failures - an array or list of the failure data. There must be at least 4 failures, but it is highly recommended to use another model if you have less than 20 failures.
+- left_censored - an array or list of left censored data
+- right_censored - an array or list of right censored data
+- print_results - True/False. This will print results to console. Default is False
+- show_plot - True/False. This will show the PDF and CDF of the Weibull mixture with a histogram of the data. Default is False.
  
 outputs:
-alpha_1 - the fitted Weibull_2P alpha parameter for the first (left) group
-beta_1 - the fitted Weibull_2P beta parameter for the first (left) group
-alpha_2 - the fitted Weibull_2P alpha parameter for the second (right) group
-beta_2 - the fitted Weibull_2P beta parameter for the second (right) group
-proportion_1 - the fitted proportion of the first (left) group
-proportion_2 - the fitted proportion of the second (right) group. Same as 1-proportion_1
-loglik2 - LogLikelihood*-2
-AICc - Akaike Information Criterion
-BIC - Bayesian Information Criterion
+- alpha_1 - the fitted Weibull_2P alpha parameter for the first (left) group
+- beta_1 - the fitted Weibull_2P beta parameter for the first (left) group
+- alpha_2 - the fitted Weibull_2P alpha parameter for the second (right) group
+- beta_2 - the fitted Weibull_2P beta parameter for the second (right) group
+- proportion_1 - the fitted proportion of the first (left) group
+- proportion_2 - the fitted proportion of the second (right) group. Same as 1-proportion_1
+- loglik2 - LogLikelihood*-2
+- AICc - Akaike Information Criterion
+- BIC - Bayesian Information Criterion
 
 In this first example, we will create some data using two Weibull distributions and then combine the data using np.hstack. We will then fit the Weibull mixture model to the combined data and will print the results and show the plot. As the input data is made up of 40% from the first group, we expect the proportion to be 0.4.
 
