@@ -32,6 +32,12 @@ Contents:
 
 .. toctree::
   :maxdepth: 1
+  :caption: Non-parametric models2
+
+  Kaplan-Meier and Nelson-Aalen estimates of reliability
+
+.. toctree::
+  :maxdepth: 1
   :caption: Stress-Strength Interference
   
   Stress-Strength interference for any distributions
