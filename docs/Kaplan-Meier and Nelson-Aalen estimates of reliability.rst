@@ -6,7 +6,7 @@
 
 
 Kaplan-Meier and Nelson-Aalen estimates of reliability
-'''''''''''''''''''''''''''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 
 Section title
