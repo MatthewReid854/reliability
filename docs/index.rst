@@ -34,7 +34,8 @@ Contents:
   :maxdepth: 1
   :caption: Non-parametric models
 
-  Kaplan-Meier and Nelson-Aalen estimates of reliability
+  Kaplan-Meier estimate of reliability
+  Nelson-Aalen estimate of reliability
 
 .. toctree::
   :maxdepth: 1
