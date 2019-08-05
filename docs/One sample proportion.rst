@@ -21,8 +21,8 @@ In this example, consider a scenario in which we have a large batch of items tha
 
 .. code:: python
 
-    from reliability import Other_functions
-    result = Other_functions.one_sample_proportion(trials=30,successes=29)
+    from reliability.Other_functions import one_sample_proportion
+    result = one_sample_proportion(trials=30,successes=29)
     print(result)
     
     '''
