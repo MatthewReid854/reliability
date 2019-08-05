@@ -116,85 +116,111 @@ def sample_size_no_failures(reliability,CI=0.95,lifetimes=1,weibull_shape=1):
     n = math.ceil((np.log(1-CI))/(lifetimes**weibull_shape*np.log(reliability))) #rounds up to nearest integer
     return n
 
-def sequential_samling_chart(producer_quality,consumer_quality,producer_risk,consumer_risk,test_results=None,max_samples=100):
+def sequential_samling_chart(p1,p2,alpha,beta,show_plot = True, print_results=True, test_results=None,max_samples=100):
     '''
     This function plots the accept/reject boundaries for a given set of quality and risk levels. If supplied, the test results are also
     plotted on the chart.
 
     inputs:
-    producer_quality - the acceptable failure rate for the producer (typical around 0.01)
-    consumer_quality - the acceptable failure rate for the consumer (typical around 0.05)
-    producer_risk - the confidence level that the producer is using (typically 0.95)
-    consumer_risk - the confidence level that the producer is using (typically 0.9)
+    p1 - producer_quality. The acceptable failure rate for the producer (typical around 0.01)
+    p2 - consumer_quality. The acceptable failure rate for the consumer (typical around 0.1)
+    alpha - producer_risk. Producer's CI = 1-alpha (typically 0.05)
+    beta - consumer_risk. Consumer's CI = 1-beta (typically 0.1)
     test_results - array or list of binary test results. eg. [0,0,0,1] for 3 successes and 1 failure. Default=None
+    show_plot - True/False. Defaults to True.
+    print_results - True/False. Defaults to True.
     max_samples - the x_lim of the plot. optional input. Default=100.
 
-    returns a plot of sequential sampling chart with decision boundaries. test_results are only plotted on the chart
+    outputs:
+    The sequential sampling chart - A plot of sequential sampling chart with decision boundaries. test_results are only plotted on the chart
     if provided as an input.
+    results - a dataframe of tabulated decision results.
+
     '''
 
     import numpy as np
     import matplotlib.pyplot as plt
+    import pandas as pd
 
     if type(test_results)==list:
         F = np.array(test_results)
     elif type(test_results)==np.ndarray:
         F = test_results
-    elif test_results==None:
+    elif test_results is None:
         F = None
     else:
-        raise ValueError('test_results must be a binary array or list with 0 as failures and 1 as successes. eg. [0 0 0 1] for 3 successes and 1 failure.')
+        raise ValueError('test_results must be a binary array or list with 1 as failures and 0 as successes. eg. [0 0 0 1] for 3 successes and 1 failure.')
 
-    p1 = producer_quality
-    p2 = consumer_quality
-    a = producer_risk
-    b = consumer_risk
+    a = 1-alpha
+    b = 1-beta
     d = np.log(p2/p1)+np.log((1-p1)/(1-p2))
     h1 = np.log((1-a)/b)/d
     h2 = np.log((1 - b) / a) / d
     s = np.log((1-p1)/(1-p2))/d
+
     xvals = np.arange(max_samples+1)
     rejection_line = s*xvals-h1
     acceptance_line = s*xvals+h2
-    upper_line = xvals+1000000
-    lower_line = xvals*0
+    acceptance_line[acceptance_line<0]=0
 
-    #plots the results of tests if they are specified
-    if type(F)==np.ndarray:
-        if max(F)>1 or min(F)<0:
-            raise ValueError('test_results must be a binary array or list with 0 as failures and 1 as successes. eg. [0 0 0 1] for 3 successes and 1 failure.')
-        nx = []
-        ny = []
-        failure_count = 0
-        sample_count = 0
-        for f in F:
-            if f==0:
-                sample_count+=1
-                nx.append(sample_count)
-                ny.append(failure_count)
-            elif f==1:
-                sample_count+=1
-                nx.append(sample_count)
-                ny.append(failure_count)
-                failure_count+=1
-                nx.append(sample_count)
-                ny.append(failure_count)
-            else:
+    upper_line = np.ones_like(xvals)*(s * max_samples - h1)
+    lower_line_range = np.linspace(-h2/s,max_samples,max_samples+1)
+    acceptance_line2 = s*lower_line_range+h2 #this is the visible part of the line that starts beyond x=0
+
+    acceptance_array = np.asarray(np.floor(s*xvals+h2), dtype=int)
+    rejection_array = np.asarray(np.ceil(s*xvals-h1), dtype=int)
+    for i,x in enumerate(xvals): # this replaces cases where the criteria exceeds the number of samples
+        if rejection_array[i]>x:
+            rejection_array[i]=-1
+
+    data = {'Samples': xvals,'Failures to accept': acceptance_array,'Failures to reject': rejection_array}
+    df = pd.DataFrame(data, columns=['Samples', 'Failures to accept','Failures to reject'])
+    df.set_index('Samples', inplace=True)
+    df.loc[df['Failures to accept'] < 0, 'Failures to accept'] = 'x'
+    df.loc[df['Failures to reject'] < 0, 'Failures to reject'] = 'x'
+
+    if print_results==True:
+        print(df)
+
+    if show_plot==True:
+        #plots the results of tests if they are specified
+        if type(F)==np.ndarray:
+            if all(F) not in [0,1]:
                 raise ValueError('test_results must be a binary array or list with 0 as failures and 1 as successes. eg. [0 0 0 1] for 3 successes and 1 failure.')
-        plt.plot(nx, ny,label='test results')
+            nx = []
+            ny = []
+            failure_count = 0
+            sample_count = 0
+            for f in F:
+                if f==0:
+                    sample_count+=1
+                    nx.append(sample_count)
+                    ny.append(failure_count)
+                elif f==1:
+                    sample_count+=1
+                    nx.append(sample_count)
+                    ny.append(failure_count)
+                    failure_count+=1
+                    nx.append(sample_count)
+                    ny.append(failure_count)
+                else:
+                    raise ValueError('test_results must be a binary array or list with 0 as failures and 1 as successes. eg. [0 0 0 1] for 3 successes and 1 failure.')
+            plt.plot(nx, ny,label='test results')
 
-    #plots the decision boundaries and shades the areas red and green
-    plt.plot(xvals,acceptance_line,linestyle='--',color='green')
-    plt.plot(xvals,rejection_line,linestyle='--',color='red')
-    plt.fill_between(xvals,rejection_line,upper_line,color='red',alpha=0.3,label='Reject sample')
-    plt.fill_between(xvals, acceptance_line, rejection_line, color='gray', alpha=0.1, label='Keep Testing')
-    plt.fill_between(xvals, acceptance_line, lower_line, color='green', alpha=0.3, label='Accept Sample')
-    plt.ylim([0,max(rejection_line)*1.1])
-    plt.xlim([0,max(xvals)])
-    plt.xlabel('Number of samples tested')
-    plt.ylabel('Number of failures from samples tested')
-    plt.title('Sequential sampling decision boundaries')
-    plt.legend()
+        #plots the decision boundaries and shades the areas red and green
+        plt.plot(lower_line_range,acceptance_line2,linestyle='--',color='green')
+        plt.plot(xvals,rejection_line,linestyle='--',color='red')
+        plt.fill_between(xvals,rejection_line,upper_line,color='red',alpha=0.3,label='Reject sample')
+        plt.fill_between(xvals, acceptance_line, rejection_line, color='gray', alpha=0.1, label='Keep Testing')
+        plt.fill_between(lower_line_range, 0, acceptance_line2, color='green', alpha=0.3, label='Accept Sample')
+        plt.ylim([0,max(rejection_line)])
+        plt.xlim([0,max(xvals)])
+        plt.xlabel('Number of samples tested')
+        plt.ylabel('Number of failures from samples tested')
+        plt.title('Sequential sampling decision boundaries')
+        plt.legend()
+        plt.show()
+    return df
 
 def reliability_growth(times,xmax=None,target_MTBF=None,show_plot=True,**kwargs):
     '''
@@ -301,18 +327,16 @@ def convert_dataframe_to_grouped_lists(input_dataframe):
                   - names is the identifying values used to group the lists from the first column
 
     Example usage:
-
     #create sample data
+    import pandas as pd
     data = {'outcome': ['Failed', 'Censored', 'Failed', 'Failed', 'Censored'],
         'cycles': [1253,1500,1342,1489,1500]}
     df = pd.DataFrame(data, columns = ['outcome', 'cycles'])
-
     #usage of the function
     lists,names = convert_dataframe_to_grouped_lists(df)
     print(names[1]) >>> Failed
     print(lists[1]) >>> [1253, 1342, 1489]
     '''
-    import pandas as pd
     df = input_dataframe
     column_names = df.columns.values
     if len(column_names)>2:
