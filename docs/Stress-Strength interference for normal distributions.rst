@@ -9,21 +9,18 @@ Stress-Strength interference is a model to predict the probability of failure wh
 
 Inputs:
 
--   stress - a probability distribution from the Distributions module
--   strength - a probability distribution from the Distributions module
--   monte_carlo_trials - number of MC trials (default is 100000)
+-   stress - a Normal probability distribution from the Distributions module
+-   strength - a Normal probability distribution from the Distributions module
 -   show_distribution_plot - True/False (default is True)
--   show_convergence_plot - True/False (default is True)
 -   print_results - True/False (default is True)
 
 Outputs:
 
 -   prob_of_failure - the probability of failure
 -   the distribution plot (only shown if show_distribution_plot=True)
--   the convergence plot (only shown if show_convergence_plot=True)
 -   results printed to console (only shown if print_results=True)
 
-In this example, we will create a stress and strength distribution (both of which are Normal distributions), and leaving everything else as dafault, we will see the reulsts. Unlike the monte carlo method, this approach does not use random samples so there is no convergence plot as the result provided is the exact result.
+In this example, we will create a stress and strength distribution (both of which are Normal distributions), and leaving everything else as dafault, we will see the results plotted and printed. Unlike the monte carlo method, this approach does not use random samples so there is no convergence plot as the results provided are exact.
 
 .. code:: python
 
