@@ -15,7 +15,7 @@ inputs:
 
 Outputs:
 
-lower, upper - Confidence interval limits. Note that this will return nan for lower or upper if the one sided CI is calculated (ie. when successes=0 or successes=trials).
+-   lower, upper - Confidence interval limits. Note that this will return nan for lower or upper if the one sided CI is calculated (ie. when successes=0 or successes=trials).
 
 In this example, consider a scenario in which we have a large batch of items that we need to test for their reliability. The batch is large and testing is expensive so we will conduct the test on 30 samples. From those 30 samples, 29 passed the test. If the batch needs at least 85% reliability with a 95% confidence, then should we accept or reject the batch?
 
