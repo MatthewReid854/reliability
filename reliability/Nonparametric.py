@@ -20,7 +20,7 @@ class KaplanMeier:
     It is not possible to obtain a useful version of the PDF or HF as the derivative of a stepwise function produces very spikey functions.
 
     inputs:
-        failure - an array or list of failure times. Sorting is automatic so times do not need to be provided in any order.
+        failures - an array or list of failure times. Sorting is automatic so times do not need to be provided in any order.
         right_censored - an array or list of right censored failure times. Defaults to None.
         show_plot - True/False. Default is True. Plots the SF.
         print_results - True/False. Default is True. Will display a pandas dataframe in the console.
