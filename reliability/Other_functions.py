@@ -62,7 +62,7 @@ def two_proportion_test(sample_1_trials=None,sample_1_successes=None,sample_2_tr
     CI - desired confidence interval. Defaults to 0.95 for 95% CI.
 
     returns:
-    lower,upper,result - lower and upper are bounds on the difference. If the bounds include 0 then it is a statistically significant difference.
+    lower,upper,result - lower and upper are bounds on the difference. If the bounds do not include 0 then it is a statistically significant difference.
     '''
     import scipy.stats as ss
     if CI<0.5 or CI>=1:
@@ -79,9 +79,9 @@ def two_proportion_test(sample_1_trials=None,sample_1_successes=None,sample_2_tr
     lower = diff-k
     upper = diff+k
     if lower<0 and upper>0:
-        result='significant'
-    else:
         result='non-significant'
+    else:
+        result='significant'
     return lower,upper,result
 
 def sample_size_no_failures(reliability,CI=0.95,lifetimes=1,weibull_shape=1):
