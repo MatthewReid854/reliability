@@ -25,7 +25,7 @@ Outputs:
 -   the convergence plot (only shown if show_convergence_plot=True)
 -   results printed to console (only shown if print_results=True)
 
-In this first example, we will create a stress and strength distribution, and leaving everything else as dafault, we will see the results and convergence plot.
+In this example, we will create a stress and strength distribution, and leaving everything else as dafault, we will see the results and convergence plot.
 
 .. code:: python
 
