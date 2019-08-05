@@ -13,7 +13,7 @@ Inputs:
 
 -   stress - a probability distribution from the Distributions module
 -   strength - a probability distribution from the Distributions module
--   monte_carlo_trials - number of MC trials. Default is 100000.
+-   monte_carlo_trials - number of MC trials (default is 100000)
 -   show_distribution_plot - True/False (default is True)
 -   show_convergence_plot - True/False (default is True)
 -   print_results - True/False (default is True)
@@ -36,7 +36,7 @@ In this first example, we will create a stress and strength distribution, and le
     result = Probability_of_failure(stress=stress, strength=strength)
     
     '''
-    Probability of failure: 0.00196
+    Probability of failure: 0.00169
     '''
 
 .. image:: images/stress_strength1.png
