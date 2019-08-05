@@ -7,7 +7,7 @@ Stress-Strength interference for any distributions
 
 Stress-Strength interference is a model to predict the probability of failure when the probability distributions of the stress and the strength are known. The model calculates the probability of failure by determining the probability that a random stress (drawn from a stress distribution) is greater than a random strength (drawn from a strength distribution). It does this using a large number of monte carlo trials and averaging the results. The more trials that are performed, the more accurate the result will be. Since this process involves using random numbers, the result is never exact, but it will approach the exact solution as the number of trials approaches infinity.
 
-If both the stress and strength distributions are normal distributions, then there exists a simple analytical solution which will give an exact result. For this method, use the function `Stress_strength.Probability_of_failure_normdist <https://reliability.readthedocs.io/en/latest/Stress-Strength%20interference%20for%20normal%20distributions.html>`_
+If both the stress and strength distributions are normal distributions, then there exists a simple analytical solution which will give an exact result. For this method, use the function `Probability_of_failure_normdist <https://reliability.readthedocs.io/en/latest/Stress-Strength%20interference%20for%20normal%20distributions.html>`_
 
 Inputs:
 
