@@ -1,8 +1,3 @@
-.. reliability documentation master file, created by
-   sphinx-quickstart on Sun Feb  2 17:10:21 2014.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 .. image:: images/logo.png
 -------------------------------------
 
