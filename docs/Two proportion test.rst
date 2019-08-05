@@ -23,8 +23,8 @@ In this example, consider that sample 1 and sample 2 are batches of items that t
 
 .. code:: python
 
-    from reliability import Other_functions
-    result = Other_functions.two_proportion_test(sample_1_trials=500,sample_1_successes=490,sample_2_trials=800,sample_2_successes=770)
+    from reliability.Other_functions import two_proportion_test
+    result = two_proportion_test(sample_1_trials=500,sample_1_successes=490,sample_2_trials=800,sample_2_successes=770)
     print(result)
 
     '''
