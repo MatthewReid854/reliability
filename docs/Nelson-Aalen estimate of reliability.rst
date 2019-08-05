@@ -37,7 +37,7 @@ outputs:
 
 Other plotting keywords (such as color, label, linestyle, etc.) are accepted and used on the point estimate line. The color of the confidence intervals is matched automatically to the point estimate line, but no other keywords are carried across to the confidence interval plot as it is only a shaded region.
 
-In the example below, we will compare the results from the Kaplan_Meier estimator with the results from the Nelson-Aalen estimator.
+In the example below, we will compare the results from the Kaplan-Meier estimator with the results from the Nelson-Aalen estimator. We will also extract the column of point estimates from the results and print these for each method in a dataframe.
 
 .. code:: python
 
