@@ -11,8 +11,8 @@
 - Mean residual life, quantiles, descriptive statistics summaries, random sampling from distributions
 - Plots of probability density function (PDF), cumulative distribution function (CDF), survival function (SF), hazard function (HF), and cumulative hazard function (CHF).
 - Easy creation of distribution objects. Eg. dist = Weibull_Distribution(alpha=4,beta=2)
-- Non-parametric estimation of survival function using Kaplan-Meier
-- Q-Q plots and goodness of fit tests (AICc, BIC)
+- Non-parametric estimation of survival function using Kaplan-Meier and Nelson-Aalen
+- Quantile plots and goodness of fit tests (AICc, BIC)
 - Reliability growth, optimal replacement time, sequential sampling charts, and many more functions.
 
 ## Installation
