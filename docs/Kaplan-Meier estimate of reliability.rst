@@ -1,5 +1,3 @@
-.. _code_directive:
-
 .. image:: images/logo.png
 
 -------------------------------------
