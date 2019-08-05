@@ -25,7 +25,7 @@ Outputs:
 -   the convergence plot (only shown if show_convergence_plot=True)
 -   results printed to console (only shown if print_results=True)
 
-In this first example, we will create a stress and strength distribution, and leaving everything else as dafault, we will see the reulsts and convergence plot.
+In this first example, we will create a stress and strength distribution, and leaving everything else as dafault, we will see the results and convergence plot.
 
 .. code:: python
 
@@ -44,3 +44,5 @@ In this first example, we will create a stress and strength distribution, and le
 .. image:: images/stress_strength_convergence.png
 
 Note that in the convergence plot, the probability of failure varies randomly when the number of monte carlo trials is small, but as the number of trials is increased, the probability of failure approaches a constant, which will be the exact solution as monte carlo trials approaches infinity.
+
+Easter Egg: The logo for ``reliability`` was created using the stress strength interference plot of two Weibull distributions.
