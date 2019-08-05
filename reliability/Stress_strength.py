@@ -144,3 +144,4 @@ class Probability_of_failure_normdist:
             plt.xlabel('Probability Density')
             plt.ylabel('Stress and Strength Units')
             plt.subplots_adjust(left=0.15,right=0.93)
+            plt.show()
