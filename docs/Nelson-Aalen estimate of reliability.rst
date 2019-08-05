@@ -94,5 +94,5 @@ In the example below, we will compare the results from the Kaplan_Meier estimato
 
 .. image:: images/KMvsNA.png
 
-Two further examples are provided in the documentation for the `Kaplan-Meier estimator <https://reliability.readthedocs.io/en/latest/Kaplan-Meier%20estimate%20of%20reliability.html>`_as this function is written to work exactly the same way as the Nelson-Aalen estimator.
+Two further examples are provided in the documentation for the `Kaplan-Meier estimator <https://reliability.readthedocs.io/en/latest/Kaplan-Meier%20estimate%20of%20reliability.html>`_ as this function is written to work exactly the same way as the Nelson-Aalen estimator.
 
