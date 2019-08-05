@@ -7,7 +7,7 @@ One sample proportion
 
 This function calculates the upper and lower bounds of reliability for a given number of trials and successes. It is most applicable to analysis of test results in which there are only success/failure results and the analyst wants to know the reliability of the batch given those sample results.
 
-inputs:
+Inputs:
 
 -   trials - the number of trials which were conducted
 -   successes - the number of trials which were successful
