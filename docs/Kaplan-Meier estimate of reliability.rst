@@ -47,12 +47,27 @@ In this first example, we will provide Kaplan-Meier with a list of failure times
     import matplotlib.pyplot as plt
     f = [5248, 7454, 16890, 17200, 38700, 45000, 49390, 69040, 72280, 131900]
     rc = [3961, 4007, 4734, 6054, 7298, 10190, 23060, 27160, 28690, 37100, 40060, 45670, 53000, 67000, 69630, 77350, 78470, 91680, 105700, 106300, 150400]
-    KaplanMeier(failures=f, right_censored=rc, label='Failures + right censored', color='steelblue')
-    KaplanMeier(failures=f, label='Failures only', color='red')
+    KaplanMeier(failures=f, right_censored=rc, label='Failures + right censored', color='steelblue',print_results=False)
+    KaplanMeier(failures=f, label='Failures only', color='red') #this will print results to console
     plt.title('Kaplan-Meier estimates showing the\nimportance of including censored data')
     plt.xlabel('Miles to failure')
     plt.show()
-
+    
+    '''
+                   Censoring code (censored=0)  Items remaining  Kaplan Meier Estimate  Lower CI bound  Upper CI bound
+    Failure times                                                                                                     
+    5248.0                                 1.0               10                    0.9        0.714061        1.000000
+    7454.0                                 1.0                9                    0.8        0.552082        1.000000
+    16890.0                                1.0                8                    0.7        0.415974        0.984026
+    17200.0                                1.0                7                    0.6        0.296364        0.903636
+    38700.0                                1.0                6                    0.5        0.190102        0.809898
+    45000.0                                1.0                5                    0.4        0.096364        0.703636
+    49390.0                                1.0                4                    0.3        0.015974        0.584026
+    69040.0                                1.0                3                    0.2        0.000000        0.447918
+    72280.0                                1.0                2                    0.1        0.000000        0.285939
+    131900.0                               1.0                1                    0.0        0.000000        0.000000
+    '''
+    
 .. image:: images/KaplanMeier1.png
 
 In this second example, we will create some data from a Weibull distribution, and then right censor the data above our chosen threshold. We will then fit a Weibull_2P distribution to the censored data, and also obtain the Kaplan-Meier estimate of this data. Using the results from the Kaplan-Meier estimate, we will plot the CDF, SF, CHF, for both the Weibull and Kaplan-Meier results. Note that the default plot from KaplanMeier will only give you the SF, but the results object provides everything you need to reconstruct the SF plot yourself, as will as what we need to do the same with CDF and CHF.
