@@ -33,7 +33,11 @@ In this first example, we will create a stress and strength distribution, and le
     from reliability.Stress_strength import Probability_of_failure
     stress = Distributions.Weibull_Distribution(alpha=2, beta=3, gamma=1)
     strength = Distributions.Gamma_Distribution(alpha=2, beta=3, gamma=3)
-    Probability_of_failure(stress=stress, strength=strength)
+    result = Probability_of_failure(stress=stress, strength=strength)
+    
+    '''
+    Probability of failure: 0.00196
+    '''
 
 .. image:: images/stress_strength1.png
 
