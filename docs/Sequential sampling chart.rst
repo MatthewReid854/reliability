@@ -22,7 +22,7 @@ Outputs:
 -   The sequential sampling chart - A plot of sequential sampling chart with decision boundaries. test_results are only plotted on the chart if provided as an input.
 -   results - a dataframe of tabulated decision results. These will be printed if print_results=True
 
-In the example below, we use the inputs p1=0.01, p2=0.10, alpha=0.05,beta=0.10. The resulting decision boundaries are plotted, and the test results that we have supplied are also plotted. The plot shows that after our 3rd failure, the test should be stopped as the batch can be rejected. The dataframe of results is also printed be default. This example is based on an example in the `Engineering statistics handbook <https://itl.nist.gov/div898/handbook/pmc/section2/pmc26.htm>`_ published online by NIST.
+In the example below, we use the inputs p1=0.01, p2=0.10, alpha=0.05,beta=0.10. The resulting decision boundaries are plotted, and the test results that we have supplied are also plotted. The plot shows that after our 3rd failure, the test should be stopped as the batch can be rejected. The dataframe of results is also printed be default. In this dataframe, the value of x is used to replace impossible numbers, ie. we cannot reject 2 failures if we have only conducted 1 inspection. This example is based on an example in the `Engineering statistics handbook <https://itl.nist.gov/div898/handbook/pmc/section2/pmc26.htm>`_ published online by NIST.
 
 .. code:: python
 
