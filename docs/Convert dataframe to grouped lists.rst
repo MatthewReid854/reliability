@@ -5,15 +5,15 @@
 Convert dataframe to grouped lists
 ''''''''''''''''''''''''''''''''''
 
-This function was written because many of our datasets are in the form of columns with one column indicating the label (eg. success, failure) and the other column providing the value. Since many functions in ``reliability`` are written to accept grouped lists (lists where all the values belong to the same group such as right_censored failure times), it is beneficial to have a fast way to perform this conversion. 
+This function was written because many of our datasets are in the form of columns with one column indicating the label (eg. success, failure) and the other column providing the value. Since many functions in ``reliability`` are written to accept grouped lists (lists where all the values belong to the same group such as right_censored failure times), it is beneficial to have a fast way to perform this conversion. This function will split the dataframe into as many grouped lists as there are unique values in the labels (left) column.
 
 Inputs:
 
--   input_dataframe. This must be a dataframe containing 2 columns, where the label column is the left column and the value column is the right column.
+-   input_dataframe. This must be a dataframe containing 2 columns, where the label column is the left column and the value column is the right column. The column titles are not important.
 
 Outputs:
 
--   lists , names - lists is a list of the grouped lists, and names is the identifying labels used to group the lists from the first column
+-   lists , names - lists is a list of the grouped lists, and names is the identifying labels used to group the lists from the first column.
     
 In the example below, we will create some data in a pandas dataframe, print it to see what it looks like, and then split it up using this function.
 
