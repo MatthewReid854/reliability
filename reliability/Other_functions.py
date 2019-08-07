@@ -222,7 +222,7 @@ def sequential_samling_chart(p1,p2,alpha,beta,show_plot = True, print_results=Tr
         plt.show()
     return df
 
-def reliability_growth(times,xmax=None,target_MTBF=None,show_plot=True,**kwargs):
+def reliability_growth(times,xmax=None,target_MTBF=None,show_plot=True,print_results=True,**kwargs):
     '''
     Uses the Duane method to find the instantaneous MTBF and produce a reliability growth plot.
 
@@ -231,8 +231,10 @@ def reliability_growth(times,xmax=None,target_MTBF=None,show_plot=True,**kwargs)
     xmax - xlim to plot up to. Default is 1.5*max(times)
     target_MTBF - specify the target MTBF to obtain the total time on test required to reach it.
     show_plot - True/False. Defaults to true. Other keyword arguments are passed to the plot for style
+    print_results - True/False. Defaults to True.
 
     returns:
+    If print_results is True it will print a summary of the results
     [Lambda, beta, time_to_target] - Array of results. Time to target is only returned if target_MTBF is specified.
     If show_plot is True, it will plot the reliability growth. Use plt.show() to show the plot.
     '''
@@ -248,7 +250,6 @@ def reliability_growth(times,xmax=None,target_MTBF=None,show_plot=True,**kwargs)
         raise ValueError('failure times cannot be negative. times must be an array or list of failure times')
     if xmax==None:
         xmax=int(max(times)*1.5)
-
     if 'color' in kwargs:
         c = kwargs.pop('color')
     else:
@@ -265,13 +266,20 @@ def reliability_growth(times,xmax=None,target_MTBF=None,show_plot=True,**kwargs)
     theta_i = (xvals**(1-beta))/(Lambda*beta) #the smooth line
     theta_i_points = (times**(1-beta))/(Lambda*beta) #the failure times highlighted along the line
     output = [Lambda, beta] #returns lambda and beta
+
+    if print_results==True:
+        print('Reliability growth model parameters:\nlambda:',Lambda,'\nbeta:',beta)
+
+    if target_MTBF is not None:
+        t_target = (target_MTBF * Lambda * beta) ** (1 / (1 - beta))
+        output.append(t_target)  # also returns time to target MTBF if a target is specified
+        print('Time to reach target MTBF:',t_target)
+
     if show_plot==True:
         plt.plot(xvals,theta_i,color=c,**kwargs)
         plt.plot(times,theta_i_points,'o',color=c,alpha=0.5)
         if target_MTBF is not None:
-            t_target = (target_MTBF*Lambda*beta)**(1/(1-beta))
-            plt.plot([0,t_target,t_target],[target_MTBF,target_MTBF,0],'red',label='Reliability target',linewidth=1)
-            output.append(t_target) #also returns time to target MTBF if a target is specified
+            plt.plot([0, t_target, t_target], [target_MTBF, target_MTBF, 0], 'red', label='Reliability target', linewidth=1)
         plt.title('Reliability Growth')
         plt.xlabel('Total time on test')
         plt.ylabel('Instantaneous MTBF')
