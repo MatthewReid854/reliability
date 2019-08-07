@@ -230,8 +230,7 @@ def reliability_growth(times,xmax=None,target_MTBF=None,show_plot=True,**kwargs)
     times - array of list of failure times
     xmax - xlim to plot up to. Default is 1.5*max(times)
     target_MTBF - specify the target MTBF to obtain the total time on test required to reach it.
-    show_plot - True/False. Defaults to true.
-    kwargs - other keyword arguments are passed to the plot for style
+    show_plot - True/False. Defaults to true. Other keyword arguments are passed to the plot for style
 
     returns:
     [Lambda, beta, time_to_target] - Array of results. Time to target is only returned if target_MTBF is specified.
@@ -240,9 +239,9 @@ def reliability_growth(times,xmax=None,target_MTBF=None,show_plot=True,**kwargs)
     import numpy as np
     import matplotlib.pyplot as plt
     if type(times)==list:
-        times = np.array(times)
+        times = np.sort(np.array(times))
     elif type(times)==np.ndarray:
-        pass
+        times = np.sort(times)
     else:
         raise ValueError('times must be an array or list of failure times')
     if min(times)<0:
