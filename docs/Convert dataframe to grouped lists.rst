@@ -15,7 +15,7 @@ Outputs:
 
 -   lists , names - lists is a list of the grouped lists, and names is the identifying labels used to group the lists from the first column.
     
-In the example below, we will create some data in a pandas dataframe, print it to see what it looks like, and then split it up using this function.
+In the example below, we will create some data in a pandas dataframe, print it to see what it looks like, and then split it up using this function and print the results.
 
 .. code:: python
 
