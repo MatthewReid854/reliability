@@ -5,7 +5,7 @@
 Convert dataframe to grouped lists
 ''''''''''''''''''''''''''''''''''
 
-This function was written because many of our datasets are in the form of columns with one column indicating the label (eg. success, failure) and the other column providing the value. Since many functions in ``reliability`` are written to accept grouped lists (lists where all the values belong to the same group such as right_censored failure times), it is beneficial to have a fast was to make this conversion. 
+This function was written because many of our datasets are in the form of columns with one column indicating the label (eg. success, failure) and the other column providing the value. Since many functions in ``reliability`` are written to accept grouped lists (lists where all the values belong to the same group such as right_censored failure times), it is beneficial to have a fast way to perform this conversion. 
 
 Inputs:
 
