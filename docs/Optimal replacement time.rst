@@ -5,12 +5,12 @@
 Optimal replacement time
 ''''''''''''''''''''''''
 
-When conducting maintenance planning, we must optimise the frequency of preventative maintenance (PM) for the minimum overall cost. If PM is conducted too frequently then we will have high costs, but if not conducted often enough then failures will result and we incur the higher cost of corrective maintenance (CM). Depending on the underlying failure distribution, it is possible to model these costs for a range of PM intervals, with the lowest cost per unit time resulting from the optimal replacement time. This function calculates the cost model to determine how cost varies with replacement time. The cost model assumes Power Law NHPP (ie. the maintenance makes the system "as good as new"). Currently, this model is only implemented to use the weibull distribution as the underlying failure distribution.
+When conducting maintenance planning, we must optimise the frequency of preventative maintenance (PM) for the minimum overall cost. If PM is conducted too frequently then we will have high costs, but if not conducted often enough then failures will result and we incur the higher cost of corrective maintenance (CM). Depending on the underlying failure distribution, it is possible to model these costs for a range of PM intervals, with the lowest cost per unit time resulting from the optimal replacement time. This function calculates the cost model to determine how cost varies with replacement time. The cost model assumes Power Law NHPP (ie. the maintenance makes the system "as good as new"). Currently, this model is only implemented to use the Weibull distribution as the underlying failure distribution.
 
 Inputs:
 
--   Cost_PM - cost of preventative maintenance (must be smaller than Cost_CM)
--   Cost_CM - cost of corrective maintenance (must be larger than Cost_PM)
+-   cost_PM - cost of preventative maintenance (must be smaller than cost_CM)
+-   cost_CM - cost of corrective maintenance (must be larger than cost_PM)
 -   weibull_alpha - scale parameter of the underlying Weibull distribution
 -   weibull_beta - shape parameter of the underlying Weibull distribution. Should be greater than 1 otherwise conducting PM is not economical.
 -   show_plot - True/False. Defaults to True. Other plotting keywords are also accepted and used.
