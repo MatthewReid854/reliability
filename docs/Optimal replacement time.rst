@@ -33,7 +33,7 @@ In the example below, we provide the cost of preventative maintenance (cost_PM),
 
     '''
     The minimum cost per unit time is 0.0035 
-    The optimal replacement time is 493.05
+    The optimal replacement time is 493.19
     '''
 
 .. image:: images/optimal_replacement_time.png
