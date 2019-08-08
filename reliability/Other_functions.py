@@ -289,7 +289,7 @@ def reliability_growth(times,xmax=None,target_MTBF=None,show_plot=True,print_res
 
 def optimal_replacement_time(cost_PM, cost_CM, weibull_alpha, weibull_beta, show_plot=True, print_results=True, **kwargs):
     '''
-    Calculates the cost model to determine how cost varies with replacement time. The cost model assumes Power Law NHPP.
+    Calculates the cost model to determine how cost varies with replacement time. The cost model assumes a HPP (good as new replacement).
 
     inputs:
     Cost_PM - cost of preventative maintenance (must be smaller than Cost_CM)
