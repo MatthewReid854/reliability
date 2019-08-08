@@ -5,27 +5,24 @@
 Optimal replacement time
 ''''''''''''''''''''''''
 
-
-
-Calculates the cost model to determine how cost varies with replacement time. The cost model assumes Power Law NHPP.
+When conducting maintenance planning, we must optimise the frequency of preventative maintenance (PM) for the minimum overall cost. If PM is conducted too frequently then we will have high costs, but if not conducted often enough then failures will result and we incur the higher cost of corrective maintenance (CM). Depending on the underlying failure distribution, it is possible to model these costs for a range of PM intervals, with the lowest cost per unit time resulting from the optimal replacement time. This function calculates the cost model to determine how cost varies with replacement time. The cost model assumes Power Law NHPP (ie. the maintenance makes the system "as good as new"). Currently, this model is only implemented to use the weibull distribution as the underlying failure distribution.
 
 Inputs:
 
-    Cost_PM - cost of preventative maintenance (must be smaller than Cost_CM)
-    Cost_CM - cost of corrective maintenance (must be larger than Cost_PM)
-    weibull_alpha - scale parameter of the underlying Weibull distribution
-    weibull_beta - shape parameter of the underlying Weibull distribution. Should be greater than 1 otherwise conducting PM is not economical.
-    show_plot - True/False. Defaults to True. Other plotting keywords are also accepted and used.
-    print_results - True/False. Defaults to True
+-   Cost_PM - cost of preventative maintenance (must be smaller than Cost_CM)
+-   Cost_CM - cost of corrective maintenance (must be larger than Cost_PM)
+-   weibull_alpha - scale parameter of the underlying Weibull distribution
+-   weibull_beta - shape parameter of the underlying Weibull distribution. Should be greater than 1 otherwise conducting PM is not economical.
+-   show_plot - True/False. Defaults to True. Other plotting keywords are also accepted and used.
+-   print_results - True/False. Defaults to True
 
 Outputs:
 
-    [ORT, min_cost] - the optimal replacement time and minimum cost per unit time in an array
-    Plot of cost model if show_plot is set to True. Use plt.show() to display it.
-    Printed results if print_results is set to True.
+-   [ORT, min_cost] - the optimal replacement time and minimum cost per unit time in an array
+-   Plot of cost model if show_plot is set to True. Use plt.show() to display it.
+-   Printed results if print_results is set to True.
 
-
-
+In the example below, we provide the cost of preventative maintenance (cost_PM), and the cost of corrective maintenance (cost_CM), as well as the weibull parameters of the failure distribution. Leaving the default outputs, we obtain a plot of the cost per unit time and the printed results. This example is based of the example provided on the `reliasoft article <http://www.reliawiki.org/index.php/Optimum_Replacement_Time_Example>`_.
 
 .. code:: python
 
