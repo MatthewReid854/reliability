@@ -287,43 +287,64 @@ def reliability_growth(times,xmax=None,target_MTBF=None,show_plot=True,print_res
         plt.ylim([0,max(theta_i)*1.2])
     return output
 
-def optimal_replacement_time(Cf, Cr,weibull_alpha,weibull_beta,xmin=None,xmax=None,show_plot=False,**kwargs):
+def optimal_replacement_time(cost_PM, cost_CM, weibull_alpha, weibull_beta, show_plot=True, print_results=True, **kwargs):
     '''
-    Calculates the cost model to determine how cost varies with replacement time. The cost model assumes Power Law NHPP
+    Calculates the cost model to determine how cost varies with replacement time. The cost model assumes Power Law NHPP.
 
     inputs:
-    Cf - cost of scheduled repair (must be smaller than (Cr)
-    Cr - cost of unscheduled repair (must be larger than Cf)
-    weibull_alpha, weibull_beta - parameters of the underlying Weibull distribution
-    show_plot - True/False. If set to True the cost model will be plotted. Use plt.show() to display it. Defaults to False.
+    Cost_PM - cost of preventative maintenance (must be smaller than Cost_CM)
+    Cost_CM - cost of corrective maintenance (must be larger than Cost_PM)
+    weibull_alpha - scale parameter of the underlying Weibull distribution
+    weibull_beta - shape parameter of the underlying Weibull distribution. Should be greater than 1 otherwise conducting PM is not economical.
+    show_plot - True/False. Defaults to True. Other plotting keywords are also accepted and used.
+    print_results - True/False. Defaults to True
 
-    returns
-    [t_min, cost_min] - the optimal replacement time and cost in an array
+    outputs:
+    [ORT, min_cost] - the optimal replacement time and minimum cost per unit time in an array
+    Plot of cost model if show_plot is set to True. Use plt.show() to display it.
+    Printed results if print_results is set to True.
     '''
     import numpy as np
     import matplotlib.pyplot as plt
-    if xmax is None:
-        xmax = 1000000
-    if xmin is None:
-        xmin = 1
+    import warnings
+    from scipy import integrate
     if 'color' in kwargs:
         c = kwargs.pop('color')
     else:
         c = 'steelblue'
-    if Cf>Cr:
-        raise ValueError('Cf must be less than Cr otherwise preventative maintenance should not be conducted.')
+    if cost_PM>cost_CM:
+        raise ValueError('Cost_PM must be less than Cost_CM otherwise preventative maintenance should not be conducted.')
+    if weibull_beta<1:
+        warnings.warn('weibull_beta is < 1 so the hazard rate is decreasing, therefore preventative maintenance should not be conducted.')
 
-    t = np.linspace(xmin,xmax,1000000)
-    cost = (Cf*((t/weibull_alpha)**weibull_beta)+Cr)/t
-    t_min = weibull_alpha*((Cr/(Cf*(weibull_beta-1)))**(1/weibull_beta))
-    cost_min = (Cf*((t_min/weibull_alpha)**weibull_beta)+Cr)/t_min
+    t = np.linspace(1,weibull_alpha*3,10000)
+    CPUT = [] #cost per unit time
+    R = lambda x: np.exp(-((x/weibull_alpha)**weibull_beta))
+    for T in t:
+        SF = np.exp(-((T/weibull_alpha)**weibull_beta))
+        integral_R, error = integrate.quad(R, 0, T)
+        CPUT.append((cost_PM * SF + cost_CM * (1 - SF)) / integral_R)
+    idx = np.argmin(CPUT)
+    min_cost = CPUT[idx] #minimum cost per unit time
+    ORT = t[idx] #optimal replacement time
+
+    min_cost_rounded = round(min_cost, -int(np.floor(np.log10(abs(min_cost))))+1) # this rounds to exactly 2 sigfigs no matter the number of preceding zeros
+    ORT_rounded = round(ORT,2)
+
+    if print_results==True:
+        print('The minimum cost per unit time is',min_cost_rounded,'\nThe optimal replacement time is',ORT_rounded)
+
     if show_plot==True:
-        plt.plot(t,cost,color=c,**kwargs)
-        plt.plot(t_min,cost_min,'o',color=c)
+        plt.plot(t,CPUT,color=c,**kwargs)
+        plt.plot(ORT,min_cost,'o',color=c)
+        text_str = str('\nMinimum cost per unit time is '+str(min_cost_rounded)+'\nOptimal replacement time is '+str(ORT_rounded))
+        plt.text(ORT,min_cost,text_str,verticalalignment='top')
         plt.xlabel('Replacement time')
-        plt.ylabel('Total cost')
+        plt.ylabel('Cost per unit time')
         plt.title('Optimal replacement time estimation')
-    return [t_min,cost_min]
+        plt.ylim([0,min_cost*2])
+        plt.xlim([0,weibull_alpha*3])
+    return [ORT,min_cost]
 
 def convert_dataframe_to_grouped_lists(input_dataframe):
     '''
