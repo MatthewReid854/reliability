@@ -10,6 +10,7 @@ Available distributions are:
     Beta_Distribution
 
 Methods:
+    name - the name of the distribution. eg. 'Weibull'
     parameter names - varies by distribution
     parameters - returns an array of parameters
     mean
@@ -28,6 +29,7 @@ Methods:
     CHF() - plots the cumulative hazard function
     quantile() - Calculates the quantile (time until a fraction has failed) for a given fraction failing.
                  Also known as b life where b5 is the time at which 5% have failed.
+    inverse_SF() - the inverse of the Survival Function. This is useful when producing QQ plots.
     mean_residual_life() - Average residual lifetime of an item given that the item has survived up to a given time.
                            Effectively the mean of the remaining amount (right side) of a distribution at a given time.
     stats() - prints all the descriptive statistics. Same as the statistics shown using .plot() but printed to console.
@@ -66,6 +68,7 @@ class Weibull_Distribution:
     gamma - threshold (offset) parameter. Default = 0
 
     methods:
+    name
     mean
     variance
     standard_deviation
@@ -82,12 +85,14 @@ class Weibull_Distribution:
     CHF() - plots the cumulative hazard function
     quantile() - Calculates the quantile (time until a fraction has failed) for a given fraction failing.
                  Also known as b life where b5 is the time at which 5% have failed.
+    inverse_SF() - the inverse of the Survival Function. This is useful when producing QQ plots.
     mean_residual_life() - Average residual lifetime of an item given that the item has survived up to a given time.
                            Effectively the mean of the remaining amount (right side) of a distribution at a given time.
     stats() - prints all the descriptive statistics. Same as the statistics shown using .plot() but printed to console.
     random_samples() - draws random samples from the distribution to which it is applied. Same as rvs in scipy.stats.
     '''
     def __init__(self,alpha=None,beta=None,gamma=0):
+        self.name = 'Weibull'
         self.alpha = alpha
         self.beta = beta
         if self.alpha==None or self.beta==None:
@@ -157,9 +162,20 @@ class Weibull_Distribution:
         :param q: quantile to be calculated
         :return: the probability (area under the curve) that a random variable from the distribution is < q
         '''
-        if q<0 or q> 1:
+        if min(q)<0 or max(q)> 1:
             raise ValueError('Quantile must be between 0 and 1')
         return ss.weibull_min.ppf(q,self.beta,scale=self.alpha,loc=self.gamma)
+    def inverse_SF(self,q):
+        '''
+        Inverse Survival function calculator
+
+        :param q: quantile to be calculated
+        :return: the inverse of the survival function at q
+        '''
+        if min(q)<0 or max(q)> 1:
+            raise ValueError('Quantile must be between 0 and 1')
+        return ss.weibull_min.isf(q,self.beta, scale=self.alpha, loc=self.gamma)
+
     def mean_residual_life(self,t):
         '''
         Mean Residual Life calculator
@@ -203,6 +219,7 @@ class Normal_Distribution:
     sigma - scale parameter (standard deviation)
 
     methods:
+    name
     mean
     variance
     standard_deviation
@@ -219,12 +236,14 @@ class Normal_Distribution:
     CHF() - plots the cumulative hazard function
     quantile() - Calculates the quantile (time until a fraction has failed) for a given fraction failing.
                  Also known as b life where b5 is the time at which 5% have failed.
+    inverse_SF() - the inverse of the Survival Function. This is useful when producing QQ plots.
     mean_residual_life() - Average residual lifetime of an item given that the item has survived up to a given time.
                            Effectively the mean of the remaining amount (right side) of a distribution at a given time.
     stats() - prints all the descriptive statistics. Same as the statistics shown using .plot() but printed to console.
     random_samples() - draws random samples from the distribution to which it is applied. Same as rvs in scipy.stats.
     '''
     def __init__(self,mu=None,sigma=None):
+        self.name = 'Normal'
         self.mu = mu
         self.sigma = sigma
         if self.mu==None or self.sigma==None:
@@ -289,9 +308,19 @@ class Normal_Distribution:
         :param q: quantile to be calculated
         :return: the probability (area under the curve) that a random variable from the distribution is < q
         '''
-        if q<0 or q> 1:
+        if min(q)<0 or max(q)> 1:
             raise ValueError('Quantile must be between 0 and 1')
         return ss.norm.ppf(q,loc=self.mu, scale=self.sigma)
+    def inverse_SF(self,q):
+        '''
+        Inverse Survival function calculator
+
+        :param q: quantile to be calculated
+        :return: the inverse of the survival function at q
+        '''
+        if min(q)<0 or max(q)> 1:
+            raise ValueError('Quantile must be between 0 and 1')
+        return ss.norm.isf(q,loc=self.mu, scale=self.sigma)
     def mean_residual_life(self,t):
         '''
         Mean Residual Life calculator
@@ -332,6 +361,7 @@ class Lognormal_Distribution:
     gamma - threshold (offset) parameter. Default = 0
 
     methods:
+    name
     mean
     variance
     standard_deviation
@@ -348,12 +378,14 @@ class Lognormal_Distribution:
     CHF() - plots the cumulative hazard function
     quantile() - Calculates the quantile (time until a fraction has failed) for a given fraction failing.
                  Also known as b life where b5 is the time at which 5% have failed.
+    inverse_SF() - the inverse of the Survival Function. This is useful when producing QQ plots.
     mean_residual_life() - Average residual lifetime of an item given that the item has survived up to a given time.
                            Effectively the mean of the remaining amount (right side) of a distribution at a given time.
     stats() - prints all the descriptive statistics. Same as the statistics shown using .plot() but printed to console.
     random_samples() - draws random samples from the distribution to which it is applied. Same as rvs in scipy.stats.
     '''
     def __init__(self,mu=None,sigma=None,gamma=0):
+        self.name = 'Lognormal'
         self.mu = mu
         self.sigma = sigma
         if self.mu==None or self.sigma==None:
@@ -420,9 +452,19 @@ class Lognormal_Distribution:
         :param q: quantile to be calculated
         :return: the probability (area under the curve) that a random variable from the distribution is < q
         '''
-        if q<0 or q> 1:
+        if min(q)<0 or max(q)> 1:
             raise ValueError('Quantile must be between 0 and 1')
         return ss.lognorm.ppf(q, self.sigma, self.gamma, np.exp(self.mu))
+    def inverse_SF(self,q):
+        '''
+        Inverse Survival function calculator
+
+        :param q: quantile to be calculated
+        :return: the inverse of the survival function at q
+        '''
+        if min(q)<0 or max(q)> 1:
+            raise ValueError('Quantile must be between 0 and 1')
+        return ss.lognorm.isf(q, self.sigma, self.gamma, np.exp(self.mu))
     def mean_residual_life(self,t):
         '''
         Mean Residual Life calculator
@@ -465,6 +507,7 @@ class Exponential_Distribution:
     gamma - threshold (offset) parameter. Default = 0
 
     methods:
+    name
     mean
     variance
     standard_deviation
@@ -481,12 +524,14 @@ class Exponential_Distribution:
     CHF() - plots the cumulative hazard function
     quantile() - Calculates the quantile (time until a fraction has failed) for a given fraction failing.
                  Also known as b life where b5 is the time at which 5% have failed.
+    inverse_SF() - the inverse of the Survival Function. This is useful when producing QQ plots.
     mean_residual_life() - Average residual lifetime of an item given that the item has survived up to a given time.
                            Effectively the mean of the remaining amount (right side) of a distribution at a given time.
     stats() - prints all the descriptive statistics. Same as the statistics shown using .plot() but printed to console.
     random_samples() - draws random samples from the distribution to which it is applied. Same as rvs in scipy.stats.
     '''
     def __init__(self,Lambda=None,gamma=0):
+        self.name = 'Exponential'
         self.Lambda = Lambda
         if self.Lambda==None:
             raise ValueError('Parameter Lambda must be specified. Eg. Exponential_Distribution(Lambda=3)')
@@ -552,9 +597,19 @@ class Exponential_Distribution:
         :param q: quantile to be calculated
         :return: the probability (area under the curve) that a random variable from the distribution is < q
         '''
-        if q<0 or q> 1:
+        if min(q)<0 or max(q)> 1:
             raise ValueError('Quantile must be between 0 and 1')
         return ss.expon.ppf(q,scale=1/self.Lambda, loc=self.gamma)
+    def inverse_SF(self,q):
+        '''
+        Inverse Survival function calculator
+
+        :param q: quantile to be calculated
+        :return: the inverse of the survival function at q
+        '''
+        if min(q)<0 or max(q)> 1:
+            raise ValueError('Quantile must be between 0 and 1')
+        return ss.expon.isf(q,scale=1/self.Lambda, loc=self.gamma)
     def mean_residual_life(self,t):
         '''
         Mean Residual Life calculator
@@ -598,6 +653,7 @@ class Gamma_Distribution:
     gamma - threshold (offset) parameter. Default = 0
 
     methods:
+    name
     mean
     variance
     standard_deviation
@@ -614,12 +670,14 @@ class Gamma_Distribution:
     CHF() - plots the cumulative hazard function
     quantile() - Calculates the quantile (time until a fraction has failed) for a given fraction failing.
                  Also known as b life where b5 is the time at which 5% have failed.
+    inverse_SF() - the inverse of the Survival Function. This is useful when producing QQ plots.
     mean_residual_life() - Average residual lifetime of an item given that the item has survived up to a given time.
                            Effectively the mean of the remaining amount (right side) of a distribution at a given time.
     stats() - prints all the descriptive statistics. Same as the statistics shown using .plot() but printed to console.
     random_samples() - draws random samples from the distribution to which it is applied. Same as rvs in scipy.stats.
     '''
     def __init__(self,alpha=None,beta=None,gamma=0):
+        self.name = 'Gamma'
         self.alpha = alpha
         self.beta = beta
         if self.alpha==None or self.beta==None:
@@ -689,9 +747,19 @@ class Gamma_Distribution:
         :param q: quantile to be calculated
         :return: the probability (area under the curve) that a random variable from the distribution is < q
         '''
-        if q<0 or q> 1:
+        if min(q)<0 or max(q)> 1:
             raise ValueError('Quantile must be between 0 and 1')
         return ss.gamma.ppf(q,self.beta,scale=self.alpha,loc=self.gamma)
+    def inverse_SF(self,q):
+        '''
+        Inverse Survival function calculator
+
+        :param q: quantile to be calculated
+        :return: the inverse of the survival function at q
+        '''
+        if min(q)<0 or max(q)> 1:
+            raise ValueError('Quantile must be between 0 and 1')
+        return ss.gamma.isf(q,self.beta,scale=self.alpha,loc=self.gamma)
     def mean_residual_life(self,t):
         '''
         Mean Residual Life calculator
@@ -734,6 +802,7 @@ class Beta_Distribution:
     beta - shape parameter 2
 
     methods:
+    name
     mean
     variance
     standard_deviation
@@ -750,12 +819,14 @@ class Beta_Distribution:
     CHF() - plots the cumulative hazard function
     quantile() - Calculates the quantile (time until a fraction has failed) for a given fraction failing.
                  Also known as b life where b5 is the time at which 5% have failed.
+    inverse_SF() - the inverse of the Survival Function. This is useful when producing QQ plots.
     mean_residual_life() - Average residual lifetime of an item given that the item has survived up to a given time.
                            Effectively the mean of the remaining amount (right side) of a distribution at a given time.
     stats() - prints all the descriptive statistics. Same as the statistics shown using .plot() but printed to console.
     random_samples() - draws random samples from the distribution to which it is applied. Same as rvs in scipy.stats.
     '''
     def __init__(self,alpha=None,beta=None):
+        self.name = 'Beta'
         self.alpha = alpha
         self.beta = beta
         if self.alpha==None or self.beta==None:
@@ -824,9 +895,19 @@ class Beta_Distribution:
         :param q: quantile to be calculated
         :return: the probability (area under the curve) that a random variable from the distribution is < q
         '''
-        if q<0 or q> 1:
+        if min(q)<0 or max(q)> 1:
             raise ValueError('Quantile must be between 0 and 1')
         return ss.beta.ppf(q, self.alpha, self.beta, 0, 1)
+    def inverse_SF(self,q):
+        '''
+        Inverse Survival function calculator
+
+        :param q: quantile to be calculated
+        :return: the inverse of the survival function at q
+        '''
+        if min(q)<0 or max(q)> 1:
+            raise ValueError('Quantile must be between 0 and 1')
+        return ss.beta.isf(q, self.alpha, self.beta, 0, 1)
     def mean_residual_life(self,t):
         '''
         Mean Residual Life calculator

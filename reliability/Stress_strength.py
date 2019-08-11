@@ -27,6 +27,7 @@ class Probability_of_failure:
     show_distribution_plot - True/False (default is True)
     show_convergence_plot - True/False (default is True)
     print_results - True/False (default is True)
+    warn - a warning will be issued if both stress and strength are Normal as you should use Probability_of_failure_normdist. You can supress this using warn=False
 
     returns:
     prob_of_failure - the probability of failure

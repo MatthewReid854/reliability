@@ -10,7 +10,7 @@ sample_size_no_failures - used to determine the sample size required for a test 
 sequential_sampling_chart - plots the accept/reject boundaries for a given set of quality and risk levels. If supplied, the test results
     are also plotted on the chart.
 reliability_growth - uses the Duane method to find the instantaneous MTBF and produce a reliability growth plot.
-optimal_replacement_time - Calculates the cost model to determine how cost varies with replacement time. The cost model assumes Power Law NHPP
+optimal_replacement_time - Calculates the cost model to determine how cost varies with replacement time. The cost model may be NHPP (as good as old) or HPP (as good as new). Default is HPP.
 convert_dataframe_to_grouped_lists - groups values in a 2-column dataframe based on the values in the left column and returns those groups in a list of lists
 '''
 def one_sample_proportion(trials=None,successes=None,CI=0.95):
@@ -287,15 +287,17 @@ def reliability_growth(times,xmax=None,target_MTBF=None,show_plot=True,print_res
         plt.ylim([0,max(theta_i)*1.2])
     return output
 
-def optimal_replacement_time(cost_PM, cost_CM, weibull_alpha, weibull_beta, show_plot=True, print_results=True, **kwargs):
+def optimal_replacement_time(cost_PM, cost_CM, weibull_alpha, weibull_beta, show_plot=True, print_results=True, q=0, **kwargs):
     '''
-    Calculates the cost model to determine how cost varies with replacement time. The cost model assumes a HPP (good as new replacement).
+    Calculates the cost model to determine how cost varies with replacement time.
+    The cost model may be HPP (good as new replacement) or NHPP (as good as old replacement). Default is HPP.
 
     inputs:
     Cost_PM - cost of preventative maintenance (must be smaller than Cost_CM)
     Cost_CM - cost of corrective maintenance (must be larger than Cost_PM)
     weibull_alpha - scale parameter of the underlying Weibull distribution
     weibull_beta - shape parameter of the underlying Weibull distribution. Should be greater than 1 otherwise conducting PM is not economical.
+    q - restoration factor. q=1 is Power Law NHPP (as good as old), q=0 is HPP (as good as new). Default is q=0 (as good as new).
     show_plot - True/False. Defaults to True. Other plotting keywords are also accepted and used.
     print_results - True/False. Defaults to True
 
@@ -317,21 +319,38 @@ def optimal_replacement_time(cost_PM, cost_CM, weibull_alpha, weibull_beta, show
     if weibull_beta<1:
         warnings.warn('weibull_beta is < 1 so the hazard rate is decreasing, therefore preventative maintenance should not be conducted.')
 
-    t = np.linspace(1,weibull_alpha*3,10000)
-    CPUT = [] #cost per unit time
-    R = lambda x: np.exp(-((x/weibull_alpha)**weibull_beta))
-    for T in t:
-        SF = np.exp(-((T/weibull_alpha)**weibull_beta))
-        integral_R, error = integrate.quad(R, 0, T)
-        CPUT.append((cost_PM * SF + cost_CM * (1 - SF)) / integral_R)
-    idx = np.argmin(CPUT)
-    min_cost = CPUT[idx] #minimum cost per unit time
-    ORT = t[idx] #optimal replacement time
+    if q == 1: #as good as old
+        alpha_multiple = 4 #just used for plot limits
+        t = np.linspace(1, weibull_alpha * alpha_multiple, 100000)
+        CPUT = ((cost_PM*(t/weibull_alpha)**weibull_beta)+cost_CM)/t
+        ORT = weibull_alpha*((cost_CM/(cost_PM*(weibull_beta-1)))**(1/weibull_beta))
+        min_cost = ((cost_PM * (ORT / weibull_alpha) ** weibull_beta) + cost_CM) / ORT
+    elif q == 0: #as good as new
+        alpha_multiple = 3
+        t = np.linspace(1, weibull_alpha * alpha_multiple, 10000)
+        CPUT = []  # cost per unit time
+        R = lambda x: np.exp(-((x/weibull_alpha)**weibull_beta))
+        for T in t:
+            SF = np.exp(-((T/weibull_alpha)**weibull_beta))
+            integral_R, error = integrate.quad(R, 0, T)
+            CPUT.append((cost_PM * SF + cost_CM * (1 - SF)) / integral_R)
+            idx = np.argmin(CPUT)
+            min_cost = CPUT[idx]  # minimum cost per unit time
+            ORT = t[idx]  # optimal replacement time
+    else:
+        raise ValueError('q must be 0 or 1. Default is 0. Use 0 for "as good as new" and use 1 for "as good as old".')
 
-    min_cost_rounded = round(min_cost, -int(np.floor(np.log10(abs(min_cost))))+1) # this rounds to exactly 2 sigfigs no matter the number of preceding zeros
-    ORT_rounded = round(ORT,2)
+    if min_cost<1:
+        min_cost_rounded = round(min_cost, -int(np.floor(np.log10(abs(min_cost)))) + 1)  # this rounds to exactly 2 sigfigs no matter the number of preceding zeros
+    else:
+        min_cost_rounded = round(min_cost,2)
+    ORT_rounded = round(ORT, 2)
 
     if print_results==True:
+        if q==0:
+            print('Cost model assuming as good as new replacement (q=0):')
+        else:
+            print('Cost model assuming as good as old replacement (q=1):')
         print('The minimum cost per unit time is',min_cost_rounded,'\nThe optimal replacement time is',ORT_rounded)
 
     if show_plot==True:
@@ -343,7 +362,7 @@ def optimal_replacement_time(cost_PM, cost_CM, weibull_alpha, weibull_beta, show
         plt.ylabel('Cost per unit time')
         plt.title('Optimal replacement time estimation')
         plt.ylim([0,min_cost*2])
-        plt.xlim([0,weibull_alpha*3])
+        plt.xlim([0,weibull_alpha*alpha_multiple])
     return [ORT,min_cost]
 
 def convert_dataframe_to_grouped_lists(input_dataframe):

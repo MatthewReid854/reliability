@@ -1,4 +1,4 @@
-.. image:: images/logo.png
+﻿.. image:: images/logo.png
 
 -------------------------------------
 
@@ -30,6 +30,7 @@ Understanding how to create and plot distributions is easiest with an example. T
 
 The following methods are available for all distributions:
 
+-   name - a string of the distribution name. Eg. 'Weibull'
 -   parameter names - varies by distribution. Eg. dist.mu will provide the mu parameter in the above example.
 -   parameters - returns an array of parameters. These are in the order specified in the bullet points above, so for Lognormal it would return [mu,sigma].
 -   mean
@@ -47,6 +48,7 @@ The following methods are available for all distributions:
 -   HF() - plots the hazard function.
 -   CHF() - plots the cumulative hazard function.
 -   quantile() - Calculates the quantile (time until a fraction has failed) for a given fraction failing. Also known as 'b' life where b5 is the time at which 5% have failed. Eg. dist.quantile(0.05) will give the b5 life.
+-   inverse_SF() - Calculates the inverse of the survival function. Useful when producing QQ plots.
 -   mean_residual_life() - Average residual lifetime of an item given that the item has survived up to a given time. Effectively the mean of the remaining amount (right side) of a distribution at a given time. You must specify the x-value at which to calculate MRL. Eg. dist.mean_residual_life(10)
 -   stats() - prints all the descriptive statistics. Same as the statistics shown using .plot() but printed to console.
 -   random_samples() - draws random samples from the distribution to which it is applied. Same as rvs in scipy.stats. You must specify the number of samples. Eg. data = dist.random_samples(100) will set data as a list of 100 random samples from the distribution.

@@ -1,6 +1,7 @@
 import numpy as np
 import scipy.stats as ss
 import matplotlib.pyplot as plt
+from reliability.Distributions import Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution
 _sigfig=4 #number of significant figures to use when rounding descriptive statistics
 np.seterr(divide='ignore',invalid='ignore') #ignore the divide by zero warnings
 class plot:
