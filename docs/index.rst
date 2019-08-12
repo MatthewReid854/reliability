@@ -41,16 +41,21 @@ Contents:
 
 .. toctree::
   :maxdepth: 1
+  :caption: Repairable systems
+  
+  Reliability growth
+  Optimal replacement time
+
+.. toctree::
+  :maxdepth: 1
   :caption: Other functions
   
   One sample proportion
   Two proportion test
   Sample size required for no failures
   Sequential sampling chart
-  Reliability growth
-  Optimal replacement time
   Convert dataframe to grouped lists
-  
+
 .. toctree::
   :maxdepth: 1
   :caption: Administration
