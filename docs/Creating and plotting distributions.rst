@@ -33,7 +33,7 @@ The following methods are available for all distributions:
 -   name - a string of the distribution name. Eg. 'Weibull'
 -   parameter_names - varies by distribution. Eg. ['alpha','beta','gamma'] would be returned for Weibull
 -   parameters - returns an array of parameters. These are in the order specified in the bullet points above, so for Lognormal it would return [mu,sigma].
--   alpha, beta, gamma, lambda, mu, sigma - these vary by distribution but will return the value of their respective parameter. Eg. dist.mu would return 5 in the above example.
+-   alpha, beta, gamma, Lambda, mu, sigma - these vary by distribution but will return the value of their respective parameter. Eg. dist.mu would return 5 in the above example.
 -   mean
 -   variance
 -   standard_deviation
