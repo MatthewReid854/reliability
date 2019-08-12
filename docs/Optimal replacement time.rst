@@ -27,7 +27,7 @@ In the example below, we provide the cost of preventative maintenance (cost_PM),
 
 .. code:: python
 
-    from reliability.Other_functions import optimal_replacement_time
+    from reliability.Repairable_systems import optimal_replacement_time
     import matplotlib.pyplot as plt
     optimal_replacement_time(cost_PM=1, cost_CM=5, weibull_alpha=1000, weibull_beta=2.5,q=0)
     plt.show()
