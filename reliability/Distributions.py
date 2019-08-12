@@ -11,8 +11,8 @@ Available distributions are:
 
 Methods:
     name - the name of the distribution. eg. 'Weibull'
-    parameter names - varies by distribution
-    parameters - returns an array of parameters
+    parameter_names - varies by distribution. eg. ['alpha','beta','gamma']
+    parameters - returns an array of parameters. eg. [alpha,beta,gamma]
     mean
     variance
     standard_deviation
@@ -51,10 +51,12 @@ values = dist.random_samples(number_of_samples=10000)
     >> random values will be generated from the distribution
 '''
 
-from reliability import Plotting
 import scipy.stats as ss
 import numpy as np
 from scipy import integrate
+import matplotlib.pyplot as plt
+_sigfig=4 #number of significant figures to use when rounding descriptive statistics
+np.seterr(divide='ignore',invalid='ignore') #ignore the divide by zero warnings
 
 class Weibull_Distribution:
     '''
@@ -68,7 +70,9 @@ class Weibull_Distribution:
     gamma - threshold (offset) parameter. Default = 0
 
     methods:
-    name
+    name - 'Weibull'
+    parameter_names - ['alpha','beta','gamma']
+    parameters - [alpha,beta,gamma]
     mean
     variance
     standard_deviation
@@ -93,6 +97,7 @@ class Weibull_Distribution:
     '''
     def __init__(self,alpha=None,beta=None,gamma=0):
         self.name = 'Weibull'
+        self.parameter_names = ['alpha','beta','gamma']
         self.alpha = alpha
         self.beta = beta
         if self.alpha==None or self.beta==None:
@@ -110,51 +115,259 @@ class Weibull_Distribution:
         if self.beta>=1:
             self.mode = self.alpha*((self.beta-1)/self.beta)**(1/self.beta)+self.gamma
         else:
-            self.mode = 'No mode exists when beta < 1'
+            self.mode = r'No mode exists when $\beta$ < 1'
+        if self.gamma != 0:
+            self.param_title = str(r'$\alpha$ = ' + str(self.alpha) + r' , $\beta$ = ' + str(self.beta) + ' , $\gamma$ = ' + str(self.gamma))
+        else:
+            self.param_title = str(r'$\alpha$ = ' + str(self.alpha) + r' , $\beta$ = ' + str(self.beta))
         self.b5 = ss.weibull_min.ppf(0.05, self.beta, scale=self.alpha, loc=self.gamma)
         self.b95 = ss.weibull_min.ppf(0.95, self.beta, scale=self.alpha, loc=self.gamma)
-    def plot(self=None,xvals=None,xmin=None,xmax=None,show_plot=True):
+    def plot(self,xvals=None,xmin=None,xmax=None):
         '''
-        Plots the distribution
-        Invokes the Plotting.plot.all_functions() which will provide all the plots of the distribution
+        Plots all functions (PDF, CDF, SF, HF, CHF) and descriptive statistics in a single figure
+
+        Inputs:
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *no plotting keywords are accepted
+
+        Outputs:
+        The plot will be shown. No need to use plt.show()
         '''
-        yvals = Plotting.plot('weibull', alpha=self.alpha, beta=self.beta, gamma=self.gamma,xvals=xvals,xmin=xmin,xmax=xmax,show_plot=show_plot).all_functions()
-        return yvals
+        if xvals is not None:
+            X = xvals
+        elif xmin is not None and xmax is not None:
+            X = np.linspace(xmin, xmax, 1000)
+        else:
+            X = np.linspace(0, self.b95*1.5, 1000)  # if no limits are specified, they are assumed
+
+        pdf = ss.weibull_min.pdf(X, self.beta, scale=self.alpha, loc=self.gamma)
+        cdf = ss.weibull_min.cdf(X, self.beta, scale=self.alpha, loc=self.gamma)
+        sf = ss.weibull_min.sf(X, self.beta, scale=self.alpha, loc=self.gamma)
+        hf = pdf/sf
+        chf = -np.log(sf)
+
+        plt.figure(figsize=(9,7))
+        text_title=str('Weibull Distribution'+'\n'+self.param_title)
+        plt.suptitle(text_title,fontsize=15)
+        plt.subplot(231)
+        plt.plot(X,pdf)
+        plt.title('Probability Density\nFunction')
+        plt.subplot(232)
+        plt.plot(X,cdf)
+        plt.title('Cumulative Distribution\nFunction')
+        plt.subplot(233)
+        plt.plot(X,sf)
+        plt.title('Survival Function')
+        plt.subplot(234)
+        plt.plot(X,hf)
+        plt.title('Hazard Function')
+        plt.subplot(235)
+        plt.plot(X,chf)
+        plt.title('Cumulative Hazard\nFunction')
+
+        #descriptive statistics section
+        plt.subplot(236)
+        plt.axis('off')
+        plt.ylim([0,10])
+        plt.xlim([0,10])
+        text_mean=str('Mean = ' + str(round(float(self.mean), _sigfig)))
+        text_median = str('Median = ' + str(round(self.median, _sigfig)))
+        try:
+            text_mode = str('Mode = ' + str(round(self.mode, _sigfig)))
+        except:
+            text_mode = str('Mode = ' + str(self.mode)) #required when mode is str
+        text_b5=str('$5^{th}$ quantile = ' + str(round(self.b5, _sigfig)))
+        text_b95=str('$95^{th}$ quantile = ' + str(round(self.b95, _sigfig)))
+        text_std = str('Standard deviation = ' + str(round(self.variance ** 0.5, _sigfig)))
+        text_var = str('Variance = ' + str(round(float(self.variance), _sigfig)))
+        text_skew = str('Skewness = ' + str(round(float(self.skewness), _sigfig)))
+        text_ex_kurt = str('Excess kurtosis = ' + str(round(float(self.excess_kurtosis), _sigfig)))
+        plt.text(0, 9, text_mean)
+        plt.text(0, 8, text_median)
+        plt.text(0, 7, text_mode)
+        plt.text(0, 6, text_b5)
+        plt.text(0, 5, text_b95)
+        plt.text(0, 4, text_std)
+        plt.text(0, 3, text_var)
+        plt.text(0, 2, text_skew)
+        plt.text(0, 1, text_ex_kurt)
+        plt.tight_layout()
+        plt.subplots_adjust(hspace=0.3, top=0.84)
+        plt.show()
     def PDF(self,xvals=None,xmin=None,xmax=None,show_plot=True,**kwargs):
         '''
-        Plots the PDF
-        Invokes Plotting.plot.PDF() which will plot only the PDF of the function
+        Plots the PDF (probability density function)
+
+        Inputs:
+        show_plot - True/False. Default is True
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *plotting keywords are also accepted (eg. color, linestyle)
+
+        Outputs:
+        yvals - this is the y-values of the plot
+        The plot will be shown if show_plot is True (which it is by default).
         '''
-        yvals = Plotting.plot('weibull', alpha=self.alpha, beta=self.beta, gamma=self.gamma,xvals=xvals,xmin=xmin,xmax=xmax,show_plot=show_plot).PDF(**kwargs)
-        return yvals
+        if xvals is not None:
+            X = xvals
+        elif xmin is not None and xmax is not None:
+            X = np.linspace(xmin, xmax, 1000)
+        else:
+            X = np.linspace(0, self.b95*1.5, 1000)  # if no limits are specified, they are assumed
+        pdf = ss.weibull_min.pdf(X, self.beta, scale=self.alpha, loc=self.gamma)
+        if show_plot == False:
+            return pdf
+        else:
+            plt.plot(X,pdf,**kwargs)
+            plt.xlabel('x values')
+            plt.ylabel('Probability density')
+            text_title = str('Weibull Distribution\n'+' Probability Density Function '+ '\n' + self.param_title)
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.87)
+            return pdf
     def CDF(self,xvals=None,xmin=None,xmax=None,show_plot=True,**kwargs):
         '''
-        Plots the CDF
-        Invokes Plotting.plot.CDF() which will plot only the PDF of the function
+        Plots the CDF (cumulative distribution function)
+
+        Inputs:
+        show_plot - True/False. Default is True
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *plotting keywords are also accepted (eg. color, linestyle)
+
+        Outputs:
+        yvals - this is the y-values of the plot
+        The plot will be shown if show_plot is True (which it is by default).
         '''
-        yvals = Plotting.plot('weibull', alpha=self.alpha, beta=self.beta, gamma=self.gamma,xvals=xvals,xmin=xmin,xmax=xmax,show_plot=show_plot).CDF(**kwargs)
-        return yvals
+        if xvals is not None:
+            X = xvals
+        elif xmin is not None and xmax is not None:
+            X = np.linspace(xmin, xmax, 1000)
+        else:
+            X = np.linspace(0, self.b95*1.5, 1000)  # if no limits are specified, they are assumed
+        cdf = ss.weibull_min.cdf(X, self.beta, scale=self.alpha, loc=self.gamma)
+        if show_plot == False:
+            return cdf
+        else:
+            plt.plot(X,cdf,**kwargs)
+            plt.xlabel('x values')
+            plt.ylabel('Fraction failing')
+            text_title = str('Weibull Distribution\n'+' Cumulative Distribution Function '+ '\n' + self.param_title)
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.87)
+            return cdf
     def SF(self,xvals=None,xmin=None,xmax=None,show_plot=True,**kwargs):
         '''
-        Plots the SF
-        Invokes Plotting.plot.SF() which will plot only the Survival Function
+        Plots the SF (survival function)
+
+        Inputs:
+        show_plot - True/False. Default is True
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *plotting keywords are also accepted (eg. color, linestyle)
+
+        Outputs:
+        yvals - this is the y-values of the plot
+        The plot will be shown if show_plot is True (which it is by default).
         '''
-        yvals = Plotting.plot('weibull', alpha=self.alpha, beta=self.beta, gamma=self.gamma,xvals=xvals,xmin=xmin,xmax=xmax,show_plot=show_plot).SF(**kwargs)
-        return yvals
+        if xvals is not None:
+            X = xvals
+        elif xmin is not None and xmax is not None:
+            X = np.linspace(xmin, xmax, 1000)
+        else:
+            X = np.linspace(0, self.b95*1.5, 1000)  # if no limits are specified, they are assumed
+        sf = ss.weibull_min.sf(X, self.beta, scale=self.alpha, loc=self.gamma)
+        if show_plot == False:
+            return sf
+        else:
+            plt.plot(X,sf,**kwargs)
+            plt.xlabel('x values')
+            plt.ylabel('Fraction surviving')
+            text_title = str('Weibull Distribution\n'+' Survival Function '+ '\n' + self.param_title)
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.87)
+            return sf
     def HF(self,xvals=None,xmin=None,xmax=None,show_plot=True,**kwargs):
         '''
-        Plots the HF
-        Invokes Plotting.plot.HF() which will plot only the Hazard Function
+        Plots the HF (hazard function)
+
+        Inputs:
+        show_plot - True/False. Default is True
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *plotting keywords are also accepted (eg. color, linestyle)
+
+        Outputs:
+        yvals - this is the y-values of the plot
+        The plot will be shown if show_plot is True (which it is by default).
         '''
-        yvals = Plotting.plot('weibull', alpha=self.alpha, beta=self.beta, gamma=self.gamma,xvals=xvals,xmin=xmin,xmax=xmax,show_plot=show_plot).HF(**kwargs)
-        return yvals
+        if xvals is not None:
+            X = xvals
+        elif xmin is not None and xmax is not None:
+            X = np.linspace(xmin, xmax, 1000)
+        else:
+            X = np.linspace(0, self.b95*1.5, 1000)  # if no limits are specified, they are assumed
+        hf = ss.weibull_min.pdf(X, self.beta, scale=self.alpha, loc=self.gamma)/ss.weibull_min.sf(X, self.beta, scale=self.alpha, loc=self.gamma)
+        if show_plot == False:
+            return hf
+        else:
+            plt.plot(X,hf,**kwargs)
+            plt.xlabel('x values')
+            plt.ylabel('Hazard')
+            text_title = str('Weibull Distribution\n'+' Hazard Function '+ '\n' + self.param_title)
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.87)
+            return hf
     def CHF(self,xvals=None,xmin=None,xmax=None,show_plot=True,**kwargs):
         '''
-        Plots the CHF
-        Invokes Plotting.plot.CHF which will plot only the Cumulative Hazard Function
+        Plots the CHF (cumulative hazard function)
+
+        Inputs:
+        show_plot - True/False. Default is True
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *plotting keywords are also accepted (eg. color, linestyle)
+
+        Outputs:
+        yvals - this is the y-values of the plot
+        The plot will be shown if show_plot is True (which it is by default).
         '''
-        yvals = Plotting.plot('weibull', alpha=self.alpha, beta=self.beta, gamma=self.gamma,xvals=xvals,xmin=xmin,xmax=xmax,show_plot=show_plot).CHF(**kwargs)
-        return yvals
+        if xvals is not None:
+            X = xvals
+        elif xmin is not None and xmax is not None:
+            X = np.linspace(xmin, xmax, 1000)
+        else:
+            X = np.linspace(0, self.b95*1.5, 1000)  # if no limits are specified, they are assumed
+        chf = -np.log(ss.weibull_min.sf(X, self.beta, scale=self.alpha, loc=self.gamma))
+        if show_plot == False:
+            return chf
+        else:
+            plt.plot(X,chf,**kwargs)
+            plt.xlabel('x values')
+            plt.ylabel('Cumulative hazard')
+            text_title = str('Weibull Distribution\n'+' Cumulative Hazard Function '+ '\n' + self.param_title)
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.87)
+            return chf
     def quantile(self,q):
         '''
         Quantile calculator
@@ -162,8 +375,14 @@ class Weibull_Distribution:
         :param q: quantile to be calculated
         :return: the probability (area under the curve) that a random variable from the distribution is < q
         '''
-        if min(q)<0 or max(q)> 1:
-            raise ValueError('Quantile must be between 0 and 1')
+        if type(q)==int or type(q)==float:
+            if q<0 or q> 1:
+                raise ValueError('Quantile must be between 0 and 1')
+        elif type(q) == np.ndarray or type(q)== list:
+            if min(q) < 0 or max(q) > 1:
+                raise ValueError('Quantile must be between 0 and 1')
+        else:
+            raise ValueError('Quantile must be of type int, float, list, array')
         return ss.weibull_min.ppf(q,self.beta,scale=self.alpha,loc=self.gamma)
     def inverse_SF(self,q):
         '''
@@ -172,10 +391,15 @@ class Weibull_Distribution:
         :param q: quantile to be calculated
         :return: the inverse of the survival function at q
         '''
-        if min(q)<0 or max(q)> 1:
-            raise ValueError('Quantile must be between 0 and 1')
+        if type(q)==int or type(q)==float:
+            if q<0 or q> 1:
+                raise ValueError('Quantile must be between 0 and 1')
+        elif type(q) == np.ndarray or type(q)== list:
+            if min(q) < 0 or max(q) > 1:
+                raise ValueError('Quantile must be between 0 and 1')
+        else:
+            raise ValueError('Quantile must be of type int, float, list, array')
         return ss.weibull_min.isf(q,self.beta, scale=self.alpha, loc=self.gamma)
-
     def mean_residual_life(self,t):
         '''
         Mean Residual Life calculator
@@ -201,7 +425,6 @@ class Weibull_Distribution:
         print('Variance =',self.variance)
         print('Skewness =',self.skewness)
         print('Excess kurtosis =',self.excess_kurtosis)
-
     def random_samples(self,number_of_samples):
         if type(number_of_samples)!=int or number_of_samples<1:
             raise ValueError('number_of_samples must be an integer greater than 1')
@@ -219,7 +442,9 @@ class Normal_Distribution:
     sigma - scale parameter (standard deviation)
 
     methods:
-    name
+    name - 'Normal'
+    parameter_names - ['mu','sigma']
+    parameters - [mu,sigma]
     mean
     variance
     standard_deviation
@@ -244,6 +469,7 @@ class Normal_Distribution:
     '''
     def __init__(self,mu=None,sigma=None):
         self.name = 'Normal'
+        self.parameter_names = ['mu', 'sigma']
         self.mu = mu
         self.sigma = sigma
         if self.mu==None or self.sigma==None:
@@ -259,48 +485,253 @@ class Normal_Distribution:
         self.mode = mu
         self.b5 = ss.norm.ppf(0.05, loc=self.mu, scale=self.sigma)
         self.b95 = ss.norm.ppf(0.95, loc=self.mu, scale=self.sigma)
-    def plot(self,xvals=None,xmin=None,xmax=None,show_plot=True):
+        self.param_title = str('$\mu$ = ' + str(self.mu) + ' , $\sigma$ = ' + str(self.sigma))
+    def plot(self,xvals=None,xmin=None,xmax=None):
         '''
-        Plots the distribution
-        Invokes the Plotting.plot.all_functions() which will provide all the plots of the distribution
+        Plots all functions (PDF, CDF, SF, HF, CHF) and descriptive statistics in a single figure
+
+        Inputs:
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *no plotting keywords are accepted
+
+        Outputs:
+        The plot will be shown. No need to use plt.show()
         '''
-        yvals = Plotting.plot('normal', sigma=self.sigma, mu=self.mu, xvals=xvals,xmin=xmin,xmax=xmax,show_plot=show_plot).all_functions()
-        return yvals
+        if xvals is not None:
+            X = xvals
+        elif xmin is not None and xmax is not None:
+            X = np.linspace(xmin, xmax, 1000)
+        else:
+            X = np.linspace(self.mu - 3 * self.sigma, self.mu + 3 * self.sigma,1000)  # if no limits are specified, they are assumed
+
+        pdf = ss.norm.pdf(X, self.mu, self.sigma)
+        cdf = ss.norm.cdf(X, self.mu, self.sigma)
+        sf = ss.norm.sf(X, self.mu, self.sigma)
+        hf = pdf/sf
+        chf = -np.log(sf)
+
+        plt.figure(figsize=(9,7))
+        text_title=str('Normal Distribution'+'\n'+self.param_title)
+        plt.suptitle(text_title,fontsize=15)
+        plt.subplot(231)
+        plt.plot(X,pdf)
+        plt.title('Probability Density\nFunction')
+        plt.subplot(232)
+        plt.plot(X,cdf)
+        plt.title('Cumulative Distribution\nFunction')
+        plt.subplot(233)
+        plt.plot(X,sf)
+        plt.title('Survival Function')
+        plt.subplot(234)
+        plt.plot(X,hf)
+        plt.title('Hazard Function')
+        plt.subplot(235)
+        plt.plot(X,chf)
+        plt.title('Cumulative Hazard\nFunction')
+
+        #descriptive statistics section
+        plt.subplot(236)
+        plt.axis('off')
+        plt.ylim([0,10])
+        plt.xlim([0,10])
+        text_mean=str('Mean = ' + str(round(float(self.mean), _sigfig)))
+        text_median = str('Median = ' + str(round(self.median, _sigfig)))
+        try:
+            text_mode = str('Mode = ' + str(round(self.mode, _sigfig)))
+        except:
+            text_mode = str('Mode = ' + str(self.mode)) #required when mode is str
+        text_b5=str('$5^{th}$ quantile = ' + str(round(self.b5, _sigfig)))
+        text_b95=str('$95^{th}$ quantile = ' + str(round(self.b95, _sigfig)))
+        text_std = str('Standard deviation = ' + str(round(self.variance ** 0.5, _sigfig)))
+        text_var = str('Variance = ' + str(round(float(self.variance), _sigfig)))
+        text_skew = str('Skewness = ' + str(round(float(self.skewness), _sigfig)))
+        text_ex_kurt = str('Excess kurtosis = ' + str(round(float(self.excess_kurtosis), _sigfig)))
+        plt.text(0, 9, text_mean)
+        plt.text(0, 8, text_median)
+        plt.text(0, 7, text_mode)
+        plt.text(0, 6, text_b5)
+        plt.text(0, 5, text_b95)
+        plt.text(0, 4, text_std)
+        plt.text(0, 3, text_var)
+        plt.text(0, 2, text_skew)
+        plt.text(0, 1, text_ex_kurt)
+        plt.tight_layout()
+        plt.subplots_adjust(hspace=0.3, top=0.84)
+        plt.show()
     def PDF(self,xvals=None,xmin=None,xmax=None,show_plot=True,**kwargs):
         '''
-        Plots the PDF
-        Invokes Plotting.plot.PDF() which will plot only the PDF of the function
+        Plots the PDF (probability density function)
+
+        Inputs:
+        show_plot - True/False. Default is True
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *plotting keywords are also accepted (eg. color, linestyle)
+
+        Outputs:
+        yvals - this is the y-values of the plot
+        The plot will be shown if show_plot is True (which it is by default).
         '''
-        yvals = Plotting.plot('normal', sigma=self.sigma, mu=self.mu, xvals=xvals,xmin=xmin,xmax=xmax,show_plot=show_plot).PDF(**kwargs)
-        return yvals
+        if xvals is not None:
+            X = xvals
+        elif xmin is not None and xmax is not None:
+            X = np.linspace(xmin, xmax, 1000)
+        else:
+            X = np.linspace(self.mu - 3 * self.sigma, self.mu + 3 * self.sigma,1000)  # if no limits are specified, they are assumed
+        pdf = ss.norm.pdf(X, self.mu, self.sigma)
+        if show_plot == False:
+            return pdf
+        else:
+            plt.plot(X,pdf,**kwargs)
+            plt.xlabel('x values')
+            plt.ylabel('Probability density')
+            text_title = str('Normal Distribution\n'+' Probability Density Function '+ '\n' + self.param_title)
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.87)
+            return pdf
     def CDF(self,xvals=None,xmin=None,xmax=None,show_plot=True,**kwargs):
         '''
-        Plots the CDF
-        Invokes Plotting.plot.CDF() which will plot only the PDF of the function
+        Plots the CDF (cumulative distribution function)
+
+        Inputs:
+        show_plot - True/False. Default is True
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *plotting keywords are also accepted (eg. color, linestyle)
+
+        Outputs:
+        yvals - this is the y-values of the plot
+        The plot will be shown if show_plot is True (which it is by default).
         '''
-        yvals = Plotting.plot('normal', sigma=self.sigma, mu=self.mu, xvals=xvals,xmin=xmin,xmax=xmax,show_plot=show_plot).CDF(**kwargs)
-        return yvals
+        if xvals is not None:
+            X = xvals
+        elif xmin is not None and xmax is not None:
+            X = np.linspace(xmin, xmax, 1000)
+        else:
+            X = np.linspace(self.mu - 3 * self.sigma, self.mu + 3 * self.sigma,1000)  # if no limits are specified, they are assumed
+        cdf = ss.norm.cdf(X, self.mu, self.sigma)
+        if show_plot == False:
+            return cdf
+        else:
+            plt.plot(X,cdf,**kwargs)
+            plt.xlabel('x values')
+            plt.ylabel('Fraction failing')
+            text_title = str('Normal Distribution\n'+' Cumulative Distribution Function '+ '\n' + self.param_title)
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.87)
+            return cdf
     def SF(self,xvals=None,xmin=None,xmax=None,show_plot=True,**kwargs):
         '''
-        Plots the SF
-        Invokes Plotting.plot.SF() which will plot only the Survival Function
+        Plots the SF (survival function)
+
+        Inputs:
+        show_plot - True/False. Default is True
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *plotting keywords are also accepted (eg. color, linestyle)
+
+        Outputs:
+        yvals - this is the y-values of the plot
+        The plot will be shown if show_plot is True (which it is by default).
         '''
-        yvals = Plotting.plot('normal', sigma=self.sigma, mu=self.mu, xvals=xvals,xmin=xmin,xmax=xmax,show_plot=show_plot).SF(**kwargs)
-        return yvals
+        if xvals is not None:
+            X = xvals
+        elif xmin is not None and xmax is not None:
+            X = np.linspace(xmin, xmax, 1000)
+        else:
+            X = np.linspace(self.mu - 3 * self.sigma, self.mu + 3 * self.sigma,1000)  # if no limits are specified, they are assumed
+        sf = ss.norm.sf(X, self.mu, self.sigma)
+        if show_plot == False:
+            return sf
+        else:
+            plt.plot(X,sf,**kwargs)
+            plt.xlabel('x values')
+            plt.ylabel('Fraction surviving')
+            text_title = str('Normal Distribution\n'+' Survival Function '+ '\n' + self.param_title)
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.87)
+            return sf
     def HF(self,xvals=None,xmin=None,xmax=None,show_plot=True,**kwargs):
         '''
-        Plots the HF
-        Invokes Plotting.plot.HF() which will plot only the Hazard Function
+        Plots the HF (hazard function)
+
+        Inputs:
+        show_plot - True/False. Default is True
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *plotting keywords are also accepted (eg. color, linestyle)
+
+        Outputs:
+        yvals - this is the y-values of the plot
+        The plot will be shown if show_plot is True (which it is by default).
         '''
-        yvals = Plotting.plot('normal', sigma=self.sigma, mu=self.mu, xvals=xvals,xmin=xmin,xmax=xmax,show_plot=show_plot).HF(**kwargs)
-        return yvals
+        if xvals is not None:
+            X = xvals
+        elif xmin is not None and xmax is not None:
+            X = np.linspace(xmin, xmax, 1000)
+        else:
+            X = np.linspace(self.mu - 3 * self.sigma, self.mu + 3 * self.sigma,1000)  # if no limits are specified, they are assumed
+        hf = ss.norm.pdf(X, self.mu, self.sigma)/ss.norm.sf(X, self.mu, self.sigma)
+        if show_plot == False:
+            return hf
+        else:
+            plt.plot(X,hf,**kwargs)
+            plt.xlabel('x values')
+            plt.ylabel('Hazard')
+            text_title = str('Normal Distribution\n'+' Hazard Function '+ '\n' + self.param_title)
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.87)
+            return hf
     def CHF(self,xvals=None,xmin=None,xmax=None,show_plot=True,**kwargs):
         '''
-        Plots the CHF
-        Invokes Plotting.plot.CHF which will plot only the Cumulative Hazard Function
+        Plots the CHF (cumulative hazard function)
+
+        Inputs:
+        show_plot - True/False. Default is True
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *plotting keywords are also accepted (eg. color, linestyle)
+
+        Outputs:
+        yvals - this is the y-values of the plot
+        The plot will be shown if show_plot is True (which it is by default).
         '''
-        yvals = Plotting.plot('normal', sigma=self.sigma, mu=self.mu, xvals=xvals,xmin=xmin,xmax=xmax,show_plot=show_plot).CHF(**kwargs)
-        return yvals
+        if xvals is not None:
+            X = xvals
+        elif xmin is not None and xmax is not None:
+            X = np.linspace(xmin, xmax, 1000)
+        else:
+            X = np.linspace(self.mu - 3 * self.sigma, self.mu + 3 * self.sigma,1000)  # if no limits are specified, they are assumed
+        chf = -np.log(ss.norm.sf(X, self.mu, self.sigma))
+        if show_plot == False:
+            return chf
+        else:
+            plt.plot(X,chf,**kwargs)
+            plt.xlabel('x values')
+            plt.ylabel('Cumulative hazard')
+            text_title = str('Normal Distribution\n'+' Cumulative Hazard Function '+ '\n' + self.param_title)
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.87)
+            return chf
     def quantile(self,q):
         '''
         Quantile calculator
@@ -308,8 +739,14 @@ class Normal_Distribution:
         :param q: quantile to be calculated
         :return: the probability (area under the curve) that a random variable from the distribution is < q
         '''
-        if min(q)<0 or max(q)> 1:
-            raise ValueError('Quantile must be between 0 and 1')
+        if type(q)==int or type(q)==float:
+            if q<0 or q> 1:
+                raise ValueError('Quantile must be between 0 and 1')
+        elif type(q) == np.ndarray or type(q)== list:
+            if min(q) < 0 or max(q) > 1:
+                raise ValueError('Quantile must be between 0 and 1')
+        else:
+            raise ValueError('Quantile must be of type int, float, list, array')
         return ss.norm.ppf(q,loc=self.mu, scale=self.sigma)
     def inverse_SF(self,q):
         '''
@@ -318,8 +755,14 @@ class Normal_Distribution:
         :param q: quantile to be calculated
         :return: the inverse of the survival function at q
         '''
-        if min(q)<0 or max(q)> 1:
-            raise ValueError('Quantile must be between 0 and 1')
+        if type(q)==int or type(q)==float:
+            if q<0 or q> 1:
+                raise ValueError('Quantile must be between 0 and 1')
+        elif type(q) == np.ndarray or type(q)== list:
+            if min(q) < 0 or max(q) > 1:
+                raise ValueError('Quantile must be between 0 and 1')
+        else:
+            raise ValueError('Quantile must be of type int, float, list, array')
         return ss.norm.isf(q,loc=self.mu, scale=self.sigma)
     def mean_residual_life(self,t):
         '''
@@ -361,7 +804,9 @@ class Lognormal_Distribution:
     gamma - threshold (offset) parameter. Default = 0
 
     methods:
-    name
+    name - 'Lognormal'
+    parameter_names - ['mu','sigma','gamma']
+    parameters - [mu,sigma,gamma]
     mean
     variance
     standard_deviation
@@ -386,6 +831,7 @@ class Lognormal_Distribution:
     '''
     def __init__(self,mu=None,sigma=None,gamma=0):
         self.name = 'Lognormal'
+        self.parameter_names = ['mu', 'sigma', 'gamma']
         self.mu = mu
         self.sigma = sigma
         if self.mu==None or self.sigma==None:
@@ -401,50 +847,258 @@ class Lognormal_Distribution:
         self.excess_kurtosis = kurt
         self.median = ss.lognorm.median(self.sigma, self.gamma, np.exp(self.mu))
         self.mode = np.exp(self.mu - self.sigma ** 2) + self.gamma
+        if self.gamma != 0:
+            self.param_title = str('$\mu$ = ' + str(self.mu) + ' , $\sigma$ = ' + str(self.sigma) + ' , $\gamma$ = ' + str(self.gamma))
+        else:
+            self.param_title = str('$\mu$ = ' + str(self.mu) + ' , $\sigma$ = ' + str(self.sigma))
         self.b5 = ss.lognorm.ppf(0.05, self.sigma, self.gamma, np.exp(self.mu))  # note that scipy uses mu in a log way compared to most other software, so we must take the exp of the input
         self.b95 = ss.lognorm.ppf(0.95, self.sigma, self.gamma, np.exp(self.mu))
-    def plot(self=None,xvals=None,xmin=None,xmax=None,show_plot=True):
+    def plot(self, xvals=None, xmin=None, xmax=None):
         '''
-        Plots the distribution
-        Invokes the Plotting.plot.all_functions() which will provide all the plots of the distribution
+        Plots all functions (PDF, CDF, SF, HF, CHF) and descriptive statistics in a single figure
+
+        Inputs:
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *no plotting keywords are accepted
+
+        Outputs:
+        The plot will be shown. No need to use plt.show()
         '''
-        yvals = Plotting.plot('lognormal', mu=self.mu, sigma=self.sigma, gamma=self.gamma,xvals=xvals,xmin=xmin,xmax=xmax,show_plot=show_plot).all_functions()
-        return yvals
-    def PDF(self,xvals=None,xmin=None,xmax=None,show_plot=True,**kwargs):
+        if xvals is not None:
+            X = xvals
+        elif xmin is not None and xmax is not None:
+            X = np.linspace(xmin, xmax, 1000)
+        else:
+            X = np.linspace(0, self.b95 * 1.5, 1000)  # if no limits are specified, they are assumed
+
+        pdf = ss.lognorm.pdf(X, self.sigma, self.gamma, np.exp(self.mu))
+        cdf = ss.lognorm.cdf(X, self.sigma, self.gamma, np.exp(self.mu))
+        sf = ss.lognorm.sf(X, self.sigma, self.gamma, np.exp(self.mu))
+        hf = pdf / sf
+        chf = -np.log(sf)
+
+        plt.figure(figsize=(9, 7))
+        text_title = str('Lognormal Distribution' + '\n' + self.param_title)
+        plt.suptitle(text_title, fontsize=15)
+        plt.subplot(231)
+        plt.plot(X, pdf)
+        plt.title('Probability Density\nFunction')
+        plt.subplot(232)
+        plt.plot(X, cdf)
+        plt.title('Cumulative Distribution\nFunction')
+        plt.subplot(233)
+        plt.plot(X, sf)
+        plt.title('Survival Function')
+        plt.subplot(234)
+        plt.plot(X, hf)
+        plt.title('Hazard Function')
+        plt.subplot(235)
+        plt.plot(X, chf)
+        plt.title('Cumulative Hazard\nFunction')
+
+        # descriptive statistics section
+        plt.subplot(236)
+        plt.axis('off')
+        plt.ylim([0, 10])
+        plt.xlim([0, 10])
+        text_mean = str('Mean = ' + str(round(float(self.mean), _sigfig)))
+        text_median = str('Median = ' + str(round(self.median, _sigfig)))
+        try:
+            text_mode = str('Mode = ' + str(round(self.mode, _sigfig)))
+        except:
+            text_mode = str('Mode = ' + str(self.mode))  # required when mode is str
+        text_b5 = str('$5^{th}$ quantile = ' + str(round(self.b5, _sigfig)))
+        text_b95 = str('$95^{th}$ quantile = ' + str(round(self.b95, _sigfig)))
+        text_std = str('Standard deviation = ' + str(round(self.variance ** 0.5, _sigfig)))
+        text_var = str('Variance = ' + str(round(float(self.variance), _sigfig)))
+        text_skew = str('Skewness = ' + str(round(float(self.skewness), _sigfig)))
+        text_ex_kurt = str('Excess kurtosis = ' + str(round(float(self.excess_kurtosis), _sigfig)))
+        plt.text(0, 9, text_mean)
+        plt.text(0, 8, text_median)
+        plt.text(0, 7, text_mode)
+        plt.text(0, 6, text_b5)
+        plt.text(0, 5, text_b95)
+        plt.text(0, 4, text_std)
+        plt.text(0, 3, text_var)
+        plt.text(0, 2, text_skew)
+        plt.text(0, 1, text_ex_kurt)
+        plt.tight_layout()
+        plt.subplots_adjust(hspace=0.3, top=0.84)
+        plt.show()
+    def PDF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
         '''
-        Plots the PDF
-        Invokes Plotting.plot.PDF() which will plot only the PDF of the function
+        Plots the PDF (probability density function)
+
+        Inputs:
+        show_plot - True/False. Default is True
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *plotting keywords are also accepted (eg. color, linestyle)
+
+        Outputs:
+        yvals - this is the y-values of the plot
+        The plot will be shown if show_plot is True (which it is by default).
         '''
-        yvals = Plotting.plot('lognormal', mu=self.mu, sigma=self.sigma, gamma=self.gamma,xvals=xvals,xmin=xmin,xmax=xmax,show_plot=show_plot).PDF(**kwargs)
-        return yvals
-    def CDF(self,xvals=None,xmin=None,xmax=None,show_plot=True,**kwargs):
+        if xvals is not None:
+            X = xvals
+        elif xmin is not None and xmax is not None:
+            X = np.linspace(xmin, xmax, 1000)
+        else:
+            X = np.linspace(0, self.b95 * 1.5, 1000)  # if no limits are specified, they are assumed
+        pdf = ss.lognorm.pdf(X, self.sigma, self.gamma, np.exp(self.mu))
+        if show_plot == False:
+            return pdf
+        else:
+            plt.plot(X, pdf, **kwargs)
+            plt.xlabel('x values')
+            plt.ylabel('Probability density')
+            text_title = str('Lognormal Distribution\n' + ' Probability Density Function ' + '\n' + self.param_title)
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.87)
+            return pdf
+    def CDF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
         '''
-        Plots the CDF
-        Invokes Plotting.plot.CDF() which will plot only the PDF of the function
+        Plots the CDF (cumulative distribution function)
+
+        Inputs:
+        show_plot - True/False. Default is True
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *plotting keywords are also accepted (eg. color, linestyle)
+
+        Outputs:
+        yvals - this is the y-values of the plot
+        The plot will be shown if show_plot is True (which it is by default).
         '''
-        yvals = Plotting.plot('lognormal', mu=self.mu, sigma=self.sigma, gamma=self.gamma,xvals=xvals,xmin=xmin,xmax=xmax,show_plot=show_plot).CDF(**kwargs)
-        return yvals
-    def SF(self,xvals=None,xmin=None,xmax=None,show_plot=True,**kwargs):
+        if xvals is not None:
+            X = xvals
+        elif xmin is not None and xmax is not None:
+            X = np.linspace(xmin, xmax, 1000)
+        else:
+            X = np.linspace(0, self.b95 * 1.5, 1000)  # if no limits are specified, they are assumed
+        cdf = ss.lognorm.cdf(X, self.sigma, self.gamma, np.exp(self.mu))
+        if show_plot == False:
+            return cdf
+        else:
+            plt.plot(X, cdf, **kwargs)
+            plt.xlabel('x values')
+            plt.ylabel('Fraction failing')
+            text_title = str('Lognormal Distribution\n' + ' Cumulative Distribution Function ' + '\n' + self.param_title)
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.87)
+            return cdf
+    def SF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
         '''
-        Plots the SF
-        Invokes Plotting.plot.SF() which will plot only the Survival Function
+        Plots the SF (survival function)
+
+        Inputs:
+        show_plot - True/False. Default is True
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *plotting keywords are also accepted (eg. color, linestyle)
+
+        Outputs:
+        yvals - this is the y-values of the plot
+        The plot will be shown if show_plot is True (which it is by default).
         '''
-        yvals = Plotting.plot('lognormal', mu=self.mu, sigma=self.sigma, gamma=self.gamma,xvals=xvals,xmin=xmin,xmax=xmax,show_plot=show_plot).SF(**kwargs)
-        return yvals
-    def HF(self,xvals=None,xmin=None,xmax=None,show_plot=True,**kwargs):
+        if xvals is not None:
+            X = xvals
+        elif xmin is not None and xmax is not None:
+            X = np.linspace(xmin, xmax, 1000)
+        else:
+            X = np.linspace(0, self.b95 * 1.5, 1000)  # if no limits are specified, they are assumed
+        sf = ss.lognorm.sf(X, self.sigma, self.gamma, np.exp(self.mu))
+        if show_plot == False:
+            return sf
+        else:
+            plt.plot(X, sf, **kwargs)
+            plt.xlabel('x values')
+            plt.ylabel('Fraction surviving')
+            text_title = str('Lognormal Distribution\n' + ' Survival Function ' + '\n' + self.param_title)
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.87)
+            return sf
+    def HF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
         '''
-        Plots the HF
-        Invokes Plotting.plot.HF() which will plot only the Hazard Function
+        Plots the HF (hazard function)
+
+        Inputs:
+        show_plot - True/False. Default is True
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *plotting keywords are also accepted (eg. color, linestyle)
+
+        Outputs:
+        yvals - this is the y-values of the plot
+        The plot will be shown if show_plot is True (which it is by default).
         '''
-        yvals = Plotting.plot('lognormal', mu=self.mu, sigma=self.sigma, gamma=self.gamma,xvals=xvals,xmin=xmin,xmax=xmax,show_plot=show_plot).HF(**kwargs)
-        return yvals
-    def CHF(self,xvals=None,xmin=None,xmax=None,show_plot=True,**kwargs):
+        if xvals is not None:
+            X = xvals
+        elif xmin is not None and xmax is not None:
+            X = np.linspace(xmin, xmax, 1000)
+        else:
+            X = np.linspace(0, self.b95 * 1.5, 1000)  # if no limits are specified, they are assumed
+        hf = ss.lognorm.pdf(X, self.sigma, self.gamma, np.exp(self.mu)) / ss.lognorm.sf(X, self.sigma, self.gamma, np.exp(self.mu))
+        if show_plot == False:
+            return hf
+        else:
+            plt.plot(X, hf, **kwargs)
+            plt.xlabel('x values')
+            plt.ylabel('Hazard')
+            text_title = str('Lognormal Distribution\n' + ' Hazard Function ' + '\n' + self.param_title)
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.87)
+            return hf
+    def CHF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
         '''
-        Plots the CHF
-        Invokes Plotting.plot.CHF which will plot only the Cumulative Hazard Function
+        Plots the CHF (cumulative hazard function)
+
+        Inputs:
+        show_plot - True/False. Default is True
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *plotting keywords are also accepted (eg. color, linestyle)
+
+        Outputs:
+        yvals - this is the y-values of the plot
+        The plot will be shown if show_plot is True (which it is by default).
         '''
-        yvals = Plotting.plot('lognormal', mu=self.mu, sigma=self.sigma, gamma=self.gamma,xvals=xvals,xmin=xmin,xmax=xmax,show_plot=show_plot).CHF(**kwargs)
-        return yvals
+        if xvals is not None:
+            X = xvals
+        elif xmin is not None and xmax is not None:
+            X = np.linspace(xmin, xmax, 1000)
+        else:
+            X = np.linspace(0, self.b95 * 1.5, 1000)  # if no limits are specified, they are assumed
+        chf = -np.log(ss.lognorm.sf(X, self.sigma, self.gamma, np.exp(self.mu)))
+        if show_plot == False:
+            return chf
+        else:
+            plt.plot(X, chf, **kwargs)
+            plt.xlabel('x values')
+            plt.ylabel('Cumulative hazard')
+            text_title = str('Lognormal Distribution\n' + ' Cumulative Hazard Function ' + '\n' + self.param_title)
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.87)
+            return chf
     def quantile(self,q):
         '''
         Quantile calculator
@@ -452,8 +1106,14 @@ class Lognormal_Distribution:
         :param q: quantile to be calculated
         :return: the probability (area under the curve) that a random variable from the distribution is < q
         '''
-        if min(q)<0 or max(q)> 1:
-            raise ValueError('Quantile must be between 0 and 1')
+        if type(q)==int or type(q)==float:
+            if q<0 or q> 1:
+                raise ValueError('Quantile must be between 0 and 1')
+        elif type(q) == np.ndarray or type(q)== list:
+            if min(q) < 0 or max(q) > 1:
+                raise ValueError('Quantile must be between 0 and 1')
+        else:
+            raise ValueError('Quantile must be of type int, float, list, array')
         return ss.lognorm.ppf(q, self.sigma, self.gamma, np.exp(self.mu))
     def inverse_SF(self,q):
         '''
@@ -462,8 +1122,14 @@ class Lognormal_Distribution:
         :param q: quantile to be calculated
         :return: the inverse of the survival function at q
         '''
-        if min(q)<0 or max(q)> 1:
-            raise ValueError('Quantile must be between 0 and 1')
+        if type(q)==int or type(q)==float:
+            if q<0 or q> 1:
+                raise ValueError('Quantile must be between 0 and 1')
+        elif type(q) == np.ndarray or type(q)== list:
+            if min(q) < 0 or max(q) > 1:
+                raise ValueError('Quantile must be between 0 and 1')
+        else:
+            raise ValueError('Quantile must be of type int, float, list, array')
         return ss.lognorm.isf(q, self.sigma, self.gamma, np.exp(self.mu))
     def mean_residual_life(self,t):
         '''
@@ -507,7 +1173,9 @@ class Exponential_Distribution:
     gamma - threshold (offset) parameter. Default = 0
 
     methods:
-    name
+    name - 'Exponential'
+    parameter_names - ['lambda','gamma']
+    parameters - [lambda,gamma]
     mean
     variance
     standard_deviation
@@ -532,6 +1200,7 @@ class Exponential_Distribution:
     '''
     def __init__(self,Lambda=None,gamma=0):
         self.name = 'Exponential'
+        self.parameter_names = ['lambda', 'gamma']
         self.Lambda = Lambda
         if self.Lambda==None:
             raise ValueError('Parameter Lambda must be specified. Eg. Exponential_Distribution(Lambda=3)')
@@ -545,51 +1214,259 @@ class Exponential_Distribution:
         self.kurtosis = kurt+3
         self.excess_kurtosis = kurt
         self.median = ss.expon.median(scale=1/self.Lambda, loc=self.gamma)
-        self.mode = 0
+        self.mode = self.gamma
+        if self.gamma != 0:
+            self.param_title = str(r'$\lambda$ = ' + str(self.Lambda) + ' , $\gamma$ = ' + str(self.gamma))
+        else:
+            self.param_title = str(r'$\lambda$ = ' + str(self.Lambda))
         self.b5 = ss.expon.ppf(0.05, scale=1/self.Lambda, loc=self.gamma)
         self.b95 = ss.expon.ppf(0.95, scale=1/self.Lambda, loc=self.gamma)
-    def plot(self=None,xvals=None,xmin=None,xmax=None,show_plot=True):
+    def plot(self, xvals=None, xmin=None, xmax=None):
         '''
-        Plots the distribution
-        Invokes the Plotting.plot.all_functions() which will provide all the plots of the distribution
+        Plots all functions (PDF, CDF, SF, HF, CHF) and descriptive statistics in a single figure
+
+        Inputs:
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *no plotting keywords are accepted
+
+        Outputs:
+        The plot will be shown. No need to use plt.show()
         '''
-        yvals = Plotting.plot('expon', Lambda=self.Lambda, gamma=self.gamma,xvals=xvals,xmin=xmin,xmax=xmax,show_plot=show_plot).all_functions()
-        return yvals
-    def PDF(self,xvals=None,xmin=None,xmax=None,show_plot=True,**kwargs):
+        if xvals is not None:
+            X = xvals
+        elif xmin is not None and xmax is not None:
+            X = np.linspace(xmin, xmax, 1000)
+        else:
+            X = np.linspace(0, self.b95 * 1.5, 1000)  # if no limits are specified, they are assumed
+
+        pdf = ss.expon.pdf(X, scale=1/self.Lambda, loc=self.gamma)
+        cdf = ss.expon.cdf(X, scale=1/self.Lambda, loc=self.gamma)
+        sf = ss.expon.sf(X, scale=1/self.Lambda, loc=self.gamma)
+        hf = pdf / sf
+        chf = -np.log(sf)
+
+        plt.figure(figsize=(9, 7))
+        text_title = str('Exponential Distribution' + '\n' + self.param_title)
+        plt.suptitle(text_title, fontsize=15)
+        plt.subplot(231)
+        plt.plot(X, pdf)
+        plt.title('Probability Density\nFunction')
+        plt.subplot(232)
+        plt.plot(X, cdf)
+        plt.title('Cumulative Distribution\nFunction')
+        plt.subplot(233)
+        plt.plot(X, sf)
+        plt.title('Survival Function')
+        plt.subplot(234)
+        plt.plot(X, hf)
+        plt.title('Hazard Function')
+        plt.subplot(235)
+        plt.plot(X, chf)
+        plt.title('Cumulative Hazard\nFunction')
+
+        # descriptive statistics section
+        plt.subplot(236)
+        plt.axis('off')
+        plt.ylim([0, 10])
+        plt.xlim([0, 10])
+        text_mean = str('Mean = ' + str(round(float(self.mean), _sigfig)))
+        text_median = str('Median = ' + str(round(self.median, _sigfig)))
+        try:
+            text_mode = str('Mode = ' + str(round(self.mode, _sigfig)))
+        except:
+            text_mode = str('Mode = ' + str(self.mode))  # required when mode is str
+        text_b5 = str('$5^{th}$ quantile = ' + str(round(self.b5, _sigfig)))
+        text_b95 = str('$95^{th}$ quantile = ' + str(round(self.b95, _sigfig)))
+        text_std = str('Standard deviation = ' + str(round(self.variance ** 0.5, _sigfig)))
+        text_var = str('Variance = ' + str(round(float(self.variance), _sigfig)))
+        text_skew = str('Skewness = ' + str(round(float(self.skewness), _sigfig)))
+        text_ex_kurt = str('Excess kurtosis = ' + str(round(float(self.excess_kurtosis), _sigfig)))
+        plt.text(0, 9, text_mean)
+        plt.text(0, 8, text_median)
+        plt.text(0, 7, text_mode)
+        plt.text(0, 6, text_b5)
+        plt.text(0, 5, text_b95)
+        plt.text(0, 4, text_std)
+        plt.text(0, 3, text_var)
+        plt.text(0, 2, text_skew)
+        plt.text(0, 1, text_ex_kurt)
+        plt.tight_layout()
+        plt.subplots_adjust(hspace=0.3, top=0.84)
+        plt.show()
+    def PDF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
         '''
-        Plots the PDF
-        Invokes Plotting.plot.PDF() which will plot only the PDF of the function
+        Plots the PDF (probability density function)
+
+        Inputs:
+        show_plot - True/False. Default is True
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *plotting keywords are also accepted (eg. color, linestyle)
+
+        Outputs:
+        yvals - this is the y-values of the plot
+        The plot will be shown if show_plot is True (which it is by default).
         '''
-        yvals = Plotting.plot('expon', Lambda=self.Lambda, gamma=self.gamma,xvals=xvals,xmin=xmin,xmax=xmax,show_plot=show_plot).PDF(**kwargs)
-        return yvals
-    def CDF(self,xvals=None,xmin=None,xmax=None,show_plot=True,**kwargs):
+        if xvals is not None:
+            X = xvals
+        elif xmin is not None and xmax is not None:
+            X = np.linspace(xmin, xmax, 1000)
+        else:
+            X = np.linspace(0, self.b95 * 1.5, 1000)  # if no limits are specified, they are assumed
+        pdf = ss.expon.pdf(X, scale=1/self.Lambda, loc=self.gamma)
+        if show_plot == False:
+            return pdf
+        else:
+            plt.plot(X, pdf, **kwargs)
+            plt.xlabel('x values')
+            plt.ylabel('Probability density')
+            text_title = str('Exponential Distribution\n' + ' Probability Density Function ' + '\n' + self.param_title)
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.87)
+            return pdf
+    def CDF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
         '''
-        Plots the CDF
-        Invokes Plotting.plot.CDF() which will plot only the PDF of the function
+        Plots the CDF (cumulative distribution function)
+
+        Inputs:
+        show_plot - True/False. Default is True
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *plotting keywords are also accepted (eg. color, linestyle)
+
+        Outputs:
+        yvals - this is the y-values of the plot
+        The plot will be shown if show_plot is True (which it is by default).
         '''
-        yvals = Plotting.plot('expon', Lambda=self.Lambda, gamma=self.gamma,xvals=xvals,xmin=xmin,xmax=xmax,show_plot=show_plot).CDF(**kwargs)
-        return yvals
-    def SF(self,xvals=None,xmin=None,xmax=None,show_plot=True,**kwargs):
+        if xvals is not None:
+            X = xvals
+        elif xmin is not None and xmax is not None:
+            X = np.linspace(xmin, xmax, 1000)
+        else:
+            X = np.linspace(0, self.b95 * 1.5, 1000)  # if no limits are specified, they are assumed
+        cdf = ss.expon.cdf(X, scale=1/self.Lambda, loc=self.gamma)
+        if show_plot == False:
+            return cdf
+        else:
+            plt.plot(X, cdf, **kwargs)
+            plt.xlabel('x values')
+            plt.ylabel('Fraction failing')
+            text_title = str('Exponential Distribution\n' + ' Cumulative Distribution Function ' + '\n' + self.param_title)
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.87)
+            return cdf
+    def SF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
         '''
-        Plots the SF
-        Invokes Plotting.plot.SF() which will plot only the Survival Function
+        Plots the SF (survival function)
+
+        Inputs:
+        show_plot - True/False. Default is True
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *plotting keywords are also accepted (eg. color, linestyle)
+
+        Outputs:
+        yvals - this is the y-values of the plot
+        The plot will be shown if show_plot is True (which it is by default).
         '''
-        yvals = Plotting.plot('expon', Lambda=self.Lambda, gamma=self.gamma,xvals=xvals,xmin=xmin,xmax=xmax,show_plot=show_plot).SF(**kwargs)
-        return yvals
-    def HF(self,xvals=None,xmin=None,xmax=None,show_plot=True,**kwargs):
+        if xvals is not None:
+            X = xvals
+        elif xmin is not None and xmax is not None:
+            X = np.linspace(xmin, xmax, 1000)
+        else:
+            X = np.linspace(0, self.b95 * 1.5, 1000)  # if no limits are specified, they are assumed
+        sf = ss.expon.sf(X, scale=1/self.Lambda, loc=self.gamma)
+        if show_plot == False:
+            return sf
+        else:
+            plt.plot(X, sf, **kwargs)
+            plt.xlabel('x values')
+            plt.ylabel('Fraction surviving')
+            text_title = str('Exponential Distribution\n' + ' Survival Function ' + '\n' + self.param_title)
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.87)
+            return sf
+    def HF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
         '''
-        Plots the HF
-        Invokes Plotting.plot.HF() which will plot only the Hazard Function
+        Plots the HF (hazard function)
+
+        Inputs:
+        show_plot - True/False. Default is True
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *plotting keywords are also accepted (eg. color, linestyle)
+
+        Outputs:
+        yvals - this is the y-values of the plot
+        The plot will be shown if show_plot is True (which it is by default).
         '''
-        yvals = Plotting.plot('expon', Lambda=self.Lambda, gamma=self.gamma,xvals=xvals,xmin=xmin,xmax=xmax,show_plot=show_plot).HF(**kwargs)
-        return yvals
-    def CHF(self,xvals=None,xmin=None,xmax=None,show_plot=True,**kwargs):
+        if xvals is not None:
+            X = xvals
+        elif xmin is not None and xmax is not None:
+            X = np.linspace(xmin, xmax, 1000)
+        else:
+            X = np.linspace(0, self.b95 * 1.5, 1000)  # if no limits are specified, they are assumed
+        hf = ss.expon.pdf(X, scale=1/self.Lambda, loc=self.gamma) / ss.expon.sf(X, scale=1/self.Lambda, loc=self.gamma)
+        if show_plot == False:
+            return hf
+        else:
+            plt.plot(X, hf, **kwargs)
+            plt.xlabel('x values')
+            plt.ylabel('Hazard')
+            text_title = str('Exponential Distribution\n' + ' Hazard Function ' + '\n' + self.param_title)
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.87)
+            return hf
+    def CHF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
         '''
-        Plots the CHF
-        Invokes Plotting.plot.CHF which will plot only the Cumulative Hazard Function
+        Plots the CHF (cumulative hazard function)
+
+        Inputs:
+        show_plot - True/False. Default is True
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *plotting keywords are also accepted (eg. color, linestyle)
+
+        Outputs:
+        yvals - this is the y-values of the plot
+        The plot will be shown if show_plot is True (which it is by default).
         '''
-        yvals = Plotting.plot('expon', Lambda=self.Lambda, gamma=self.gamma,xvals=xvals,xmin=xmin,xmax=xmax,show_plot=show_plot).CHF(**kwargs)
-        return yvals
+        if xvals is not None:
+            X = xvals
+        elif xmin is not None and xmax is not None:
+            X = np.linspace(xmin, xmax, 1000)
+        else:
+            X = np.linspace(0, self.b95 * 1.5, 1000)  # if no limits are specified, they are assumed
+        chf = -np.log(ss.expon.sf(X, scale=1/self.Lambda, loc=self.gamma))
+        if show_plot == False:
+            return chf
+        else:
+            plt.plot(X, chf, **kwargs)
+            plt.xlabel('x values')
+            plt.ylabel('Cumulative hazard')
+            text_title = str('Exponential Distribution\n' + ' Cumulative Hazard Function ' + '\n' + self.param_title)
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.87)
+            return chf
     def quantile(self,q):
         '''
         Quantile calculator
@@ -597,8 +1474,14 @@ class Exponential_Distribution:
         :param q: quantile to be calculated
         :return: the probability (area under the curve) that a random variable from the distribution is < q
         '''
-        if min(q)<0 or max(q)> 1:
-            raise ValueError('Quantile must be between 0 and 1')
+        if type(q)==int or type(q)==float:
+            if q<0 or q> 1:
+                raise ValueError('Quantile must be between 0 and 1')
+        elif type(q) == np.ndarray or type(q)== list:
+            if min(q) < 0 or max(q) > 1:
+                raise ValueError('Quantile must be between 0 and 1')
+        else:
+            raise ValueError('Quantile must be of type int, float, list, array')
         return ss.expon.ppf(q,scale=1/self.Lambda, loc=self.gamma)
     def inverse_SF(self,q):
         '''
@@ -607,8 +1490,14 @@ class Exponential_Distribution:
         :param q: quantile to be calculated
         :return: the inverse of the survival function at q
         '''
-        if min(q)<0 or max(q)> 1:
-            raise ValueError('Quantile must be between 0 and 1')
+        if type(q)==int or type(q)==float:
+            if q<0 or q> 1:
+                raise ValueError('Quantile must be between 0 and 1')
+        elif type(q) == np.ndarray or type(q)== list:
+            if min(q) < 0 or max(q) > 1:
+                raise ValueError('Quantile must be between 0 and 1')
+        else:
+            raise ValueError('Quantile must be of type int, float, list, array')
         return ss.expon.isf(q,scale=1/self.Lambda, loc=self.gamma)
     def mean_residual_life(self,t):
         '''
@@ -653,7 +1542,9 @@ class Gamma_Distribution:
     gamma - threshold (offset) parameter. Default = 0
 
     methods:
-    name
+    name - 'Gamma'
+    parameter_names - ['alpha','beta','gamma']
+    parameters - [alpha,beta,gamma]
     mean
     variance
     standard_deviation
@@ -678,6 +1569,7 @@ class Gamma_Distribution:
     '''
     def __init__(self,alpha=None,beta=None,gamma=0):
         self.name = 'Gamma'
+        self.parameter_names = ['alpha', 'beta', 'gamma']
         self.alpha = alpha
         self.beta = beta
         if self.alpha==None or self.beta==None:
@@ -693,53 +1585,262 @@ class Gamma_Distribution:
         self.excess_kurtosis = kurt
         self.median = ss.gamma.median(self.beta, scale=self.alpha, loc=self.gamma)
         if self.beta>=1:
-            self.mode = (self.beta-1)*self.alpha
+            self.mode = (self.beta-1)*self.alpha+self.gamma
         else:
-            self.mode = 'No mode exists when beta < 1'
+            self.mode = r'No mode exists when $\beta$ < 1'
+        if self.gamma != 0:
+            self.param_title = str(
+                r'$\alpha$ = ' + str(self.alpha) + r' , $\beta$ = ' + str(self.beta) + ' , $\gamma$ = ' + str(self.gamma))
+        else:
+            self.param_title = str(r'$\alpha$ = ' + str(self.alpha) + r' , $\beta$ = ' + str(self.beta))
         self.b5 = ss.gamma.ppf(0.05, self.beta, scale=self.alpha, loc=self.gamma)
         self.b95 = ss.gamma.ppf(0.95, self.beta, scale=self.alpha, loc=self.gamma)
-    def plot(self=None,xvals=None,xmin=None,xmax=None,show_plot=True):
+    def plot(self,xvals=None,xmin=None,xmax=None):
         '''
-        Plots the distribution
-        Invokes the Plotting.plot.all_functions() which will provide all the plots of the distribution
+        Plots all functions (PDF, CDF, SF, HF, CHF) and descriptive statistics in a single figure
+
+        Inputs:
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *no plotting keywords are accepted
+
+        Outputs:
+        The plot will be shown. No need to use plt.show()
         '''
-        yvals = Plotting.plot('gamma', alpha=self.alpha, beta=self.beta, gamma=self.gamma,xvals=xvals,xmin=xmin,xmax=xmax,show_plot=show_plot).all_functions()
-        return yvals
+        if xvals is not None:
+            X = xvals
+        elif xmin is not None and xmax is not None:
+            X = np.linspace(xmin, xmax, 1000)
+        else:
+            X = np.linspace(0, self.b95 * 1.5, 1000)  # if no limits are specified, they are assumed
+
+        pdf = ss.gamma.pdf(X, self.beta, scale=self.alpha, loc=self.gamma)
+        cdf = ss.gamma.cdf(X, self.beta, scale=self.alpha, loc=self.gamma)
+        sf = ss.gamma.sf(X, self.beta, scale=self.alpha, loc=self.gamma)
+        hf = pdf/sf
+        chf = -np.log(sf)
+
+        plt.figure(figsize=(9,7))
+        text_title=str('Gamma Distribution'+'\n'+self.param_title)
+        plt.suptitle(text_title,fontsize=15)
+        plt.subplot(231)
+        plt.plot(X,pdf)
+        plt.title('Probability Density\nFunction')
+        plt.subplot(232)
+        plt.plot(X,cdf)
+        plt.title('Cumulative Distribution\nFunction')
+        plt.subplot(233)
+        plt.plot(X,sf)
+        plt.title('Survival Function')
+        plt.subplot(234)
+        plt.plot(X,hf)
+        plt.title('Hazard Function')
+        plt.subplot(235)
+        plt.plot(X,chf)
+        plt.title('Cumulative Hazard\nFunction')
+
+        #descriptive statistics section
+        plt.subplot(236)
+        plt.axis('off')
+        plt.ylim([0,10])
+        plt.xlim([0,10])
+        text_mean=str('Mean = ' + str(round(float(self.mean), _sigfig)))
+        text_median = str('Median = ' + str(round(self.median, _sigfig)))
+        try:
+            text_mode = str('Mode = ' + str(round(self.mode, _sigfig)))
+        except:
+            text_mode = str('Mode = ' + str(self.mode)) #required when mode is str
+        text_b5=str('$5^{th}$ quantile = ' + str(round(self.b5, _sigfig)))
+        text_b95=str('$95^{th}$ quantile = ' + str(round(self.b95, _sigfig)))
+        text_std = str('Standard deviation = ' + str(round(self.variance ** 0.5, _sigfig)))
+        text_var = str('Variance = ' + str(round(float(self.variance), _sigfig)))
+        text_skew = str('Skewness = ' + str(round(float(self.skewness), _sigfig)))
+        text_ex_kurt = str('Excess kurtosis = ' + str(round(float(self.excess_kurtosis), _sigfig)))
+        plt.text(0, 9, text_mean)
+        plt.text(0, 8, text_median)
+        plt.text(0, 7, text_mode)
+        plt.text(0, 6, text_b5)
+        plt.text(0, 5, text_b95)
+        plt.text(0, 4, text_std)
+        plt.text(0, 3, text_var)
+        plt.text(0, 2, text_skew)
+        plt.text(0, 1, text_ex_kurt)
+        plt.tight_layout()
+        plt.subplots_adjust(hspace=0.3, top=0.84)
+        plt.show()
     def PDF(self,xvals=None,xmin=None,xmax=None,show_plot=True,**kwargs):
         '''
-        Plots the PDF
-        Invokes Plotting.plot.PDF() which will plot only the PDF of the function
+        Plots the PDF (probability density function)
+
+        Inputs:
+        show_plot - True/False. Default is True
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *plotting keywords are also accepted (eg. color, linestyle)
+
+        Outputs:
+        yvals - this is the y-values of the plot
+        The plot will be shown if show_plot is True (which it is by default).
         '''
-        yvals = Plotting.plot('gamma', alpha=self.alpha, beta=self.beta, gamma=self.gamma,xvals=xvals,xmin=xmin,xmax=xmax,show_plot=show_plot).PDF(**kwargs)
-        return yvals
+        if xvals is not None:
+            X = xvals
+        elif xmin is not None and xmax is not None:
+            X = np.linspace(xmin, xmax, 1000)
+        else:
+            X = np.linspace(0, self.b95*1.5, 1000)  # if no limits are specified, they are assumed
+        pdf = ss.gamma.pdf(X, self.beta, scale=self.alpha, loc=self.gamma)
+        if show_plot == False:
+            return pdf
+        else:
+            plt.plot(X,pdf,**kwargs)
+            plt.xlabel('x values')
+            plt.ylabel('Probability density')
+            text_title = str('Gamma Distribution\n'+' Probability Density Function '+ '\n' + self.param_title)
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.87)
+            return pdf
     def CDF(self,xvals=None,xmin=None,xmax=None,show_plot=True,**kwargs):
         '''
-        Plots the CDF
-        Invokes Plotting.plot.CDF() which will plot only the PDF of the function
+        Plots the CDF (cumulative distribution function)
+
+        Inputs:
+        show_plot - True/False. Default is True
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *plotting keywords are also accepted (eg. color, linestyle)
+
+        Outputs:
+        yvals - this is the y-values of the plot
+        The plot will be shown if show_plot is True (which it is by default).
         '''
-        yvals = Plotting.plot('gamma', alpha=self.alpha, beta=self.beta, gamma=self.gamma,xvals=xvals,xmin=xmin,xmax=xmax,show_plot=show_plot).CDF(**kwargs)
-        return yvals
+        if xvals is not None:
+            X = xvals
+        elif xmin is not None and xmax is not None:
+            X = np.linspace(xmin, xmax, 1000)
+        else:
+            X = np.linspace(0, self.b95*1.5, 1000)  # if no limits are specified, they are assumed
+        cdf = ss.gamma.cdf(X, self.beta, scale=self.alpha, loc=self.gamma)
+        if show_plot == False:
+            return cdf
+        else:
+            plt.plot(X,cdf,**kwargs)
+            plt.xlabel('x values')
+            plt.ylabel('Fraction failing')
+            text_title = str('Gamma Distribution\n'+' Cumulative Distribution Function '+ '\n' + self.param_title)
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.87)
+            return cdf
     def SF(self,xvals=None,xmin=None,xmax=None,show_plot=True,**kwargs):
         '''
-        Plots the SF
-        Invokes Plotting.plot.SF() which will plot only the Survival Function
+        Plots the SF (survival function)
+
+        Inputs:
+        show_plot - True/False. Default is True
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *plotting keywords are also accepted (eg. color, linestyle)
+
+        Outputs:
+        yvals - this is the y-values of the plot
+        The plot will be shown if show_plot is True (which it is by default).
         '''
-        yvals = Plotting.plot('gamma', alpha=self.alpha, beta=self.beta, gamma=self.gamma,xvals=xvals,xmin=xmin,xmax=xmax,show_plot=show_plot).SF(**kwargs)
-        return yvals
+        if xvals is not None:
+            X = xvals
+        elif xmin is not None and xmax is not None:
+            X = np.linspace(xmin, xmax, 1000)
+        else:
+            X = np.linspace(0, self.b95*1.5, 1000)  # if no limits are specified, they are assumed
+        sf = ss.gamma.sf(X, self.beta, scale=self.alpha, loc=self.gamma)
+        if show_plot == False:
+            return sf
+        else:
+            plt.plot(X,sf,**kwargs)
+            plt.xlabel('x values')
+            plt.ylabel('Fraction surviving')
+            text_title = str('Gamma Distribution\n'+' Survival Function '+ '\n' + self.param_title)
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.87)
+            return sf
     def HF(self,xvals=None,xmin=None,xmax=None,show_plot=True,**kwargs):
         '''
-        Plots the HF
-        Invokes Plotting.plot.HF() which will plot only the Hazard Function
+        Plots the HF (hazard function)
+
+        Inputs:
+        show_plot - True/False. Default is True
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *plotting keywords are also accepted (eg. color, linestyle)
+
+        Outputs:
+        yvals - this is the y-values of the plot
+        The plot will be shown if show_plot is True (which it is by default).
         '''
-        yvals = Plotting.plot('gamma', alpha=self.alpha, beta=self.beta, gamma=self.gamma,xvals=xvals,xmin=xmin,xmax=xmax,show_plot=show_plot).HF(**kwargs)
-        return yvals
+        if xvals is not None:
+            X = xvals
+        elif xmin is not None and xmax is not None:
+            X = np.linspace(xmin, xmax, 1000)
+        else:
+            X = np.linspace(0, self.b95*1.5, 1000)  # if no limits are specified, they are assumed
+        hf = ss.gamma.pdf(X, self.beta, scale=self.alpha, loc=self.gamma)/ss.gamma.sf(X, self.beta, scale=self.alpha, loc=self.gamma)
+        if show_plot == False:
+            return hf
+        else:
+            plt.plot(X,hf,**kwargs)
+            plt.xlabel('x values')
+            plt.ylabel('Hazard')
+            text_title = str('Gamma Distribution\n'+' Hazard Function '+ '\n' + self.param_title)
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.87)
+            return hf
     def CHF(self,xvals=None,xmin=None,xmax=None,show_plot=True,**kwargs):
         '''
-        Plots the CHF
-        Invokes Plotting.plot.CHF which will plot only the Cumulative Hazard Function
+        Plots the CHF (cumulative hazard function)
+
+        Inputs:
+        show_plot - True/False. Default is True
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *plotting keywords are also accepted (eg. color, linestyle)
+
+        Outputs:
+        yvals - this is the y-values of the plot
+        The plot will be shown if show_plot is True (which it is by default).
         '''
-        yvals = Plotting.plot('gamma', alpha=self.alpha, beta=self.beta, gamma=self.gamma,xvals=xvals,xmin=xmin,xmax=xmax,show_plot=show_plot).CHF(**kwargs)
-        return yvals
+        if xvals is not None:
+            X = xvals
+        elif xmin is not None and xmax is not None:
+            X = np.linspace(xmin, xmax, 1000)
+        else:
+            X = np.linspace(0, self.b95*1.5, 1000)  # if no limits are specified, they are assumed
+        chf = -np.log(ss.gamma.sf(X, self.beta, scale=self.alpha, loc=self.gamma))
+        if show_plot == False:
+            return chf
+        else:
+            plt.plot(X,chf,**kwargs)
+            plt.xlabel('x values')
+            plt.ylabel('Cumulative hazard')
+            text_title = str('Gamma Distribution\n'+' Cumulative Hazard Function '+ '\n' + self.param_title)
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.87)
+            return chf
     def quantile(self,q):
         '''
         Quantile calculator
@@ -747,8 +1848,14 @@ class Gamma_Distribution:
         :param q: quantile to be calculated
         :return: the probability (area under the curve) that a random variable from the distribution is < q
         '''
-        if min(q)<0 or max(q)> 1:
-            raise ValueError('Quantile must be between 0 and 1')
+        if type(q)==int or type(q)==float:
+            if q<0 or q> 1:
+                raise ValueError('Quantile must be between 0 and 1')
+        elif type(q) == np.ndarray or type(q)== list:
+            if min(q) < 0 or max(q) > 1:
+                raise ValueError('Quantile must be between 0 and 1')
+        else:
+            raise ValueError('Quantile must be of type int, float, list, array')
         return ss.gamma.ppf(q,self.beta,scale=self.alpha,loc=self.gamma)
     def inverse_SF(self,q):
         '''
@@ -757,8 +1864,14 @@ class Gamma_Distribution:
         :param q: quantile to be calculated
         :return: the inverse of the survival function at q
         '''
-        if min(q)<0 or max(q)> 1:
-            raise ValueError('Quantile must be between 0 and 1')
+        if type(q)==int or type(q)==float:
+            if q<0 or q> 1:
+                raise ValueError('Quantile must be between 0 and 1')
+        elif type(q) == np.ndarray or type(q)== list:
+            if min(q) < 0 or max(q) > 1:
+                raise ValueError('Quantile must be between 0 and 1')
+        else:
+            raise ValueError('Quantile must be of type int, float, list, array')
         return ss.gamma.isf(q,self.beta,scale=self.alpha,loc=self.gamma)
     def mean_residual_life(self,t):
         '''
@@ -802,7 +1915,9 @@ class Beta_Distribution:
     beta - shape parameter 2
 
     methods:
-    name
+    name - 'Beta'
+    parameter_names - ['alpha','beta']
+    parameters - [alpha,beta]
     mean
     variance
     standard_deviation
@@ -827,6 +1942,7 @@ class Beta_Distribution:
     '''
     def __init__(self,alpha=None,beta=None):
         self.name = 'Beta'
+        self.parameter_names = ['alpha', 'beta', 'gamma']
         self.alpha = alpha
         self.beta = beta
         if self.alpha==None or self.beta==None:
@@ -843,51 +1959,256 @@ class Beta_Distribution:
         if self.alpha >1 and self.beta>1:
             self.mode = (self.alpha-1) / (self.beta + self.alpha - 2)
         else:
-            self.mode = 'No mode exists unless alpha > 1 and beta > 1'
+            self.mode = r'No mode exists unless $\alpha$ > 1 and $\beta$ > 1'
+        self.param_title = str(r'$\alpha$ = ' + str(self.alpha) + r' , $\beta$ = ' + str(self.beta))
         self.b5 = ss.beta.ppf(0.05, self.alpha, self.beta, 0, 1)
         self.b95 = ss.beta.ppf(0.95, self.alpha, self.beta, 0, 1)
-    def plot(self=None,xvals=None,xmin=None,xmax=None,show_plot=True):
+    def plot(self, xvals=None, xmin=None, xmax=None):
         '''
-        Plots the distribution
-        Invokes the Plotting.plot.all_functions() which will provide all the plots of the distribution
+        Plots all functions (PDF, CDF, SF, HF, CHF) and descriptive statistics in a single figure
+
+        Inputs:
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *no plotting keywords are accepted
+
+        Outputs:
+        The plot will be shown. No need to use plt.show()
         '''
-        yvals = Plotting.plot('beta', alpha=self.alpha, beta=self.beta,xvals=xvals,xmin=xmin,xmax=xmax,show_plot=show_plot).all_functions()
-        return yvals
-    def PDF(self,xvals=None,xmin=None,xmax=None,show_plot=True,**kwargs):
+        if xvals is not None:
+            X = xvals
+        elif xmin is not None and xmax is not None:
+            X = np.linspace(xmin, xmax, 1000)
+        else:
+            X = np.linspace(0, 1, 1000)  # if no limits are specified, they are assumed
+
+        pdf = ss.beta.pdf(X, self.alpha, self.beta, 0, 1)
+        cdf = ss.beta.cdf(X, self.alpha, self.beta, 0, 1)
+        sf = ss.beta.sf(X, self.alpha, self.beta, 0, 1)
+        hf = pdf / sf
+        chf = -np.log(sf)
+
+        plt.figure(figsize=(9, 7))
+        text_title = str('Beta Distribution' + '\n' + self.param_title)
+        plt.suptitle(text_title, fontsize=15)
+        plt.subplot(231)
+        plt.plot(X, pdf)
+        plt.title('Probability Density\nFunction')
+        plt.subplot(232)
+        plt.plot(X, cdf)
+        plt.title('Cumulative Distribution\nFunction')
+        plt.subplot(233)
+        plt.plot(X, sf)
+        plt.title('Survival Function')
+        plt.subplot(234)
+        plt.plot(X, hf)
+        plt.title('Hazard Function')
+        plt.subplot(235)
+        plt.plot(X, chf)
+        plt.title('Cumulative Hazard\nFunction')
+
+        # descriptive statistics section
+        plt.subplot(236)
+        plt.axis('off')
+        plt.ylim([0, 10])
+        plt.xlim([0, 10])
+        text_mean = str('Mean = ' + str(round(float(self.mean), _sigfig)))
+        text_median = str('Median = ' + str(round(self.median, _sigfig)))
+        try:
+            text_mode = str('Mode = ' + str(round(self.mode, _sigfig)))
+        except:
+            text_mode = str('Mode = ' + str(self.mode))  # required when mode is str
+        text_b5 = str('$5^{th}$ quantile = ' + str(round(self.b5, _sigfig)))
+        text_b95 = str('$95^{th}$ quantile = ' + str(round(self.b95, _sigfig)))
+        text_std = str('Standard deviation = ' + str(round(self.variance ** 0.5, _sigfig)))
+        text_var = str('Variance = ' + str(round(float(self.variance), _sigfig)))
+        text_skew = str('Skewness = ' + str(round(float(self.skewness), _sigfig)))
+        text_ex_kurt = str('Excess kurtosis = ' + str(round(float(self.excess_kurtosis), _sigfig)))
+        plt.text(0, 9, text_mean)
+        plt.text(0, 8, text_median)
+        plt.text(0, 7, text_mode)
+        plt.text(0, 6, text_b5)
+        plt.text(0, 5, text_b95)
+        plt.text(0, 4, text_std)
+        plt.text(0, 3, text_var)
+        plt.text(0, 2, text_skew)
+        plt.text(0, 1, text_ex_kurt)
+        plt.tight_layout()
+        plt.subplots_adjust(hspace=0.3, top=0.84)
+        plt.show()
+    def PDF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
         '''
-        Plots the PDF
-        Invokes Plotting.plot.PDF() which will plot only the PDF of the function
+        Plots the PDF (probability density function)
+
+        Inputs:
+        show_plot - True/False. Default is True
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *plotting keywords are also accepted (eg. color, linestyle)
+
+        Outputs:
+        yvals - this is the y-values of the plot
+        The plot will be shown if show_plot is True (which it is by default).
         '''
-        yvals = Plotting.plot('beta', alpha=self.alpha, beta=self.beta,xvals=xvals,xmin=xmin,xmax=xmax,show_plot=show_plot).PDF(**kwargs)
-        return yvals
-    def CDF(self,xvals=None,xmin=None,xmax=None,show_plot=True,**kwargs):
+        if xvals is not None:
+            X = xvals
+        elif xmin is not None and xmax is not None:
+            X = np.linspace(xmin, xmax, 1000)
+        else:
+            X = np.linspace(0, 1, 1000)  # if no limits are specified, they are assumed
+        pdf = ss.beta.pdf(X, self.alpha, self.beta, 0, 1)
+        if show_plot == False:
+            return pdf
+        else:
+            plt.plot(X, pdf, **kwargs)
+            plt.xlabel('x values')
+            plt.ylabel('Probability density')
+            text_title = str('Beta Distribution\n' + ' Probability Density Function ' + '\n' + self.param_title)
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.87)
+            return pdf
+    def CDF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
         '''
-        Plots the CDF
-        Invokes Plotting.plot.CDF() which will plot only the PDF of the function
+        Plots the CDF (cumulative distribution function)
+
+        Inputs:
+        show_plot - True/False. Default is True
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *plotting keywords are also accepted (eg. color, linestyle)
+
+        Outputs:
+        yvals - this is the y-values of the plot
+        The plot will be shown if show_plot is True (which it is by default).
         '''
-        yvals = Plotting.plot('beta', alpha=self.alpha, beta=self.beta,xvals=xvals,xmin=xmin,xmax=xmax,show_plot=show_plot).CDF(**kwargs)
-        return yvals
-    def SF(self,xvals=None,xmin=None,xmax=None,show_plot=True,**kwargs):
+        if xvals is not None:
+            X = xvals
+        elif xmin is not None and xmax is not None:
+            X = np.linspace(xmin, xmax, 1000)
+        else:
+            X = np.linspace(0, 1, 1000)  # if no limits are specified, they are assumed
+        cdf = ss.beta.cdf(X, self.alpha, self.beta, 0, 1)
+        if show_plot == False:
+            return cdf
+        else:
+            plt.plot(X, cdf, **kwargs)
+            plt.xlabel('x values')
+            plt.ylabel('Fraction failing')
+            text_title = str('Beta Distribution\n' + ' Cumulative Distribution Function ' + '\n' + self.param_title)
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.87)
+            return cdf
+    def SF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
         '''
-        Plots the SF
-        Invokes Plotting.plot.SF() which will plot only the Survival Function
+        Plots the SF (survival function)
+
+        Inputs:
+        show_plot - True/False. Default is True
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *plotting keywords are also accepted (eg. color, linestyle)
+
+        Outputs:
+        yvals - this is the y-values of the plot
+        The plot will be shown if show_plot is True (which it is by default).
         '''
-        yvals = Plotting.plot('beta', alpha=self.alpha, beta=self.beta,xvals=xvals,xmin=xmin,xmax=xmax,show_plot=show_plot).SF(**kwargs)
-        return yvals
-    def HF(self,xvals=None,xmin=None,xmax=None,show_plot=True,**kwargs):
+        if xvals is not None:
+            X = xvals
+        elif xmin is not None and xmax is not None:
+            X = np.linspace(xmin, xmax, 1000)
+        else:
+            X = np.linspace(0, 1, 1000)  # if no limits are specified, they are assumed
+        sf = ss.beta.sf(X, self.alpha, self.beta, 0, 1)
+        if show_plot == False:
+            return sf
+        else:
+            plt.plot(X, sf, **kwargs)
+            plt.xlabel('x values')
+            plt.ylabel('Fraction surviving')
+            text_title = str('Beta Distribution\n' + ' Survival Function ' + '\n' + self.param_title)
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.87)
+            return sf
+    def HF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
         '''
-        Plots the HF
-        Invokes Plotting.plot.HF() which will plot only the Hazard Function
+        Plots the HF (hazard function)
+
+        Inputs:
+        show_plot - True/False. Default is True
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *plotting keywords are also accepted (eg. color, linestyle)
+
+        Outputs:
+        yvals - this is the y-values of the plot
+        The plot will be shown if show_plot is True (which it is by default).
         '''
-        yvals = Plotting.plot('beta', alpha=self.alpha, beta=self.beta,xvals=xvals,xmin=xmin,xmax=xmax,show_plot=show_plot).HF(**kwargs)
-        return yvals
-    def CHF(self,xvals=None,xmin=None,xmax=None,show_plot=True,**kwargs):
+        if xvals is not None:
+            X = xvals
+        elif xmin is not None and xmax is not None:
+            X = np.linspace(xmin, xmax, 1000)
+        else:
+            X = np.linspace(0, 1, 1000)  # if no limits are specified, they are assumed
+        hf = ss.beta.pdf(X, self.alpha, self.beta, 0, 1) / ss.beta.sf(X, self.alpha, self.beta, 0, 1)
+        if show_plot == False:
+            return hf
+        else:
+            plt.plot(X, hf, **kwargs)
+            plt.xlabel('x values')
+            plt.ylabel('Hazard')
+            text_title = str('Beta Distribution\n' + ' Hazard Function ' + '\n' + self.param_title)
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.87)
+            return hf
+    def CHF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
         '''
-        Plots the CHF
-        Invokes Plotting.plot.CHF which will plot only the Cumulative Hazard Function
+        Plots the CHF (cumulative hazard function)
+
+        Inputs:
+        show_plot - True/False. Default is True
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *plotting keywords are also accepted (eg. color, linestyle)
+
+        Outputs:
+        yvals - this is the y-values of the plot
+        The plot will be shown if show_plot is True (which it is by default).
         '''
-        yvals = Plotting.plot('beta', alpha=self.alpha, beta=self.beta,xvals=xvals,xmin=xmin,xmax=xmax,show_plot=show_plot).CHF(**kwargs)
-        return yvals
+        if xvals is not None:
+            X = xvals
+        elif xmin is not None and xmax is not None:
+            X = np.linspace(xmin, xmax, 1000)
+        else:
+            X = np.linspace(0, 1, 1000)  # if no limits are specified, they are assumed
+        chf = -np.log(ss.beta.sf(X, self.alpha, self.beta, 0, 1))
+        if show_plot == False:
+            return chf
+        else:
+            plt.plot(X, chf, **kwargs)
+            plt.xlabel('x values')
+            plt.ylabel('Cumulative hazard')
+            text_title = str('Beta Distribution\n' + ' Cumulative Hazard Function ' + '\n' + self.param_title)
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.87)
+            return chf
     def quantile(self,q):
         '''
         Quantile calculator
@@ -895,8 +2216,14 @@ class Beta_Distribution:
         :param q: quantile to be calculated
         :return: the probability (area under the curve) that a random variable from the distribution is < q
         '''
-        if min(q)<0 or max(q)> 1:
-            raise ValueError('Quantile must be between 0 and 1')
+        if type(q)==int or type(q)==float:
+            if q<0 or q> 1:
+                raise ValueError('Quantile must be between 0 and 1')
+        elif type(q) == np.ndarray or type(q)== list:
+            if min(q) < 0 or max(q) > 1:
+                raise ValueError('Quantile must be between 0 and 1')
+        else:
+            raise ValueError('Quantile must be of type int, float, list, array')
         return ss.beta.ppf(q, self.alpha, self.beta, 0, 1)
     def inverse_SF(self,q):
         '''
@@ -905,8 +2232,14 @@ class Beta_Distribution:
         :param q: quantile to be calculated
         :return: the inverse of the survival function at q
         '''
-        if min(q)<0 or max(q)> 1:
-            raise ValueError('Quantile must be between 0 and 1')
+        if type(q)==int or type(q)==float:
+            if q<0 or q> 1:
+                raise ValueError('Quantile must be between 0 and 1')
+        elif type(q) == np.ndarray or type(q)== list:
+            if min(q) < 0 or max(q) > 1:
+                raise ValueError('Quantile must be between 0 and 1')
+        else:
+            raise ValueError('Quantile must be of type int, float, list, array')
         return ss.beta.isf(q, self.alpha, self.beta, 0, 1)
     def mean_residual_life(self,t):
         '''
