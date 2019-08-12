@@ -13,6 +13,7 @@ Methods:
     name - the name of the distribution. eg. 'Weibull'
     parameter_names - varies by distribution. eg. ['alpha','beta','gamma']
     parameters - returns an array of parameters. eg. [alpha,beta,gamma]
+    alpha, beta, gamma, Lambda, mu, sigma - these vary by distribution but will return the value of their respective parameter.
     mean
     variance
     standard_deviation
@@ -73,6 +74,9 @@ class Weibull_Distribution:
     name - 'Weibull'
     parameter_names - ['alpha','beta','gamma']
     parameters - [alpha,beta,gamma]
+    alpha
+    beta
+    gamma
     mean
     variance
     standard_deviation
@@ -445,6 +449,8 @@ class Normal_Distribution:
     name - 'Normal'
     parameter_names - ['mu','sigma']
     parameters - [mu,sigma]
+    mu
+    sigma
     mean
     variance
     standard_deviation
@@ -807,6 +813,9 @@ class Lognormal_Distribution:
     name - 'Lognormal'
     parameter_names - ['mu','sigma','gamma']
     parameters - [mu,sigma,gamma]
+    mu
+    sigma
+    gamma
     mean
     variance
     standard_deviation
@@ -1174,8 +1183,10 @@ class Exponential_Distribution:
 
     methods:
     name - 'Exponential'
-    parameter_names - ['lambda','gamma']
-    parameters - [lambda,gamma]
+    parameter_names - ['Lambda','gamma']
+    parameters - [Lambda,gamma]
+    Lambda
+    gamma
     mean
     variance
     standard_deviation
@@ -1545,6 +1556,9 @@ class Gamma_Distribution:
     name - 'Gamma'
     parameter_names - ['alpha','beta','gamma']
     parameters - [alpha,beta,gamma]
+    alpha
+    beta
+    gamma
     mean
     variance
     standard_deviation
@@ -1918,6 +1932,8 @@ class Beta_Distribution:
     name - 'Beta'
     parameter_names - ['alpha','beta']
     parameters - [alpha,beta]
+    alpha
+    beta
     mean
     variance
     standard_deviation
