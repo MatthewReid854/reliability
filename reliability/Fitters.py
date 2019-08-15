@@ -67,7 +67,7 @@ class Fit_Everything:
     show_plot - True/False. Defaults to True
     print_results - True/False. Defaults to True. Will show the results of the fitted parameters and the goodness of fit
         tests in a dataframe.
-    show_quantile_plot - True/False. Defaults to True unless there is left censored data in which case Kaplan Meier cannot be applied.
+    show_probability_plot - True/False. Defaults to True unless there is left censored data in which case Kaplan-Meier cannot be applied.
         Provides a comparison of parametric vs non-parametric fit.
 
     outputs:
@@ -104,7 +104,7 @@ class Fit_Everything:
     print('Weibull Alpha =',output.Weibull_2P_alpha,'\nWeibull Beta =',output.Weibull_2P_beta)
 
     '''
-    def __init__(self,failures=None,right_censored=None,left_censored=None, sort_by='BIC', show_plot=True, print_results=True,show_quantile_plot=None):
+    def __init__(self, failures=None, right_censored=None, left_censored=None, sort_by='BIC', show_plot=True, print_results=True, show_probability_plot=None):
         if failures is None or len(failures)<3:
             raise ValueError('Maximum likelihood estimates could not be calculated for these data. There must be at least three failures to calculate 3 parameter models.')
         if right_censored is not None and left_censored is not None: #check that a mix of left and right censoring is not entered
@@ -115,21 +115,21 @@ class Fit_Everything:
             raise  ValueError('show_plot must be either True or False. Defaults to True.')
         if print_results not in [True, False]:
             raise ValueError('print_results must be either True or False. Defaults to True.')
-        if show_quantile_plot not in [True, False, None]:
-            raise ValueError('show_quantile_plot must be either True or False. Defaults to True unless left censored data is provided.')
+        if show_probability_plot not in [True, False, None]:
+            raise ValueError('show_probability_plot must be either True or False. Defaults to True unless left censored data is provided.')
 
         self.failures = failures
         if left_censored is None:
             LC = []
-            if show_quantile_plot is None:
-                show_quantile_plot=True
+            if show_probability_plot is None:
+                show_probability_plot=True
         else:
             LC = left_censored
-            if show_quantile_plot is True:
-                warnings.warn('show_quantile_plot has been changed to False because left censored data has been supplied')
-                show_quantile_plot = False #can't do Kaplan-Meier estimates with left censored data
+            if show_probability_plot is True:
+                warnings.warn('show_probability_plot has been changed to False because left censored data has been supplied')
+                show_probability_plot = False #can't do Kaplan-Meier estimates with left censored data
             else:
-                show_quantile_plot = False #can't do Kaplan-Meier estimates with left censored data
+                show_probability_plot = False #can't do Kaplan-Meier estimates with left censored data
         if right_censored is None:
             RC = []
         else:
@@ -142,7 +142,7 @@ class Fit_Everything:
         self._frac_fail = len(failures) / len(self._all_data)
         self._frac_fail_L = len(failures) / len(np.hstack([failures, LC]))
 
-        # Kaplan-Meier estimate of quantiles. Used in Q-Q plot.
+        # Kaplan-Meier estimate of quantiles. Used in P-P plot.
         d = sorted(self._all_data)  # sorting the failure data is necessary for plotting quantiles in order
         nonparametric = KaplanMeier(failures=failures,right_censored=right_censored, print_results=False, show_plot=False)
         self._nonparametric_CDF = 1 - np.array(nonparametric.KM)  # change SF into CDF
@@ -294,10 +294,10 @@ class Fit_Everything:
         if show_plot==True:
             Fit_Everything.plot_distributions(self) #plotting occurs by default
 
-        if show_quantile_plot==True:
-            Fit_Everything.Q_Q_plot(self) #plotting occurs by default unless there is left censored data
+        if show_probability_plot==True:
+            Fit_Everything.P_P_plot(self) #plotting occurs by default unless there is left censored data
 
-        if show_plot==True or show_quantile_plot==True:
+        if show_plot==True or show_probability_plot==True:
             plt.show()
 
     def plot_distributions(self):
@@ -361,14 +361,14 @@ class Fit_Everything:
         plt.ylabel('Probability density')
         plt.legend()
 
-    def Q_Q_plot(self): #quantile-quantile plot of parametric vs non-parametric
+    def P_P_plot(self): #probability-probability plot of parametric vs non-parametric
 
         plot_id = 251 #set dimensions of plot
         fig_size = (10, 5)
 
         #plot each of the results
         plt.figure(figsize=fig_size)
-        plt.suptitle('Quantile-Quantile plots of Parametric (x-axis)\nvs Non-Parametric (y-axis) for all distributions')
+        plt.suptitle('Probability-Probability plots of Parametric (x-axis)\nvs Non-Parametric (y-axis) for all fitted distributions')
         plt.subplot(plot_id)
         xlim = max(np.hstack([self._nonparametric_CDF,self._parametric_CDF_Exponential_1P]))
         plt.plot(self._nonparametric_CDF,self._parametric_CDF_Exponential_1P,'b',alpha=0.8,linewidth=2)

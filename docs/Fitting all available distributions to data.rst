@@ -15,13 +15,13 @@ Inputs:
 -   sort_by - goodness of fit test to sort results by. Must be either 'BIC' or 'AIC'. Default is BIC.
 -   show_plot - True/False. Defaults to True. Will show the PDF and CDF of the fitted distributions along with a histogram of the failure data.
 -   print_results - True/False. Defaults to True. Will show the results of the fitted parameters and the goodness of fit tests in a dataframe.
--   show_quantile_plot - True/False. Defaults to True unless there is left censored data in which case Kaplan Meier cannot be applied. This plot provides a comparison of parametric vs non-parametric fit.
+-   show_probability_plot - True/False. Defaults to True unless there is left censored data in which case Kaplan-Meier cannot be applied. This plot provides a comparison of parametric vs non-parametric fit.
 
 Outputs:
 
 -   results - a dataframe of the fitted distributions and their parameters, along with the AICc and BIC goodness of fit statistics. This is sorted automatically to provide the best fit first. Use the sort_by='BIC' to change the sort between AICc and BIC. Default sort is BIC. print_results controls whether this is printed. In displaying these results, the pandas dataframe is designed to use the common greek letter parametrisations rather than the scale, shape, location, threshold parametrisations which can become confusing for some distributions.
 -   a plot of the PDF and CDF of each fitted distribution along with a histogram of the failure data. The legend is not in any particular order.
--   a quantile plot of parametric vs non-parametric (a better fit is will lie on the red diagonal).
+-   a probability plot of parametric vs non-parametric (a better fit is will lie on the red diagonal).
 -   best_distribution - a distribution object created based on the parameters of the best fitting distribution. The best distribution is created as a distribution object that can be used like any of the other `distribution <https://reliability.readthedocs.io/en/latest/Creating%20and%20plotting%20distributions.html>`_ objects. See the examples below for how this can be used.
 -   best_distribution_name - the name of the best fitting distribution. E.g. 'Weibull_3P'
 -   parameters and goodness of fit tests for each fitted distribution. For example, the Weibull_3P distribution values are: Weibull_3P_alpha, Weibull_3P_beta, Weibull_3P_gamma, Weibull_3P_BIC, Weibull_3P_AICc.
@@ -34,7 +34,7 @@ In this first example, we will use Fit_Everything on some data and will return o
 
     from reliability.Fitters import Fit_Everything
     data = [4,4,2,4,7,4,1,2,7,1,4,3,6,6,6,3,2,3,4,3,2,3,2,4,6,5,5,2,4,3] # created using Weibull_Distribution(alpha=5,beta=2), and rounded to nearest int
-    Fit_Everything(failures=data, show_plot=False, show_quantile_plot=False)
+    Fit_Everything(failures=data, show_plot=False, show_probability_plot=False)
 
     '''
                            Alpha     Beta  Gamma       Mu     Sigma    Lambda     AICc      BIC
@@ -87,6 +87,6 @@ In this second example, we will create some right censored data and use Fit_Ever
 
 .. image:: images/Fit_everything_histogram.png
 
-.. image:: images/Fit_everything_quantile_plot.png
+.. image:: images/PP_plot.png
 
 The histogram is scaled based on the amount of censored data. If your censored data is all above or below your failure data then the histogram bars should line up well with the fitted distributions (assuming you have enough data). However, if your censored data is not always greater or less than the max and min of your failure data then the heights of the histogram bars will be scaled down and the plot won't look right. This is to be expected as the histogram is only a plot of the failure data and the totals will not add to 100% if there is censored data.

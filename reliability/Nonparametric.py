@@ -110,10 +110,10 @@ class KaplanMeier:
         DATA = {'Failure times': d,
                 'Censoring code (censored=0)': c,
                 'Items remaining': remaining_array,
-                'Kaplan Meier Estimate': KM,
+                'Kaplan-Meier Estimate': KM,
                 'Lower CI bound': KM_lower,
                 'Upper CI bound': KM_upper}
-        dfx = pd.DataFrame(DATA,columns=['Failure times','Censoring code (censored=0)','Items remaining','Kaplan Meier Estimate','Lower CI bound','Upper CI bound'])
+        dfx = pd.DataFrame(DATA,columns=['Failure times','Censoring code (censored=0)','Items remaining','Kaplan-Meier Estimate','Lower CI bound','Upper CI bound'])
         dfy = dfx.set_index('Failure times')
         pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
         pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
