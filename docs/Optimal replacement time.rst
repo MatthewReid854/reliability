@@ -19,7 +19,8 @@ Inputs:
 
 Outputs:
 
--   [ORT, min_cost] - the optimal replacement time and minimum cost per unit time in an array
+-   ORT - the optimal replacement time
+-   min_cost - the minimum cost per unit time
 -   Plot of cost model if show_plot is set to True. Use plt.show() to display it.
 -   Printed results if print_results is set to True.
 

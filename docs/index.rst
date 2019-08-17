@@ -45,6 +45,7 @@ Contents:
   
   Reliability growth
   Optimal replacement time
+  ROCOF
 
 .. toctree::
   :maxdepth: 1

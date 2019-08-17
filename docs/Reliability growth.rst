@@ -19,7 +19,9 @@ Inputs:
     
 Outputs:
 
--   [Lambda, beta, time_to_target] - Array of results. Time to target is only returned if target_MTBF is specified.
+-   Lambda - the lambda parameter from the Duane model
+-   Beta - the beta parameter from the Duane model
+-   time_to_target - The time (from the start of the test) until the target MTBF is reached. time_to_target is only returned if target_MTBF is specified.
 -   If show_plot is True, it will plot the reliability growth. Use plt.show() to show the plot.
 -   If print_results is True, it will print a summary of the fitted parameters and time to target MTBF (if target is specified).
 
