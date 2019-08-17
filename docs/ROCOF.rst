@@ -23,9 +23,9 @@ Outputs:
 -   trend - 'improving','worsening','constant'. This is based on the comparison of U with z_crit
 -   Beta_hat - the Beta parameter for the NHPP Power Law model. Only calculated if the trend is not constant.
 -   Lambda_hat - the Lambda parameter for the NHPP Power Law model. Only calculated if the trend is not constant.
--   ROCOF - the Rate of OCcurrence Of Failures. Only calculated if the trend is constant. If trend is not constant then ROCOF changes over time in accordance with Beta_hat and Lambda_hat.
+-   ROCOF - the Rate of Occurrence Of Failures. Only calculated if the trend is constant. If trend is not constant then ROCOF changes over time in accordance with Beta_hat and Lambda_hat.
 -   printed results. Only printed if print_results is True.
--   plotted results. Only plotted of plot_results is True. Use plt.show() to display it.
+-   plotted results. Only plotted if plot_results is True. Use plt.show() to display it.
 
 In the example below, we provide the failure interarrival times. The function will run the Laplace test using the default 95% confidence interval and then, when a trend is found, it will plot the MTBF based on the calculated NHPP Power Law model. MTBF = 1/ROCOF.
 
