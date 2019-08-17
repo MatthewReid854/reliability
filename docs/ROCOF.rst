@@ -10,7 +10,7 @@ ROCOF is the Rate of Occurrence of Failures. It is used to model the trend (cons
 Inputs:
 
 -   times_between_failures - these are the failure interarrival times.
--   failure_times - these are the actual failure times. Note 1: You can specify either times_between_failures OR failure times but not both. Both options are provided for convenience so the conversion between the two is done internally. failure_times should be the same as np.cumsum(times_between_failures). Note 2: The repair time is assumed to be negligible. If the repair times are not negligibly small then you will need to manually adjust your input to factor in the repair times.
+-   failure_times - these are the actual failure times. Note 1: You can specify either times_between_failures OR failure_times but not both. Both options are provided for convenience so the conversion between the two is done internally. failure_times should be the same as np.cumsum(times_between_failures). Note 2: The repair time is assumed to be negligible. If the repair times are not negligibly small then you will need to manually adjust your input to factor in the repair times.
 -   test_end - use this to specify the end of the test if the test did not end at the time of the last failure.
 -   CI - the confidence interval for the Laplace test. Default is 0.95 for 95% CI.
 -   show_plot - True/False. Default is True. Plotting keywords are also accepted (eg. color, linestyle).
