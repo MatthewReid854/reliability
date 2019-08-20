@@ -22,7 +22,7 @@ Install via ``pip``:
 A quick example
 ---------------
 
-In this example, we will create a Weibull Distribution, and from that distribution we will draw 100 random samples. Using those samples we will obtain a non-parametric estimate of the survival function using the Kaplan-Meier method. Finally, we will plot the parametric and non-parametric distribuions together to see how they compare.
+In this example, we will create a Weibull Distribution, and from that distribution we will draw 100 random samples. Using those samples we will obtain a non-parametric estimate of the survival function using the Kaplan-Meier method. Finally, we will plot the parametric and non-parametric distributions together to see how they compare.
 
 .. code:: python
 
