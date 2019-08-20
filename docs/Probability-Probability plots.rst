@@ -39,21 +39,21 @@ In the example below, we generate two parametric distributions and compare them 
 Semiparametric Probability-Probability plot
 -------------------------------------------
 
-A semiparametric PP plot is still a probability-probability plot, but since we only have one parametric distribution to give us the CDF, we must use the failure data to obtain the nonparametric estimate of the empirical CDF. To create a semiparametric PP plot, we must provide the failure data and the nonparametric method ('KM' or 'NA' for Kaplan-Meier or Nelson-Aalen) to estimate the empirical CDF, and we must also provide the parametric distribution for the parametric CDF. The failure units (times, cycles, rounds fired, strength units, etc.) are the limiting values here so the parametric CDF is only calculated at the failure units since that is the result we get from the empirical CDF. Note that the empirical CDF also accepts X_data_right_censored just as Kaplan-Meier and Nelson-Aalen will also accept right censored data. If the fitted distribution is a good fit the PP_Plot will lie on the diagonal line. Assessing goodness of fit in a graphical way is the main purpose of this type of plot. The `Fit_everything <https://reliability.readthedocs.io/en/latest/Fitting%20all%20available%20distributions%20to%20data.html>`_ function also uses a semiparametric PP plot to show the goodness of fit in a graphical way.
+A semiparametric PP plot is still a probability-probability plot, but since we only have one parametric distribution to give us the CDF, we must use the failure data to obtain the non-parametric estimate of the empirical CDF. To create a semiparametric PP plot, we must provide the failure data and the non-parametric method ('KM' or 'NA' for Kaplan-Meier or Nelson-Aalen) to estimate the empirical CDF, and we must also provide the parametric distribution for the parametric CDF. The failure units (times, cycles, rounds fired, strength units, etc.) are the limiting values here so the parametric CDF is only calculated at the failure units since that is the result we get from the empirical CDF. Note that the empirical CDF also accepts X_data_right_censored just as Kaplan-Meier and Nelson-Aalen will also accept right censored data. If the fitted distribution is a good fit the PP plot will follow the 45 degree diagonal line. Assessing goodness of fit in a graphical way is the main purpose of this type of plot. The `Fit_everything <https://reliability.readthedocs.io/en/latest/Fitting%20all%20available%20distributions%20to%20data.html>`_ function also uses a semiparametric PP plot to show the goodness of fit in a graphical way.
 
 Inputs:
 
--   X_data_failures - the failure times in an array or list
--   X_data_right_censored - the right censored failure times in an array or list. Optional input.
+-   X_data_failures - the failure times in an array or list. The empirical CDF of this data will be plotted along the X-axis.
+-   X_data_right_censored - the right censored failure times in an array or list. This is an optional input.
 -   Y_dist - a probability distribution. The CDF of this distribution will be plotted along the Y-axis.
--   method - 'KM' or 'NA' for Kaplan-Meier and Nelson-Aalen. Default is 'KM'
+-   method - 'KM' or 'NA' for Kaplan-Meier or Nelson-Aalen. Default is 'KM'
 -   show_diagonal_line - True/False. Default is True. If True the diagonal line will be shown on the plot.
 
 Outputs:
 
 -   The PP_plot is the only output. Use plt.show() to show it.
 
-In the example below, we create 100 random samples from a Weibull distribution. We hypothesise that a Normal distribution may fit this data well so we fit the Normal distribution and then plot the CDF of the fitted distribution against the empirical CDF (obtained using the Kaplan-Meier estimate). We see that the plot follows the 45 degree diagonal quite well so we may consider that the fitted Normal distribution is reasonably good at describing this data sample. Ideally, this comparison should be made against other distributions as well and the graphical results are often hard to tell apart which is why we resort to quantitative goodness of fit measures like AICc and BIC.
+In the example below, we create 100 random samples from a Weibull distribution. We hypothesise that a Normal distribution may fit this data well so we fit the Normal distribution and then plot the CDF of the fitted distribution against the empirical CDF (obtained using the Kaplan-Meier estimate). We see that the plot follows the 45 degree diagonal quite well so we may consider that the fitted Normal distribution is reasonably good at describing this data. Ideally, this comparison should be made against other distributions as well and the graphical results are often hard to tell apart which is why we often use quantitative goodness of fit measures like AICc and BIC.
 
 .. code:: python
 
@@ -66,3 +66,5 @@ In the example below, we create 100 random samples from a Weibull distribution. 
     plt.show()
 
 .. image:: images/PPsemiparametric.png
+
+To see how semiparametric PP plots compare with semiparametric QQ plots as a graphical goodness of fit test, please see the second example in the section on `comparing PP plots with QQ plots <https://reliability.readthedocs.io/en/latest/Quantile-Quantile%20plots.html#comparing-pp-plots-with-qq-plots>`_.
