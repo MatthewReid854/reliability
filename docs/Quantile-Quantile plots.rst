@@ -29,6 +29,8 @@ In the example below, we have determined that the field failures follow a Weibul
 .. code:: python
 
     from reliability.Other_functions import QQ_plot_parametric
+    from reliability.Distributions import Weibull_Distribution
+    import matplotlib.pyplot as plt
     Field = Weibull_Distribution(alpha=350,beta=2.01)
     Lab = Weibull_Distribution(alpha=128,beta=2.11)
     QQ_plot_parametric(X_dist=Lab, Y_dist=Field)
@@ -62,6 +64,8 @@ In the example below, we generate 100 random samples from a Normal distribution.
 
     from reliability.Other_functions import QQ_plot_semiparametric
     from reliability.Fitters import Fit_Weibull_2P
+    from reliability.Distributions import Normal_Distribution, Weibull_Distribution
+    import matplotlib.pyplot as plt
     DATA = Normal_Distribution(mu=50,sigma=12).random_samples(100)
     wbf = Fit_Weibull_2P(failures=DATA)
     dist = Weibull_Distribution(alpha=wbf.alpha,beta=wbf.beta)
@@ -78,6 +82,8 @@ In this example we compare a QQ_plot_parametric with a PP_plot_parametric for th
 .. code:: python
 
     from reliability.Other_functions import QQ_plot_parametric, PP_plot_parametric
+    from reliability.Distributions import Weibull_Distribution
+    import matplotlib.pyplot as plt
     Field = Weibull_Distribution(alpha=350,beta=2.01)
     Lab = Weibull_Distribution(alpha=128,beta=2.11)
     plt.figure(figsize=(10,5))
@@ -95,6 +101,8 @@ In this example we compare a QQ_plot_semiparametric with a PP_plot_semiparametri
 
     from reliability.Other_functions import PP_plot_semiparametric, QQ_plot_semiparametric
     from reliability.Fitters import Fit_Normal_2P
+    from reliability.Distributions import Weibull_Distribution,Normal_Distribution
+    import matplotlib.pyplot as plt
     DATA = Weibull_Distribution(alpha=100,beta=3).random_samples(100) #create some data
     nf = Fit_Normal_2P(failures=DATA) #fit a normal distribution
     dist = Normal_Distribution(mu=nf.mu,sigma=nf.sigma) #generate the Normal distribution using the fitted parameters
