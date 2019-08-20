@@ -24,7 +24,7 @@ Outputs:
 -   The QQ_plot will always be output. Use plt.show() to show it.
 -   [m,m1,c1] - these are the values for the lines of best fit. m is used in Y=mX, and m1 and c1 are used in Y=m1X+c1
 
-In the example below, we have determined that the field failures follow a Weibull distribution (alpha=350,beta=2.01) with time represented in months. By using an accelerated life test we have replicated the failure mode and Weibull shape parameter reasonably closely and the Lab failures follow a Weibull distribution (alpha=128,beta=2.11) with time measured in hours. We would like to obtain a simple Field-to-Lab conversion for time so we know how much lab time is required to simulate 10 years of field time. The QQ-plot will automatically provide the equations for the lines of best fit. If we use the Y=mX equation we see that Field(months)=2.757 * Lab(hours). Therefore, to simulate 10 years of field time (120 months) we need to run the accelerated life test for approximately 43.5 hours in the Lab.
+In the example below, we have determined that the field failures follow a Weibull distribution (α=350, β=2.01) with time represented in months. By using an accelerated life test we have replicated the failure mode and Weibull shape parameter reasonably closely and the Lab failures follow a Weibull distribution (α=128, β=2.11) with time measured in hours. We would like to obtain a simple Field-to-Lab conversion for time so we know how much lab time is required to simulate 10 years of field time. The QQ-plot will automatically provide the equations for the lines of best fit. If we use the Y=mX equation we see that Field(months)=2.757 * Lab(hours). Therefore, to simulate 10 years of field time (120 months) we need to run the accelerated life test for approximately 43.5 hours in the Lab.
 
 .. code:: python
 
@@ -39,9 +39,24 @@ In the example below, we have determined that the field failures follow a Weibul
 Semiparametric Quantile-Quantile plot
 -------------------------------------
 
+This plot is still a Quantile-Quantile plot (plotting failure units vs failure units for shared quantiles), but instead of using two parametric distributions, we use the failure data directly as one set of quantiles. We then estimate what the quantiles of the parametric distribution would be and plot the parametric (theoretical) failure units against the actual failure units.
+To generate this plot we begin with the failure units (these may be units of time, strength, cycles, landings, etc.). We then obtain an emprical CDF using either Kaplan-Meier or Nelson-Aalen. The empirical CDF gives us the quantiles we will use to equate the actual and theoretical failure times. Once we have the empirical CDF, we use the inverse survival function of the specified distribution to obtain the theoretical failure units and then plot the actual and theoretical failure units together. If the specified distribution is a good fit, then the QQ_plot should be a reasonably straight line along the diagonal. The primary purpose of this plot is as a graphical goodness of fit test.
 
+Inputs:
 
-In the example below,
+-   X_data_failures - the failure times in an array or list. These will be plotted along the X-axis.
+-   X_data_right_censored - the right censored failure times in an array or list. Optional input.
+-   Y_dist - a probability distribution. The quantiles of this distribution will be plotted along the Y-axis.
+-   method - 'KM' or 'NA' for Kaplan-Meier or Nelson-Aalen. Default is 'KM'
+-   show_fitted_lines - True/False. Default is True. These are the Y=mX and Y=mX+c lines of best fit.
+-   show_diagonal_line - True/False. Default is False. If True the diagonal line will be shown on the plot.
+
+Outputs:
+
+-   The QQ_plot will always be output. Use plt.show() to show it.
+-   [m,m1,c1] - these are the values for the lines of best fit. m is used in Y=mX, and m1 and c1 are used in Y=m1X+c1
+
+In the example below, we generate 100 random samples from a Normal distribution. We then fit a Weibull_2P distribution to this data and using QQ_plot_semiparametric we compare the actual quantile (the original data) with the theoretical quantiles (from the fitted distribution). The lines of best fit are automatically provided and the Y=0.99X shows the relationship is very close to perfect with only some deviation around the tails of the distribution. The final example on this page compares a QQ_plot_semiparametric with a PP_plot_semiparametric for the same dataset to show the differences between the two.
 
 .. code:: python
 
@@ -55,7 +70,7 @@ In the example below,
     
 .. image:: images/QQsemiparametric.png
 
-In the example below,
+This example compares a QQ_plot_parametric with a PP_plot_parametric for the same pair of distributions. It is not practical to compare the output of the two plots as they are so vastly different and are used for different purposes, but for the reader's understanding, the comparison is provided. The differences are so significant because one is the time at which the fraction has failed (the Quantile) and the other is the fraction failing (the CDF). Parametric PP plots are not very commonly used as their only use is in providing a graphical understanding of the differences between the CDFs of two distributions, such as how one lags or leads the other at various times. See `Probability-Probability plots <https://reliability.readthedocs.io/en/latest/Probability-Probability%20plots.html>`_ for more detail on the uses on parametric PP plots.
 
 .. code:: python
 
@@ -71,15 +86,15 @@ In the example below,
 
 .. image:: images/PPvsQQparametric.png
 
-In the example below,
+In this example we compare a QQ_plot_semiparametric with a PP_plot_semiparametric for the same dataset. Both plots are intended to be used as graphical goodness of fit tests. In a PP plot we get a lot of resolution in the center of the distributions, but less at the tails, whereas the QQ plot gives very good resolution at the tails, but less in the center. Because most data analysts are more concerned about the extremes (tails) of a distribution, QQ plots are the more commonly used plot between the two.
 
 .. code:: python
 
     from reliability.Other_functions import PP_plot_semiparametric, QQ_plot_semiparametric
     from reliability.Fitters import Fit_Normal_2P
-    DATA = Weibull_Distribution(alpha=100,beta=3).random_samples(100)
-    nf = Fit_Normal_2P(failures=DATA)
-    dist = Normal_Distribution(mu=nf.mu,sigma=nf.sigma)
+    DATA = Weibull_Distribution(alpha=100,beta=3).random_samples(100) #create some data
+    nf = Fit_Normal_2P(failures=DATA) #fit a normal distribution
+    dist = Normal_Distribution(mu=nf.mu,sigma=nf.sigma) #generate the Normal distribution using the fitted parameters
     plt.figure(figsize=(10,5))
     plt.subplot(121)
     QQ_plot_semiparametric(X_data_failures=DATA,Y_dist=dist,show_fitted_lines=False,show_diagonal_line=True)
