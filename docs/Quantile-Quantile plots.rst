@@ -5,7 +5,7 @@
 Quantile-Quantile plots
 '''''''''''''''''''''''
 
-This section contains two different styles of quantile-quantile plots. These are the fully parametric quantile-quantile plot (``reliability.Other_functions.QQ_plot_parametric``) and the semi-parametric quantile-quantile plot (``reliability.Other_functions.QQ_plot_semiparametric``). These will be described separately below. A quantile-quantile (QQ) plot is made by plotting failure units vs failure units for shared quantiles. A quantile is the fraction failing (ranging from 0 to 1).
+This section contains two different styles of quantile-quantile plots. These are the fully parametric quantile-quantile plot (``reliability.Other_functions.QQ_plot_parametric``) and the semi-parametric quantile-quantile plot (``reliability.Other_functions.QQ_plot_semiparametric``). These will be described separately below. A quantile-quantile (QQ) plot is made by plotting failure units vs failure units for shared quantiles. A quantile is the value of random variable (time, cycles, landings, etc.) which corresponds to a given fraction failing (that ranges from 0 to 1).
 
 Parametric Quantile-Quantile plot
 ---------------------------------
