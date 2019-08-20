@@ -56,6 +56,8 @@ Contents:
   Sample size required for no failures
   Sequential sampling chart
   Convert dataframe to grouped lists
+  Quantile-Quantile plots
+  Probability-Probability plots
 
 .. toctree::
   :maxdepth: 1
