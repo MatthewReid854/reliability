@@ -70,7 +70,10 @@ In the example below, we generate 100 random samples from a Normal distribution.
     
 .. image:: images/QQsemiparametric.png
 
-This example compares a QQ_plot_parametric with a PP_plot_parametric for the same pair of distributions. It is not practical to compare the output of the two plots as they are so vastly different and are used for different purposes, but for the reader's understanding, the comparison is provided. The differences are so significant because one is the time at which the fraction has failed (the Quantile) and the other is the fraction failing (the CDF). Parametric PP plots are not very commonly used as their only use is in providing a graphical understanding of the differences between the CDFs of two distributions, such as how one lags or leads the other at various times. See `Probability-Probability plots <https://reliability.readthedocs.io/en/latest/Probability-Probability%20plots.html>`_ for more detail on the uses on parametric PP plots.
+Comparing PP plots with QQ plots
+--------------------------------
+
+In this example we compare a QQ_plot_parametric with a PP_plot_parametric for the same pair of distributions. It is not practical to compare the output of the two plots as they are so vastly different and are used for different purposes, but for the reader's understanding, the comparison is provided. The differences are so significant because one is the time at which the fraction has failed (the Quantile) and the other is the fraction failing (the CDF). Parametric PP plots are not very commonly used as their only use is in providing a graphical understanding of the differences between the CDFs of two distributions, such as how one lags or leads the other at various times. See `Probability-Probability plots <https://reliability.readthedocs.io/en/latest/Probability-Probability%20plots.html>`_ for more detail on the uses on parametric PP plots.
 
 .. code:: python
 
