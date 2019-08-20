@@ -7,8 +7,8 @@ Probability-Probability plots
 
 This section contains two different styles of probability-probability plots. These are the fully parametric probability-probability plot (``reliability.Other_functions.PP_plot_parametric``) and the semi-parametric probability-probability plot (``reliability.Other_functions.PP_plot_semiparametric``). These will be described separately below. A probability-probability (PP) plot is made by plotting the fraction failing (CDF) of one distribution vs the fraction failing (CDF) of another distribution. In the semiparametric form, when we only have the failure data and one hypothesised distribution, the CDF for the data can be obtained non-parametrically to generate an Empirical CDF.
 
-Parametric Quantile-Quantile plot
----------------------------------
+Parametric Probability-Probability plot
+---------------------------------------
 
 To generate this plot we simply plot the CDF of one distribution vs the CDF of another distribution. If the distributions are very similar, the points will lie on the 45 degree diagonal. Any deviation from this diagonal indicates that one distribution is leading or lagging the other. Fully parametric PP plots are rarely used as their utility is limited to providing a graphical comparison of the similarity between two CDFs. To aide this comparison, the PP_plot_parametric function accepts x and y quantile lines that will be traced across to the other distribution.
 
@@ -36,8 +36,8 @@ In the example below, we generate two parametric distributions and compare them 
 
 .. image:: images/PPparametric.png
 
-Semiparametric Quantile-Quantile plot
----------------------------------
+Semiparametric Probability-Probability plot
+-------------------------------------------
 
 A semiparametric PP plot is still a probability-probability plot, but since we only have one parametric distribution to give us the CDF, we must use the failure data to obtain the nonparametric estimate of the empirical CDF. To create a semiparametric PP plot, we must provide the failure data and the nonparametric method ('KM' or 'NA' for Kaplan-Meier or Nelson-Aalen) to estimate the empirical CDF, and we must also provide the parametric distribution for the parametric CDF. The failure units (times, cycles, rounds fired, strength units, etc.) are the limiting values here so the parametric CDF is only calculated at the failure units since that is the result we get from the empirical CDF. Note that the empirical CDF also accepts X_data_right_censored just as Kaplan-Meier and Nelson-Aalen will also accept right censored data. If the fitted distribution is a good fit the PP_Plot will lie on the diagonal line. Assessing goodness of fit in a graphical way is the main purpose of this type of plot. The `Fit_everything <https://reliability.readthedocs.io/en/latest/Fitting%20all%20available%20distributions%20to%20data.html>`_ function also uses a semiparametric PP plot to show the goodness of fit in a graphical way.
 
