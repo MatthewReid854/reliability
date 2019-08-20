@@ -455,7 +455,7 @@ def PP_plot_semiparametric(X_data_failures=None, X_data_right_censored=None, Y_d
     If the fitted distribution is a good fit the PP_Plot will lie on the diagonal line. Assessing goodness of fit in a graphical way is the main purpose of this type of plot.
     To create a semi-parametric PP_plot, we must provide the failure data and the method ('KM' or 'NA' for Kaplan-Meier or Nelson-Aalen) to estimate the empirical CDF, and we must also provide the parametric distribution for the parametric CDF.
     The failure times are the limiting values here so the parametric CDF is only calculated at the failure times since that is the result from the empirical CDF.
-    Note that the empirical CDF also accepts X_data_right_censored just as Kampal-Meier and Nelson-Aalen will also accept right censored data.
+    Note that the empirical CDF also accepts X_data_right_censored just as Kaplan-Meier and Nelson-Aalen will also accept right censored data.
 
     Inputs:
     X_data_failures - the failure times in an array or list
