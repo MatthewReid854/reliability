@@ -29,6 +29,8 @@ In the example below, we generate two parametric distributions and compare them 
 .. code:: python
 
     from reliability.Other_functions import PP_plot_parametric
+    from reliability.Distributions import Weibull_Distribution,Normal_Distribution
+    import matplotlib.pyplot as plt
     Field = Normal_Distribution(mu=100,sigma=30)
     Lab = Weibull_Distribution(alpha=120,beta=3)
     PP_plot_parametric(X_dist=Field, Y_dist=Lab, x_quantile_lines=[0.3, 0.6], y_quantile_lines=[0.1, 0.6])
@@ -59,6 +61,8 @@ In the example below, we create 100 random samples from a Weibull distribution. 
 
     from reliability.Other_functions import PP_plot_semiparametric
     from reliability.Fitters import Fit_Normal_2P
+    from reliability.Distributions import Weibull_Distribution,Normal_Distribution
+    import matplotlib.pyplot as plt
     DATA = Weibull_Distribution(alpha=5,beta=3).random_samples(100)
     nf = Fit_Normal_2P(failures=DATA)
     dist = Normal_Distribution(mu=nf.mu,sigma=nf.sigma)
