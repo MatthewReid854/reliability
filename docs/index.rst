@@ -15,6 +15,7 @@ Contents:
 
   Quickstart for reliability
   Introduction to the field of reliability engineering
+  Recommended resources
 
 .. toctree::
   :maxdepth: 1
