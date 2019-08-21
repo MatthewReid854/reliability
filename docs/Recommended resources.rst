@@ -17,7 +17,7 @@ The following collection of resources are things I have found useful during my r
 
 -    `Lifelines <https://github.com/CamDavidsonPilon/lifelines/blob/master/README.md>`_ - a Python library for survival analysis.
 -    `Parameter Solver v3.0 <https://biostatistics.mdanderson.org/SoftwareDownload/SingleSoftware/Index/6>`_ - a biostatistics tool for quickly making some simple calculations with probability distributions.
--    `Orange <https://orange.biolab.si/>`_ - a standalone data mining program that runs using Python.
+-    `Orange <https://orange.biolab.si/>`_ - a standalone data mining and data visualization program that runs using Python. Beautifully interactive data analysis workflows with a large toolbox. Not much reliability related content but good for preprocessing.
 -    `R Studio - Survival analysis library <https://r-posts.com/steps-to-perform-survival-analysis-in-r/>`_ - one of the more popular survival analysis libraries available in the open source commmunity.
 
 **Paid software**
@@ -28,7 +28,7 @@ The following collection of resources are things I have found useful during my r
 
 **Websites for Reliability**
 
--    `Reliawiki <http://reliawiki.org/index.php/Life_Data_Analysis_Reference_Book>`_ - an excellent reference written by Reliasoft that is intended largely as a guide to reliability eengineering when using Reliasoft's software but is equally as good to understand concepts without using their software.
+-    `Reliawiki <http://reliawiki.org/index.php/Life_Data_Analysis_Reference_Book>`_ - an excellent reference written by Reliasoft that is intended largely as a guide to reliability engineering when using Reliasoft's software but is equally as good to understand concepts without using their software.
 -    `Reliability Analytics Toolkit <https://reliabilityanalyticstoolkit.appspot.com/>`_ - a collection of tools which run using the Google App Engine.
 -    `Univariate distributions relationships <http://www.math.wm.edu/~leemis/chart/UDR/UDR.html>`_ - an excellent resource for understanding more about probability distributions and how they are related. Some strange parametrisations are used in the documentation.
 -    `Kijima G-renewal process <http://www.soft4structures.com/WeibullGRP/JSPageGRP.jsp>`_ - an online calculator for simulating the G-renewal process
