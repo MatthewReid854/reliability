@@ -7,13 +7,13 @@ Recommended resources
 
 The following collection of resources are things I have found useful during my reliability engineering studies and also while writing ``reliability``. There are many other resources available (especially textbooks), so I encourage you to do your own research. If you find something you think is worth adding here, please send me an email.
 
-# Textbooks
+**Textbooks**
 
 -    Reliability Engineering and Risk Analysis, Modarrres, Kaminskiy, Krivtsov
 -    Probability Distributions Used in Reliability Engineering, O'Conner, Modarres, Mosleh <http://crr.umd.edu/sites/default/files/FreeBooks/Probability%20Distributions%20Used%20in%20Reliability%20Engineering%20r1.pdf>
 -    Practical Reliability Engineering, O'Conner, Kleyner
 
-# Free software
+#Free software
 
 -    Lifelines (Python library) <https://github.com/CamDavidsonPilon/lifelines/blob/master/README.md>
 -    Parameter Solver v3.0 <https://biostatistics.mdanderson.org/SoftwareDownload/SingleSoftware/Index/6>
