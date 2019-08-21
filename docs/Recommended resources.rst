@@ -13,14 +13,14 @@ The following collection of resources are things I have found useful during my r
 -    Probability Distributions Used in Reliability Engineering, O'Conner, Modarres, Mosleh <http://crr.umd.edu/sites/default/files/FreeBooks/Probability%20Distributions%20Used%20in%20Reliability%20Engineering%20r1.pdf>
 -    Practical Reliability Engineering, O'Conner, Kleyner
 
-#Free software
+**Free software**
 
 -    Lifelines (Python library) <https://github.com/CamDavidsonPilon/lifelines/blob/master/README.md>
--    Parameter Solver v3.0 <https://biostatistics.mdanderson.org/SoftwareDownload/SingleSoftware/Index/6>
--    Orange <https://orange.biolab.si/>
--    R Studio - Survival analysis library <https://r-posts.com/steps-to-perform-survival-analysis-in-r/>
+-   Parameter Solver v3.0 <https://biostatistics.mdanderson.org/SoftwareDownload/SingleSoftware/Index/6>
+-  Orange <https://orange.biolab.si/>
+- R Studio - Survival analysis library <https://r-posts.com/steps-to-perform-survival-analysis-in-r/>
 
-# Paid software
+**Paid software**
 
 -    Minitab
 -    Reliasoft
