@@ -41,6 +41,7 @@ The following collection of resources are things I have found useful during my r
 -    `Wolfram Alpha <https://www.wolframalpha.com/>`_ - an amazing computational knowledge engine. Great for checking your calculations.
 -    `Derivative calculator <https://www.derivative-calculator.net/>`_ - calculates derivatives. Slightly more user friendly input method than Wolfram alpha and doesn't time out as easily for big calculations.
 -    `Integral calculator <https://www.integral-calculator.com/>`_ - calculates integrals. Slightly more user friendly input method than Wolfram alpha and doesn't time out as easily for big calculations.
+-    `Cross Validated <https://stats.stackexchange.com/>`_ - an online forum for asking statistics and mathematics questions. Check for existing answers before posting your own question.
 
 **Getting free access to academic papers**
 
