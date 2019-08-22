@@ -34,6 +34,7 @@ The following collection of resources are things I have found useful during my r
 -    `Kijima G-renewal process <http://www.soft4structures.com/WeibullGRP/JSPageGRP.jsp>`_ - an online calculator for simulating the G-renewal process.
 -    `Prediction of future recurrent events <http://www.soft4structures.com/WeibullGRP/JSPageGRPinverse_1.jsp>`_ - an online calculator for predicting future recurrent events with different underlying probability functions.
 -    `Maintenance optimization <http://www.soft4structures.com/WeibullGRP/JSPageMTN.jsp>`_ - an online calculator for optimal replacement policy (time) under Kijima imperfect repair model.
+-    `Wikipedia <https://en.wikipedia.org/wiki/Reliability_engineering>`_ - it's always worth checking if there's an article on there about the topic you're trying to understand.
 
 **Websites for Mathematics**
 
