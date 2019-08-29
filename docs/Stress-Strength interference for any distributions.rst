@@ -43,6 +43,6 @@ In this example, we will create a stress and strength distribution, and leaving 
 
 .. image:: images/stress_strength_convergence.png
 
-Note that in the convergence plot, the probability of failure varies randomly when the number of monte carlo trials is small, but as the number of trials is increased, the probability of failure approaches a constant, which will be the exact solution as monte carlo trials approaches infinity.
+.. note:: In the convergence plot, the probability of failure varies randomly when the number of monte carlo trials is small, but as the number of trials is increased, the probability of failure approaches a constant. This constant will be the exact solution as monte carlo trials approaches infinity.
 
 Easter Egg: The logo for ``reliability`` was created using the stress strength interference plot of two Weibull distributions.
