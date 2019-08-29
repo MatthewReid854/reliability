@@ -32,7 +32,10 @@ The supported distributions for failures and left censored data are:
 -   Beta_2P
 -   Weibull_Mixture (see the `section <https://reliability.readthedocs.io/en/latest/Weibull%20mixture%20models.html>`_ on this)
 
-Note that the Beta distribution is only for data in the range {0,1}.
+.. note:: The Beta distribution is only for data in the range {0,1}. Specifying data outside of this range will trigger an error.
+
+.. note:: The current method of fitting the location shifted distributions (Weibull_3P, Exponential_2P, Gamma_3P) is not perfectly accurate. The optimisation method is sensitive to the quality of the initial guess and this initial guess is provided by scipy which does a rather prro job of estimating the parameters. This is planned to be solved in a future release but at this stage there is no known fix. If you are fitting location shifted distributions and your work is important, I would recommend using commercial software.
+
 If you do not know which distribution you want to fit, then please see the `section <https://reliability.readthedocs.io/en/latest/Fitting%20all%20available%20distributions%20to%20data.html>`_ on using the Fit_Everything function which will find the best distribution to describe your data.
 
 To learn how we can fit a distribution, we will start by using a simple example with 10 failure times. These times were generated from a Weibull distribution with α=5, β=2.
