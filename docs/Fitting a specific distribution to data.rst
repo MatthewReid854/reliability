@@ -34,7 +34,7 @@ The supported distributions for failures and left censored data are:
 
 .. note:: The Beta distribution is only for data in the range {0,1}. Specifying data outside of this range will trigger an error.
 
-.. note:: The current method of fitting the location shifted distributions (Weibull_3P, Exponential_2P, Gamma_3P) is not perfectly accurate. The optimisation method is sensitive to the quality of the initial guess and this initial guess is provided by scipy which does a rather prro job of estimating the parameters. This is planned to be solved in a future release but at this stage there is no known fix. If you are fitting location shifted distributions and your work is important, I would recommend using commercial software.
+.. note:: The current method of fitting the location shifted distributions (Weibull_3P, Exponential_2P, Gamma_3P) is not perfectly accurate. The optimisation method is sensitive to the quality of the initial guess and this initial guess is provided by scipy which does a rather poor job of estimating the parameters. This is planned to be solved in a future release but at this stage there is no known fix. If you are fitting location shifted distributions and your work is important, I would recommend using commercial software.
 
 If you do not know which distribution you want to fit, then please see the `section <https://reliability.readthedocs.io/en/latest/Fitting%20all%20available%20distributions%20to%20data.html>`_ on using the Fit_Everything function which will find the best distribution to describe your data.
 
