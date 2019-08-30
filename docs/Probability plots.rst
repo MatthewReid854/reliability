@@ -45,4 +45,25 @@ In the example below we generate some samples from a Normal Distribution and pro
     
 .. image:: images/Normal_probability_plot.png
 
-In this second example, we will fit an Exponential distribution that has a gamma...more to come soon
+In this second example, we will fit an Exponential distribution to some right censored data. To create this data, we will draw it from an exponentail distribution that has a location shift of 12. Once again, the true 
+
+.. code:: python
+
+    from reliability.Distributions import Exponential_Distribution
+    from reliability.Probability_plotting import Exponential_probability_plot
+    import matplotlib.pyplot as plt
+    dist = Exponential_Distribution(Lambda=0.25,gamma=12)
+    Exponential_Distribution(Lambda=0.25).CDF(linestyle='--',label='true') #we can't plot dist because it will be location shifted
+    raw_data = dist.random_samples(100) #draw some random data from an exponential distribution
+    #right censor the data at 17
+    failures = []
+    censored = []
+    for item in raw_data:
+        if item > 17:
+            censored.append(17)
+        else:
+            failures.append(item)
+    Exponential_probability_plot(failures=failures,right_censored=censored,fit_gamma=True) #do the probability plot. Note that we have specified to fit gamma
+    plt.show()
+
+.. image:: images/Exponential_probability_plot.png
