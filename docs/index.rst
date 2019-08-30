@@ -28,6 +28,14 @@ Contents:
 
 .. toctree::
   :maxdepth: 1
+  :caption: Probability Plotting
+
+  Probability plots
+  Quantile-Quantile plots
+  Probability-Probability plots
+
+.. toctree::
+  :maxdepth: 1
   :caption: Non-parametric models
 
   Kaplan-Meier estimate of reliability
@@ -57,8 +65,6 @@ Contents:
   Sample size required for no failures
   Sequential sampling chart
   Convert dataframe to grouped lists
-  Quantile-Quantile plots
-  Probability-Probability plots
 
 .. toctree::
   :maxdepth: 1
