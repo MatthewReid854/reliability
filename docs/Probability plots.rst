@@ -67,3 +67,51 @@ In this second example, we will fit an Exponential distribution to some right ce
     plt.show()
 
 .. image:: images/Exponential_probability_plot.png
+
+In this third example, we will see how probability plotting can be used to highlight the importance of getting as much data as possible. This code performs a loop in which increasing numbers of samples are used for fitting a Weibull distribution and the accuracy of the results (shown both in the legend and by comparison with the True CDF) increases with the number of samples.
+
+.. code:: python
+
+    from reliability.Distributions import Weibull_Distribution
+    from reliability.Probability_plotting import Weibull_probability_plot
+    import matplotlib.pyplot as plt
+    dist = Weibull_Distribution(alpha=250,beta=3)
+    for i,x in enumerate([10,100,1000]):
+        plt.subplot(131+i)
+        dist.CDF(linestyle='--',label='True CDF')
+        failures = dist.random_samples(x) #take 10,100,1000 samples
+        Weibull_probability_plot(failures=failures) #this is the probability plot
+        plt.title(str(str(x)+' samples'))
+    plt.gcf().set_size_inches(15,7) #adjust the figuresize after creation. Necessary to do it after as it it automatically ajdusted within probability_plot
+    plt.subplots_adjust(left=0.08,right=0.98,top=0.92,wspace=0.35) #formatting for the figure layout
+    plt.show()
+
+.. image:: images/Weibull_probability_plot_multi.png
+
+In this final example, we take a look at how a probability plot can show us that there's something wrong with our assumption of a single distribution. To generate the data, the random samples are drawn from two different distributions which are shown in the left image. In the right image, the scatterplot of failure times is clearly non-linear. The red line is the attempt to fit a single Weibull_2P distribution and this will do a poor job of modelling the data. Also note that the points of the scatterplot do not fall on the True CDF of each distribution. This is because the median rank method of obtaining the plotting positions does not work well if the failure times come from more than one distribution. If you see a pattern like this, try a `mixture model <https://reliability.readthedocs.io/en/latest/Weibull%20mixture%20models.html>`_. Always remember that cusps, corners, and doglegs indicate a mixture of failure modes.
+
+.. code:: python
+
+    from reliability.Distributions import Weibull_Distribution
+    from reliability.Probability_plotting import Weibull_probability_plot
+    import matplotlib.pyplot as plt
+    import numpy as np
+    dist_1 = Weibull_Distribution(alpha=200,beta=3)
+    dist_2 = Weibull_Distribution(alpha=900,beta=4)
+    plt.subplot(121)
+    dist_1.PDF(label='dist 1')
+    dist_2.PDF(label='dist 2')
+    plt.legend()
+    plt.title('PDF of dist 1 and dist 2')
+    plt.subplot(122)
+    dist_1_data = dist_1.random_samples(50)
+    dist_2_data = dist_2.random_samples(50)
+    all_data = np.hstack([dist_1_data,dist_2_data])
+    dist_1.CDF(label='dist 1')
+    dist_2.CDF(label='dist 2')
+    Weibull_probability_plot(failures=all_data)
+    plt.gcf().set_size_inches(13,7) #adjust the figuresize after creation. Necessary to do it after as it it automatically ajdusted within probability_plot
+    plt.subplots_adjust(left=0.08,right=0.96)
+    plt.show()
+
+.. image:: images/probability_plot_mixture.png
