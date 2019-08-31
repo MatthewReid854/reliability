@@ -5,7 +5,7 @@
 Quantile-Quantile plots
 '''''''''''''''''''''''
 
-This section contains two different styles of quantile-quantile plots. These are the fully parametric quantile-quantile plot (``reliability.Other_functions.QQ_plot_parametric``) and the semi-parametric quantile-quantile plot (``reliability.Other_functions.QQ_plot_semiparametric``). These will be described separately below. A quantile-quantile (QQ) plot is made by plotting failure units vs failure units for shared quantiles. A quantile is the value of random variable (time, cycles, landings, etc.) which corresponds to a given fraction failing (that ranges from 0 to 1).
+This section contains two different styles of quantile-quantile plots. These are the fully parametric quantile-quantile plot (``reliability.Probability_plotting.QQ_plot_parametric``) and the semi-parametric quantile-quantile plot (``reliability.Probability_plotting.QQ_plot_semiparametric``). These will be described separately below. A quantile-quantile (QQ) plot is made by plotting failure units vs failure units for shared quantiles. A quantile is the value of random variable (time, cycles, landings, etc.) which corresponds to a given fraction failing (that ranges from 0 to 1).
 
 Parametric Quantile-Quantile plot
 ---------------------------------
@@ -28,7 +28,7 @@ In the example below, we have determined that the field failures follow a Weibul
 
 .. code:: python
 
-    from reliability.Other_functions import QQ_plot_parametric
+    from reliability.Probability_plotting import QQ_plot_parametric
     from reliability.Distributions import Weibull_Distribution
     import matplotlib.pyplot as plt
     Field = Weibull_Distribution(alpha=350,beta=2.01)
@@ -62,7 +62,7 @@ In the example below, we generate 100 random samples from a Normal distribution.
 
 .. code:: python
 
-    from reliability.Other_functions import QQ_plot_semiparametric
+    from reliability.Probability_plotting import QQ_plot_semiparametric
     from reliability.Fitters import Fit_Weibull_2P
     from reliability.Distributions import Normal_Distribution, Weibull_Distribution
     import matplotlib.pyplot as plt
@@ -81,7 +81,7 @@ In this example we compare a QQ_plot_parametric with a PP_plot_parametric for th
 
 .. code:: python
 
-    from reliability.Other_functions import QQ_plot_parametric, PP_plot_parametric
+    from reliability.Probability_plotting import QQ_plot_parametric, PP_plot_parametric
     from reliability.Distributions import Weibull_Distribution
     import matplotlib.pyplot as plt
     Field = Weibull_Distribution(alpha=350,beta=2.01)
@@ -99,7 +99,7 @@ In this example we compare a QQ_plot_semiparametric with a PP_plot_semiparametri
 
 .. code:: python
 
-    from reliability.Other_functions import PP_plot_semiparametric, QQ_plot_semiparametric
+    from reliability.Probability_plotting import PP_plot_semiparametric, QQ_plot_semiparametric
     from reliability.Fitters import Fit_Normal_2P
     from reliability.Distributions import Weibull_Distribution,Normal_Distribution
     import matplotlib.pyplot as plt
