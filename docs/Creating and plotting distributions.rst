@@ -58,23 +58,21 @@ For all of the individual plotting functions (PDF, CDF, SF, HF, CHF), all standa
 
 Note that .plot() does not require plt.show() to be used as it will automatically show, however the other 5 plotting functions will not be displayed until plt.show() is used. This is to allow the user to overlay multiple plots on the figure or change titles, labels, and legends as required.
 
-As another example, we will create a bathtub curve by creating and layering several distributions.
+As another example, we will create a bathtub curve by creating and layering several distributions. The bathtub curve is only for the Hazard function as it shows how a variety of failure modes throughout the life of a population can shape the hazard into a bathtub shape. The three distrinct regions are infant mortality, random failures, and wear out.
 
 .. code:: python
 
-    from reliability import Distributions
-    import numpy as np
+    from reliability.Distributions import Weibull_Distribution, Lognormal_Distribution, Exponential_Distribution
     import matplotlib.pyplot as plt
-    xvals=np.linspace(0,50,1000)
-    wear_in = Distributions.Exponential_Distribution(Lambda=0.3).PDF(xvals=xvals,label='wear in',color='blue')
-    random_failures = np.ones_like(xvals)*0.05
-    wear_out = Distributions.Normal_Distribution(mu=50,sigma=3).PDF(xvals=xvals,label='wear out',color='orange')
-    bathtub = wear_in+random_failures+wear_out
-    plt.plot(xvals,random_failures,label='random failures',color='green')
-    plt.plot(xvals,bathtub,'r',label='total',linestyle='--')
+    import numpy as np
+    xvals = np.linspace(0,1000,1000)
+    infant_mortality = Weibull_Distribution(alpha=400,beta=0.7).HF(xvals=xvals,label='infant mortality [Weibull]')
+    random_failures = Exponential_Distribution(Lambda=0.001).HF(xvals=xvals,label='random failures [Exponential]')
+    wear_out = Lognormal_Distribution(mu=6.8,sigma=0.1).HF(xvals=xvals,label='wear out [Lognormal]')
+    combined = infant_mortality+random_failures+wear_out
+    plt.plot(xvals,combined,linestyle='--',label='Combined hazard rate')
     plt.legend()
-    plt.xlabel('Cycles')
-    plt.title('Example of how bathtub curve is constructed')
+    plt.title('Example of how multiple failure modes at different stages of\nlife create a "Bathtub curve" for the total Hazard function')
     plt.show()
 
 .. image:: images/bathtub_curve.png
