@@ -5,7 +5,7 @@
 Probability-Probability plots
 '''''''''''''''''''''''''''''
 
-This section contains two different styles of probability-probability plots. These are the fully parametric probability-probability plot (``reliability.Other_functions.PP_plot_parametric``) and the semi-parametric probability-probability plot (``reliability.Other_functions.PP_plot_semiparametric``). These will be described separately below. A probability-probability (PP) plot is made by plotting the fraction failing (CDF) of one distribution vs the fraction failing (CDF) of another distribution. In the semiparametric form, when we only have the failure data and one hypothesised distribution, the CDF for the data can be obtained non-parametrically to generate an Empirical CDF.
+This section contains two different styles of probability-probability plots. These are the fully parametric probability-probability plot (``reliability.Probability_plotting.PP_plot_parametric``) and the semi-parametric probability-probability plot (``reliability.Probability_plotting.PP_plot_semiparametric``). These will be described separately below. A probability-probability (PP) plot is made by plotting the fraction failing (CDF) of one distribution vs the fraction failing (CDF) of another distribution. In the semiparametric form, when we only have the failure data and one hypothesised distribution, the CDF for the data can be obtained non-parametrically to generate an Empirical CDF.
 
 Parametric Probability-Probability plot
 ---------------------------------------
@@ -28,7 +28,7 @@ In the example below, we generate two parametric distributions and compare them 
 
 .. code:: python
 
-    from reliability.Other_functions import PP_plot_parametric
+    from reliability.Probability_plotting import PP_plot_parametric
     from reliability.Distributions import Weibull_Distribution,Normal_Distribution
     import matplotlib.pyplot as plt
     Field = Normal_Distribution(mu=100,sigma=30)
@@ -59,7 +59,7 @@ In the example below, we create 100 random samples from a Weibull distribution. 
 
 .. code:: python
 
-    from reliability.Other_functions import PP_plot_semiparametric
+    from reliability.Probability_plotting import PP_plot_semiparametric
     from reliability.Fitters import Fit_Normal_2P
     from reliability.Distributions import Weibull_Distribution,Normal_Distribution
     import matplotlib.pyplot as plt
