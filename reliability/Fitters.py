@@ -51,6 +51,7 @@ from autograd.scipy.special import beta as abeta
 from autograd_gamma import betainc
 from autograd.scipy.special import erf
 from autograd_gamma import gammainc, gammaincc
+from reliability import Probability_plotting
 anp.seterr('ignore')
 
 class Fit_Everything:
@@ -535,6 +536,16 @@ class Fit_Weibull_2P:
         self.loglik2=LL2
         self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
         self.BIC = np.log(n) * k + LL2
+
+        if len(left_censored)==0:
+            lc = None
+        else:
+            lc = left_censored
+        if len(right_censored)==0:
+            rc = None
+        else:
+            rc = right_censored
+        Probability_plotting.Weibull_probability_plot(failures=failures,right_censored=rc,left_censored=lc) #this is a beta test at the moment
 
     def logf(t,a,b): #Log PDF (2 parameter Weibull)
         return (b - 1) * anp.log(t/a) + anp.log(b/a) - (t / a) ** b
