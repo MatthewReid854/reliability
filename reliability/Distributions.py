@@ -11,7 +11,8 @@ Available distributions are:
 
 Methods:
     name - the name of the distribution. eg. 'Weibull'
-    parameter_names - varies by distribution. eg. ['alpha','beta','gamma']
+    param_title_long - Useful in plot titles, legends and in printing strings. Varies by distribution. eg. 'Weibull Distribution (α=5,β=2)'
+    param_title - Useful in plot titles, legends and in printing strings. Varies by distribution. eg. 'α=5,β=2'
     parameters - returns an array of parameters. eg. [alpha,beta,gamma]
     alpha, beta, gamma, Lambda, mu, sigma - these vary by distribution but will return the value of their respective parameter.
     mean
@@ -72,7 +73,8 @@ class Weibull_Distribution:
 
     methods:
     name - 'Weibull'
-    parameter_names - ['alpha','beta','gamma']
+    param_title_long - Useful in plot titles, legends and in printing strings. eg. 'Weibull Distribution (α=5,β=2)'
+    param_title - Useful in plot titles, legends and in printing strings. eg. 'α=5,β=2'
     parameters - [alpha,beta,gamma]
     alpha
     beta
@@ -101,7 +103,6 @@ class Weibull_Distribution:
     '''
     def __init__(self,alpha=None,beta=None,gamma=0):
         self.name = 'Weibull'
-        self.parameter_names = ['alpha','beta','gamma']
         self.alpha = alpha
         self.beta = beta
         if self.alpha==None or self.beta==None:
@@ -121,9 +122,11 @@ class Weibull_Distribution:
         else:
             self.mode = r'No mode exists when $\beta$ < 1'
         if self.gamma != 0:
-            self.param_title = str(r'$\alpha$ = ' + str(self.alpha) + r' , $\beta$ = ' + str(self.beta) + ' , $\gamma$ = ' + str(self.gamma))
+            self.param_title = str('α=' + str(self.alpha) + ',β=' + str(self.beta) + ',γ=' + str(self.gamma))
+            self.param_title_long = str('Weibull Distribution (α=' + str(self.alpha) + ',β=' + str(self.beta) + ',γ=' + str(gamma) + ')')
         else:
-            self.param_title = str(r'$\alpha$ = ' + str(self.alpha) + r' , $\beta$ = ' + str(self.beta))
+            self.param_title = str('α=' + str(self.alpha) + ',β=' + str(self.beta))
+            self.param_title_long = str('Weibull Distribution (α=' + str(self.alpha) + ',β=' + str(self.beta) + ')')
         self.b5 = ss.weibull_min.ppf(0.05, self.beta, scale=self.alpha, loc=self.gamma)
         self.b95 = ss.weibull_min.ppf(0.95, self.beta, scale=self.alpha, loc=self.gamma)
     def plot(self,xvals=None,xmin=None,xmax=None):
@@ -447,7 +450,8 @@ class Normal_Distribution:
 
     methods:
     name - 'Normal'
-    parameter_names - ['mu','sigma']
+    param_title_long - Useful in plot titles, legends and in printing strings. eg. 'Normal Distribution (μ=5,σ=2)'
+    param_title - Useful in plot titles, legends and in printing strings. eg. 'μ=5,σ=2'
     parameters - [mu,sigma]
     mu
     sigma
@@ -475,7 +479,6 @@ class Normal_Distribution:
     '''
     def __init__(self,mu=None,sigma=None):
         self.name = 'Normal'
-        self.parameter_names = ['mu', 'sigma']
         self.mu = mu
         self.sigma = sigma
         if self.mu==None or self.sigma==None:
@@ -489,9 +492,10 @@ class Normal_Distribution:
         self.excess_kurtosis = 0
         self.median = mu
         self.mode = mu
+        self.param_title = str('μ=' + str(self.mu) + ',σ=' + str(self.sigma))
+        self.param_title_long = str('Normal Distribution (μ=' + str(self.mu) + ',σ=' + str(self.sigma) + ')')
         self.b5 = ss.norm.ppf(0.05, loc=self.mu, scale=self.sigma)
         self.b95 = ss.norm.ppf(0.95, loc=self.mu, scale=self.sigma)
-        self.param_title = str('$\mu$ = ' + str(self.mu) + ' , $\sigma$ = ' + str(self.sigma))
     def plot(self,xvals=None,xmin=None,xmax=None):
         '''
         Plots all functions (PDF, CDF, SF, HF, CHF) and descriptive statistics in a single figure
@@ -811,7 +815,8 @@ class Lognormal_Distribution:
 
     methods:
     name - 'Lognormal'
-    parameter_names - ['mu','sigma','gamma']
+    param_title_long - Useful in plot titles, legends and in printing strings. eg. 'Lognormal Distribution (μ=5,σ=2)'
+    param_title - Useful in plot titles, legends and in printing strings. eg. 'μ=5,σ=2'
     parameters - [mu,sigma,gamma]
     mu
     sigma
@@ -840,7 +845,6 @@ class Lognormal_Distribution:
     '''
     def __init__(self,mu=None,sigma=None,gamma=0):
         self.name = 'Lognormal'
-        self.parameter_names = ['mu', 'sigma', 'gamma']
         self.mu = mu
         self.sigma = sigma
         if self.mu==None or self.sigma==None:
@@ -857,9 +861,11 @@ class Lognormal_Distribution:
         self.median = ss.lognorm.median(self.sigma, self.gamma, np.exp(self.mu))
         self.mode = np.exp(self.mu - self.sigma ** 2) + self.gamma
         if self.gamma != 0:
-            self.param_title = str('$\mu$ = ' + str(self.mu) + ' , $\sigma$ = ' + str(self.sigma) + ' , $\gamma$ = ' + str(self.gamma))
+            self.param_title = str('μ=' + str(self.mu) + ',σ=' + str(self.sigma) + ',γ=' + str(self.gamma))
+            self.param_title_long = str('Lognormal Distribution (μ=' + str(self.mu) + ',σ=' + str(self.sigma) + ',γ=' + str(gamma) + ')')
         else:
-            self.param_title = str('$\mu$ = ' + str(self.mu) + ' , $\sigma$ = ' + str(self.sigma))
+            self.param_title = str('μ=' + str(self.mu) + ',σ=' + str(self.sigma))
+            self.param_title_long = str('Lognormal Distribution (μ=' + str(self.mu) + ',σ=' + str(self.sigma) + ')')
         self.b5 = ss.lognorm.ppf(0.05, self.sigma, self.gamma, np.exp(self.mu))  # note that scipy uses mu in a log way compared to most other software, so we must take the exp of the input
         self.b95 = ss.lognorm.ppf(0.95, self.sigma, self.gamma, np.exp(self.mu))
     def plot(self, xvals=None, xmin=None, xmax=None):
@@ -1183,7 +1189,8 @@ class Exponential_Distribution:
 
     methods:
     name - 'Exponential'
-    parameter_names - ['Lambda','gamma']
+    param_title_long - Useful in plot titles, legends and in printing strings. eg. 'Exponential Distribution (λ=5)'
+    param_title - Useful in plot titles, legends and in printing strings. eg. 'λ=5'
     parameters - [Lambda,gamma]
     Lambda
     gamma
@@ -1211,7 +1218,6 @@ class Exponential_Distribution:
     '''
     def __init__(self,Lambda=None,gamma=0):
         self.name = 'Exponential'
-        self.parameter_names = ['lambda', 'gamma']
         self.Lambda = Lambda
         if self.Lambda==None:
             raise ValueError('Parameter Lambda must be specified. Eg. Exponential_Distribution(Lambda=3)')
@@ -1227,9 +1233,11 @@ class Exponential_Distribution:
         self.median = ss.expon.median(scale=1/self.Lambda, loc=self.gamma)
         self.mode = self.gamma
         if self.gamma != 0:
-            self.param_title = str(r'$\lambda$ = ' + str(self.Lambda) + ' , $\gamma$ = ' + str(self.gamma))
+            self.param_title = str('λ=' + str(self.Lambda) + ',γ=' + str(self.gamma))
+            self.param_title_long = str('Exponential Distribution (λ=' + str(self.Lambda) + ',γ=' + str(gamma) + ')')
         else:
-            self.param_title = str(r'$\lambda$ = ' + str(self.Lambda))
+            self.param_title = str('λ=' + str(self.Lambda))
+            self.param_title_long = str('Exponential Distribution (λ=' + str(self.Lambda) + ')')
         self.b5 = ss.expon.ppf(0.05, scale=1/self.Lambda, loc=self.gamma)
         self.b95 = ss.expon.ppf(0.95, scale=1/self.Lambda, loc=self.gamma)
     def plot(self, xvals=None, xmin=None, xmax=None):
@@ -1554,7 +1562,8 @@ class Gamma_Distribution:
 
     methods:
     name - 'Gamma'
-    parameter_names - ['alpha','beta','gamma']
+    param_title_long - Useful in plot titles, legends and in printing strings. eg. 'Gamma Distribution (α=5,β=2)'
+    param_title - Useful in plot titles, legends and in printing strings. eg. 'α=5,β=2'
     parameters - [alpha,beta,gamma]
     alpha
     beta
@@ -1583,7 +1592,6 @@ class Gamma_Distribution:
     '''
     def __init__(self,alpha=None,beta=None,gamma=0):
         self.name = 'Gamma'
-        self.parameter_names = ['alpha', 'beta', 'gamma']
         self.alpha = alpha
         self.beta = beta
         if self.alpha==None or self.beta==None:
@@ -1603,10 +1611,11 @@ class Gamma_Distribution:
         else:
             self.mode = r'No mode exists when $\beta$ < 1'
         if self.gamma != 0:
-            self.param_title = str(
-                r'$\alpha$ = ' + str(self.alpha) + r' , $\beta$ = ' + str(self.beta) + ' , $\gamma$ = ' + str(self.gamma))
+            self.param_title = str('α=' + str(self.alpha) + ',β=' + str(self.beta) + ',γ=' + str(self.gamma))
+            self.param_title_long = str('Gamma Distribution (α=' + str(self.alpha) + ',β=' + str(self.beta) + ',γ=' + str(gamma) + ')')
         else:
-            self.param_title = str(r'$\alpha$ = ' + str(self.alpha) + r' , $\beta$ = ' + str(self.beta))
+            self.param_title = str('α=' + str(self.alpha) + ',β=' + str(self.beta))
+            self.param_title_long = str('Gamma Distribution (α=' + str(self.alpha) + ',β=' + str(self.beta) + ')')
         self.b5 = ss.gamma.ppf(0.05, self.beta, scale=self.alpha, loc=self.gamma)
         self.b95 = ss.gamma.ppf(0.95, self.beta, scale=self.alpha, loc=self.gamma)
     def plot(self,xvals=None,xmin=None,xmax=None):
@@ -1930,7 +1939,8 @@ class Beta_Distribution:
 
     methods:
     name - 'Beta'
-    parameter_names - ['alpha','beta']
+    param_title_long - Useful in plot titles, legends and in printing strings. eg. 'Beta Distribution (α=5,β=2)'
+    param_title - Useful in plot titles, legends and in printing strings. eg. 'α=5,β=2'
     parameters - [alpha,beta]
     alpha
     beta
@@ -1958,7 +1968,6 @@ class Beta_Distribution:
     '''
     def __init__(self,alpha=None,beta=None):
         self.name = 'Beta'
-        self.parameter_names = ['alpha', 'beta', 'gamma']
         self.alpha = alpha
         self.beta = beta
         if self.alpha==None or self.beta==None:
@@ -1976,7 +1985,8 @@ class Beta_Distribution:
             self.mode = (self.alpha-1) / (self.beta + self.alpha - 2)
         else:
             self.mode = r'No mode exists unless $\alpha$ > 1 and $\beta$ > 1'
-        self.param_title = str(r'$\alpha$ = ' + str(self.alpha) + r' , $\beta$ = ' + str(self.beta))
+        self.param_title = str('α=' + str(self.alpha) + ',β=' + str(self.beta))
+        self.param_title_long = str('Beta Distribution (α=' + str(self.alpha) + ',β=' + str(self.beta) + ')')
         self.b5 = ss.beta.ppf(0.05, self.alpha, self.beta, 0, 1)
         self.b95 = ss.beta.ppf(0.95, self.alpha, self.beta, 0, 1)
     def plot(self, xvals=None, xmin=None, xmax=None):

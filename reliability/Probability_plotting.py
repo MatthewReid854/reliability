@@ -33,7 +33,7 @@ from matplotlib.ticker import FixedLocator
 import scipy.stats as ss
 from reliability.Distributions import Weibull_Distribution, Lognormal_Distribution, Normal_Distribution, Gamma_Distribution, Beta_Distribution, Exponential_Distribution
 from reliability.Nonparametric import KaplanMeier, NelsonAalen
-from reliability import Fitters
+from reliability.Fitters import Fit_Weibull_2P,Fit_Weibull_3P,Fit_Expon_2P,Fit_Expon_1P,Fit_Gamma_2P,Fit_Normal_2P,Fit_Lognormal_2P,Fit_Beta_2P,Fit_Gamma_3P
 np.seterr('ignore')
 
 class _WeibullScale(scale.ScaleBase):
@@ -261,7 +261,7 @@ def plotting_positions(failures=None,right_censored=None,left_censored=None):
         y = yvalues[::-1]
     return x,y
 
-def Weibull_probability_plot(failures=None,right_censored=None,left_censored=None,fit_gamma=False):
+def Weibull_probability_plot(failures=None,right_censored=None,left_censored=None,fit_gamma=False,**kwargs):
     '''
     Weibull probability plot
 
@@ -271,6 +271,7 @@ def Weibull_probability_plot(failures=None,right_censored=None,left_censored=Non
     right_censored - the array or list of right censored failure times
     left_censored - the array or list of left censored failure times
     fit_gamma - True/False. Default is False. Specify This as true in order to fit the Weibull_3P distribution and scale the x-axis to time - gamma.
+    kwargs are accepted for the fitted line (eg. linestyle, label, color)
 
     Outputs:
     The plot is the only output. Use plt.show() to show it.
@@ -303,14 +304,30 @@ def Weibull_probability_plot(failures=None,right_censored=None,left_censored=Non
     #generate the figure and fit the distribution
     xvals = np.logspace(-2, np.log10(max(failures))*10, 1000)
     if fit_gamma == False:
-        fit = Fitters.Fit_Weibull_2P(failures=failures,right_censored=right_censored,left_censored=left_censored)
+        fit = Fit_Weibull_2P(failures=failures,right_censored=right_censored,left_censored=left_censored)
         wbf = Weibull_Distribution(alpha = fit.alpha,beta=fit.beta).CDF(show_plot=False,xvals=xvals)
-        plt.plot(xvals,wbf,color='red',label=str('Fitted Weibull_2P (α='+str(round(fit.alpha,2))+', β='+str(round(fit.beta,2))+')'))
+        if 'label' in kwargs:
+            label = kwargs.pop('label')
+        else:
+            label = str('Fitted Weibull_2P (α='+str(round(fit.alpha,2))+', β='+str(round(fit.beta,2))+')')
+        if 'color' in kwargs:
+            color = kwargs.pop('color')
+        else:
+            color = 'red'
+        plt.plot(xvals,wbf,color=color,label=label,**kwargs)
         plt.xlabel('Time')
     elif fit_gamma == True:
-        fit = Fitters.Fit_Weibull_3P(failures=failures, right_censored=right_censored)
+        fit = Fit_Weibull_3P(failures=failures, right_censored=right_censored)
         wbf = Weibull_Distribution(alpha = fit.alpha,beta=fit.beta).CDF(show_plot=False,xvals=xvals)
-        plt.plot(xvals,wbf,color='red',label=str('Fitted Weibull_3P\n(α='+str(round(fit.alpha,2))+', β='+str(round(fit.beta,2))+', γ='+str(round(fit.gamma,2))+')'))
+        if 'label' in kwargs:
+            label = kwargs.pop('label')
+        else:
+            label = str('Fitted Weibull_3P\n(α='+str(round(fit.alpha,2))+', β='+str(round(fit.beta,2))+', γ='+str(round(fit.gamma,2))+')')
+        if 'color' in kwargs:
+            color = kwargs.pop('color')
+        else:
+            color = 'red'
+        plt.plot(xvals,wbf,color=color,label=label,**kwargs)
         plt.xlabel('Time - gamma')
         failures=failures-fit.gamma
         if right_censored is not None:
@@ -335,7 +352,7 @@ def Weibull_probability_plot(failures=None,right_censored=None,left_censored=Non
     plt.legend(loc='upper left')
     plt.gcf().set_size_inches(9, 7) #adjust the figsize. This is done post figure creation so that layering is easier
 
-def Normal_probability_plot(failures=None,right_censored=None,left_censored=None):
+def Normal_probability_plot(failures=None,right_censored=None,left_censored=None,**kwargs):
     '''
     Normal probability plot
 
@@ -344,6 +361,7 @@ def Normal_probability_plot(failures=None,right_censored=None,left_censored=None
     failures - the array or list of failure times
     right_censored - the array or list of right censored failure times
     left_censored - the array or list of left censored failure times
+    kwargs are accepted for the fitted line (eg. linestyle, label, color)
 
     Outputs:
     The plot is the only output. Use plt.show() to show it.
@@ -362,16 +380,24 @@ def Normal_probability_plot(failures=None,right_censored=None,left_censored=None
     plt.yticks(ytickvals)
     plt.gca().set_yticklabels(['{:,.2%}'.format(x) for x in ytickvals]) #formats y ticks as percentage
     xvals = np.linspace(min(x)-max(x),max(x)*10,1000)
-    fit = Fitters.Fit_Normal_2P(failures=failures,right_censored=right_censored,left_censored=left_censored)
+    fit = Fit_Normal_2P(failures=failures,right_censored=right_censored,left_censored=left_censored)
     nf = Normal_Distribution(mu= fit.mu,sigma=fit.sigma).CDF(show_plot=False,xvals=xvals)
-    plt.plot(xvals,nf,color='red',label=str('Fitted Normal_2P (μ='+str(round(fit.mu,2))+', σ='+str(round(fit.sigma,2))+')'))
+    if 'label' in kwargs:
+        label = kwargs.pop('label')
+    else:
+        label = str('Fitted Normal_2P (μ='+str(round(fit.mu,2))+', σ='+str(round(fit.sigma,2))+')')
+    if 'color' in kwargs:
+        color = kwargs.pop('color')
+    else:
+        color = 'red'
+    plt.plot(xvals,nf,color=color,label=label,**kwargs)
     plt.title('Probability plot\nNormal CDF')
     plt.xlabel('Time')
     plt.ylabel('Fraction failing')
     plt.legend(loc='upper left')
     plt.gcf().set_size_inches(9, 7) #adjust the figsize. This is done post figure creation so that layering is easier
 
-def Lognormal_probability_plot(failures=None,right_censored=None,left_censored=None):
+def Lognormal_probability_plot(failures=None,right_censored=None,left_censored=None,**kwargs):
     '''
     Lognormal probability plot
 
@@ -380,6 +406,7 @@ def Lognormal_probability_plot(failures=None,right_censored=None,left_censored=N
     failures - the array or list of failure times
     right_censored - the array or list of right censored failure times
     left_censored - the array or list of left censored failure times
+    kwargs are accepted for the fitted line (eg. linestyle, label, color)
 
     Outputs:
     The plot is the only output. Use plt.show() to show it.
@@ -403,16 +430,24 @@ def Lognormal_probability_plot(failures=None,right_censored=None,left_censored=N
     plt.yticks(ytickvals)
     plt.gca().set_yticklabels(['{:,.2%}'.format(x) for x in ytickvals]) #formats y ticks as percentage
     xvals = np.logspace(np.log10(xmin_log)-1,np.log10(xmax_log)+1,1000)
-    fit = Fitters.Fit_Lognormal_2P(failures=failures,right_censored=right_censored,left_censored=left_censored)
+    fit = Fit_Lognormal_2P(failures=failures,right_censored=right_censored,left_censored=left_censored)
     lnf = Lognormal_Distribution(mu= fit.mu,sigma=fit.sigma).CDF(show_plot=False,xvals=xvals)
-    plt.plot(xvals,lnf,color='red',label=str('Fitted Lognormal_2P (μ='+str(round(fit.mu,2))+', σ='+str(round(fit.sigma,2))+')'))
+    if 'label' in kwargs:
+        label = kwargs.pop('label')
+    else:
+        label = str('Fitted Lognormal_2P (μ='+str(round(fit.mu,2))+', σ='+str(round(fit.sigma,2))+')')
+    if 'color' in kwargs:
+        color = kwargs.pop('color')
+    else:
+        color = 'red'
+    plt.plot(xvals,lnf,color=color,label=label,**kwargs)
     plt.title('Probability plot\nLognormal CDF')
     plt.xlabel('Time')
     plt.ylabel('Fraction failing')
     plt.legend(loc='upper left')
     plt.gcf().set_size_inches(9, 7) #adjust the figsize. This is done post figure creation so that layering is easier
 
-def Beta_probability_plot(failures=None,right_censored=None,left_censored=None):
+def Beta_probability_plot(failures=None,right_censored=None,left_censored=None,**kwargs):
     '''
     Beta probability plot
 
@@ -421,6 +456,7 @@ def Beta_probability_plot(failures=None,right_censored=None,left_censored=None):
     failures - the array or list of failure times
     right_censored - the array or list of right censored failure times
     left_censored - the array or list of left censored failure times
+    kwargs are accepted for the fitted line (eg. linestyle, label, color)
 
     Outputs:
     The plot is the only output. Use plt.show() to show it.
@@ -439,9 +475,17 @@ def Beta_probability_plot(failures=None,right_censored=None,left_censored=None):
     plt.yticks(ytickvals)
     plt.gca().set_yticklabels(['{:,.1%}'.format(x) for x in ytickvals]) #formats y ticks as percentage
     xvals = np.linspace(0,1,1000)
-    fit = Fitters.Fit_Beta_2P(failures=failures,right_censored=right_censored,left_censored=left_censored)
+    fit = Fit_Beta_2P(failures=failures,right_censored=right_censored,left_censored=left_censored)
     bf = Beta_Distribution(alpha = fit.alpha,beta=fit.beta).CDF(show_plot=False,xvals=xvals)
-    plt.plot(xvals,bf,color='red',label=str('Fitted Beta_2P (α='+str(round(fit.alpha,2))+', β='+str(round(fit.beta,2))+')'))
+    if 'label' in kwargs:
+        label = kwargs.pop('label')
+    else:
+        label = str('Fitted Beta_2P (α='+str(round(fit.alpha,2))+', β='+str(round(fit.beta,2))+')')
+    if 'color' in kwargs:
+        color = kwargs.pop('color')
+    else:
+        color = 'red'
+    plt.plot(xvals,bf,color=color,label=label,**kwargs)
     global beta_alpha, beta_beta
     beta_beta = fit.beta #this is used in the axes scaling as the ppf and cdf need the shape parameter to scale the axes correctly
     beta_alpha = fit.alpha
@@ -451,7 +495,7 @@ def Beta_probability_plot(failures=None,right_censored=None,left_censored=None):
     plt.legend(loc='upper left')
     plt.gcf().set_size_inches(9, 7)  # adjust the figsize. This is done post figure creation so that layering is easier
 
-def Gamma_probability_plot(failures=None,right_censored=None,left_censored=None,fit_gamma=False):
+def Gamma_probability_plot(failures=None,right_censored=None,left_censored=None,fit_gamma=False,**kwargs):
     '''
     Gamma probability plot
 
@@ -461,6 +505,7 @@ def Gamma_probability_plot(failures=None,right_censored=None,left_censored=None,
     right_censored - the array or list of right censored failure times
     left_censored - the array or list of left censored failure times
     fit_gamma - True/False. Default is False. Specify This as true in order to fit the Gamma_3P distribution and scale the x-axis to time - gamma.
+    kwargs are accepted for the fitted line (eg. linestyle, label, color)
 
     Outputs:
     The plot is the only output. Use plt.show() to show it.
@@ -495,14 +540,30 @@ def Gamma_probability_plot(failures=None,right_censored=None,left_censored=None,
     #generate the figure and fit the distribution
     xvals = np.logspace(-2, np.log10(max(failures))*10, 1000)
     if fit_gamma == False:
-        fit = Fitters.Fit_Gamma_2P(failures=failures,right_censored=right_censored,left_censored=left_censored)
+        fit = Fit_Gamma_2P(failures=failures,right_censored=right_censored,left_censored=left_censored)
         gf = Gamma_Distribution(alpha = fit.alpha,beta=fit.beta).CDF(show_plot=False,xvals=xvals)
-        plt.plot(xvals,gf,color='red',label=str('Fitted Gamma_2P (α='+str(round(fit.alpha,2))+', β='+str(round(fit.beta,2))+')'))
+        if 'label' in kwargs:
+            label = kwargs.pop('label')
+        else:
+            label = str('Fitted Gamma_2P (α='+str(round(fit.alpha,2))+', β='+str(round(fit.beta,2))+')')
+        if 'color' in kwargs:
+            color = kwargs.pop('color')
+        else:
+            color = 'red'
+        plt.plot(xvals,gf,color=color,label=label,**kwargs)
         plt.xlabel('Time')
     elif fit_gamma == True:
-        fit = Fitters.Fit_Gamma_3P(failures=failures, right_censored=right_censored)
+        fit = Fit_Gamma_3P(failures=failures, right_censored=right_censored)
         gf = Gamma_Distribution(alpha = fit.alpha,beta=fit.beta).CDF(show_plot=False,xvals=xvals)
-        plt.plot(xvals,gf,color='red',label=str('Fitted Gamma_3P\n(α='+str(round(fit.alpha,2))+', β='+str(round(fit.beta,2))+', γ='+str(round(fit.gamma,2))+')'))
+        if 'label' in kwargs:
+            label = kwargs.pop('label')
+        else:
+            label = str('Fitted Gamma_3P\n(α='+str(round(fit.alpha,2))+', β='+str(round(fit.beta,2))+', γ='+str(round(fit.gamma,2))+')')
+        if 'color' in kwargs:
+            color = kwargs.pop('color')
+        else:
+            color = 'red'
+        plt.plot(xvals,gf,color=color,label=label,**kwargs)
         plt.xlabel('Time - gamma')
         failures=failures-fit.gamma
         if right_censored is not None:
@@ -547,7 +608,7 @@ def Gamma_probability_plot(failures=None,right_censored=None,left_censored=None,
     plt.legend(loc='upper left')
     plt.gcf().set_size_inches(9, 7) #adjust the figsize. This is done post figure creation so that layering is easier
 
-def Exponential_probability_plot(failures=None,right_censored=None,left_censored=None,fit_gamma=False):
+def Exponential_probability_plot(failures=None,right_censored=None,left_censored=None,fit_gamma=False,**kwargs):
     '''
     Exponential probability plot
 
@@ -557,6 +618,7 @@ def Exponential_probability_plot(failures=None,right_censored=None,left_censored
     right_censored - the array or list of right censored failure times
     left_censored - the array or list of left censored failure times
     fit_gamma - True/False. Default is False. Specify This as true in order to fit the Exponential_2P distribution and scale the x-axis to time - gamma.
+    kwargs are accepted for the fitted line (eg. linestyle, label, color)
 
     Outputs:
     The plot is the only output. Use plt.show() to show it.
@@ -567,14 +629,30 @@ def Exponential_probability_plot(failures=None,right_censored=None,left_censored
         raise ValueError('cannot fit gamma if left censored data is specified')
     xvals = np.logspace(-2, np.log10(max(failures)) * 10, 1000)
     if fit_gamma == False:
-        fit = Fitters.Fit_Expon_1P(failures=failures,right_censored=right_censored,left_censored=left_censored)
+        fit = Fit_Expon_1P(failures=failures,right_censored=right_censored,left_censored=left_censored)
         ef = Exponential_Distribution(Lambda = fit.Lambda).CDF(show_plot=False,xvals=xvals)
-        plt.plot(xvals,ef,color='red',label=str('Fitted Exponential_1P (λ='+str(round(fit.Lambda,2))+')'))
+        if 'label' in kwargs:
+            label = kwargs.pop('label')
+        else:
+            label = str('Fitted Exponential_1P (λ='+str(round(fit.Lambda,2))+')')
+        if 'color' in kwargs:
+            color = kwargs.pop('color')
+        else:
+            color = 'red'
+        plt.plot(xvals,ef,color=color,label=label,**kwargs)
         plt.xlabel('Time')
     elif fit_gamma == True:
-        fit = Fitters.Fit_Expon_2P(failures=failures, right_censored=right_censored)
+        fit = Fit_Expon_2P(failures=failures, right_censored=right_censored)
         ef = Exponential_Distribution(Lambda = fit.Lambda).CDF(show_plot=False,xvals=xvals)
-        plt.plot(xvals,ef,color='red',label=str('Fitted Exponential_2P\n(λ='+str(round(fit.Lambda,2))+', γ='+str(round(fit.gamma,2))+')'))
+        if 'label' in kwargs:
+            label = kwargs.pop('label')
+        else:
+            label = str('Fitted Exponential_2P\n(λ='+str(round(fit.Lambda,2))+', γ='+str(round(fit.gamma,2))+')')
+        if 'color' in kwargs:
+            color = kwargs.pop('color')
+        else:
+            color = 'red'
+        plt.plot(xvals,ef,color=color,label=label,**kwargs)
         plt.xlabel('Time - gamma')
         failures=failures-fit.gamma
         if right_censored is not None:
@@ -998,4 +1076,3 @@ def QQ_plot_semiparametric(X_data_failures=None,X_data_right_censored=None,Y_dis
     plt.ylim([0,endval])
     plt.title('Quantile-Quantile Plot\nSemi-parametric')
     return [m,deg1[0],deg1[1]]
-

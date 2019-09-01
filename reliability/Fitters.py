@@ -51,7 +51,6 @@ from autograd.scipy.special import beta as abeta
 from autograd_gamma import betainc
 from autograd.scipy.special import erf
 from autograd_gamma import gammainc, gammaincc
-from reliability import Probability_plotting
 anp.seterr('ignore')
 
 class Fit_Everything:
@@ -483,6 +482,7 @@ class Fit_Weibull_2P:
     loglik2 - LogLikelihood*-2
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
+    distribution - a Weibull_Distribution object with the parameters of the fitted distribution
     '''
     def __init__(self,failures=None,right_censored=None,left_censored=None):
         if failures is None or len(failures)<2:
@@ -536,16 +536,7 @@ class Fit_Weibull_2P:
         self.loglik2=LL2
         self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
         self.BIC = np.log(n) * k + LL2
-
-        if len(left_censored)==0:
-            lc = None
-        else:
-            lc = left_censored
-        if len(right_censored)==0:
-            rc = None
-        else:
-            rc = right_censored
-        Probability_plotting.Weibull_probability_plot(failures=failures,right_censored=rc,left_censored=lc) #this is a beta test at the moment
+        self.distribution = Weibull_Distribution(alpha=self.alpha,beta=self.beta)
 
     def logf(t,a,b): #Log PDF (2 parameter Weibull)
         return (b - 1) * anp.log(t/a) + anp.log(b/a) - (t / a) ** b
@@ -564,7 +555,6 @@ class Fit_Weibull_2P:
         LL_rc += Fit_Weibull_2P.logR(T_rc, params[0], params[1]).sum() #right censored times
         LL_lc += Fit_Weibull_2P.logF(T_lc, params[0], params[1]).sum() #left censored times
         return -(LL_f+LL_rc+LL_lc)
-
 
 class Fit_Weibull_3P:
     '''
@@ -591,6 +581,7 @@ class Fit_Weibull_3P:
     loglik2 - LogLikelihood*-2
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
+    distribution - a Weibull_Distribution object with the parameters of the fitted distribution
     '''
     def __init__(self,failures=None,right_censored=None):
         if failures is None or len(failures)<3:
@@ -637,6 +628,7 @@ class Fit_Weibull_3P:
         self.loglik2=LL2
         self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
         self.BIC = np.log(n) * k + LL2
+        self.distribution = Weibull_Distribution(alpha=self.alpha, beta=self.beta, gamma=self.gamma)
 
     def logf(t,a,b): #Log PDF (2 parameter Weibull)
         return (b - 1) * anp.log(t/a) + anp.log(b/a) - (t / a) ** b
@@ -859,6 +851,7 @@ class Fit_Expon_1P:
     loglik2 - LogLikelihood*-2
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
+    distribution - an Exponential_Distribution object with the parameters of the fitted distribution
     '''
 
     def __init__(self,failures=None,right_censored=None,left_censored=None):
@@ -910,6 +903,7 @@ class Fit_Expon_1P:
         self.loglik2=LL2
         self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
         self.BIC = np.log(n) * k + LL2
+        self.distribution = Exponential_Distribution(Lambda=self.Lambda)
 
     def logf(t,L): #Log PDF (1 parameter Expon)
         return anp.log(L) - L*t
@@ -953,6 +947,7 @@ class Fit_Expon_2P:
     loglik2 - LogLikelihood*-2
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
+    distribution - an Exponential_Distribution object with the parameters of the fitted distribution
     '''
     def __init__(self,failures=None,right_censored=None):
         if failures is None or len(failures)<2:
@@ -997,6 +992,7 @@ class Fit_Expon_2P:
         self.loglik2=LL2
         self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
         self.BIC = np.log(n) * k + LL2
+        self.distribution = Exponential_Distribution(Lambda=self.Lambda,gamma=self.gamma)
 
     def logf(t,L): #Log PDF (1 parameter Expon)
         return anp.log(L) - L*t
@@ -1037,6 +1033,7 @@ class Fit_Normal_2P:
     loglik2 - LogLikelihood*-2
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
+    distribution - a Normal_Distribution object with the parameters of the fitted distribution
     '''
     def __init__(self,failures=None,right_censored=None,left_censored=None):
         if failures is None or len(failures)<2:
@@ -1089,6 +1086,7 @@ class Fit_Normal_2P:
         self.loglik2=LL2
         self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
         self.BIC = np.log(n) * k + LL2
+        self.distribution = Normal_Distribution(mu=self.mu,sigma=self.sigma)
 
     def logf(t,mu,sigma): #Log PDF (Normal)
         return anp.log(anp.exp(-0.5*(((t-mu)/sigma)**2)))-anp.log((sigma*(2*anp.pi)**0.5))
@@ -1131,6 +1129,7 @@ class Fit_Lognormal_2P:
     loglik2 - LogLikelihood*-2
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
+    distribution - a Lognormal_Distribution object with the parameters of the fitted distribution
     '''
     def __init__(self,failures=None,right_censored=None,left_censored=None):
         if failures is None or len(failures)<2:
@@ -1185,6 +1184,7 @@ class Fit_Lognormal_2P:
         self.loglik2=LL2
         self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
         self.BIC = np.log(n) * k + LL2
+        self.distribution = Lognormal_Distribution(mu=self.mu,sigma=self.sigma)
 
     def logf(t,mu,sigma): #Log PDF (Lognormal)
         return anp.log(anp.exp(-0.5 * (((anp.log(t) - mu) / sigma) ** 2)) / (t * sigma * (2 * anp.pi) ** 0.5))
@@ -1227,6 +1227,7 @@ class Fit_Gamma_2P:
     loglik2 - LogLikelihood*-2
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
+    distribution - a Gamma_Distribution object with the parameters of the fitted distribution
     '''
     def __init__(self,failures=None,right_censored=None,left_censored=None):
         if failures is None or len(failures)<2:
@@ -1280,6 +1281,7 @@ class Fit_Gamma_2P:
         self.loglik2=LL2
         self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
         self.BIC = np.log(n) * k + LL2
+        self.distribution = Gamma_Distribution(alpha=self.alpha,beta=self.beta)
 
     def logf(t,a,b): #Log PDF (2 parameter Gamma)
         return anp.log(t**(b-1)) -anp.log((a**b) * agamma(b)) - (t/a)
@@ -1324,6 +1326,7 @@ class Fit_Gamma_3P:
     loglik2 - LogLikelihood*-2
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
+    distribution - a Gamma_Distribution object with the parameters of the fitted distribution
     '''
     def __init__(self,failures=None,right_censored=None):
         if failures is None or len(failures)<3:
@@ -1372,6 +1375,7 @@ class Fit_Gamma_3P:
         self.loglik2=LL2
         self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
         self.BIC = np.log(n) * k + LL2
+        self.distribution = Gamma_Distribution(alpha=self.alpha, beta=self.beta,gamma=self.gamma)
 
     def logf(t,a,b): #Log PDF (2 parameter Gamma)
         return anp.log(t**(b-1)) -anp.log((a**b) * agamma(b)) - (t/a)
@@ -1410,6 +1414,8 @@ class Fit_Beta_2P:
     loglik2 - LogLikelihood*-2
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
+    distribution - a Beta_Distribution object with the parameters of the fitted distribution
+
     '''
     def __init__(self,failures=None,right_censored=None,left_censored=None):
         if failures is None or len(failures)<2:
@@ -1465,6 +1471,7 @@ class Fit_Beta_2P:
         self.loglik2=LL2
         self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
         self.BIC = np.log(n) * k + LL2
+        self.distribution = Beta_Distribution(alpha=self.alpha, beta=self.beta)
 
     def logf(t,a,b): #Log PDF (2 parameter Beta)
         return anp.log(((t ** (a - 1)) * ((1 - t) ** (b - 1)))) - anp.log(abeta(a, b))

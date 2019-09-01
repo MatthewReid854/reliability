@@ -1,4 +1,4 @@
-.. image:: images/logo.png
+﻿.. image:: images/logo.png
 
 -------------------------------------
 
@@ -7,7 +7,7 @@ Fitting a specific distribution to data
 
 The module ``reliability.Fitters`` provides many probability distribution fitting functions. Many of these functions can accept left or right censored data, although the location shifted distributions (any distribution with γ>0) will not accept left censored data. A discussion on why this is the case is presented at the end of this section. All distributions in the Fitters module are named with their number of parameters (i.e. Fit_Weibull_2P uses α,β, whereas Fit_Weibull_3P uses α,β,γ). This is intended to remove ambiguity about what distribution you are fitting.
 
-Distributions are fitted simply by using the desired function and specifying the data as failures, right_censored, or left_censored data. You cannot specify both left and right censored data at the same time. You must have at least as many failures as there are distribution parameters or the fit would be under-constrained. Once fitted, the results are assigned to an object and the fitted parameters can be accessed by name, as shown in the examples below. The goodness of fit criterions are also available as AICc (Akaike Information Criterion corrected) and BIC (Bayesian Information Criterion), though these are more useful when comparing the fit of multiple distributions such as in the `Fit_Everything <https://reliability.readthedocs.io/en/latest/Fitting%20all%20available%20distributions%20to%20data.html>`_ function.
+Distributions are fitted simply by using the desired function and specifying the data as failures, right_censored, or left_censored data. You cannot specify both left and right censored data at the same time. You must have at least as many failures as there are distribution parameters or the fit would be under-constrained. Once fitted, the results are assigned to an object and the fitted parameters can be accessed by name, as shown in the examples below. The goodness of fit criterions are also available as AICc (Akaike Information Criterion corrected) and BIC (Bayesian Information Criterion), though these are more useful when comparing the fit of multiple distributions such as in the `Fit_Everything <https://reliability.readthedocs.io/en/latest/Fitting%20all%20available%20distributions%20to%20data.html>`_ function. As a matter of convenience, each of the modules in Fitters also generates a distribution object that has the parameters of the fitted distribution.
 
 The supported distributions for failures and right censored data are:
 
@@ -61,28 +61,28 @@ It is beneficial to see the effectiveness of the fitted distribution in comparis
     from reliability.Fitters import Fit_Weibull_3P
     import matplotlib.pyplot as plt
     import numpy as np
-    np.random.seed(2) #this is just for repeatability in this tutorial
+    np.random.seed(2)  # this is just for repeatability in this tutorial
     a = 30
     b = 2
     g = 20
-    uncensored_failure_data = Weibull_Distribution(alpha=a, beta=b, gamma=g).random_samples(500) #create some data
+    uncensored_failure_data = Weibull_Distribution(alpha=a, beta=b, gamma=g).random_samples(500)  # create some data
     cens = []
     fail = []
-    threshold = 55 #censoring cutoff
+    threshold = 55  # censoring cutoff
     for item in uncensored_failure_data:
-        if item>=threshold: #this will right censor any value above the threshold
+        if item >= threshold:  # this will right censor any value above the threshold
             cens.append(threshold)
         else:
             fail.append(item)
-    print('There are',len(cens),'censored items.')
-    wb = Fit_Weibull_3P(failures=fail, right_censored=cens) #fit the Weibull_3P distribution
-    print('Fit_Weibull_3P parameters:\nAlpha:', wb.alpha, '\nBeta:', wb.beta, '\nGamma', wb.gamma)
-    xvals = np.linspace(0,150,1000)
-    N,bins,patches = plt.hist(uncensored_failure_data, density=True, alpha=0.2, color='k', bins=30, edgecolor='k') #histogram of the data
-    for i in range(np.argmin(abs(np.array(bins)-threshold)),len(patches)): #this is to shade the censored part of the histogram as white
+    print('There are' ,len(cens) ,'censored items.')
+    wbf = Fit_Weibull_3P(failures=fail, right_censored=cens)  # fit the Weibull_3P distribution
+    print('Fit_Weibull_3P parameters:\nAlpha:', wbf.alpha, '\nBeta:', wbf.beta, '\nGamma', wbf.gamma)
+    xvals = np.linspace(0 ,150 ,1000)
+    N ,bins ,patches = plt.hist(uncensored_failure_data, density=True, alpha=0.2, color='k', bins=30, edgecolor='k')  # histogram of the data
+    for i in range(np.argmin(abs(np.array(bins ) -threshold)) ,len(patches)):  # this is to shade the censored part of the histogram as white
         patches[i].set_facecolor('white')
-    Weibull_Distribution(alpha=a,beta=b,gamma=g).PDF(xvals=xvals,label='True Distribution') #plots the true distribution
-    Weibull_Distribution(alpha=wb.alpha, beta=wb.beta, gamma=wb.gamma).PDF(xvals=xvals, label='Fit_Weibull_3P',linestyle='--') #plots the fitted Weibull_3P
+    Weibull_Distribution(alpha=a ,beta=b ,gamma=g).PDF(xvals=xvals ,label='True Distribution')  # plots the true distribution
+    Weibull_Distribution(alpha=wbf.alpha, beta=wbf.beta, gamma=wbf.gamma).PDF(xvals=xvals, label='Fit_Weibull_3P' ,linestyle='--')  # plots the fitted Weibull_3P
     plt.title('Fitting comparison for failures and right censored data')
     plt.legend()
     plt.show()
@@ -105,39 +105,40 @@ As a final example, we will fit a Gamma_2P distribution to some partially left c
     from reliability.Fitters import Fit_Gamma_2P
     import matplotlib.pyplot as plt
     import numpy as np
-    np.random.seed(2) #this is just for repeatability in this tutorial
+    
+    np.random.seed(2)  # this is just for repeatability in this tutorial
     a = 30
     b = 4
     xvals = np.linspace(0, 500, 1000)
-
-    trials = [10,100,1000,10000]
+    
+    trials = [10, 100, 1000, 10000]
     subplot_id = 141
-    plt.figure(figsize=(12,5))
+    plt.figure(figsize=(12, 5))
     for t in trials:
-        uncensored_failure_data = Gamma_Distribution(alpha=a, beta=b).random_samples(t) #create some data
+        uncensored_failure_data = Gamma_Distribution(alpha=a, beta=b).random_samples(t)  # create some data
         cens = []
         fail = []
-        threshold = 100 #censoring cutoff
+        threshold = 100  # censoring cutoff
         for item in uncensored_failure_data:
-            if item<=threshold: #this will left censor any value below the threshold
+            if item <= threshold:  # this will left censor any value below the threshold
                 cens.append(threshold)
             else:
                 fail.append(item)
-        wb = Fit_Gamma_2P(failures=fail, left_censored=cens) #fit the Gamma_2P distribution
-        print('\nFit_Gamma_2P parameters using',t,'samples:','\nAlpha:', wb.alpha, '\nBeta:', wb.beta)
+        gf = Fit_Gamma_2P(failures=fail, left_censored=cens)  # fit the Gamma_2P distribution
+        print('\nFit_Gamma_2P parameters using', t, 'samples:', '\nAlpha:', gf.alpha, '\nBeta:', gf.beta)
         plt.subplot(subplot_id)
-        num_bins = min(int(len(fail)/2),30)
-        N,bins,patches = plt.hist(uncensored_failure_data, density=True, alpha=0.2, color='k', bins=num_bins, edgecolor='k') #histogram of the data
-        for i in range(0,np.argmin(abs(np.array(bins)-threshold))): #this is to shade the censored part of the histogram as white
+        num_bins = min(int(len(fail) / 2), 30)
+        N, bins, patches = plt.hist(uncensored_failure_data, density=True, alpha=0.2, color='k', bins=num_bins, edgecolor='k')  # histogram of the data
+        for i in range(0, np.argmin(abs(np.array(bins) - threshold))):  # this is to shade the censored part of the histogram as white
             patches[i].set_facecolor('white')
-        Gamma_Distribution(alpha=a,beta=b).PDF(xvals=xvals,label='True') #plots the true distribution
-        Gamma_Distribution(alpha=wb.alpha, beta=wb.beta).PDF(xvals=xvals,label='Fitted',linestyle='--') #plots the fitted Gamma_2P
-        plt.title(str(str(t)+' samples'))
-        plt.ylim([0,0.012])
-        plt.xlim([0,500])
+        Gamma_Distribution(alpha=a, beta=b).PDF(xvals=xvals, label='True')  # plots the true distribution
+        Gamma_Distribution(alpha=gf.alpha, beta=gf.beta).PDF(xvals=xvals, label='Fitted', linestyle='--')  # plots the fitted Gamma_2P
+        plt.title(str(str(t) + ' samples'))
+        plt.ylim([0, 0.012])
+        plt.xlim([0, 500])
         plt.legend()
-        subplot_id+=1
-    plt.subplots_adjust(left=0.09,right=0.96,wspace=0.41)
+        subplot_id += 1
+    plt.subplots_adjust(left=0.09, right=0.96, wspace=0.41)
     plt.show()
 
     '''
