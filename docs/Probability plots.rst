@@ -99,19 +99,20 @@ In this final example, we take a look at how a probability plot can show us that
     dist_1 = Weibull_Distribution(alpha=200,beta=3)
     dist_2 = Weibull_Distribution(alpha=900,beta=4)
     plt.subplot(121) #this is for the PDFs of the 2 individual distributions
-    dist_1.PDF(label='dist 1')
-    dist_2.PDF(label='dist 2')
+    dist_1.PDF(label=dist_1.param_title_long)
+    dist_2.PDF(label=dist_2.param_title_long)
     plt.legend()
-    plt.title('PDF of dist 1 and dist 2')
+    plt.title('PDF of two different distributions\nthat are contributing the failure data')
     plt.subplot(122) #this will be the probability plot
     dist_1_data = dist_1.random_samples(50)
     dist_2_data = dist_2.random_samples(50)
     all_data = np.hstack([dist_1_data,dist_2_data]) #combine the failure data into one array
-    dist_1.CDF(label='dist 1') #plot each individual distribution for comparison
-    dist_2.CDF(label='dist 2')
+    dist_1.CDF(label=dist_1.param_title_long) #plot each individual distribution for comparison
+    dist_2.CDF(label=dist_2.param_title_long)
     Weibull_probability_plot(failures=all_data) #do the probability plot
     plt.gcf().set_size_inches(13,7) #adjust the figuresize after creation. Necessary to do it after as it it automatically ajdusted within probability_plot
     plt.subplots_adjust(left=0.08,right=0.96) #formatting the layout
+    plt.legend(loc='lower right')
     plt.show()
 
 .. image:: images/probability_plot_mixture.png
