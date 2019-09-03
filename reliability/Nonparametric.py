@@ -8,6 +8,11 @@ Both methods support failures and right censored data. Left censored data is not
 Confidence intervals are provided using the Greenwood formula with Normal approximation (as implemented in Minitab).
 '''
 
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import scipy.stats as ss
+
 class KaplanMeier:
     '''
     Kaplan-Meier
@@ -47,10 +52,6 @@ class KaplanMeier:
     KaplanMeier(failures = f, right_censored = rc)
     '''
     def __init__(self,failures=None,right_censored = None,show_plot=True,print_results=True,plot_CI=True,CI=0.95,**kwargs):
-        import pandas as pd
-        import numpy as np
-        import matplotlib.pyplot as plt
-        import scipy.stats as ss
         np.seterr(divide='ignore') #divide by zero occurs if last detapoint is a failure so risk set is zero
 
         if failures is None:
@@ -234,10 +235,6 @@ class NelsonAalen:
     '''
 
     def __init__(self, failures=None, right_censored=None, show_plot=True, print_results=True, plot_CI=True, CI=0.95, **kwargs):
-        import pandas as pd
-        import numpy as np
-        import matplotlib.pyplot as plt
-        import scipy.stats as ss
         np.seterr(divide='ignore')  # divide by zero occurs if last detapoint is a failure so risk set is zero
 
         if failures is None:
