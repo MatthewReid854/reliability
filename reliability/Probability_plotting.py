@@ -17,11 +17,6 @@ QQ_plot_parametric - quantile-quantile plot. Compares two parametric distributio
 QQ_plot_semiparametric - quantile-quantile plot. Compares failure data with a hypothesised parametric distribution. Useful to assess goodness of fit.
 PP_plot_parametric - probability-probability plot. Compares two parametric distributions using their CDFs. Useful to understand the differences between the quantiles of the distributions.
 PP_plot_semiparametric - probability-probability plot. Compares failure data with a hypothesised parametric distribution. Useful to assess goodness of fit.
-
-This function also the axes scaling functions, though these are used internally by matplotlib and have no inputs or outputs.
-If you would like to use these scaling functions, simply import this module and then in your plotting code use plt.gca().set_yscale('weibull').
-The scaling options are 'weibull','exponential','normal','gamma',beta'.
-Gamma and Beta are more complicated to use as they require the parameters of the distribution to be declared as global variables. Look through the code if you need to see how this is done.
 '''
 
 import matplotlib.pyplot as plt
@@ -35,152 +30,27 @@ from reliability.Distributions import Weibull_Distribution, Lognormal_Distributi
 from reliability.Nonparametric import KaplanMeier, NelsonAalen
 np.seterr('ignore')
 
-class _WeibullScale(scale.ScaleBase):
-    name = 'weibull'
-    def __init__(self, axis, **kwargs):
-        scale.ScaleBase.__init__(self)
-        self.thresh = None
-    def get_transform(self):
-        return self.CustomTransform(self.thresh)
-    def set_default_locators_and_formatters(self, axis):
-        pass
-    class CustomTransform(mtransforms.Transform):
-        input_dims = 1
-        def __init__(self, thresh):
-            mtransforms.Transform.__init__(self)
-            self.thresh = thresh
-        def transform_non_affine(self, F):
-            return np.log(-np.log(1-F))
-        def inverted(self):
-            return _WeibullScale.InvertedCustomTransform(self.thresh)
-    class InvertedCustomTransform(mtransforms.Transform):
-        input_dims = 1
-        def __init__(self, thresh):
-            mtransforms.Transform.__init__(self)
-            self.thresh = thresh
-        def transform_non_affine(self, R):
-            return 1-np.exp(-np.exp(R))
-        def inverted(self):
-            return _WeibullScale.CustomTransform(self.thresh)
-
-class _ExponentialScale(scale.ScaleBase):
-    name = 'exponential'
-    def __init__(self, axis, **kwargs):
-        scale.ScaleBase.__init__(self)
-        self.thresh = None
-    def get_transform(self):
-        return self.CustomTransform(self.thresh)
-    def set_default_locators_and_formatters(self, axis):
-        pass
-    class CustomTransform(mtransforms.Transform):
-        input_dims = 1
-        def __init__(self, thresh):
-            mtransforms.Transform.__init__(self)
-            self.thresh = thresh
-        def transform_non_affine(self, F):
-            return ss.expon.ppf(F)
-        def inverted(self):
-            return _ExponentialScale.InvertedCustomTransform(self.thresh)
-    class InvertedCustomTransform(mtransforms.Transform):
-        input_dims = 1
-        def __init__(self, thresh):
-            mtransforms.Transform.__init__(self)
-            self.thresh = thresh
-        def transform_non_affine(self, R):
-            return ss.expon.cdf(R)
-        def inverted(self):
-            return _ExponentialScale.CustomTransform(self.thresh)
-
-class _NormalScale(scale.ScaleBase):
-    name = 'normal'
-    def __init__(self, axis, **kwargs):
-        scale.ScaleBase.__init__(self)
-        self.thresh = None
-    def get_transform(self):
-        return self.CustomTransform(self.thresh)
-    def set_default_locators_and_formatters(self, axis):
-        pass
-    class CustomTransform(mtransforms.Transform):
-        input_dims = 1
-        def __init__(self, thresh):
-            mtransforms.Transform.__init__(self)
-            self.thresh = thresh
-        def transform_non_affine(self, F):
-            return ss.norm.ppf(F)
-        def inverted(self):
-            return _NormalScale.InvertedCustomTransform(self.thresh)
-    class InvertedCustomTransform(mtransforms.Transform):
-        input_dims = 1
-        def __init__(self, thresh):
-            mtransforms.Transform.__init__(self)
-            self.thresh = thresh
-        def transform_non_affine(self, R):
-            return ss.norm.cdf(R)
-        def inverted(self):
-            return _NormalScale.CustomTransform(self.thresh)
-
-class _GammaScale(scale.ScaleBase):
-    name = 'gamma'
-    def __init__(self, axis, **kwargs):
-        scale.ScaleBase.__init__(self)
-        self.thresh = None
-    def get_transform(self):
-        return self.CustomTransform(self.thresh)
-    def set_default_locators_and_formatters(self, axis):
-        pass
-    class CustomTransform(mtransforms.Transform):
-        input_dims = 1
-        def __init__(self, thresh):
-            mtransforms.Transform.__init__(self)
-            self.thresh = thresh
-        def transform_non_affine(self, F):
-            return ss.gamma.ppf(F,a=gamma_beta)
-        def inverted(self):
-            return _GammaScale.InvertedCustomTransform(self.thresh)
-    class InvertedCustomTransform(mtransforms.Transform):
-        input_dims = 1
-        def __init__(self, thresh):
-            mtransforms.Transform.__init__(self)
-            self.thresh = thresh
-        def transform_non_affine(self, R):
-            return ss.gamma.cdf(R,a=gamma_beta)
-        def inverted(self):
-            return _GammaScale.CustomTransform(self.thresh)
-
-class _BetaScale(scale.ScaleBase):
-    name = 'beta'
-    def __init__(self, axis, **kwargs):
-        scale.ScaleBase.__init__(self)
-        self.thresh = None
-    def get_transform(self):
-        return self.CustomTransform(self.thresh)
-    def set_default_locators_and_formatters(self, axis):
-        pass
-    class CustomTransform(mtransforms.Transform):
-        input_dims = 1
-        def __init__(self, thresh):
-            mtransforms.Transform.__init__(self)
-            self.thresh = thresh
-        def transform_non_affine(self, F):
-            return ss.beta.ppf(F,a=beta_alpha,b=beta_beta)
-        def inverted(self):
-            return _BetaScale.InvertedCustomTransform(self.thresh)
-    class InvertedCustomTransform(mtransforms.Transform):
-        input_dims = 1
-        def __init__(self, thresh):
-            mtransforms.Transform.__init__(self)
-            self.thresh = thresh
-        def transform_non_affine(self, R):
-            return ss.beta.cdf(R,a=beta_alpha,b=beta_beta)
-        def inverted(self):
-            return _BetaScale.CustomTransform(self.thresh)
-
-#register all the custom scales so that matplotlib can find them by name
-scale.register_scale(_WeibullScale)
-scale.register_scale(_ExponentialScale)
-scale.register_scale(_NormalScale)
-scale.register_scale(_GammaScale)
-scale.register_scale(_BetaScale)
+#Custom scale functions
+def __weibull_forward(F):
+    return np.log(-np.log(1-F))
+def __weibull_inverse(R):
+    return 1-np.exp(-np.exp(R))
+def __expon_forward(F):
+    return ss.expon.ppf(F)
+def __expon_inverse(R):
+    return ss.expon.cdf(R)
+def __normal_forward(F):
+    return ss.norm.ppf(F)
+def __normal_inverse(R):
+    return ss.norm.cdf(R)
+def __gamma_forward(F):
+    return ss.gamma.ppf(F,a=gamma_beta)
+def __gamma_inverse(R):
+    return ss.gamma.cdf(R,a=gamma_beta)
+def __beta_forward(F):
+    return ss.beta.ppf(F,a=beta_alpha,b=beta_beta)
+def __beta_inverse(R):
+    return ss.beta.cdf(R,a=beta_alpha,b=beta_beta)
 
 def plotting_positions(failures=None,right_censored=None,left_censored=None):
     '''
@@ -302,7 +172,7 @@ def Weibull_probability_plot(failures=None,right_censored=None,left_censored=Non
         raise ValueError('cannot fit gamma if left censored data is specified')
     #generate the figure and fit the distribution
     if max(failures)<1:
-        xvals = np.linspace(10**-3,1,1000)
+        xvals = np.linspace(10**-3,2,1000)
     else:
         xvals = np.logspace(-2, np.log10(max(failures))*10, 1000)
     if fit_gamma == False:
@@ -353,7 +223,7 @@ def Weibull_probability_plot(failures=None,right_censored=None,left_censored=Non
     #plot the failure points and format the scale and axes
     x,y = plotting_positions(failures=failures,right_censored=right_censored,left_censored=left_censored)
     plt.scatter(x, y, marker='.', linewidth=2, c='k',label='Failure data')
-    plt.gca().set_yscale('weibull')
+    plt.gca().set_yscale('function', functions=(__weibull_forward, __weibull_inverse))
     plt.xscale('log')
     plt.grid(b=True, which='major' ,color='k',alpha=0.3, linestyle='-')
     plt.grid(b=True, which='minor', color='k',alpha=0.08, linestyle='-')
@@ -391,7 +261,7 @@ def Normal_probability_plot(failures=None,right_censored=None,left_censored=None
     plt.scatter(x, y, marker='.', linewidth=2, c='k',label='Failure data')
     plt.ylim([0.0001,0.9999])
     plt.xlim([min(x)-max(x)*0.2,max(x)*1.2])
-    plt.gca().set_yscale('normal')
+    plt.gca().set_yscale('function', functions=(__normal_forward, __normal_inverse))
     plt.grid(b=True, which='major' ,color='k',alpha=0.3, linestyle='-')
     plt.grid(b=True, which='minor', color='k',alpha=0.08, linestyle='-')
     plt.gca().yaxis.set_minor_locator(FixedLocator(np.linspace(0,1,51)))
@@ -448,7 +318,7 @@ def Lognormal_probability_plot(failures=None,right_censored=None,left_censored=N
     xmin_log = 10**(int(np.floor(np.log10(min(x)))))
     xmax_log = 10**(int(np.ceil(np.log10(max(x)))))
     plt.xlim([xmin_log,xmax_log])
-    plt.gca().set_yscale('normal')
+    plt.gca().set_yscale('function', functions=(__normal_forward, __normal_inverse))
     plt.grid(b=True, which='major' ,color='k',alpha=0.3, linestyle='-')
     plt.grid(b=True, which='minor', color='k',alpha=0.08, linestyle='-')
     plt.xscale('log')
@@ -458,7 +328,7 @@ def Lognormal_probability_plot(failures=None,right_censored=None,left_censored=N
     plt.gca().set_yticklabels(['{:,.2%}'.format(x) for x in ytickvals]) #formats y ticks as percentage
     plt.gca().tick_params(axis='x', which='minor', labelcolor='w')
     if max(failures)<1:
-        xvals = np.linspace(10**-3,1,1000)
+        xvals = np.linspace(10**-3,2,1000)
     else:
         xvals = np.logspace(np.log10(xmin_log)-1,np.log10(xmax_log)+1,1000)
     if __fitted_dist_params is not None:
@@ -505,7 +375,7 @@ def Beta_probability_plot(failures=None,right_censored=None,left_censored=None,_
     plt.scatter(x, y, marker='.', linewidth=2, c='k',label='Failure data')
     plt.ylim([0.0001,0.9999])
     plt.xlim([-0.1,1.1])
-    plt.gca().set_yscale('beta')
+    plt.gca().set_yscale('function', functions=(__beta_forward, __beta_inverse))
     plt.grid(b=True, which='major' ,color='k',alpha=0.3, linestyle='-')
     plt.grid(b=True, which='minor', color='k',alpha=0.08, linestyle='-')
     plt.gca().yaxis.set_minor_locator(FixedLocator(np.linspace(0,1,51)))
@@ -585,7 +455,7 @@ def Gamma_probability_plot(failures=None,right_censored=None,left_censored=None,
         raise ValueError('cannot fit gamma if left censored data is specified')
     #generate the figure and fit the distribution
     if max(failures)<1:
-        xvals = np.linspace(10**-3,1,1000)
+        xvals = np.linspace(10**-3,2,1000)
     else:
         xvals = np.logspace(-2, np.log10(max(failures))*10, 1000)
     if fit_gamma == False:
@@ -635,10 +505,11 @@ def Gamma_probability_plot(failures=None,right_censored=None,left_censored=None,
             right_censored=right_censored-gamma
     global gamma_beta
     gamma_beta = beta #this is used in the axes scaling as the ppf and cdf need the shape parameter to scale the axes correctly
+    print(gamma_beta)
     #plot the failure points and format the scale and axes
     x,y = plotting_positions(failures=failures,right_censored=right_censored,left_censored=left_censored)
     plt.scatter(x, y, marker='.', linewidth=2, c='k',label='Failure data')
-    plt.gca().set_yscale('gamma')
+    plt.gca().set_yscale('function', functions=(__gamma_forward, __gamma_inverse))
     plt.grid(b=True, which='major' ,color='k',alpha=0.3, linestyle='-')
     plt.grid(b=True, which='minor', color='k',alpha=0.08, linestyle='-')
     plt.xlim([0,max(x)*1.2])
@@ -694,7 +565,7 @@ def Exponential_probability_plot(failures=None,right_censored=None,left_censored
     if fit_gamma==True and left_censored is not None:
         raise ValueError('cannot fit gamma if left censored data is specified')
     if max(failures)<1:
-        xvals = np.linspace(10**-3,1,1000)
+        xvals = np.linspace(10**-3,2,1000)
     else:
         xvals = np.logspace(-2, np.log10(max(failures)) * 10, 1000)
     if fit_gamma == False:
@@ -741,7 +612,7 @@ def Exponential_probability_plot(failures=None,right_censored=None,left_censored
     x,y = plotting_positions(failures=failures,right_censored=right_censored,left_censored=left_censored)
     plt.scatter(x, y, marker='.', linewidth=2, c='k',label='Failure data')
     plt.xlim([0,max(x)*1.2])
-    plt.gca().set_yscale('exponential')
+    plt.gca().set_yscale('function', functions=(__expon_forward, __expon_inverse))
     plt.grid(b=True, which='major' ,color='k',alpha=0.3, linestyle='-')
     plt.grid(b=True, which='minor', color='k',alpha=0.08, linestyle='-')
     if max(y)<0.9:

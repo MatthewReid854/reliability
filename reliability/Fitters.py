@@ -553,7 +553,7 @@ class Fit_Everything:
             ax.set_ylabel('')
             ax.set_xlabel('')
             ax.get_legend().remove()
-            plt.title('Beta_3P')
+            plt.title('Beta_2P')
         plt.gcf().set_size_inches(10, 5)
         plt.suptitle('Probability plots of each fitted distribution')
         plt.subplots_adjust(left=0.04, bottom=0.07, right=0.96, top=0.87)
