@@ -43,14 +43,14 @@ def __normal_forward(F):
     return ss.norm.ppf(F)
 def __normal_inverse(R):
     return ss.norm.cdf(R)
-def __gamma_forward(F):
-    return ss.gamma.ppf(F,a=gamma_beta)
-def __gamma_inverse(R):
-    return ss.gamma.cdf(R,a=gamma_beta)
-def __beta_forward(F):
-    return ss.beta.ppf(F,a=beta_alpha,b=beta_beta)
-def __beta_inverse(R):
-    return ss.beta.cdf(R,a=beta_alpha,b=beta_beta)
+def __gamma_forward(F,beta):
+    return ss.gamma.ppf(F,a=beta)
+def __gamma_inverse(R,beta):
+    return ss.gamma.cdf(R,a=beta)
+def __beta_forward(F,alpha,beta):
+    return ss.beta.ppf(F,a=alpha,b=beta)
+def __beta_inverse(R,alpha,beta):
+    return ss.beta.cdf(R,a=alpha,b=beta)
 
 def plotting_positions(failures=None,right_censored=None,left_censored=None):
     '''
@@ -375,7 +375,6 @@ def Beta_probability_plot(failures=None,right_censored=None,left_censored=None,_
     plt.scatter(x, y, marker='.', linewidth=2, c='k',label='Failure data')
     plt.ylim([0.0001,0.9999])
     plt.xlim([-0.1,1.1])
-    plt.gca().set_yscale('function', functions=(__beta_forward, __beta_inverse))
     plt.grid(b=True, which='major' ,color='k',alpha=0.3, linestyle='-')
     plt.grid(b=True, which='minor', color='k',alpha=0.08, linestyle='-')
     plt.gca().yaxis.set_minor_locator(FixedLocator(np.linspace(0,1,51)))
@@ -401,10 +400,10 @@ def Beta_probability_plot(failures=None,right_censored=None,left_censored=None,_
         color = kwargs.pop('color')
     else:
         color = 'red'
+    f_beta = lambda x: __beta_forward(x, alpha, beta)
+    fi_beta = lambda x: __beta_inverse(x, alpha, beta)
+    plt.gca().set_yscale('function', functions=(f_beta,fi_beta))
     plt.plot(xvals,bf,color=color,label=label,**kwargs)
-    global beta_alpha, beta_beta
-    beta_beta = beta #this is used in the axes scaling as the ppf and cdf need the shape parameter to scale the axes correctly
-    beta_alpha = alpha
     plt.title('Probability plot\nBeta CDF')
     plt.xlabel('Time')
     plt.ylabel('Fraction failing')
@@ -503,13 +502,13 @@ def Gamma_probability_plot(failures=None,right_censored=None,left_censored=None,
         failures=failures-gamma
         if right_censored is not None:
             right_censored=right_censored-gamma
-    global gamma_beta
-    gamma_beta = beta #this is used in the axes scaling as the ppf and cdf need the shape parameter to scale the axes correctly
-    print(gamma_beta)
+    # gamma_beta = beta #this is used in the axes scaling as the ppf and cdf need the shape parameter to scale the axes correctly
     #plot the failure points and format the scale and axes
     x,y = plotting_positions(failures=failures,right_censored=right_censored,left_censored=left_censored)
     plt.scatter(x, y, marker='.', linewidth=2, c='k',label='Failure data')
-    plt.gca().set_yscale('function', functions=(__gamma_forward, __gamma_inverse))
+    f_gamma = lambda x: __gamma_forward(x, beta)
+    fi_gamma = lambda x: __gamma_inverse(x, beta)
+    plt.gca().set_yscale('function', functions=(f_gamma,fi_gamma))
     plt.grid(b=True, which='major' ,color='k',alpha=0.3, linestyle='-')
     plt.grid(b=True, which='minor', color='k',alpha=0.08, linestyle='-')
     plt.xlim([0,max(x)*1.2])

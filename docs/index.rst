@@ -74,7 +74,7 @@ Contents:
   How to request or contribute a new feature
   How to get help
   About the author
-
+  Credits to those who helped
 
 Installation
 ------------------------------
