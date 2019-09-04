@@ -372,14 +372,10 @@ class Fit_Everything:
         plt.legend()
 
     def P_P_plot(self): #probability-probability plot of parametric vs non-parametric
-
-        plot_id = 251 #set dimensions of plot
-        fig_size = (10, 5)
-
         #plot each of the results
-        plt.figure(figsize=fig_size)
+        plt.figure(figsize=(10,5))
         plt.suptitle('Semi-parametric Probability-Probability plots of each fitted distribution\nParametric (x-axis) vs Non-Parametric (y-axis)')
-        plt.subplot(plot_id)
+        plt.subplot(251)
         xlim = max(np.hstack([self._nonparametric_CDF,self._parametric_CDF_Exponential_1P]))
         plt.plot(self._nonparametric_CDF,self._parametric_CDF_Exponential_1P,'b',alpha=0.8,linewidth=2)
         plt.plot([0,xlim],[0,xlim],'r',alpha=0.7)
@@ -387,9 +383,8 @@ class Fit_Everything:
         plt.title('Expon_1P')
         plt.yticks([])
         plt.xticks([])
-        plot_id+=1
 
-        plt.subplot(plot_id)
+        plt.subplot(252)
         xlim = max(np.hstack([self._nonparametric_CDF,self._parametric_CDF_Weibull_2P]))
         plt.plot(self._nonparametric_CDF,self._parametric_CDF_Weibull_2P,'b',alpha=0.8,linewidth=2)
         plt.plot([0,xlim],[0,xlim],'r',alpha=0.7)
@@ -397,9 +392,8 @@ class Fit_Everything:
         plt.title('Weibull_2P')
         plt.yticks([])
         plt.xticks([])
-        plot_id += 1
 
-        plt.subplot(plot_id)
+        plt.subplot(253)
         xlim = max(np.hstack([self._nonparametric_CDF,self._parametric_CDF_Gamma_2P]))
         plt.plot(self._nonparametric_CDF,self._parametric_CDF_Gamma_2P,'b',alpha=0.8,linewidth=2)
         plt.plot([0,xlim],[0,xlim],'r',alpha=0.7)
@@ -407,9 +401,8 @@ class Fit_Everything:
         plt.title('Gamma_2P')
         plt.yticks([])
         plt.xticks([])
-        plot_id += 1
 
-        plt.subplot(plot_id)
+        plt.subplot(254)
         xlim = max(np.hstack([self._nonparametric_CDF,self._parametric_CDF_Normal_2P]))
         plt.plot(self._nonparametric_CDF,self._parametric_CDF_Normal_2P,'b',alpha=0.8,linewidth=2)
         plt.plot([0,xlim],[0,xlim],'r',alpha=0.7)
@@ -417,9 +410,8 @@ class Fit_Everything:
         plt.title('Normal_2P')
         plt.yticks([])
         plt.xticks([])
-        plot_id+=1
 
-        plt.subplot(plot_id)
+        plt.subplot(255)
         xlim = max(np.hstack([self._nonparametric_CDF,self._parametric_CDF_Lognormal_2P]))
         plt.plot(self._nonparametric_CDF,self._parametric_CDF_Lognormal_2P,'b',alpha=0.8,linewidth=2)
         plt.plot([0,xlim],[0,xlim],'r',alpha=0.7)
@@ -427,9 +419,8 @@ class Fit_Everything:
         plt.title('Lognormal_2P')
         plt.yticks([])
         plt.xticks([])
-        plot_id+=1
 
-        plt.subplot(plot_id)
+        plt.subplot(256)
         xlim = max(np.hstack([self._nonparametric_CDF,self._parametric_CDF_Exponential_2P]))
         plt.plot(self._nonparametric_CDF,self._parametric_CDF_Exponential_2P,'b',alpha=0.8,linewidth=2)
         plt.plot([0,xlim],[0,xlim],'r',alpha=0.7)
@@ -437,9 +428,8 @@ class Fit_Everything:
         plt.title('Expon_2P')
         plt.yticks([])
         plt.xticks([])
-        plot_id+=1
 
-        plt.subplot(plot_id)
+        plt.subplot(257)
         xlim = max(np.hstack([self._nonparametric_CDF,self._parametric_CDF_Weibull_3P]))
         plt.plot(self._nonparametric_CDF,self._parametric_CDF_Weibull_3P,'b',alpha=0.8,linewidth=2)
         plt.plot([0,xlim],[0,xlim],'r',alpha=0.7)
@@ -447,9 +437,8 @@ class Fit_Everything:
         plt.title('Weibull_3P')
         plt.yticks([])
         plt.xticks([])
-        plot_id+=1
 
-        plt.subplot(plot_id)
+        plt.subplot(258)
         xlim = max(np.hstack([self._nonparametric_CDF,self._parametric_CDF_Gamma_3P]))
         plt.plot(self._nonparametric_CDF,self._parametric_CDF_Gamma_3P,'b',alpha=0.8,linewidth=2)
         plt.plot([0,xlim],[0,xlim],'r',alpha=0.7)
@@ -457,10 +446,9 @@ class Fit_Everything:
         plt.title('Gamma_3P')
         plt.yticks([])
         plt.xticks([])
-        plot_id+=1
 
         if max(self.failures)<=1:
-            plt.subplot(plot_id)
+            plt.subplot(259)
             xlim = max(np.hstack([self._nonparametric_CDF,self._parametric_CDF_Beta_2P]))
             plt.plot(self._nonparametric_CDF,self._parametric_CDF_Beta_2P,'b',alpha=0.8,linewidth=2)
             plt.plot([0,xlim],[0,xlim],'r',alpha=0.7)
@@ -481,6 +469,7 @@ class Fit_Everything:
         ax.set_xlabel('')
         ax.get_legend().remove()
         plt.title('Expon_1P')
+
         plt.subplot(252)
         Weibull_probability_plot(failures=self.failures,right_censored=self.right_censored,left_censored=self.left_censored,__fitted_dist_params=self.__Weibull_2P_params)
         ax = plt.gca()
@@ -490,6 +479,7 @@ class Fit_Everything:
         ax.set_xlabel('')
         ax.get_legend().remove()
         plt.title('Weibull_2P')
+
         plt.subplot(253)
         Gamma_probability_plot(failures=self.failures, right_censored=self.right_censored, left_censored=self.left_censored, __fitted_dist_params=self.__Gamma_2P_params)
         ax = plt.gca()
@@ -499,6 +489,7 @@ class Fit_Everything:
         ax.set_xlabel('')
         ax.get_legend().remove()
         plt.title('Gamma_2P')
+
         plt.subplot(254)
         Normal_probability_plot(failures=self.failures, right_censored=self.right_censored, left_censored=self.left_censored, __fitted_dist_params=self.__Normal_2P_params)
         ax = plt.gca()
@@ -508,6 +499,7 @@ class Fit_Everything:
         ax.set_xlabel('')
         ax.get_legend().remove()
         plt.title('Normal_2P')
+
         plt.subplot(255)
         Lognormal_probability_plot(failures=self.failures,right_censored=self.right_censored,left_censored=self.left_censored,__fitted_dist_params=self.__Lognormal_2P_params)
         ax = plt.gca()
@@ -517,6 +509,7 @@ class Fit_Everything:
         ax.set_xlabel('')
         ax.get_legend().remove()
         plt.title('Lognormal_2P')
+
         plt.subplot(256)
         Exponential_probability_plot(failures=self.failures, right_censored=self.right_censored, left_censored=self.left_censored, __fitted_dist_params=self.__Expon_2P_params,fit_gamma=True)
         ax = plt.gca()
@@ -526,6 +519,7 @@ class Fit_Everything:
         ax.set_xlabel('')
         ax.get_legend().remove()
         plt.title('Expon_2P')
+
         plt.subplot(257)
         Weibull_probability_plot(failures=self.failures, right_censored=self.right_censored, left_censored=self.left_censored, __fitted_dist_params=self.__Weibull_3P_params,fit_gamma=True)
         ax = plt.gca()
@@ -535,6 +529,7 @@ class Fit_Everything:
         ax.set_xlabel('')
         ax.get_legend().remove()
         plt.title('Weibull_3P')
+
         plt.subplot(258)
         Gamma_probability_plot(failures=self.failures, right_censored=self.right_censored, left_censored=self.left_censored, __fitted_dist_params=self.__Gamma_3P_params,fit_gamma=True)
         ax = plt.gca()
@@ -544,6 +539,7 @@ class Fit_Everything:
         ax.set_xlabel('')
         ax.get_legend().remove()
         plt.title('Gamma_3P')
+
         if max(self.failures) <= 1:
             plt.subplot(259)
             Beta_probability_plot(failures=self.failures, right_censored=self.right_censored, left_censored=self.left_censored, __fitted_dist_params=self.__Beta_2P_params)
@@ -554,12 +550,11 @@ class Fit_Everything:
             ax.set_xlabel('')
             ax.get_legend().remove()
             plt.title('Beta_2P')
+
         plt.gcf().set_size_inches(10, 5)
         plt.suptitle('Probability plots of each fitted distribution')
         plt.subplots_adjust(left=0.04, bottom=0.07, right=0.96, top=0.87)
         plt.show()
-
-
 
 class Fit_Weibull_2P:
     '''
