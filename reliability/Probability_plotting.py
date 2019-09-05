@@ -202,7 +202,7 @@ def Weibull_probability_plot(failures=None,right_censored=None,left_censored=Non
             gamma = __fitted_dist_params.gamma
         else:
             from reliability.Fitters import Fit_Weibull_3P
-            fit = Fit_Weibull_3P(failures=failures, right_censored=right_censored,show_probability_plot=False)
+            fit = Fit_Weibull_3P(failures=failures, right_censored=right_censored,show_probability_plot=False,print_results=False)
             alpha = fit.alpha
             beta = fit.beta
             gamma = fit.gamma
@@ -275,7 +275,7 @@ def Normal_probability_plot(failures=None,right_censored=None,left_censored=None
         sigma = __fitted_dist_params.sigma
     else:
         from reliability.Fitters import Fit_Normal_2P
-        fit = Fit_Normal_2P(failures=failures,right_censored=right_censored,left_censored=left_censored,show_probability_plot=False)
+        fit = Fit_Normal_2P(failures=failures,right_censored=right_censored,left_censored=left_censored,show_probability_plot=False,print_results=False)
         mu = fit.mu
         sigma = fit.sigma
     nf = Normal_Distribution(mu= mu,sigma=sigma).CDF(show_plot=False,xvals=xvals)
@@ -336,7 +336,7 @@ def Lognormal_probability_plot(failures=None,right_censored=None,left_censored=N
         sigma = __fitted_dist_params.sigma
     else:
         from reliability.Fitters import Fit_Lognormal_2P
-        fit = Fit_Lognormal_2P(failures=failures,right_censored=right_censored,left_censored=left_censored,show_probability_plot=False)
+        fit = Fit_Lognormal_2P(failures=failures,right_censored=right_censored,left_censored=left_censored,show_probability_plot=False,print_results=False)
         mu = fit.mu
         sigma = fit.sigma
     lnf = Lognormal_Distribution(mu=mu,sigma=sigma).CDF(show_plot=False,xvals=xvals)
@@ -388,7 +388,7 @@ def Beta_probability_plot(failures=None,right_censored=None,left_censored=None,_
         beta = __fitted_dist_params.beta
     else:
         from reliability.Fitters import Fit_Beta_2P
-        fit = Fit_Beta_2P(failures=failures,right_censored=right_censored,left_censored=left_censored,show_probability_plot=False)
+        fit = Fit_Beta_2P(failures=failures,right_censored=right_censored,left_censored=left_censored,show_probability_plot=False,print_results=False)
         alpha = fit.alpha
         beta = fit.beta
     bf = Beta_Distribution(alpha = alpha,beta=beta).CDF(show_plot=False,xvals=xvals)
@@ -463,7 +463,7 @@ def Gamma_probability_plot(failures=None,right_censored=None,left_censored=None,
             beta = __fitted_dist_params.beta
         else:
             from reliability.Fitters import Fit_Gamma_2P
-            fit = Fit_Gamma_2P(failures=failures,right_censored=right_censored,left_censored=left_censored,show_probability_plot=False)
+            fit = Fit_Gamma_2P(failures=failures,right_censored=right_censored,left_censored=left_censored,show_probability_plot=False,print_results=False)
             alpha = fit.alpha
             beta = fit.beta
         gf = Gamma_Distribution(alpha = alpha,beta=beta).CDF(show_plot=False,xvals=xvals)
@@ -572,7 +572,7 @@ def Exponential_probability_plot(failures=None,right_censored=None,left_censored
             Lambda = __fitted_dist_params.Lambda
         else:
             from reliability.Fitters import Fit_Expon_1P
-            fit = Fit_Expon_1P(failures=failures,right_censored=right_censored,left_censored=left_censored, show_probability_plot=False)
+            fit = Fit_Expon_1P(failures=failures,right_censored=right_censored,left_censored=left_censored, show_probability_plot=False,print_results=False)
             Lambda = fit.Lambda
         ef = Exponential_Distribution(Lambda = Lambda).CDF(show_plot=False,xvals=xvals)
         if 'label' in kwargs:
@@ -1028,3 +1028,6 @@ def QQ_plot_semiparametric(X_data_failures=None,X_data_right_censored=None,Y_dis
     plt.ylim([0,endval])
     plt.title('Quantile-Quantile Plot\nSemi-parametric')
     return [m,deg1[0],deg1[1]]
+
+
+
