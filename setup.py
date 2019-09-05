@@ -7,7 +7,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="reliability",
-    version="0.2.12",
+    version="0.2.13",
     description="Reliability Engineering toolkit for Python",
     author="Matthew Reid",
     author_email="m.reid854@gmail.com",
@@ -23,7 +23,7 @@ setuptools.setup(
     ],
     install_requires=["autograd>=1.3",
                       "scipy>=1.3.1",
-                      "numpy>=1.17.2",
+                      "numpy>=1.17.1",
                       "matplotlib>=3.1.1",
                       "pandas>=0.23.4",
                       "autograd-gamma>=0.4.1",
