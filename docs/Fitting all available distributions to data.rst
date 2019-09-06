@@ -29,7 +29,7 @@ Outputs:
 
 Confidence intervals for each of the fitted parameters are not reported by ``Fitters.Fit_Everything`` as this would be a large number of outputs. If you need the confidence intervals for the fitted parameters you can repeat the fitting using just a specific distribution and the results will include the confidence intervals. Whilst Minitab uses the Anderson-Darling statistic for the goodness of fit, it is generally recognised that AICc and BIC are more accurate measures as they take into account the number of parameters in the distribution.
 
-In this first example, we will use Fit_Everything on some data and will return only the dataframe of results.
+In this first example, we will use Fit_Everything on some data and will return only the dataframe of results. Note that we are actively supressing the 3 plots that would normally be shown to provide graphical goodness of fit indications.
 
 .. code:: python
 
