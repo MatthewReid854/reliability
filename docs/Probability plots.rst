@@ -116,3 +116,24 @@ In this final example, we take a look at how a probability plot can show us that
     plt.show()
 
 .. image:: images/probability_plot_mixture.png
+
+What does a probability plot show me?
+-------------------------------------
+
+A probability plot shows how well your data is modelled by a particular distribution. By scaling the axes in such as way that the fitted distribution's CDF appears to be a straight line, we can judge whether the empirical CDF of the failure data (the black dots) are in agreement with the CDF of the fitted distribution. Ideally we would see that all of the black dots would lie on the straight line but most of the time this is not the case. A bad fit is evident when the line or curve formed by the black dots is deviating significantly from the straight line. We can usually tolerate a little bit of deviation at the tails of the distribution but the majority of the black dots should follow the line. A historically popular test was the `'fat pencil test' <https://support.minitab.com/en-us/minitab/18/help-and-how-to/statistics/basic-statistics/supporting-topics/normality/normal-probability-plots-and-the-fat-pencil-test/>`_ which suggested that if a fat pencil could cover the majority of the data points then the fit was probably suitable. Such a method makes no mention of the size of the plot window which could easily affect the result so it is best to use your own judgement and experience. This approach is not a substitute for statistical inference so it is often preferred to use quantitative measures for goodness of fit such as AICc and BIC. Despite being an imprecise measure, probability plots remain popular among reliability engineers and in reliability engineering software.
+
+.. code:: python
+
+    from reliability.Probability_plotting import Weibull_probability_plot, Exponential_probability_plot
+    from reliability.Distributions import Weibull_Distribution
+    import matplotlib.pyplot as plt
+    data = Weibull_Distribution(alpha=5,beta=3).random_samples(100)
+    plt.subplot(121)
+    Weibull_probability_plot(failures=data)
+    plt.title('Example of a good fit')
+    plt.subplot(122)
+    Exponential_probability_plot(failures=data)
+    plt.title('Example of a bad fit')
+    plt.show()
+
+.. image:: images/probability_plotting_good_and_bad.png
