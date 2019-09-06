@@ -181,7 +181,7 @@ def Weibull_probability_plot(failures=None,right_censored=None,left_censored=Non
             beta = __fitted_dist_params.beta
         else:
             from reliability.Fitters import Fit_Weibull_2P
-            fit = Fit_Weibull_2P(failures=failures,right_censored=right_censored,left_censored=left_censored,show_probability_plot=False)
+            fit = Fit_Weibull_2P(failures=failures,right_censored=right_censored,left_censored=left_censored,show_probability_plot=False,print_results=False)
             alpha = fit.alpha
             beta = fit.beta
         wbf = Weibull_Distribution(alpha = alpha,beta=beta).CDF(show_plot=False,xvals=xvals)
@@ -484,7 +484,7 @@ def Gamma_probability_plot(failures=None,right_censored=None,left_censored=None,
             gamma = __fitted_dist_params.gamma
         else:
             from reliability.Fitters import Fit_Gamma_3P
-            fit = Fit_Gamma_3P(failures=failures, right_censored=right_censored,show_probability_plot=False)
+            fit = Fit_Gamma_3P(failures=failures, right_censored=right_censored,show_probability_plot=False,print_results=False)
             alpha = fit.alpha
             beta = fit.beta
             gamma = fit.gamma
@@ -591,7 +591,7 @@ def Exponential_probability_plot(failures=None,right_censored=None,left_censored
             gamma = __fitted_dist_params.gamma
         else:
             from reliability.Fitters import Fit_Expon_2P
-            fit = Fit_Expon_2P(failures=failures, right_censored=right_censored, show_probability_plot=False)
+            fit = Fit_Expon_2P(failures=failures, right_censored=right_censored, show_probability_plot=False,print_results=False)
             Lambda = fit.Lambda
             gamma = fit.gamma
         ef = Exponential_Distribution(Lambda = Lambda).CDF(show_plot=False,xvals=xvals)
