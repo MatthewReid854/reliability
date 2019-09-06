@@ -5,7 +5,7 @@
 Fitting all available distributions to data
 '''''''''''''''''''''''''''''''''''''''''''
 
-To fit all of the `distributions available <https://reliability.readthedocs.io/en/latest/Fitting%20a%20specific%20distribution%20to%20data.html>`_ in ``reliability``, is a similar process to fitting a specific distribution. The user needs to specify the failures and any right or left censored data. Based on what is specified, the Fit_Everything function will fit what can be fitted. For example, if you specify data that is in the range {0,1} and does not contain left censored data, then Fit_Everything will fit all of the distributions implemented, however if you specify failure data and left censored data then Fit_Everything will not fit a Beta distribution or any of the location shifted distributions. Selection of what can be fitted is all done automatically based on the data provided.
+To fit all of the `distributions available <https://reliability.readthedocs.io/en/latest/Fitting%20a%20specific%20distribution%20to%20data.html>`_ in ``reliability``, is a similar process to fitting a specific distribution. The user needs to specify the failures and any right or left censored data. Based on what is specified, the Fit_Everything function will fit what can be fitted. For example, if you specify data that is in the range {0,1} and does not contain left censored data, then Fit_Everything will fit all of the distributions implemented, however, if you specify failure data and left censored data then Fit_Everything will not fit a Beta distribution or any of the location shifted distributions. Selection of what can be fitted is all done automatically based on the data provided.
 
 Inputs:
 
@@ -13,9 +13,10 @@ Inputs:
 -   left_censored - an array or list of the left failure times.
 -   right_censored - an array or list of the right failure times.
 -   sort_by - goodness of fit test to sort results by. Must be either 'BIC' or 'AIC'. Default is BIC.
--   show_plot - True/False. Defaults to True. Will show the PDF and CDF of the fitted distributions along with a histogram of the failure data.
+-   show_histogram_plot - True/False. Defaults to True. Will show the PDF and CDF of the fitted distributions along with a histogram of the failure data.
+-   show_PP_plot - True/False. Defaults to True unless there is left censored data in which case Kaplan-Meier cannot be applied. Provides a comparison of parametric vs non-parametric fit using a `semiparametric Probability-Probability (PP) plot <https://reliability.readthedocs.io/en/latest/Probability-Probability%20plots.html#semiparametric-probability-probability-plot>`_ for each fitted distribution.
+-   show_probability_plot - True/False. Defaults to True. Provides a `probability plot <https://reliability.readthedocs.io/en/latest/Probability%20plots.html>`_ of each of the fitted distributions.
 -   print_results - True/False. Defaults to True. Will show the results of the fitted parameters and the goodness of fit tests in a dataframe.
--   show_probability_plot - True/False. Defaults to True unless there is left censored data in which case Kaplan-Meier cannot be applied. This plot provides a comparison of parametric vs non-parametric fit.
 
 Outputs:
 
@@ -26,7 +27,7 @@ Outputs:
 -   best_distribution_name - the name of the best fitting distribution. E.g. 'Weibull_3P'
 -   parameters and goodness of fit tests for each fitted distribution. For example, the Weibull_3P distribution values are: Weibull_3P_alpha, Weibull_3P_beta, Weibull_3P_gamma, Weibull_3P_BIC, Weibull_3P_AICc.
 
-Confidence intervals for each of the fitted parameters are not supported. This feature may be incorporated in future releases, however, the need has not been identified. See the python library `lifelines <https://lifelines.readthedocs.io/en/latest/jupyter_notebooks/Piecewise%20Exponential%20Models%20and%20Creating%20Custom%20Models.html>`_ or JMP Pro software if this is required. You may not find all of the models from ``reliability`` in these other programs. Whilst Minitab uses the Anderson-Darling statistic for the goodness of fit, it is generally recognised that AICc and BIC are more accurate measures as they take into account the number of parameters in the distribution.
+Confidence intervals for each of the fitted parameters are not reported by `Fitters.Fit_everything` as this would be a large number of outputs. If you need the confidence intervals for the fitted parameters you can repeat the fitting using just a specific distribution and the results will include the confidence intervals. Whilst Minitab uses the Anderson-Darling statistic for the goodness of fit, it is generally recognised that AICc and BIC are more accurate measures as they take into account the number of parameters in the distribution.
 
 In this first example, we will use Fit_Everything on some data and will return only the dataframe of results.
 
@@ -34,7 +35,7 @@ In this first example, we will use Fit_Everything on some data and will return o
 
     from reliability.Fitters import Fit_Everything
     data = [4,4,2,4,7,4,1,2,7,1,4,3,6,6,6,3,2,3,4,3,2,3,2,4,6,5,5,2,4,3] # created using Weibull_Distribution(alpha=5,beta=2), and rounded to nearest int
-    Fit_Everything(failures=data, show_plot=False, show_probability_plot=False)
+    Fit_Everything(failures=data, show_histogram_plot=False, show_probability_plot=False, show_PP_plot=False)
 
     '''
                            Alpha     Beta  Gamma       Mu     Sigma    Lambda     AICc      BIC
@@ -85,8 +86,10 @@ In this second example, we will create some right censored data and use Fit_Ever
     The best fitting distribution was Weibull_2P which had parameters [11.27727274  3.30293237  0.        ]
     '''
 
-.. image:: images/Fit_everything_histogram.png
+.. image:: images/Fit_everything_histogram_plot.png
 
-.. image:: images/PP_plot.png
+.. image:: images/Fit_everything_probability_plot.png
+
+.. image:: images/Fit_everything_PP_plot.png
 
 The histogram is scaled based on the amount of censored data. If your censored data is all above or below your failure data then the histogram bars should line up well with the fitted distributions (assuming you have enough data). However, if your censored data is not always greater or less than the max and min of your failure data then the heights of the histogram bars will be scaled down and the plot won't look right. This is to be expected as the histogram is only a plot of the failure data and the totals will not add to 100% if there is censored data.
