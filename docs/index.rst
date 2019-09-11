@@ -21,6 +21,7 @@ Contents:
   :maxdepth: 1
   :caption: Parametric Models
 
+  Equations of supported distributions
   Creating and plotting distributions
   Fitting a specific distribution to data
   Fitting all available distributions to data
