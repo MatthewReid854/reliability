@@ -27,13 +27,13 @@ Weibull Distribution
 Exponential Distribution
 ========================
 
-:math:`\text{PDF:} \qquad f(t) = 
+:math:`\text{PDF:} \qquad f(t) = `
 
-:math:`\text{CDF:} \qquad F(t) = 
+:math:`\text{CDF:} \qquad F(t) = `
 
-:math:`\text{SF:} \qquad R(t) = 
+:math:`\text{SF:  } \qquad R(t) = `
 
-:math:`\text{HF:} \qquad h(t) = 
+:math:`\text{HF:  } \qquad h(t) = `
 
-:math:`\text{CHF:} \qquad H(t) = 
+:math:`\text{CHF:} \qquad H(t) = `
 
