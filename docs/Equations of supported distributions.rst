@@ -20,12 +20,14 @@ Weibull Distribution
 
 :math:`\text{SF:} \qquad R(t) = e^{-(\frac{t}{\alpha })^ \beta }`
 
-:math:`\text{HF:} \qquad h(t) = \beta t^{\beta -1}`
+:math:`\text{HF:} \qquad h(t) = \frac{\beta}{\alpha} (\frac{t}{\alpha})^{\beta -1}`
 
-:math:`\text{CHF:} \qquad H(t) = t^{\beta -1}`
+:math:`\text{CHF:} \qquad H(t) = (\frac{t}{\alpha})^{\beta}`
 
 Exponential Distribution
 ========================
+
+This is a work in progress. Check back soon for more equations.
 
 :math:`\text{PDF:} \qquad f(t) = 1`
 
