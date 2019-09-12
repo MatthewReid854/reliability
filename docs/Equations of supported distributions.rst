@@ -10,6 +10,14 @@ The following expressions provide the equations for the Probability Density Func
 Weibull Distribution
 ====================
 
-.. math:: \alpha = scale parameter, \beta = shape parameter
+.. math:: \alpha = \text{scale parameter}, \beta = \text{shape parameter}
 
-.. math::  \underbrace{h(t | x)}_{\text{hazard}} = \overbrace{b_0(t)}^{\text{baseline hazard}} \underbrace{\exp \overbrace{\left(\sum_{i=1}^n b_i (x_i - \overline{x_i})\right)}^{\text{log-partial hazard}}}_ {\text{partial hazard}}
+.. math:: \text{PDF:} f(t) = \frac{\beta t^{ \beta - 1}}{ \alpha^ \beta} e^{-(\frac{t}{\alpha })^ \beta }
+
+.. math:: \text{CDF:} F(t) = 1 - e^{-(\frac{t}{\alpha })^ \beta }
+
+Exponential Distribution
+========================
+
+
+
