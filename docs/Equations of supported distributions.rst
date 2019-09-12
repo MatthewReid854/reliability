@@ -5,7 +5,7 @@
 Equations of supported distributions
 ''''''''''''''''''''''''''''''''''''
 
-The following expressions provide the equations for the Probability Density Functions (PDF), Cumulative Distributions Function (CDF), Survival Function (SF), Hazard Function (HF), and Cumulative Hazard Function (CHF) of all supported distributions. Readers should note that there are many ways to write the equations for probability distributions and careful attention should be afforded to the parametrization to ensure you understand each parameter.
+The following expressions provide the equations for the Probability Density Function (PDF), Cumulative Distribution Function (CDF), Survival Function (SF), Hazard Function (HF), and Cumulative Hazard Function (CHF) of all supported distributions. Readers should note that there are many ways to write the equations for probability distributions and careful attention should be afforded to the parametrization to ensure you understand each parameter.
 
 Weibull Distribution
 ====================
