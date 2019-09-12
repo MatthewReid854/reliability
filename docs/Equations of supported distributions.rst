@@ -14,19 +14,12 @@ Weibull Distribution
 
 :math:`\beta` = shape parameter
 
-.. math:: \text{PDF:} f(t) = \frac{\beta t^{ \beta - 1}}{ \alpha^ \beta} e^{-(\frac{t}{\alpha })^ \beta }
+:math:`\text{PDF:} \qquad f(t) = \frac{\beta t^{ \beta - 1}}{ \alpha^ \beta} e^{-(\frac{t}{\alpha })^ \beta }
 
-:math:`\text{CDF:} F(t) = 1 - e^{-(\frac{t}{\alpha })^ \beta }`
+:math:`\text{CDF:} \qquad F(t) = 1 - e^{-(\frac{t}{\alpha })^ \beta }`
 
-CDF: :math:`F(t) = 1 - e^{-(\frac{t}{\alpha })^ \beta }`
+:math:`\text{SF:} \qquad R(t) = e^{-(\frac{t}{\alpha })^ \beta }`
 
-**CDF:**    :math:`F(t) = 1 - e^{-(\frac{t}{\alpha })^ \beta }`
-
-:math:`\text{CDF:}     F(t) = 1 - e^{-(\frac{t}{\alpha })^ \beta }`
-
-:math:`CDF: \qquad F(t) = 1 - e^{-(\frac{t}{\alpha })^ \beta }`
-
-test3
 
 Exponential Distribution
 ========================
