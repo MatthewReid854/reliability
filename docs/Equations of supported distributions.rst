@@ -10,11 +10,17 @@ The following expressions provide the equations for the Probability Density Func
 Weibull Distribution
 ====================
 
-.. math:: \alpha = \text{scale parameter}, \beta = \text{shape parameter}
+.. math:: \alpha = \text{scale parameter}
+
+:math:`\beta` = \text{shape parameter}
 
 .. math:: \text{PDF:} f(t) = \frac{\beta t^{ \beta - 1}}{ \alpha^ \beta} e^{-(\frac{t}{\alpha })^ \beta }
 
-.. math:: \text{CDF:} F(t) = 1 - e^{-(\frac{t}{\alpha })^ \beta }
+:math:`\text{CDF:} F(t) = 1 - e^{-(\frac{t}{\alpha })^ \beta }`
+
+CDF: :math:`F(t) = 1 - e^{-(\frac{t}{\alpha })^ \beta }`
+
+**CDF:** :math:`F(t) = 1 - e^{-(\frac{t}{\alpha })^ \beta }`
 
 Exponential Distribution
 ========================
