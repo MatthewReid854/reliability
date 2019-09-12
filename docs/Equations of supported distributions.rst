@@ -24,7 +24,8 @@ CDF: :math:`F(t) = 1 - e^{-(\frac{t}{\alpha })^ \beta }`
 
 :math:`\text{CDF:}     F(t) = 1 - e^{-(\frac{t}{\alpha })^ \beta }`
 
-:math:`\text{**CDF:**}     F(t) = 1 - e^{-(\frac{t}{\alpha })^ \beta }`
+**CDF:**
+:math:`F(t) = 1 - e^{-(\frac{t}{\alpha })^ \beta }`
 
 
 Exponential Distribution
