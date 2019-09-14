@@ -27,13 +27,13 @@ Weibull Distribution
 Exponential Distribution
 ========================
 
-This is a work in progress. Check back soon for more equations.
+:math:`\lambda` = scale parameter (:math:`\lambda > 0`)
 
 :math:`\text{PDF:} \hspace{11mm} f(t) = \lambda {\rm e}^{-\lambda t}`
 
-:math:`\text{CDF:} \hspace{10mm} F(t) = 1 - e^{-\lambda t}`
+:math:`\text{CDF:} \hspace{10mm} F(t) = 1 - {\rm e}^{-\lambda t}`
 
-:math:`\text{SF:} \hspace{14mm} R(t) = e^{-\lambda t}`
+:math:`\text{SF:} \hspace{14mm} R(t) = {\rm e}^{-\lambda t}`
 
 :math:`\text{HF:} \hspace{14mm} h(t) = \lambda`
 
@@ -42,21 +42,23 @@ This is a work in progress. Check back soon for more equations.
 Normal Distribution
 ===================
 
-This is a work in progress. Check back soon for more equations.
+:math:`\mu` = location parameter (:math:`-\infty < \mu < \infty`) 
 
-:math:`\text{PDF:} \hspace{11mm} f(t) = \frac{1}{\sigma \sqrt{2 \pi}}exp\left[-\frac{1}{2}\left(\frac{t - \mu}{\sigma}\right)^2\right]`
+:math:`\sigma` = scale parameter (:math:`\sigma > 0`)
 
-:math:`\hspace{33mm} = \frac{1}{\sigma}\phi \left[ \frac{t - \mu}{\sigma} \right]`
+:math:`\text{PDF:} \hspace{11mm} f(t) = \frac{1}{\sigma \sqrt{2 \pi}}{\rm exp}\left[-\frac{1}{2}\left(\frac{t - \mu}{\sigma}\right)^2\right]`
+
+:math:`\hspace{31mm} = \frac{1}{\sigma}\phi \left[ \frac{t - \mu}{\sigma} \right]`
 
 where :math:`\phi` is the standard normal PDF with :math:`\mu = 0` and :math:`\sigma=1`
 
-:math:`\text{CDF:} \hspace{10mm} F(t) = \frac{1}{\sigma \sqrt{2 \pi}} \int^t_{-\infty} exp\left[-\frac{1}{2}\left(\frac{\theta - \mu}{\sigma}\right)^2\right] d \theta`
+:math:`\text{CDF:} \hspace{10mm} F(t) = \frac{1}{\sigma \sqrt{2 \pi}} \int^t_{-\infty} {\rm exp}\left[-\frac{1}{2}\left(\frac{\theta - \mu}{\sigma}\right)^2\right] d \theta`
 
-:math:`\hspace{33mm} =\frac{1}{2}+\frac{1}{2}erf\left(\frac{t - \mu}{\sigma \sqrt{2}}\right)`
+:math:`\hspace{31mm} =\frac{1}{2}+\frac{1}{2}{\rm erf}\left(\frac{t - \mu}{\sigma \sqrt{2}}\right)`
 
-:math:`\hspace{33mm} = \frac{1}{\sigma}\Phi \left( \frac{t - \mu}{\sigma} \right)`
+:math:`\hspace{31mm} = \Phi \left( \frac{t - \mu}{\sigma} \right)`
 
-where :math:`\Phi` is the standard normal PDF with :math:`\mu = 0` and :math:`\sigma=1`
+where :math:`\Phi` is the standard normal CDF with :math:`\mu = 0` and :math:`\sigma=1`
 
 :math:`\text{SF:} \hspace{14mm} R(t) = 1 - F(t)`
 
