@@ -29,7 +29,7 @@ Exponential Distribution
 
 This is a work in progress. Check back soon for more equations.
 
-:math:`\text{PDF:} \hspace{11mm} f(t) = \lambda \e^{-\lambda t}`
+:math:`\text{PDF:} \hspace{11mm} f(t) = \lambda e^{-\lambda t}`
 
 :math:`\text{CDF:} \hspace{10mm} F(t) = 1 - e^{-\lambda t}`
 
@@ -44,7 +44,7 @@ Normal Distribution
 
 This is a work in progress. Check back soon for more equations.
 
-:math:`\text{PDF:} \hspace{11mm} f(t) = \frac{1}{\sigma \sqrt{2 \pi}}exp[-\frac{1}{2}(\frac{t - \mu}{\sigma})^2]`
+:math:`\text{PDF:} \hspace{11mm} f(t) = \frac{1}{\sigma \sqrt{2 \pi}}exp\left[-\frac{1}{2}(\frac{t - \mu}{\sigma})^2\right]`
 
 :math:`\text{CDF:} \hspace{10mm} F(t) = 1`
 
