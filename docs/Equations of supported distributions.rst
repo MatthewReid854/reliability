@@ -39,3 +39,62 @@ This is a work in progress. Check back soon for more equations.
 
 :math:`\text{CHF:} \hspace{10mm} H(t) = 1`
 
+Normal Distribution
+===================
+
+This is a work in progress. Check back soon for more equations.
+
+:math:`\text{PDF:} \hspace{11mm} f(t) = 1`
+
+:math:`\text{CDF:} \hspace{10mm} F(t) = 1`
+
+:math:`\text{SF:} \hspace{14mm} R(t) = 1`
+
+:math:`\text{HF:} \hspace{14mm} h(t) = 1`
+
+:math:`\text{CHF:} \hspace{10mm} H(t) = 1`
+
+Lognormal Distribution
+======================
+
+This is a work in progress. Check back soon for more equations.
+
+:math:`\text{PDF:} \hspace{11mm} f(t) = 1`
+
+:math:`\text{CDF:} \hspace{10mm} F(t) = 1`
+
+:math:`\text{SF:} \hspace{14mm} R(t) = 1`
+
+:math:`\text{HF:} \hspace{14mm} h(t) = 1`
+
+:math:`\text{CHF:} \hspace{10mm} H(t) = 1`
+
+Gamma Distribution
+==================
+
+This is a work in progress. Check back soon for more equations.
+
+:math:`\text{PDF:} \hspace{11mm} f(t) = 1`
+
+:math:`\text{CDF:} \hspace{10mm} F(t) = 1`
+
+:math:`\text{SF:} \hspace{14mm} R(t) = 1`
+
+:math:`\text{HF:} \hspace{14mm} h(t) = 1`
+
+:math:`\text{CHF:} \hspace{10mm} H(t) = 1`
+
+Beta Distribution
+=================
+
+This is a work in progress. Check back soon for more equations.
+
+:math:`\text{PDF:} \hspace{11mm} f(t) = 1`
+
+:math:`\text{CDF:} \hspace{10mm} F(t) = 1`
+
+:math:`\text{SF:} \hspace{14mm} R(t) = 1`
+
+:math:`\text{HF:} \hspace{14mm} h(t) = 1`
+
+:math:`\text{CHF:} \hspace{10mm} H(t) = 1`
