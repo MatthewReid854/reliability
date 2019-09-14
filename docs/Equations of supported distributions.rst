@@ -20,9 +20,9 @@ Weibull Distribution
 
 :math:`\text{SF:} \space \space \qquad R(t) = e^{-(\frac{t}{\alpha })^ \beta }`
 
-:math:`\text{HF:} \tab h(t) = \frac{\beta}{\alpha} (\frac{t}{\alpha})^{\beta -1}`
+:math:`\text{HF:} \hspace{10mm} h(t) = \frac{\beta}{\alpha} (\frac{t}{\alpha})^{\beta -1}`
 
-:math:`\text{CHF:} \tab H(t) = (\frac{t}{\alpha})^{\beta}`
+:math:`\text{CHF:} \hspace{9mm} H(t) = (\frac{t}{\alpha})^{\beta}`
 
 Exponential Distribution
 ========================
