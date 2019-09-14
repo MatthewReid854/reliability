@@ -14,27 +14,13 @@ Weibull Distribution
 
 :math:`\beta` = shape parameter (:math:`\beta > 0`)
 
-:math:`\text{PDF:} \qquad f(t) = \frac{\beta t^{ \beta - 1}}{ \alpha^ \beta} e^{-(\frac{t}{\alpha })^ \beta }`
+:math:`\text{PDF:} \hspace{11mm} f(t) = \frac{\beta t^{ \beta - 1}}{ \alpha^ \beta} e^{-(\frac{t}{\alpha })^ \beta }`
 
-:math:`\text{CDF:} \qquad F(t) = 1 - e^{-(\frac{t}{\alpha })^ \beta }`
+:math:`\text{CDF:} \hspace{10mm} F(t) = 1 - e^{-(\frac{t}{\alpha })^ \beta }`
 
-:math:`\text{SF:} \space \space \space \qquad R(t) = e^{-(\frac{t}{\alpha })^ \beta }`
-
-:math:`\text{HF:} \hspace{11mm} h(t) = \frac{\beta}{\alpha} (\frac{t}{\alpha})^{\beta -1}`
-
-:math:`\text{HF:} \hspace{12mm} h(t) = \frac{\beta}{\alpha} (\frac{t}{\alpha})^{\beta -1}`
-
-:math:`\text{HF:} \hspace{13mm} h(t) = \frac{\beta}{\alpha} (\frac{t}{\alpha})^{\beta -1}`
+:math:`\text{SF:} \hspace{14mm} R(t) = e^{-(\frac{t}{\alpha })^ \beta }`
 
 :math:`\text{HF:} \hspace{14mm} h(t) = \frac{\beta}{\alpha} (\frac{t}{\alpha})^{\beta -1}`
-
-:math:`\text{HF:} \hspace{15mm} h(t) = \frac{\beta}{\alpha} (\frac{t}{\alpha})^{\beta -1}`
-
-:math:`\text{HF:} \hspace{16mm} h(t) = \frac{\beta}{\alpha} (\frac{t}{\alpha})^{\beta -1}`
-
-:math:`\text{HF:} \hspace{17mm} h(t) = \frac{\beta}{\alpha} (\frac{t}{\alpha})^{\beta -1}`
-
-:math:`\text{HF:} \hspace{18mm} h(t) = \frac{\beta}{\alpha} (\frac{t}{\alpha})^{\beta -1}`
 
 :math:`\text{CHF:} \hspace{10mm} H(t) = (\frac{t}{\alpha})^{\beta}`
 
