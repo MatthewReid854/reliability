@@ -10,9 +10,9 @@ The following expressions provide the equations for the Probability Density Func
 Weibull Distribution
 ====================
 
-:math:`\alpha` = scale parameter (:math:`\alpha > 0`) 
+:math:`\alpha` = scale parameter :math:`\left( \alpha > 0 \right)` 
 
-:math:`\beta` = shape parameter (:math:`\beta > 0`)
+:math:`\beta` = shape parameter :math:`\left( \beta > 0 \right)`
 
 :math:`\text{PDF:} \hspace{11mm} f(t) = \frac{\beta t^{ \beta - 1}}{ \alpha^ \beta} e^{-(\frac{t}{\alpha })^ \beta }`
 
