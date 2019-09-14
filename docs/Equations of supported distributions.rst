@@ -24,6 +24,8 @@ Weibull Distribution
 
 :math:`\text{CHF:} \hspace{9mm} H(t) = (\frac{t}{\alpha})^{\beta}`
 
+test2
+
 Exponential Distribution
 ========================
 
