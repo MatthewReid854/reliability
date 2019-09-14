@@ -18,7 +18,15 @@ Weibull Distribution
 
 :math:`\text{CDF:} \qquad F(t) = 1 - e^{-(\frac{t}{\alpha })^ \beta }`
 
+:math:`\text{SF: \thinspace } \qquad R(t) = e^{-(\frac{t}{\alpha })^ \beta }`
+
+:math:`\text{SF: \space } \qquad R(t) = e^{-(\frac{t}{\alpha })^ \beta }`
+
 :math:`\text{SF:} \qquad R(t) = e^{-(\frac{t}{\alpha })^ \beta }`
+
+
+
+
 
 :math:`\text{HF:} \qquad h(t) = \frac{\beta}{\alpha} (\frac{t}{\alpha})^{\beta -1}`
 
