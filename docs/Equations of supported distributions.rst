@@ -20,9 +20,23 @@ Weibull Distribution
 
 :math:`\text{SF:} \space \space \space \qquad R(t) = e^{-(\frac{t}{\alpha })^ \beta }`
 
-:math:`\text{HF:} \hspace{20mm} h(t) = \frac{\beta}{\alpha} (\frac{t}{\alpha})^{\beta -1}`
+:math:`\text{HF:} \hspace{11mm} h(t) = \frac{\beta}{\alpha} (\frac{t}{\alpha})^{\beta -1}`
 
-:math:`\text{CHF:} \hspace{9mm} H(t) = (\frac{t}{\alpha})^{\beta}`
+:math:`\text{HF:} \hspace{12mm} h(t) = \frac{\beta}{\alpha} (\frac{t}{\alpha})^{\beta -1}`
+
+:math:`\text{HF:} \hspace{13mm} h(t) = \frac{\beta}{\alpha} (\frac{t}{\alpha})^{\beta -1}`
+
+:math:`\text{HF:} \hspace{14mm} h(t) = \frac{\beta}{\alpha} (\frac{t}{\alpha})^{\beta -1}`
+
+:math:`\text{HF:} \hspace{15mm} h(t) = \frac{\beta}{\alpha} (\frac{t}{\alpha})^{\beta -1}`
+
+:math:`\text{HF:} \hspace{16mm} h(t) = \frac{\beta}{\alpha} (\frac{t}{\alpha})^{\beta -1}`
+
+:math:`\text{HF:} \hspace{17mm} h(t) = \frac{\beta}{\alpha} (\frac{t}{\alpha})^{\beta -1}`
+
+:math:`\text{HF:} \hspace{18mm} h(t) = \frac{\beta}{\alpha} (\frac{t}{\alpha})^{\beta -1}`
+
+:math:`\text{CHF:} \hspace{10mm} H(t) = (\frac{t}{\alpha})^{\beta}`
 
 test2
 
