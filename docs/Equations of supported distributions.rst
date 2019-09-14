@@ -24,20 +24,18 @@ Weibull Distribution
 
 :math:`\text{CHF:} \hspace{10mm} H(t) = (\frac{t}{\alpha})^{\beta}`
 
-test2
-
 Exponential Distribution
 ========================
 
 This is a work in progress. Check back soon for more equations.
 
-:math:`\text{PDF:} \qquad f(t) = 1`
+:math:`\text{PDF:} \hspace{11mm} f(t) = 1`
 
-:math:`\text{CDF:} \qquad F(t) = 1`
+:math:`\text{CDF:} \hspace{10mm} F(t) = 1`
 
-:math:`\text{SF:  } \qquad R(t) = 1`
+:math:`\text{SF:} \hspace{14mm} R(t) = 1`
 
-:math:`\text{HF:  } \qquad h(t) = 1`
+:math:`\text{HF:} \hspace{14mm} h(t) = 1`
 
-:math:`\text{CHF:} \qquad H(t) = 1`
+:math:`\text{CHF:} \hspace{10mm} H(t) = 1`
 
