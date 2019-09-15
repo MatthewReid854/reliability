@@ -27,7 +27,7 @@ Weibull Distribution
 Exponential Distribution
 ========================
 
-:math:`\lambda` = scale parameter (:math:`\lambda > 0`)
+:math:`\lambda` = scale parameter :math:`\left( \lambda > 0 \right)`
 
 :math:`\text{PDF:} \hspace{11mm} f(t) = \lambda {\rm e}^{-\lambda t}`
 
@@ -42,9 +42,9 @@ Exponential Distribution
 Normal Distribution
 ===================
 
-:math:`\mu` = location parameter (:math:`-\infty < \mu < \infty`) 
+:math:`\mu` = location parameter :math:`\left( -\infty < \mu < \infty \right)` 
 
-:math:`\sigma` = scale parameter (:math:`\sigma > 0`)
+:math:`\sigma` = scale parameter :math:`\left( \sigma > 0 \right)`
 
 :math:`\text{PDF:} \hspace{11mm} f(t) = \frac{1}{\sigma \sqrt{2 \pi}}{\rm exp}\left[-\frac{1}{2}\left(\frac{t - \mu}{\sigma}\right)^2\right]`
 
@@ -60,11 +60,13 @@ where :math:`\phi` is the standard normal PDF with :math:`\mu = 0` and :math:`\s
 
 where :math:`\Phi` is the standard normal CDF with :math:`\mu = 0` and :math:`\sigma=1`
 
-:math:`\text{SF:} \hspace{14mm} R(t) = 1 - F(t)`
+:math:`\text{SF:} \hspace{14mm} R(t) = 1 - \Phi \left( \frac{t - \mu}{\sigma} \right)`
 
-:math:`\text{HF:} \hspace{14mm} h(t) = 1`
+:math:`\hspace{31mm} = \Phi \left( \frac{\mu - t}{\sigma} \right)`
 
-:math:`\text{CHF:} \hspace{10mm} H(t) = 1`
+:math:`\text{HF:} \hspace{14mm} h(t) = \frac{\psi \left[\frac{t-\mu}{\sigma}\right]}{\sigma \left( \Psi \left[frac{\mu - t}{\sigma}\right]\right)}`
+
+:math:`\text{CHF:} \hspace{10mm} H(t) = -{\rm ln}\left[\Phi \left(\frac{\mu - t}{\sigma}\right)\right]`
 
 Lognormal Distribution
 ======================
