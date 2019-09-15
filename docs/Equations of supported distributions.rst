@@ -10,9 +10,13 @@ The following expressions provide the equations for the Probability Density Func
 Weibull Distribution
 ====================
 
-:math:`\alpha` = scale parameter :math:`\left( \alpha > 0 \right) ` 
+:math:`\alpha` = scale parameter \qquad :math:`\left( \alpha > 0 \right)`
 
-:math:`\beta = ` shape parameter :math:` \left( \beta > 0 \right) `
+:math:`\alpha` = scale parameter \qquad :math:`( \alpha > 0 )`
+
+:math:`\alpha` = scale parameter :math:`( \alpha > 0 )`
+
+:math:`\beta = ` shape parameter :math:` \left( \beta > 0 \right)`
 
 :math:`\text{PDF:} \hspace{11mm} f(t) = \frac{\beta t^{ \beta - 1}}{ \alpha^ \beta} e^{-(\frac{t}{\alpha })^ \beta }`
 
@@ -119,3 +123,7 @@ Relationships between the 5 functions
 The PDF, CDF, SF, HF, CHF of a probability distribution are inter-related and any of these functions can be obtained from certain transformations of the others. The following transformations are useful to know, but this list is incomplete as there are many more less useful tranformations.
 
 :math:`{\rm PDF} = \frac{d}{dx} {\rm CDF}`
+
+:math:`{\rm CDF} = \int_0^\infty {\rm PDF}`
+
+:math:`{\rm SF} = 1 - {\rm CDF}`
