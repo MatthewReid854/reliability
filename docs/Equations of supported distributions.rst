@@ -10,7 +10,7 @@ The following expressions provide the equations for the Probability Density Func
 Weibull Distribution
 ====================
 
-:math:`\alpha = \text{scale parameter} \qquad \left( \alpha > 0 \right) ` 
+:math:`\alpha` = scale parameter :math:`\left( \alpha > 0 \right) ` 
 
 :math:`\beta = ` shape parameter :math:` \left( \beta > 0 \right) `
 
@@ -53,13 +53,6 @@ Normal Distribution
 where :math:`\phi` is the standard normal PDF with :math:`\mu = 0` and :math:`\sigma=1`
 
 :math:`\text{CDF:} \hspace{10mm} F(t) = \frac{1}{\sigma \sqrt{2 \pi}} \int^t_{-\infty} {\rm exp}\left[-\frac{1}{2}\left(\frac{\theta - \mu}{\sigma}\right)^2\right] {\rm d} \theta`
-
-TEST
-
-:math:`\text{CDF:} \hspace{10mm} F(t) = \frac{1}{\sigma \sqrt{2 \pi}} \int^t_{-\infty}{ {\rm exp}\left[-\frac{1}{2}\left(\frac{\theta - \mu}{\sigma}\right)^2\right]} {\rm d} \theta`
-
-
-END TEST
 
 :math:`\hspace{31mm} =\frac{1}{2}+\frac{1}{2}{\rm erf}\left(\frac{t - \mu}{\sigma \sqrt{2}}\right)`
 
