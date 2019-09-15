@@ -22,7 +22,7 @@ Weibull Distribution
 
 :math:`\text{HF:} \hspace{14mm} h(t) = \frac{\beta}{\alpha} (\frac{t}{\alpha})^{\beta -1}`
 
-:math:`\text{CHF:} \hspace{10mm} H(t) = (\frac{t}{\alpha})^{\beta}`
+:math:`\text{CHF:} \hspace{9mm} H(t) = (\frac{t}{\alpha})^{\beta}`
 
 Exponential Distribution
 ========================
@@ -37,7 +37,7 @@ Exponential Distribution
 
 :math:`\text{HF:} \hspace{14mm} h(t) = \lambda`
 
-:math:`\text{CHF:} \hspace{10mm} H(t) = \lambda t`
+:math:`\text{CHF:} \hspace{9mm} H(t) = \lambda t`
 
 Normal Distribution
 ===================
@@ -64,9 +64,9 @@ where :math:`\Phi` is the standard normal CDF with :math:`\mu = 0` and :math:`\s
 
 :math:`\hspace{31mm} = \Phi \left( \frac{\mu - t}{\sigma} \right)`
 
-:math:`\text{HF:} \hspace{14mm} h(t) = \frac{\psi \left[\frac{t-\mu}{\sigma}\right]}{\sigma \left( \Psi \left[frac{\mu - t}{\sigma}\right]\right)}`
+:math:`\text{HF:} \hspace{14mm} h(t) = \frac{\phi \left[\frac{t-\mu}{\sigma}\right]}{\sigma \left( \Phi \left[ \frac{\mu - t}{\sigma} \right] \right)}`
 
-:math:`\text{CHF:} \hspace{10mm} H(t) = -{\rm ln}\left[\Phi \left(\frac{\mu - t}{\sigma}\right)\right]`
+:math:`\text{CHF:} \hspace{9mm} H(t) = -{\rm ln}\left[\Phi \left(\frac{\mu - t}{\sigma}\right)\right]`
 
 Lognormal Distribution
 ======================
@@ -81,7 +81,7 @@ This is a work in progress. Check back soon for more equations.
 
 :math:`\text{HF:} \hspace{14mm} h(t) = 1`
 
-:math:`\text{CHF:} \hspace{10mm} H(t) = 1`
+:math:`\text{CHF:} \hspace{9mm} H(t) = 1`
 
 Gamma Distribution
 ==================
@@ -96,7 +96,7 @@ This is a work in progress. Check back soon for more equations.
 
 :math:`\text{HF:} \hspace{14mm} h(t) = 1`
 
-:math:`\text{CHF:} \hspace{10mm} H(t) = 1`
+:math:`\text{CHF:} \hspace{9mm} H(t) = 1`
 
 Beta Distribution
 =================
@@ -111,4 +111,11 @@ This is a work in progress. Check back soon for more equations.
 
 :math:`\text{HF:} \hspace{14mm} h(t) = 1`
 
-:math:`\text{CHF:} \hspace{10mm} H(t) = 1`
+:math:`\text{CHF:} \hspace{9mm} H(t) = 1`
+
+Relationships between the 5 functions
+=====================================
+
+The PDF, CDF, SF, HF, CHF of a probability distribution are inter-related and any of these functions can be obtained from certain transformations of the others. The following transformations are useful to know, but this list is incomplete as there are many more less useful tranformations.
+
+:math:`{\rm PDF} = frac{d}{dx}\left({\rm CDF}\right)`
