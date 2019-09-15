@@ -52,7 +52,7 @@ Normal Distribution
 
 where :math:`\phi` is the standard normal PDF with :math:`\mu = 0` and :math:`\sigma=1`
 
-:math:`\text{CDF:} \hspace{10mm} F(t) = \frac{1}{\sigma \sqrt{2 \pi}} \int^t_{-\infty}{ {\rm exp}\left[-\frac{1}{2}\left(\frac{\theta - \mu}{\sigma}\right)^2\right]} {rm d} \theta`
+:math:`\text{CDF:} \hspace{10mm} F(t) = \frac{1}{\sigma \sqrt{2 \pi}} \int^t_{-\infty} {\rm exp}\left[-\frac{1}{2}\left(\frac{\theta - \mu}{\sigma}\right)^2\right] \; {\rm d} \theta`
 
 :math:`\hspace{31mm} =\frac{1}{2}+\frac{1}{2}{\rm erf}\left(\frac{t - \mu}{\sigma \sqrt{2}}\right)`
 
@@ -118,4 +118,4 @@ Relationships between the 5 functions
 
 The PDF, CDF, SF, HF, CHF of a probability distribution are inter-related and any of these functions can be obtained from certain transformations of the others. The following transformations are useful to know, but this list is incomplete as there are many more less useful tranformations.
 
-:math:`{\rm PDF} = frac{d}{dx} \left( {\rm CDF} \right)`
+:math:`{\rm PDF} = \frac{d}{dx} \left( {\rm CDF} \right)`
