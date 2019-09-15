@@ -10,13 +10,9 @@ The following expressions provide the equations for the Probability Density Func
 Weibull Distribution
 ====================
 
-:math:`\alpha` = scale parameter \qquad :math:`\left( \alpha > 0 \right)`
-
-:math:`\alpha` = scale parameter \qquad :math:`( \alpha > 0 )`
-
 :math:`\alpha` = scale parameter :math:`( \alpha > 0 )`
 
-:math:`\beta = ` shape parameter :math:` \left( \beta > 0 \right)`
+:math:`\beta` = shape parameter :math:`( \beta > 0 )`
 
 :math:`\text{PDF:} \hspace{11mm} f(t) = \frac{\beta t^{ \beta - 1}}{ \alpha^ \beta} e^{-(\frac{t}{\alpha })^ \beta }`
 
@@ -31,7 +27,7 @@ Weibull Distribution
 Exponential Distribution
 ========================
 
-:math:`\lambda = ` scale parameter :math:`\left( \lambda > 0 \right)`
+:math:`\lambda` = scale parameter :math:`( \lambda > 0 )`
 
 :math:`\text{PDF:} \hspace{11mm} f(t) = \lambda {\rm e}^{-\lambda t}`
 
@@ -46,9 +42,9 @@ Exponential Distribution
 Normal Distribution
 ===================
 
-:math:`\mu = ` location parameter :math:`\left( -\infty < \mu < \infty \right)` 
+:math:`\mu` = location parameter :math:`( -\infty < \mu < \infty )`
 
-:math:`\sigma = ` scale parameter :math:`\left( \sigma > 0 \right)`
+:math:`\sigma` = scale parameter :math:`( \sigma > 0 )`
 
 :math:`\text{PDF:} \hspace{11mm} f(t) = \frac{1}{\sigma \sqrt{2 \pi}}{\rm exp}\left[-\frac{1}{2}\left(\frac{t - \mu}{\sigma}\right)^2\right]`
 
@@ -124,6 +120,10 @@ The PDF, CDF, SF, HF, CHF of a probability distribution are inter-related and an
 
 :math:`{\rm PDF} = \frac{d}{dx} {\rm CDF}`
 
-:math:`{\rm CDF} = \int_0^\infty {\rm PDF}`
+:math:`{\rm CDF} = \int_{-\infty}^\infty {\rm PDF}`
 
 :math:`{\rm SF} = 1 - {\rm CDF}`
+
+:math:`{\rm HF} = \frac{{\rm PDF}}{{\rm SF}}`
+
+:math:`{\rm CHF} = -{\rm ln} \left({\rm SF} \right)`
