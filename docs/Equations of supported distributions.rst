@@ -10,7 +10,7 @@ The following expressions provide the equations for the Probability Density Func
 Weibull Distribution
 ====================
 
-:math:`\alpha = {\rm scale parameter} \qquad \left( \alpha > 0 \right) ` 
+:math:`\alpha = \text{scale parameter} \qquad \left( \alpha > 0 \right) ` 
 
 :math:`\beta = ` shape parameter :math:` \left( \beta > 0 \right) `
 
@@ -56,13 +56,8 @@ where :math:`\phi` is the standard normal PDF with :math:`\mu = 0` and :math:`\s
 
 TEST
 
-:math:`\text{CDF:} \hspace{10mm} F(t) = \frac{1}{\sigma \sqrt{2 \pi}} $\int^t_{-\infty} {\rm exp}\left[-\frac{1}{2}\left(\frac{\theta - \mu}{\sigma}\right)^2\right]$ {\rm d} \theta`
+:math:`\text{CDF:} \hspace{10mm} F(t) = \frac{1}{\sigma \sqrt{2 \pi}} \int^t_{-\infty}{ {\rm exp}\left[-\frac{1}{2}\left(\frac{\theta - \mu}{\sigma}\right)^2\right]} {\rm d} \theta`
 
-:math:`\text{CDF:} \hspace{10mm} F(t) = \frac{1}{\sigma \sqrt{2 \pi}} \\int^t_{-\infty} {\rm exp}\left[-\frac{1}{2}\left(\frac{\theta - \mu}{\sigma}\right)^2\right]\ {\rm d} \theta`
-
-:math:`\text{CDF:} \hspace{10mm} F(t) = \frac{1}{\sigma \sqrt{2 \pi}} \\int^t_{-\infty} {\rm exp}\left[-\frac{1}{2}\left(\frac{\theta - \mu}{\sigma}\right)^2\right]\; {\rm d} \theta`
-
-:math:`\text{CDF:} \hspace{10mm} F(t) = \frac{1}{\sigma \sqrt{2 \pi}} \\int^t_{-\infty} {\rm exp}\left[-\frac{1}{2}\left(\frac{\theta - \mu}{\sigma}\right)^2\right] {\rm d} \theta`
 
 END TEST
 
@@ -130,4 +125,4 @@ Relationships between the 5 functions
 
 The PDF, CDF, SF, HF, CHF of a probability distribution are inter-related and any of these functions can be obtained from certain transformations of the others. The following transformations are useful to know, but this list is incomplete as there are many more less useful tranformations.
 
-:math:`{\rm PDF} = \frac{d {\rm CDF}}{dx}`
+:math:`{\rm PDF} = \frac{d}{dx} {\rm CDF}`
