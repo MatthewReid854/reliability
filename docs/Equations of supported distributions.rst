@@ -5,7 +5,7 @@
 Equations of supported distributions
 ''''''''''''''''''''''''''''''''''''
 
-The following expressions provide the equations for the Probability Density Function (PDF), Cumulative Distribution Function (CDF), Survival Function (SF), Hazard Function (HF), and Cumulative Hazard Function (CHF) of all supported distributions. Readers should note that there are many ways to write the equations for probability distributions and careful attention should be afforded to the parametrization to ensure you understand each parameter.
+The following expressions provide the equations for the Probability Density Function (PDF), Cumulative Distribution Function (CDF), Survival Function (SF), Hazard Function (HF), and Cumulative Hazard Function (CHF) of all supported distributions. Readers should note that there are many ways to write the equations for probability distributions and careful attention should be afforded to the parametrization to ensure you understand each parameter. For more equations of these distributions, see the textbook "Probability Distributions Used in Reliability Engineering" listed in `recommended resources<https://reliability.readthedocs.io/en/latest/Recommended%20resources.html>`_. 
 
 Weibull Distribution
 ====================
@@ -113,10 +113,10 @@ This is a work in progress. Check back soon for more equations.
 
 :math:`\text{CHF:} \hspace{9mm} H(t) = 1`
 
-Relationships between the 5 functions
-=====================================
+Relationships between the five functions
+========================================
 
-The PDF, CDF, SF, HF, CHF of a probability distribution are inter-related and any of these functions can be obtained from certain transformations of the others. The following transformations are useful to know, but this list is incomplete as there are many more less useful tranformations.
+The PDF, CDF, SF, HF, CHF of a probability distribution are inter-related and any of these functions can be obtained by applying the correct transformation to any of the others. The following list of transformations are some of the most useful:
 
 :math:`{\rm PDF} = \frac{d}{dx} {\rm CDF}`
 
