@@ -10,7 +10,7 @@ The following expressions provide the equations for the Probability Density Func
 Weibull Distribution
 ====================
 
-:math:`\alpha = ` scale parameter :math:` \left( \alpha > 0 \right) ` 
+:math:`\alpha = ` scale parameter :math:` ( \alpha > 0 ) ` 
 
 :math:`\beta = ` shape parameter :math:` \left( \beta > 0 \right) `
 
