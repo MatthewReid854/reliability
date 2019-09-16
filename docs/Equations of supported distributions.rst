@@ -54,7 +54,7 @@ Normal Distribution
 
 :math:`\sigma` = scale parameter :math:`( \sigma > 0 )`
 
-Limits :math:`( t \geq 0 )`
+Limits :math:`( -\infty < t < infty )`
 
 :math:`\text{PDF:} \hspace{11mm} f(t) = \frac{1}{\sigma \sqrt{2 \pi}}{\rm exp}\left[-\frac{1}{2}\left(\frac{t - \mu}{\sigma}\right)^2\right]`
 
@@ -160,7 +160,7 @@ Note that there is a parameterization of the Beta distribution that changes the 
 Location shifting the distributions
 ===================================
 
-Within ``reliability`` the parametrization of the Exponential, Weibull, Gamma, and Lognormal distributions allows for location shifting using the gamma parameter. This will simply shift the distribution's lower limit to the right from 0 to gamma. In the location shifted form of the distributions, the equations listed above are almost identical, except everywhere you see t replace it with t - \gamma. The reason for using the location shift is because some phonomena that can be modelled well by a certain probability distribution do not begin to occur immediately so it becomes necessary to shift the lower limit of the distribution so that the data can be accurately modelled by the distribution.
+Within ``reliability`` the parametrization of the Exponential, Weibull, Gamma, and Lognormal distributions allows for location shifting using the gamma parameter. This will simply shift the distribution's lower limit to the right from 0 to :math:`\gamma`. In the location shifted form of the distributions, the equations listed above are almost identical, except everywhere you see :math:`t` replace it with :math:`t - \gamma`. The reason for using the location shifted form of the distribution is because some phonomena that can be modelled well by a certain probability distribution do not begin to occur immediately, so it becomes necessary to shift the lower limit of the distribution so that the data can be accurately modelled by the distribution.
 
 Relationships between the five functions
 ========================================
