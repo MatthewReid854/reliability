@@ -14,7 +14,7 @@ Weibull Distribution
 
 :math:`\beta` = shape parameter :math:`( \beta > 0 )`
 
-:math:`( t \geq 0 )`
+Limits :math:`( t \geq 0 )`
 
 :math:`\text{PDF:} \hspace{11mm} f(t) = \frac{\beta t^{ \beta - 1}}{ \alpha^ \beta} {\rm e}^{-(\frac{t}{\alpha })^ \beta }` 
 
