@@ -104,17 +104,19 @@ Gamma Distribution
 
 :math:`\text{PDF:} \hspace{11mm} f(t) = \frac{t^{\beta-1}}{\Gamma(\beta)\alpha^\beta}{\rm e}^{-\frac{t}{\alpha}}`
 
-where :math:`\Gamma` is the Gamma function. :math:`\Gamma (z) = \int^\infty_0 x^{z-1}{\rm e}^{-x} {\rm d}x`
+where :math:`\Gamma(z)` is the Gamma function. :math:`\Gamma (z) = \int^\infty_0 x^{z-1}{\rm e}^{-x} {\rm d}x`
 
 :math:`\text{CDF:} \hspace{10mm} F(t) = \frac{1}{\Gamma (\beta)} \gamma\left(\beta,\frac{t}{\alpha}\right)`
 
-where :math:`\gamma` is the lower incomplete gamma function. :math:`\gamma (z,t) = \frac{1}{\Gamma(z)} \int^t_0 x^{z-1}{\rm e}^{-x} {\rm d}x`
+where :math:`\gamma(z,t)` is the lower incomplete gamma function. :math:`\gamma (z,t) = \frac{1}{\Gamma(z)} \int^t_0 x^{z-1}{\rm e}^{-x} {\rm d}x`
 
-:math:`\text{SF:} \hspace{14mm} R(t) = 1`
+:math:`\text{SF:} \hspace{14mm} R(t) = \frac{1}{\Gamma (\beta)} \Gamma\left(\beta,\frac{t}{\alpha}\right)`
+
+where :math:`Gamma(z,t)` is the upper incomplete gamma function. :math:`\gamma (z,t) = \frac{1}{\Gamma(z)} \int^\infty_t x^{z-1}{\rm e}^{-x} {\rm d}x`
 
 :math:`\text{HF:} \hspace{14mm} h(t) = 1`
 
-:math:`\text{CHF:} \hspace{9mm} H(t) = 1`
+:math:`\text{CHF:} \hspace{9mm} H(t) = -{\rm ln}\left[\frac{1}{\Gamma (\beta)} \Gamma\left(\beta,\frac{t}{\alpha}\right)\right]`
 
 Beta Distribution
 =================
