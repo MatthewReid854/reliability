@@ -14,9 +14,11 @@ Weibull Distribution
 
 :math:`\beta` = shape parameter :math:`( \beta > 0 )`
 
-:math:`( t >= 0 )`
+:math:`( t \geq 0 )`
 
-:math:`\text{PDF:} \hspace{11mm} f(t) = \frac{\beta t^{ \beta - 1}}{ \alpha^ \beta} {\rm e}^{-(\frac{t}{\alpha })^ \beta } = \frac{\beta}{\alpha}\left(\frac{t}{\alpha}\right)^(\beta-1){\rm e}^{-(\frac{t}{\alpha })^ \beta }`
+:math:`\text{PDF:} \hspace{11mm} f(t) = \frac{\beta t^{ \beta - 1}}{ \alpha^ \beta} {\rm e}^{-(\frac{t}{\alpha })^ \beta }` 
+
+:math:`\hspace{31mm} = \frac{\beta}{\alpha}\left(\frac{t}{\alpha}\right)^{(\beta-1)}{\rm e}^{-(\frac{t}{\alpha })^ \beta }`
 
 :math:`\text{CDF:} \hspace{10mm} F(t) = 1 - {\rm e}^{-(\frac{t}{\alpha })^ \beta }`
 
