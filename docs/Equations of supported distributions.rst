@@ -71,17 +71,25 @@ where :math:`\Phi` is the standard normal CDF with :math:`\mu = 0` and :math:`\s
 Lognormal Distribution
 ======================
 
-This is a work in progress. Check back soon for more equations.
+:math:`\mu` = scale parameter :math:`( -\infty < \mu < \infty )`
 
-:math:`\text{PDF:} \hspace{11mm} f(t) = \frac{1}{\sigma t \sqrt{2\pi}} {\rm exp} \left[-\frac{1}{2} \left(\frac{{\rm ln}(t)-\mu}{\sigma}\right)\right]`
+:math:`\sigma` = shape parameter :math:`( \sigma > 0 )`
+
+:math:`\text{PDF:} \hspace{11mm} f(t) = \frac{1}{\sigma t \sqrt{2\pi}} {\rm exp} \left[-\frac{1}{2} \left(\frac{{\rm ln}(t)-\mu}{\sigma}\right)^2\right]`
 
 :math:`\hspace{31mm} = \frac{1}{\sigma t}\phi \left[ \frac{{\rm ln}(t) - \mu}{\sigma} \right]`
 
 where :math:`\phi` is the standard normal PDF with :math:`\mu = 0` and :math:`\sigma=1`
 
-:math:`\text{CDF:} \hspace{10mm} F(t) = 1`
+:math:`\text{CDF:} \hspace{10mm} F(t) = \frac{1}{\sigma \sqrt{2\pi}} \int^t_0 \frac{1}{\theta} {\rm exp} \left[-\frac{1}{2} \left(\frac{{\rm ln}(\theta)-\mu}{\sigma}\right)^2\right] {\rm d}\theta`
 
-:math:`\text{SF:} \hspace{14mm} R(t) = 1`
+:math:`\hspace{31mm} =\frac{1}{2}+\frac{1}{2}{\rm erf}\left(\frac{{\rm ln}(t) - \mu}{\sigma \sqrt{2}}\right)`
+
+:math:`\hspace{31mm} = \Phi \left( \frac{{\rm ln}(t) - \mu}{\sigma} \right)`
+
+where :math:`\Phi` is the standard normal CDF with :math:`\mu = 0` and :math:`\sigma=1`
+
+:math:`\text{SF:} \hspace{14mm} R(t) = 1 - \Phi \left( \frac{{\rm ln}(t) - \mu}{\sigma} \right)`
 
 :math:`\text{HF:} \hspace{14mm} h(t) = 1`
 
