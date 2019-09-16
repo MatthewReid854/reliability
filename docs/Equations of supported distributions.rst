@@ -118,15 +118,15 @@ Limits :math:`( t \geq 0 )`
 
 :math:`\text{PDF:} \hspace{11mm} f(t) = \frac{t^{\beta-1}}{\Gamma(\beta)\alpha^\beta}{\rm e}^{-\frac{t}{\alpha}}`
 
-where :math:`\Gamma(z)` is the Gamma function. :math:`\Gamma (z) = \int^\infty_0 x^{z-1}{\rm e}^{-x} {\rm d}x`
+where :math:`\Gamma(z)` is the complete gamma function. :math:`\Gamma (x) = \int^\infty_0 t^{x-1}{\rm e}^{-t} {\rm d}t`
 
 :math:`\text{CDF:} \hspace{10mm} F(t) = \frac{1}{\Gamma (\beta)} \gamma\left(\beta,\frac{t}{\alpha}\right)`
 
-where :math:`\gamma(z,t)` is the lower incomplete gamma function. :math:`\gamma (z,t) = \frac{1}{\Gamma(z)} \int^t_0 x^{z-1}{\rm e}^{-x} {\rm d}x`
+where :math:`\gamma(x,y)` is the lower incomplete gamma function. :math:`\gamma (x,y) = \frac{1}{\Gamma(x)} \int^y_0 t^{x-1}{\rm e}^{-t} {\rm d}t`
 
 :math:`\text{SF:} \hspace{14mm} R(t) = \frac{1}{\Gamma (\beta)} \Gamma\left(\beta,\frac{t}{\alpha}\right)`
 
-where :math:`\Gamma(z,t)` is the upper incomplete gamma function. :math:`\gamma (z,t) = \frac{1}{\Gamma(z)} \int^\infty_t x^{z-1}{\rm e}^{-x} {\rm d}x`
+where :math:`\Gamma(x,y)` is the upper incomplete gamma function. :math:`\gamma (x,y) = \frac{1}{\Gamma(x)} \int^\infty_y t^{x-1}{\rm e}^{-t} {\rm d}t`
 
 :math:`\text{HF:} \hspace{14mm} h(t) = \frac{t^{\beta-1}{\rm exp}\left(-\frac{t}{\alpha}\right)}{\alpha^\beta\Gamma\left(\beta,\frac{t}{\alpha}\right)}`
 
@@ -145,7 +145,13 @@ Limits :math:`(0 < t \leq 1 )`
 
 This is a work in progress. Check back soon for more equations.
 
-:math:`\text{PDF:} \hspace{11mm} f(t) = 1`
+:math:`\text{PDF:} \hspace{11mm} f(t) = \frac{\Gamma(\alpha+\beta)}{\Gamma(\alpha)\Gamma(\beta)}.t^{\alpha-1}(1-t)^{\beta-1}`
+
+:math:`\hspace{31mm} =\frac{1}{B(\alpha,\beta)}.t^{\alpha-1}(1-t)^{\beta-1}`
+
+where :math:`\Gamma(z)` is the complete gamma function. :math:`\Gamma (x) = \int^\infty_0 t^{x-1}{\rm e}^{-t} {\rm d}t`
+
+where :math:`\Beta(x,y)` is the complete beta function. :math:`\Beta (x,y) = \int^\1_0 t^{x-1}(1-t)^{y-1} {\rm d}t`
 
 :math:`\text{CDF:} \hspace{10mm} F(t) = 1`
 
