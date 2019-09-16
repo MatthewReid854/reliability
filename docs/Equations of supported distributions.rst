@@ -108,7 +108,7 @@ where :math:`\Gamma` is the Gamma function. :math:`\Gamma (z) = \int^\infty_0 x^
 
 :math:`\text{CDF:} \hspace{10mm} F(t) = \frac{1}{\Gamma (\beta)} \gamma\left(\beta,\frac{t}{\alpha}\right)`
 
-where :math:`\gamma` is the lower incomplete gamma function. :math:`\gamma (a,t) = \frac{1}{\Gamma(a)} \int^t_0 x^{\alpha-1}{\rm e}^{-x} {\rm d}x`
+where :math:`\gamma` is the lower incomplete gamma function. :math:`\gamma (z,t) = \frac{1}{\Gamma(z)} \int^t_0 x^{z-1}{\rm e}^{-x} {\rm d}x`
 
 :math:`\text{SF:} \hspace{14mm} R(t) = 1`
 
