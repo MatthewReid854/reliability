@@ -98,9 +98,13 @@ where :math:`\Phi` is the standard normal CDF with :math:`\mu = 0` and :math:`\s
 Gamma Distribution
 ==================
 
-This is a work in progress. Check back soon for more equations.
+:math:`\alpha` = scale parameter :math:`( \alpha > 0 )`
 
-:math:`\text{PDF:} \hspace{11mm} f(t) = 1`
+:math:`\beta` = shape parameter :math:`( \beta > 0 )`
+
+:math:`\text{PDF:} \hspace{11mm} f(t) = \frac{t^{\beta-1}}{\Gamma(\beta)\alpha^\beta}{\rm e}^{-\frac{t}{\alpha}}`
+
+where :math:`\Gamma` is the Gamma function. :math:`\Gamma (z) = \int^\infty_0 x^{z-1}{\rm e}^{-x} {\rm d}x`
 
 :math:`\text{CDF:} \hspace{10mm} F(t) = 1`
 
