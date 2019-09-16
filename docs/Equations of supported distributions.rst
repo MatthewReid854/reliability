@@ -73,7 +73,11 @@ Lognormal Distribution
 
 This is a work in progress. Check back soon for more equations.
 
-:math:`\text{PDF:} \hspace{11mm} f(t) = 1`
+:math:`\text{PDF:} \hspace{11mm} f(t) = \frac{1}{\sigma t \sqrt{2\pi}} {\rm exp} \left[-\frac{1}{2} \left(\frac{{\rm ln}(t)-\mu}{\sigma}\right)\right]`
+
+:math:`\hspace{31mm} = \frac{1}{\sigma t}\phi \left[ \frac{{\rm ln}(t) - \mu}{\sigma} \right]`
+
+where :math:`\phi` is the standard normal PDF with :math:`\mu = 0` and :math:`\sigma=1`
 
 :math:`\text{CDF:} \hspace{10mm} F(t) = 1`
 
