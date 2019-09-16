@@ -118,6 +118,8 @@ where :math:`\Gamma(z,t)` is the upper incomplete gamma function. :math:`\gamma 
 
 :math:`\text{CHF:} \hspace{9mm} H(t) = -{\rm ln}\left[\frac{1}{\Gamma (\beta)} \Gamma\left(\beta,\frac{t}{\alpha}\right)\right]`
 
+Note that some parametrizations of the Gamma distribution use :math:`\frac{1}{\alpha}` in place of :math:`\alpha`. There is also an alternative parametrization which uses shape and rate instead of shape and scale. See `Wikipedia <https://en.wikipedia.org/wiki/Gamma_distribution>`_ for an example of this.
+
 Beta Distribution
 =================
 
