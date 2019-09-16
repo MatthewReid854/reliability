@@ -120,7 +120,7 @@ The PDF, CDF, SF, HF, CHF of a probability distribution are inter-related and an
 
 :math:`{\rm PDF} = \frac{d}{dt} {\rm CDF}`
 
-:math:`{\rm CDF} = \int_{-\infty}^\infty {\rm PDF}`
+:math:`{\rm CDF} = \int_{-\infty}^t {\rm PDF}`
 
 :math:`{\rm SF} = 1 - {\rm CDF}`
 
