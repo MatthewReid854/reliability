@@ -33,6 +33,8 @@ Exponential Distribution
 
 :math:`\lambda` = scale parameter :math:`( \lambda > 0 )`
 
+Limits :math:`( t \geq 0 )`
+
 :math:`\text{PDF:} \hspace{11mm} f(t) = \lambda {\rm e}^{-\lambda t}`
 
 :math:`\text{CDF:} \hspace{10mm} F(t) = 1 - {\rm e}^{-\lambda t}`
@@ -51,6 +53,8 @@ Normal Distribution
 :math:`\mu` = location parameter :math:`( -\infty < \mu < \infty )`
 
 :math:`\sigma` = scale parameter :math:`( \sigma > 0 )`
+
+Limits :math:`( t \geq 0 )`
 
 :math:`\text{PDF:} \hspace{11mm} f(t) = \frac{1}{\sigma \sqrt{2 \pi}}{\rm exp}\left[-\frac{1}{2}\left(\frac{t - \mu}{\sigma}\right)^2\right]`
 
@@ -81,6 +85,8 @@ Lognormal Distribution
 
 :math:`\sigma` = shape parameter :math:`( \sigma > 0 )`
 
+Limits :math:`( t \geq 0 )`
+
 :math:`\text{PDF:} \hspace{11mm} f(t) = \frac{1}{\sigma t \sqrt{2\pi}} {\rm exp} \left[-\frac{1}{2} \left(\frac{{\rm ln}(t)-\mu}{\sigma}\right)^2\right]`
 
 :math:`\hspace{31mm} = \frac{1}{\sigma t}\phi \left[ \frac{{\rm ln}(t) - \mu}{\sigma} \right]`
@@ -108,6 +114,8 @@ Gamma Distribution
 
 :math:`\beta` = shape parameter :math:`( \beta > 0 )`
 
+Limits :math:`( t \geq 0 )`
+
 :math:`\text{PDF:} \hspace{11mm} f(t) = \frac{t^{\beta-1}}{\Gamma(\beta)\alpha^\beta}{\rm e}^{-\frac{t}{\alpha}}`
 
 where :math:`\Gamma(z)` is the Gamma function. :math:`\Gamma (z) = \int^\infty_0 x^{z-1}{\rm e}^{-x} {\rm d}x`
@@ -129,6 +137,12 @@ Note that some parametrizations of the Gamma distribution use :math:`\frac{1}{\a
 Beta Distribution
 =================
 
+:math:`\alpha` = shape parameter :math:`( \alpha > 0 )`
+
+:math:`\beta` = shape parameter :math:`( \beta > 0 )`
+
+Limits :math:`(0 < t \leq 1 )`
+
 This is a work in progress. Check back soon for more equations.
 
 :math:`\text{PDF:} \hspace{11mm} f(t) = 1`
@@ -140,6 +154,13 @@ This is a work in progress. Check back soon for more equations.
 :math:`\text{HF:} \hspace{14mm} h(t) = 1`
 
 :math:`\text{CHF:} \hspace{9mm} H(t) = 1`
+
+Note that there is a parameterization of the Beta distribution that changes the lower and upper limits beyond 0 and 1. For this parametrization, see the reference listed in the opening paragraph of this page.
+
+Location shifting the distributions
+===================================
+
+Within ``reliability`` the parametrization of the Exponential, Weibull, Gamma, and Lognormal distributions allows for location shifting using the gamma parameter. This will simply shift the distribution's lower limit to the right from 0 to gamma. In the location shifted form of the distributions, the equations listed above are almost identical, except everywhere you see t replace it with t - \gamma. The reason for using the location shift is because some phonomena that can be modelled well by a certain probability distribution do not begin to occur immediately so it becomes necessary to shift the lower limit of the distribution so that the data can be accurately modelled by the distribution.
 
 Relationships between the five functions
 ========================================
