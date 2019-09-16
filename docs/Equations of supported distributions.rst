@@ -106,7 +106,9 @@ Gamma Distribution
 
 where :math:`\Gamma` is the Gamma function. :math:`\Gamma (z) = \int^\infty_0 x^{z-1}{\rm e}^{-x} {\rm d}x`
 
-:math:`\text{CDF:} \hspace{10mm} F(t) = 1`
+:math:`\text{CDF:} \hspace{10mm} F(t) = \frac{1}{\Gamma (\beta)} \gamma \left(\beta,\frac{t}{\alpha}\right)`
+
+where :math:`\gamma` is the lower incomplete gamma function. :math:`\gamma (a,x) = \frac{1}{\Gamma(a)} \int^\x_0 t^{\alpha-1}{\rm e}^{-t} {\rm d}t`
 
 :math:`\text{SF:} \hspace{14mm} R(t) = 1`
 
