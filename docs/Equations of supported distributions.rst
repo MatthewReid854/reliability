@@ -91,9 +91,9 @@ where :math:`\Phi` is the standard normal CDF with :math:`\mu = 0` and :math:`\s
 
 :math:`\text{SF:} \hspace{14mm} R(t) = 1 - \Phi \left( \frac{{\rm ln}(t) - \mu}{\sigma} \right)`
 
-:math:`\text{HF:} \hspace{14mm} h(t) = 1`
+:math:`\text{HF:} \hspace{14mm} h(t) = \frac{\phi \left[ \frac{{\rm ln}(t) - \mu}{\sigma} \right]}{t \sigma \left(1 - \Phi \left( \frac{{\rm ln}(t) - \mu}{\sigma} \right)\right)}`
 
-:math:`\text{CHF:} \hspace{9mm} H(t) = 1`
+:math:`\text{CHF:} \hspace{9mm} H(t) = -{\rm ln}\left[1 - \Phi \left( \frac{{\rm ln}(t) - \mu}{\sigma} \right)\right]`
 
 Gamma Distribution
 ==================
