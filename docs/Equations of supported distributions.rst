@@ -14,11 +14,13 @@ Weibull Distribution
 
 :math:`\beta` = shape parameter :math:`( \beta > 0 )`
 
-:math:`\text{PDF:} \hspace{11mm} f(t) = \frac{\beta t^{ \beta - 1}}{ \alpha^ \beta} e^{-(\frac{t}{\alpha })^ \beta }`
+:math:`( t >= 0 )`
 
-:math:`\text{CDF:} \hspace{10mm} F(t) = 1 - e^{-(\frac{t}{\alpha })^ \beta }`
+:math:`\text{PDF:} \hspace{11mm} f(t) = \frac{\beta t^{ \beta - 1}}{ \alpha^ \beta} {\rm e}^{-(\frac{t}{\alpha })^ \beta } = \frac{\beta}{\alpha}\left(\frac{t}{\alpha}\right)^(\beta-1){\rm e}^{-(\frac{t}{\alpha })^ \beta }`
 
-:math:`\text{SF:} \hspace{14mm} R(t) = e^{-(\frac{t}{\alpha })^ \beta }`
+:math:`\text{CDF:} \hspace{10mm} F(t) = 1 - {\rm e}^{-(\frac{t}{\alpha })^ \beta }`
+
+:math:`\text{SF:} \hspace{14mm} R(t) = {\rm e}^{-(\frac{t}{\alpha })^ \beta }`
 
 :math:`\text{HF:} \hspace{14mm} h(t) = \frac{\beta}{\alpha} (\frac{t}{\alpha})^{\beta -1}`
 
@@ -38,6 +40,8 @@ Exponential Distribution
 :math:`\text{HF:} \hspace{14mm} h(t) = \lambda`
 
 :math:`\text{CHF:} \hspace{9mm} H(t) = \lambda t`
+
+Note that some parametrizations of the Exponential distribution (such as the one in `scipy.stats <https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.expon.html>`_) use :math:`\frac{1}{\lambda}` in place of :math:`\lambda`. 
 
 Normal Distribution
 ===================
