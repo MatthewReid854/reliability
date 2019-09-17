@@ -151,15 +151,15 @@ where :math:`\Gamma(x)` is the complete gamma function. :math:`\Gamma (x) = \int
 
 where :math:`B(x,y)` is the complete beta function. :math:`B(x,y) = \int^1_0 t^{x-1}(1-t)^{y-1} {\rm d}t`
 
-:math:`\text{CDF:} \hspace{10mm} F(t) = \frac{\Gamma(\alpha+\beta)}{\Gamma(\alpha)\Gamma(\beta)} \int^t_0 u^{\alpha-1}(1-u)^{\beta-1} {\rm d}u`
+:math:`\text{CDF:} \hspace{10mm} F(t) = \frac{\Gamma(\alpha+\beta)}{\Gamma(\alpha)\Gamma(\beta)} \int^t_0 \theta^{\alpha-1}(1-\theta)^{\beta-1} {\rm d}\theta`
 
 :math:`\hspace{31mm} =\frac{B_t(t|\alpha,\beta)}{B(\alpha,\beta)}`
 
 :math:`\hspace{31mm} =I_t(t|\alpha,\beta)`
 
-where :math:`B_t(t|x,y)` is the incomplete beta function. :math:`B_t(t|x,y) = \int^t_0 x^{x-1}(1-x)^{y-1} {\rm d}x`
+where :math:`B_t(t|x,y)` is the incomplete beta function. :math:`B_t(t|x,y) = \int^t_0 \theta^{x-1}(1-\theta)^{y-1} {\rm d}\theta`
 
-where :math:`I_t(t|x,y)` is the regularized incomplete beta function. :math:`I_t(t|x,y)=\frac{B_t(t|x,y)}{B(x,y)}`
+where :math:`I_t(t|x,y)` is the regularized incomplete beta function which is defined in terms of the incomplete beta function and the complete beta function. :math:`I_t(t|x,y)=\frac{B_t(t|x,y)}{B(x,y)}`
 
 :math:`\text{SF:} \hspace{14mm} R(t) = 1 - I_t(t|\alpha,\beta)`
 
