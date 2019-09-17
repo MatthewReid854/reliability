@@ -163,9 +163,9 @@ where :math:`I_t(t|x,y)` is the regularized incomplete beta function which is de
 
 :math:`\text{SF:} \hspace{14mm} R(t) = 1 - I_t(t|\alpha,\beta)`
 
-:math:`\text{HF:} \hspace{14mm} h(t) = 1`
+:math:`\text{HF:} \hspace{14mm} h(t) = \frac{t^{\alpha-1}(1-t)}{B(\alpha,\beta)-B_t(t|\alpha,\beta)}`
 
-:math:`\text{CHF:} \hspace{9mm} H(t) = 1`
+:math:`\text{CHF:} \hspace{9mm} H(t) = -{\rm ln}\left[1 - I_t(t|\alpha,\beta)\right]`
 
 Note that there is a parameterization of the Beta distribution that changes the lower and upper limits beyond 0 and 1. For this parametrization, see the reference listed in the opening paragraph of this page.
 
