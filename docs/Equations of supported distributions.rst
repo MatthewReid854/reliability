@@ -54,7 +54,7 @@ Normal Distribution
 
 :math:`\sigma` = scale parameter :math:`( \sigma > 0 )`
 
-Limits :math:`( -\infty < t < infty )`
+Limits :math:`( -\infty < t < \infty )`
 
 :math:`\text{PDF:} \hspace{11mm} f(t) = \frac{1}{\sigma \sqrt{2 \pi}}{\rm exp}\left[-\frac{1}{2}\left(\frac{t - \mu}{\sigma}\right)^2\right]`
 
@@ -141,7 +141,7 @@ Beta Distribution
 
 :math:`\beta` = shape parameter :math:`( \beta > 0 )`
 
-Limits :math:`(0 < t \leq 1 )`
+Limits :math:`(0 \leq t \leq 1 )`
 
 :math:`\text{PDF:} \hspace{11mm} f(t) = \frac{\Gamma(\alpha+\beta)}{\Gamma(\alpha)\Gamma(\beta)}.t^{\alpha-1}(1-t)^{\beta-1}`
 
