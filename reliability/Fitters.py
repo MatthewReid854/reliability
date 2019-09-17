@@ -48,7 +48,9 @@ from autograd.differential_operators import hessian
 from autograd_gamma import betainc
 from autograd.scipy.special import erf
 from autograd_gamma import gammainc, gammaincc
+
 anp.seterr('ignore')
+
 
 class Fit_Everything:
     '''
@@ -103,15 +105,16 @@ class Fit_Everything:
     print('Weibull Alpha =',output.Weibull_2P_alpha,'\nWeibull Beta =',output.Weibull_2P_beta)
 
     '''
+
     def __init__(self, failures=None, right_censored=None, left_censored=None, sort_by='BIC', print_results=True, show_histogram_plot=True, show_PP_plot=None, show_probability_plot=True):
-        if failures is None or len(failures)<3:
+        if failures is None or len(failures) < 3:
             raise ValueError('Maximum likelihood estimates could not be calculated for these data. There must be at least three failures to calculate 3 parameter models.')
-        if right_censored is not None and left_censored is not None: #check that a mix of left and right censoring is not entered
+        if right_censored is not None and left_censored is not None:  # check that a mix of left and right censoring is not entered
             raise ValueError('You have specified both left and right censoring. You can specify either but not both.')
-        if sort_by not in ['AICc','BIC']:
+        if sort_by not in ['AICc', 'BIC']:
             raise ValueError('sort_by must be either AICc or BIC. Defaults to BIC')
-        if show_histogram_plot not in [True,False]:
-            raise  ValueError('show_histogram_plot must be either True or False. Defaults to True.')
+        if show_histogram_plot not in [True, False]:
+            raise ValueError('show_histogram_plot must be either True or False. Defaults to True.')
         if print_results not in [True, False]:
             raise ValueError('print_results must be either True or False. Defaults to True.')
         if show_PP_plot not in [True, False, None]:
@@ -125,58 +128,58 @@ class Fit_Everything:
         if left_censored is None:
             LC = []
             if show_PP_plot is None:
-                show_PP_plot=True
+                show_PP_plot = True
         else:
             LC = left_censored
             if show_PP_plot is True:
                 warnings.warn('show_PP_plot has been changed to False because left censored data has been supplied')
-                show_PP_plot = False #can't do Kaplan-Meier estimates with left censored data
+                show_PP_plot = False  # can't do Kaplan-Meier estimates with left censored data
             else:
-                show_PP_plot = False #can't do Kaplan-Meier estimates with left censored data
+                show_PP_plot = False  # can't do Kaplan-Meier estimates with left censored data
         if right_censored is None:
             RC = []
         else:
             RC = right_censored
         self._all_data = np.hstack([failures, LC, RC])
-        if min(self._all_data)<=0:
+        if min(self._all_data) <= 0:
             raise ValueError('All failure and censoring times must be greater than zero.')
-        
-        #These are all used for scaling the histogram when there is censored data
+
+        # These are all used for scaling the histogram when there is censored data
         self._frac_fail = len(failures) / len(self._all_data)
         self._frac_fail_L = len(failures) / len(np.hstack([failures, LC]))
 
         # Kaplan-Meier estimate of quantiles. Used in P-P plot.
         d = sorted(self._all_data)  # sorting the failure data is necessary for plotting quantiles in order
-        nonparametric = KaplanMeier(failures=failures,right_censored=right_censored, print_results=False, show_plot=False)
+        nonparametric = KaplanMeier(failures=failures, right_censored=right_censored, print_results=False, show_plot=False)
         self._nonparametric_CDF = 1 - np.array(nonparametric.KM)  # change SF into CDF
 
-        #parametric models
-        if left_censored is None: #This section includes location shifted (gamma>0) distributions. We can only fit location shifted distributions when there is no left censored data
-            self._left_cens = False #used by plot distributions to tell what parameters were calculated
-            self.__Weibull_3P_params = Fit_Weibull_3P(failures=failures, right_censored=right_censored,show_probability_plot=False,print_results=False)
+        # parametric models
+        if left_censored is None:  # This section includes location shifted (gamma>0) distributions. We can only fit location shifted distributions when there is no left censored data
+            self._left_cens = False  # used by plot distributions to tell what parameters were calculated
+            self.__Weibull_3P_params = Fit_Weibull_3P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False)
             self.Weibull_3P_alpha = self.__Weibull_3P_params.alpha
             self.Weibull_3P_beta = self.__Weibull_3P_params.beta
             self.Weibull_3P_gamma = self.__Weibull_3P_params.gamma
             self.Weibull_3P_BIC = self.__Weibull_3P_params.BIC
             self.Weibull_3P_AICc = self.__Weibull_3P_params.AICc
-            self._parametric_CDF_Weibull_3P = self.__Weibull_3P_params.distribution.CDF(xvals=d,show_plot=False)
+            self._parametric_CDF_Weibull_3P = self.__Weibull_3P_params.distribution.CDF(xvals=d, show_plot=False)
 
-            self.__Gamma_3P_params = Fit_Gamma_3P(failures=failures, right_censored=right_censored,show_probability_plot=False,print_results=False)
+            self.__Gamma_3P_params = Fit_Gamma_3P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False)
             self.Gamma_3P_alpha = self.__Gamma_3P_params.alpha
             self.Gamma_3P_beta = self.__Gamma_3P_params.beta
             self.Gamma_3P_gamma = self.__Gamma_3P_params.gamma
             self.Gamma_3P_BIC = self.__Gamma_3P_params.BIC
             self.Gamma_3P_AICc = self.__Gamma_3P_params.AICc
-            self._parametric_CDF_Gamma_3P = self.__Gamma_3P_params.distribution.CDF(xvals=d,show_plot=False)
+            self._parametric_CDF_Gamma_3P = self.__Gamma_3P_params.distribution.CDF(xvals=d, show_plot=False)
 
-            self.__Expon_2P_params = Fit_Expon_2P(failures=failures,right_censored=right_censored,show_probability_plot=False,print_results=False)
+            self.__Expon_2P_params = Fit_Expon_2P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False)
             self.Expon_2P_lambda = self.__Expon_2P_params.Lambda
             self.Expon_2P_gamma = self.__Expon_2P_params.gamma
             self.Expon_2P_BIC = self.__Expon_2P_params.BIC
             self.Expon_2P_AICc = self.__Expon_2P_params.AICc
-            self._parametric_CDF_Exponential_2P = self.__Expon_2P_params.distribution.CDF(xvals=d,show_plot=False)
+            self._parametric_CDF_Exponential_2P = self.__Expon_2P_params.distribution.CDF(xvals=d, show_plot=False)
 
-        else: #fills the non-calculated distributions with zeros so we don't get an error when these values are entered in the dataframe
+        else:  # fills the non-calculated distributions with zeros so we don't get an error when these values are entered in the dataframe
             self._left_cens = True  # used by plot distributions to tell what parameters were calculated
             self.Weibull_3P_alpha = 0
             self.Weibull_3P_beta = 0
@@ -193,117 +196,117 @@ class Fit_Everything:
             self.Expon_2P_BIC = 0
             self.Expon_2P_AICc = 0
 
-        self.__Normal_2P_params = Fit_Normal_2P(failures=failures, right_censored=right_censored,left_censored=left_censored,show_probability_plot=False,print_results=False)
+        self.__Normal_2P_params = Fit_Normal_2P(failures=failures, right_censored=right_censored, left_censored=left_censored, show_probability_plot=False, print_results=False)
         self.Normal_2P_mu = self.__Normal_2P_params.mu
         self.Normal_2P_sigma = self.__Normal_2P_params.sigma
         self.Normal_2P_BIC = self.__Normal_2P_params.BIC
         self.Normal_2P_AICc = self.__Normal_2P_params.AICc
-        self._parametric_CDF_Normal_2P = self.__Normal_2P_params.distribution.CDF(xvals=d,show_plot=False)
+        self._parametric_CDF_Normal_2P = self.__Normal_2P_params.distribution.CDF(xvals=d, show_plot=False)
 
-        self.__Lognormal_2P_params = Fit_Lognormal_2P(failures=failures,right_censored=right_censored,left_censored=left_censored,show_probability_plot=False,print_results=False)
+        self.__Lognormal_2P_params = Fit_Lognormal_2P(failures=failures, right_censored=right_censored, left_censored=left_censored, show_probability_plot=False, print_results=False)
         self.Lognormal_2P_mu = self.__Lognormal_2P_params.mu
         self.Lognormal_2P_sigma = self.__Lognormal_2P_params.sigma
         self.Lognormal_2P_BIC = self.__Lognormal_2P_params.BIC
         self.Lognormal_2P_AICc = self.__Lognormal_2P_params.AICc
-        self._parametric_CDF_Lognormal_2P = self.__Lognormal_2P_params.distribution.CDF(xvals=d,show_plot=False)
+        self._parametric_CDF_Lognormal_2P = self.__Lognormal_2P_params.distribution.CDF(xvals=d, show_plot=False)
 
-        self.__Weibull_2P_params = Fit_Weibull_2P(failures=failures,right_censored=right_censored,left_censored=left_censored,show_probability_plot=False,print_results=False)
+        self.__Weibull_2P_params = Fit_Weibull_2P(failures=failures, right_censored=right_censored, left_censored=left_censored, show_probability_plot=False, print_results=False)
         self.Weibull_2P_alpha = self.__Weibull_2P_params.alpha
         self.Weibull_2P_beta = self.__Weibull_2P_params.beta
         self.Weibull_2P_BIC = self.__Weibull_2P_params.BIC
         self.Weibull_2P_AICc = self.__Weibull_2P_params.AICc
-        self._parametric_CDF_Weibull_2P = self.__Weibull_2P_params.distribution.CDF(xvals=d,show_plot=False)
+        self._parametric_CDF_Weibull_2P = self.__Weibull_2P_params.distribution.CDF(xvals=d, show_plot=False)
 
-        self.__Gamma_2P_params = Fit_Gamma_2P(failures=failures,right_censored=right_censored,left_censored=left_censored,show_probability_plot=False,print_results=False)
+        self.__Gamma_2P_params = Fit_Gamma_2P(failures=failures, right_censored=right_censored, left_censored=left_censored, show_probability_plot=False, print_results=False)
         self.Gamma_2P_alpha = self.__Gamma_2P_params.alpha
         self.Gamma_2P_beta = self.__Gamma_2P_params.beta
         self.Gamma_2P_BIC = self.__Gamma_2P_params.BIC
         self.Gamma_2P_AICc = self.__Gamma_2P_params.AICc
-        self._parametric_CDF_Gamma_2P = self.__Gamma_2P_params.distribution.CDF(xvals=d,show_plot=False)
+        self._parametric_CDF_Gamma_2P = self.__Gamma_2P_params.distribution.CDF(xvals=d, show_plot=False)
 
-        self.__Expon_1P_params = Fit_Expon_1P(failures=failures,right_censored=right_censored,left_censored=left_censored,show_probability_plot=False,print_results=False)
+        self.__Expon_1P_params = Fit_Expon_1P(failures=failures, right_censored=right_censored, left_censored=left_censored, show_probability_plot=False, print_results=False)
         self.Expon_1P_lambda = self.__Expon_1P_params.Lambda
         self.Expon_1P_BIC = self.__Expon_1P_params.BIC
         self.Expon_1P_AICc = self.__Expon_1P_params.AICc
-        self._parametric_CDF_Exponential_1P = self.__Expon_1P_params.distribution.CDF(xvals=d,show_plot=False)
+        self._parametric_CDF_Exponential_1P = self.__Expon_1P_params.distribution.CDF(xvals=d, show_plot=False)
 
-        if max(failures)<=1:
-            self.__Beta_2P_params = Fit_Beta_2P(failures=failures, right_censored=right_censored, left_censored=left_censored,show_probability_plot=False,print_results=False)
+        if max(failures) <= 1:
+            self.__Beta_2P_params = Fit_Beta_2P(failures=failures, right_censored=right_censored, left_censored=left_censored, show_probability_plot=False, print_results=False)
             self.Beta_2P_alpha = self.__Beta_2P_params.alpha
             self.Beta_2P_beta = self.__Beta_2P_params.beta
             self.Beta_2P_BIC = self.__Beta_2P_params.BIC
             self.Beta_2P_AICc = self.__Beta_2P_params.AICc
-            self._parametric_CDF_Beta_2P = self.__Beta_2P_params.distribution.CDF(xvals=d,show_plot=False)
+            self._parametric_CDF_Beta_2P = self.__Beta_2P_params.distribution.CDF(xvals=d, show_plot=False)
         else:
             self.Beta_2P_alpha = 0
             self.Beta_2P_beta = 0
             self.Beta_2P_BIC = 0
             self.Beta_2P_AICc = 0
 
-        #assemble the output dataframe
-        DATA = {'Distribution': ['Weibull_3P','Weibull_2P','Normal_2P','Exponential_1P','Exponential_2P','Lognormal_2P','Gamma_2P','Gamma_3P','Beta_2P'],
-                'Alpha':[self.Weibull_3P_alpha,self.Weibull_2P_alpha,'','','','',self.Gamma_2P_alpha,self.Gamma_3P_alpha,self.Beta_2P_alpha],
-                'Beta':[self.Weibull_3P_beta,self.Weibull_2P_beta,'','','','',self.Gamma_2P_beta,self.Gamma_3P_beta,self.Beta_2P_beta],
-                'Gamma':[self.Weibull_3P_gamma,'','','',self.Expon_2P_gamma,'','',self.Gamma_3P_gamma,''],
-                'Mu':['','',self.Normal_2P_mu,'','',self.Lognormal_2P_mu,'','',''],
-                'Sigma':['','',self.Normal_2P_sigma,'','',self.Lognormal_2P_sigma,'','',''],
-                'Lambda':['','','',self.Expon_1P_lambda,self.Expon_2P_lambda,'','','',''],
-                'AICc':[self.Weibull_3P_AICc, self.Weibull_2P_AICc, self.Normal_2P_AICc, self.Expon_1P_AICc, self.Expon_2P_AICc, self.Lognormal_2P_AICc, self.Gamma_2P_AICc, self.Gamma_3P_AICc, self.Beta_2P_AICc],
-                'BIC':[self.Weibull_3P_BIC, self.Weibull_2P_BIC, self.Normal_2P_BIC, self.Expon_1P_BIC, self.Expon_2P_BIC, self.Lognormal_2P_BIC, self.Gamma_2P_BIC, self.Gamma_3P_BIC, self.Beta_2P_BIC]}
+        # assemble the output dataframe
+        DATA = {'Distribution': ['Weibull_3P', 'Weibull_2P', 'Normal_2P', 'Exponential_1P', 'Exponential_2P', 'Lognormal_2P', 'Gamma_2P', 'Gamma_3P', 'Beta_2P'],
+                'Alpha': [self.Weibull_3P_alpha, self.Weibull_2P_alpha, '', '', '', '', self.Gamma_2P_alpha, self.Gamma_3P_alpha, self.Beta_2P_alpha],
+                'Beta': [self.Weibull_3P_beta, self.Weibull_2P_beta, '', '', '', '', self.Gamma_2P_beta, self.Gamma_3P_beta, self.Beta_2P_beta],
+                'Gamma': [self.Weibull_3P_gamma, '', '', '', self.Expon_2P_gamma, '', '', self.Gamma_3P_gamma, ''],
+                'Mu': ['', '', self.Normal_2P_mu, '', '', self.Lognormal_2P_mu, '', '', ''],
+                'Sigma': ['', '', self.Normal_2P_sigma, '', '', self.Lognormal_2P_sigma, '', '', ''],
+                'Lambda': ['', '', '', self.Expon_1P_lambda, self.Expon_2P_lambda, '', '', '', ''],
+                'AICc': [self.Weibull_3P_AICc, self.Weibull_2P_AICc, self.Normal_2P_AICc, self.Expon_1P_AICc, self.Expon_2P_AICc, self.Lognormal_2P_AICc, self.Gamma_2P_AICc, self.Gamma_3P_AICc, self.Beta_2P_AICc],
+                'BIC': [self.Weibull_3P_BIC, self.Weibull_2P_BIC, self.Normal_2P_BIC, self.Expon_1P_BIC, self.Expon_2P_BIC, self.Lognormal_2P_BIC, self.Gamma_2P_BIC, self.Gamma_3P_BIC, self.Beta_2P_BIC]}
 
-        df = pd.DataFrame(DATA,columns = ['Distribution','Alpha','Beta','Gamma','Mu','Sigma','Lambda','AICc','BIC'])
-        #sort the dataframe by BIC or AICc and replace na and 0 values with spaces. Smallest AICc or BIC is better fit
-        if sort_by in ['BIC','bic']:
+        df = pd.DataFrame(DATA, columns=['Distribution', 'Alpha', 'Beta', 'Gamma', 'Mu', 'Sigma', 'Lambda', 'AICc', 'BIC'])
+        # sort the dataframe by BIC or AICc and replace na and 0 values with spaces. Smallest AICc or BIC is better fit
+        if sort_by in ['BIC', 'bic']:
             df2 = df.reindex(df.BIC.sort_values().index)
-        elif sort_by in ['AICc','AIC','aic','aicc']:
+        elif sort_by in ['AICc', 'AIC', 'aic', 'aicc']:
             df2 = df.reindex(df.AICc.sort_values().index)
         else:
             raise ValueError('Invalid input to sort_by. Options are BIC or AICc. Default is BIC')
-        df3 = df2.set_index('Distribution').fillna('').replace(to_replace=0,value='')
-        if self.Beta_2P_BIC == 0: #remove beta if it was not fitted (due to data being outside of 0 to 1 range)
-            df3 = df3.drop('Beta_2P',axis=0)
-        if self._left_cens ==True: #remove all location shifted distributions if they were not fitted (due to having left censored data)
-            df3 = df3.drop(['Weibull_3P','Exponential_2P','Gamma_3P'], axis=0)
+        df3 = df2.set_index('Distribution').fillna('').replace(to_replace=0, value='')
+        if self.Beta_2P_BIC == 0:  # remove beta if it was not fitted (due to data being outside of 0 to 1 range)
+            df3 = df3.drop('Beta_2P', axis=0)
+        if self._left_cens == True:  # remove all location shifted distributions if they were not fitted (due to having left censored data)
+            df3 = df3.drop(['Weibull_3P', 'Exponential_2P', 'Gamma_3P'], axis=0)
         self.results = df3
 
-        #creates a distribution object of the best fitting distribution and assigns its name
+        # creates a distribution object of the best fitting distribution and assigns its name
         best_dist = df3.index.values[0]
         self.best_distribution_name = best_dist
         if best_dist == 'Weibull_2P':
-            self.best_distribution = Weibull_Distribution(alpha=self.Weibull_2P_alpha,beta=self.Weibull_2P_beta)
+            self.best_distribution = Weibull_Distribution(alpha=self.Weibull_2P_alpha, beta=self.Weibull_2P_beta)
         elif best_dist == 'Weibull_3P':
-            self.best_distribution = Weibull_Distribution(alpha=self.Weibull_3P_alpha,beta=self.Weibull_3P_beta,gamma=self.Weibull_3P_gamma)
+            self.best_distribution = Weibull_Distribution(alpha=self.Weibull_3P_alpha, beta=self.Weibull_3P_beta, gamma=self.Weibull_3P_gamma)
         elif best_dist == 'Gamma_2P':
-            self.best_distribution = Gamma_Distribution(alpha=self.Gamma_2P_alpha,beta=self.Gamma_2P_beta)
+            self.best_distribution = Gamma_Distribution(alpha=self.Gamma_2P_alpha, beta=self.Gamma_2P_beta)
         elif best_dist == 'Gamma_3P':
-            self.best_distribution = Gamma_Distribution(alpha=self.Gamma_3P_alpha,beta=self.Gamma_3P_beta,gamma=self.Gamma_3P_gamma)
+            self.best_distribution = Gamma_Distribution(alpha=self.Gamma_3P_alpha, beta=self.Gamma_3P_beta, gamma=self.Gamma_3P_gamma)
         elif best_dist == 'Lognormal_2P':
-            self.best_distribution = Lognormal_Distribution(mu=self.Lognormal_2P_mu,sigma=self.Lognormal_2P_sigma)
+            self.best_distribution = Lognormal_Distribution(mu=self.Lognormal_2P_mu, sigma=self.Lognormal_2P_sigma)
         elif best_dist == 'Exponential_1P':
             self.best_distribution = Exponential_Distribution(Lambda=self.Expon_1P_lambda)
         elif best_dist == 'Exponential_2P':
-            self.best_distribution = Exponential_Distribution(Lambda=self.Expon_2P_lambda,gamma=self.Expon_2P_gamma)
+            self.best_distribution = Exponential_Distribution(Lambda=self.Expon_2P_lambda, gamma=self.Expon_2P_gamma)
         elif best_dist == 'Normal_2P':
-            self.best_distribution = Normal_Distribution(mu=self.Normal_2P_mu,sigma=self.Normal_2P_sigma)
+            self.best_distribution = Normal_Distribution(mu=self.Normal_2P_mu, sigma=self.Normal_2P_sigma)
         elif best_dist == 'Beta_2P':
-            self.best_distribution = Beta_Distribution(alpha=self.Beta_2P_alpha,beta=self.Beta_2P_beta)
+            self.best_distribution = Beta_Distribution(alpha=self.Beta_2P_alpha, beta=self.Beta_2P_beta)
 
-        #print the results
-        if print_results==True: #printing occurs by default
-            pd.set_option('display.width', 200) #prevents wrapping after default 80 characters
-            pd.set_option('display.max_columns', 9)#shows the dataframe without ... truncation
+        # print the results
+        if print_results == True:  # printing occurs by default
+            pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
+            pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
             print(self.results)
 
-        if show_histogram_plot==True:
-            Fit_Everything.histogram_plot(self) #plotting occurs by default
+        if show_histogram_plot == True:
+            Fit_Everything.histogram_plot(self)  # plotting occurs by default
 
-        if show_PP_plot==True:
-            Fit_Everything.P_P_plot(self) #plotting occurs by default unless there is left censored data
+        if show_PP_plot == True:
+            Fit_Everything.P_P_plot(self)  # plotting occurs by default unless there is left censored data
 
-        if show_probability_plot==True:
-            Fit_Everything.probability_plot(self) #plotting occurs by default
+        if show_probability_plot == True:
+            Fit_Everything.probability_plot(self)  # plotting occurs by default
 
-        if show_histogram_plot==True or show_PP_plot==True or show_probability_plot==True:
+        if show_histogram_plot == True or show_PP_plot == True or show_probability_plot == True:
             plt.show()
 
     def histogram_plot(self):
@@ -319,24 +322,24 @@ class Fit_Everything:
 
         # make this histogram. Can't use plt.hist due to need to scale the heights when there's censored data
         num_bins = min(int(len(X) / 2), 30)
-        hist, bins = np.histogram(X, bins=num_bins,density=True)
+        hist, bins = np.histogram(X, bins=num_bins, density=True)
         hist_cumulative = np.cumsum(hist) / sum(hist)
         width = np.diff(bins)
         center = (bins[:-1] + bins[1:]) / 2
 
-        plt.bar(center, hist*self._frac_fail, align='center', width=width,alpha=0.2,color='k',edgecolor='k')
+        plt.bar(center, hist * self._frac_fail, align='center', width=width, alpha=0.2, color='k', edgecolor='k')
 
-        if self._left_cens == False: #we can only plot the 3P distributions if they were fitted (in the case the left censored data was not provided)
-            Weibull_Distribution(alpha=self.Weibull_3P_alpha,beta=self.Weibull_3P_beta,gamma=self.Weibull_3P_gamma).PDF(xvals=xvals,label=r'Weibull ($\alpha , \beta , \gamma$)')
-            Gamma_Distribution(alpha=self.Gamma_3P_alpha, beta=self.Gamma_3P_beta,gamma=self.Gamma_3P_gamma).PDF(xvals=xvals,label=r'Gamma ($\alpha , \beta , \gamma$)')
+        if self._left_cens == False:  # we can only plot the 3P distributions if they were fitted (in the case the left censored data was not provided)
+            Weibull_Distribution(alpha=self.Weibull_3P_alpha, beta=self.Weibull_3P_beta, gamma=self.Weibull_3P_gamma).PDF(xvals=xvals, label=r'Weibull ($\alpha , \beta , \gamma$)')
+            Gamma_Distribution(alpha=self.Gamma_3P_alpha, beta=self.Gamma_3P_beta, gamma=self.Gamma_3P_gamma).PDF(xvals=xvals, label=r'Gamma ($\alpha , \beta , \gamma$)')
             Exponential_Distribution(Lambda=self.Expon_2P_lambda, gamma=self.Expon_2P_gamma).PDF(xvals=xvals, label=r'Exponential ($\lambda , \gamma$)')
         Weibull_Distribution(alpha=self.Weibull_2P_alpha, beta=self.Weibull_2P_beta).PDF(xvals=xvals, label=r'Weibull ($\alpha , \beta$)')
         Lognormal_Distribution(mu=self.Lognormal_2P_mu, sigma=self.Lognormal_2P_sigma).PDF(xvals=xvals, label=r'Lognormal ($\mu , \sigma$)')
         Normal_Distribution(mu=self.Normal_2P_mu, sigma=self.Normal_2P_sigma).PDF(xvals=xvals, label=r'Normal ($\mu , \sigma$)')
-        Gamma_Distribution(alpha=self.Gamma_2P_alpha, beta=self.Gamma_2P_beta).PDF(xvals=xvals,label=r'Gamma ($\alpha , \beta$)')
+        Gamma_Distribution(alpha=self.Gamma_2P_alpha, beta=self.Gamma_2P_beta).PDF(xvals=xvals, label=r'Gamma ($\alpha , \beta$)')
         Exponential_Distribution(Lambda=self.Expon_1P_lambda).PDF(xvals=xvals, label=r'Exponential ($\lambda$)')
-        if max(X)<=1: #condition for Beta Dist to be fitted
-            Beta_Distribution(alpha=self.Beta_2P_alpha, beta=self.Beta_2P_beta).PDF(xvals=xvals,label=r'Beta ($\alpha , \beta$)')
+        if max(X) <= 1:  # condition for Beta Dist to be fitted
+            Beta_Distribution(alpha=self.Beta_2P_alpha, beta=self.Beta_2P_beta).PDF(xvals=xvals, label=r'Beta ($\alpha , \beta$)')
         plt.legend()
         plt.xlim([xmin, xmax])
         plt.title('Probability Density Function')
@@ -346,20 +349,20 @@ class Fit_Everything:
 
         plt.subplot(122)  # CDF
         if self._left_cens == True:
-            plt.bar(center, hist_cumulative*self._frac_fail+(1-self._frac_fail_L), align='center', width=width, alpha=0.2, color='k',edgecolor='k')
+            plt.bar(center, hist_cumulative * self._frac_fail + (1 - self._frac_fail_L), align='center', width=width, alpha=0.2, color='k', edgecolor='k')
         else:
-            plt.bar(center, hist_cumulative*self._frac_fail, align='center', width=width,alpha=0.2,color='k',edgecolor='k')
-        if self._left_cens == False: #we can only plot the 3P distributions if they were fitted (in the case the left censored data was not provided)
-            Weibull_Distribution(alpha=self.Weibull_3P_alpha,beta=self.Weibull_3P_beta,gamma=self.Weibull_3P_gamma).CDF(xvals=xvals,label=r'Weibull ($\alpha , \beta , \gamma$)')
-            Gamma_Distribution(alpha=self.Gamma_3P_alpha, beta=self.Gamma_3P_beta,gamma=self.Gamma_3P_gamma).CDF(xvals=xvals,label=r'Gamma ($\alpha , \beta , \gamma$)')
+            plt.bar(center, hist_cumulative * self._frac_fail, align='center', width=width, alpha=0.2, color='k', edgecolor='k')
+        if self._left_cens == False:  # we can only plot the 3P distributions if they were fitted (in the case the left censored data was not provided)
+            Weibull_Distribution(alpha=self.Weibull_3P_alpha, beta=self.Weibull_3P_beta, gamma=self.Weibull_3P_gamma).CDF(xvals=xvals, label=r'Weibull ($\alpha , \beta , \gamma$)')
+            Gamma_Distribution(alpha=self.Gamma_3P_alpha, beta=self.Gamma_3P_beta, gamma=self.Gamma_3P_gamma).CDF(xvals=xvals, label=r'Gamma ($\alpha , \beta , \gamma$)')
             Exponential_Distribution(Lambda=self.Expon_2P_lambda, gamma=self.Expon_2P_gamma).CDF(xvals=xvals, label=r'Exponential ($\lambda , \gamma$)')
-        Weibull_Distribution(alpha=self.Weibull_2P_alpha,beta=self.Weibull_2P_beta).CDF(xvals=xvals,label=r'Weibull ($\alpha , \beta$)')
+        Weibull_Distribution(alpha=self.Weibull_2P_alpha, beta=self.Weibull_2P_beta).CDF(xvals=xvals, label=r'Weibull ($\alpha , \beta$)')
         Lognormal_Distribution(mu=self.Lognormal_2P_mu, sigma=self.Lognormal_2P_sigma).CDF(xvals=xvals, label=r'Lognormal ($\mu , \sigma$)')
         Normal_Distribution(mu=self.Normal_2P_mu, sigma=self.Normal_2P_sigma).CDF(xvals=xvals, label=r'Normal ($\mu , \sigma$)')
-        Gamma_Distribution(alpha=self.Gamma_2P_alpha, beta=self.Gamma_2P_beta).CDF(xvals=xvals,label=r'Gamma ($\alpha , \beta$)')
+        Gamma_Distribution(alpha=self.Gamma_2P_alpha, beta=self.Gamma_2P_beta).CDF(xvals=xvals, label=r'Gamma ($\alpha , \beta$)')
         Exponential_Distribution(Lambda=self.Expon_1P_lambda).CDF(xvals=xvals, label=r'Exponential ($\lambda$)')
-        if max(X)<=1: #condition for Beta Dist to be fitted
-            Beta_Distribution(alpha=self.Beta_2P_alpha, beta=self.Beta_2P_beta).CDF(xvals=xvals,label=r'Beta ($\alpha , \beta$)')
+        if max(X) <= 1:  # condition for Beta Dist to be fitted
+            Beta_Distribution(alpha=self.Beta_2P_alpha, beta=self.Beta_2P_beta).CDF(xvals=xvals, label=r'Beta ($\alpha , \beta$)')
         plt.legend()
         plt.xlim([xmin, xmax])
         plt.title('Cumulative Distribution Function')
@@ -368,94 +371,94 @@ class Fit_Everything:
         plt.suptitle('Histogram plot of each fitted distribution')
         plt.legend()
 
-    def P_P_plot(self): #probability-probability plot of parametric vs non-parametric
-        #plot each of the results
-        if max(self.failures)<=1:
-            cols = 6 #this is for when the beta distribution was fitted
-            size = (11,4.65)
+    def P_P_plot(self):  # probability-probability plot of parametric vs non-parametric
+        # plot each of the results
+        if max(self.failures) <= 1:
+            cols = 6  # this is for when the beta distribution was fitted
+            size = (11, 4.65)
         else:
             cols = 5
-            size = (10,4.65)
+            size = (10, 4.65)
         plt.figure(figsize=size)
         plt.suptitle('Semi-parametric Probability-Probability plots of each fitted distribution\nParametric (x-axis) vs Non-Parametric (y-axis)')
 
-        plt.subplot(2,cols,1)
-        xlim = max(np.hstack([self._nonparametric_CDF,self._parametric_CDF_Exponential_1P]))
-        plt.scatter(self._nonparametric_CDF, self._parametric_CDF_Exponential_1P,marker='.',color='k')
-        plt.plot([0,xlim],[0,xlim],'r',alpha=0.7)
+        plt.subplot(2, cols, 1)
+        xlim = max(np.hstack([self._nonparametric_CDF, self._parametric_CDF_Exponential_1P]))
+        plt.scatter(self._nonparametric_CDF, self._parametric_CDF_Exponential_1P, marker='.', color='k')
+        plt.plot([0, xlim], [0, xlim], 'r', alpha=0.7)
         plt.axis('square')
         plt.title('Exponential_1P')
         plt.yticks([])
         plt.xticks([])
 
-        plt.subplot(2,cols,2)
-        xlim = max(np.hstack([self._nonparametric_CDF,self._parametric_CDF_Weibull_2P]))
-        plt.scatter(self._nonparametric_CDF,self._parametric_CDF_Weibull_2P,marker='.',color='k')
-        plt.plot([0,xlim],[0,xlim],'r',alpha=0.7)
+        plt.subplot(2, cols, 2)
+        xlim = max(np.hstack([self._nonparametric_CDF, self._parametric_CDF_Weibull_2P]))
+        plt.scatter(self._nonparametric_CDF, self._parametric_CDF_Weibull_2P, marker='.', color='k')
+        plt.plot([0, xlim], [0, xlim], 'r', alpha=0.7)
         plt.axis('square')
         plt.title('Weibull_2P')
         plt.yticks([])
         plt.xticks([])
 
-        plt.subplot(2,cols,3)
-        xlim = max(np.hstack([self._nonparametric_CDF,self._parametric_CDF_Gamma_2P]))
-        plt.scatter(self._nonparametric_CDF,self._parametric_CDF_Gamma_2P,marker='.',color='k')
-        plt.plot([0,xlim],[0,xlim],'r',alpha=0.7)
+        plt.subplot(2, cols, 3)
+        xlim = max(np.hstack([self._nonparametric_CDF, self._parametric_CDF_Gamma_2P]))
+        plt.scatter(self._nonparametric_CDF, self._parametric_CDF_Gamma_2P, marker='.', color='k')
+        plt.plot([0, xlim], [0, xlim], 'r', alpha=0.7)
         plt.axis('square')
         plt.title('Gamma_2P')
         plt.yticks([])
         plt.xticks([])
 
-        plt.subplot(2,cols,4)
-        xlim = max(np.hstack([self._nonparametric_CDF,self._parametric_CDF_Normal_2P]))
-        plt.scatter(self._nonparametric_CDF,self._parametric_CDF_Normal_2P,marker='.',color='k')
-        plt.plot([0,xlim],[0,xlim],'r',alpha=0.7)
+        plt.subplot(2, cols, 4)
+        xlim = max(np.hstack([self._nonparametric_CDF, self._parametric_CDF_Normal_2P]))
+        plt.scatter(self._nonparametric_CDF, self._parametric_CDF_Normal_2P, marker='.', color='k')
+        plt.plot([0, xlim], [0, xlim], 'r', alpha=0.7)
         plt.axis('square')
         plt.title('Normal_2P')
         plt.yticks([])
         plt.xticks([])
 
-        plt.subplot(2,cols,5)
-        xlim = max(np.hstack([self._nonparametric_CDF,self._parametric_CDF_Lognormal_2P]))
-        plt.scatter(self._nonparametric_CDF,self._parametric_CDF_Lognormal_2P,marker='.',color='k')
-        plt.plot([0,xlim],[0,xlim],'r',alpha=0.7)
+        plt.subplot(2, cols, 5)
+        xlim = max(np.hstack([self._nonparametric_CDF, self._parametric_CDF_Lognormal_2P]))
+        plt.scatter(self._nonparametric_CDF, self._parametric_CDF_Lognormal_2P, marker='.', color='k')
+        plt.plot([0, xlim], [0, xlim], 'r', alpha=0.7)
         plt.axis('square')
         plt.title('Lognormal_2P')
         plt.yticks([])
         plt.xticks([])
 
-        plt.subplot(2,cols,cols+1)
-        xlim = max(np.hstack([self._nonparametric_CDF,self._parametric_CDF_Exponential_2P]))
-        plt.scatter(self._nonparametric_CDF,self._parametric_CDF_Exponential_2P,marker='.',color='k')
-        plt.plot([0,xlim],[0,xlim],'r',alpha=0.7)
+        plt.subplot(2, cols, cols + 1)
+        xlim = max(np.hstack([self._nonparametric_CDF, self._parametric_CDF_Exponential_2P]))
+        plt.scatter(self._nonparametric_CDF, self._parametric_CDF_Exponential_2P, marker='.', color='k')
+        plt.plot([0, xlim], [0, xlim], 'r', alpha=0.7)
         plt.axis('square')
         plt.title('Exponential_2P')
         plt.yticks([])
         plt.xticks([])
 
-        plt.subplot(2,cols,cols+2)
-        xlim = max(np.hstack([self._nonparametric_CDF,self._parametric_CDF_Weibull_3P]))
-        plt.scatter(self._nonparametric_CDF,self._parametric_CDF_Weibull_3P,marker='.',color='k')
-        plt.plot([0,xlim],[0,xlim],'r',alpha=0.7)
+        plt.subplot(2, cols, cols + 2)
+        xlim = max(np.hstack([self._nonparametric_CDF, self._parametric_CDF_Weibull_3P]))
+        plt.scatter(self._nonparametric_CDF, self._parametric_CDF_Weibull_3P, marker='.', color='k')
+        plt.plot([0, xlim], [0, xlim], 'r', alpha=0.7)
         plt.axis('square')
         plt.title('Weibull_3P')
         plt.yticks([])
         plt.xticks([])
 
-        plt.subplot(2,cols,cols+3)
-        xlim = max(np.hstack([self._nonparametric_CDF,self._parametric_CDF_Gamma_3P]))
-        plt.scatter(self._nonparametric_CDF,self._parametric_CDF_Gamma_3P,marker='.',color='k')
-        plt.plot([0,xlim],[0,xlim],'r',alpha=0.7)
+        plt.subplot(2, cols, cols + 3)
+        xlim = max(np.hstack([self._nonparametric_CDF, self._parametric_CDF_Gamma_3P]))
+        plt.scatter(self._nonparametric_CDF, self._parametric_CDF_Gamma_3P, marker='.', color='k')
+        plt.plot([0, xlim], [0, xlim], 'r', alpha=0.7)
         plt.axis('square')
         plt.title('Gamma_3P')
         plt.yticks([])
         plt.xticks([])
 
-        if max(self.failures)<=1:
-            plt.subplot(2,6,6)
-            xlim = max(np.hstack([self._nonparametric_CDF,self._parametric_CDF_Beta_2P]))
-            plt.scatter(self._nonparametric_CDF,self._parametric_CDF_Beta_2P,marker='.',color='k')
-            plt.plot([0,xlim],[0,xlim],'r',alpha=0.7)
+        if max(self.failures) <= 1:
+            plt.subplot(2, 6, 6)
+            xlim = max(np.hstack([self._nonparametric_CDF, self._parametric_CDF_Beta_2P]))
+            plt.scatter(self._nonparametric_CDF, self._parametric_CDF_Beta_2P, marker='.', color='k')
+            plt.plot([0, xlim], [0, xlim], 'r', alpha=0.7)
             plt.axis('square')
             plt.title('Beta_2P')
             plt.yticks([])
@@ -463,19 +466,19 @@ class Fit_Everything:
         plt.subplots_adjust(left=0.04, bottom=0.07, right=0.96, top=0.87)
 
     def probability_plot(self):
-        from reliability.Probability_plotting import Weibull_probability_plot,Normal_probability_plot,Gamma_probability_plot,Exponential_probability_plot,Beta_probability_plot,Lognormal_probability_plot
-        if self._left_cens == False: #then the location shifted distributions will have been fitted
+        from reliability.Probability_plotting import Weibull_probability_plot, Normal_probability_plot, Gamma_probability_plot, Exponential_probability_plot, Beta_probability_plot, Lognormal_probability_plot
+        if self._left_cens == False:  # then the location shifted distributions will have been fitted
             rows = 2
-        else: #this is when the location shifted distributions were not fitted
+        else:  # this is when the location shifted distributions were not fitted
             rows = 1
-        if max(self.failures)<=1:
-            cols = 6 #this is for when the beta distribution was fitted
+        if max(self.failures) <= 1:
+            cols = 6  # this is for when the beta distribution was fitted
         else:
             cols = 5
 
         plt.figure()
-        plt.subplot(rows,cols,1)
-        Exponential_probability_plot(failures=self.failures,right_censored=self.right_censored,left_censored=self.left_censored,__fitted_dist_params=self.__Expon_1P_params)
+        plt.subplot(rows, cols, 1)
+        Exponential_probability_plot(failures=self.failures, right_censored=self.right_censored, left_censored=self.left_censored, __fitted_dist_params=self.__Expon_1P_params)
         ax = plt.gca()
         ax.set_yticklabels([])
         ax.set_xticklabels([])
@@ -484,8 +487,8 @@ class Fit_Everything:
         ax.get_legend().remove()
         plt.title('Exponential_1P')
 
-        plt.subplot(rows,cols,2)
-        Weibull_probability_plot(failures=self.failures,right_censored=self.right_censored,left_censored=self.left_censored,__fitted_dist_params=self.__Weibull_2P_params)
+        plt.subplot(rows, cols, 2)
+        Weibull_probability_plot(failures=self.failures, right_censored=self.right_censored, left_censored=self.left_censored, __fitted_dist_params=self.__Weibull_2P_params)
         ax = plt.gca()
         ax.set_yticklabels([])
         ax.set_xticklabels([])
@@ -494,7 +497,7 @@ class Fit_Everything:
         ax.get_legend().remove()
         plt.title('Weibull_2P')
 
-        plt.subplot(rows,cols,3)
+        plt.subplot(rows, cols, 3)
         Gamma_probability_plot(failures=self.failures, right_censored=self.right_censored, left_censored=self.left_censored, __fitted_dist_params=self.__Gamma_2P_params)
         ax = plt.gca()
         ax.set_yticklabels([])
@@ -504,7 +507,7 @@ class Fit_Everything:
         ax.get_legend().remove()
         plt.title('Gamma_2P')
 
-        plt.subplot(rows,cols,4)
+        plt.subplot(rows, cols, 4)
         Normal_probability_plot(failures=self.failures, right_censored=self.right_censored, left_censored=self.left_censored, __fitted_dist_params=self.__Normal_2P_params)
         ax = plt.gca()
         ax.set_yticklabels([])
@@ -514,8 +517,8 @@ class Fit_Everything:
         ax.get_legend().remove()
         plt.title('Normal_2P')
 
-        plt.subplot(rows,cols,5)
-        Lognormal_probability_plot(failures=self.failures,right_censored=self.right_censored,left_censored=self.left_censored,__fitted_dist_params=self.__Lognormal_2P_params)
+        plt.subplot(rows, cols, 5)
+        Lognormal_probability_plot(failures=self.failures, right_censored=self.right_censored, left_censored=self.left_censored, __fitted_dist_params=self.__Lognormal_2P_params)
         ax = plt.gca()
         ax.set_yticklabels([])
         ax.set_xticklabels([])
@@ -524,9 +527,9 @@ class Fit_Everything:
         ax.get_legend().remove()
         plt.title('Lognormal_2P')
 
-        if self._left_cens == False: #only plot the location shifted distributions if they were created (ie. there was no left censored data supplied)
-            plt.subplot(2,cols,cols+1)
-            Exponential_probability_plot(failures=self.failures, right_censored=self.right_censored, left_censored=self.left_censored, __fitted_dist_params=self.__Expon_2P_params,fit_gamma=True)
+        if self._left_cens == False:  # only plot the location shifted distributions if they were created (ie. there was no left censored data supplied)
+            plt.subplot(2, cols, cols + 1)
+            Exponential_probability_plot(failures=self.failures, right_censored=self.right_censored, left_censored=self.left_censored, __fitted_dist_params=self.__Expon_2P_params, fit_gamma=True)
             ax = plt.gca()
             ax.set_yticklabels([])
             ax.set_xticklabels([])
@@ -535,8 +538,8 @@ class Fit_Everything:
             ax.get_legend().remove()
             plt.title('Exponential_2P')
 
-            plt.subplot(2,cols,cols+2)
-            Weibull_probability_plot(failures=self.failures, right_censored=self.right_censored, left_censored=self.left_censored, __fitted_dist_params=self.__Weibull_3P_params,fit_gamma=True)
+            plt.subplot(2, cols, cols + 2)
+            Weibull_probability_plot(failures=self.failures, right_censored=self.right_censored, left_censored=self.left_censored, __fitted_dist_params=self.__Weibull_3P_params, fit_gamma=True)
             ax = plt.gca()
             ax.set_yticklabels([])
             ax.set_xticklabels([])
@@ -545,8 +548,8 @@ class Fit_Everything:
             ax.get_legend().remove()
             plt.title('Weibull_3P')
 
-            plt.subplot(2,cols,cols+3)
-            Gamma_probability_plot(failures=self.failures, right_censored=self.right_censored, left_censored=self.left_censored, __fitted_dist_params=self.__Gamma_3P_params,fit_gamma=True)
+            plt.subplot(2, cols, cols + 3)
+            Gamma_probability_plot(failures=self.failures, right_censored=self.right_censored, left_censored=self.left_censored, __fitted_dist_params=self.__Gamma_3P_params, fit_gamma=True)
             ax = plt.gca()
             ax.set_yticklabels([])
             ax.set_xticklabels([])
@@ -556,7 +559,7 @@ class Fit_Everything:
             plt.title('Gamma_3P')
 
         if max(self.failures) <= 1:
-            plt.subplot(rows,6,6)
+            plt.subplot(rows, 6, 6)
             Beta_probability_plot(failures=self.failures, right_censored=self.right_censored, left_censored=self.left_censored, __fitted_dist_params=self.__Beta_2P_params)
             ax = plt.gca()
             ax.set_yticklabels([])
@@ -566,14 +569,15 @@ class Fit_Everything:
             ax.get_legend().remove()
             plt.title('Beta_2P')
 
-        if max(self.failures)<=1:
-            plt.gcf().set_size_inches(11, 5) #this is for when the beta distribution was fitted
+        if max(self.failures) <= 1:
+            plt.gcf().set_size_inches(11, 5)  # this is for when the beta distribution was fitted
         else:
             plt.gcf().set_size_inches(10, 5)
 
         plt.suptitle('Probability plots of each fitted distribution\n')
-        plt.subplots_adjust(left=0.04, bottom=0.09, right=0.96, top=0.86,wspace=0.2,hspace=0.32)
+        plt.subplots_adjust(left=0.04, bottom=0.09, right=0.96, top=0.86, wspace=0.2, hspace=0.32)
         plt.show()
+
 
 class Fit_Weibull_2P:
     '''
@@ -611,23 +615,24 @@ class Fit_Weibull_2P:
     beta_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     '''
-    def __init__(self,failures=None,right_censored=None,left_censored=None,show_probability_plot=True, print_results=True,CI=0.95):
-        if failures is None or len(failures)<2:
+
+    def __init__(self, failures=None, right_censored=None, left_censored=None, show_probability_plot=True, print_results=True, CI=0.95):
+        if failures is None or len(failures) < 2:
             raise ValueError('Maximum likelihood estimates could not be calculated for these data. There must be at least two failures to calculate Weibull parameters.')
-        if right_censored is not None and left_censored is not None: #check that a mix of left and right censoring is not entered
+        if right_censored is not None and left_censored is not None:  # check that a mix of left and right censoring is not entered
             raise ValueError('You have specified both left and right censoring. You can specify either but not both.')
-        if CI <=0 or CI >=1:
+        if CI <= 0 or CI >= 1:
             raise ValueError('CI must be between 0 and 1. Default is 0.95 for 95% Confidence interval.')
         # fill with empty lists if not specified
         if right_censored is None:
-            right_censored=[]
+            right_censored = []
         if left_censored is None:
-            left_censored=[]
+            left_censored = []
 
         # adjust inputs to be arrays
-        if type(failures)==list:
+        if type(failures) == list:
             failures = np.array(failures)
-        if type(failures)!= np.ndarray:
+        if type(failures) != np.ndarray:
             raise TypeError('failures must be a list or array of failure data')
         if type(right_censored) == list:
             right_censored = np.array(right_censored)
@@ -637,12 +642,12 @@ class Fit_Weibull_2P:
             left_censored = np.array(left_censored)
         if type(left_censored) != np.ndarray:
             raise TypeError('left_censored must be a list or array of left censored failure data')
-        all_data = np.hstack([failures,right_censored,left_censored])
-        bnds = [(0.0001, None), (0.0001, None)] #bounds of solution
+        all_data = np.hstack([failures, right_censored, left_censored])
+        bnds = [(0.0001, None), (0.0001, None)]  # bounds of solution
 
-        #solve it
+        # solve it
         self.gamma = 0
-        sp = ss.weibull_min.fit(all_data,floc=0,optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
+        sp = ss.weibull_min.fit(all_data, floc=0, optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
         guess = [sp[2], sp[0]]
         result = minimize(value_and_grad(Fit_Weibull_2P.LL), guess, args=(failures, right_censored, left_censored), jac=True, bounds=bnds, tol=1e-6)
 
@@ -661,12 +666,12 @@ class Fit_Weibull_2P:
         k = len(params)
         n = len(all_data)
         LL2 = 2 * Fit_Weibull_2P.LL(params, failures, right_censored, left_censored)
-        self.loglik2=LL2
+        self.loglik2 = LL2
         self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
         self.BIC = np.log(n) * k + LL2
-        self.distribution = Weibull_Distribution(alpha=self.alpha,beta=self.beta)
+        self.distribution = Weibull_Distribution(alpha=self.alpha, beta=self.beta)
 
-        #confidence interval estimates of parameters
+        # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
         hessian_matrix = hessian(Fit_Weibull_2P.LL)(np.array(tuple(params)), np.array(tuple(failures)), np.array(tuple(right_censored)), np.array(tuple(left_censored)))
         fisher_information_matrix = np.linalg.inv(hessian_matrix)
@@ -677,47 +682,48 @@ class Fit_Weibull_2P:
         self.alpha_lower = self.alpha * (np.exp(-Z * (self.alpha_SE / self.alpha)))
         self.beta_upper = self.beta * (np.exp(Z * (self.beta_SE / self.beta)))
         self.beta_lower = self.beta * (np.exp(-Z * (self.beta_SE / self.beta)))
-        Data = {'Parameter': ['Alpha','Beta'],
-                'Point Estimate': [self.alpha,self.beta],
-                'Standard Error': [self.alpha_SE,self.beta_SE],
-                'Lower CI': [self.alpha_lower,self.beta_lower],
-                'Upper CI': [self.alpha_upper,self.beta_upper]}
-        df = pd.DataFrame(Data, columns=['Parameter','Point Estimate','Standard Error','Lower CI','Upper CI'])
+        Data = {'Parameter': ['Alpha', 'Beta'],
+                'Point Estimate': [self.alpha, self.beta],
+                'Standard Error': [self.alpha_SE, self.beta_SE],
+                'Lower CI': [self.alpha_lower, self.beta_lower],
+                'Upper CI': [self.alpha_upper, self.beta_upper]}
+        df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
         self.results = df.set_index('Parameter')
 
-        if print_results==True:
-            print(str('Results from Fit_Weibull_2P ('+str(int(CI*100))+'% CI):'))
+        if print_results == True:
+            print(str('Results from Fit_Weibull_2P (' + str(int(CI * 100)) + '% CI):'))
             print(self.results)
 
-        if show_probability_plot==True:
+        if show_probability_plot == True:
             from reliability.Probability_plotting import Weibull_probability_plot
-            if len(right_censored)==0:
+            if len(right_censored) == 0:
                 rc = None
             else:
                 rc = right_censored
-            if len(left_censored)==0:
+            if len(left_censored) == 0:
                 lc = None
             else:
                 lc = left_censored
-            Weibull_probability_plot(failures=failures,right_censored=rc,left_censored=lc,__fitted_dist_params=self)
+            Weibull_probability_plot(failures=failures, right_censored=rc, left_censored=lc, __fitted_dist_params=self)
 
-    def logf(t,a,b): #Log PDF (2 parameter Weibull)
-        return (b - 1) * anp.log(t/a) + anp.log(b/a) - (t / a) ** b
+    def logf(t, a, b):  # Log PDF (2 parameter Weibull)
+        return (b - 1) * anp.log(t / a) + anp.log(b / a) - (t / a) ** b
 
-    def logF(t,a,b): #Log CDF (2 parameter Weibull)
-        return anp.log(1-anp.exp((-((t/a)**b))))
+    def logF(t, a, b):  # Log CDF (2 parameter Weibull)
+        return anp.log(1 - anp.exp((-((t / a) ** b))))
 
-    def logR(t,a,b): #Log SF (2 parameter Weibull)
-        return -((t/a)**b)
+    def logR(t, a, b):  # Log SF (2 parameter Weibull)
+        return -((t / a) ** b)
 
-    def LL(params,T_f,T_rc,T_lc): #log likelihood function (2 parameter weibull)
+    def LL(params, T_f, T_rc, T_lc):  # log likelihood function (2 parameter weibull)
         LL_f = 0
         LL_rc = 0
         LL_lc = 0
-        LL_f += Fit_Weibull_2P.logf(T_f, params[0], params[1]).sum() #failure times
-        LL_rc += Fit_Weibull_2P.logR(T_rc, params[0], params[1]).sum() #right censored times
-        LL_lc += Fit_Weibull_2P.logF(T_lc, params[0], params[1]).sum() #left censored times
-        return -(LL_f+LL_rc+LL_lc)
+        LL_f += Fit_Weibull_2P.logf(T_f, params[0], params[1]).sum()  # failure times
+        LL_rc += Fit_Weibull_2P.logR(T_rc, params[0], params[1]).sum()  # right censored times
+        LL_lc += Fit_Weibull_2P.logF(T_lc, params[0], params[1]).sum()  # left censored times
+        return -(LL_f + LL_rc + LL_lc)
+
 
 class Fit_Weibull_3P:
     '''
@@ -757,30 +763,31 @@ class Fit_Weibull_3P:
     beta_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     '''
-    def __init__(self,failures=None,right_censored=None,show_probability_plot=True,print_results=True,CI=0.95):
-        if failures is None or len(failures)<3:
+
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95):
+        if failures is None or len(failures) < 3:
             raise ValueError('Maximum likelihood estimates could not be calculated for these data. There must be at least three failures to calculate Weibull parameters.')
         if right_censored is None:
-            right_censored=[]   # fill with empty list if not specified
-        if CI <=0 or CI >=1:
+            right_censored = []  # fill with empty list if not specified
+        if CI <= 0 or CI >= 1:
             raise ValueError('CI must be between 0 and 1. Default is 0.95 for 95% Confidence interval.')
         # adjust inputs to be arrays
-        if type(failures)==list:
+        if type(failures) == list:
             failures = np.array(failures)
-        if type(failures)!= np.ndarray:
+        if type(failures) != np.ndarray:
             raise TypeError('failures must be a list or array of failure data')
         if type(right_censored) == list:
             right_censored = np.array(right_censored)
         if type(right_censored) != np.ndarray:
             raise TypeError('right_censored must be a list or array of right censored failure data')
-        all_data = np.hstack([failures,right_censored])
-        bnds = [(0.0001, None), (0.0001, None)] #bounds of solution
+        all_data = np.hstack([failures, right_censored])
+        bnds = [(0.0001, None), (0.0001, None)]  # bounds of solution
 
-        #solve it
-        shift = min(all_data)-0.01 #the 0.01 is to avoid taking the log of zero in logf and logF
-        self.gamma = shift+0.001 #this adds 0.001 instead of 0.01 to avoid the min(failures) equalling gamma which would cause AIC and BIC to be inf. The difference it causes is negligible
-        data_shifted = all_data-shift
-        sp = ss.weibull_min.fit(data_shifted,floc=0,optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
+        # solve it
+        shift = min(all_data) - 0.01  # the 0.01 is to avoid taking the log of zero in logf and logF
+        self.gamma = shift + 0.001  # this adds 0.001 instead of 0.01 to avoid the min(failures) equalling gamma which would cause AIC and BIC to be inf. The difference it causes is negligible
+        data_shifted = all_data - shift
+        sp = ss.weibull_min.fit(data_shifted, floc=0, optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
         guess = [sp[2], sp[0]]
         result = minimize(value_and_grad(Fit_Weibull_3P.LL), guess, args=(failures - shift, right_censored - shift), jac=True, bounds=bnds, tol=1e-6)
 
@@ -800,13 +807,13 @@ class Fit_Weibull_3P:
         params = [self.alpha, self.beta]
         k = len(params)
         n = len(all_data)
-        LL2 = 2 * Fit_Weibull_3P.LL(params, failures-shift, right_censored-shift)
-        self.loglik2=LL2
+        LL2 = 2 * Fit_Weibull_3P.LL(params, failures - shift, right_censored - shift)
+        self.loglik2 = LL2
         self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
         self.BIC = np.log(n) * k + LL2
         self.distribution = Weibull_Distribution(alpha=self.alpha, beta=self.beta, gamma=self.gamma)
 
-        #confidence interval estimates of parameters
+        # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
         hessian_matrix = hessian(Fit_Weibull_3P.LL)(np.array(tuple(params)), np.array(tuple(failures)), np.array(tuple(right_censored)))
         fisher_information_matrix = np.linalg.inv(hessian_matrix)
@@ -817,38 +824,39 @@ class Fit_Weibull_3P:
         self.alpha_lower = self.alpha * (np.exp(-Z * (self.alpha_SE / self.alpha)))
         self.beta_upper = self.beta * (np.exp(Z * (self.beta_SE / self.beta)))
         self.beta_lower = self.beta * (np.exp(-Z * (self.beta_SE / self.beta)))
-        Data = {'Parameter': ['Alpha','Beta','Gamma'],
-                'Point Estimate': [self.alpha,self.beta,self.gamma],
-                'Standard Error': [self.alpha_SE,self.beta_SE,''], #fitting of Gamma is not by equation so it has no confidence bound estimates
-                'Lower CI': [self.alpha_lower,self.beta_lower,''],
-                'Upper CI': [self.alpha_upper,self.beta_upper,'']}
-        df = pd.DataFrame(Data, columns=['Parameter','Point Estimate','Standard Error','Lower CI','Upper CI'])
+        Data = {'Parameter': ['Alpha', 'Beta', 'Gamma'],
+                'Point Estimate': [self.alpha, self.beta, self.gamma],
+                'Standard Error': [self.alpha_SE, self.beta_SE, ''],  # fitting of Gamma is not by equation so it has no confidence bound estimates
+                'Lower CI': [self.alpha_lower, self.beta_lower, ''],
+                'Upper CI': [self.alpha_upper, self.beta_upper, '']}
+        df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
         self.results = df.set_index('Parameter')
 
-        if print_results==True:
-            print(str('Results from Fit_Weibull_3P ('+str(int(CI*100))+'% CI):'))
+        if print_results == True:
+            print(str('Results from Fit_Weibull_3P (' + str(int(CI * 100)) + '% CI):'))
             print(self.results)
 
-        if show_probability_plot==True:
+        if show_probability_plot == True:
             from reliability.Probability_plotting import Weibull_probability_plot
-            if len(right_censored)==0:
+            if len(right_censored) == 0:
                 rc = None
             else:
                 rc = right_censored
-            Weibull_probability_plot(failures=failures,right_censored=rc,__fitted_dist_params=self)
+            Weibull_probability_plot(failures=failures, right_censored=rc, __fitted_dist_params=self)
 
-    def logf(t,a,b): #Log PDF (2 parameter Weibull)
-        return (b - 1) * anp.log(t/a) + anp.log(b/a) - (t / a) ** b
+    def logf(t, a, b):  # Log PDF (2 parameter Weibull)
+        return (b - 1) * anp.log(t / a) + anp.log(b / a) - (t / a) ** b
 
-    def logR(t,a,b): #Log SF (2 parameter Weibull)
-        return -((t/a)**b)
+    def logR(t, a, b):  # Log SF (2 parameter Weibull)
+        return -((t / a) ** b)
 
-    def LL(params,T_f,T_rc): #log likelihood function (2 parameter weibull)
+    def LL(params, T_f, T_rc):  # log likelihood function (2 parameter weibull)
         LL_f = 0
         LL_rc = 0
-        LL_f += Fit_Weibull_2P.logf(T_f, params[0], params[1]).sum() #failure times
-        LL_rc += Fit_Weibull_2P.logR(T_rc, params[0], params[1]).sum() #right censored times
-        return -(LL_f+LL_rc)
+        LL_f += Fit_Weibull_2P.logf(T_f, params[0], params[1]).sum()  # failure times
+        LL_rc += Fit_Weibull_2P.logR(T_rc, params[0], params[1]).sum()  # right censored times
+        return -(LL_f + LL_rc)
+
 
 class Fit_Weibull_Mixture:
     '''
@@ -884,22 +892,23 @@ class Fit_Weibull_Mixture:
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
     '''
-    def __init__(self,failures=None,right_censored=None,left_censored=None,show_plot=True,print_results=True):
+
+    def __init__(self, failures=None, right_censored=None, left_censored=None, show_plot=True, print_results=True):
         if failures is None or len(failures) < 4:  # it is possible to fit a mixture model with as few as 4 samples but it is inappropriate to do so. You should have at least 10, and preferably a lot more (>20) samples before using a mixture model.
             raise ValueError('The minimum number of failures to fit a mixture model is 4 (2 failures for each weibull). It is highly recommended that a mixture model is only used when sufficient data (>10 samples) is available.')
-        if right_censored is not None and left_censored is not None: #check that a mix of left and right censoring is not entered
+        if right_censored is not None and left_censored is not None:  # check that a mix of left and right censoring is not entered
             raise ValueError('You have specified both left and right censoring. You can specify either but not both.')
 
         # fill with empty lists if not specified
         if right_censored is None:
-            right_censored=[]
+            right_censored = []
         if left_censored is None:
-            left_censored=[]
+            left_censored = []
 
         # adjust inputs to be arrays
-        if type(failures)==list:
+        if type(failures) == list:
             failures = np.array(failures)
-        if type(failures)!= np.ndarray:
+        if type(failures) != np.ndarray:
             raise TypeError('failures must be a list or array of failure data')
         if type(right_censored) == list:
             right_censored = np.array(right_censored)
@@ -909,76 +918,76 @@ class Fit_Weibull_Mixture:
             left_censored = np.array(left_censored)
         if type(left_censored) != np.ndarray:
             raise TypeError('left_censored must be a list or array of left censored failure data')
-        all_data = np.hstack([failures,right_censored,left_censored])
-        if min(all_data)<=0:
+        all_data = np.hstack([failures, right_censored, left_censored])
+        if min(all_data) <= 0:
             raise ValueError('All failure and censoring times must be greater than zero.')
 
-        #find the division line. This is to assign data to each group
+        # find the division line. This is to assign data to each group
         h = np.histogram(failures, bins=50, density=True)
         hist_counts = h[0]
         hist_bins = h[1]
         midbins = []
         for i in range(len(hist_bins)):
-            if i>0 and i<len(hist_bins):
-                midbins.append((hist_bins[i]+hist_bins[i-1])/2)
+            if i > 0 and i < len(hist_bins):
+                midbins.append((hist_bins[i] + hist_bins[i - 1]) / 2)
         peaks_x = []
         peaks_y = []
         batch_width = 8
-        for i,x in enumerate(hist_counts):
-            if i<batch_width:
-                batch = hist_counts[0:i+batch_width]
-            elif i>batch_width and i>len(hist_counts-batch_width):
+        for i, x in enumerate(hist_counts):
+            if i < batch_width:
+                batch = hist_counts[0:i + batch_width]
+            elif i > batch_width and i > len(hist_counts - batch_width):
                 batch = hist_counts[i - batch_width:len(hist_counts)]
             else:
-                batch = hist_counts[i - batch_width:i + batch_width] #the histogram counts are batched (actual batch size = 2 x batch_width)
-            if max(batch)==x: #if the current point is higher than the rest of the batch then it is counted as a peak
+                batch = hist_counts[i - batch_width:i + batch_width]  # the histogram counts are batched (actual batch size = 2 x batch_width)
+            if max(batch) == x:  # if the current point is higher than the rest of the batch then it is counted as a peak
                 peaks_x.append(midbins[i])
                 peaks_y.append(x)
-        if len(peaks_x)>2: #if there are more than 2 peaks, the mean is moved based on the height of the peaks. Higher peaks will attract the mean towards them more than smaller peaks.
-            yfracs = np.array(peaks_y)/sum(peaks_y)
-            division_line = sum(peaks_x*yfracs)
+        if len(peaks_x) > 2:  # if there are more than 2 peaks, the mean is moved based on the height of the peaks. Higher peaks will attract the mean towards them more than smaller peaks.
+            yfracs = np.array(peaks_y) / sum(peaks_y)
+            division_line = sum(peaks_x * yfracs)
         else:
             division_line = np.average(peaks_x)
         self.division_line = division_line
-        #this is the point at which data is assigned to one group or another for the purpose of generating the initial guess
+        # this is the point at which data is assigned to one group or another for the purpose of generating the initial guess
         GROUP_1_failures = []
         GROUP_2_failures = []
         for item in failures:
-            if item<division_line:
+            if item < division_line:
                 GROUP_1_failures.append(item)
             else:
                 GROUP_2_failures.append(item)
-        GROUP_1_left_cens = left_censored #group 1 cannot have right censored data otherwise there would be no group 2. The opposite is also true.
+        GROUP_1_left_cens = left_censored  # group 1 cannot have right censored data otherwise there would be no group 2. The opposite is also true.
         GROUP_2_right_cens = right_censored
 
         # get inputs for the guess by fitting a weibull to each of the groups with their respective censored data
-        group_1_estimates = Fit_Weibull_2P(failures=GROUP_1_failures,left_censored=GROUP_1_left_cens,show_probability_plot=False,print_results=False)
-        group_2_estimates = Fit_Weibull_2P(failures=GROUP_2_failures,right_censored=GROUP_2_right_cens,show_probability_plot=False,print_results=False)
-        p_guess = (len(GROUP_1_failures)+len(GROUP_1_left_cens)) / len(all_data) #proportion guess
-        guess = [group_1_estimates.alpha,group_1_estimates.beta,group_2_estimates.alpha,group_2_estimates.beta,p_guess] # A1,B1,A2,B2,P
+        group_1_estimates = Fit_Weibull_2P(failures=GROUP_1_failures, left_censored=GROUP_1_left_cens, show_probability_plot=False, print_results=False)
+        group_2_estimates = Fit_Weibull_2P(failures=GROUP_2_failures, right_censored=GROUP_2_right_cens, show_probability_plot=False, print_results=False)
+        p_guess = (len(GROUP_1_failures) + len(GROUP_1_left_cens)) / len(all_data)  # proportion guess
+        guess = [group_1_estimates.alpha, group_1_estimates.beta, group_2_estimates.alpha, group_2_estimates.beta, p_guess]  # A1,B1,A2,B2,P
 
         # solve it
         bnds = [(0.0001, None), (0.0001, None), (0.0001, None), (0.0001, None), (0.0001, 0.9999)]  # bounds of solution
-        result = minimize(value_and_grad(Fit_Weibull_Mixture.LL), guess, args=(failures,right_censored,left_censored), jac=True, bounds=bnds, tol=1e-6)
+        result = minimize(value_and_grad(Fit_Weibull_Mixture.LL), guess, args=(failures, right_censored, left_censored), jac=True, bounds=bnds, tol=1e-6)
         params = result.x
         self.alpha_1 = params[0]
         self.beta_1 = params[1]
         self.alpha_2 = params[2]
         self.beta_2 = params[3]
         self.proportion_1 = params[4]
-        self.proportion_2 = 1-params[4]
+        self.proportion_2 = 1 - params[4]
 
         params = [self.alpha_1, self.beta_1, self.alpha_2, self.beta_2, self.proportion_1]
         k = len(params)
         n = len(all_data)
         LL2 = 2 * Fit_Weibull_Mixture.LL(params, failures, right_censored, left_censored)
-        self.loglik2=LL2
+        self.loglik2 = LL2
         self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
         self.BIC = np.log(n) * k + LL2
 
-        if print_results==True:
+        if print_results == True:
             print('Parameters:', '\nAlpha 1:', self.alpha_1, '\nBeta 1:', self.beta_1, '\nAlpha 2:', self.alpha_2, '\nBeta 2:', self.beta_2, '\nProportion 1:', self.proportion_1)
-        if show_plot==True:
+        if show_plot == True:
             xvals = np.linspace(0, max(failures) * 1.05, 1000)
             plt.figure(figsize=(14, 6))
 
@@ -990,9 +999,9 @@ class Fit_Weibull_Mixture:
             hist_cumulative = np.cumsum(hist) / sum(hist)
             width = np.diff(bins)
             center = (bins[:-1] + bins[1:]) / 2
-            frac_failing = len(failures)/len(all_data)
+            frac_failing = len(failures) / len(all_data)
             frac_fail_L = len(failures) / len(np.hstack([failures, left_censored]))
-            plt.bar(center, hist*frac_failing, align='center', width=width, alpha=0.2, color='k', edgecolor='k')
+            plt.bar(center, hist * frac_failing, align='center', width=width, alpha=0.2, color='k', edgecolor='k')
 
             yvals_p1_pdf = Weibull_Distribution(alpha=self.alpha_1, beta=self.beta_1).PDF(xvals=xvals, show_plot=False)
             yvals_p2_pdf = Weibull_Distribution(alpha=self.alpha_2, beta=self.beta_2).PDF(xvals=xvals, show_plot=False)
@@ -1004,7 +1013,7 @@ class Fit_Weibull_Mixture:
 
             plt.subplot(122)
             # make the histogram. Can't use plt.hist due to need to scale the heights when there's censored data
-            if len(left_censored)>0:
+            if len(left_censored) > 0:
                 plt.bar(center, hist_cumulative * frac_failing + (1 - frac_fail_L), align='center', width=width, alpha=0.2, color='k', edgecolor='k')
             else:
                 plt.bar(center, hist_cumulative * frac_failing, align='center', width=width, alpha=0.2, color='k', edgecolor='k')
@@ -1018,23 +1027,24 @@ class Fit_Weibull_Mixture:
             plt.ylabel('Cumulative Probability Density')
             plt.show()
 
-    def logf(t,a1,b1,a2,b2,p): #Log Mixture PDF (2 parameter Weibull)
-        return anp.log(p*((b1*t**(b1-1))/(a1**b1))*anp.exp(-((t/a1)**b1))+(1-p)*((b2*t**(b2-1))/(a2**b2))*anp.exp(-((t/a2)**b2)))
+    def logf(t, a1, b1, a2, b2, p):  # Log Mixture PDF (2 parameter Weibull)
+        return anp.log(p * ((b1 * t ** (b1 - 1)) / (a1 ** b1)) * anp.exp(-((t / a1) ** b1)) + (1 - p) * ((b2 * t ** (b2 - 1)) / (a2 ** b2)) * anp.exp(-((t / a2) ** b2)))
 
-    def logF(t,a1,b1,a2,b2,p): #Log Mixture CDF (2 parameter Weibull)
-        return anp.log(p*(1-anp.exp(-((t/a1)**b1)))+(1-p)*(1-anp.exp(-((t/a2)**b2))))
+    def logF(t, a1, b1, a2, b2, p):  # Log Mixture CDF (2 parameter Weibull)
+        return anp.log(p * (1 - anp.exp(-((t / a1) ** b1))) + (1 - p) * (1 - anp.exp(-((t / a2) ** b2))))
 
-    def logR(t,a1,b1,a2,b2,p): #Log Mixture SF (2 parameter Weibull)
-        return anp.log(p*anp.exp(-((t/a1)**b1))+(1-p)*anp.exp(-((t/a2)**b2)))
+    def logR(t, a1, b1, a2, b2, p):  # Log Mixture SF (2 parameter Weibull)
+        return anp.log(p * anp.exp(-((t / a1) ** b1)) + (1 - p) * anp.exp(-((t / a2) ** b2)))
 
-    def LL(params,T_f,T_rc,T_lc): #Log Mixture Likelihood function (2 parameter weibull)
+    def LL(params, T_f, T_rc, T_lc):  # Log Mixture Likelihood function (2 parameter weibull)
         LL_f = 0
         LL_rc = 0
         LL_lc = 0
-        LL_f += Fit_Weibull_Mixture.logf(T_f, params[0], params[1], params[2], params[3], params[4]).sum() #failure times
-        LL_rc += Fit_Weibull_Mixture.logR(T_rc, params[0], params[1], params[2], params[3], params[4]).sum() #right censored times
-        LL_lc += Fit_Weibull_Mixture.logF(T_lc, params[0], params[1], params[2], params[3], params[4]).sum() #left censored times
-        return -(LL_f+LL_rc+LL_lc)
+        LL_f += Fit_Weibull_Mixture.logf(T_f, params[0], params[1], params[2], params[3], params[4]).sum()  # failure times
+        LL_rc += Fit_Weibull_Mixture.logR(T_rc, params[0], params[1], params[2], params[3], params[4]).sum()  # right censored times
+        LL_lc += Fit_Weibull_Mixture.logF(T_lc, params[0], params[1], params[2], params[3], params[4]).sum()  # left censored times
+        return -(LL_f + LL_rc + LL_lc)
+
 
 class Fit_Expon_1P:
     '''
@@ -1068,23 +1078,23 @@ class Fit_Expon_1P:
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for the parameter)
     '''
 
-    def __init__(self,failures=None,right_censored=None,left_censored=None,show_probability_plot=True,print_results=True,CI=0.95):
-        if failures is None or len(failures)<1:
+    def __init__(self, failures=None, right_censored=None, left_censored=None, show_probability_plot=True, print_results=True, CI=0.95):
+        if failures is None or len(failures) < 1:
             raise ValueError('Maximum likelihood estimates could not be calculated for these data. There must be at least one failure to calculate Exponential parameters.')
-        if right_censored is not None and left_censored is not None: #check that a mix of left and right censoring is not entered
+        if right_censored is not None and left_censored is not None:  # check that a mix of left and right censoring is not entered
             raise ValueError('You have specified both left and right censoring. You can specify either but not both.')
-        if CI <=0 or CI >=1:
+        if CI <= 0 or CI >= 1:
             raise ValueError('CI must be between 0 and 1. Default is 0.95 for 95% Confidence interval.')
         # fill with empty lists if not specified
         if right_censored is None:
-            right_censored=[]
+            right_censored = []
         if left_censored is None:
-            left_censored=[]
+            left_censored = []
 
         # adjust inputs to be arrays
-        if type(failures)==list:
+        if type(failures) == list:
             failures = np.array(failures)
-        if type(failures)!= np.ndarray:
+        if type(failures) != np.ndarray:
             raise TypeError('failures must be a list or array of failure data')
         if type(right_censored) == list:
             right_censored = np.array(right_censored)
@@ -1094,13 +1104,13 @@ class Fit_Expon_1P:
             left_censored = np.array(left_censored)
         if type(left_censored) != np.ndarray:
             raise TypeError('left_censored must be a list or array of left censored failure data')
-        all_data = np.hstack([failures,right_censored,left_censored])
-        bnds = [(0.0001, None)] #bounds of solution
+        all_data = np.hstack([failures, right_censored, left_censored])
+        bnds = [(0.0001, None)]  # bounds of solution
 
-        #solve it
+        # solve it
         self.gamma = 0
-        sp = ss.expon.fit(all_data,floc=0,optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
-        guess = [1/sp[1]]
+        sp = ss.expon.fit(all_data, floc=0, optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
+        guess = [1 / sp[1]]
         result = minimize(value_and_grad(Fit_Expon_1P.LL), guess, args=(failures, right_censored, left_censored), jac=True, bounds=bnds, tol=1e-6)
 
         if result.success == True:
@@ -1110,18 +1120,18 @@ class Fit_Expon_1P:
         else:
             self.success = False
             warnings.warn('Fitting using Autograd FAILED for Expon_1P. The fit from Scipy was used instead so results may not be accurate.')
-            self.Lambda = 1/sp[1]
+            self.Lambda = 1 / sp[1]
 
         params = [self.Lambda]
         k = len(params)
         n = len(all_data)
         LL2 = 2 * Fit_Expon_1P.LL(params, failures, right_censored, left_censored)
-        self.loglik2=LL2
+        self.loglik2 = LL2
         self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
         self.BIC = np.log(n) * k + LL2
         self.distribution = Exponential_Distribution(Lambda=self.Lambda)
 
-        #confidence interval estimates of parameters
+        # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
         hessian_matrix = hessian(Fit_Expon_1P.LL)(np.array(tuple(params)), np.array(tuple(failures)), np.array(tuple(right_censored)), np.array(tuple(left_censored)))
         fisher_information_matrix = np.linalg.inv(hessian_matrix)
@@ -1133,42 +1143,43 @@ class Fit_Expon_1P:
                 'Standard Error': [self.Lambda_SE],
                 'Lower CI': [self.Lambda_lower],
                 'Upper CI': [self.Lambda_upper]}
-        df = pd.DataFrame(Data, columns=['Parameter','Point Estimate','Standard Error','Lower CI','Upper CI'])
+        df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
         self.results = df.set_index('Parameter')
 
-        if print_results==True:
-            print(str('Results from Fit_Expon_1P ('+str(int(CI*100))+'% CI):'))
+        if print_results == True:
+            print(str('Results from Fit_Expon_1P (' + str(int(CI * 100)) + '% CI):'))
             print(self.results)
 
-        if show_probability_plot==True:
+        if show_probability_plot == True:
             from reliability.Probability_plotting import Exponential_probability_plot
-            if len(right_censored)==0:
+            if len(right_censored) == 0:
                 rc = None
             else:
                 rc = right_censored
-            if len(left_censored)==0:
+            if len(left_censored) == 0:
                 lc = None
             else:
                 lc = left_censored
-            Exponential_probability_plot(failures=failures,right_censored=rc,left_censored=lc,__fitted_dist_params=self)
+            Exponential_probability_plot(failures=failures, right_censored=rc, left_censored=lc, __fitted_dist_params=self)
 
-    def logf(t,L): #Log PDF (1 parameter Expon)
-        return anp.log(L) - L*t
+    def logf(t, L):  # Log PDF (1 parameter Expon)
+        return anp.log(L) - L * t
 
-    def logF(t,L): #Log CDF (1 parameter Expon)
-        return anp.log(1-anp.exp(-(L*t)))
+    def logF(t, L):  # Log CDF (1 parameter Expon)
+        return anp.log(1 - anp.exp(-(L * t)))
 
-    def logR(t,L): #Log SF (1 parameter Expon)
-        return -(L*t)
+    def logR(t, L):  # Log SF (1 parameter Expon)
+        return -(L * t)
 
-    def LL(params,T_f,T_rc,T_lc): #log likelihood function (1 parameter Expon)
+    def LL(params, T_f, T_rc, T_lc):  # log likelihood function (1 parameter Expon)
         LL_f = 0
         LL_rc = 0
         LL_lc = 0
-        LL_f += Fit_Expon_1P.logf(T_f, params[0]).sum() #failure times
-        LL_rc += Fit_Expon_1P.logR(T_rc, params[0]).sum() #right censored times
-        LL_lc += Fit_Expon_1P.logF(T_lc, params[0]).sum() #left censored times
-        return -(LL_f+LL_rc+LL_lc)
+        LL_f += Fit_Expon_1P.logf(T_f, params[0]).sum()  # failure times
+        LL_rc += Fit_Expon_1P.logR(T_rc, params[0]).sum()  # right censored times
+        LL_lc += Fit_Expon_1P.logF(T_lc, params[0]).sum()  # left censored times
+        return -(LL_f + LL_rc + LL_lc)
+
 
 class Fit_Expon_2P:
     '''
@@ -1203,31 +1214,32 @@ class Fit_Expon_2P:
     Lambda_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for the parameter)
     '''
-    def __init__(self,failures=None,right_censored=None,show_probability_plot=True,print_results=True,CI=0.95):
-        if failures is None or len(failures)<2:
+
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95):
+        if failures is None or len(failures) < 2:
             raise ValueError('Maximum likelihood estimates could not be calculated for these data. There must be at least two failure to calculate Exponential parameters.')
         if right_censored is None:
-            right_censored=[] # fill with empty lists if not specified
-        if CI <=0 or CI >=1:
+            right_censored = []  # fill with empty lists if not specified
+        if CI <= 0 or CI >= 1:
             raise ValueError('CI must be between 0 and 1. Default is 0.95 for 95% Confidence interval.')
         # adjust inputs to be arrays
-        if type(failures)==list:
+        if type(failures) == list:
             failures = np.array(failures)
-        if type(failures)!= np.ndarray:
+        if type(failures) != np.ndarray:
             raise TypeError('failures must be a list or array of failure data')
         if type(right_censored) == list:
             right_censored = np.array(right_censored)
         if type(right_censored) != np.ndarray:
             raise TypeError('right_censored must be a list or array of right censored failure data')
-        all_data = np.hstack([failures,right_censored])
-        bnds = [(0.0001, None)] #bounds of solution
+        all_data = np.hstack([failures, right_censored])
+        bnds = [(0.0001, None)]  # bounds of solution
 
-        #solve it
-        shift = min(all_data)-0.01 #the 0.01 is to avoid taking the log of zero in logF
-        self.gamma = shift+0.01
-        data_shifted = all_data-shift
-        sp = ss.expon.fit(data_shifted,floc=0,optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
-        guess = [1/sp[1]]
+        # solve it
+        shift = min(all_data) - 0.01  # the 0.01 is to avoid taking the log of zero in logF
+        self.gamma = shift + 0.01
+        data_shifted = all_data - shift
+        sp = ss.expon.fit(data_shifted, floc=0, optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
+        guess = [1 / sp[1]]
         result = minimize(value_and_grad(Fit_Expon_2P.LL), guess, args=(failures - shift, right_censored - shift), jac=True, bounds=bnds, tol=1e-6)
 
         if result.success == True:
@@ -1238,56 +1250,58 @@ class Fit_Expon_2P:
             self.success = False
             warnings.warn('Fitting using Autograd FAILED for Expon_2P. The fit from Scipy was used instead so results may not be accurate.')
             sp = ss.expon.fit(all_data, optimizer='powell')
-            self.Lambda = 1/sp[1]
+            self.Lambda = 1 / sp[1]
             self.gamma = sp[0]
 
         params = [self.Lambda]
         k = len(params)
         n = len(all_data)
-        LL2 = 2 * Fit_Expon_2P.LL(params, failures-shift, right_censored-shift)
-        self.loglik2=LL2
+        LL2 = 2 * Fit_Expon_2P.LL(params, failures - shift, right_censored - shift)
+        self.loglik2 = LL2
         self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
         self.BIC = np.log(n) * k + LL2
-        self.distribution = Exponential_Distribution(Lambda=self.Lambda,gamma=self.gamma)
+        self.distribution = Exponential_Distribution(Lambda=self.Lambda, gamma=self.gamma)
 
-        #confidence interval estimates of parameters
+        # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
         hessian_matrix = hessian(Fit_Expon_2P.LL)(np.array(tuple(params)), np.array(tuple(failures)), np.array(tuple(right_censored)))
         fisher_information_matrix = np.linalg.inv(hessian_matrix)
         self.Lambda_SE = abs(fisher_information_matrix[0][0]) ** 0.5
         self.Lambda_upper = self.Lambda * (np.exp(Z * (self.Lambda_SE / self.Lambda)))
         self.Lambda_lower = self.Lambda * (np.exp(-Z * (self.Lambda_SE / self.Lambda)))
-        Data = {'Parameter': ['Lambda','Gamma'],
-                'Point Estimate': [self.Lambda,self.gamma],
-                'Standard Error': [self.Lambda_SE,''], #fitting of Gamma is not by equation so it has no confidence bound estimates
-                'Lower CI': [self.Lambda_lower,''],
-                'Upper CI': [self.Lambda_upper,'']}
-        df = pd.DataFrame(Data, columns=['Parameter','Point Estimate','Standard Error','Lower CI','Upper CI'])
+        Data = {'Parameter': ['Lambda', 'Gamma'],
+                'Point Estimate': [self.Lambda, self.gamma],
+                'Standard Error': [self.Lambda_SE, ''],  # fitting of Gamma is not by equation so it has no confidence bound estimates
+                'Lower CI': [self.Lambda_lower, ''],
+                'Upper CI': [self.Lambda_upper, '']}
+        df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
         self.results = df.set_index('Parameter')
 
-        if print_results==True:
-            print(str('Results from Fit_Expon_2P ('+str(int(CI*100))+'% CI):'))
+        if print_results == True:
+            print(str('Results from Fit_Expon_2P (' + str(int(CI * 100)) + '% CI):'))
             print(self.results)
 
-        if show_probability_plot==True:
+        if show_probability_plot == True:
             from reliability.Probability_plotting import Exponential_probability_plot
-            if len(right_censored)==0:
+            if len(right_censored) == 0:
                 rc = None
             else:
                 rc = right_censored
-            Exponential_probability_plot(failures=failures,right_censored=rc,__fitted_dist_params=self)
-    def logf(t,L): #Log PDF (1 parameter Expon)
-        return anp.log(L) - L*t
+            Exponential_probability_plot(failures=failures, right_censored=rc, __fitted_dist_params=self)
 
-    def logR(t,L): #Log SF (1 parameter Expon)
-        return -(L*t)
+    def logf(t, L):  # Log PDF (1 parameter Expon)
+        return anp.log(L) - L * t
 
-    def LL(params,T_f,T_rc): #log likelihood function (1 parameter Expon)
+    def logR(t, L):  # Log SF (1 parameter Expon)
+        return -(L * t)
+
+    def LL(params, T_f, T_rc):  # log likelihood function (1 parameter Expon)
         LL_f = 0
         LL_rc = 0
-        LL_f += Fit_Expon_1P.logf(T_f, params[0]).sum() #failure times
-        LL_rc += Fit_Expon_1P.logR(T_rc, params[0]).sum() #right censored times
-        return -(LL_f+LL_rc)
+        LL_f += Fit_Expon_1P.logf(T_f, params[0]).sum()  # failure times
+        LL_rc += Fit_Expon_1P.logR(T_rc, params[0]).sum()  # right censored times
+        return -(LL_f + LL_rc)
+
 
 class Fit_Normal_2P:
     '''
@@ -1326,23 +1340,24 @@ class Fit_Normal_2P:
     sigma_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     '''
-    def __init__(self,failures=None,right_censored=None,left_censored=None,show_probability_plot=True,print_results=True,CI=0.95):
-        if failures is None or len(failures)<2:
+
+    def __init__(self, failures=None, right_censored=None, left_censored=None, show_probability_plot=True, print_results=True, CI=0.95):
+        if failures is None or len(failures) < 2:
             raise ValueError('Maximum likelihood estimates could not be calculated for these data. There must be at least two failures to calculate Normal parameters.')
-        if right_censored is not None and left_censored is not None: #check that a mix of left and right censoring is not entered
+        if right_censored is not None and left_censored is not None:  # check that a mix of left and right censoring is not entered
             raise ValueError('You have specified both left and right censoring. You can specify either but not both.')
-        if CI <=0 or CI >=1:
+        if CI <= 0 or CI >= 1:
             raise ValueError('CI must be between 0 and 1. Default is 0.95 for 95% Confidence interval.')
         # fill with empty lists if not specified
         if right_censored is None:
-            right_censored=[]
+            right_censored = []
         if left_censored is None:
-            left_censored=[]
+            left_censored = []
 
         # adjust inputs to be arrays
-        if type(failures)==list:
+        if type(failures) == list:
             failures = np.array(failures)
-        if type(failures)!= np.ndarray:
+        if type(failures) != np.ndarray:
             raise TypeError('failures must be a list or array of failure data')
         if type(right_censored) == list:
             right_censored = np.array(right_censored)
@@ -1352,12 +1367,12 @@ class Fit_Normal_2P:
             left_censored = np.array(left_censored)
         if type(left_censored) != np.ndarray:
             raise TypeError('left_censored must be a list or array of left censored failure data')
-        all_data = np.hstack([failures,right_censored,left_censored])
-        bnds = [(0.0001, None), (0.0001, None)] #bounds of solution
+        all_data = np.hstack([failures, right_censored, left_censored])
+        bnds = [(0.0001, None), (0.0001, None)]  # bounds of solution
 
-        #solve it
-        sp = ss.norm.fit(all_data,optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
-        guess = [sp[0],sp[1]]
+        # solve it
+        sp = ss.norm.fit(all_data, optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
+        guess = [sp[0], sp[1]]
         result = minimize(value_and_grad(Fit_Normal_2P.LL), guess, args=(failures, right_censored, left_censored), jac=True, bounds=bnds, tol=1e-6)
 
         if result.success == True:
@@ -1375,10 +1390,10 @@ class Fit_Normal_2P:
         k = len(params)
         n = len(all_data)
         LL2 = 2 * Fit_Normal_2P.LL(params, failures, right_censored, left_censored)
-        self.loglik2=LL2
+        self.loglik2 = LL2
         self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
         self.BIC = np.log(n) * k + LL2
-        self.distribution = Normal_Distribution(mu=self.mu,sigma=self.sigma)
+        self.distribution = Normal_Distribution(mu=self.mu, sigma=self.sigma)
 
         # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
@@ -1403,34 +1418,36 @@ class Fit_Normal_2P:
             print(str('Results from Fit_Normal_2P (' + str(int(CI * 100)) + '% CI):'))
             print(self.results)
 
-        if show_probability_plot==True:
+        if show_probability_plot == True:
             from reliability.Probability_plotting import Normal_probability_plot
-            if len(right_censored)==0:
+            if len(right_censored) == 0:
                 rc = None
             else:
                 rc = right_censored
-            if len(left_censored)==0:
+            if len(left_censored) == 0:
                 lc = None
             else:
                 lc = left_censored
-            Normal_probability_plot(failures=failures,right_censored=rc,left_censored=lc,__fitted_dist_params=self)
-    def logf(t,mu,sigma): #Log PDF (Normal)
-        return anp.log(anp.exp(-0.5*(((t-mu)/sigma)**2)))-anp.log((sigma*(2*anp.pi)**0.5))
+            Normal_probability_plot(failures=failures, right_censored=rc, left_censored=lc, __fitted_dist_params=self)
 
-    def logF(t,mu,sigma): #Log CDF (Normal)
-        return anp.log((1 + erf(((t-mu)/sigma) / 2**0.5)) / 2)
+    def logf(t, mu, sigma):  # Log PDF (Normal)
+        return anp.log(anp.exp(-0.5 * (((t - mu) / sigma) ** 2))) - anp.log((sigma * (2 * anp.pi) ** 0.5))
 
-    def logR(t,mu,sigma): #Log SF (Normal)
+    def logF(t, mu, sigma):  # Log CDF (Normal)
+        return anp.log((1 + erf(((t - mu) / sigma) / 2 ** 0.5)) / 2)
+
+    def logR(t, mu, sigma):  # Log SF (Normal)
         return anp.log((1 + erf(((mu - t) / sigma) / 2 ** 0.5)) / 2)
 
-    def LL(params,T_f,T_rc,T_lc): #log likelihood function (2 parameter weibull)
+    def LL(params, T_f, T_rc, T_lc):  # log likelihood function (2 parameter weibull)
         LL_f = 0
         LL_rc = 0
         LL_lc = 0
-        LL_f += Fit_Normal_2P.logf(T_f, params[0], params[1]).sum() #failure times
-        LL_rc += Fit_Normal_2P.logR(T_rc, params[0], params[1]).sum() #right censored times
-        LL_lc += Fit_Normal_2P.logF(T_lc, params[0], params[1]).sum() #left censored times
-        return -(LL_f+LL_rc+LL_lc)
+        LL_f += Fit_Normal_2P.logf(T_f, params[0], params[1]).sum()  # failure times
+        LL_rc += Fit_Normal_2P.logR(T_rc, params[0], params[1]).sum()  # right censored times
+        LL_lc += Fit_Normal_2P.logF(T_lc, params[0], params[1]).sum()  # left censored times
+        return -(LL_f + LL_rc + LL_lc)
+
 
 class Fit_Lognormal_2P:
     '''
@@ -1468,23 +1485,24 @@ class Fit_Lognormal_2P:
     sigma_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     '''
-    def __init__(self,failures=None,right_censored=None,left_censored=None,show_probability_plot=True,print_results=True,CI=0.95):
-        if failures is None or len(failures)<2:
+
+    def __init__(self, failures=None, right_censored=None, left_censored=None, show_probability_plot=True, print_results=True, CI=0.95):
+        if failures is None or len(failures) < 2:
             raise ValueError('Maximum likelihood estimates could not be calculated for these data. There must be at least two failures to calculate Lognormal parameters.')
-        if right_censored is not None and left_censored is not None: #check that a mix of left and right censoring is not entered
+        if right_censored is not None and left_censored is not None:  # check that a mix of left and right censoring is not entered
             raise ValueError('You have specified both left and right censoring. You can specify either but not both.')
-        if CI <=0 or CI >=1:
+        if CI <= 0 or CI >= 1:
             raise ValueError('CI must be between 0 and 1. Default is 0.95 for 95% Confidence interval.')
         # fill with empty lists if not specified
         if right_censored is None:
-            right_censored=[]
+            right_censored = []
         if left_censored is None:
-            left_censored=[]
+            left_censored = []
 
         # adjust inputs to be arrays
-        if type(failures)==list:
+        if type(failures) == list:
             failures = np.array(failures)
-        if type(failures)!= np.ndarray:
+        if type(failures) != np.ndarray:
             raise TypeError('failures must be a list or array of failure data')
         if type(right_censored) == list:
             right_censored = np.array(right_censored)
@@ -1496,12 +1514,12 @@ class Fit_Lognormal_2P:
             raise TypeError('left_censored must be a list or array of left censored failure data')
 
         self.gamma = 0
-        all_data = np.hstack([failures,right_censored,left_censored])
-        bnds = [(0.0001, None), (0.0001, None)] #bounds of solution
+        all_data = np.hstack([failures, right_censored, left_censored])
+        bnds = [(0.0001, None), (0.0001, None)]  # bounds of solution
 
-        #solve it
-        sp = ss.lognorm.fit(all_data,floc=0,optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
-        guess = [np.log(sp[2]),sp[0]]
+        # solve it
+        sp = ss.lognorm.fit(all_data, floc=0, optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
+        guess = [np.log(sp[2]), sp[0]]
         result = minimize(value_and_grad(Fit_Lognormal_2P.LL), guess, args=(failures, right_censored, left_censored), jac=True, bounds=bnds, tol=1e-6)
 
         if result.success == True:
@@ -1519,10 +1537,10 @@ class Fit_Lognormal_2P:
         k = len(params)
         n = len(all_data)
         LL2 = 2 * Fit_Lognormal_2P.LL(params, failures, right_censored, left_censored)
-        self.loglik2=LL2
+        self.loglik2 = LL2
         self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
         self.BIC = np.log(n) * k + LL2
-        self.distribution = Lognormal_Distribution(mu=self.mu,sigma=self.sigma)
+        self.distribution = Lognormal_Distribution(mu=self.mu, sigma=self.sigma)
 
         # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
@@ -1547,35 +1565,36 @@ class Fit_Lognormal_2P:
             print(str('Results from Fit_Lognormal_2P (' + str(int(CI * 100)) + '% CI):'))
             print(self.results)
 
-        if show_probability_plot==True:
+        if show_probability_plot == True:
             from reliability.Probability_plotting import Lognormal_probability_plot
-            if len(right_censored)==0:
+            if len(right_censored) == 0:
                 rc = None
             else:
                 rc = right_censored
-            if len(left_censored)==0:
+            if len(left_censored) == 0:
                 lc = None
             else:
                 lc = left_censored
-            Lognormal_probability_plot(failures=failures,right_censored=rc,left_censored=lc,__fitted_dist_params=self)
+            Lognormal_probability_plot(failures=failures, right_censored=rc, left_censored=lc, __fitted_dist_params=self)
 
-    def logf(t,mu,sigma): #Log PDF (Lognormal)
+    def logf(t, mu, sigma):  # Log PDF (Lognormal)
         return anp.log(anp.exp(-0.5 * (((anp.log(t) - mu) / sigma) ** 2)) / (t * sigma * (2 * anp.pi) ** 0.5))
 
-    def logF(t,mu,sigma): #Log CDF (Lognormal)
+    def logF(t, mu, sigma):  # Log CDF (Lognormal)
         return anp.log(0.5 + 0.5 * erf((anp.log(t) - mu) / (sigma * 2 ** 0.5)))
 
-    def logR(t,mu,sigma): #Log SF (Lognormal)
+    def logR(t, mu, sigma):  # Log SF (Lognormal)
         return anp.log(0.5 - 0.5 * erf((anp.log(t) - mu) / (sigma * 2 ** 0.5)))
 
-    def LL(params,T_f,T_rc,T_lc): #log likelihood function (2 parameter lognormal)
+    def LL(params, T_f, T_rc, T_lc):  # log likelihood function (2 parameter lognormal)
         LL_f = 0
         LL_rc = 0
         LL_lc = 0
-        LL_f += Fit_Lognormal_2P.logf(T_f, params[0], params[1]).sum() #failure times
-        LL_rc += Fit_Lognormal_2P.logR(T_rc, params[0], params[1]).sum() #right censored times
-        LL_lc += Fit_Lognormal_2P.logF(T_lc, params[0], params[1]).sum() #left censored times
-        return -(LL_f+LL_rc+LL_lc)
+        LL_f += Fit_Lognormal_2P.logf(T_f, params[0], params[1]).sum()  # failure times
+        LL_rc += Fit_Lognormal_2P.logR(T_rc, params[0], params[1]).sum()  # right censored times
+        LL_lc += Fit_Lognormal_2P.logF(T_lc, params[0], params[1]).sum()  # left censored times
+        return -(LL_f + LL_rc + LL_lc)
+
 
 class Fit_Gamma_2P:
     '''
@@ -1613,23 +1632,24 @@ class Fit_Gamma_2P:
     beta_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     '''
-    def __init__(self,failures=None,right_censored=None,left_censored=None,show_probability_plot=True,print_results=True,CI=0.95):
-        if failures is None or len(failures)<2:
+
+    def __init__(self, failures=None, right_censored=None, left_censored=None, show_probability_plot=True, print_results=True, CI=0.95):
+        if failures is None or len(failures) < 2:
             raise ValueError('Maximum likelihood estimates could not be calculated for these data. There must be at least two failures to calculate Gamma parameters.')
-        if right_censored is not None and left_censored is not None: #check that a mix of left and right censoring is not entered
+        if right_censored is not None and left_censored is not None:  # check that a mix of left and right censoring is not entered
             raise ValueError('You have specified both left and right censoring. You can specify either but not both.')
-        if CI <=0 or CI >=1:
+        if CI <= 0 or CI >= 1:
             raise ValueError('CI must be between 0 and 1. Default is 0.95 for 95% Confidence interval.')
         # fill with empty lists if not specified
         if right_censored is None:
-            right_censored=[]
+            right_censored = []
         if left_censored is None:
-            left_censored=[]
+            left_censored = []
 
         # adjust inputs to be arrays
-        if type(failures)==list:
+        if type(failures) == list:
             failures = np.array(failures)
-        if type(failures)!= np.ndarray:
+        if type(failures) != np.ndarray:
             raise TypeError('failures must be a list or array of failure data')
         if type(right_censored) == list:
             right_censored = np.array(right_censored)
@@ -1639,12 +1659,12 @@ class Fit_Gamma_2P:
             left_censored = np.array(left_censored)
         if type(left_censored) != np.ndarray:
             raise TypeError('left_censored must be a list or array of left censored failure data')
-        all_data = np.hstack([failures,right_censored,left_censored])
-        bnds = [(0.0001, None), (0.0001, None)] #bounds of solution
+        all_data = np.hstack([failures, right_censored, left_censored])
+        bnds = [(0.0001, None), (0.0001, None)]  # bounds of solution
 
-        #solve it
+        # solve it
         self.gamma = 0
-        sp = ss.gamma.fit(all_data,floc=0,optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
+        sp = ss.gamma.fit(all_data, floc=0, optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
         guess = [sp[2], sp[0]]
         result = minimize(value_and_grad(Fit_Gamma_2P.LL), guess, args=(failures, right_censored, left_censored), jac=True, bounds=bnds, tol=1e-10)
 
@@ -1664,10 +1684,10 @@ class Fit_Gamma_2P:
         k = len(params)
         n = len(all_data)
         LL2 = 2 * Fit_Gamma_2P.LL(params, failures, right_censored, left_censored)
-        self.loglik2=LL2
+        self.loglik2 = LL2
         self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
         self.BIC = np.log(n) * k + LL2
-        self.distribution = Gamma_Distribution(alpha=self.alpha,beta=self.beta)
+        self.distribution = Gamma_Distribution(alpha=self.alpha, beta=self.beta)
 
         # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
@@ -1692,35 +1712,36 @@ class Fit_Gamma_2P:
             print(str('Results from Fit_Gamma_2P (' + str(int(CI * 100)) + '% CI):'))
             print(self.results)
 
-        if show_probability_plot==True:
+        if show_probability_plot == True:
             from reliability.Probability_plotting import Gamma_probability_plot
-            if len(right_censored)==0:
+            if len(right_censored) == 0:
                 rc = None
             else:
                 rc = right_censored
-            if len(left_censored)==0:
+            if len(left_censored) == 0:
                 lc = None
             else:
                 lc = left_censored
-            Gamma_probability_plot(failures=failures,right_censored=rc,left_censored=lc,__fitted_dist_params=self)
+            Gamma_probability_plot(failures=failures, right_censored=rc, left_censored=lc, __fitted_dist_params=self)
 
-    def logf(t,a,b): #Log PDF (2 parameter Gamma)
-        return anp.log(t**(b-1)) -anp.log((a**b) * agamma(b)) - (t/a)
+    def logf(t, a, b):  # Log PDF (2 parameter Gamma)
+        return anp.log(t ** (b - 1)) - anp.log((a ** b) * agamma(b)) - (t / a)
 
-    def logF(t,a,b): #Log CDF (2 parameter Gamma)
-        return anp.log(gammainc(b,t/a))
+    def logF(t, a, b):  # Log CDF (2 parameter Gamma)
+        return anp.log(gammainc(b, t / a))
 
-    def logR(t,a,b): #Log SF (2 parameter Gamma)
-        return anp.log(gammaincc(b,t/a))
+    def logR(t, a, b):  # Log SF (2 parameter Gamma)
+        return anp.log(gammaincc(b, t / a))
 
-    def LL(params,T_f,T_rc,T_lc): #log likelihood function (2 parameter Gamma)
+    def LL(params, T_f, T_rc, T_lc):  # log likelihood function (2 parameter Gamma)
         LL_f = 0
         LL_rc = 0
         LL_lc = 0
-        LL_f += Fit_Gamma_2P.logf(T_f, params[0], params[1]).sum() #failure times
-        LL_rc += Fit_Gamma_2P.logR(T_rc, params[0], params[1]).sum() #right censored times
-        LL_lc += Fit_Gamma_2P.logF(T_lc, params[0], params[1]).sum() #left censored times
-        return -(LL_f+LL_rc+LL_lc)
+        LL_f += Fit_Gamma_2P.logf(T_f, params[0], params[1]).sum()  # failure times
+        LL_rc += Fit_Gamma_2P.logR(T_rc, params[0], params[1]).sum()  # right censored times
+        LL_lc += Fit_Gamma_2P.logF(T_lc, params[0], params[1]).sum()  # left censored times
+        return -(LL_f + LL_rc + LL_lc)
+
 
 class Fit_Gamma_3P:
     '''
@@ -1760,33 +1781,34 @@ class Fit_Gamma_3P:
     beta_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     '''
-    def __init__(self,failures=None,right_censored=None,show_probability_plot=True,print_results=True,CI=0.95):
-        if failures is None or len(failures)<3:
+
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95):
+        if failures is None or len(failures) < 3:
             raise ValueError('Maximum likelihood estimates could not be calculated for these data. There must be at least three failures to calculate Gamma parameters.')
         # fill with empty lists if not specified
         if right_censored is None:
-            right_censored=[]
-        if CI <=0 or CI >=1:
+            right_censored = []
+        if CI <= 0 or CI >= 1:
             raise ValueError('CI must be between 0 and 1. Default is 0.95 for 95% Confidence interval.')
         # adjust inputs to be arrays
-        if type(failures)==list:
+        if type(failures) == list:
             failures = np.array(failures)
-        if type(failures)!= np.ndarray:
+        if type(failures) != np.ndarray:
             raise TypeError('failures must be a list or array of failure data')
         if type(right_censored) == list:
             right_censored = np.array(right_censored)
         if type(right_censored) != np.ndarray:
             raise TypeError('right_censored must be a list or array of right censored failure data')
-        all_data = np.hstack([failures,right_censored])
-        bnds = [(0.0001, None), (0.0001, None)] #bounds of solution
+        all_data = np.hstack([failures, right_censored])
+        bnds = [(0.0001, None), (0.0001, None)]  # bounds of solution
 
         # solve it
         shift = min(all_data) - 0.01  # the 0.01 is to avoid taking the log of zero in logf
-        self.gamma = shift+0.001 #this adds 0.001 instead of 0.01 to avoid the min(failures) equalling gamma which would cause AIC and BIC to be inf. The difference it causes is negligible
+        self.gamma = shift + 0.001  # this adds 0.001 instead of 0.01 to avoid the min(failures) equalling gamma which would cause AIC and BIC to be inf. The difference it causes is negligible
         data_shifted = all_data - shift
-        sp = ss.gamma.fit(data_shifted, floc=0,optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
+        sp = ss.gamma.fit(data_shifted, floc=0, optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
         guess = [sp[2], sp[0]]
-        result = minimize(value_and_grad(Fit_Gamma_3P.LL), guess, args=(failures-shift, right_censored-shift), jac=True, bounds=bnds, tol=1e-10)
+        result = minimize(value_and_grad(Fit_Gamma_3P.LL), guess, args=(failures - shift, right_censored - shift), jac=True, bounds=bnds, tol=1e-10)
 
         if result.success == True:
             params = result.x
@@ -1804,11 +1826,11 @@ class Fit_Gamma_3P:
         params = [self.alpha, self.beta]
         k = len(params)
         n = len(all_data)
-        LL2 = 2 * Fit_Gamma_3P.LL(params, failures-shift, right_censored-shift)
-        self.loglik2=LL2
+        LL2 = 2 * Fit_Gamma_3P.LL(params, failures - shift, right_censored - shift)
+        self.loglik2 = LL2
         self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
         self.BIC = np.log(n) * k + LL2
-        self.distribution = Gamma_Distribution(alpha=self.alpha, beta=self.beta,gamma=self.gamma)
+        self.distribution = Gamma_Distribution(alpha=self.alpha, beta=self.beta, gamma=self.gamma)
 
         # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
@@ -1821,11 +1843,11 @@ class Fit_Gamma_3P:
         self.alpha_lower = self.alpha * (np.exp(-Z * (self.alpha_SE / self.alpha)))
         self.beta_upper = self.beta * (np.exp(Z * (self.beta_SE / self.beta)))
         self.beta_lower = self.beta * (np.exp(-Z * (self.beta_SE / self.beta)))
-        Data = {'Parameter': ['Alpha', 'Beta','Gamma'],
-                'Point Estimate': [self.alpha, self.beta,self.gamma],
-                'Standard Error': [self.alpha_SE, self.beta_SE,''], #fitting of Gamma is not by equation so it has no confidence bound estimates
-                'Lower CI': [self.alpha_lower, self.beta_lower,''],
-                'Upper CI': [self.alpha_upper, self.beta_upper,'']}
+        Data = {'Parameter': ['Alpha', 'Beta', 'Gamma'],
+                'Point Estimate': [self.alpha, self.beta, self.gamma],
+                'Standard Error': [self.alpha_SE, self.beta_SE, ''],  # fitting of Gamma is not by equation so it has no confidence bound estimates
+                'Lower CI': [self.alpha_lower, self.beta_lower, ''],
+                'Upper CI': [self.alpha_upper, self.beta_upper, '']}
         df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
         self.results = df.set_index('Parameter')
 
@@ -1833,26 +1855,27 @@ class Fit_Gamma_3P:
             print(str('Results from Fit_Gamma_3P (' + str(int(CI * 100)) + '% CI):'))
             print(self.results)
 
-        if show_probability_plot==True:
+        if show_probability_plot == True:
             from reliability.Probability_plotting import Gamma_probability_plot
-            if len(right_censored)==0:
+            if len(right_censored) == 0:
                 rc = None
             else:
                 rc = right_censored
-            Gamma_probability_plot(failures=failures,right_censored=rc,__fitted_dist_params=self)
+            Gamma_probability_plot(failures=failures, right_censored=rc, __fitted_dist_params=self)
 
-    def logf(t,a,b): #Log PDF (2 parameter Gamma)
-        return anp.log(t**(b-1)) -anp.log((a**b) * agamma(b)) - (t/a)
+    def logf(t, a, b):  # Log PDF (2 parameter Gamma)
+        return anp.log(t ** (b - 1)) - anp.log((a ** b) * agamma(b)) - (t / a)
 
-    def logR(t,a,b): #Log SF (2 parameter Gamma)
-        return anp.log(gammaincc(b,t/a))
+    def logR(t, a, b):  # Log SF (2 parameter Gamma)
+        return anp.log(gammaincc(b, t / a))
 
-    def LL(params,T_f,T_rc): #log likelihood function (2 parameter Gamma)
+    def LL(params, T_f, T_rc):  # log likelihood function (2 parameter Gamma)
         LL_f = 0
         LL_rc = 0
-        LL_f += Fit_Gamma_3P.logf(T_f, params[0], params[1]).sum() #failure times
-        LL_rc += Fit_Gamma_3P.logR(T_rc, params[0], params[1]).sum() #right censored times
-        return -(LL_f+LL_rc)
+        LL_f += Fit_Gamma_3P.logf(T_f, params[0], params[1]).sum()  # failure times
+        LL_rc += Fit_Gamma_3P.logR(T_rc, params[0], params[1]).sum()  # right censored times
+        return -(LL_f + LL_rc)
+
 
 class Fit_Beta_2P:
     '''
@@ -1891,23 +1914,24 @@ class Fit_Beta_2P:
     beta_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     '''
-    def __init__(self,failures=None,right_censored=None,left_censored=None,show_probability_plot=True,print_results=True,CI=0.95):
-        if failures is None or len(failures)<2:
+
+    def __init__(self, failures=None, right_censored=None, left_censored=None, show_probability_plot=True, print_results=True, CI=0.95):
+        if failures is None or len(failures) < 2:
             raise ValueError('Maximum likelihood estimates could not be calculated for these data. There must be at least two failures to calculate Beta parameters.')
-        if right_censored is not None and left_censored is not None: #check that a mix of left and right censoring is not entered
+        if right_censored is not None and left_censored is not None:  # check that a mix of left and right censoring is not entered
             raise ValueError('You have specified both left and right censoring. You can specify either but not both.')
-        if CI <=0 or CI >=1:
+        if CI <= 0 or CI >= 1:
             raise ValueError('CI must be between 0 and 1. Default is 0.95 for 95% Confidence interval.')
         # fill with empty lists if not specified
         if right_censored is None:
-            right_censored=[]
+            right_censored = []
         if left_censored is None:
-            left_censored=[]
+            left_censored = []
 
         # adjust inputs to be arrays
-        if type(failures)==list:
+        if type(failures) == list:
             failures = np.array(failures)
-        if type(failures)!= np.ndarray:
+        if type(failures) != np.ndarray:
             raise TypeError('failures must be a list or array of failure data')
         if type(right_censored) == list:
             right_censored = np.array(right_censored)
@@ -1917,14 +1941,14 @@ class Fit_Beta_2P:
             left_censored = np.array(left_censored)
         if type(left_censored) != np.ndarray:
             raise TypeError('left_censored must be a list or array of left censored failure data')
-        all_data = np.hstack([failures,right_censored,left_censored])
-        if min(all_data)<0 or max(all_data)>1:
+        all_data = np.hstack([failures, right_censored, left_censored])
+        if min(all_data) < 0 or max(all_data) > 1:
             raise ValueError('All data must be between 0 and 1 to use the beta distribution.')
-        bnds = [(0.0001, None), (0.0001, None)] #bounds of solution
+        bnds = [(0.0001, None), (0.0001, None)]  # bounds of solution
 
-        #solve it
+        # solve it
         self.gamma = 0
-        sp = ss.beta.fit(all_data,floc=0,fscale=1,optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
+        sp = ss.beta.fit(all_data, floc=0, fscale=1, optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
         guess = [sp[0], sp[1]]
         result = minimize(value_and_grad(Fit_Beta_2P.LL), guess, args=(failures, right_censored, left_censored), jac=True, bounds=bnds, tol=1e-6)
 
@@ -1943,7 +1967,7 @@ class Fit_Beta_2P:
         k = len(params)
         n = len(all_data)
         LL2 = 2 * Fit_Beta_2P.LL(params, failures, right_censored, left_censored)
-        self.loglik2=LL2
+        self.loglik2 = LL2
         self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
         self.BIC = np.log(n) * k + LL2
         self.distribution = Beta_Distribution(alpha=self.alpha, beta=self.beta)
@@ -1971,32 +1995,32 @@ class Fit_Beta_2P:
             print(str('Results from Fit_Beta_2P (' + str(int(CI * 100)) + '% CI):'))
             print(self.results)
 
-        if show_probability_plot==True:
+        if show_probability_plot == True:
             from reliability.Probability_plotting import Beta_probability_plot
-            if len(right_censored)==0:
+            if len(right_censored) == 0:
                 rc = None
             else:
                 rc = right_censored
-            if len(left_censored)==0:
+            if len(left_censored) == 0:
                 lc = None
             else:
                 lc = left_censored
-            Beta_probability_plot(failures=failures,right_censored=rc,left_censored=lc,__fitted_dist_params=self)
+            Beta_probability_plot(failures=failures, right_censored=rc, left_censored=lc, __fitted_dist_params=self)
 
-    def logf(t,a,b): #Log PDF (2 parameter Beta)
+    def logf(t, a, b):  # Log PDF (2 parameter Beta)
         return anp.log(((t ** (a - 1)) * ((1 - t) ** (b - 1)))) - anp.log(abeta(a, b))
 
-    def logF(t,a,b): #Log CDF (2 parameter Beta)
+    def logF(t, a, b):  # Log CDF (2 parameter Beta)
         return anp.log(betainc(a, b, t))
 
-    def logR(t,a,b): #Log SF (2 parameter Beta)
-        return anp.log(1-betainc(a, b, t))
+    def logR(t, a, b):  # Log SF (2 parameter Beta)
+        return anp.log(1 - betainc(a, b, t))
 
-    def LL(params,T_f,T_rc,T_lc): #log likelihood function (2 parameter beta)
+    def LL(params, T_f, T_rc, T_lc):  # log likelihood function (2 parameter beta)
         LL_f = 0
         LL_rc = 0
         LL_lc = 0
-        LL_f += Fit_Beta_2P.logf(T_f, params[0], params[1]).sum() #failure times
-        LL_rc += Fit_Beta_2P.logR(T_rc, params[0], params[1]).sum() #right censored times
-        LL_lc += Fit_Beta_2P.logF(T_lc, params[0], params[1]).sum() #left censored times
-        return -(LL_f+LL_rc+LL_lc)
+        LL_f += Fit_Beta_2P.logf(T_f, params[0], params[1]).sum()  # failure times
+        LL_rc += Fit_Beta_2P.logR(T_rc, params[0], params[1]).sum()  # right censored times
+        LL_lc += Fit_Beta_2P.logF(T_lc, params[0], params[1]).sum()  # left censored times
+        return -(LL_f + LL_rc + LL_lc)

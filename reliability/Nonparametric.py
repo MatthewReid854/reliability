@@ -13,6 +13,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.stats as ss
 
+
 class KaplanMeier:
     '''
     Kaplan-Meier
@@ -51,18 +52,19 @@ class KaplanMeier:
     rc = [3961,4007,4734,6054,7298,10190,23060,27160,28690,37100,40060,45670,53000,67000,69630,77350,78470,91680,105700,106300,150400]
     KaplanMeier(failures = f, right_censored = rc)
     '''
-    def __init__(self,failures=None,right_censored = None,show_plot=True,print_results=True,plot_CI=True,CI=0.95,**kwargs):
-        np.seterr(divide='ignore') #divide by zero occurs if last detapoint is a failure so risk set is zero
+
+    def __init__(self, failures=None, right_censored=None, show_plot=True, print_results=True, plot_CI=True, CI=0.95, **kwargs):
+        np.seterr(divide='ignore')  # divide by zero occurs if last detapoint is a failure so risk set is zero
 
         if failures is None:
             raise ValueError('failures must be provided to calculate non-parametric estimates.')
         if right_censored is None:
-            right_censored = [] #create empty array so it can be added in hstack
+            right_censored = []  # create empty array so it can be added in hstack
 
-        #turn the failures and right censored times into a two lists of times and censoring codes
+        # turn the failures and right censored times into a two lists of times and censoring codes
         times = np.hstack([failures, right_censored])
         F = np.ones_like(failures)
-        RC = np.zeros_like(right_censored) #censored values are given the code of 0
+        RC = np.zeros_like(right_censored)  # censored values are given the code of 0
         cens_code = np.hstack([F, RC])
         Data = {'times': times, 'cens_code': cens_code}
         df = pd.DataFrame(Data, columns=['times', 'cens_code'])
@@ -73,48 +75,48 @@ class KaplanMeier:
         self.data = d
         self.censor_codes = c
 
-        if CI<0 or CI>1:
+        if CI < 0 or CI > 1:
             raise ValueError('CI must be between 0 and 1. Default is 0.95 for 95% confidence intervals.')
 
-        n = len(d) #number of items
-        failures_array = np.arange(1, n + 1) #array of number of items (1 to n)
-        remaining_array = failures_array[::-1] #items remaining (n to 1)
-        KM = [] #R(t)
-        KM_upper = [] #upper CI
-        KM_lower = [] #lower CI
-        z = ss.norm.ppf(1-(1-CI)/2)
+        n = len(d)  # number of items
+        failures_array = np.arange(1, n + 1)  # array of number of items (1 to n)
+        remaining_array = failures_array[::-1]  # items remaining (n to 1)
+        KM = []  # R(t)
+        KM_upper = []  # upper CI
+        KM_lower = []  # lower CI
+        z = ss.norm.ppf(1 - (1 - CI) / 2)
         frac = []
-        delta=0
+        delta = 0
         for i in failures_array:
-            if i==1:
-                KM.append((remaining_array[i-1]-c[i-1])/remaining_array[i-1])
+            if i == 1:
+                KM.append((remaining_array[i - 1] - c[i - 1]) / remaining_array[i - 1])
             else:
-                KM.append(((remaining_array[i-1] - c[i-1]) / remaining_array[i-1])*KM[i-2])
-            #greenwood confidence interval calculations. Uses Normal approximation (same method as in Minitab)
-            if c[i-1]==1:
-                risk_set=n-i+1
-                frac.append(1/((risk_set)*(risk_set-1)))
+                KM.append(((remaining_array[i - 1] - c[i - 1]) / remaining_array[i - 1]) * KM[i - 2])
+            # greenwood confidence interval calculations. Uses Normal approximation (same method as in Minitab)
+            if c[i - 1] == 1:
+                risk_set = n - i + 1
+                frac.append(1 / ((risk_set) * (risk_set - 1)))
                 sumfrac = sum(frac)
-                R2 = KM[i-1]**2
-                if R2>0: #required if the last piece of data is a failure
+                R2 = KM[i - 1] ** 2
+                if R2 > 0:  # required if the last piece of data is a failure
                     delta = ((sumfrac * R2) ** 0.5) * z
                 else:
-                    delta=0
-            KM_upper.append(KM[i-1]+delta)
-            KM_lower.append(KM[i-1]-delta)
+                    delta = 0
+            KM_upper.append(KM[i - 1] + delta)
+            KM_lower.append(KM[i - 1] - delta)
         KM_lower = np.array(KM_lower)
         KM_upper = np.array(KM_upper)
-        KM_upper[KM_upper>1]=1
-        KM_lower[KM_lower<0]=0
+        KM_upper[KM_upper > 1] = 1
+        KM_lower[KM_lower < 0] = 0
 
-        #assemble the pandas dataframe for the output
+        # assemble the pandas dataframe for the output
         DATA = {'Failure times': d,
                 'Censoring code (censored=0)': c,
                 'Items remaining': remaining_array,
                 'Kaplan-Meier Estimate': KM,
                 'Lower CI bound': KM_lower,
                 'Upper CI bound': KM_upper}
-        dfx = pd.DataFrame(DATA,columns=['Failure times','Censoring code (censored=0)','Items remaining','Kaplan-Meier Estimate','Lower CI bound','Upper CI bound'])
+        dfx = pd.DataFrame(DATA, columns=['Failure times', 'Censoring code (censored=0)', 'Items remaining', 'Kaplan-Meier Estimate', 'Lower CI bound', 'Upper CI bound'])
         dfy = dfx.set_index('Failure times')
         pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
         pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
@@ -163,36 +165,36 @@ class KaplanMeier:
         self.SF = np.array(KM_y)
         self.SF_lower = np.array(KM_y_lower)
         self.SF_upper = np.array(KM_y_upper)
-        self.CDF = 1-self.SF
+        self.CDF = 1 - self.SF
         self.CDF_lower = 1 - self.SF_upper
         self.CDF_upper = 1 - self.SF_lower
         self.CHF = -np.log(self.SF)
         self.CHF_lower = -np.log(self.SF_upper)
         self.CHF_upper = -np.log(self.SF_lower)
 
-        if print_results==True:
-            print(dfy) #this will print the pandas dataframe
-        #plotting section
-        if show_plot==True:
+        if print_results == True:
+            print(dfy)  # this will print the pandas dataframe
+        # plotting section
+        if show_plot == True:
 
-            plt.plot(KM_x,KM_y,**kwargs) #plot the main KM estimate
+            plt.plot(KM_x, KM_y, **kwargs)  # plot the main KM estimate
 
-            #extract certain keyword arguments or specify them if they are not set. We cannot pass all kwargs to CI plots as some are not appropriate (eg. label)
+            # extract certain keyword arguments or specify them if they are not set. We cannot pass all kwargs to CI plots as some are not appropriate (eg. label)
             if 'color' in kwargs:
-                CI_color=kwargs.get('color')
+                CI_color = kwargs.get('color')
             else:
-                CI_color='steelblue'
+                CI_color = 'steelblue'
 
-            if plot_CI==True: #plots the confidence bounds
+            if plot_CI == True:  # plots the confidence bounds
                 title_text = str('Kaplan-Meier reliability estimate\n with ' + str(int(CI * 100)) + '% confidence bounds')
-                plt.fill_between(KM_x,KM_y_lower,KM_y_upper,alpha=0.3,color=CI_color)
+                plt.fill_between(KM_x, KM_y_lower, KM_y_upper, alpha=0.3, color=CI_color)
             else:
                 title_text = 'Kaplan-Meier reliability estimate'
             plt.xlabel('Failure units')
             plt.ylabel('Reliability')
             plt.title(title_text)
-            plt.xlim([0,max(KM_x)])
-            plt.ylim([0,1.1])
+            plt.xlim([0, max(KM_x)])
+            plt.ylim([0, 1.1])
 
 
 class NelsonAalen:
@@ -264,15 +266,15 @@ class NelsonAalen:
         remaining_array = failures_array[::-1]  # items remaining (n to 1)
         h = []
         H = []
-        NA = [] #R(t)
+        NA = []  # R(t)
         NA_upper = []  # upper CI
         NA_lower = []  # lower CI
         z = ss.norm.ppf(1 - (1 - CI) / 2)
         frac = []
         delta = 0
         for i in failures_array:
-            h.append((c[i - 1]) / remaining_array[i - 1]) #obtain HF
-            H.append(sum(h)) #obtain CHF
+            h.append((c[i - 1]) / remaining_array[i - 1])  # obtain HF
+            H.append(sum(h))  # obtain CHF
             NA.append(np.exp(-H[-1]))
 
             # greenwood confidence interval calculations. Uses Normal approximation
