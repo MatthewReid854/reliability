@@ -10,6 +10,7 @@ The following collection of resources are things I have found useful during my r
 **Textbooks**
 
 -    Reliability Engineering and Risk Analysis: A practical Guide, Third Edition (2017), by M. Modarres, M. Kaminskiy, and V. Krivtsov.
+-    Probabilistic Physics of Failure Approach to Reliability (2017), by M. Modarres, M. Amiri, and C. Jackson.
 -    `Probability Distributions Used in Reliability Engineering (2011), by A. O'Conner, M. Modarres, and A. Mosleh. <http://crr.umd.edu/sites/default/files/FreeBooks/Probability%20Distributions%20Used%20in%20Reliability%20Engineering%20r1.pdf>`_
 -    Practical Reliability Engineering, Fifth Edition (2012), by P. O'Conner and A. Kleyner.
 
