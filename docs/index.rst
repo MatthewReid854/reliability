@@ -69,6 +69,17 @@ Contents:
 
 .. toctree::
   :maxdepth: 1
+  :caption: Physics of failure
+
+  SN diagram
+  Stress strain life diagram
+  Creep
+  Wear
+  Acceleration factor
+  Simultaneous equation solvers
+
+.. toctree::
+  :maxdepth: 1
   :caption: Administration
   
   Citing reliability in your work
