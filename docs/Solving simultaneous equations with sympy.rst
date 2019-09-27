@@ -27,7 +27,7 @@ Solving with sympy:
     print(result)
 
     '''
-    [(1, 4), (4, 1)] #these are the solutions for x,y
+    [(1, 4), (4, 1)] #these are the solutions for x,y. There are 2 solutions because the equations represent a line passing through a circle.
     '''
 
 Example 2:
