@@ -76,7 +76,7 @@ Contents:
   Creep
   Wear
   Acceleration factor
-  Simultaneous equation solvers
+  Solving simultaneous equations with sympy
 
 .. toctree::
   :maxdepth: 1
