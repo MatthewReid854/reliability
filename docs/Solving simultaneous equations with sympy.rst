@@ -32,9 +32,9 @@ Solving with sympy:
 
 Example 2:
 
-:math:`\text{Eqn 1:} \hspace{11mm} a.(10^6)^b = 119.54907` 
+:math:`\text{Eqn 1:} \hspace{11mm} a1000000^b = 119.54907` 
 
-:math:`\text{Eqn 2:} \hspace{11mm} a.(10^3)^b = 405`
+:math:`\text{Eqn 2:} \hspace{11mm} a1000^b = 405`
 
 Solving with sympy:
 
@@ -42,8 +42,8 @@ Solving with sympy:
 
     import sympy as sym
     a,b = sym.symbols('a,b')
-    eq1 = sym.Eq(a*(10**6)**b,119.54907)
-    eq2 = sym.Eq(a*(10**3)**b,405)
+    eq1 = sym.Eq(a*1000000**b,119.54907)
+    eq2 = sym.Eq(a*1000**b,405)
     result = sym.solve([eq1,eq2],(a,b))
     print(result)
 
@@ -61,7 +61,7 @@ Example 3:
 
 The actual solution to the above set of equations is:
 
-:math:`\hspace{21mm} x = -\frac{1}{2}+\frac{\srqt{3}}{2}` 
+:math:`\hspace{21mm} x = -\frac{1}{2}+\frac{\sqrt{3}}{2}` 
 
 :math:`\hspace{21mm} y = c_1 - \frac{3\sqrt{3}}{2}+\frac{3}{2}` 
 
@@ -69,7 +69,7 @@ The actual solution to the above set of equations is:
 
 and a second solution:
 
-:math:`\hspace{21mm} x = -\frac{1}{2}-\frac{\srqt{3}}{2}` 
+:math:`\hspace{21mm} x = -\frac{1}{2}-\frac{\sqrt{3}}{2}` 
 
 :math:`\hspace{21mm} y = c_1 + \frac{3\sqrt{3}}{2}+\frac{3}{2}` 
 
@@ -92,6 +92,6 @@ Solving with sympy:
     [(-1/2 + sqrt(3)/2, c1 - 3*sqrt(3)/2 + 3/2, -c1 - 5/2 + 5*sqrt(3)/2), (-sqrt(3)/2 - 1/2, c1 + 3/2 + 3*sqrt(3)/2, -c1 - 5*sqrt(3)/2 - 5/2)]
     '''
 
-note:: If you are using an iPython notebook, the display abilities are much better than the command line interface, so you can simply add sym.init_printing() after the import line and your equations should be displayed nicely.
+.. note:: If you are using an iPython notebook, the display abilities are much better than the command line interface, so you can simply add sym.init_printing() after the import line and your equations should be displayed nicely.
 
-A special thanks to Brigham Young University for offering `this <https://apmonitor.com/che263/index.php/Main/PythonSolveEquations>`_ tutorial.
+A special thanks to Brigham Young University for offering `this tutorial <https://apmonitor.com/che263/index.php/Main/PythonSolveEquations>`_.
