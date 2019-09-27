@@ -20,7 +20,7 @@ Outputs:
 
 -   Acceleration Factor
  
-In the example below, the acceleration factor is found for an accelerated test at 100:math:`^oC` for a component that is normally run at 60:math:`^oC` and has an activation energy of 1.2 eV.
+In the example below, the acceleration factor is found for an accelerated test at 100 :math:`^oC` for a component that is normally run at 60 :math:`^oC` and has an activation energy of 1.2 eV.
 
 
 .. code:: python
