@@ -6,8 +6,8 @@ Solving simultaneous equations with sympy
 '''''''''''''''''''''''''''''''''''''''''
 
 This document is a tutorial for how to use the Python module ``sympy`` to solve simultaneous equations. Since sympy does this so well, there is no need to implement it within ``reliability``, but users may find this tutorial helpful as problems involving physics of failure will often require the solution of simultaneous equations.
-The library ``sympy`` is not installed by default when you install ``reliability`` so users following this tutorial will need to ensure sympy is installed on their machine.
-The following three examples should be sufficient to illustrate how to use sympy for solving simultaneous equations.
+The library ``sympy`` is not installed by default when you install ``reliability`` so users following this tutorial will need to ensure ``sympy`` is installed on their machine.
+The following three examples should be sufficient to illustrate how to use ``sympy`` for solving simultaneous equations.
 
 Example 1:
 
