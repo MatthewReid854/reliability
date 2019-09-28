@@ -5,11 +5,9 @@
 Solving simultaneous equations with sympy
 '''''''''''''''''''''''''''''''''''''''''
 
-This document is a tutorial for how to use the Python module ``sympy`` to solve simultaneous equations. Since sympy does this so well, there is no need to implement it within ``reliability``, but users may find this tutorial helpful as problems involving physics of failure will often require the solution of simultaneous equations.
-The library ``sympy`` is not installed by default when you install ``reliability`` so users following this tutorial will need to ensure ``sympy`` is installed on their machine.
-The following three examples should be sufficient to illustrate how to use ``sympy`` for solving simultaneous equations.
+This document is a tutorial for how to use the Python module ``sympy`` to solve simultaneous equations. Since sympy does this so well, there is no need to implement it within ``reliability``, but users may find this tutorial helpful as problems involving physics of failure will often require the solution of simultaneous equations. Sympy is not installed by default when you install reliability so users following this tutorial will need to ensure sympy is installed on their machine. The following three examples should be sufficient to illustrate how to use sympy for solving simultaneous equations. Further examples are available in the `sympy documentation <https://docs.sympy.org/latest/modules/solvers/solvers.html>`_.
 
-Example 1:
+**Example 1**
 
 :math:`\text{Eqn 1:} \hspace{11mm} x + y = 5` 
 
@@ -30,7 +28,7 @@ Solving with sympy:
     [(1, 4), (4, 1)] #these are the solutions for x,y. There are 2 solutions because the equations represent a line passing through a circle.
     '''
 
-Example 2:
+**Example 2**
 
 :math:`\text{Eqn 1:} \hspace{11mm} a1000000^b = 119.54907` 
 
@@ -51,7 +49,7 @@ Solving with sympy:
     [(1372.03074854535, -0.176636273742481)] #these are the solutions for a,b
     '''
 
-Example 3:
+**Example 3**
 
 :math:`\text{Eqn 1:} \hspace{11mm} 2x^2 +y + z = 1` 
 
