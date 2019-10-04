@@ -1,6 +1,5 @@
 '''
 Fitters
-
 This module contains custom fitting functions for parametric distributions which support left or right censored data (but not both together).
 The supported distributions for failures and right censored data are:
 Weibull_2P
@@ -13,7 +12,6 @@ Lognormal_2P
 Normal_2P
 Beta_2P
 Weibull_Mixture
-
 The supported distributions for failures and left censored data are:
 Weibull_2P
 Exponential_1P
@@ -22,10 +20,8 @@ Lognormal_2P
 Normal_2P
 Beta_2P
 Weibull_Mixture
-
 Note that the Beta distribution is only for data in the range 0-1.
 There is also a Fit_Everything function which will fit all distributions except the Weibull mixture model and will provide plots and a table of values.
-
 All functions in this module work using autograd to find the derivative of the log-likelihood function. In this way, the code only needs to specify
 the log PDF, log CDF, and log SF in order to obtain the fitted parameters. Initial guesses of the parameters are essential for autograd and are obtained
 using scipy. If the distribution is an extremely bad fit or is heavily censored then these guesses may be poor and the fit might not be successful.
@@ -55,9 +51,7 @@ anp.seterr('ignore')
 class Fit_Everything:
     '''
     Fit_Everything
-
     This function will fit all available distributions for the data you enter. You may also specify left or right censored data (either but not both).
-
     inputs:
     failures - an array or list of the failure times (this does not need to be sorted).
     left_censored - an array or list of the left failure times (this does not need to be sorted).
@@ -70,7 +64,6 @@ class Fit_Everything:
     show_PP_plot - True/False. Defaults to True unless there is left censored data in which case Kaplan-Meier cannot be applied.
         Provides a comparison of parametric vs non-parametric fit using Probability-Probability (PP) plot.
     show_probability_plot - True/False. Defaults to True. Provides a probability plot of each of the fitted distributions.
-
     outputs:
     results - the dataframe of results. Fitted parameters in this dataframe may be accessed by name. See below example.
         In displaying these results, the pandas dataframe is designed to use the common greek letter parametrisations
@@ -84,26 +77,20 @@ class Fit_Everything:
         Weibull_3P_gamma
         Weibull_3P_BIC
         Weibull_3P_AICc
-
     All parametric models have the number of parameters in the name. For example, Weibull_2P used alpha and beta, whereas Weibull_3P
     uses alpha, beta, and gamma. This is applied even for Normal_2P for consistency in naming conventions.
-
     If plot_results is True, the plot will show the PDF and CDF of all fitted distributions plotted with a histogram of the data.
     From the results, the distributions are sorted based on their goodness of fit test results, where the smaller the goodness of fit
     value, the better the fit of the distribution to the data.
-
     Confidence intervals for each of the fitted parameters are not supported. This feature may be incorporated in
     future releases, however, the need has not been identified. See the python library "lifelines" or JMP Pro software if this is required.
     Whilst Minitab uses the Anderson-Darling statistic for the goodness of fit, it is generally recognised that AICc and BIC
     are more accurate measures as they take into account the number of parameters in the distribution.
-
     Example Usage:
     X = [0.95892,1.43249,1.04221,0.67583,3.28411,1.03072,0.05826,1.81387,2.06383,0.59762,5.99005,1.92145,1.35179,0.50391]
     output = Fit_Everything(X)
-
     To extract the parameters of the Weibull distribution from the results dataframe, you may access the parameters by name:
     print('Weibull Alpha =',output.Weibull_2P_alpha,'\nWeibull Beta =',output.Weibull_2P_beta)
-
     '''
 
     def __init__(self, failures=None, right_censored=None, left_censored=None, sort_by='BIC', print_results=True, show_histogram_plot=True, show_PP_plot=None, show_probability_plot=True):
@@ -643,13 +630,13 @@ class Fit_Weibull_2P:
         if type(left_censored) != np.ndarray:
             raise TypeError('left_censored must be a list or array of left censored failure data')
         all_data = np.hstack([failures, right_censored, left_censored])
-        bnds = [(0.0001, None), (0.0001, None)]  # bounds of solution
 
         # solve it
         self.gamma = 0
         sp = ss.weibull_min.fit(all_data, floc=0, optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
         guess = [sp[2], sp[0]]
-        result = minimize(value_and_grad(Fit_Weibull_2P.LL), guess, args=(failures, right_censored, left_censored), jac=True, bounds=bnds, tol=1e-6)
+        warnings.filterwarnings('ignore')  # necessary to supress the warning about the jacobian when using the Powell optimizer
+        result = minimize(value_and_grad(Fit_Weibull_2P.LL), guess, args=(failures, right_censored, left_censored), jac=True, tol=1e-6, method='Powell')
 
         if result.success == True:
             params = result.x
@@ -658,7 +645,7 @@ class Fit_Weibull_2P:
             self.beta = params[1]
         else:
             self.success = False
-            warnings.warn('Fitting using Autograd FAILED for Weibull_2P. The fit from Scipy was used instead so results may not be accurate.')
+            print('WARNING: Fitting using Autograd FAILED for Weibull_2P. The fit from Scipy was used instead so results may not be accurate.')
             self.alpha = sp[2]
             self.beta = sp[0]
 
@@ -728,19 +715,16 @@ class Fit_Weibull_2P:
 class Fit_Weibull_3P:
     '''
     Fit_Weibull_3P
-
     Fits a 3-parameter Weibull distribution (alpha,beta,gamma) to the data provided.
     You may also enter right censored data.
     Left censored data is not supported because of the way the gamma parameter is obtained. If you have left censored data, use
     Fit_Weibull_2P instead.
-
     inputs:
     failures - an array or list of failure data
     right_censored - an array or list of right censored data
     show_probability_plot - True/False. Defaults to True.
     print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-
     outputs:
     success - Whether the solution was found by autograd (True/False)
         if success is False a warning will be printed indicating that scipy's fit was used as autograd failed. This fit will not be accurate if
@@ -781,7 +765,6 @@ class Fit_Weibull_3P:
         if type(right_censored) != np.ndarray:
             raise TypeError('right_censored must be a list or array of right censored failure data')
         all_data = np.hstack([failures, right_censored])
-        bnds = [(0.0001, None), (0.0001, None)]  # bounds of solution
 
         # solve it
         shift = min(all_data) - 0.01  # the 0.01 is to avoid taking the log of zero in logf and logF
@@ -789,7 +772,8 @@ class Fit_Weibull_3P:
         data_shifted = all_data - shift
         sp = ss.weibull_min.fit(data_shifted, floc=0, optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
         guess = [sp[2], sp[0]]
-        result = minimize(value_and_grad(Fit_Weibull_3P.LL), guess, args=(failures - shift, right_censored - shift), jac=True, bounds=bnds, tol=1e-6)
+        warnings.filterwarnings('ignore')  # necessary to supress the warning about the jacobian when using the Powell optimizer
+        result = minimize(value_and_grad(Fit_Weibull_3P.LL), guess, args=(failures - shift, right_censored - shift), jac=True, tol=1e-6, method='Powell')
 
         if result.success == True:
             params = result.x
@@ -798,7 +782,7 @@ class Fit_Weibull_3P:
             self.beta = params[1]
         else:
             self.success = False
-            warnings.warn('Fitting using Autograd FAILED for Weibull_3P. The fit from Scipy was used instead so results may not be accurate.')
+            print('Fitting using Autograd FAILED for Weibull_3P. The fit from Scipy was used instead so the results may not be accurate.')
             sp = ss.weibull_min.fit(all_data, optimizer='powell')
             self.alpha = sp[2]
             self.beta = sp[0]
@@ -861,18 +845,15 @@ class Fit_Weibull_3P:
 class Fit_Weibull_Mixture:
     '''
     Fit_Weibull_Mixture
-
     Fits a mixture of 2 x Weibull_2P distributions (this does not fit the gamma parameter).
     Censoring is supported (left or right but not both), though care should be taken to ensure that there still appears
     to be two groups when plotting only the failure data. A second group cannot be made from a mostly or totally censored
     set of samples.
-
     Use this model when you think there are multiple failure modes acting to create the failure data.
     Whilst some failure modes may not be fitted as well by a Weibull distribution as they may be by another distribution, it
     is unlikely that a mixture of data from two distributions (particularly if they are overlapping) will be fitted
     noticeably better by other types of mixtures than would be achieved by a Weibull mixture. For this reason, other types
     of mixtures are not implemented.
-
     inputs:
     failures - an array or list of the failure data. There must be at least 4 failures, but it is highly recommended to use another model if you have
         less than 20 failures.
@@ -880,7 +861,6 @@ class Fit_Weibull_Mixture:
     right_censored - an array or list of right censored data
     print_results - True/False. This will print results to console. Default is True
     show_plot - True/False. This will show the PDF and CDF of the Weibull mixture with a histogram of the data. Default is True.
-
     outputs:
     alpha_1 - the fitted Weibull_2P alpha parameter for the first (left) group
     beta_1 - the fitted Weibull_2P beta parameter for the first (left) group
@@ -1049,10 +1029,8 @@ class Fit_Weibull_Mixture:
 class Fit_Expon_1P:
     '''
     Fit_Expon_1P
-
     Fits a 1-parameter Exponential distribution (Lambda) to the data provided.
     You may also enter left or right censored data (either but not both).
-
     inputs:
     failures - an array or list of failure data
     left_censored - an array or list of left censored data
@@ -1060,7 +1038,6 @@ class Fit_Expon_1P:
     show_probability_plot - True/False. Defaults to True.
     print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-
     outputs:
     success - Whether the solution was found by autograd (True/False)
         if success is False a warning will be printed indicating that scipy's fit was used as autograd failed. This fit will not be accurate if
@@ -1184,19 +1161,16 @@ class Fit_Expon_1P:
 class Fit_Expon_2P:
     '''
     Fit_Expon_2P
-
     Fits a 2-parameter Exponential distribution (Lambda,gamma) to the data provided.
     You may also enter right censored data.
     Left censored data is not supported because of the way the gamma parameter is obtained. If you have left censored data, use
     Fit_Expon_1P instead.
-
     inputs:
     failures - an array or list of failure data
     right_censored - an array or list of right censored data
     show_probability_plot - True/False. Defaults to True.
     print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-
     outputs:
     success - Whether the solution was found by autograd (True/False)
         if success is False a warning will be printed indicating that scipy's fit was used as autograd failed. This fit will not be accurate if
@@ -1306,19 +1280,15 @@ class Fit_Expon_2P:
 class Fit_Normal_2P:
     '''
     Fit_Normal_2P
-
     Fits a 2-parameter Normal distribution (mu,sigma) to the data provided.
     You may also enter left or right censored data (either but not both).
-
     Note that it will return a fit that may be partially in the negative domain (x<0).
     If you need an entirely positive distribution that is similar to Normal then consider using Weibull.
-
     inputs:
     failures - an array or list of failure data
     left_censored - an array or list of left censored data
     right_censored - an array or list of right censored data
     show_probability_plot - True/False. Defaults to True.
-
     outputs:
     success - Whether the solution was found by autograd (True/False)
         if success is False a warning will be printed indicating that scipy's fit was used as autograd failed. This fit will not be accurate if
@@ -1452,10 +1422,8 @@ class Fit_Normal_2P:
 class Fit_Lognormal_2P:
     '''
     Fit_Lognormal_2P
-
     Fits a 2-parameter Lognormal distribution (mu,sigma) to the data provided.
     You may also enter left or right censored data (either but not both).
-
     inputs:
     failures - an array or list of failure data
     left_censored - an array or list of left censored data
@@ -1463,7 +1431,6 @@ class Fit_Lognormal_2P:
     show_probability_plot - True/False. Defaults to True.
     print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-
     outputs:
     success - Whether the solution was found by autograd (True/False)
         if success is False a warning will be printed indicating that scipy's fit was used as autograd failed. This fit will not be accurate if
@@ -1599,10 +1566,8 @@ class Fit_Lognormal_2P:
 class Fit_Gamma_2P:
     '''
     Fit_Gamma_2P
-
     Fits a 2-parameter Gamma distribution (alpha,beta) to the data provided.
     You may also enter left or right censored data (either but not both).
-
     inputs:
     failures - an array or list of failure data
     left_censored - an array or list of left censored data
@@ -1610,7 +1575,6 @@ class Fit_Gamma_2P:
     show_probability_plot - True/False. Defaults to True.
     print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-
     outputs:
     success - Whether the solution was found by autograd (True/False)
         if success is False a warning will be printed indicating that scipy's fit was used as autograd failed. This fit will not be accurate if
@@ -1746,19 +1710,16 @@ class Fit_Gamma_2P:
 class Fit_Gamma_3P:
     '''
     Fit_Gamma_3P
-
     Fits a 3-parameter Gamma distribution (alpha,beta,gamma) to the data provided.
     You may also enter right censored data.
     Left censored data is not supported because of the way the gamma parameter is obtained. If you have left censored data, use
     Fit_Gamma_2P instead.
-
     inputs:
     failures - an array or list of failure data
     right_censored - an array or list of right censored data
     show_probability_plot - True/False. Defaults to True.
     print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-
     outputs:
     success - Whether the solution was found by autograd (True/False)
         if success is False a warning will be printed indicating that scipy's fit was used as autograd failed. This fit will not be accurate if
@@ -1880,11 +1841,9 @@ class Fit_Gamma_3P:
 class Fit_Beta_2P:
     '''
     Fit_Beta_2P
-
     Fits a 2-parameter Beta distribution (alpha,beta) to the data provided.
     You may also enter left or right censored data (either but not both).
     All data must be in the range 0-1.
-
     inputs:
     failures - an array or list of failure data
     left_censored - an array or list of left censored data
@@ -1892,7 +1851,6 @@ class Fit_Beta_2P:
     show_probability_plot - True/False. Defaults to True.
     print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-
     outputs:
     success - Whether the solution was found by autograd (True/False)
         if success is False a warning will be printed indicating that scipy's fit was used as autograd failed. This fit will not be accurate if
