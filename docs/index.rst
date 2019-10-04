@@ -72,7 +72,7 @@ Contents:
   :caption: Physics of failure
 
   SN diagram
-  Stress strain life diagram
+  Stress-strain and strain-life
   Fracture mechanics
   Fracture mechanics with notch effect
   Creep
