@@ -16,6 +16,7 @@
 - Probability plots on probability paper for all supported distributions
 - Quantile-Quantile plots and Probability-Probability plots
 - Reliability growth, optimal replacement time, sequential sampling charts, and many more functions
+- Physics of Failure and Accelerated Life Testing Models coming soon
 
 ## Installation
 ```
