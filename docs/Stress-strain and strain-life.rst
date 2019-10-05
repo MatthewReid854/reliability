@@ -137,11 +137,33 @@ stress_strain_diagram(E=210000, K = 1200, n = 0.2, max_stress=378,min_stress=-32
 Strain-Life diagram
 -------------------
 
-This function be written soon.
+EXPLAINATION REQUIRED HERE. WILL BE WRITTEN SOON
 
+This function plots the strain-life diagram.
 
+Note: If you do not have the parameters sigma_f, epsilon_f, b, c, but you do have stress, strain, and cycles data then you can use the function 'stress_strain_life_parameters_from_data'
 
+Inputs:
 
+- E - The modulus of elasticity. Ensure this is in the same units for which K and n were obtained (typically MPa)
+- sigma_f - fatigue strength coefficient
+- epsilon_f - fatigue strain coefficient
+- b - elastic strain exponent
+- c - plastic strain exponent
+- K - cyclic strength coefficient. Optional input. Only required if you specify use_level_stress.
+- n - strain hardening exponent. Optional input. Only required if you specify use_level_stress.
+- mean_stress_correction_method - must be either 'morrow','modified_morrow', or 'SWT'. Default is 'SWT'. Only used if mean_stress is found to be non-zero.
+- max_stress - specify the max_stress if you want cycles to failure. If specified, you will need to also specify K and n.
+- max_strain - specify the max_strain if you want cycles to failure.
+- min_stress - if this is not -max_stress then specify it here. Optional input.
+- min_strain - if this is not -max_strain then specify it here. Optional input. When specifying min and max stress or strain, Do not specify both stress and strain as the corresponding value will be automatically calculated. Only specify the min if it is not -max
+- print_results - True/False. Defaults to True. If use_level_stress or use_level_strain is specified then the printed results will be the cycles_to_failure
+- show_plot - True/False. Default is True
+
+Outputs:
+
+- The strain-life plot will be generated if show_plot = True. Use plt.show() to show it.
+- cycles_to_failure - only calculated if max_stress OR max_strain is specified. This will be printed if print_results = True.
 
 .. code:: python
 
