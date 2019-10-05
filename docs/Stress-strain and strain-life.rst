@@ -151,7 +151,7 @@ This function be written soon.
     plt.show()
 
     '''
-    Failure will occur in 13771.39 cycles (27543.0 reversals).
+    Failure will occur in 13771.39 cycles (27542.78 reversals).
     '''
 
 .. image:: images/strain_life_diagram1.png
