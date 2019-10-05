@@ -5,7 +5,7 @@
 Acceleration factor
 '''''''''''''''''''
 
-.. note:: This module is currently in development. The following documentation is correct, however, the most recent version of ``reliability`` on PyPI will not contain this module until Dec 2018.
+.. note:: This module is currently in development. The following documentation is correct, however, the most recent version of ``reliability`` on PyPI will not contain this module until Dec 2019.
 
 This function calculates the acceleration factor at a higher temperature based on the Arrhenius model.
 It solves the equation :math:`AF = exp\left[\frac{E_a}{K_B}\left(\frac{1}{T_{use}}-\frac{1}{T_{acc}}\right)\right]`
