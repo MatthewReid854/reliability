@@ -7,7 +7,7 @@ Stress-strain and strain-life
 
 .. note:: This module is currently in development. The following documentation is correct, however, the most recent version of ``reliability`` on PyPI will not contain this module until Dec 2018.
 
-In the strain-life method of fatigue analysis, the elastic and plastic deformation of the material is used to determine how many cycles before failure. In this context, failure is defined as the formation of a small crack (typically 1mm) so the geometry of the material need not be considered provided the material peoperties have been accurately measured using a stress-strain test. This section of the documentation contains three functions which are useful in strain-life analysis. The first of these is useful to fit the stress-strain and strain-life models to available data, thereby providing the material properties. The second function is a diagram of the relationship between stress and strain during cyclic fatigue which shows the hysteresis loop and finds the min/max stress and strain. The third function produced the strain-life diagram and the equations for this diagram are used for calculating the number of cycles to failure. Further detail is available below for each of the respective functions.
+In the strain-life method of fatigue analysis, the elastic and plastic deformation of the material is used to determine how many cycles the material will last before failure. In this context, failure is defined as the formation of a small crack (typically 1mm) so the geometry of the material does not need to be considered provided the material peoperties have been accurately measured using a stress-strain test. This section of the documentation describes three functions which are useful in strain-life analysis. The first of these is useful to fit the stress-strain and strain-life models to available data, thereby providing the material properties. The second function is a diagram of the relationship between stress and strain during cyclic fatigue which shows the hysteresis loop and finds the min and max stress and strain. The third function produces the strain-life diagram and the equations for this diagram are used for calculating the number of cycles to failure. Further detail is available below for each of the respective functions.
 
 Stress-Strain and Strain-Life parameter estimation
 --------------------------------------------------
@@ -37,9 +37,9 @@ Outputs:
 - b - the elastic strain exponent. Only generated if cycles is provided.
 - c - the plastic strain exponent. Only generated if cycles is provided.
 
-Note that the parameters generated are stored to an object, so you may find it useful to use this function with print_results=False and show_plot=False, and then access the calculated parameters later. This is done in the example for the stress-strain diagram.
+Note that the parameters generated are stored to an object, so you may find it useful to use this function with print_results=False and show_plot=False, and then access the calculated parameters later. This is done in the first example for the section on stress-strain diagram.
 
-In the example below, we provide data from a fatigue test including stress, strain, and cycles to failure. We also must provide the modulus of elasticity (E) for the material. All other options are left as default values. The plots shown below are provided and the results are printed to the console.  
+In the example below, we provide data from a fatigue test including stress, strain, and cycles to failure. We must also provide the modulus of elasticity (E) for the material. All other options are left as default values. The plots shown below are provided and the results are printed to the console.  
 
 .. code:: python
 
@@ -67,9 +67,9 @@ In the example below, we provide data from a fatigue test including stress, stra
 Stress-Strain diagram
 ---------------------
 
-The stress strain diagram is used to visualise how the stress and strain vary with successive load cycles. Due to residual tensile and compressive stresses, the stress and strain in the material does not unload in the same way that it loads. This results in a hysteresis loop being formed and this is the basis for crack propagation in the material leading to fatigue failure. The size of the hysteresis loop increases for higher strains. Fatigue tests are typically strain controlled; that is they are subjected to a specifiedamount of strain throughout the test, typically in a sinusoidal pattern. Fatigue tests may also be stress controlled, whereby the material is subjected to a specified amount of stress. This function accepts either input (max_stress or max_strain) and will find the corresponding stress and strain as required. If you do not specify min_stress or min_strain then it is assumed to be negative of the maximum value. The cyclic loading sequence defaults to begin with tension, but can be changed using initial_load_direction='compression'. If your test begins with compression it is important to specify this as the residual stress effects will affect the results.
+The stress strain diagram is used to visualize how the stress and strain vary with successive load cycles. Due to residual tensile and compressive stresses, the stress and strain in the material does not unload in the same way that it loads. This results in a hysteresis loop being formed and this is the basis for crack propagation in the material leading to fatigue failure. The size of the hysteresis loop increases for higher strains. Fatigue tests are typically strain controlled; that is they are subjected to a specified amount of strain throughout the test, typically in a sinusoidal pattern. Fatigue tests may also be stress controlled, whereby the material is subjected to a specified amount of stress. This function accepts either input (max_stress or max_strain) and will find the corresponding stress or strain as required. If you do not specify min_stress or min_strain then it is assumed to be negative of the maximum value.
 
-When a min_stress or min_strain is specified that results in a non-zero mean stress, there are several mean stress correction methods that are available. These are 'morrow', 'modified_morrow' (also known as Manson-Halford) , and 'SWT' (Smith-Watson-Topper). Only the first three reversals are plotted. For most materials the shape of the hysteresis loop will change over many hundreds of cycles as a result of fatigue hardening (also known as work-hardening) or fatigue-softening. More on this process is available in the `eFatigue training documents <https://www.efatigue.com/training/Chapter_5.pdf>`_. 
+The cyclic loading sequence defaults to begin with tension, but can be changed using initial_load_direction='compression'. If your test begins with compression it is important to specify this as the residual stresses in the material from the initial loading will affect the results for the first reversal. Only the initial loading and the first two reversals are plotted. For most materials the shape of the hysteresis loop will change over many hundreds of cycles as a result of fatigue hardening (also known as work-hardening) or fatigue-softening. More on this process is available in the `eFatigue training documents <https://www.efatigue.com/training/Chapter_5.pdf>`_. 
 
 Note that if you do not have the parameters K, n, but you do have stress and strain data then you can use the function 'stress_strain_life_parameters_from_data'. This will be shown in the first example below.
 
@@ -79,8 +79,8 @@ Inputs:
 - n - strain hardening exponent
 - E - The modulus of elasticity. Ensure this is in the same units for which K and n were obtained (typically MPa)
 - max_strain - the maximum strain to use for cyclic loading when plotting the hysteresis loop.
-- max_stress - the maximum stress to use for cyclic loading when plotting the hysteresis loop. When specifying min and max stress or strain, Do not specify both stress and strain as the corresponding value will be automatically calculated.
-- min_strain - if this is not -max_strain then specify it here. Optional input. Only specify the min if it is not -max
+- max_stress - the maximum stress to use for cyclic loading when plotting the hysteresis loop. When specifying min and max stress or strain, do not specify both stress and strain as the corresponding value will be automatically calculated.
+- min_strain - if this is not -max_strain then specify it here. Optional input.
 - min_stress - if this is not -max_stress then specify it here. Optional input.
 - initial_load_direction - 'tension' or 'compression'. Default is 'tension'.
 
@@ -115,7 +115,7 @@ In the example below, we are using the same data from the first example, but thi
 
 .. image:: images/stress_strain_hysteresis.png
 
-In this second example, we will use the stress_strain_diagram to visualise the effects of residual stresses for a material subjected to non-zero mean stress. The material parameters (K and n) are already known so we do not need to obtain them from any data. We specify the max_stress is 378 MPa and the min_stress is -321 MPa. We will do this for two scenarios; initial tensile load, and initial compressive load. Upon inspection of the results we see for the tension first plot, the min_stress in the material is actually -328.893 MPa which exceeds the min_stress we specified in out test. When we do compression first, the max_stress is 385.893 MPa which exceeds the max_stress we specified in out test. These results are not an error and are caused by the residual stresses in the material that were formed during the first loading cycle. In the tension first case, when the material was pulled apart in tension, the material pulls back but due to plastic deformation, these internal forces in the material are not entirely removed, such that when the first compressive load peaks, the material's internal stresses add to the external compressive forces. This phenomenon is important in load sequence effects for variable amplitude fatigue.
+In this second example, we will use the stress_strain_diagram to visualise the effects of residual stresses for a material subjected to non-zero mean stress. The material parameters (K and n) are already known so we do not need to obtain them from any data. We specify the max_stress is 378 MPa and the min_stress is -321 MPa. We will do this for two scenarios; initial tensile load, and initial compressive load. Upon inspection of the results we see for the initial tensile load, the min_stress in the material is actually -328.893 MPa which exceeds the min_stress we specified in our test. When we have an initial compressive load, the max_stress is 385.893 MPa which exceeds the max_stress we specified in our test. These results are not an error and are caused by the residual stresses in the material that were formed during the first loading cycle. In the case of an initial tensile load, when the material was pulled apart in tension by an external force, the material pulls back but due to plastic deformation, these internal forces in the material are not entirely removed, such that when the first compressive load peaks, the material's internal stresses add to the external compressive forces. This phenomenon is important in load sequence effects for variable amplitude fatigue.
 
 .. code:: python
 
@@ -151,11 +151,11 @@ In this second example, we will use the stress_strain_diagram to visualise the e
 Strain-Life diagram
 -------------------
 
-EXPLAINATION REQUIRED HERE. WILL BE WRITTEN SOON
+The strain-life diagram provides a visual representation of the Coffin-Manson relationship between strain and life. In this equation, strain is split into elastic strain and plastic strain which are shown on the plot as straight lines (on a log-log scale), and life is represented by reversals (with 2 reversals per cycle). The total strain amplitude is used to determine the fatigue life by solving the Coffin-Manson equation. When a min_stress or min_strain is specified that results in a non-zero mean stress, there are several mean stress correction methods that are available. These are 'morrow', 'modified_morrow' (also known as Manson-Halford) , and 'SWT' (Smith-Watson-Topper). The default method is 'SWT' but can be changed using the options described below. The equation used is displayed in the legend of the plot. Also shown on the plot is the life of the material at the specified strain amplitude, and the transition life (2Nt) for which the material failure transitions from being dominated by plastic strain to elastic strain.
 
-This function plots the strain-life diagram.
+Note that if you do not have the parameters sigma_f, epsilon_f, b, c, but you do have stress, strain, and cycles data then you can use the function 'stress_strain_life_parameters_from_data'.
 
-Note: If you do not have the parameters sigma_f, epsilon_f, b, c, but you do have stress, strain, and cycles data then you can use the function 'stress_strain_life_parameters_from_data'
+The residual stress in a material subjected to non-zero mean stress (as shown in the previous example) are not considered in this analysis, and the specified max and min values for stress or strain are taken as the true values to which the material is subjected.
 
 Inputs:
 
@@ -164,13 +164,13 @@ Inputs:
 - epsilon_f - fatigue strain coefficient
 - b - elastic strain exponent
 - c - plastic strain exponent
-- K - cyclic strength coefficient. Optional input. Only required if you specify use_level_stress.
-- n - strain hardening exponent. Optional input. Only required if you specify use_level_stress.
-- mean_stress_correction_method - must be either 'morrow','modified_morrow', or 'SWT'. Default is 'SWT'. Only used if mean_stress is found to be non-zero.
-- max_stress - specify the max_stress if you want cycles to failure. If specified, you will need to also specify K and n.
+- K - cyclic strength coefficient. Optional input. Only required if you specify max_stress or max_strain.
+- n - strain hardening exponent. Optional input. Only required if you specify max_stress or max_strain.
+- max_stress - specify the max_stress if you want cycles to failure. If specified, you will also need to specify K and n.
 - max_strain - specify the max_strain if you want cycles to failure.
 - min_stress - if this is not -max_stress then specify it here. Optional input.
-- min_strain - if this is not -max_strain then specify it here. Optional input. When specifying min and max stress or strain, Do not specify both stress and strain as the corresponding value will be automatically calculated. Only specify the min if it is not -max
+- min_strain - if this is not -max_strain then specify it here. Optional input. When specifying min and max stress or strain, do not specify both stress and strain as the corresponding value will be automatically calculated. Only specify the min if it is not -max
+- mean_stress_correction_method - must be either 'morrow','modified_morrow', or 'SWT'. Default is 'SWT'. This is only used if mean_stress is found to be non-zero.
 - print_results - True/False. Defaults to True. If use_level_stress or use_level_strain is specified then the printed results will be the cycles_to_failure
 - show_plot - True/False. Default is True
 
