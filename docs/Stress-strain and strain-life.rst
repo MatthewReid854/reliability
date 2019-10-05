@@ -67,7 +67,7 @@ In the example below, we provide data from a fatigue test including stress, stra
 Stress-Strain diagram
 ---------------------
 
-The stress strain diagram is used to visualise how the stress and strain vary with successive load cycles. Due to residual tensile and compressive stresses, the stress and strain in the material does not unload in the same way that it loads. This results in a hysteresis loop being formed and this is the basis for crack propagation in the material leading to fatigue failure. The size of the hysteresis loop increases for higher strains. Fatigue tests are typically strain controlled; that is they are subjected to a specifiedamount of strain throughout the test, typically in a sinusoidal pattern. Fatigue tests may also be stress controlled, whereby the material is subjected to a specified amount of stress. This function accepts either input (max_stress or max_strain) and will find the corresponding stress and strain as required. If you do not specify min_stress or min_strain then it is assumed to be negative of the maximum value.
+The stress strain diagram is used to visualise how the stress and strain vary with successive load cycles. Due to residual tensile and compressive stresses, the stress and strain in the material does not unload in the same way that it loads. This results in a hysteresis loop being formed and this is the basis for crack propagation in the material leading to fatigue failure. The size of the hysteresis loop increases for higher strains. Fatigue tests are typically strain controlled; that is they are subjected to a specifiedamount of strain throughout the test, typically in a sinusoidal pattern. Fatigue tests may also be stress controlled, whereby the material is subjected to a specified amount of stress. This function accepts either input (max_stress or max_strain) and will find the corresponding stress and strain as required. If you do not specify min_stress or min_strain then it is assumed to be negative of the maximum value. Currently the cyclic loading sequence begins with tension. For loading cycles with non-zero mean stresses, the results will be inaccurate if the sequence begins with compression.
 
 When a min_stress or min_strain is specified that results in a non-zero mean stress, there are several mean stress correction methods that are available. These are 'morrow', 'modified_morrow' (also known as Manson-Halford) , and 'SWT' (Smith-Watson-Topper). Only the first three reversals are plotted. For most materials the shape of the hysteresis loop will change over many hundreds of cycles as a result of fatigue hardening (also known as work-hardening) or softening. More on this process is available in the `eFatigue training documents <https://www.efatigue.com/training/Chapter_5.pdf>`_. 
 
@@ -96,11 +96,14 @@ In the example below, we are using the same data from the first example, but thi
 
 .. code:: python
 
+    from reliability.PoF import stress_strain_life_parameters_from_data, stress_strain_diagram
+    import matplotlib.pyplot as plt
     strain_data = [0.02, 0.015, 0.01, 0.006, 0.0035, 0.002]
     stress_data = [650, 625, 555, 480, 395, 330]
     cycles_data = [200, 350, 1100, 4600, 26000, 560000]
     params = stress_strain_life_parameters_from_data(stress=stress_data, strain=strain_data, cycles=cycles_data, E=216000, show_plot=False, print_results=False)
     stress_strain_diagram(E = 216000,n = params.n, K = params.K, max_strain=0.006)
+    plt.show()
 
     '''
     Max stress: 483.85816239406745
@@ -110,6 +113,25 @@ In the example below, we are using the same data from the first example, but thi
     '''
 
 .. image:: images/stress_strain_hysteresis.png
+
+In this second example, we will use the stress_strain_diagram to visualise the effects of residual stresses for a material subjected to non-zero mean stress. The material parameters (K and n) are already known so we do not need to obtain them from any data. We specify the max_stress is 378 MPa and the min_stress is -321 MPa. Upon inspection of the results we see the Min stress in the material is actually -328.893 MPa which exceeds the min_stress we specified in out test. This result is not an error and is caused by the residual stresses in the material that were formed during the first tensile loading cycle. When the material was pulled apart in tension, the material pulls back but due to plastic deformation, these internal forces in the material are not entirely removed, such that when the first compressive load peaks, the material's internal stresses add to the external compressive forces. This phenomena is important in load sequence effects for variable amplitude fatigue.
+
+stress_strain_diagram(E=210000, K = 1200, n = 0.2, max_stress=378,min_stress=-321)
+
+.. code:: python
+    from reliability.PoF import stress_strain_diagram
+    import matplotlib.pyplot as plt
+    stress_strain_diagram(E=210000, K = 1200, n = 0.2, max_stress=378,min_stress=-321)
+    plt.show()
+
+    '''
+    Max stress: 378.0
+    Min stress: -328.8931121800317 #note that this is different from our specified min_stress
+    Max strain: 0.004901364196875
+    Min strain: -0.0028982508530831477
+    '''
+
+.. image:: images/stress_strain_nonzero_mean_stress.png
 
 Strain-Life diagram
 -------------------
