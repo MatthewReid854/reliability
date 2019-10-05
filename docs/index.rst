@@ -76,7 +76,6 @@ Contents:
   Fracture mechanics
   Fracture mechanics with notch effect
   Creep
-  Wear
   Acceleration factor
   Solving simultaneous equations with sympy
 
