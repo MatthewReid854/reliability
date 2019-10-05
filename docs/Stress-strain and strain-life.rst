@@ -119,6 +119,7 @@ In this second example, we will use the stress_strain_diagram to visualise the e
 stress_strain_diagram(E=210000, K = 1200, n = 0.2, max_stress=378,min_stress=-321)
 
 .. code:: python
+
     from reliability.PoF import stress_strain_diagram
     import matplotlib.pyplot as plt
     stress_strain_diagram(E=210000, K = 1200, n = 0.2, max_stress=378,min_stress=-321)
