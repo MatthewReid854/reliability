@@ -127,12 +127,12 @@ stress_strain_diagram(E=210000, K = 1200, n = 0.2, max_stress=378,min_stress=-32
 
     '''
     Max stress: 378.0
-    Min stress: -328.8931121800317 #note that this is different from our specified min_stress
+    Min stress: -328.8931121800317 #note that this is different from the -321 that we specified due to residual compressive stresses
     Max strain: 0.004901364196875
     Min strain: -0.0028982508530831477
     '''
 
-.. image:: images/stress_strain_nonzero_mean_stress.png
+.. image:: images/stress_strain_hysteresis2.png
 
 Strain-Life diagram
 -------------------
