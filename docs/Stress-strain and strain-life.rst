@@ -9,6 +9,13 @@ Stress-strain and strain-life
 
 In the strain-life method of fatigue analysis, the elastic and plastic deformation of the material is used to determine how many cycles the material will last before failure. In this context, failure is defined as the formation of a small crack (typically 1mm) so the geometry of the material does not need to be considered provided the material peoperties have been accurately measured using a stress-strain test. This section of the documentation describes three functions which are useful in strain-life analysis. The first of these is useful to fit the stress-strain and strain-life models to available data, thereby providing the material properties. The second function is a diagram of the relationship between stress and strain during cyclic fatigue which shows the hysteresis loop and finds the min and max stress and strain. The third function produces the strain-life diagram and the equations for this diagram are used for calculating the number of cycles to failure. Further detail is available below for each of the respective functions.
 
+The equations used for stress-strain and strain life are:
+
+:math:`\text{Ramberg-Osgood relationship:} \hspace{20mm} \epsilon_{tot} = \frac{\sigma}{E} + \left(\frac{\sigma}{K}\right)^{\frac{1}{n}}` 
+
+:math:`\text{Ramberg-Osgood relationship:} \hspace{20mm} \epsilon_{tot} = \underbrace{\frac{\sigma}{E}}_{\text{elastic}} + \underbrace{\left(\frac{\sigma}{K}\right)^{\frac{1}{n}}}_{\text{plastic}}`
+
+
 Stress-Strain and Strain-Life parameter estimation
 --------------------------------------------------
 
