@@ -11,23 +11,23 @@ In the strain-life method of fatigue analysis, the elastic and plastic deformati
 
 The equations used for stress-strain and strain life are:
 
-:math:`\text{Ramberg-Osgood relationship:} \hspace{20mm} \varepsilon_{tot} = \underbrace{\frac{\sigma}{E}}_{\text{elastic}} + \underbrace{\left(\frac{\sigma}{K}\right)^{\frac{1}{n}}}_{\text{plastic}}`
+:math:`\text{Ramberg-Osgood equation:} \hspace{20mm} \varepsilon_{tot} = \underbrace{\frac{\sigma}{E}}_{\text{elastic}} + \underbrace{\left(\frac{\sigma}{K}\right)^{\frac{1}{n}}}_{\text{plastic}}`
 
-:math:`\text{Hysteresis curve equation:} \hspace{28mm} \Delta\varepsilon = \underbrace{\frac{\Delta\sigma}{E}}_{\text{elastic}} + \underbrace{2\left(\frac{\Delta\sigma}{2K}\right)^{\frac{1}{n}}}_{\text{plastic}}`
+:math:`\text{Hysteresis curve equation:} \hspace{33mm} \Delta\varepsilon = \underbrace{\frac{\Delta\sigma}{E}}_{\text{elastic}} + \underbrace{2\left(\frac{\Delta\sigma}{2K}\right)^{\frac{1}{n}}}_{\text{plastic}}`
 
-:math:`\text{Coffin-Manson relationship:} \hspace{25mm} \varepsilon_{tot} = \underbrace{\frac{\sigma_f}{E}\left(2N_f\right)^b}_{\text{elastic}} + \underbrace{\varepsilon_f\left(2N_f\right)^c}_{\text{plastic}}`
+:math:`\text{Coffin-Manson equation:} \hspace{28mm} \varepsilon_{tot} = \underbrace{\frac{\sigma_f}{E}\left(2N_f\right)^b}_{\text{elastic}} + \underbrace{\varepsilon_f\left(2N_f\right)^c}_{\text{plastic}}`
 
 :math:`\text{Morrow Mean Stress Correction:} \hspace{18mm} \varepsilon_{tot} = \underbrace{\frac{\sigma_f-\sigma_m}{E}\left(2N_f\right)^b}_{\text{elastic}} + \underbrace{\varepsilon_f\left(2N_f\right)^c}_{\text{plastic}}`
 
-:math:`\text{Modified Morrow Mean Stress Correction:} \hspace{8mm} \varepsilon_{tot} = \underbrace{\frac{\sigma_f-\sigma_m}{E}\left(2N_f\right)^b}_{\text{elastic}} + \underbrace{\varepsilon_f\left\left(\frac{\sigma_f-\sigma_m}{\sigma_f}\right)^{\frac{c}{b}}(2N_f\right)^c}_{\text{plastic}}`
+:math:`\text{Modified Morrow Mean Stress Correction:} \hspace{8mm} \varepsilon_{tot} = \underbrace{\frac{\sigma_f-\sigma_m}{E}\left(2N_f\right)^b}_{\text{elastic}} + \underbrace{\varepsilon_f\left(\frac{\sigma_f-\sigma_m}{\sigma_f}\right)^{\frac{c}{b}}\left(2N_f\right)^c}_{\text{plastic}}`
 
-:math:`\text{Smith-Watson_Topper Mean Stress Correction:} \hspace{2mm} \varepsilon_{tot} = \frac{1}{\sigma_{max)}\underbrace{\frac{\sigma_f^2}{E}\left(2N_f\right)^{2b}}_{\text{elastic}} + \underbrace{\sigma_f\varepsilon_f\left(2N_f\right)^{b+c}}_{\text{plastic}}`
+:math:`\text{Smith-Watson-Topper Mean Stress Correction:} \hspace{2mm} \varepsilon_{tot} = \frac{1}{\sigma_{max)}\underbrace{\frac{\sigma_f^2}{E}\left(2N_f\right)^{2b}}_{\text{elastic}} + \underbrace{\sigma_f\varepsilon_f\left(2N_f\right)^{b+c}}_{\text{plastic}}`
 
 Stress-Strain and Strain-Life parameter estimation
 --------------------------------------------------
 
-The function ``stress_strain_life_parameters_from_data`` will use stress and strain data to calculate the stress-strain parameters: K, n.
-If cycles is provided it will also produce the strain-life parameters: sigma_f, epsilon_f, b, c.
+The function ``stress_strain_life_parameters_from_data`` will use stress and strain data to calculate the stress-strain parameters (K, n) from the Ramberg-Osgood relationship.
+If cycles is provided it will also produce the strain-life parameters (sigma_f, epsilon_f, b, c) from the Coffin-Manson equation.
 You cannot find the strain-life parameters without stress as we must use stress to find elastic strain.
 Note that if you already have the parameters K, n, sigma_f, epsilon_f, b, c, then you can use the functions 'stress_strain_diagram' or 'strain_life_diagram' as described below.
 
@@ -81,7 +81,7 @@ In the example below, we provide data from a fatigue test including stress, stra
 Stress-Strain diagram
 ---------------------
 
-The function ``stress_strain_diagram`` is used to visualize how the stress and strain vary with successive load cycles. Due to residual tensile and compressive stresses, the stress and strain in the material does not unload in the same way that it loads. This results in a hysteresis loop being formed and this is the basis for crack propagation in the material leading to fatigue failure. The size of the hysteresis loop increases for higher strains. Fatigue tests are typically strain controlled; that is they are subjected to a specified amount of strain throughout the test, typically in a sinusoidal pattern. Fatigue tests may also be stress controlled, whereby the material is subjected to a specified amount of stress. This function accepts either input (max_stress or max_strain) and will find the corresponding stress or strain as required. If you do not specify min_stress or min_strain then it is assumed to be negative of the maximum value.
+The function ``stress_strain_diagram`` is used to visualize how the stress and strain vary with successive load cycles as described by the hysteresis curve equation. Due to residual tensile and compressive stresses, the stress and strain in the material does not unload in the same way that it loads. This results in a hysteresis loop being formed and this is the basis for crack propagation in the material leading to fatigue failure. The size of the hysteresis loop increases for higher strains. Fatigue tests are typically strain controlled; that is they are subjected to a specified amount of strain throughout the test, typically in a sinusoidal pattern. Fatigue tests may also be stress controlled, whereby the material is subjected to a specified amount of stress. This function accepts either input (max_stress or max_strain) and will find the corresponding stress or strain as required. If you do not specify min_stress or min_strain then it is assumed to be negative of the maximum value.
 
 The cyclic loading sequence defaults to begin with tension, but can be changed using initial_load_direction='compression'. If your test begins with compression it is important to specify this as the residual stresses in the material from the initial loading will affect the results for the first reversal. Only the initial loading and the first two reversals are plotted. For most materials the shape of the hysteresis loop will change over many hundreds of cycles as a result of fatigue hardening (also known as work-hardening) or fatigue-softening. More on this process is available in the `eFatigue training documents <https://www.efatigue.com/training/Chapter_5.pdf>`_. 
 
