@@ -17,6 +17,11 @@ The equations used for stress-strain and strain life are:
 
 :math:`\text{Coffin-Manson relationship:} \hspace{25mm} \varepsilon_{tot} = \underbrace{\frac{\sigma_f}{E}\left(2N_f\right)^b}_{\text{elastic}} + \underbrace{\varepsilon_f\left(2N_f\right)^c}_{\text{plastic}}`
 
+:math:`\text{Morrow Mean Stress Correction:} \hspace{18mm} \varepsilon_{tot} = \underbrace{\frac{\sigma_f-\sigma_m}{E}\left(2N_f\right)^b}_{\text{elastic}} + \underbrace{\varepsilon_f\left(2N_f\right)^c}_{\text{plastic}}`
+
+:math:`\text{Modified Morrow Mean Stress Correction:} \hspace{8mm} \varepsilon_{tot} = \underbrace{\frac{\sigma_f-\sigma_m}{E}\left(2N_f\right)^b}_{\text{elastic}} + \underbrace{\varepsilon_f\left\left(\frac{\sigma_f-\sigma_m}{\sigma_f}\right)^{\frac{c}{b}}(2N_f\right)^c}_{\text{plastic}}`
+
+:math:`\text{Smith-Watson_Topper Mean Stress Correction:} \hspace{2mm} \varepsilon_{tot} = \frac{1}{\sigma_{max)}\underbrace{\frac{\sigma_f^2}{E}\left(2N_f\right)^{2b}}_{\text{elastic}} + \underbrace{\sigma_f\varepsilon_f\left(2N_f\right)^{b+c}}_{\text{plastic}}`
 
 Stress-Strain and Strain-Life parameter estimation
 --------------------------------------------------
