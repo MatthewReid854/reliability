@@ -21,7 +21,7 @@ The equations used for stress-strain and strain life are:
 
 :math:`\text{Modified Morrow Mean Stress Correction:} \hspace{10mm} \varepsilon_{tot} = \underbrace{\frac{\sigma_f-\sigma_m}{E}\left(2N_f\right)^b}_{\text{elastic}} + \underbrace{\varepsilon_f\left(\frac{\sigma_f-\sigma_m}{\sigma_f}\right)^{\frac{c}{b}}\left(2N_f\right)^c}_{\text{plastic}}`
 
-:math:`\text{Smith-Watson-Topper Mean Stress Correction:} \hspace{2mm} \varepsilon_{tot} = \frac{1}{\sigma_{max}}\left[\underbrace{\frac{\sigma_f^2}{E}\left(2N_f\right)^{2b}}_{\text{elastic}} + \underbrace{\sigma_f\varepsilon_f\left(2N_f\right)^{b+c}}_{\text{plastic}}\right]`
+:math:`\text{Smith-Watson-Topper Mean Stress Correction:} \hspace{2mm} \varepsilon_{tot} = \underbrace{\frac{\sigma_f^2}{E.\sigma_{max}}\left(2N_f\right)^{2b}}_{\text{elastic}} + \underbrace{\frac{\sigma_f\varepsilon_f}{\sigma_{max}}\left(2N_f\right)^{b+c}}_{\text{plastic}}\`
 
 Stress-Strain and Strain-Life parameter estimation
 --------------------------------------------------
