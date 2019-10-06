@@ -11,13 +11,13 @@ In the strain-life method of fatigue analysis, the elastic and plastic deformati
 
 The equations used for stress-strain and strain life are:
 
-:math:`\text{Ramberg-Osgood equation:} \hspace{30mm} \varepsilon_{tot} = \underbrace{\frac{\sigma}{E}}_{\text{elastic}} + \underbrace{\left(\frac{\sigma}{K}\right)^{\frac{1}{n}}}_{\text{plastic}}`
+:math:`\text{Ramberg-Osgood equation:} \hspace{44mm} \varepsilon_{tot} = \underbrace{\frac{\sigma}{E}}_{\text{elastic}} + \underbrace{\left(\frac{\sigma}{K}\right)^{\frac{1}{n}}}_{\text{plastic}}`
 
-:math:`\text{Hysteresis curve equation:} \hspace{28mm} \Delta\varepsilon = \underbrace{\frac{\Delta\sigma}{E}}_{\text{elastic}} + \underbrace{2\left(\frac{\Delta\sigma}{2K}\right)^{\frac{1}{n}}}_{\text{plastic}}`
+:math:`\text{Hysteresis curve equation:} \hspace{45mm} \Delta\varepsilon = \underbrace{\frac{\Delta\sigma}{E}}_{\text{elastic}} + \underbrace{2\left(\frac{\Delta\sigma}{2K}\right)^{\frac{1}{n}}}_{\text{plastic}}`
 
-:math:`\text{Coffin-Manson equation:} \hspace{30mm} \varepsilon_{tot} = \underbrace{\frac{\sigma_f}{E}\left(2N_f\right)^b}_{\text{elastic}} + \underbrace{\varepsilon_f\left(2N_f\right)^c}_{\text{plastic}}`
+:math:`\text{Coffin-Manson equation:} \hspace{46mm} \varepsilon_{tot} = \underbrace{\frac{\sigma_f}{E}\left(2N_f\right)^b}_{\text{elastic}} + \underbrace{\varepsilon_f\left(2N_f\right)^c}_{\text{plastic}}`
 
-:math:`\text{Morrow Mean Stress Correction:} \hspace{15mm} \varepsilon_{tot} = \underbrace{\frac{\sigma_f-\sigma_m}{E}\left(2N_f\right)^b}_{\text{elastic}} + \underbrace{\varepsilon_f\left(2N_f\right)^c}_{\text{plastic}}`
+:math:`\text{Morrow Mean Stress Correction:} \hspace{32mm} \varepsilon_{tot} = \underbrace{\frac{\sigma_f-\sigma_m}{E}\left(2N_f\right)^b}_{\text{elastic}} + \underbrace{\varepsilon_f\left(2N_f\right)^c}_{\text{plastic}}`
 
 :math:`\text{Modified Morrow Mean Stress Correction:} \hspace{8mm} \varepsilon_{tot} = \underbrace{\frac{\sigma_f-\sigma_m}{E}\left(2N_f\right)^b}_{\text{elastic}} + \underbrace{\varepsilon_f\left(\frac{\sigma_f-\sigma_m}{\sigma_f}\right)^{\frac{c}{b}}\left(2N_f\right)^c}_{\text{plastic}}`
 
