@@ -179,10 +179,10 @@ def sequential_samling_chart(p1, p2, alpha, beta, show_plot=True, print_results=
     df.loc[df['Failures to accept'] < 0, 'Failures to accept'] = 'x'
     df.loc[df['Failures to reject'] < 0, 'Failures to reject'] = 'x'
 
-    if print_results == True:
+    if print_results is True:
         print(df)
 
-    if show_plot == True:
+    if show_plot is True:
         # plots the results of tests if they are specified
         if type(F) == np.ndarray:
             if all(F) not in [0, 1]:

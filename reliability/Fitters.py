@@ -252,7 +252,7 @@ class Fit_Everything:
         df3 = df2.set_index('Distribution').fillna('').replace(to_replace=0, value='')
         if self.Beta_2P_BIC == 0:  # remove beta if it was not fitted (due to data being outside of 0 to 1 range)
             df3 = df3.drop('Beta_2P', axis=0)
-        if self._left_cens == True:  # remove all location shifted distributions if they were not fitted (due to having left censored data)
+        if self._left_cens is True:  # remove all location shifted distributions if they were not fitted (due to having left censored data)
             df3 = df3.drop(['Weibull_3P', 'Exponential_2P', 'Gamma_3P'], axis=0)
         self.results = df3
 
@@ -279,21 +279,21 @@ class Fit_Everything:
             self.best_distribution = Beta_Distribution(alpha=self.Beta_2P_alpha, beta=self.Beta_2P_beta)
 
         # print the results
-        if print_results == True:  # printing occurs by default
+        if print_results is True:  # printing occurs by default
             pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
             pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
             print(self.results)
 
-        if show_histogram_plot == True:
+        if show_histogram_plot is True:
             Fit_Everything.histogram_plot(self)  # plotting occurs by default
 
-        if show_PP_plot == True:
+        if show_PP_plot is True:
             Fit_Everything.P_P_plot(self)  # plotting occurs by default unless there is left censored data
 
-        if show_probability_plot == True:
+        if show_probability_plot is True:
             Fit_Everything.probability_plot(self)  # plotting occurs by default
 
-        if show_histogram_plot == True or show_PP_plot == True or show_probability_plot == True:
+        if show_histogram_plot is True or show_PP_plot is True or show_probability_plot is True:
             plt.show()
 
     def histogram_plot(self):
@@ -316,7 +316,7 @@ class Fit_Everything:
 
         plt.bar(center, hist * self._frac_fail, align='center', width=width, alpha=0.2, color='k', edgecolor='k')
 
-        if self._left_cens == False:  # we can only plot the 3P distributions if they were fitted (in the case the left censored data was not provided)
+        if self._left_cens is False:  # we can only plot the 3P distributions if they were fitted (in the case the left censored data was not provided)
             Weibull_Distribution(alpha=self.Weibull_3P_alpha, beta=self.Weibull_3P_beta, gamma=self.Weibull_3P_gamma).PDF(xvals=xvals, label=r'Weibull ($\alpha , \beta , \gamma$)')
             Gamma_Distribution(alpha=self.Gamma_3P_alpha, beta=self.Gamma_3P_beta, gamma=self.Gamma_3P_gamma).PDF(xvals=xvals, label=r'Gamma ($\alpha , \beta , \gamma$)')
             Exponential_Distribution(Lambda=self.Expon_2P_lambda, gamma=self.Expon_2P_gamma).PDF(xvals=xvals, label=r'Exponential ($\lambda , \gamma$)')
@@ -335,11 +335,11 @@ class Fit_Everything:
         plt.legend()
 
         plt.subplot(122)  # CDF
-        if self._left_cens == True:
+        if self._left_cens is True:
             plt.bar(center, hist_cumulative * self._frac_fail + (1 - self._frac_fail_L), align='center', width=width, alpha=0.2, color='k', edgecolor='k')
         else:
             plt.bar(center, hist_cumulative * self._frac_fail, align='center', width=width, alpha=0.2, color='k', edgecolor='k')
-        if self._left_cens == False:  # we can only plot the 3P distributions if they were fitted (in the case the left censored data was not provided)
+        if self._left_cens is False:  # we can only plot the 3P distributions if they were fitted (in the case the left censored data was not provided)
             Weibull_Distribution(alpha=self.Weibull_3P_alpha, beta=self.Weibull_3P_beta, gamma=self.Weibull_3P_gamma).CDF(xvals=xvals, label=r'Weibull ($\alpha , \beta , \gamma$)')
             Gamma_Distribution(alpha=self.Gamma_3P_alpha, beta=self.Gamma_3P_beta, gamma=self.Gamma_3P_gamma).CDF(xvals=xvals, label=r'Gamma ($\alpha , \beta , \gamma$)')
             Exponential_Distribution(Lambda=self.Expon_2P_lambda, gamma=self.Expon_2P_gamma).CDF(xvals=xvals, label=r'Exponential ($\lambda , \gamma$)')
@@ -454,7 +454,7 @@ class Fit_Everything:
 
     def probability_plot(self):
         from reliability.Probability_plotting import Weibull_probability_plot, Normal_probability_plot, Gamma_probability_plot, Exponential_probability_plot, Beta_probability_plot, Lognormal_probability_plot
-        if self._left_cens == False:  # then the location shifted distributions will have been fitted
+        if self._left_cens is False:  # then the location shifted distributions will have been fitted
             rows = 2
         else:  # this is when the location shifted distributions were not fitted
             rows = 1
@@ -514,7 +514,7 @@ class Fit_Everything:
         ax.get_legend().remove()
         plt.title('Lognormal_2P')
 
-        if self._left_cens == False:  # only plot the location shifted distributions if they were created (ie. there was no left censored data supplied)
+        if self._left_cens is False:  # only plot the location shifted distributions if they were created (ie. there was no left censored data supplied)
             plt.subplot(2, cols, cols + 1)
             Exponential_probability_plot(failures=self.failures, right_censored=self.right_censored, left_censored=self.left_censored, __fitted_dist_params=self.__Expon_2P_params, fit_gamma=True)
             ax = plt.gca()
@@ -638,7 +638,7 @@ class Fit_Weibull_2P:
         warnings.filterwarnings('ignore')  # necessary to supress the warning about the jacobian when using the Powell optimizer
         result = minimize(value_and_grad(Fit_Weibull_2P.LL), guess, args=(failures, right_censored, left_censored), jac=True, tol=1e-6, method='Powell')
 
-        if result.success == True:
+        if result.success is True:
             params = result.x
             self.success = True
             self.alpha = params[0]
@@ -677,11 +677,11 @@ class Fit_Weibull_2P:
         df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
         self.results = df.set_index('Parameter')
 
-        if print_results == True:
+        if print_results is True:
             print(str('Results from Fit_Weibull_2P (' + str(int(CI * 100)) + '% CI):'))
             print(self.results)
 
-        if show_probability_plot == True:
+        if show_probability_plot is True:
             from reliability.Probability_plotting import Weibull_probability_plot
             if len(right_censored) == 0:
                 rc = None
@@ -775,7 +775,7 @@ class Fit_Weibull_3P:
         warnings.filterwarnings('ignore')  # necessary to supress the warning about the jacobian when using the Powell optimizer
         result = minimize(value_and_grad(Fit_Weibull_3P.LL), guess, args=(failures - shift, right_censored - shift), jac=True, tol=1e-6, method='Powell')
 
-        if result.success == True:
+        if result.success is True:
             params = result.x
             self.success = True
             self.alpha = params[0]
@@ -816,11 +816,11 @@ class Fit_Weibull_3P:
         df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
         self.results = df.set_index('Parameter')
 
-        if print_results == True:
+        if print_results is True:
             print(str('Results from Fit_Weibull_3P (' + str(int(CI * 100)) + '% CI):'))
             print(self.results)
 
-        if show_probability_plot == True:
+        if show_probability_plot is True:
             from reliability.Probability_plotting import Weibull_probability_plot
             if len(right_censored) == 0:
                 rc = None
@@ -965,9 +965,9 @@ class Fit_Weibull_Mixture:
         self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
         self.BIC = np.log(n) * k + LL2
 
-        if print_results == True:
+        if print_results is True:
             print('Parameters:', '\nAlpha 1:', self.alpha_1, '\nBeta 1:', self.beta_1, '\nAlpha 2:', self.alpha_2, '\nBeta 2:', self.beta_2, '\nProportion 1:', self.proportion_1)
-        if show_plot == True:
+        if show_plot is True:
             xvals = np.linspace(0, max(failures) * 1.05, 1000)
             plt.figure(figsize=(14, 6))
 
@@ -1090,7 +1090,7 @@ class Fit_Expon_1P:
         guess = [1 / sp[1]]
         result = minimize(value_and_grad(Fit_Expon_1P.LL), guess, args=(failures, right_censored, left_censored), jac=True, bounds=bnds, tol=1e-6)
 
-        if result.success == True:
+        if result.success is True:
             params = result.x
             self.success = True
             self.Lambda = params[0]
@@ -1123,11 +1123,11 @@ class Fit_Expon_1P:
         df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
         self.results = df.set_index('Parameter')
 
-        if print_results == True:
+        if print_results is True:
             print(str('Results from Fit_Expon_1P (' + str(int(CI * 100)) + '% CI):'))
             print(self.results)
 
-        if show_probability_plot == True:
+        if show_probability_plot is True:
             from reliability.Probability_plotting import Exponential_probability_plot
             if len(right_censored) == 0:
                 rc = None
@@ -1216,7 +1216,7 @@ class Fit_Expon_2P:
         guess = [1 / sp[1]]
         result = minimize(value_and_grad(Fit_Expon_2P.LL), guess, args=(failures - shift, right_censored - shift), jac=True, bounds=bnds, tol=1e-6)
 
-        if result.success == True:
+        if result.success is True:
             params = result.x
             self.success = True
             self.Lambda = params[0]
@@ -1251,11 +1251,11 @@ class Fit_Expon_2P:
         df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
         self.results = df.set_index('Parameter')
 
-        if print_results == True:
+        if print_results is True:
             print(str('Results from Fit_Expon_2P (' + str(int(CI * 100)) + '% CI):'))
             print(self.results)
 
-        if show_probability_plot == True:
+        if show_probability_plot is True:
             from reliability.Probability_plotting import Exponential_probability_plot
             if len(right_censored) == 0:
                 rc = None
@@ -1345,7 +1345,7 @@ class Fit_Normal_2P:
         guess = [sp[0], sp[1]]
         result = minimize(value_and_grad(Fit_Normal_2P.LL), guess, args=(failures, right_censored, left_censored), jac=True, bounds=bnds, tol=1e-6)
 
-        if result.success == True:
+        if result.success is True:
             params = result.x
             self.success = True
             self.mu = params[0]
@@ -1384,11 +1384,11 @@ class Fit_Normal_2P:
         df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
         self.results = df.set_index('Parameter')
 
-        if print_results == True:
+        if print_results is True:
             print(str('Results from Fit_Normal_2P (' + str(int(CI * 100)) + '% CI):'))
             print(self.results)
 
-        if show_probability_plot == True:
+        if show_probability_plot is True:
             from reliability.Probability_plotting import Normal_probability_plot
             if len(right_censored) == 0:
                 rc = None
@@ -1489,7 +1489,7 @@ class Fit_Lognormal_2P:
         guess = [np.log(sp[2]), sp[0]]
         result = minimize(value_and_grad(Fit_Lognormal_2P.LL), guess, args=(failures, right_censored, left_censored), jac=True, bounds=bnds, tol=1e-6)
 
-        if result.success == True:
+        if result.success is True:
             params = result.x
             self.success = True
             self.mu = params[0]
@@ -1528,11 +1528,11 @@ class Fit_Lognormal_2P:
         df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
         self.results = df.set_index('Parameter')
 
-        if print_results == True:
+        if print_results is True:
             print(str('Results from Fit_Lognormal_2P (' + str(int(CI * 100)) + '% CI):'))
             print(self.results)
 
-        if show_probability_plot == True:
+        if show_probability_plot is True:
             from reliability.Probability_plotting import Lognormal_probability_plot
             if len(right_censored) == 0:
                 rc = None
@@ -1632,7 +1632,7 @@ class Fit_Gamma_2P:
         guess = [sp[2], sp[0]]
         result = minimize(value_and_grad(Fit_Gamma_2P.LL), guess, args=(failures, right_censored, left_censored), jac=True, bounds=bnds, tol=1e-10)
 
-        if result.success == True:
+        if result.success is True:
             params = result.x
             self.success = True
             self.alpha = params[0]
@@ -1672,11 +1672,11 @@ class Fit_Gamma_2P:
         df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
         self.results = df.set_index('Parameter')
 
-        if print_results == True:
+        if print_results is True:
             print(str('Results from Fit_Gamma_2P (' + str(int(CI * 100)) + '% CI):'))
             print(self.results)
 
-        if show_probability_plot == True:
+        if show_probability_plot is True:
             from reliability.Probability_plotting import Gamma_probability_plot
             if len(right_censored) == 0:
                 rc = None
@@ -1771,7 +1771,7 @@ class Fit_Gamma_3P:
         guess = [sp[2], sp[0]]
         result = minimize(value_and_grad(Fit_Gamma_3P.LL), guess, args=(failures - shift, right_censored - shift), jac=True, bounds=bnds, tol=1e-10)
 
-        if result.success == True:
+        if result.success is True:
             params = result.x
             self.success = True
             self.alpha = params[0]
@@ -1812,11 +1812,11 @@ class Fit_Gamma_3P:
         df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
         self.results = df.set_index('Parameter')
 
-        if print_results == True:
+        if print_results is True:
             print(str('Results from Fit_Gamma_3P (' + str(int(CI * 100)) + '% CI):'))
             print(self.results)
 
-        if show_probability_plot == True:
+        if show_probability_plot is True:
             from reliability.Probability_plotting import Gamma_probability_plot
             if len(right_censored) == 0:
                 rc = None
@@ -1910,7 +1910,7 @@ class Fit_Beta_2P:
         guess = [sp[0], sp[1]]
         result = minimize(value_and_grad(Fit_Beta_2P.LL), guess, args=(failures, right_censored, left_censored), jac=True, bounds=bnds, tol=1e-6)
 
-        if result.success == True:
+        if result.success is True:
             params = result.x
             self.success = True
             self.alpha = params[0]
@@ -1949,11 +1949,11 @@ class Fit_Beta_2P:
         df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
         self.results = df.set_index('Parameter')
 
-        if print_results == True:
+        if print_results is True:
             print(str('Results from Fit_Beta_2P (' + str(int(CI * 100)) + '% CI):'))
             print(self.results)
 
-        if show_probability_plot == True:
+        if show_probability_plot is True:
             from reliability.Probability_plotting import Beta_probability_plot
             if len(right_censored) == 0:
                 rc = None

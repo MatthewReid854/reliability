@@ -44,7 +44,7 @@ class reliability_growth:
             raise ValueError('times must be an array or list of failure times')
         if min(times) < 0:
             raise ValueError('failure times cannot be negative. times must be an array or list of failure times')
-        if xmax == None:
+        if xmax is None:
             xmax = int(max(times) * 1.5)
         if 'color' in kwargs:
             c = kwargs.pop('color')
@@ -64,7 +64,7 @@ class reliability_growth:
         self.Lambda = Lambda
         self.Beta = beta
 
-        if print_results == True:
+        if print_results is True:
             print('Reliability growth model parameters:\nlambda:', Lambda, '\nbeta:', beta)
 
         if target_MTBF is not None:
@@ -74,7 +74,7 @@ class reliability_growth:
         else:
             self.time_to_target = 'specify a target to obtain the time_to_target'
 
-        if show_plot == True:
+        if show_plot is True:
             plt.plot(xvals, theta_i, color=c, **kwargs)
             plt.plot(times, theta_i_points, 'o', color=c, alpha=0.5)
             if target_MTBF is not None:
@@ -146,14 +146,14 @@ class optimal_replacement_time:
             min_cost_rounded = round(min_cost, 2)
         ORT_rounded = round(ORT, 2)
 
-        if print_results == True:
+        if print_results is True:
             if q == 0:
                 print('Cost model assuming as good as new replacement (q=0):')
             else:
                 print('Cost model assuming as good as old replacement (q=1):')
             print('The minimum cost per unit time is', min_cost_rounded, '\nThe optimal replacement time is', ORT_rounded)
 
-        if show_plot == True:
+        if show_plot is True:
             plt.plot(t, CPUT, color=c, **kwargs)
             plt.plot(ORT, min_cost, 'o', color=c)
             text_str = str('\nMinimum cost per unit time is ' + str(min_cost_rounded) + '\nOptimal replacement time is ' + str(ORT_rounded))
@@ -245,12 +245,12 @@ class ROCOF:
         self.U = U
         self.z_crit = (z_crit, -z_crit)
         results_str = str('Laplace test results: U = ' + str(round(U, 3)) + ', z_crit = (' + str(round(z_crit, 2)) + ',+' + str(round(-z_crit, 2)) + ')')
-        if print_results == True:
+        if print_results is True:
             print(results_str)
 
         x = np.arange(1, len(ti) + 1)
         if U < z_crit:
-            if print_results == True:
+            if print_results is True:
                 print('At', int(CI * 100), '% confidence level the ROCOF is IMPROVING. Assume NHPP.')
             B = len(ti) / (sum(np.log(tn / np.array(tc))))
             L = len(ti) / (tn ** B)
@@ -262,7 +262,7 @@ class ROCOF:
                 L_rounded = round(L, -int(np.floor(np.log10(abs(L)))) + 3)  # this rounds to exactly 4 sigfigs no matter the number of preceding zeros
             else:
                 L_rounded = round(L, 2)
-            if print_results == True:
+            if print_results is True:
                 print('ROCOF assuming NHPP has parameters: Beta_hat =', round(B, 3), ', Lambda_hat =', L_rounded)
             _rocof = L * B * tc ** (B - 1)
             MTBF = np.ones_like(tc) / _rocof
@@ -271,7 +271,7 @@ class ROCOF:
             else:
                 x_to_plot = x[:-1]
         elif U > -z_crit:
-            if print_results == True:
+            if print_results is True:
                 print('At', int(CI * 100), '% confidence level the ROCOF is WORSENING. Assume NHPP.')
             B = len(ti) / (sum(np.log(tn / np.array(tc))))
             L = len(ti) / (tn ** B)
@@ -283,7 +283,7 @@ class ROCOF:
                 L_rounded = round(L, -int(np.floor(np.log10(abs(L)))) + 3)  # this rounds to exactly 4 sigfigs no matter the number of preceding zeros
             else:
                 L_rounded = round(L, 2)
-            if print_results == True:
+            if print_results is True:
                 print('ROCOF assuming NHPP has parameters: Beta_hat =', round(B, 3), ', Lambda_hat =', L_rounded)
             _rocof = L * B * tc ** (B - 1)
             MTBF = np.ones_like(tc) / _rocof
@@ -292,7 +292,7 @@ class ROCOF:
             else:
                 x_to_plot = x[:-1]
         else:
-            if print_results == True:
+            if print_results is True:
                 print('At', int(CI * 100), '% confidence level the ROCOF is CONSTANT. Assume HPP.')
             rocof = n / sum(ti)
             self.trend = 'constant'
@@ -305,10 +305,10 @@ class ROCOF:
                 rocof_rounded = round(rocof, -int(np.floor(np.log10(abs(rocof)))) + 1)  # this rounds to exactly 2 sigfigs no matter the number of preceding zeros
             else:
                 rocof_rounded = round(rocof, 2)
-            if print_results == True:
+            if print_results is True:
                 print('ROCOF assuming HPP is', rocof_rounded, 'failures per unit time.')
 
-        if show_plot == True:
+        if show_plot is True:
             plt.plot(x_to_plot, MTBF, linestyle=ls, label='MTBF')
             plt.scatter(x, ti, label=label_1, **kwargs)
             plt.ylabel('Times between failures')

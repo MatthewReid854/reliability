@@ -172,10 +172,10 @@ class KaplanMeier:
         self.CHF_lower = -np.log(self.SF_upper)
         self.CHF_upper = -np.log(self.SF_lower)
 
-        if print_results == True:
+        if print_results is True:
             print(dfy)  # this will print the pandas dataframe
         # plotting section
-        if show_plot == True:
+        if show_plot is True:
 
             plt.plot(KM_x, KM_y, **kwargs)  # plot the main KM estimate
 
@@ -185,7 +185,7 @@ class KaplanMeier:
             else:
                 CI_color = 'steelblue'
 
-            if plot_CI == True:  # plots the confidence bounds
+            if plot_CI is True:  # plots the confidence bounds
                 title_text = str('Kaplan-Meier reliability estimate\n with ' + str(int(CI * 100)) + '% confidence bounds')
                 plt.fill_between(KM_x, KM_y_lower, KM_y_upper, alpha=0.3, color=CI_color)
             else:
@@ -357,10 +357,10 @@ class NelsonAalen:
         self.CHF_lower = -np.log(self.SF_upper)
         self.CHF_upper = -np.log(self.SF_lower)
 
-        if print_results == True:
+        if print_results is True:
             print(dfy)  # this will print the pandas dataframe
         # plotting section
-        if show_plot == True:
+        if show_plot is True:
 
             plt.plot(NA_x, NA_y, **kwargs)  # plot the main NA estimate
 
@@ -370,7 +370,7 @@ class NelsonAalen:
             else:
                 CI_color = 'steelblue'
 
-            if plot_CI == True:  # plots the confidence bounds
+            if plot_CI is True:  # plots the confidence bounds
                 title_text = str('Nelson-Aalen reliability estimate\n with ' + str(int(CI * 100)) + '% confidence bounds')
                 plt.fill_between(NA_x, NA_y_lower, NA_y_upper, alpha=0.3, color=CI_color)
             else:

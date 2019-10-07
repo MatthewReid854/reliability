@@ -46,7 +46,7 @@ class Probability_of_failure:
             raise ValueError('Stress and Strength must both be probability distributions. First define the distribution using Reliability.Distributions.___')
         if monte_carlo_trials < 100000:
             print('Warning: Using less than 100000 monte carlo trials will lead to very inaccurate results.')
-        if type(stress) == Normal_Distribution and type(strength) == Normal_Distribution and warn == True:  # supress the warning by setting warn=False
+        if type(stress) == Normal_Distribution and type(strength) == Normal_Distribution and warn is True:  # supress the warning by setting warn=False
             print('If strength and stress are both Normal distributions, it is more accurate to use the exact formula rather than monte carlo estimation. The exact formula is supported in the function Probability_of_failure_normdist')
 
         # draw random samples from stress and strength distributions
@@ -62,7 +62,7 @@ class Probability_of_failure:
             pof_array.append(failures / (i + 1))
         self.prob_of_failure = failures / monte_carlo_trials
 
-        if show_distribution_plot == True:
+        if show_distribution_plot is True:
             xmin = stress.b5
             xmax = strength.b95
             if type(stress) == Beta_Distribution:
@@ -84,7 +84,7 @@ class Probability_of_failure:
             plt.xlabel('Probability Density')
             plt.ylabel('Stress and Strength Units')
 
-        if show_convergence_plot == True:
+        if show_convergence_plot is True:
             plt.figure()
             plt.plot(range(monte_carlo_trials), pof_array)
             plt.title('Monte Carlo convergence plot\nof probability of failure results')
@@ -92,10 +92,10 @@ class Probability_of_failure:
             plt.ylabel('Probability of failure')
             plt.subplots_adjust(left=0.15, right=0.93)
 
-        if print_results == True:
+        if print_results is True:
             print('Probability of failure:', self.prob_of_failure)
 
-        if show_convergence_plot == True or show_distribution_plot == True:
+        if show_convergence_plot is True or show_distribution_plot is True:
             plt.show()
 
 
@@ -127,10 +127,10 @@ class Probability_of_failure_normdist:
         mu_stress = stress.mu
         self.prob_of_failure = ss.norm.cdf(-(mu_strength - mu_stress) / ((sigma_strength ** 2 + sigma_stress ** 2) ** 0.5))
 
-        if print_results == True:
+        if print_results is True:
             print('Probability of failure:', self.prob_of_failure)
 
-        if show_distribution_plot == True:
+        if show_distribution_plot is True:
             xmin = stress.b5
             xmax = strength.b95
             xvals = np.linspace(xmin, xmax, 100000)

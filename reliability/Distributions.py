@@ -108,7 +108,7 @@ class Weibull_Distribution:
         self.name = 'Weibull'
         self.alpha = alpha
         self.beta = beta
-        if self.alpha == None or self.beta == None:
+        if self.alpha is None or self.beta is None:
             raise ValueError('Parameters alpha and beta must be specified. Eg. Weibull_Distribution(alpha=5,beta=2)')
         self.gamma = gamma
         self.parameters = np.array([self.alpha, self.beta, self.gamma])
@@ -497,7 +497,7 @@ class Normal_Distribution:
         self.name = 'Normal'
         self.mu = mu
         self.sigma = sigma
-        if self.mu == None or self.sigma == None:
+        if self.mu is None or self.sigma is None:
             raise ValueError('Parameters mu and sigma must be specified. Eg. Normal_Distribution(mu=5,sigma=2)')
         self.parameters = np.array([self.mu, self.sigma])
         self.mean = mu
@@ -876,7 +876,7 @@ class Lognormal_Distribution:
         self.name = 'Lognormal'
         self.mu = mu
         self.sigma = sigma
-        if self.mu == None or self.sigma == None:
+        if self.mu is None or self.sigma is None:
             raise ValueError('Parameters mu and sigma must be specified. Eg. Lognormal_Distribution(mu=5,sigma=2)')
         self.gamma = gamma
         self.parameters = np.array([self.mu, self.sigma, self.gamma])
@@ -1261,7 +1261,7 @@ class Exponential_Distribution:
     def __init__(self, Lambda=None, gamma=0):
         self.name = 'Exponential'
         self.Lambda = Lambda
-        if self.Lambda == None:
+        if self.Lambda is None:
             raise ValueError('Parameter Lambda must be specified. Eg. Exponential_Distribution(Lambda=3)')
         self.gamma = gamma
         self.parameters = np.array([self.Lambda, self.gamma])
@@ -1649,7 +1649,7 @@ class Gamma_Distribution:
         self.name = 'Gamma'
         self.alpha = alpha
         self.beta = beta
-        if self.alpha == None or self.beta == None:
+        if self.alpha is None or self.beta is None:
             raise ValueError('Parameters alpha and beta must be specified. Eg. Gamma_Distribution(alpha=5,beta=2)')
         self.gamma = gamma
         self.parameters = np.array([self.alpha, self.beta, self.gamma])
@@ -2038,7 +2038,7 @@ class Beta_Distribution:
         self.name = 'Beta'
         self.alpha = alpha
         self.beta = beta
-        if self.alpha == None or self.beta == None:
+        if self.alpha is None or self.beta is None:
             raise ValueError('Parameters alpha and beta must be specified. Eg. Beta_Distribution(alpha=5,beta=2)')
         self.parameters = np.array([self.alpha, self.beta])
         mean, var, skew, kurt = ss.beta.stats(self.alpha, self.beta, 0, 1, moments='mvsk')

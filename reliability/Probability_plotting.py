@@ -151,7 +151,6 @@ def plotting_positions(failures=None, right_censored=None, left_censored=None):
         y = yvalues[::-1]
     return x, y
 
-
 def Weibull_probability_plot(failures=None, right_censored=None, left_censored=None, fit_gamma=False, __fitted_dist_params=None, **kwargs):
     '''
     Weibull probability plot
@@ -190,14 +189,14 @@ def Weibull_probability_plot(failures=None, right_censored=None, left_censored=N
             left_censored = np.array(left_censored)
         else:
             raise ValueError('left_censored must be a list or an array')
-    if fit_gamma == True and left_censored is not None:
+    if fit_gamma is True and left_censored is not None:
         raise ValueError('cannot fit gamma if left censored data is specified')
     # generate the figure and fit the distribution
     if max(failures) < 1:
         xvals = np.linspace(10 ** -3, 2, 1000)
     else:
         xvals = np.logspace(-2, np.log10(max(failures)) * 10, 1000)
-    if fit_gamma == False:
+    if fit_gamma is False:
         if __fitted_dist_params is not None:
             alpha = __fitted_dist_params.alpha
             beta = __fitted_dist_params.beta
@@ -217,7 +216,7 @@ def Weibull_probability_plot(failures=None, right_censored=None, left_censored=N
             color = 'red'
         plt.plot(xvals, wbf, color=color, label=label, **kwargs)
         plt.xlabel('Time')
-    elif fit_gamma == True:
+    elif fit_gamma is True:
         if __fitted_dist_params is not None:
             alpha = __fitted_dist_params.alpha
             beta = __fitted_dist_params.beta
@@ -474,16 +473,16 @@ def Gamma_probability_plot(failures=None, right_censored=None, left_censored=Non
             left_censored = np.array(left_censored)
         else:
             raise ValueError('left_censored must be a list or an array')
-    if fit_gamma == True and left_censored is not None:
+    if fit_gamma is True and left_censored is not None:
         raise ValueError('cannot fit gamma if left censored data is specified')
-    if fit_gamma == True and left_censored is not None:
+    if fit_gamma is True and left_censored is not None:
         raise ValueError('cannot fit gamma if left censored data is specified')
     # generate the figure and fit the distribution
     if max(failures) < 1:
         xvals = np.linspace(10 ** -3, 2, 1000)
     else:
         xvals = np.logspace(-2, np.log10(max(failures)) * 10, 1000)
-    if fit_gamma == False:
+    if fit_gamma is False:
         if __fitted_dist_params is not None:
             alpha = __fitted_dist_params.alpha
             beta = __fitted_dist_params.beta
@@ -503,7 +502,7 @@ def Gamma_probability_plot(failures=None, right_censored=None, left_censored=Non
             color = 'red'
         plt.plot(xvals, gf, color=color, label=label, **kwargs)
         plt.xlabel('Time')
-    elif fit_gamma == True:
+    elif fit_gamma is True:
         if __fitted_dist_params is not None:
             alpha = __fitted_dist_params.alpha
             beta = __fitted_dist_params.beta
@@ -588,13 +587,13 @@ def Exponential_probability_plot(failures=None, right_censored=None, left_censor
     '''
     if len(failures) < 2:
         raise ValueError('Insufficient data to fit a distribution. Minimum number of points is 2')
-    if fit_gamma == True and left_censored is not None:
+    if fit_gamma is True and left_censored is not None:
         raise ValueError('cannot fit gamma if left censored data is specified')
     if max(failures) < 1:
         xvals = np.linspace(10 ** -3, 2, 1000)
     else:
         xvals = np.logspace(-2, np.log10(max(failures)) * 10, 1000)
-    if fit_gamma == False:
+    if fit_gamma is False:
         if __fitted_dist_params is not None:
             Lambda = __fitted_dist_params.Lambda
         else:
@@ -612,7 +611,7 @@ def Exponential_probability_plot(failures=None, right_censored=None, left_censor
             color = 'red'
         plt.plot(xvals, ef, color=color, label=label, **kwargs)
         plt.xlabel('Time')
-    elif fit_gamma == True:
+    elif fit_gamma is True:
         if __fitted_dist_params is not None:
             Lambda = __fitted_dist_params.Lambda
             gamma = __fitted_dist_params.gamma
@@ -758,7 +757,7 @@ def PP_plot_parametric(X_dist=None, Y_dist=None, y_quantile_lines=None, x_quanti
             plt.plot([q, q, 0], [0, quantile, quantile], color='red', linewidth=0.5)
             plt.text(q, 0, str(q))
             plt.text(0, quantile, str(round(quantile, 2)))
-    if show_diagonal_line == True:
+    if show_diagonal_line is True:
         plt.plot([0, 1], [0, 1], color='blue', alpha=0.5, label='Y = X')
     plt.title('Probability-Probability plot\nParametric')
     plt.axis('square')
@@ -825,9 +824,9 @@ def QQ_plot_parametric(X_dist=None, Y_dist=None, show_fitted_lines=True, show_di
     xmax = max(dist_X_ISF) * 1.1
     ymax = max(dist_Y_ISF) * 1.1
     overall_max = max(xmax, ymax)
-    if show_diagonal_line == True:
+    if show_diagonal_line is True:
         plt.plot([0, overall_max], [0, overall_max], color='blue', alpha=0.5, label='Y = X')
-    if show_fitted_lines == True:
+    if show_fitted_lines is True:
         plt.plot(x_fit, y_fit, color='red', alpha=0.5, label=text_str)
         plt.plot(x_fit, y1_fit, color='green', alpha=0.5, label=text_str1)
         plt.legend(title='Fitted lines:')
@@ -953,7 +952,7 @@ def PP_plot_semiparametric(X_data_failures=None, X_data_right_censored=None, Y_d
     plt.axis('square')
     plt.xlim([0, 1])
     plt.ylim([0, 1])
-    if show_diagonal_line == True:
+    if show_diagonal_line is True:
         plt.plot([0, 1], [0, 1], color='blue', alpha=0.5)
     plt.title('Probability-Probability Plot\nSemi-parametric')
 
@@ -1035,7 +1034,7 @@ def QQ_plot_semiparametric(X_data_failures=None, X_data_right_censored=None, Y_d
     plt.xlabel('Actual Quantiles')
     plt.axis('square')
     endval = max(max(dist_Y_ISF), max(X_data_failures)) * 1.1
-    if show_diagonal_line == True:
+    if show_diagonal_line is True:
         plt.plot([0, endval], [0, endval], color='blue', alpha=0.5, label='Y = X')
 
     # fit lines and generate text for equations to go in legend
@@ -1051,7 +1050,7 @@ def QQ_plot_semiparametric(X_data_failures=None, X_data_right_censored=None, Y_d
         text_str1 = str('Y = ' + str(round(deg1[0], 3)) + ' X' + ' - ' + str(round(-1 * deg1[1], 3)))
     else:
         text_str1 = str('Y = ' + str(round(deg1[0], 3)) + ' X' + ' + ' + str(round(deg1[1], 3)))
-    if show_fitted_lines == True:
+    if show_fitted_lines is True:
         plt.plot(x_fit, y_fit, color='red', alpha=0.5, label=text_str)
         plt.plot(x_fit, y1_fit, color='green', alpha=0.5, label=text_str1)
         plt.legend(title='Fitted lines:')
