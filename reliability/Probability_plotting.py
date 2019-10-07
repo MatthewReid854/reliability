@@ -283,18 +283,7 @@ def Normal_probability_plot(failures=None, right_censored=None, left_censored=No
     '''
     if len(failures) < 2:
         raise ValueError('Insufficient data to fit a distribution. Minimum number of points is 2')
-    if 'label' in kwargs:
-        label = kwargs.pop('label')
-    else:
-        label = str('Fitted Normal_2P (μ=' + str(round(mu, 2)) + ', σ=' + str(round(sigma, 2)) + ')')
-    if 'color' in kwargs:
-        color = kwargs.pop('color')
-        data_color = color
-    else:
-        color = 'red'
-        data_color = 'k'
     x, y = plotting_positions(failures=failures, right_censored=right_censored, left_censored=left_censored)
-    plt.scatter(x, y, marker='.', linewidth=2, c=data_color, label='Failure data')
     plt.ylim([0.0001, 0.9999])
     plt.xlim([min(x) - max(x) * 0.2, max(x) * 1.2])
     plt.gca().set_yscale('function', functions=(__normal_forward, __normal_inverse))
@@ -314,6 +303,17 @@ def Normal_probability_plot(failures=None, right_censored=None, left_censored=No
         fit = Fit_Normal_2P(failures=failures, right_censored=right_censored, left_censored=left_censored, show_probability_plot=False, print_results=False)
         mu = fit.mu
         sigma = fit.sigma
+    if 'label' in kwargs:
+        label = kwargs.pop('label')
+    else:
+        label = str('Fitted Normal_2P (μ=' + str(round(mu, 2)) + ', σ=' + str(round(sigma, 2)) + ')')
+    if 'color' in kwargs:
+        color = kwargs.pop('color')
+        data_color = color
+    else:
+        color = 'red'
+        data_color = 'k'
+    plt.scatter(x, y, marker='.', linewidth=2, c=data_color, label='Failure data')
     nf = Normal_Distribution(mu=mu, sigma=sigma).CDF(show_plot=False, xvals=xvals)
     plt.plot(xvals, nf, color=color, label=label, **kwargs)
     plt.title('Probability plot\nNormal CDF')
@@ -340,18 +340,8 @@ def Lognormal_probability_plot(failures=None, right_censored=None, left_censored
     '''
     if len(failures) < 2:
         raise ValueError('Insufficient data to fit a distribution. Minimum number of points is 2')
-    if 'label' in kwargs:
-        label = kwargs.pop('label')
-    else:
-        label = str('Fitted Lognormal_2P (μ=' + str(round(mu, 2)) + ', σ=' + str(round(sigma, 2)) + ')')
-    if 'color' in kwargs:
-        color = kwargs.pop('color')
-        data_color = color
-    else:
-        color = 'red'
-        data_color = 'k'
+
     x, y = plotting_positions(failures=failures, right_censored=right_censored, left_censored=left_censored)
-    plt.scatter(x, y, marker='.', linewidth=2, c=data_color, label='Failure data')
     plt.ylim([0.0001, 0.9999])
     xmin_log = 10 ** (int(np.floor(np.log10(min(x)))))
     xmax_log = 10 ** (int(np.ceil(np.log10(max(x)))))
@@ -377,6 +367,17 @@ def Lognormal_probability_plot(failures=None, right_censored=None, left_censored
         fit = Fit_Lognormal_2P(failures=failures, right_censored=right_censored, left_censored=left_censored, show_probability_plot=False, print_results=False)
         mu = fit.mu
         sigma = fit.sigma
+    if 'label' in kwargs:
+        label = kwargs.pop('label')
+    else:
+        label = str('Fitted Lognormal_2P (μ=' + str(round(mu, 2)) + ', σ=' + str(round(sigma, 2)) + ')')
+    if 'color' in kwargs:
+        color = kwargs.pop('color')
+        data_color = color
+    else:
+        color = 'red'
+        data_color = 'k'
+    plt.scatter(x, y, marker='.', linewidth=2, c=data_color, label='Failure data')
     lnf = Lognormal_Distribution(mu=mu, sigma=sigma).CDF(show_plot=False, xvals=xvals)
     plt.plot(xvals, lnf, color=color, label=label, **kwargs)
     plt.title('Probability plot\nLognormal CDF')
@@ -402,18 +403,7 @@ def Beta_probability_plot(failures=None, right_censored=None, left_censored=None
     '''
     if len(failures) < 2:
         raise ValueError('Insufficient data to fit a distribution. Minimum number of points is 2')
-    if 'label' in kwargs:
-        label = kwargs.pop('label')
-    else:
-        label = str('Fitted Beta_2P (α=' + str(round(alpha, 2)) + ', β=' + str(round(beta, 2)) + ')')
-    if 'color' in kwargs:
-        color = kwargs.pop('color')
-        data_color = color
-    else:
-        color = 'red'
-        data_color = 'k'
     x, y = plotting_positions(failures=failures, right_censored=right_censored, left_censored=left_censored)
-    plt.scatter(x, y, marker='.', linewidth=2, c=data_color, label='Failure data')
     plt.ylim([0.0001, 0.9999])
     plt.xlim([-0.1, 1.1])
     plt.grid(b=True, which='major', color='k', alpha=0.3, linestyle='-')
@@ -432,6 +422,17 @@ def Beta_probability_plot(failures=None, right_censored=None, left_censored=None
         fit = Fit_Beta_2P(failures=failures, right_censored=right_censored, left_censored=left_censored, show_probability_plot=False, print_results=False)
         alpha = fit.alpha
         beta = fit.beta
+    if 'label' in kwargs:
+        label = kwargs.pop('label')
+    else:
+        label = str('Fitted Beta_2P (α=' + str(round(alpha, 2)) + ', β=' + str(round(beta, 2)) + ')')
+    if 'color' in kwargs:
+        color = kwargs.pop('color')
+        data_color = color
+    else:
+        color = 'red'
+        data_color = 'k'
+    plt.scatter(x, y, marker='.', linewidth=2, c=data_color, label='Failure data')
     bf = Beta_Distribution(alpha=alpha, beta=beta).CDF(show_plot=False, xvals=xvals)
     f_beta = lambda x: __beta_forward(x, alpha, beta)
     fi_beta = lambda x: __beta_inverse(x, alpha, beta)
