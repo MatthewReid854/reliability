@@ -7,7 +7,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="reliability",
-    version="0.2.15",
+    version="0.2.17",
     description="Reliability Engineering toolkit for Python",
     author="Matthew Reid",
     author_email="m.reid854@gmail.com",

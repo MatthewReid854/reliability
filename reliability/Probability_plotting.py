@@ -212,8 +212,10 @@ def Weibull_probability_plot(failures=None, right_censored=None, left_censored=N
             label = str('Fitted Weibull_2P (α=' + str(round(alpha, 2)) + ', β=' + str(round(beta, 2)) + ')')
         if 'color' in kwargs:
             color = kwargs.pop('color')
+            data_color = color
         else:
             color = 'red'
+            data_color = 'k'
         plt.plot(xvals, wbf, color=color, label=label, **kwargs)
         plt.xlabel('Time')
     elif fit_gamma is True:
@@ -234,8 +236,10 @@ def Weibull_probability_plot(failures=None, right_censored=None, left_censored=N
             label = str('Fitted Weibull_3P\n(α=' + str(round(alpha, 2)) + ', β=' + str(round(beta, 2)) + ', γ=' + str(round(gamma, 2)) + ')')
         if 'color' in kwargs:
             color = kwargs.pop('color')
+            data_color = color
         else:
             color = 'red'
+            data_color = 'k'
         plt.plot(xvals, wbf, color=color, label=label, **kwargs)
         plt.xlabel('Time - gamma')
         failures = failures - gamma
@@ -243,7 +247,7 @@ def Weibull_probability_plot(failures=None, right_censored=None, left_censored=N
             right_censored = right_censored - gamma
     # plot the failure points and format the scale and axes
     x, y = plotting_positions(failures=failures, right_censored=right_censored, left_censored=left_censored)
-    plt.scatter(x, y, marker='.', linewidth=2, c='k', label='Failure data')
+    plt.scatter(x, y, marker='.', linewidth=2, c=data_color, label='Failure data')
     plt.gca().set_yscale('function', functions=(__weibull_forward, __weibull_inverse))
     plt.xscale('log')
     plt.grid(b=True, which='major', color='k', alpha=0.3, linestyle='-')
@@ -279,8 +283,18 @@ def Normal_probability_plot(failures=None, right_censored=None, left_censored=No
     '''
     if len(failures) < 2:
         raise ValueError('Insufficient data to fit a distribution. Minimum number of points is 2')
+    if 'label' in kwargs:
+        label = kwargs.pop('label')
+    else:
+        label = str('Fitted Normal_2P (μ=' + str(round(mu, 2)) + ', σ=' + str(round(sigma, 2)) + ')')
+    if 'color' in kwargs:
+        color = kwargs.pop('color')
+        data_color = color
+    else:
+        color = 'red'
+        data_color = 'k'
     x, y = plotting_positions(failures=failures, right_censored=right_censored, left_censored=left_censored)
-    plt.scatter(x, y, marker='.', linewidth=2, c='k', label='Failure data')
+    plt.scatter(x, y, marker='.', linewidth=2, c=data_color, label='Failure data')
     plt.ylim([0.0001, 0.9999])
     plt.xlim([min(x) - max(x) * 0.2, max(x) * 1.2])
     plt.gca().set_yscale('function', functions=(__normal_forward, __normal_inverse))
@@ -301,21 +315,12 @@ def Normal_probability_plot(failures=None, right_censored=None, left_censored=No
         mu = fit.mu
         sigma = fit.sigma
     nf = Normal_Distribution(mu=mu, sigma=sigma).CDF(show_plot=False, xvals=xvals)
-    if 'label' in kwargs:
-        label = kwargs.pop('label')
-    else:
-        label = str('Fitted Normal_2P (μ=' + str(round(mu, 2)) + ', σ=' + str(round(sigma, 2)) + ')')
-    if 'color' in kwargs:
-        color = kwargs.pop('color')
-    else:
-        color = 'red'
     plt.plot(xvals, nf, color=color, label=label, **kwargs)
     plt.title('Probability plot\nNormal CDF')
     plt.xlabel('Time')
     plt.ylabel('Fraction failing')
     plt.legend(loc='upper left')
     plt.gcf().set_size_inches(9, 7)  # adjust the figsize. This is done post figure creation so that layering is easier
-
 
 def Lognormal_probability_plot(failures=None, right_censored=None, left_censored=None, __fitted_dist_params=None, **kwargs):
     '''
@@ -335,8 +340,18 @@ def Lognormal_probability_plot(failures=None, right_censored=None, left_censored
     '''
     if len(failures) < 2:
         raise ValueError('Insufficient data to fit a distribution. Minimum number of points is 2')
+    if 'label' in kwargs:
+        label = kwargs.pop('label')
+    else:
+        label = str('Fitted Lognormal_2P (μ=' + str(round(mu, 2)) + ', σ=' + str(round(sigma, 2)) + ')')
+    if 'color' in kwargs:
+        color = kwargs.pop('color')
+        data_color = color
+    else:
+        color = 'red'
+        data_color = 'k'
     x, y = plotting_positions(failures=failures, right_censored=right_censored, left_censored=left_censored)
-    plt.scatter(x, y, marker='.', linewidth=2, c='k', label='Failure data')
+    plt.scatter(x, y, marker='.', linewidth=2, c=data_color, label='Failure data')
     plt.ylim([0.0001, 0.9999])
     xmin_log = 10 ** (int(np.floor(np.log10(min(x)))))
     xmax_log = 10 ** (int(np.ceil(np.log10(max(x)))))
@@ -363,14 +378,6 @@ def Lognormal_probability_plot(failures=None, right_censored=None, left_censored
         mu = fit.mu
         sigma = fit.sigma
     lnf = Lognormal_Distribution(mu=mu, sigma=sigma).CDF(show_plot=False, xvals=xvals)
-    if 'label' in kwargs:
-        label = kwargs.pop('label')
-    else:
-        label = str('Fitted Lognormal_2P (μ=' + str(round(mu, 2)) + ', σ=' + str(round(sigma, 2)) + ')')
-    if 'color' in kwargs:
-        color = kwargs.pop('color')
-    else:
-        color = 'red'
     plt.plot(xvals, lnf, color=color, label=label, **kwargs)
     plt.title('Probability plot\nLognormal CDF')
     plt.xlabel('Time')
@@ -395,8 +402,18 @@ def Beta_probability_plot(failures=None, right_censored=None, left_censored=None
     '''
     if len(failures) < 2:
         raise ValueError('Insufficient data to fit a distribution. Minimum number of points is 2')
+    if 'label' in kwargs:
+        label = kwargs.pop('label')
+    else:
+        label = str('Fitted Beta_2P (α=' + str(round(alpha, 2)) + ', β=' + str(round(beta, 2)) + ')')
+    if 'color' in kwargs:
+        color = kwargs.pop('color')
+        data_color = color
+    else:
+        color = 'red'
+        data_color = 'k'
     x, y = plotting_positions(failures=failures, right_censored=right_censored, left_censored=left_censored)
-    plt.scatter(x, y, marker='.', linewidth=2, c='k', label='Failure data')
+    plt.scatter(x, y, marker='.', linewidth=2, c=data_color, label='Failure data')
     plt.ylim([0.0001, 0.9999])
     plt.xlim([-0.1, 1.1])
     plt.grid(b=True, which='major', color='k', alpha=0.3, linestyle='-')
@@ -416,14 +433,6 @@ def Beta_probability_plot(failures=None, right_censored=None, left_censored=None
         alpha = fit.alpha
         beta = fit.beta
     bf = Beta_Distribution(alpha=alpha, beta=beta).CDF(show_plot=False, xvals=xvals)
-    if 'label' in kwargs:
-        label = kwargs.pop('label')
-    else:
-        label = str('Fitted Beta_2P (α=' + str(round(alpha, 2)) + ', β=' + str(round(beta, 2)) + ')')
-    if 'color' in kwargs:
-        color = kwargs.pop('color')
-    else:
-        color = 'red'
     f_beta = lambda x: __beta_forward(x, alpha, beta)
     fi_beta = lambda x: __beta_inverse(x, alpha, beta)
     plt.gca().set_yscale('function', functions=(f_beta, fi_beta))
@@ -498,8 +507,10 @@ def Gamma_probability_plot(failures=None, right_censored=None, left_censored=Non
             label = str('Fitted Gamma_2P (α=' + str(round(alpha, 2)) + ', β=' + str(round(beta, 2)) + ')')
         if 'color' in kwargs:
             color = kwargs.pop('color')
+            data_color = color
         else:
             color = 'red'
+            data_color = 'k'
         plt.plot(xvals, gf, color=color, label=label, **kwargs)
         plt.xlabel('Time')
     elif fit_gamma is True:
@@ -520,17 +531,18 @@ def Gamma_probability_plot(failures=None, right_censored=None, left_censored=Non
             label = str('Fitted Gamma_3P\n(α=' + str(round(alpha, 2)) + ', β=' + str(round(beta, 2)) + ', γ=' + str(round(gamma, 2)) + ')')
         if 'color' in kwargs:
             color = kwargs.pop('color')
+            data_color = color
         else:
             color = 'red'
+            data_color = 'k'
         plt.plot(xvals, gf, color=color, label=label, **kwargs)
         plt.xlabel('Time - gamma')
         failures = failures - gamma
         if right_censored is not None:
             right_censored = right_censored - gamma
-    # gamma_beta = beta #this is used in the axes scaling as the ppf and cdf need the shape parameter to scale the axes correctly
     # plot the failure points and format the scale and axes
     x, y = plotting_positions(failures=failures, right_censored=right_censored, left_censored=left_censored)
-    plt.scatter(x, y, marker='.', linewidth=2, c='k', label='Failure data')
+    plt.scatter(x, y, marker='.', linewidth=2, c=data_color, label='Failure data')
     f_gamma = lambda x: __gamma_forward(x, beta)
     fi_gamma = lambda x: __gamma_inverse(x, beta)
     plt.gca().set_yscale('function', functions=(f_gamma, fi_gamma))
@@ -607,8 +619,10 @@ def Exponential_probability_plot(failures=None, right_censored=None, left_censor
             label = str('Fitted Exponential_1P (λ=' + str(round(Lambda, 2)) + ')')
         if 'color' in kwargs:
             color = kwargs.pop('color')
+            data_color = color
         else:
             color = 'red'
+            data_color = 'k'
         plt.plot(xvals, ef, color=color, label=label, **kwargs)
         plt.xlabel('Time')
     elif fit_gamma is True:
@@ -627,15 +641,17 @@ def Exponential_probability_plot(failures=None, right_censored=None, left_censor
             label = str('Fitted Exponential_2P\n(λ=' + str(round(Lambda, 2)) + ', γ=' + str(round(gamma, 2)) + ')')
         if 'color' in kwargs:
             color = kwargs.pop('color')
+            data_color = color
         else:
             color = 'red'
+            data_color = 'k'
         plt.plot(xvals, ef, color=color, label=label, **kwargs)
         plt.xlabel('Time - gamma')
         failures = failures - gamma
         if right_censored is not None:
             right_censored = right_censored - gamma
     x, y = plotting_positions(failures=failures, right_censored=right_censored, left_censored=left_censored)
-    plt.scatter(x, y, marker='.', linewidth=2, c='k', label='Failure data')
+    plt.scatter(x, y, marker='.', linewidth=2, c=data_color, label='Failure data')
     plt.xlim([0, max(x) * 1.2])
     plt.gca().set_yscale('function', functions=(__expon_forward, __expon_inverse))
     plt.grid(b=True, which='major', color='k', alpha=0.3, linestyle='-')

@@ -654,7 +654,10 @@ class Fit_Weibull_2P:
         n = len(all_data)
         LL2 = 2 * Fit_Weibull_2P.LL(params, failures, right_censored, left_censored)
         self.loglik2 = LL2
-        self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
+        if n - k - 1 > 0:
+            self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
+        else:
+            self.AICc = 'Insufficient data'
         self.BIC = np.log(n) * k + LL2
         self.distribution = Weibull_Distribution(alpha=self.alpha, beta=self.beta)
 
@@ -782,7 +785,7 @@ class Fit_Weibull_3P:
             self.beta = params[1]
         else:
             self.success = False
-            print('Fitting using Autograd FAILED for Weibull_3P. The fit from Scipy was used instead so the results may not be accurate.')
+            print('WARNING: Fitting using Autograd FAILED for Weibull_3P. The fit from Scipy was used instead so the results may not be accurate.')
             sp = ss.weibull_min.fit(all_data, optimizer='powell')
             self.alpha = sp[2]
             self.beta = sp[0]
@@ -793,7 +796,10 @@ class Fit_Weibull_3P:
         n = len(all_data)
         LL2 = 2 * Fit_Weibull_3P.LL(params, failures - shift, right_censored - shift)
         self.loglik2 = LL2
-        self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
+        if n - k - 1 > 0:
+            self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
+        else:
+            self.AICc = 'Insufficient data'
         self.BIC = np.log(n) * k + LL2
         self.distribution = Weibull_Distribution(alpha=self.alpha, beta=self.beta, gamma=self.gamma)
 
@@ -962,7 +968,10 @@ class Fit_Weibull_Mixture:
         n = len(all_data)
         LL2 = 2 * Fit_Weibull_Mixture.LL(params, failures, right_censored, left_censored)
         self.loglik2 = LL2
-        self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
+        if n - k - 1 > 0:
+            self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
+        else:
+            self.AICc = 'Insufficient data'
         self.BIC = np.log(n) * k + LL2
 
         if print_results is True:
@@ -1104,7 +1113,10 @@ class Fit_Expon_1P:
         n = len(all_data)
         LL2 = 2 * Fit_Expon_1P.LL(params, failures, right_censored, left_censored)
         self.loglik2 = LL2
-        self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
+        if n - k - 1 > 0:
+            self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
+        else:
+            self.AICc = 'Insufficient data'
         self.BIC = np.log(n) * k + LL2
         self.distribution = Exponential_Distribution(Lambda=self.Lambda)
 
@@ -1232,7 +1244,10 @@ class Fit_Expon_2P:
         n = len(all_data)
         LL2 = 2 * Fit_Expon_2P.LL(params, failures - shift, right_censored - shift)
         self.loglik2 = LL2
-        self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
+        if n - k - 1 > 0:
+            self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
+        else:
+            self.AICc = 'Insufficient data'
         self.BIC = np.log(n) * k + LL2
         self.distribution = Exponential_Distribution(Lambda=self.Lambda, gamma=self.gamma)
 
@@ -1361,7 +1376,10 @@ class Fit_Normal_2P:
         n = len(all_data)
         LL2 = 2 * Fit_Normal_2P.LL(params, failures, right_censored, left_censored)
         self.loglik2 = LL2
-        self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
+        if n - k - 1 > 0:
+            self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
+        else:
+            self.AICc = 'Insufficient data'
         self.BIC = np.log(n) * k + LL2
         self.distribution = Normal_Distribution(mu=self.mu, sigma=self.sigma)
 
@@ -1505,7 +1523,10 @@ class Fit_Lognormal_2P:
         n = len(all_data)
         LL2 = 2 * Fit_Lognormal_2P.LL(params, failures, right_censored, left_censored)
         self.loglik2 = LL2
-        self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
+        if n - k - 1 > 0:
+            self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
+        else:
+            self.AICc = 'Insufficient data'
         self.BIC = np.log(n) * k + LL2
         self.distribution = Lognormal_Distribution(mu=self.mu, sigma=self.sigma)
 
@@ -1649,7 +1670,10 @@ class Fit_Gamma_2P:
         n = len(all_data)
         LL2 = 2 * Fit_Gamma_2P.LL(params, failures, right_censored, left_censored)
         self.loglik2 = LL2
-        self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
+        if n - k - 1 > 0:
+            self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
+        else:
+            self.AICc = 'Insufficient data'
         self.BIC = np.log(n) * k + LL2
         self.distribution = Gamma_Distribution(alpha=self.alpha, beta=self.beta)
 
@@ -1789,7 +1813,10 @@ class Fit_Gamma_3P:
         n = len(all_data)
         LL2 = 2 * Fit_Gamma_3P.LL(params, failures - shift, right_censored - shift)
         self.loglik2 = LL2
-        self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
+        if n - k - 1 > 0:
+            self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
+        else:
+            self.AICc = 'Insufficient data'
         self.BIC = np.log(n) * k + LL2
         self.distribution = Gamma_Distribution(alpha=self.alpha, beta=self.beta, gamma=self.gamma)
 
@@ -1926,7 +1953,10 @@ class Fit_Beta_2P:
         n = len(all_data)
         LL2 = 2 * Fit_Beta_2P.LL(params, failures, right_censored, left_censored)
         self.loglik2 = LL2
-        self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
+        if n - k - 1 > 0:
+            self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
+        else:
+            self.AICc = 'Insufficient data'
         self.BIC = np.log(n) * k + LL2
         self.distribution = Beta_Distribution(alpha=self.alpha, beta=self.beta)
 
