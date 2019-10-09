@@ -76,6 +76,7 @@ Contents:
   Fracture mechanics
   Fracture mechanics with notch effect
   Creep
+  Palmgren-Miner linear damage model
   Acceleration factor
   Solving simultaneous equations with sympy
 
