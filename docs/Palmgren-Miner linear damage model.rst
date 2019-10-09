@@ -7,7 +7,7 @@ Palmgren-Miner linear damage model
 
 .. note:: This module is currently in development. The following documentation is correct, however, the most recent version of ``reliability`` on PyPI will not contain this module until Dec 2019.
 
-The function ``Palmgren_miner_linear_damage`` uses the Palmgren-Miner linear damage hypothesis to the outputs listed below.
+The function ``palmgren_miner_linear_damage`` uses the Palmgren-Miner linear damage hypothesis to the outputs listed below.
 
 Inputs:
 
@@ -27,7 +27,7 @@ In the following example, we consider a scenario in which ball bearings are fail
 
 .. code:: python
 
-    Palmgren_miner_linear_damage(rated_life=[50000,6500,1000], time_at_stress=[40/60, 15/60, 5/60], stress=[1, 2, 4])
+    palmgren_miner_linear_damage(rated_life=[50000,6500,1000], time_at_stress=[40/60, 15/60, 5/60], stress=[1, 2, 4])
     
     '''
     Palmgren-Miner Linear Damage Model results:
