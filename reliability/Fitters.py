@@ -681,6 +681,8 @@ class Fit_Weibull_2P:
         self.results = df.set_index('Parameter')
 
         if print_results is True:
+            pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
+            pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
             print(str('Results from Fit_Weibull_2P (' + str(int(CI * 100)) + '% CI):'))
             print(self.results)
 
@@ -823,6 +825,8 @@ class Fit_Weibull_3P:
         self.results = df.set_index('Parameter')
 
         if print_results is True:
+            pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
+            pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
             print(str('Results from Fit_Weibull_3P (' + str(int(CI * 100)) + '% CI):'))
             print(self.results)
 
@@ -1136,6 +1140,8 @@ class Fit_Expon_1P:
         self.results = df.set_index('Parameter')
 
         if print_results is True:
+            pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
+            pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
             print(str('Results from Fit_Expon_1P (' + str(int(CI * 100)) + '% CI):'))
             print(self.results)
 
@@ -1267,6 +1273,8 @@ class Fit_Expon_2P:
         self.results = df.set_index('Parameter')
 
         if print_results is True:
+            pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
+            pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
             print(str('Results from Fit_Expon_2P (' + str(int(CI * 100)) + '% CI):'))
             print(self.results)
 
@@ -1403,6 +1411,8 @@ class Fit_Normal_2P:
         self.results = df.set_index('Parameter')
 
         if print_results is True:
+            pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
+            pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
             print(str('Results from Fit_Normal_2P (' + str(int(CI * 100)) + '% CI):'))
             print(self.results)
 
@@ -1550,6 +1560,8 @@ class Fit_Lognormal_2P:
         self.results = df.set_index('Parameter')
 
         if print_results is True:
+            pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
+            pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
             print(str('Results from Fit_Lognormal_2P (' + str(int(CI * 100)) + '% CI):'))
             print(self.results)
 
@@ -1697,6 +1709,8 @@ class Fit_Gamma_2P:
         self.results = df.set_index('Parameter')
 
         if print_results is True:
+            pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
+            pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
             print(str('Results from Fit_Gamma_2P (' + str(int(CI * 100)) + '% CI):'))
             print(self.results)
 
@@ -1840,6 +1854,8 @@ class Fit_Gamma_3P:
         self.results = df.set_index('Parameter')
 
         if print_results is True:
+            pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
+            pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
             print(str('Results from Fit_Gamma_3P (' + str(int(CI * 100)) + '% CI):'))
             print(self.results)
 
@@ -1980,6 +1996,8 @@ class Fit_Beta_2P:
         self.results = df.set_index('Parameter')
 
         if print_results is True:
+            pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
+            pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
             print(str('Results from Fit_Beta_2P (' + str(int(CI * 100)) + '% CI):'))
             print(self.results)
 
