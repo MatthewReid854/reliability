@@ -74,7 +74,6 @@ Contents:
   SN diagram
   Stress-strain and strain-life
   Fracture mechanics
-  Fracture mechanics with notch effect
   Creep
   Palmgren-Miner linear damage model
   Acceleration factor
