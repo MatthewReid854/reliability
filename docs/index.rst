@@ -76,8 +76,13 @@ Contents:
   Fracture mechanics
   Creep
   Palmgren-Miner linear damage model
-  Acceleration factor
   Solving simultaneous equations with sympy
+
+.. toctree::
+  :maxdepth: 1
+  :caption: Accelerated Life Testing
+
+  Acceleration factor
 
 .. toctree::
   :maxdepth: 1
