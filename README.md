@@ -4,7 +4,7 @@
 *reliability* is a Python library for reliability engineering and survival analysis. It offers the ability to create and fit probability distributions intuitively and to explore and plot their properties. *reliability* is designed to be much easier to use than scipy.stats whilst also extending the functionality to include many of the same tools that are typically only found in proprietary software such as Minitab, Reliasoft, and JMP Pro.
 
 ## Key features
-- Fitting probability distributions to data including left or right censored data
+- Fitting probability distributions to data including right censored data
 - Fitting Weibull mixture models
 - Calculating the probability of failure for stress-strength interference between any combination of the supported distributions
 - Support for Exponential, Weibull, Gamma, Normal, Lognormal, and Beta probability distributions
@@ -24,4 +24,4 @@ pip install reliability
 ```
 ## Documentation
 Check out [readthedocs](https://reliability.readthedocs.io/en/latest/) for detailed documentation and examples.
-If you find any errors, or would like to request that something be added, please raise an [issue](https://github.com/MatthewReid854/reliability/issues) in GitHub.
+If you find any errors, have any suggestions, or would like to request that something be added, please email me: m.reid854@gmail.com.

@@ -2,10 +2,8 @@
 
 -------------------------------------
 
-
 Quickstart for reliability
 ''''''''''''''''''''''''''
-
 
 Installation
 ------------
@@ -15,9 +13,6 @@ Install via ``pip``:
 .. code-block:: console
 
     pip install reliability
-
-
-
 
 A quick example
 ---------------
