@@ -17,12 +17,11 @@ import pandas as pd
 class automotive:
     '''
     This dataset is relatively small and a challenging task to fit with any distribution due to its size and shape
-    It also includes right censored data which makes fitting more difficult.
-    Thanks to Dr. Vasiliy Krivtsov for providing this data.
+    It also includes mostly right censored data which makes fitting more difficult.
     '''
     def __init__(self):
-        self.failures = [3961,4007,4734,6054,7298,10190,23060,27160,28690,37100,40060,45670,53000,67000,69630,77350,78470,91680,105700,106300,150400]
-        self.right_censored = [5248,7454,16890,17200,38700,45000,49390,69040,72280,131900]
+        self.failures = [5248,7454,16890,17200,38700,45000,49390,69040,72280,131900]
+        self.right_censored = [3961,4007,4734,6054,7298,10190,23060,27160,28690,37100,40060,45670,53000,67000,69630,77350,78470,91680,105700,106300,150400]
         rc = len(self.right_censored)
         f = len(self.failures)
         tot = f+rc
