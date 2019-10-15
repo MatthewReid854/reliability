@@ -19,11 +19,12 @@ Inputs:
 -   print_results - True/False. Default is True. Will display a pandas dataframe of results in the console.
 -   plot_CI - shades the upper and lower confidence interval
 -   CI - confidence interval between 0 and 1. Default is 0.95 for 95% CI.
+-   plot_type - SF, CDF, or CHF. Default is SF.
 
 Outputs:
 
--   results - dataframe of results
--   NA - list of Nelson-Aalen column from results dataframe. This column is the non parametric estimate of the Survival Function (reliability function).
+-    results - dataframe of results
+-    NA - list of Nelson-Aalen column from results dataframe. This column is the non parametric estimate of the Survival Function (reliability function).
 -    xvals - the x-values to plot the stepwise plot as seen when show_plot=True
 -    SF - survival function stepwise values (these differ from the NA values as there are extra values added in to make the plot into a step plot)
 -    CDF - cumulative distribution function stepwise values
@@ -50,12 +51,13 @@ In the example below, we will compare the results from the Kaplan-Meier estimato
   NA = NelsonAalen(failures=failures,right_censored=censored,color='steelblue',label='Nelson-Aalen',print_results=False)
   plt.title('Comparison of Kaplan-Meier vs Nelson-Aalen\nwith 95% CI bounds')
   plt.legend()
-  plt.show()
-
+  
   #print a table of the SF estimates for each method
   data = {'Kaplan-Meier': KM.KM,'Nelson-Aalen': NA.NA}
   df = pd.DataFrame (data, columns = ['Kaplan-Meier','Nelson-Aalen'])
   print(df)
+  
+  plt.show()
 
   '''
       Kaplan-Meier  Nelson-Aalen
