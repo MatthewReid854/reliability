@@ -9,7 +9,7 @@ The Kaplan-Meier estimator provides a method by which to estimate the survival f
 
 The Kaplan-Meier estimator is very similar in result (but quite different in method) to the `Nelson-Aalen estimator <https://reliability.readthedocs.io/en/latest/Nelson-Aalen%20estimate%20of%20reliability.html>`_. While neither has been proven to be more accurate than the other, the Kaplan-Meier estimator is generally more popular as a non-parametric means of estimating the SF. Confidence intervals are provided using the Greenwood method with Normal approximation.
 
-The Kaplan-Meier estimator can only be used with failure and right censored data. Left censored data is not supported. If you require support for left censored data, use the Turnbull Empirical Distribution Function (by B.W. Turnbull) which is available in R and Minitab. The Kaplan-Meier estimator can be accessed from ``reliability.Nonparametric.KaplanMeier``.
+The Kaplan-Meier estimator can be used with both complete and right censored data. This function can be accessed from ``reliability.Nonparametric.KaplanMeier``.
 
 Inputs:
 
