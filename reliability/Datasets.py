@@ -18,6 +18,7 @@ class automotive:
     '''
     This dataset is relatively small and a challenging task to fit with any distribution due to its size and shape
     It also includes mostly right censored data which makes fitting more difficult.
+    Sourced (with permission) from: V.V. Krivtsov and J. W. Case (1999), Peculiarities of Censored Data Analysis in Automotive Industry Applications - SAE Technical Paper Series, # 1999-01-3220
     '''
     def __init__(self):
         self.failures = [5248,7454,16890,17200,38700,45000,49390,69040,72280,131900]
