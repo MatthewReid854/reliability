@@ -5,11 +5,11 @@
 Fitting a specific distribution to data
 '''''''''''''''''''''''''''''''''''''''
 
-The module ``reliability.Fitters`` provides many probability distribution fitting functions. These functions can be thought of in two categories; non-location shifted distributions [eg. Weibull(α,β)], and location shifted distributions [eg. Weibull(α,β,γ)]. All of the non-location shifted distributions can be fitted to data containing left or right censored data (either but not both), however the location shifted distributions cannot be fitted to data containing left censored data. A discussion on why this is the case is presented at the end of this section. All distributions in the Fitters module are named with their number of parameters (eg. Fit_Weibull_2P uses α,β, whereas Fit_Weibull_3P uses α,β,γ). This is intended to remove ambiguity about what distribution you are fitting.
+The module ``reliability.Fitters`` provides many probability distribution fitting functions. These functions can be thought of in two categories; non-location shifted distributions [eg. Weibull (α,β)], and location shifted distributions [eg. Weibull (α,β,γ)]. All of the distributions can be fitted to both complete and imcomplete (right censored data). All distributions in the Fitters module are named with their number of parameters (eg. Fit_Weibull_2P uses α,β, whereas Fit_Weibull_3P uses α,β,γ). This is intended to remove ambiguity about what distribution you are fitting.
 
-Distributions are fitted simply by using the desired function and specifying the data as failures, right_censored, or left_censored data. You may not specify both left and right censored data at the same time. You must have at least as many failures as there are distribution parameters or the fit would be under-constrained. It is generally advisable to have at least 4 data points as the accuracy of the fit is proportional to the amount of data. Once fitted, the results are assigned to an object and the fitted parameters can be accessed by name, as shown in the examples below. The goodness of fit criterions are also available as AICc (Akaike Information Criterion corrected) and BIC (Bayesian Information Criterion), though these are more useful when comparing the fit of multiple distributions such as in the `Fit_Everything <https://reliability.readthedocs.io/en/latest/Fitting%20all%20available%20distributions%20to%20data.html>`_ function. As a matter of convenience, each of the modules in Fitters also generates a distribution object that has the parameters of the fitted distribution.
+Distributions are fitted simply by using the desired function and specifying the data as failures or right_censored data. You must have at least as many failures as there are distribution parameters or the fit would be under-constrained. It is generally advisable to have at least 4 data points as the accuracy of the fit is proportional to the amount of data. Once fitted, the results are assigned to an object and the fitted parameters can be accessed by name, as shown in the examples below. The goodness of fit criterions are also available as AICc (Akaike Information Criterion corrected) and BIC (Bayesian Information Criterion), though these are more useful when comparing the fit of multiple distributions such as in the `Fit_Everything <https://reliability.readthedocs.io/en/latest/Fitting%20all%20available%20distributions%20to%20data.html>`_ function. As a matter of convenience, each of the modules in Fitters also generates a distribution object that has the parameters of the fitted distribution.
 
-The supported distributions for failures and right censored data are:
+The supported distributions are:
 
 -   Weibull_2P
 -   Weibull_3P
@@ -22,19 +22,9 @@ The supported distributions for failures and right censored data are:
 -   Beta_2P
 -   Weibull_Mixture (see the `section <https://reliability.readthedocs.io/en/latest/Weibull%20mixture%20models.html>`_ on this)
 
-The supported distributions for failures and left censored data are:
-
--   Weibull_2P
--   Exponential_1P
--   Gamma_2P
--   Lognormal_2P
--   Normal_2P
--   Beta_2P
--   Weibull_Mixture (see the `section <https://reliability.readthedocs.io/en/latest/Weibull%20mixture%20models.html>`_ on this)
-
 .. note:: The Beta distribution is only for data in the range {0,1}. Specifying data outside of this range will cause an error.
 
-.. note:: The current method of fitting the location shifted distributions (Weibull_3P, Exponential_2P, Gamma_3P) is not perfectly accurate as it uses a shortcut of setting γ equal to the lowest datapoint. The optimisation method is highly sensitive to the quality of the initial guess and this initial guess is provided by scipy which does a rather poor job of estimating the parameters for location shifted distributions. This is planned to be solved in a future release but will require a reqrite of the optimization functions that are curretly used from scipy so the solution is not simple. If you are fitting location shifted distributions to small or heavily censored datasets and your work is important, I would recommend using commercial software for maximum accuracy. If you have a lot of data and not too much censored data then ``reliability.Fitters`` should do a reasonable job with location shifted distributions.
+.. note:: The current method of fitting the location shifted distributions (Weibull_3P, Exponential_2P, Gamma_3P) is not perfectly accurate as it uses a shortcut of setting γ equal to the lowest datapoint. The optimisation method is highly sensitive to the quality of the initial guess and this initial guess is provided by scipy which does a rather poor job of estimating the parameters for location shifted distributions. This is planned to be solved in a future release by using the least squares estimate (yet to be implemented) as an initial guess which would bypass the need to use scipy. If you are fitting location shifted distributions to small or heavily censored datasets and your work is important, I would recommend using commercial software for maximum accuracy. If you have a lot of data and not too much censored data then ``reliability.Fitters`` should do a reasonable job with location shifted distributions.
 
 If you do not know which distribution you want to fit, then please see the `section <https://reliability.readthedocs.io/en/latest/Fitting%20all%20available%20distributions%20to%20data.html>`_ on using the Fit_Everything function which will find the best distribution to describe your data.
 
@@ -43,7 +33,6 @@ Each of the fitters listed above (except Fit_Weibull_Mixture) has the following 
 Inputs:
 
 -   failures - an array or list of failure data
--   left_censored - an array or list of left censored data. This may only be specified if fitting non-location shifted distributions.
 -   right_censored - an array or list of right censored data
 -   show_probability_plot - True/False. Defaults to True. Produces a probability plot of the failure data and fitted distribution.
 -   print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
@@ -131,20 +120,20 @@ It is beneficial to see the effectiveness of the fitted distribution in comparis
 
 .. image:: images/Fit_Weibull_3P_right_cens.png
 
-As a final example, we will fit a Gamma_2P distribution to some partially left censored data. To provide a comparison of the fitting accuracy as the number of samples increases, we will do the same experiment with varying sample sizes. The results highlight that the accuracy of the fit is proportional to the amount of samples, so you should always try to obtain more data if possible.
+As a final example, we will fit a Gamma_2P distribution to some partially right censored data. To provide a comparison of the fitting accuracy as the number of samples increases, we will do the same experiment with varying sample sizes. The results highlight that the accuracy of the fit is proportional to the amount of samples, so you should always try to obtain more data if possible.
 
 .. code:: python
 
-    from reliability.Distributions import Gamma_Distribution
+   from reliability.Distributions import Gamma_Distribution
     from reliability.Fitters import Fit_Gamma_2P
     import matplotlib.pyplot as plt
     import numpy as np
-    
+
     np.random.seed(2)  # this is just for repeatability in this tutorial
     a = 30
     b = 4
     xvals = np.linspace(0, 500, 1000)
-    
+
     trials = [10, 100, 1000, 10000]
     subplot_id = 141
     plt.figure(figsize=(12, 5))
@@ -152,22 +141,22 @@ As a final example, we will fit a Gamma_2P distribution to some partially left c
         uncensored_failure_data = Gamma_Distribution(alpha=a, beta=b).random_samples(t)  # create some data
         cens = []
         fail = []
-        threshold = 100  # censoring cutoff
+        threshold = 180  # censoring cutoff
         for item in uncensored_failure_data:
-            if item <= threshold:  # this will left censor any value below the threshold
+            if item > threshold:  # this will right censor any value above the threshold
                 cens.append(threshold)
             else:
                 fail.append(item)
-        gf = Fit_Gamma_2P(failures=fail, left_censored=cens, show_probability_plot=False, print_results=False)  # fit the Gamma_2P distribution
+        gf = Fit_Gamma_2P(failures=fail, right_censored=cens, show_probability_plot=False, print_results=False)  # fit the Gamma_2P distribution
         print('\nFit_Gamma_2P parameters using', t, 'samples:', '\nAlpha:', gf.alpha, '\nBeta:', gf.beta)
         plt.subplot(subplot_id)
         num_bins = min(int(len(fail) / 2), 30)
         N, bins, patches = plt.hist(uncensored_failure_data, density=True, alpha=0.2, color='k', bins=num_bins, edgecolor='k')  # histogram of the data
-        for i in range(0, np.argmin(abs(np.array(bins) - threshold))):  # this is to shade the censored part of the histogram as white
+        for i in range(np.argmin(abs(np.array(bins ) -threshold)) ,len(patches)):  # this is to shade the censored part of the histogram as white
             patches[i].set_facecolor('white')
         Gamma_Distribution(alpha=a, beta=b).PDF(xvals=xvals, label='True')  # plots the true distribution
         Gamma_Distribution(alpha=gf.alpha, beta=gf.beta).PDF(xvals=xvals, label='Fitted', linestyle='--')  # plots the fitted Gamma_2P
-        plt.title(str(str(t) + ' samples'))
+        plt.title(str(str(t) + ' samples\n'+r'$\alpha$ error: '+str(round(abs(gf.alpha-a)/a*100,2))+'%\n'+r'$\beta$ error: '+str(round(abs(gf.beta-b)/b*100,2))+'%'))
         plt.ylim([0, 0.012])
         plt.xlim([0, 500])
         plt.legend()
@@ -177,33 +166,28 @@ As a final example, we will fit a Gamma_2P distribution to some partially left c
 
     '''
     Fit_Gamma_2P parameters using 10 samples: 
-    Alpha: 16.826016882071595 
-    Beta: 5.534279313290292
+    Alpha: 19.426045595196136 
+    Beta: 4.690125911226989
 
     Fit_Gamma_2P parameters using 100 samples: 
-    Alpha: 43.204091411221356 
-    Beta: 2.84231256528535
+    Alpha: 37.668605543885036 
+    Beta: 3.282138545140892
 
     Fit_Gamma_2P parameters using 1000 samples: 
-    Alpha: 30.23910765614133 
-    Beta: 3.9312509126197566
+    Alpha: 28.836133518634924 
+    Beta: 4.07244603642164
 
     Fit_Gamma_2P parameters using 10000 samples: 
-    Alpha: 29.911755243578337 
-    Beta: 4.028977541477251
+    Alpha: 30.703267251417966 
+    Beta: 3.9158594820597834
     '''
 
-.. image:: images/Fit_Gamma_2P_left_cens.png
-
-Why can't I fit a location shifted distribution to my left censored data?
--------------------------------------------------------------------------
-
-This is because left censored data could occur anywhere to the left of the shifted start point (the gamma value), making the true location of a censored datapoint an impossibility if the gamma parameter is larger than the data. To think of it another way, for the same reason that we can't have a negative failure time on a Weibull_2P distribution, we can't have a failure time less than gamma on a Weibull_3P distribution. While it is certainly possible that left censored data come from a location shifted distribution, we cannot accurately determine what gamma is without a known minimum. In the case of no censoring or right censored data, the gamma parameter is simply set as the lowest failure time, but this convenience breaks down for left censored data.
+.. image:: images/Fit_Gamma_2P_right_cens.png
 
 How does the code work with censored data?
 ------------------------------------------
 
-All functions in this module work using a Python library called `autograd <https://github.com/HIPS/autograd/blob/master/README.md/>`_ to find the derivative of the log-likelihood function. In this way, the code only needs to specify the log PDF, log CDF, and log SF in order to obtain the fitted parameters. Initial guesses of the parameters are essential for autograd and are obtained using scipy.stats on all the data as if it wasn't censored (since scipy doesn't accept censored data). If the distribution is an extremely bad fit or is heavily censored then these guesses may be poor and the fit might not be successful. In this case, the scipy fit is used which will be incorrect if there is any censored data. If this occurs, a warning will be printed. Generally the fit achieved by autograd is highly successful.
+All functions in this module work using a Python library called `autograd <https://github.com/HIPS/autograd/blob/master/README.md/>`_ to find the derivative of the log-likelihood function. In this way, the code only needs to specify the log PDF and log SF in order to obtain the fitted parameters. Initial guesses of the parameters are essential for autograd and are obtained using scipy.stats on all the data as if it wasn't censored (since scipy doesn't accept censored data). If the distribution is an extremely bad fit or is heavily censored then these guesses may be poor and the fit might not be successful. In this case, the scipy fit is used which will be incorrect if there is any censored data. If this occurs, a warning will be printed. Generally the fit achieved by autograd is highly successful.
 
 For location shifted distributions, the fitting of the gamma parameter is done using the lowest failure time, rather than by using a location shifted log-likelihood function. This is a shortcut way that is usually quite effective. It was found to be necessary because scipy's fit (which is used as the initial guess for autograd) was often wildly inaccurate for location shifted log-likelihood functions. This meant that autograd did not converge to a solution for location shifted distributions when given such a poor initial guess. Because the lognormal distribution is initially slow to increase (compared to Weibull, Gamma, and Exponential), there is often a substantial gap between zero and the smallest failure time in a lognormal distribution. This made it unreliable to use the "lowest failure time" method to find gamma, which is why there is no Fit_Lognormal_3P distribution. If you have a solution to this, please let me know.
 
