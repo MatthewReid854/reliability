@@ -19,33 +19,34 @@ class KaplanMeier:
     Kaplan-Meier
 
     Uses the Kaplan-Meier estimation method to calculate the reliability from failure data.
-    Right censoring is supported and confidence bounds are provided. Left censoring is not supported.
+    Right censoring is supported and confidence bounds are provided.
     The confidence bounds are calculated using the Greenwood formula with Normal approximation, which is the same as
     featured in Minitab.
     The Kaplan-Meier method provides the SF. With a little algebra, the CDF and CHF are also obtained from the SF.
     It is not possible to obtain a useful version of the PDF or HF as the derivative of a stepwise function produces very spikey functions.
 
-    inputs:
-        failures - an array or list of failure times. Sorting is automatic so times do not need to be provided in any order.
-        right_censored - an array or list of right censored failure times. Defaults to None.
-        show_plot - True/False. Default is True. Plots the SF.
-        print_results - True/False. Default is True. Will display a pandas dataframe in the console.
-        plot_CI - shades the upper and lower confidence interval
-        CI - confidence interval between 0 and 1. Default is 0.95 for 95% CI.
+    Inputs:
+    failures - an array or list of failure times. Sorting is automatic so times do not need to be provided in any order.
+    right_censored - an array or list of right censored failure times. Defaults to None.
+    show_plot - True/False. Default is True. Plots the CDF, SF, or CHF as specified by plot_type.
+    plot_type - SF, CDF, or CHF. Default is SF.
+    print_results - True/False. Default is True. Will display a pandas dataframe in the console.
+    plot_CI - shades the upper and lower confidence interval
+    CI - confidence interval between 0 and 1. Default is 0.95 for 95% CI.
 
-    outputs:
-        results - dataframe of results
-        KM - list of Kaplan-Meier column from results dataframe. This column is the non parametric estimate of the Survival Function (reliability function).
-        xvals - the x-values to plot the stepwise plot as seen when show_plot=True
-        SF - survival function stepwise values (these differ from the KM values as there are extra values added in to make the plot into a step plot)
-        CDF - cumulative distribution function stepwise values
-        CHF - cumulative hazard function stepwise values
-        SF_lower - survival function stepwise values for lower CI
-        SF_upper - survival function stepwise values for upper CI
-        CDF_lower - cumulative distribution function stepwise values for lower CI
-        CDF_upper - cumulative distribution function stepwise values for upper CI
-        CHF_lower - cumulative hazard function stepwise values for lower CI
-        CHF_upper - cumulative hazard function stepwise values for upper CI
+    Outputs:
+    results - dataframe of results for the SF
+    KM - list of Kaplan-Meier column from results dataframe. This column is the non parametric estimate of the Survival Function (reliability function).
+    xvals - the x-values to plot the stepwise plot as seen when show_plot=True
+    SF - survival function stepwise values (these differ from the KM values as there are extra values added in to make the plot into a step plot)
+    CDF - cumulative distribution function stepwise values
+    CHF - cumulative hazard function stepwise values
+    SF_lower - survival function stepwise values for lower CI
+    SF_upper - survival function stepwise values for upper CI
+    CDF_lower - cumulative distribution function stepwise values for lower CI
+    CDF_upper - cumulative distribution function stepwise values for upper CI
+    CHF_lower - cumulative hazard function stepwise values for lower CI
+    CHF_upper - cumulative hazard function stepwise values for upper CI
 
     Example Usage:
     f = [5248,7454,16890,17200,38700,45000,49390,69040,72280,131900]
@@ -53,13 +54,15 @@ class KaplanMeier:
     KaplanMeier(failures = f, right_censored = rc)
     '''
 
-    def __init__(self, failures=None, right_censored=None, show_plot=True, print_results=True, plot_CI=True, CI=0.95, **kwargs):
+    def __init__(self, failures=None, right_censored=None, show_plot=True, print_results=True, plot_CI=True, CI=0.95, plot_type='SF', **kwargs):
         np.seterr(divide='ignore')  # divide by zero occurs if last detapoint is a failure so risk set is zero
 
         if failures is None:
             raise ValueError('failures must be provided to calculate non-parametric estimates.')
         if right_censored is None:
             right_censored = []  # create empty array so it can be added in hstack
+        if plot_type not in ['CDF','SF','CHF','cdf','sf','chf']:
+            raise ValueError('plot_type must be CDF, SF, or CHF. Default is SF.')
 
         # turn the failures and right censored times into a two lists of times and censoring codes
         times = np.hstack([failures, right_censored])
@@ -176,26 +179,47 @@ class KaplanMeier:
             print(dfy)  # this will print the pandas dataframe
         # plotting section
         if show_plot is True:
-
-            plt.plot(KM_x, KM_y, **kwargs)  # plot the main KM estimate
-
             # extract certain keyword arguments or specify them if they are not set. We cannot pass all kwargs to CI plots as some are not appropriate (eg. label)
             if 'color' in kwargs:
                 CI_color = kwargs.get('color')
             else:
                 CI_color = 'steelblue'
 
-            if plot_CI is True:  # plots the confidence bounds
-                title_text = str('Kaplan-Meier reliability estimate\n with ' + str(int(CI * 100)) + '% confidence bounds')
-                plt.fill_between(KM_x, KM_y_lower, KM_y_upper, alpha=0.3, color=CI_color)
-            else:
-                title_text = 'Kaplan-Meier reliability estimate'
-            plt.xlabel('Failure units')
-            plt.ylabel('Reliability')
-            plt.title(title_text)
-            plt.xlim([0, max(KM_x)])
-            plt.ylim([0, 1.1])
-
+            if plot_type == 'SF':
+                plt.plot(self.xvals, self.SF, **kwargs)
+                if plot_CI is True:  # plots the confidence bounds
+                    title_text = str('Kaplan-Meier SF estimate\n with ' + str(int(CI * 100)) + '% confidence bounds')
+                    plt.fill_between(self.xvals, self.SF_lower, self.SF_upper, color=CI_color, alpha=0.3)
+                else:
+                    title_text = 'Kaplan-Meier estimate of Survival Function'
+                plt.xlabel('Failure units')
+                plt.ylabel('Reliability')
+                plt.title(title_text)
+                plt.xlim([0, max(KM_x)])
+                plt.ylim([0, 1.1])
+            if plot_type == 'CDF':
+                plt.plot(self.xvals, self.CDF, **kwargs)
+                if plot_CI is True:  # plots the confidence bounds
+                    title_text = str('Kaplan-Meier CDF estimate\n with ' + str(int(CI * 100)) + '% confidence bounds')
+                    plt.fill_between(self.xvals, self.CDF_lower, self.CDF_upper, color=CI_color, alpha=0.3)
+                else:
+                    title_text = 'Kaplan-Meier estimate of Cumulative Density Function'
+                plt.xlabel('Failure units')
+                plt.ylabel('Fraction Failing')
+                plt.title(title_text)
+                plt.xlim([0, max(KM_x)])
+                plt.ylim([0, 1.1])
+            if plot_type == 'CHF':
+                plt.plot(self.xvals, self.CHF, **kwargs)
+                if plot_CI is True:  # plots the confidence bounds
+                    title_text = str('Kaplan-Meier CHF estimate\n with ' + str(int(CI * 100)) + '% confidence bounds')
+                    plt.fill_between(self.xvals, self.CHF_lower, self.CHF_upper, color=CI_color, alpha=0.3)
+                else:
+                    title_text = 'Kaplan-Meier estimate of Cumulative Hazard Function'
+                plt.xlabel('Failure units')
+                plt.ylabel('Cumulative Hazard')
+                plt.title(title_text)
+                plt.xlim([0, max(KM_x)])
 
 class NelsonAalen:
     '''
@@ -208,27 +232,28 @@ class NelsonAalen:
     It is not possible to obtain a useful version of the PDF or HF as the derivative of a stepwise function produces very spikey functions.
     Nelson-Aalen does obtain the HF directly which is then used to obtain the CHF, but this function is not smooth and is of little use
 
-    inputs:
-        failure - an array or list of failure times. Sorting is automatic so times do not need to be provided in any order.
-        right_censored - an array or list of right censored failure times. Defaults to None.
-        show_plot - True/False. Default is True. Plots the SF.
-        print_results - True/False. Default is True. Will display a pandas dataframe in the console.
-        plot_CI - shades the upper and lower confidence interval
-        CI - confidence interval between 0 and 1. Default is 0.95 for 95% CI.
+    Inputs:
+    failure - an array or list of failure times. Sorting is automatic so times do not need to be provided in any order.
+    right_censored - an array or list of right censored failure times. Defaults to None.
+    show_plot - True/False. Default is True. Plots the SF.
+    print_results - True/False. Default is True. Will display a pandas dataframe in the console.
+    plot_CI - shades the upper and lower confidence interval
+    CI - confidence interval between 0 and 1. Default is 0.95 for 95% CI.
+    plot_type - SF, CDF, or CHF. Default is SF.
 
-    outputs:
-        results - dataframe of results
-        NA - list of Nelson-Aalen column from results dataframe. This column is the non parametric estimate of the Survival Function (reliability function).
-        xvals - the x-values to plot the stepwise plot as seen when show_plot=True
-        SF - survival function stepwise values (these differ from the NA values as there are extra values added in to make the plot into a step plot)
-        CDF - cumulative distribution function stepwise values
-        CHF - cumulative hazard function stepwise values
-        SF_lower - survival function stepwise values for lower CI
-        SF_upper - survival function stepwise values for upper CI
-        CDF_lower - cumulative distribution function stepwise values for lower CI
-        CDF_upper - cumulative distribution function stepwise values for upper CI
-        CHF_lower - cumulative hazard function stepwise values for lower CI
-        CHF_upper - cumulative hazard function stepwise values for upper CI
+    Outputs:
+    results - dataframe of results
+    NA - list of Nelson-Aalen column from results dataframe. This column is the non parametric estimate of the Survival Function (reliability function).
+    xvals - the x-values to plot the stepwise plot as seen when show_plot=True
+    SF - survival function stepwise values (these differ from the NA values as there are extra values added in to make the plot into a step plot)
+    CDF - cumulative distribution function stepwise values
+    CHF - cumulative hazard function stepwise values
+    SF_lower - survival function stepwise values for lower CI
+    SF_upper - survival function stepwise values for upper CI
+    CDF_lower - cumulative distribution function stepwise values for lower CI
+    CDF_upper - cumulative distribution function stepwise values for upper CI
+    CHF_lower - cumulative hazard function stepwise values for lower CI
+    CHF_upper - cumulative hazard function stepwise values for upper CI
 
     Example Usage:
     f = [5248,7454,16890,17200,38700,45000,49390,69040,72280,131900]
@@ -236,13 +261,15 @@ class NelsonAalen:
     NelsonAalen(failures = f, right_censored = rc)
     '''
 
-    def __init__(self, failures=None, right_censored=None, show_plot=True, print_results=True, plot_CI=True, CI=0.95, **kwargs):
+    def __init__(self, failures=None, right_censored=None, show_plot=True, print_results=True, plot_CI=True, CI=0.95,plot_type='SF', **kwargs):
         np.seterr(divide='ignore')  # divide by zero occurs if last detapoint is a failure so risk set is zero
 
         if failures is None:
             raise ValueError('failures must be provided to calculate non-parametric estimates.')
         if right_censored is None:
             right_censored = []  # create empty array so it can be added in hstack
+        if plot_type not in ['CDF','SF','CHF','cdf','sf','chf']:
+            raise ValueError('plot_type must be CDF, SF, or CHF. Default is SF.')
 
         # turn the failures and right censored times into a two lists of times and censoring codes
         times = np.hstack([failures, right_censored])
@@ -361,22 +388,44 @@ class NelsonAalen:
             print(dfy)  # this will print the pandas dataframe
         # plotting section
         if show_plot is True:
-
-            plt.plot(NA_x, NA_y, **kwargs)  # plot the main NA estimate
-
             # extract certain keyword arguments or specify them if they are not set. We cannot pass all kwargs to CI plots as some are not appropriate (eg. label)
             if 'color' in kwargs:
                 CI_color = kwargs.get('color')
             else:
                 CI_color = 'steelblue'
 
-            if plot_CI is True:  # plots the confidence bounds
-                title_text = str('Nelson-Aalen reliability estimate\n with ' + str(int(CI * 100)) + '% confidence bounds')
-                plt.fill_between(NA_x, NA_y_lower, NA_y_upper, alpha=0.3, color=CI_color)
-            else:
-                title_text = 'Nelson-Aalen reliability estimate'
-            plt.xlabel('Failure units')
-            plt.ylabel('Reliability')
-            plt.title(title_text)
-            plt.xlim([0, max(NA_x)])
-            plt.ylim([0, 1.1])
+            if plot_type == 'SF':
+                plt.plot(self.xvals, self.SF, **kwargs)
+                if plot_CI is True:  # plots the confidence bounds
+                    title_text = str('Nelson-Aalen SF estimate\n with ' + str(int(CI * 100)) + '% confidence bounds')
+                    plt.fill_between(self.xvals, self.SF_lower, self.SF_upper, color=CI_color, alpha=0.3)
+                else:
+                    title_text = 'Nelson-Aalen estimate of Survival Function'
+                plt.xlabel('Failure units')
+                plt.ylabel('Reliability')
+                plt.title(title_text)
+                plt.xlim([0, max(NA_x)])
+                plt.ylim([0, 1.1])
+            if plot_type == 'CDF':
+                plt.plot(self.xvals, self.CDF, **kwargs)
+                if plot_CI is True:  # plots the confidence bounds
+                    title_text = str('Nelson-Aalen CDF estimate\n with ' + str(int(CI * 100)) + '% confidence bounds')
+                    plt.fill_between(self.xvals, self.CDF_lower, self.CDF_upper, color=CI_color, alpha=0.3)
+                else:
+                    title_text = 'Nelson-Aalen estimate of Cumulative Density Function'
+                plt.xlabel('Failure units')
+                plt.ylabel('Fraction Failing')
+                plt.title(title_text)
+                plt.xlim([0, max(NA_x)])
+                plt.ylim([0, 1.1])
+            if plot_type == 'CHF':
+                plt.plot(self.xvals, self.CHF, **kwargs)
+                if plot_CI is True:  # plots the confidence bounds
+                    title_text = str('Nelson-Aalen CHF estimate\n with ' + str(int(CI * 100)) + '% confidence bounds')
+                    plt.fill_between(self.xvals, self.CHF_lower, self.CHF_upper, color=CI_color, alpha=0.3)
+                else:
+                    title_text = 'Nelson-Aalen estimate of Cumulative Hazard Function'
+                plt.xlabel('Failure units')
+                plt.ylabel('Cumulative Hazard')
+                plt.title(title_text)
+                plt.xlim([0, max(NA_x)])
