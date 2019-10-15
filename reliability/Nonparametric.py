@@ -4,7 +4,7 @@ Two estimation methods are implemented:
 - Kaplan-Meier
 - Nelson-Aalen
 These methods arrive at very similar results but are distinctly different in their approach. Kaplan-Meier is more popular.
-Both methods support failures and right censored data. Left censored data is not supported by these methods.
+Both methods support failures and right censored data.
 Confidence intervals are provided using the Greenwood formula with Normal approximation (as implemented in Minitab).
 '''
 
@@ -226,7 +226,7 @@ class NelsonAalen:
     Nelson-Aalen
 
     Uses the Nelson-Aalen estimation method to calculate the reliability from failure data.
-    Right censoring is supported and confidence bounds are provided. Left censoring is not supported.
+    Right censoring is supported and confidence bounds are provided.
     The confidence bounds are calculated using the Greenwood formula with Normal approximation.
     The Nelson-Aalen method provides the CHF. With a little algebra, the CDF and SF are also obtained from the CHF.
     It is not possible to obtain a useful version of the PDF or HF as the derivative of a stepwise function produces very spikey functions.

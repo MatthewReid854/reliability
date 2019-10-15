@@ -59,13 +59,14 @@ Contents:
 
 .. toctree::
   :maxdepth: 1
-  :caption: Other functions
+  :caption: Other functions and data
   
   One sample proportion
   Two proportion test
   Sample size required for no failures
   Sequential sampling chart
   Convert dataframe to grouped lists
+  Datasets
 
 .. toctree::
   :maxdepth: 1
