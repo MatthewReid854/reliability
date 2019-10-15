@@ -5,8 +5,7 @@
 Datasets
 ''''''''
 
-There are a few datasets that have been included with reliability that users may find useful for testing and experimenting.
-Within ``reliability.Datasets`` the following datasets are available:
+There are a few datasets that have been included with reliability that users may find useful for testing and experimenting. While this list is currently small, expect it to increase significantly over time. Within ``reliability.Datasets`` the following datasets are available:
 
 - automotive - This dataset is relatively small and a challenging task to fit with any distribution due to its size and shape. It also includes right censored data which makes fitting more difficult.
 - defective_sample - This dataset is heavily right censored with intermixed censoring (not all censored values are greater than the largest failure). It exhibits the behavior of a defective sample (aka. Limited fraction defective).
