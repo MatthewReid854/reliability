@@ -17,7 +17,7 @@ The module ``reliability.Probability_plotting`` contains functions for each of t
 
 There is also a function to obtain the plotting positions as well as the functions for custom axes scaling. These are explained more in the help file and will not be discussed further here.
 
-Within each of the above probability plotting functions you may enter failure data as well as left or right censored data (either but not both). For those distributions that have a function in ``reliability.Fitters`` for fitting location shifted distributions (Weibull_3P, Gamma_3P, Exponential_2P), you can explicitly tell the probability plotting function to fit the gamma parameter using fit_gamma=True. By default the gamma parameter is not fitted. Fitting the gamma parameter will also change the x-axis to time-gamma such that everything will appear linear. An example of this is shown in the second example below.
+Within each of the above probability plotting functions you may enter failure data as well as right censored data. For those distributions that have a function in ``reliability.Fitters`` for fitting location shifted distributions (Weibull_3P, Gamma_3P, Exponential_2P), you can explicitly tell the probability plotting function to fit the gamma parameter using fit_gamma=True. By default the gamma parameter is not fitted. Fitting the gamma parameter will also change the x-axis to time-gamma such that everything will appear linear. An example of this is shown in the second example below.
 
 Note that the Beta and Gamma probability plots have their y-axes scaled based on the distribution's parameters so you will find that when you overlay two gamma or two beta distributions on the same gamma or beta probability paper, one will be a curved line if they have different shape parameters. This is unavoidable due to the nature of gamma and beta probability paper and is the reason why you will never find a hardcopy of such paper.
 
@@ -25,7 +25,6 @@ Inputs:
 
 - failures - the array or list of failure times
 - right_censored - the array or list of right censored failure times
-- left_censored - the array or list of left censored failure times
 - fit_gamma - this is only included for Weibull, Gamma, and Exponential probability plots. Specify fit_gamma=True to fit the location shifted distribution.
 - h1 and h2 - these are the heuristic constants for plotting positions of the form (k-h1)/(n+h2). Default is h1=0.3,h2=0.4 which is the median rank method (same as in Minitab). You can specify any heuristic that follows this form. For more heuristics, see `wikipedia <https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics>`_.
 - show_fitted_distribution - True/False. If True, the fitted distribution will be plotted on the probability plot. Defaults to True. If you want a probability plot with just the data points and no line for the distribution then set this to False.
