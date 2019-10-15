@@ -19,6 +19,7 @@ Inputs:
 -   print_results - True/False. Default is True. Will display a pandas dataframe of results in the console.
 -   plot_CI - shades the upper and lower confidence interval
 -   CI - confidence interval between 0 and 1. Default is 0.95 for 95% CI.
+-   plot_type - SF, CDF, or CHF. Default is SF.
 
 Outputs:
 
