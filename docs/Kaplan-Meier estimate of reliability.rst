@@ -92,36 +92,27 @@ In this second example, we will create some data from a Weibull distribution, an
         else:
             fail.append(item)
 
-    #fit the Weibull_2P and KaplanMeier
-    wb = Fit_Weibull_2P(failures=fail,right_censored=cens)
-    fitted_dist = Weibull_Distribution(alpha=wb.alpha,beta=wb.beta)
-    results = KaplanMeier(failures=fail,right_censored=cens,show_plot=False,print_results=False)
-    xvals = np.linspace(0,threshold,1000)
+    # Fit the Weibull_2P
+    wbf = Fit_Weibull_2P(failures=fail,right_censored=cens,show_probability_plot=False,print_results=False)
+
+    # Create the subplots and in each subplot we will plot the parametric distribution and obtain the Kaplan Meier fit.
+    # Note that the plot_type is being changed each time
     plt.figure(figsize=(12,5))
-
-    #plot the CDF
     plt.subplot(131)
-    plt.plot(results.xvals,results.CDF,label='Kaplan-Meier')
-    plt.fill_between(results.xvals,results.CDF_lower,results.CDF_upper,color='steelblue',alpha=0.3)
-    fitted_dist.CDF(label='Parametric',xvals=xvals)
-    plt.title('CDF')
+    KaplanMeier(failures=fail,right_censored=cens,plot_type='SF',print_results=False,label='Kaplan-Meier')
+    wbf.distribution.SF(label='Parametric')
     plt.legend()
-
-    #plot the SF
-    plt.subplot(132)
-    plt.plot(results.xvals,results.SF,label='Kaplan-Meier')
-    plt.fill_between(results.xvals,results.SF_lower,results.SF_upper,color='steelblue',alpha=0.3)
-    fitted_dist.SF(label='Parametric',xvals=xvals)
     plt.title('SF')
+    plt.subplot(132)
+    KaplanMeier(failures=fail,right_censored=cens,plot_type='CDF',print_results=False,label='Kaplan-Meier')
+    wbf.distribution.CDF(label='Parametric')
     plt.legend()
-
-    #plot the CHF
+    plt.title('CDF')
     plt.subplot(133)
-    plt.plot(results.xvals,results.CHF,label='Kaplan-Meier')
-    fitted_dist.CHF(label='Parametric',xvals=xvals)
-    plt.fill_between(results.xvals,results.CHF_lower,results.CHF_upper,color='steelblue',alpha=0.3)
-    plt.title('CHF')
+    KaplanMeier(failures=fail,right_censored=cens,plot_type='CHF',print_results=False,label='Kaplan-Meier')
+    wbf.distribution.CHF(label='Parametric')
     plt.legend()
+    plt.title('CHF')
     plt.show()
 
-.. image:: images/KM_all3functions.png
+.. image:: images/KM_all3functionsV2.png
