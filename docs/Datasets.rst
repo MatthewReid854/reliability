@@ -5,8 +5,7 @@
 Datasets
 ''''''''
 
-There are a few datasets that have been included with reliability that users may find useful for testing and experimenting.
-The following datasets are available in ``reliability.Datasets``:
+There are a few datasets that have been included with reliability that users may find useful for testing and experimenting. While this list is currently small, expect it to increase significantly over time. Within ``reliability.Datasets`` the following datasets are available:
 
 - automotive - This dataset is relatively small and a challenging task to fit with any distribution due to its size. It also includes mostly right censored data which makes fitting more difficult.
 - defective_sample - This dataset is heavily right censored with intermixed censoring (not all censored values are greater than the largest failure). It exhibits the behavior of a defective sample (aka. Limited fraction defective).
@@ -39,7 +38,7 @@ If you would like the statistics about a dataset you can access the info datafra
       Right Censored    12295 (90.11%)
     '''
 
-The following example shows how to import a dataset and use it. Note that we must use () before accessing the failures and righta_censored values.
+The following example shows how to import a dataset and use it. Note that we must use () before accessing the failures and right_censored values.
 
 .. code:: python
 
