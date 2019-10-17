@@ -54,4 +54,4 @@ The following example shows how to import a dataset and use it. Note that we mus
     Beta             1.153904        0.296028      0.697909       1.907835
     '''
 
-If you have in interesting dataset, please email me (m.reid854@gmail.com) and I may include it in this database.
+If you have an interesting dataset, please email me (m.reid854@gmail.com) and I may include it in this database.
