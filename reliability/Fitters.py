@@ -36,7 +36,7 @@ from autograd.scipy.special import beta as abeta
 from autograd.differential_operators import hessian
 from autograd_gamma import betainc
 from autograd.scipy.special import erf
-from autograd_gamma import gammainc, gammaincc
+from autograd_gamma import gammaincc
 
 anp.seterr('ignore')
 
@@ -528,6 +528,7 @@ class Fit_Weibull_2P:
     show_probability_plot - True/False. Defaults to True.
     print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
+    force_beta - Use this to specify the beta value if you need to force beta to be a certain value. Used in ALT probability plotting. Optional input.
 
     outputs:
     success - Whether the solution was found by autograd (True/False)
@@ -551,7 +552,7 @@ class Fit_Weibull_2P:
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     '''
 
-    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95):
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, force_beta=None):
         if failures is None or len(failures) < 2:
             raise ValueError('Maximum likelihood estimates could not be calculated for these data. There must be at least two failures to calculate Weibull parameters.')
         if CI <= 0 or CI >= 1:
@@ -574,15 +575,24 @@ class Fit_Weibull_2P:
         # solve it
         self.gamma = 0
         sp = ss.weibull_min.fit(all_data, floc=0, optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
-        guess = [sp[2], sp[0]]
         warnings.filterwarnings('ignore')  # necessary to supress the warning about the jacobian when using the Powell optimizer
-        result = minimize(value_and_grad(Fit_Weibull_2P.LL), guess, args=(failures, right_censored), jac=True, tol=1e-6, method='Powell')
+
+        if force_beta is None:
+            guess = [sp[2], sp[0]]
+            result = minimize(value_and_grad(Fit_Weibull_2P.LL), guess, args=(failures, right_censored), jac=True, tol=1e-6, method='Powell')
+        else:
+            guess = [sp[2]]
+            result = minimize(value_and_grad(Fit_Weibull_2P.LL_fb), guess, args=(failures, right_censored, force_beta), jac=True, tol=1e-6, method='Powell')
 
         if result.success is True:
             params = result.x
             self.success = True
-            self.alpha = params[0]
-            self.beta = params[1]
+            if force_beta is None:
+                self.alpha = params[0]
+                self.beta = params[1]
+            else:
+                self.alpha = params * 1  # the *1 converts ndarray to float64
+                self.beta = force_beta
         else:
             self.success = False
             print('WARNING: Fitting using Autograd FAILED for Weibull_2P. The fit from Scipy was used instead so results may not be accurate.')
@@ -603,15 +613,27 @@ class Fit_Weibull_2P:
 
         # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
-        hessian_matrix = hessian(Fit_Weibull_2P.LL)(np.array(tuple(params)), np.array(tuple(failures)), np.array(tuple(right_censored)))
-        fisher_information_matrix = np.linalg.inv(hessian_matrix)
-        self.alpha_SE = abs(fisher_information_matrix[0][0]) ** 0.5
-        self.beta_SE = abs(fisher_information_matrix[1][1]) ** 0.5
-        self.Cov_alpha_beta = abs(fisher_information_matrix[0][1])
-        self.alpha_upper = self.alpha * (np.exp(Z * (self.alpha_SE / self.alpha)))
-        self.alpha_lower = self.alpha * (np.exp(-Z * (self.alpha_SE / self.alpha)))
-        self.beta_upper = self.beta * (np.exp(Z * (self.beta_SE / self.beta)))
-        self.beta_lower = self.beta * (np.exp(-Z * (self.beta_SE / self.beta)))
+        if force_beta is None:
+            hessian_matrix = hessian(Fit_Weibull_2P.LL)(np.array(tuple(params)), np.array(tuple(failures)), np.array(tuple(right_censored)))
+            covariance_matrix = np.linalg.inv(hessian_matrix)
+            self.alpha_SE = abs(covariance_matrix[0][0]) ** 0.5
+            self.beta_SE = abs(covariance_matrix[1][1]) ** 0.5
+            self.Cov_alpha_beta = abs(covariance_matrix[0][1])
+            self.alpha_upper = self.alpha * (np.exp(Z * (self.alpha_SE / self.alpha)))
+            self.alpha_lower = self.alpha * (np.exp(-Z * (self.alpha_SE / self.alpha)))
+            self.beta_upper = self.beta * (np.exp(Z * (self.beta_SE / self.beta)))
+            self.beta_lower = self.beta * (np.exp(-Z * (self.beta_SE / self.beta)))
+        else:  # this is for when force beta is specified
+            hessian_matrix = hessian(Fit_Weibull_2P.LL_fb)(np.array(tuple([self.alpha])), np.array(tuple(failures)), np.array(tuple(right_censored)), np.array(tuple([force_beta])))
+            covariance_matrix = np.linalg.inv(hessian_matrix)
+            self.alpha_SE = abs(covariance_matrix[0][0]) ** 0.5
+            self.beta_SE = ''
+            self.Cov_alpha_beta = ''
+            self.alpha_upper = self.alpha * (np.exp(Z * (self.alpha_SE / self.alpha)))
+            self.alpha_lower = self.alpha * (np.exp(-Z * (self.alpha_SE / self.alpha)))
+            self.beta_upper = ''
+            self.beta_lower = ''
+
         Data = {'Parameter': ['Alpha', 'Beta'],
                 'Point Estimate': [self.alpha, self.beta],
                 'Standard Error': [self.alpha_SE, self.beta_SE],
@@ -645,6 +667,13 @@ class Fit_Weibull_2P:
         LL_rc = 0
         LL_f += Fit_Weibull_2P.logf(T_f, params[0], params[1]).sum()  # failure times
         LL_rc += Fit_Weibull_2P.logR(T_rc, params[0], params[1]).sum()  # right censored times
+        return -(LL_f + LL_rc)
+
+    def LL_fb(params, T_f, T_rc, force_beta):  # log likelihood function (2 parameter weibull) FORCED BETA
+        LL_f = 0
+        LL_rc = 0
+        LL_f += Fit_Weibull_2P.logf(T_f, params[0], force_beta).sum()  # failure times
+        LL_rc += Fit_Weibull_2P.logR(T_rc, params[0], force_beta).sum()  # right censored times
         return -(LL_f + LL_rc)
 
 
@@ -739,10 +768,10 @@ class Fit_Weibull_3P:
         # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
         hessian_matrix = hessian(Fit_Weibull_3P.LL)(np.array(tuple(params)), np.array(tuple(failures)), np.array(tuple(right_censored)))
-        fisher_information_matrix = np.linalg.inv(hessian_matrix)
-        self.alpha_SE = abs(fisher_information_matrix[0][0]) ** 0.5
-        self.beta_SE = abs(fisher_information_matrix[1][1]) ** 0.5
-        self.Cov_alpha_beta = abs(fisher_information_matrix[0][1])
+        covariance_matrix = np.linalg.inv(hessian_matrix)
+        self.alpha_SE = abs(covariance_matrix[0][0]) ** 0.5
+        self.beta_SE = abs(covariance_matrix[1][1]) ** 0.5
+        self.Cov_alpha_beta = abs(covariance_matrix[0][1])
         self.alpha_upper = self.alpha * (np.exp(Z * (self.alpha_SE / self.alpha)))
         self.alpha_lower = self.alpha * (np.exp(-Z * (self.alpha_SE / self.alpha)))
         self.beta_upper = self.beta * (np.exp(Z * (self.beta_SE / self.beta)))
@@ -1035,8 +1064,8 @@ class Fit_Expon_1P:
         # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
         hessian_matrix = hessian(Fit_Expon_1P.LL)(np.array(tuple(params)), np.array(tuple(failures)), np.array(tuple(right_censored)))
-        fisher_information_matrix = np.linalg.inv(hessian_matrix)
-        self.Lambda_SE = abs(fisher_information_matrix[0][0]) ** 0.5
+        covariance_matrix = np.linalg.inv(hessian_matrix)
+        self.Lambda_SE = abs(covariance_matrix[0][0]) ** 0.5
         self.Lambda_upper = self.Lambda * (np.exp(Z * (self.Lambda_SE / self.Lambda)))
         self.Lambda_lower = self.Lambda * (np.exp(-Z * (self.Lambda_SE / self.Lambda)))
         SE_inv = abs(1 / self.Lambda * np.log(self.Lambda / self.Lambda_upper) / Z)
@@ -1160,8 +1189,8 @@ class Fit_Expon_2P:
         # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
         hessian_matrix = hessian(Fit_Expon_2P.LL)(np.array(tuple(params)), np.array(tuple(failures)), np.array(tuple(right_censored)))
-        fisher_information_matrix = np.linalg.inv(hessian_matrix)
-        self.Lambda_SE = abs(fisher_information_matrix[0][0]) ** 0.5
+        covariance_matrix = np.linalg.inv(hessian_matrix)
+        self.Lambda_SE = abs(covariance_matrix[0][0]) ** 0.5
         self.Lambda_upper = self.Lambda * (np.exp(Z * (self.Lambda_SE / self.Lambda)))
         self.Lambda_lower = self.Lambda * (np.exp(-Z * (self.Lambda_SE / self.Lambda)))
         SE_inv = abs(1 / self.Lambda * np.log(self.Lambda / self.Lambda_upper) / Z)
@@ -1213,6 +1242,9 @@ class Fit_Normal_2P:
     failures - an array or list of failure data
     right_censored - an array or list of right censored data
     show_probability_plot - True/False. Defaults to True.
+    print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
+    CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
+    force_sigma - Use this to specify the sigma value if you need to force sigma to be a certain value. Used in ALT probability plotting. Optional input.
 
     Outputs:
     success - Whether the solution was found by autograd (True/False)
@@ -1236,7 +1268,7 @@ class Fit_Normal_2P:
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     '''
 
-    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95):
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, force_sigma=None):
         if failures is None or len(failures) < 2:
             raise ValueError('Maximum likelihood estimates could not be calculated for these data. There must be at least two failures to calculate Normal parameters.')
         if CI <= 0 or CI >= 1:
@@ -1258,15 +1290,23 @@ class Fit_Normal_2P:
 
         # solve it
         sp = ss.norm.fit(all_data, optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
-        guess = [sp[0], sp[1]]
         warnings.filterwarnings('ignore')  # necessary to supress the warning about the jacobian when using the Powell optimizer
-        result = minimize(value_and_grad(Fit_Normal_2P.LL), guess, args=(failures, right_censored), jac=True, method='powell', tol=1e-6)
+        if force_sigma is None:
+            guess = [sp[0], sp[1]]
+            result = minimize(value_and_grad(Fit_Normal_2P.LL), guess, args=(failures, right_censored), jac=True, method='powell', tol=1e-6)
+        else:
+            guess = [sp[0]]
+            result = minimize(value_and_grad(Fit_Normal_2P.LL_fs), guess, args=(failures, right_censored, force_sigma), jac=True, method='powell', tol=1e-6)
 
         if result.success is True:
             params = result.x
             self.success = True
-            self.mu = params[0]
-            self.sigma = params[1]
+            if force_sigma is None:
+                self.mu = params[0]
+                self.sigma = params[1]
+            else:
+                self.mu = params * 1  # the *-1 converts ndarray to float64
+                self.sigma = force_sigma
         else:
             self.success = False
             print('WARNING: Fitting using Autograd FAILED for Normal_2P. The fit from Scipy was used instead so results may not be accurate.')
@@ -1287,15 +1327,27 @@ class Fit_Normal_2P:
 
         # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
-        hessian_matrix = hessian(Fit_Normal_2P.LL)(np.array(tuple(params)), np.array(tuple(failures)), np.array(tuple(right_censored)))
-        fisher_information_matrix = np.linalg.inv(hessian_matrix)
-        self.mu_SE = abs(fisher_information_matrix[0][0]) ** 0.5
-        self.sigma_SE = abs(fisher_information_matrix[1][1]) ** 0.5
-        self.Cov_mu_sigma = abs(fisher_information_matrix[0][1])
-        self.mu_upper = self.mu + (Z * self.mu_SE) #these are unique to normal and lognormal mu params
-        self.mu_lower = self.mu + (-Z * self.mu_SE)
-        self.sigma_upper = self.sigma * (np.exp(Z * (self.sigma_SE / self.sigma)))
-        self.sigma_lower = self.sigma * (np.exp(-Z * (self.sigma_SE / self.sigma)))
+        if force_sigma is None:
+            hessian_matrix = hessian(Fit_Normal_2P.LL)(np.array(tuple(params)), np.array(tuple(failures)), np.array(tuple(right_censored)))
+            covariance_matrix = np.linalg.inv(hessian_matrix)
+            self.mu_SE = abs(covariance_matrix[0][0]) ** 0.5
+            self.sigma_SE = abs(covariance_matrix[1][1]) ** 0.5
+            self.Cov_mu_sigma = abs(covariance_matrix[0][1])
+            self.mu_upper = self.mu + (Z * self.mu_SE)  # these are unique to normal and lognormal mu params
+            self.mu_lower = self.mu + (-Z * self.mu_SE)
+            self.sigma_upper = self.sigma * (np.exp(Z * (self.sigma_SE / self.sigma)))
+            self.sigma_lower = self.sigma * (np.exp(-Z * (self.sigma_SE / self.sigma)))
+        else:
+            hessian_matrix = hessian(Fit_Normal_2P.LL_fs)(np.array(tuple([self.mu])), np.array(tuple(failures)), np.array(tuple(right_censored)), np.array(tuple([force_sigma])))
+            covariance_matrix = np.linalg.inv(hessian_matrix)
+            self.mu_SE = abs(covariance_matrix[0][0]) ** 0.5
+            self.sigma_SE = ''
+            self.Cov_mu_sigma = ''
+            self.mu_upper = self.mu + (Z * self.mu_SE)  # these are unique to normal and lognormal mu params
+            self.mu_lower = self.mu + (-Z * self.mu_SE)
+            self.sigma_upper = ''
+            self.sigma_lower = ''
+
         Data = {'Parameter': ['Mu', 'Sigma'],
                 'Point Estimate': [self.mu, self.sigma],
                 'Standard Error': [self.mu_SE, self.sigma_SE],
@@ -1331,6 +1383,13 @@ class Fit_Normal_2P:
         LL_rc += Fit_Normal_2P.logR(T_rc, params[0], params[1]).sum()  # right censored times
         return -(LL_f + LL_rc)
 
+    def LL_fs(params, T_f, T_rc, force_sigma):  # log likelihood function (2 parameter weibull) FORCED SIGMA
+        LL_f = 0
+        LL_rc = 0
+        LL_f += Fit_Normal_2P.logf(T_f, params[0], force_sigma).sum()  # failure times
+        LL_rc += Fit_Normal_2P.logR(T_rc, params[0], force_sigma).sum()  # right censored times
+        return -(LL_f + LL_rc)
+
 
 class Fit_Lognormal_2P:
     '''
@@ -1343,6 +1402,7 @@ class Fit_Lognormal_2P:
     show_probability_plot - True/False. Defaults to True.
     print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
+    force_sigma - Use this to specify the sigma value if you need to force sigma to be a certain value. Used in ALT probability plotting. Optional input.
 
     Outputs:
     success - Whether the solution was found by autograd (True/False)
@@ -1366,7 +1426,7 @@ class Fit_Lognormal_2P:
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     '''
 
-    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95):
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, force_sigma=None):
         if failures is None or len(failures) < 2:
             raise ValueError('Maximum likelihood estimates could not be calculated for these data. There must be at least two failures to calculate Lognormal parameters.')
         if CI <= 0 or CI >= 1:
@@ -1387,18 +1447,28 @@ class Fit_Lognormal_2P:
 
         self.gamma = 0
         all_data = np.hstack([failures, right_censored])
-        bnds = [(0.0001, None), (0.0001, None)]  # bounds of solution
 
         # solve it
         sp = ss.lognorm.fit(all_data, floc=0, optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
-        guess = [np.log(sp[2]), sp[0]]
-        result = minimize(value_and_grad(Fit_Lognormal_2P.LL), guess, args=(failures, right_censored), jac=True, bounds=bnds, tol=1e-6)
+        if force_sigma is None:
+            bnds = [(0.0001, None), (0.0001, None)]  # bounds of solution
+            guess = [np.log(sp[2]), sp[0]]
+            result = minimize(value_and_grad(Fit_Lognormal_2P.LL), guess, args=(failures, right_censored), jac=True, bounds=bnds, tol=1e-6)
+        else:
+            bnds = [(0.0001, None)]  # bounds of solution
+            guess = [np.log(sp[2])]
+            result = minimize(value_and_grad(Fit_Lognormal_2P.LL_fs), guess, args=(failures, right_censored, force_sigma), jac=True, bounds=bnds, tol=1e-6)
 
         if result.success is True:
             params = result.x
             self.success = True
-            self.mu = params[0]
-            self.sigma = params[1]
+            if force_sigma is None:
+                self.mu = params[0]
+                self.sigma = params[1]
+            else:
+                self.mu = params[0]
+                self.sigma = force_sigma
+
         else:
             self.success = False
             warnings.warn('Fitting using Autograd FAILED for Lognormal_2P. The fit from Scipy was used instead so results may not be accurate.')
@@ -1419,15 +1489,27 @@ class Fit_Lognormal_2P:
 
         # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
-        hessian_matrix = hessian(Fit_Lognormal_2P.LL)(np.array(tuple(params)), np.array(tuple(failures)), np.array(tuple(right_censored)))
-        fisher_information_matrix = np.linalg.inv(hessian_matrix)
-        self.mu_SE = abs(fisher_information_matrix[0][0]) ** 0.5
-        self.sigma_SE = abs(fisher_information_matrix[1][1]) ** 0.5
-        self.Cov_mu_sigma = abs(fisher_information_matrix[0][1])
-        self.mu_upper = self.mu + (Z * self.mu_SE ) #these are unique to normal and lognormal mu params
-        self.mu_lower = self.mu + (-Z * self.mu_SE)
-        self.sigma_upper = self.sigma * (np.exp(Z * (self.sigma_SE / self.sigma)))
-        self.sigma_lower = self.sigma * (np.exp(-Z * (self.sigma_SE / self.sigma)))
+        if force_sigma is None:
+            hessian_matrix = hessian(Fit_Lognormal_2P.LL)(np.array(tuple(params)), np.array(tuple(failures)), np.array(tuple(right_censored)))
+            covariance_matrix = np.linalg.inv(hessian_matrix)
+            self.mu_SE = abs(covariance_matrix[0][0]) ** 0.5
+            self.sigma_SE = abs(covariance_matrix[1][1]) ** 0.5
+            self.Cov_mu_sigma = abs(covariance_matrix[0][1])
+            self.mu_upper = self.mu + (Z * self.mu_SE)  # these are unique to normal and lognormal mu params
+            self.mu_lower = self.mu + (-Z * self.mu_SE)
+            self.sigma_upper = self.sigma * (np.exp(Z * (self.sigma_SE / self.sigma)))
+            self.sigma_lower = self.sigma * (np.exp(-Z * (self.sigma_SE / self.sigma)))
+        else:
+            hessian_matrix = hessian(Fit_Lognormal_2P.LL_fs)(np.array(tuple([self.mu])), np.array(tuple(failures)), np.array(tuple(right_censored)), np.array(tuple([force_sigma])))
+            covariance_matrix = np.linalg.inv(hessian_matrix)
+            self.mu_SE = abs(covariance_matrix[0][0]) ** 0.5
+            self.sigma_SE = ''
+            self.Cov_mu_sigma = ''
+            self.mu_upper = self.mu + (Z * self.mu_SE)  # these are unique to normal and lognormal mu params
+            self.mu_lower = self.mu + (-Z * self.mu_SE)
+            self.sigma_upper = ''
+            self.sigma_lower = ''
+
         Data = {'Parameter': ['Mu', 'Sigma'],
                 'Point Estimate': [self.mu, self.sigma],
                 'Standard Error': [self.mu_SE, self.sigma_SE],
@@ -1463,6 +1545,13 @@ class Fit_Lognormal_2P:
         LL_rc += Fit_Lognormal_2P.logR(T_rc, params[0], params[1]).sum()  # right censored times
         return -(LL_f + LL_rc)
 
+    def LL_fs(params, T_f, T_rc, force_sigma):  # log likelihood function (2 parameter lognormal) FORCED SIGMA
+        LL_f = 0
+        LL_rc = 0
+        LL_f += Fit_Lognormal_2P.logf(T_f, params[0], force_sigma).sum()  # failure times
+        LL_rc += Fit_Lognormal_2P.logR(T_rc, params[0], force_sigma).sum()  # right censored times
+        return -(LL_f + LL_rc)
+
 
 class Fit_Gamma_2P:
     '''
@@ -1475,6 +1564,7 @@ class Fit_Gamma_2P:
     show_probability_plot - True/False. Defaults to True.
     print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
+    force_beta - Use this to specify the beta value if you need to force beta to be a certain value. Used in ALT probability plotting. Optional input.
 
     Outputs:
     success - Whether the solution was found by autograd (True/False)
@@ -1498,7 +1588,7 @@ class Fit_Gamma_2P:
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     '''
 
-    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95):
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, force_beta=None):
         if failures is None or len(failures) < 2:
             raise ValueError('Maximum likelihood estimates could not be calculated for these data. There must be at least two failures to calculate Gamma parameters.')
         if CI <= 0 or CI >= 1:
@@ -1517,22 +1607,30 @@ class Fit_Gamma_2P:
         if type(right_censored) != np.ndarray:
             raise TypeError('right_censored must be a list or array of right censored failure data')
         all_data = np.hstack([failures, right_censored])
-        bnds = [(0.0001, None), (0.0001, None)]  # bounds of solution
 
         # solve it
         self.gamma = 0
         sp = ss.gamma.fit(all_data, floc=0, optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
-        guess = [sp[2], sp[0]]
-        result = minimize(value_and_grad(Fit_Gamma_2P.LL), guess, args=(failures, right_censored), jac=True, bounds=bnds, tol=1e-10)
+        warnings.filterwarnings('ignore')
+        if force_beta is None:
+            guess = [sp[2], sp[0]]
+            result = minimize(value_and_grad(Fit_Gamma_2P.LL), guess, args=(failures, right_censored), jac=True, method='nelder-mead', tol=1e-10)
+        else:
+            guess = [sp[2]]
+            result = minimize(value_and_grad(Fit_Gamma_2P.LL_fb), guess, args=(failures, right_censored, force_beta), jac=True, method='nelder-mead', tol=1e-10)
 
         if result.success is True:
             params = result.x
             self.success = True
-            self.alpha = params[0]
-            self.beta = params[1]
+            if force_beta is None:
+                self.alpha = params[0]
+                self.beta = params[1]
+            else:
+                self.alpha = params[0]
+                self.beta = force_beta
         else:
             self.success = False
-            warnings.warn('Fitting using Autograd FAILED for Gamma_2P. The fit from Scipy was used instead so results may not be accurate.')
+            print('WARNING: Fitting using Autograd FAILED for Gamma_2P. The fit from Scipy was used instead so results may not be accurate.')
             self.alpha = sp[2]
             self.beta = sp[0]
             self.gamma = sp[1]
@@ -1551,15 +1649,26 @@ class Fit_Gamma_2P:
 
         # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
-        hessian_matrix = hessian(Fit_Gamma_2P.LL)(np.array(tuple(params)), np.array(tuple(failures)), np.array(tuple(right_censored)))
-        fisher_information_matrix = np.linalg.inv(hessian_matrix)
-        self.alpha_SE = abs(fisher_information_matrix[0][0]) ** 0.5
-        self.beta_SE = abs(fisher_information_matrix[1][1]) ** 0.5
-        self.Cov_alpha_beta = abs(fisher_information_matrix[0][1])
-        self.alpha_upper = self.alpha * (np.exp(Z * (self.alpha_SE / self.alpha)))
-        self.alpha_lower = self.alpha * (np.exp(-Z * (self.alpha_SE / self.alpha)))
-        self.beta_upper = self.beta * (np.exp(Z * (self.beta_SE / self.beta)))
-        self.beta_lower = self.beta * (np.exp(-Z * (self.beta_SE / self.beta)))
+        if force_beta is None:
+            hessian_matrix = hessian(Fit_Gamma_2P.LL)(np.array(tuple(params)), np.array(tuple(failures)), np.array(tuple(right_censored)))
+            covariance_matrix = np.linalg.inv(hessian_matrix)
+            self.alpha_SE = abs(covariance_matrix[0][0]) ** 0.5
+            self.beta_SE = abs(covariance_matrix[1][1]) ** 0.5
+            self.Cov_alpha_beta = abs(covariance_matrix[0][1])
+            self.alpha_upper = self.alpha * (np.exp(Z * (self.alpha_SE / self.alpha)))
+            self.alpha_lower = self.alpha * (np.exp(-Z * (self.alpha_SE / self.alpha)))
+            self.beta_upper = self.beta * (np.exp(Z * (self.beta_SE / self.beta)))
+            self.beta_lower = self.beta * (np.exp(-Z * (self.beta_SE / self.beta)))
+        else:
+            hessian_matrix = hessian(Fit_Gamma_2P.LL_fb)(np.array(tuple([self.alpha])), np.array(tuple(failures)), np.array(tuple(right_censored)), np.array(tuple([force_beta])))
+            covariance_matrix = np.linalg.inv(hessian_matrix)
+            self.alpha_SE = abs(covariance_matrix[0][0]) ** 0.5
+            self.beta_SE = ''
+            self.Cov_alpha_beta = ''
+            self.alpha_upper = self.alpha * (np.exp(Z * (self.alpha_SE / self.alpha)))
+            self.alpha_lower = self.alpha * (np.exp(-Z * (self.alpha_SE / self.alpha)))
+            self.beta_upper = ''
+            self.beta_lower = ''
         Data = {'Parameter': ['Alpha', 'Beta'],
                 'Point Estimate': [self.alpha, self.beta],
                 'Standard Error': [self.alpha_SE, self.beta_SE],
@@ -1594,6 +1703,14 @@ class Fit_Gamma_2P:
         LL_f += Fit_Gamma_2P.logf(T_f, params[0], params[1]).sum()  # failure times
         LL_rc += Fit_Gamma_2P.logR(T_rc, params[0], params[1]).sum()  # right censored times
         return -(LL_f + LL_rc)
+
+    def LL_fb(params, T_f, T_rc, force_beta):  # log likelihood function (2 parameter Gamma) FORCED BETA
+        LL_f = 0
+        LL_rc = 0
+        LL_f += Fit_Gamma_2P.logf(T_f, params[0], force_beta).sum()  # failure times
+        LL_rc += Fit_Gamma_2P.logR(T_rc, params[0], force_beta).sum()  # right censored times
+        return -(LL_f + LL_rc)
+
 
 class Fit_Gamma_3P:
     '''
@@ -1687,10 +1804,10 @@ class Fit_Gamma_3P:
         # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
         hessian_matrix = hessian(Fit_Gamma_3P.LL)(np.array(tuple(params)), np.array(tuple(failures)), np.array(tuple(right_censored)))
-        fisher_information_matrix = np.linalg.inv(hessian_matrix)
-        self.alpha_SE = abs(fisher_information_matrix[0][0]) ** 0.5
-        self.beta_SE = abs(fisher_information_matrix[1][1]) ** 0.5
-        self.Cov_alpha_beta = abs(fisher_information_matrix[0][1])
+        covariance_matrix = np.linalg.inv(hessian_matrix)
+        self.alpha_SE = abs(covariance_matrix[0][0]) ** 0.5
+        self.beta_SE = abs(covariance_matrix[1][1]) ** 0.5
+        self.Cov_alpha_beta = abs(covariance_matrix[0][1])
         self.alpha_upper = self.alpha * (np.exp(Z * (self.alpha_SE / self.alpha)))
         self.alpha_lower = self.alpha * (np.exp(-Z * (self.alpha_SE / self.alpha)))
         self.beta_upper = self.beta * (np.exp(Z * (self.beta_SE / self.beta)))
@@ -1821,10 +1938,10 @@ class Fit_Beta_2P:
         # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
         hessian_matrix = hessian(Fit_Beta_2P.LL)(np.array(tuple(params)), np.array(tuple(failures)), np.array(tuple(right_censored)))
-        fisher_information_matrix = np.linalg.inv(hessian_matrix)
-        self.alpha_SE = abs(fisher_information_matrix[0][0]) ** 0.5
-        self.beta_SE = abs(fisher_information_matrix[1][1]) ** 0.5
-        self.Cov_alpha_beta = abs(fisher_information_matrix[0][1])
+        covariance_matrix = np.linalg.inv(hessian_matrix)
+        self.alpha_SE = abs(covariance_matrix[0][0]) ** 0.5
+        self.beta_SE = abs(covariance_matrix[1][1]) ** 0.5
+        self.Cov_alpha_beta = abs(covariance_matrix[0][1])
         self.alpha_upper = self.alpha * (np.exp(Z * (self.alpha_SE / self.alpha)))
         self.alpha_lower = self.alpha * (np.exp(-Z * (self.alpha_SE / self.alpha)))
         self.beta_upper = self.beta * (np.exp(Z * (self.beta_SE / self.beta)))
