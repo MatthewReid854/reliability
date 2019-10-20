@@ -84,6 +84,7 @@ Contents:
   :caption: Accelerated Life Testing
 
   Acceleration factor
+  ALT probability plots
 
 .. toctree::
   :maxdepth: 1

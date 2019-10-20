@@ -49,3 +49,26 @@ class defective_sample:
         blankIndex = [''] * len(df)
         df.index = blankIndex
         self.info = df
+
+class ALT_temperature:
+    '''
+    This is an accelerated life test (ALT) dataset conducted at 3 temperatures
+    It should be used with an ALT probability plot
+    The dataset contains mostly censored data but is easily fitted by Weibull_2P, Lognormal_2P, and Gamma_2P distributions.
+    Normal_2P will fit but the ALT probability plot will not show Normal_2P is a good fit for this dataset
+    Sourced from Dr. Mohammad Modarres, University of Maryland
+    '''
+    def __init__(self):
+        self.failures = [1298, 1390, 3187, 3241, 3261, 3313, 4501, 4568, 4841, 4982, 581, 925, 1432, 1586, 2452, 2734, 2772, 4106, 4674, 283, 361, 515, 638, 854, 1024, 1030, 1045, 1767, 1777, 1856, 1951, 1964, 1951, 1964, 2884]
+        self.failure_stresses = [40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 60, 60, 60, 60, 60, 60, 60, 60, 60, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80]
+        self.right_censored = [5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000]
+        self.right_censored_stresses = [40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 80]
+
+        rc = len(self.right_censored)
+        f = len(self.failures)
+        tot = f+rc
+        data = {'Stat': ['Name','Total Values','Failures','Right Censored','Number of stresses'],'Value': ['ALT_temperature',tot,str(str(f)+' ('+str(round(f/tot*100,2))+'%)'),str(str(rc)+' ('+str(round(rc/tot*100,2))+'%)'),3]}
+        df =pd.DataFrame(data,columns= ['Stat', 'Value'])
+        blankIndex = [''] * len(df)
+        df.index = blankIndex
+        self.info = df

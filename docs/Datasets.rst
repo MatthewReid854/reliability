@@ -9,14 +9,15 @@ There are a few datasets that have been included with reliability that users may
 
 - automotive - This dataset is relatively small and a challenging task to fit with any distribution due to its size. It also includes mostly right censored data which makes fitting more difficult.
 - defective_sample - This dataset is heavily right censored with intermixed censoring (not all censored values are greater than the largest failure). It exhibits the behavior of a defective sample (aka. Limited fraction defective).
+- ALT_temperature - This dataset is an accelerated life test (ALT) dataset conducted at 3 temperatures. It should be used with an ALT probability plot. The dataset contains mostly censored data but is easily fitted by Weibull_2P, Lognormal_2P, and Gamma_2P distributions.
 
-All datasets are functions which create objects and every dataset object has three values. These are:
+All datasets are functions which create objects and every dataset object has several values. For most datasets, these are:
 
 - info - a dataframe of statistics about the dataset
 - failures - a list of the failure data
 - right_censored - a list of the right_censored data
 
-If you would like more information on a dataset, you can type the name of the dataset in the help function (after importing it).
+Some datasets (such as ALT_temperature) have other values in addition to those listed above. If you would like more information on a dataset, you can type the name of the dataset in the help function (after importing it).
 
 .. code:: python
 
