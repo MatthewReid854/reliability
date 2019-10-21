@@ -16,9 +16,9 @@ The module ``reliability.ALT`` contains four ALT probability plotting functions.
 - ALT_probability_plot_Normal
 - ALT_probability_plot_Gamma
 
-An ALT probability plot produces a multi-dataset probability plot which includes the probability plots for the data and the fitted distribution at each stress level, as well as a refitted distribution assuming a common shape parameter. All of these functions perform in a similar way, with the main difference being the distribution that is fitted. The Gamma ALT probability plot will not appear parallel because of the way the Gamma distribution works, but it is still useful to judge the goodness of fit to the entire dataset using a common shape parameter. The probability plots provided do not include Exponential (because of there only being one parameter), Beta (because there are two shape parameters), or any of the location shifted distributions (because these are not typically used for ALT probability plotting).
+An ALT probability plot produces a multi-dataset probability plot which includes the probability plots for the data and the fitted distribution at each stress level, as well as a refitted distribution assuming a common shape parameter at each stress level. All of these functions perform in a similar way, with the main difference being the distribution that is fitted. The Gamma ALT probability plot will not appear parallel because of the way the Gamma distribution works, but it is still useful to judge the goodness of fit to the entire dataset using a common shape parameter. The probability plots provided do not include the Exponential distribution (because of there only being one parameter), the Beta distribution (because there are two shape parameters), or any of the location shifted distributions (because these are not typically used for ALT probability plotting).
 
-When producing the ALT probability plot, the function automates the following process; fit a distribution to the data for each unique stress level, find the common shape parameter (several methods are provided), refit the distribution to the data for each unique stress level whilst forcing the shape parameter to be equal to the common shape parameter, plot the data along with the original and new fitted distributions, calculate the change in the common shape parameter from the original shape parametter to see if the model is applicable to this dataset. Each of the ALT plotting functions listed above has the following inputs and outputs.
+When producing the ALT probability plot, the function automates the following process; fit a distribution to the data for each unique stress level, find the common shape parameter (several methods are provided), refit the distribution to the data for each unique stress level whilst forcing the shape parameter to be equal to the common shape parameter, plot the data along with the original and new fitted distributions, calculate the change in the common shape parameter from the original shape parameter to see if the model is applicable to this dataset. Each of the ALT plotting functions listed above has the following inputs and outputs.
 
 Inputs:
 
@@ -28,29 +28,31 @@ Inputs:
 - right_censored_stress - an array or list of the corresponding stresses (such as temperature) at which each right_censored datapoint was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
 - print_results - True/False. Default is True
 - show_plot - True/False. Default is True
-- common_beta_method - 'BIC','weighted_average','average'. Default is 'BIC'. This is the method used to obtain the common_beta parameter. 'BIC' will find the common_beta that gives lowest total BIC (equivalent to the best overall fit), 'weighted_average' will perform a weighted average based on the amount of data (failures and right censored) for each stress, 'average' is simply the average. Note for the Lognormal and Normal plots, this variable is "common_sigma_method" as we are forcing sigma to be a common value.
-- BIC_sum - the sum of the BIC for each of the distributions when fitted using the common_beta
-- AICc_sum - the sum of the AICc for each of the distributions when fitted using the common_beta
+- common_beta_method - 'BIC', 'weighted_average', 'average'. Default is 'BIC'. This is the method used to obtain the common_beta parameter. 'BIC' will find the common_beta that gives lowest total BIC (equivalent to the best overall fit), 'weighted_average' will perform a weighted average based on the amount of data (failures and right censored) for each stress, 'average' is simply the average. Note for the Lognormal and Normal plots, this variable is named common_sigma_method as we are forcing sigma to be a common value.
 
 Outputs:
 
 - The plot will be produced if show_plot is True
 - A dataframe of the fitted distributions parameters will be printed if print_results is True
 - results - a dataframe of the fitted distributions parameters and change in the shape parameter
-- common_beta - the common beta parameter. Note in the Lognormal and Normal plots, this variable is "common_sigma"
+- common_beta - the common beta parameter. Note in the Lognormal and Normal plots, this variable is common_sigma
+- BIC_sum - the sum of the BIC for each of the distributions when fitted using the common_beta
+- AICc_sum - the sum of the AICc for each of the distributions when fitted using the common_beta
 
 The time to run the function will be a few seconds if you have a large amount of data and the common_beta_method is set to 'BIC'. This is because the distributions need to be refitted for each iteration of the optimizer (which is usually around 20 to 30 iterations). With 100 datapoints this should take less than 5 seconds for the 'BIC' method, and less than 1 second for the 'average' and 'weighted_average' methods. The more data you have, the longer it will take, so please be patient as a lot of computation is required.
 
-In the following example we will use a dataset from ``reliability.Datasets`` which contains failures and right_censored data for three stress levels. We examine this dataset using the Weibull and Lognormal ALT probability plots which are shown together for comparison. All other inputs are left to their default values which gives us the plot and the results dataframe. From the printed results we can see how well the model fits our data. The AICc and BIC values suggest that the Lognormal model is a slightly better fit overall for this dataset, but both models would be suitable. The fitted distributions with a common shape parameter still agree well with the majority of our data (except for the lower tail of the 40 degree data), and the amount of change to the shape parameter was within the acceptable limits. See the section `below <https://reliability.readthedocs.io/en/latest/ALT%20probability%20plots.html#what-does-an-alt-probability-plot-show-me>`_ for more details on what we are looking to get out of these plots.
+In the following example we will use a dataset from ``reliability.Datasets`` which contains failures and right_censored data for three stress levels. We will analyse this dataset using the Weibull and Lognormal ALT probability plots to determine which model is a better fit for the data. All other inputs are left to their default values which gives us the plot and the results dataframe. From the printed results we can see how well the model fits our data. The AICc and BIC values suggest that the Lognormal model is a slightly better fit overall for this dataset, but both models would be suitable. The fitted distributions with a common shape parameter still agree well with the majority of our data (except for the lower tail of the 40 degree data), and the amount of change to the shape parameter was within the acceptable limits. See the section `below <https://reliability.readthedocs.io/en/latest/ALT%20probability%20plots.html#what-does-an-alt-probability-plot-show-me>`_ for more details on what we are looking to get out of these plots.
 
 .. code:: python
 
     from reliability.ALT import ALT_probability_plot_Weibull, ALT_probability_plot_Lognormal
     from reliability.Datasets import ALT_temperature
+    import matplotlib.pyplot as plt
     plt.figure()
     plt.subplot(121)
     ALT_probability_plot_Weibull(failures=ALT_temperature().failures,failure_stress=ALT_temperature().failure_stresses,right_censored=ALT_temperature().right_censored,right_censored_stress=ALT_temperature().right_censored_stresses)
-    plt.subplot(122)    ALT_probability_plot_Lognormal(failures=ALT_temperature().failures,failure_stress=ALT_temperature().failure_stresses,right_censored=ALT_temperature().right_censored,right_censored_stress=ALT_temperature().right_censored_stresses)
+    plt.subplot(122)
+    ALT_probability_plot_Lognormal(failures=ALT_temperature().failures,failure_stress=ALT_temperature().failure_stresses,right_censored=ALT_temperature().right_censored,right_censored_stress=ALT_temperature().right_censored_stresses)
     plt.gcf().set_size_inches(15,7)
     plt.show()
     
@@ -118,6 +120,7 @@ The image provided above shows two distributions that fit well. If we apply the 
 
     from reliability.ALT import ALT_probability_plot_Weibull, ALT_probability_plot_Lognormal
     from reliability.Datasets import ALT_temperature
+    import matplotlib.pyplot as plt
     ALT_probability_plot_Normal(failures=ALT_temperature().failures,failure_stress=ALT_temperature().failure_stresses,right_censored=ALT_temperature().right_censored,right_censored_stress=ALT_temperature().right_censored_stresses)
     plt.show()
     
