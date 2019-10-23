@@ -30,6 +30,7 @@ In this first example, we use the data for stress and cycles to produce an S-N d
 .. code:: python
 
     from reliability.PoF import SN_diagram
+    import matplotlib.pyplot as plt
     stress = [340, 300, 290, 275, 260, 255, 250, 235, 230, 220, 215, 210]
     cycles = [15000, 24000, 36000, 80000, 177000, 162000, 301000, 290000, 361000, 881000, 1300000, 2500000]
     SN_diagram(stress=stress, cycles=cycles)
@@ -41,6 +42,8 @@ In this second example, we will use the same data as above, but also supply runo
 
 .. code:: python
 
+    from reliability.PoF import SN_diagram
+    import matplotlib.pyplot as plt
     stress = [340, 300, 290, 275, 260, 255, 250, 235, 230, 220, 215, 210]
     cycles = [15000, 24000, 36000, 80000, 177000, 162000, 301000, 290000, 361000, 881000, 1300000, 2500000]
     stress_runout = [210, 210, 205, 205, 205]
