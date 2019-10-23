@@ -9,3 +9,5 @@ from reliability import Repairable_systems
 from reliability import Stress_strength
 from reliability import Probability_plotting
 from reliability import Datasets
+from reliability import ALT
+from reliability import PoF

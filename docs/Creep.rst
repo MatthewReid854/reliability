@@ -5,8 +5,6 @@
 Creep
 '''''
 
-.. note:: This module is currently in development. The following documentation is correct, however, the most recent version of ``reliability`` on PyPI will not contain this module until Dec 2019.
-
 Creep is the progressive accumulation of plastic strain in a component under stress at an elevated temperature over a period of time. All creep modelling requires data that is unique to the material undergoing creep since all materials behave differently. This data may be stress, temperature, and time to failure data, or it may be material constants which are derived from the former. This secion of reliability contains two functions to determine time to failure due to creep. These functions are ``creep_rupture_curves`` and ``creep_failure_time``. Creep is generally modelled using the `Larson-Miller <https://en.wikipedia.org/wiki/Larson%E2%80%93Miller_relation>`_ relation or the Manson-Haferd relation.
 
 The function ``creep_rupture_curves`` plots the creep rupture curves for a given set of creep data. The function also fits the lines of best fit to each temperature. The time to failure for a given temperature can be found by specifying stress_trace and temp_trace.

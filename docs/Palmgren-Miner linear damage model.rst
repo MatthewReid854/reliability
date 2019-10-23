@@ -5,8 +5,6 @@
 Palmgren-Miner linear damage model
 ''''''''''''''''''''''''''''''''''
 
-.. note:: This module is currently in development. The following documentation is correct, however, the most recent version of ``reliability`` on PyPI will not contain this module until Dec 2019.
-
 The function ``palmgren_miner_linear_damage`` uses the Palmgren-Miner linear damage hypothesis to find the outputs listed below.
 
 Inputs:
