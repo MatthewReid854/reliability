@@ -116,7 +116,7 @@ The image provided above shows two distributions that fit well. If we apply the 
 
 .. code:: python
 
-    from reliability.ALT import ALT_probability_plot_Weibull, ALT_probability_plot_Lognormal
+    from reliability.ALT import ALT_probability_plot_Normal
     from reliability.Datasets import ALT_temperature
     import matplotlib.pyplot as plt
     ALT_probability_plot_Normal(failures=ALT_temperature().failures,failure_stress=ALT_temperature().failure_stresses,right_censored=ALT_temperature().right_censored,right_censored_stress=ALT_temperature().right_censored_stresses)
