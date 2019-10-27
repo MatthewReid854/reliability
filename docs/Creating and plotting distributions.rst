@@ -43,6 +43,8 @@ The following methods are available for all distributions:
 -   excess_kurtosis
 -   median
 -   mode
+-   b5
+-   b95
 -   plot() - plots all functions (PDF, CDF, SF, HF, CHF). No additional arguments are accepted.
 -   PDF() - plots the probability density function.
 -   CDF() - plots the cumulative distribution function.
