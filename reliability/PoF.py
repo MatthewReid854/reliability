@@ -785,6 +785,9 @@ class fracture_mechanics_crack_initiation:
             delta_sigma = fsolve(massing_delta_sigma, x0=100)[0]
             delta_epsilon = delta_epsilon_delta_sigma / delta_sigma
 
+            if delta_epsilon>1:#this checks that the delta_epsilon that was found is realistic
+                raise ValueError('As a results of the inputs, delta_epsilon has been calculated to be greater than 1. This will result in immediate failure of the component. You should check your inputs to ensure they are in the correct units, especially for P (units of MPa) and A (units of mm^2).')
+
             self.sigma_min = sigma - delta_sigma
             self.epsilon_min = epsilon - delta_epsilon
             self.sigma_max = sigma
@@ -795,21 +798,20 @@ class fracture_mechanics_crack_initiation:
             if mean_stress_correction_method == 'morrow':
                 def morrow(delta_epsilon, sigma_f, sigma_mean, E, Nf2, b, epsilon_f, c):
                     return ((sigma_f - sigma_mean) / E) * Nf2 ** b + epsilon_f * Nf2 ** c - delta_epsilon * 0.5
-
                 morrow_2Nf = lambda x: morrow(delta_epsilon, sigma_f, self.sigma_mean, E, x, b, epsilon_f, c)
-                Nf2 = fsolve(morrow_2Nf, x0=1000)[0]
+                Nf2 = fsolve(morrow_2Nf, x0=np.array([100]))[0]
+
             elif mean_stress_correction_method == 'modified_morrow':
                 def modified_morrow(delta_epsilon, sigma_f, sigma_mean, E, Nf2, b, epsilon_f, c):
                     return ((sigma_f - sigma_mean) / E) * Nf2 ** b + epsilon_f * ((sigma_f - sigma_mean) / sigma_f) ** (c / b) * Nf2 ** c - delta_epsilon * 0.5
-
                 modified_morrow_2Nf = lambda x: modified_morrow(delta_epsilon, sigma_f, self.sigma_mean, E, x, b, epsilon_f, c)
-                Nf2 = fsolve(modified_morrow_2Nf, x0=1000)[0]
+                Nf2 = fsolve(modified_morrow_2Nf, x0=np.array([100]))[0]
+
             elif mean_stress_correction_method == 'SWT':
                 def SWT(sigma, delta_epsilon, sigma_f, E, Nf2, b, epsilon_f, c):
                     return ((sigma_f ** 2) / E) * Nf2 ** (2 * b) + sigma_f * epsilon_f * Nf2 ** (b + c) - sigma * delta_epsilon * 0.5
-
                 SWT_2Nf = lambda x: SWT(sigma, delta_epsilon, sigma_f, E, x, b, epsilon_f, c)
-                Nf2 = fsolve(SWT_2Nf, x0=1000)[0]
+                Nf2 = fsolve(SWT_2Nf, x0=np.array([100]))[0]
         else:  # fully elastic model
             def ramberg_osgood(sigma_epsilon, sigma, E):
                 return sigma / E - sigma_epsilon / sigma
@@ -875,11 +877,12 @@ class fracture_mechanics_crack_growth:
     The value of Kt for notched components may be found at https://www.efatigue.com/constantamplitude/stressconcentration/
     In the case of notched components, the local stress concentration from the notch will often cause slower crack growth.
     In these cases, the crack length is calculated in two parts (stage 1 and stage 2) which can clearly be seen on the plot using the iterative method.
+    The only geometry this function is designed for is unnotched and notched thin flat plates. No centre holes are allowed.
 
     Inputs:
     Kc - fracture toughness
     Kt - stress concentration factor (default is 1 for no notch).
-    D - depth of the notch (default is None for no notch). A nothed specimen is assumed to be doubly-notched (equal notches on both sides)
+    D - depth of the notch (default is None for no notch). A notched specimen is assumed to be doubly-notched (equal notches on both sides)
     C - material constant (sometimes referred to as A)
     m - material constant (sometimes referred to as n). This value must not be 2.
     P - external load on the material (MPa)
@@ -920,15 +923,16 @@ class fracture_mechanics_crack_growth:
             d = 0
         else:
             d = D
-
+        if W-2*d < 0:
+            error_str = str('The specified geometry is invalid. A doubly notched specimen with specified values of the d = '+str(d)+'mm will have notches deeper than the width of the plate W = '+str(W)+'mm. This would result in a negative cross sectional area.')
+            raise ValueError(error_str)
         # Simplified method (assuming fg, S_max, af to be constant)
+        S_max = P / (t * (W - 2 * d)) * 10 ** 6
         if crack_type == 'edge':
             f_g_fixed = 1.12
-            S_max = P / (t * (W - 2 * d)) * 10 ** 6
         elif crack_type in ['center', 'centre']:
             f_g_fixed = 1.0
-            S_max = P / (t * W) * 10 ** 6
-        exp = -0.5 * m + 1
+        m_exp = -0.5 * m + 1
         a_crit = 1 / np.pi * (Kc / (S_max * f_g_fixed)) ** 2 + d / 1000  # critical crack length to cause failure
         if a_final is None:
             a_f = a_crit
@@ -940,14 +944,15 @@ class fracture_mechanics_crack_growth:
             a_f = a_crit
         lt = d / ((1.12 * Kt / f_g_fixed) ** 2 - 1) / 1000  # find the transition length due to the notch
         if lt > a_initial / 1000:  # two step process due to local stress concentration
-            Nf_1 = (lt ** exp - (a_initial / 1000) ** exp) / (exp * C * S_max ** m * np.pi ** (0.5 * m) * f_g_fixed ** m)
+            Nf_1 = (lt ** m_exp - (a_initial / 1000) ** m_exp) / (m_exp * C * S_max ** m * np.pi ** (0.5 * m) * f_g_fixed ** m)
             a_i = lt + d / 1000  # new initial length for stage 2
         else:
             a_i = a_initial / 1000
             Nf_1 = 0
-        Nf_2 = (a_f ** exp - a_i ** exp) / (exp * C * S_max ** m * np.pi ** (0.5 * m) * f_g_fixed ** m)
+        Nf_2 = (a_f ** m_exp - a_i ** m_exp) / (m_exp * C * S_max ** m * np.pi ** (0.5 * m) * f_g_fixed ** m)
         Nf_tot = Nf_1 + Nf_2
         self.Nf_stage_1_simplified = Nf_1
+        print(Nf_1)
         self.Nf_stage_2_simplified = Nf_2
         self.Nf_total_simplified = Nf_tot
         self.final_crack_length_simplified = a_f * 1000 - d

@@ -7,9 +7,18 @@ Datasets
 
 There are a few datasets that have been included with reliability that users may find useful for testing and experimenting. While this list is currently small, expect it to increase significantly over time. Within ``reliability.Datasets`` the following datasets are available:
 
-- automotive - This dataset is relatively small and a challenging task to fit with any distribution due to its size. It also includes mostly right censored data which makes fitting more difficult.
-- defective_sample - This dataset is heavily right censored with intermixed censoring (not all censored values are greater than the largest failure). It exhibits the behavior of a defective sample (aka. Limited fraction defective).
-- ALT_temperature - This dataset is an accelerated life test (ALT) dataset conducted at 3 temperatures. It should be used with an ALT probability plot. The dataset contains mostly censored data but is easily fitted by Weibull_2P, Lognormal_2P, and Gamma_2P distributions.
+**Standard datasets**
+
+- automotive - 10 failures, 21 right censored.
+- defective_sample - 1350 failures, 12296 right censored. It exhibits the behavior of a defective sample (aka. Limited fraction defective).
+
+**ALT Datasets**
+
+- ALT_temperature - conducted at 3 temperatures. 35 failures, 102 right censored.
+- ALT_temperature2 - conducted at 4 temperatures. 40 failures, 20 right censored.
+- ALT_load - conducted at 3 loads. 20 failures, 0 censored.
+- ALT_load2 - conducted at 3 loads. 13 failures, 5 right censored.
+- ALT_temperature_voltage - conducted at 3 different temperatures and 2 different voltages. 18 failures, 8 right censored.
 
 All datasets are functions which create objects and every dataset object has several values. For most datasets, these are:
 

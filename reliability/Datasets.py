@@ -292,7 +292,7 @@ class ALT_load2:
 
 class ALT_temperature_voltage:
     '''
-    This is an accelerated life test (ALT) dataset conducted at 3 difference temperatures and 2 different voltages
+    This is an accelerated life test (ALT) dataset conducted at 3 different temperatures and 2 different voltages
     The dataset is fairly small making it a difficult dataset to fit.
     It is recommended to use a dual-stress model such as dual stress exponential model
     '''
