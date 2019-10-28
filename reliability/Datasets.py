@@ -243,3 +243,74 @@ class ALT_temperature2:
         blankIndex = [''] * len(df)
         df.index = blankIndex
         self.info = df
+
+
+class ALT_load:
+    '''
+    This is an accelerated life test (ALT) dataset conducted at 3 loads
+    It should be used with an ALT probability plot
+    This is a relatively small dataset with just 20 and no censoring
+    Sourced from Dr. Mohammad Modarres, University of Maryland
+    '''
+
+    def __init__(self):
+        self.failures = [250, 460, 530, 730, 820, 970, 970, 1530, 160, 180, 290, 320, 390, 460, 90, 100, 150, 180, 220, 230]
+        self.failure_stresses = [200, 200, 200, 200, 200, 200, 200, 200, 300, 300, 300, 300, 300, 300, 466, 466, 466, 466, 466, 466]
+        rc = 0
+        f = len(self.failures)
+        tot = f + rc
+        data = {'Stat': ['Name', 'Total Values', 'Failures', 'Right Censored', 'Number of stresses'], 'Value': ['ALT_load', tot, str(str(f) + ' (' + str(round(f / tot * 100, 2)) + '%)'), str(str(rc) + ' (' + str(round(rc / tot * 100, 2)) + '%)'), 3]}
+        df = pd.DataFrame(data, columns=['Stat', 'Value'])
+        blankIndex = [''] * len(df)
+        df.index = blankIndex
+        self.info = df
+
+
+class ALT_load2:
+    '''
+    This is an accelerated life test (ALT) dataset conducted at 3 loads
+    It should be used with an ALT probability plot
+    This is a relatively small dataset with just 18 values, 5 of which are censored.
+    Sourced from Dr. Mohammad Modarres, University of Maryland
+    '''
+
+    def __init__(self):
+        self.failures = [245, 312, 409, 110, 180, 200, 222, 50, 70, 88, 112, 140, 160]
+        self.failure_stresses = [100, 100, 100, 200, 200, 200, 200, 300, 300, 300, 300, 300, 300]
+        self.right_censored = [500, 500, 500, 250, 250]
+        self.right_censored_stresses = [100, 100, 100, 200, 200]
+
+        rc = len(self.right_censored)
+        f = len(self.failures)
+        tot = f + rc
+        data = {'Stat': ['Name', 'Total Values', 'Failures', 'Right Censored', 'Number of stresses'], 'Value': ['ALT_load2', tot, str(str(f) + ' (' + str(round(f / tot * 100, 2)) + '%)'), str(str(rc) + ' (' + str(round(rc / tot * 100, 2)) + '%)'), 3]}
+        df = pd.DataFrame(data, columns=['Stat', 'Value'])
+        blankIndex = [''] * len(df)
+        df.index = blankIndex
+        self.info = df
+
+
+class ALT_temperature_voltage:
+    '''
+    This is an accelerated life test (ALT) dataset conducted at 3 difference temperatures and 2 different voltages
+    The dataset is fairly small making it a difficult dataset to fit.
+    It is recommended to use a dual-stress model such as dual stress exponential model
+    '''
+
+    def __init__(self):
+        self.failures = [1200, 1205, 1509, 1560, 1780, 2390, 2490, 2690, 1466, 1536, 1698, 1784, 2689, 222, 250, 297, 354, 368]
+        self.failure_stress_temp = [350, 350, 350, 350, 350, 350, 350, 350, 378, 378, 378, 378, 378, 398, 398, 398, 398, 398]
+        self.failure_stress_voltage = [10, 10, 10, 10, 10, 12, 12, 12, 10, 10, 10, 10, 12, 10, 10, 10, 10, 10]
+
+        self.right_censored = [2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500]
+        self.right_censored_stress_temp = [350, 350, 350, 378, 378, 378, 378, 378]
+        self.right_censored_stress_voltage = [12, 12, 12, 12, 12, 12, 12, 12]
+
+        rc = len(self.right_censored)
+        f = len(self.failures)
+        tot = f + rc
+        data = {'Stat': ['Name', 'Total Values', 'Failures', 'Right Censored', 'Number of stresses'], 'Value': ['ALT_temperature_voltage', tot, str(str(f) + ' (' + str(round(f / tot * 100, 2)) + '%)'), str(str(rc) + ' (' + str(round(rc / tot * 100, 2)) + '%)'), '3 temperatures, 2 voltages']}
+        df = pd.DataFrame(data, columns=['Stat', 'Value'])
+        blankIndex = [''] * len(df)
+        df.index = blankIndex
+        self.info = df
