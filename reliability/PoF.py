@@ -361,17 +361,12 @@ class stress_strain_diagram:
         self.K = K
         self.n = n
 
-        warnings.filterwarnings('ignore')  # sometimes fsolve has issues when delta_sigma crosses zero. It always resolves itself so the warning is just an annoyance
-
+        warnings.filterwarnings('ignore')  # sometimes fsolve has issues when delta_sigma crosses zero. It almost always resolves itself so the warning is just an annoyance
         # these functions are used for solving the equation for sigma_max as it can not be rearranged
         def ramberg_osgood(epsilon, sigma, E, K, n):
             return (sigma / E) + ((sigma / K) ** (1 / n)) - epsilon
 
         def ramberg_osgood_delta(delta_epsilon, delta_sigma, E, K, n):
-            if np.isnan(delta_sigma):
-                delta_sigma = np.array([0])  # these correct for errors in fsolve's algorithm
-            if delta_sigma < 0:
-                delta_sigma += 1  # these correct for errors in fsolve's algorithm
             return (delta_sigma / E) + 2 * (delta_sigma / (2 * K)) ** (1 / n) - delta_epsilon
 
         if max_strain is None:

@@ -89,6 +89,8 @@ class Weibull_Distribution:
     excess_kurtosis
     median
     mode
+    b5
+    b95
     plot() - plots all functions (PDF,CDF,SF,HF,CHF)
     PDF() - plots the probability density function
     CDF() - plots the cumulative distribution function
@@ -113,12 +115,12 @@ class Weibull_Distribution:
         self.gamma = gamma
         self.parameters = np.array([self.alpha, self.beta, self.gamma])
         mean, var, skew, kurt = ss.weibull_min.stats(self.beta, scale=self.alpha, loc=self.gamma, moments='mvsk')
-        self.mean = mean
-        self.variance = var
+        self.mean = float(mean)
+        self.variance = float(var)
         self.standard_deviation = var ** 0.5
-        self.skewness = skew
+        self.skewness = float(skew)
         self.kurtosis = kurt + 3
-        self.excess_kurtosis = kurt
+        self.excess_kurtosis = float(kurt)
         self.median = ss.weibull_min.median(self.beta, scale=self.alpha, loc=self.gamma)
         if self.beta >= 1:
             self.mode = self.alpha * ((self.beta - 1) / self.beta) ** (1 / self.beta) + self.gamma
@@ -478,6 +480,8 @@ class Normal_Distribution:
     excess_kurtosis
     median
     mode
+    b5
+    b95
     plot() - plots all functions (PDF,CDF,SF,HF,CHF)
     PDF() - plots the probability density function
     CDF() - plots the cumulative distribution function
@@ -857,6 +861,8 @@ class Lognormal_Distribution:
     excess_kurtosis
     median
     mode
+    b5
+    b95
     plot() - plots all functions (PDF,CDF,SF,HF,CHF)
     PDF() - plots the probability density function
     CDF() - plots the cumulative distribution function
@@ -881,12 +887,12 @@ class Lognormal_Distribution:
         self.gamma = gamma
         self.parameters = np.array([self.mu, self.sigma, self.gamma])
         mean, var, skew, kurt = ss.lognorm.stats(self.sigma, self.gamma, np.exp(self.mu), moments='mvsk')
-        self.mean = mean
-        self.variance = var
+        self.mean = float(mean)
+        self.variance = float(var)
         self.standard_deviation = var ** 0.5
-        self.skewness = skew
+        self.skewness = float(skew)
         self.kurtosis = kurt + 3
-        self.excess_kurtosis = kurt
+        self.excess_kurtosis = float(kurt)
         self.median = ss.lognorm.median(self.sigma, self.gamma, np.exp(self.mu))
         self.mode = np.exp(self.mu - self.sigma ** 2) + self.gamma
         if self.gamma != 0:
@@ -1243,6 +1249,8 @@ class Exponential_Distribution:
     excess_kurtosis
     median
     mode
+    b5
+    b95
     plot() - plots all functions (PDF,CDF,SF,HF,CHF)
     PDF() - plots the probability density function
     CDF() - plots the cumulative distribution function
@@ -1266,12 +1274,12 @@ class Exponential_Distribution:
         self.gamma = gamma
         self.parameters = np.array([self.Lambda, self.gamma])
         mean, var, skew, kurt = ss.expon.stats(scale=1 / self.Lambda, loc=self.gamma, moments='mvsk')
-        self.mean = mean
-        self.variance = var
+        self.mean = float(mean)
+        self.variance = float(var)
         self.standard_deviation = var ** 0.5
-        self.skewness = skew
+        self.skewness = float(skew)
         self.kurtosis = kurt + 3
-        self.excess_kurtosis = kurt
+        self.excess_kurtosis = float(kurt)
         self.median = ss.expon.median(scale=1 / self.Lambda, loc=self.gamma)
         self.mode = self.gamma
         if self.gamma != 0:
@@ -1630,6 +1638,8 @@ class Gamma_Distribution:
     excess_kurtosis
     median
     mode
+    b5
+    b95
     plot() - plots all functions (PDF,CDF,SF,HF,CHF)
     PDF() - plots the probability density function
     CDF() - plots the cumulative distribution function
@@ -1654,12 +1664,12 @@ class Gamma_Distribution:
         self.gamma = gamma
         self.parameters = np.array([self.alpha, self.beta, self.gamma])
         mean, var, skew, kurt = ss.gamma.stats(self.beta, scale=self.alpha, loc=self.gamma, moments='mvsk')
-        self.mean = mean
-        self.variance = var
+        self.mean = float(mean)
+        self.variance = float(var)
         self.standard_deviation = var ** 0.5
-        self.skewness = skew
+        self.skewness = float(skew)
         self.kurtosis = kurt + 3
-        self.excess_kurtosis = kurt
+        self.excess_kurtosis = float(kurt)
         self.median = ss.gamma.median(self.beta, scale=self.alpha, loc=self.gamma)
         if self.beta >= 1:
             self.mode = (self.beta - 1) * self.alpha + self.gamma
@@ -2019,6 +2029,8 @@ class Beta_Distribution:
     excess_kurtosis
     median
     mode
+    b5
+    b95
     plot() - plots all functions (PDF,CDF,SF,HF,CHF)
     PDF() - plots the probability density function
     CDF() - plots the cumulative distribution function
@@ -2042,12 +2054,12 @@ class Beta_Distribution:
             raise ValueError('Parameters alpha and beta must be specified. Eg. Beta_Distribution(alpha=5,beta=2)')
         self.parameters = np.array([self.alpha, self.beta])
         mean, var, skew, kurt = ss.beta.stats(self.alpha, self.beta, 0, 1, moments='mvsk')
-        self.mean = mean
-        self.variance = var
+        self.mean = float(mean)
+        self.variance = float(var)
         self.standard_deviation = var ** 0.5
-        self.skewness = skew
+        self.skewness = float(skew)
         self.kurtosis = kurt + 3
-        self.excess_kurtosis = kurt
+        self.excess_kurtosis = float(kurt)
         self.median = ss.beta.median(self.alpha, self.beta, 0, 1)
         if self.alpha > 1 and self.beta > 1:
             self.mode = (self.alpha - 1) / (self.beta + self.alpha - 2)
