@@ -7,14 +7,13 @@ ALT probability plots
 
 Before reading this section, you should be familiar with what a probability plot is and how to use it. For a detailed explaination, please see the section on `probability plots <https://reliability.readthedocs.io/en/latest/Probability%20plots.html>`_.
 
-The module ``reliability.ALT`` contains four ALT probability plotting functions. These functions are:
+The module ``reliability.ALT`` contains three ALT probability plotting functions. These functions are:
 
 - ALT_probability_plot_Weibull
 - ALT_probability_plot_Lognormal
 - ALT_probability_plot_Normal
-- ALT_probability_plot_Gamma
 
-An ALT probability plot produces a multi-dataset probability plot which includes the probability plots for the data and the fitted distribution at each stress level, as well as a refitted distribution assuming a common shape parameter at each stress level. All of these functions perform in a similar way, with the main difference being the distribution that is fitted. The Gamma ALT probability plot will not appear parallel because of the way the Gamma distribution works, but it is still useful to judge the goodness of fit to the entire dataset using a common shape parameter. The probability plots provided do not include the Exponential distribution (because of there only being one parameter), the Beta distribution (because there are two shape parameters), or any of the location shifted distributions (because these are not typically used for ALT probability plotting).
+An ALT probability plot produces a multi-dataset probability plot which includes the probability plots for the data and the fitted distribution at each stress level, as well as a refitted distribution assuming a common shape parameter at each stress level. All of these functions perform in a similar way, with the main difference being the distribution that is fitted. The probability plots provided do not include the Exponential distribution (because of there only being one parameter), the Beta distribution (because there are two shape parameters), the Gamma distribution (because changing the scale parameter will also change the slope of the line even when the shape parameter is constant) or any of the location shifted distributions (because these are not typically used for ALT probability plotting).
 
 When producing the ALT probability plot, the function automates the following process; fit a distribution to the data for each unique stress level, find the common shape parameter (several methods are provided), refit the distribution to the data for each unique stress level whilst forcing the shape parameter to be equal to the common shape parameter, plot the data along with the original and new fitted distributions, calculate the change in the common shape parameter from the original shape parameter to see if the model is applicable to this dataset. Each of the ALT plotting functions listed above has the following inputs and outputs.
 
