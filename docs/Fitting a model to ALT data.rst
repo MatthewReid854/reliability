@@ -9,7 +9,7 @@ Fitting a model to ALT data
 
 Before reading this section, you should be familiar with `ALT probability plots <https://reliability.readthedocs.io/en/latest/ALT%20probability%20plots.html>`_, and `Fitting distributions <https://reliability.readthedocs.io/en/latest/Fitting%20a%20specific%20distribution%20to%20data.html>`_ to non-ALT datasets.
 
-The module ``reliability.ALT`` contains fitting function for 15 different ALT life-stress models. Each model is a combination of the life model with the scale or location parameter replaced with life-stress model. For example, the Weibull-Exponential model is found by replacing the :math:`\alpha` parameter with the equation for the exponential life-stress model as follows:
+The module ``reliability.ALT`` contains fitting function for 15 different ALT life-stress models. Each model is a combination of the life model with the scale or location parameter replaced with a life-stress model. For example, the Weibull-Exponential model is found by replacing the :math:`\alpha` parameter with the equation for the exponential life-stress model as follows:
 
 :math:`\text{Weibull PDF:} \hspace{40mm} f(t) = \frac{\beta t^{ \beta - 1}}{ \alpha^ \beta} .exp \left(-(\frac{t}{\alpha })^ \beta \right)`
 
@@ -30,8 +30,8 @@ The correct substitutions for each type of model are:
 The `life models <https://reliability.readthedocs.io/en/latest/Equations%20of%20supported%20distributions.html>`_ available are:
 
 - Weibull_2P
-- Lognormal_2P
 - Normal_2P
+- Lognormal_2P
 
 The life-stress models available are:
 
@@ -41,13 +41,13 @@ The life-stress models available are:
 
 :math:`\text{Power (also known as inverse power):} \hspace{48mm} L(S)=a .S^n`
 
-:math:`\text{Dual-Exponential (also known as Temperature-Humidity):} \hspace{8mm} L(T,H)=c.exp \left(\frac{a}{T} + \frac{b}{H} \right)`
+:math:`\text{Dual-Exponential (also known as Temperature-Humidity):} \hspace{7mm} L(T,H)=c.exp \left(\frac{a}{T} + \frac{b}{H} \right)`
 
-:math:`\text{Power-Exponential (also known as Thermal-Non-Thermal):} \hspace{5mm} L(T,S)=c.S^n.exp \left(\frac{a}{T} \right)`
+:math:`\text{Power-Exponential (also known as Thermal-Non-Thermal):} \hspace{4mm} L(T,S)=c.S^n.exp \left(\frac{a}{T} \right)`
 
-When choosing a model, it is important to consider the physics involved rather than just trying everything to see what fits best. For exxample, the Power-Exponential model is most appropriate for a dataset that was obtained from an ALT test with a thermal and a non-thermal stress (such as temperature and voltage). It would be inappropriate to model the data from a Temperature-Humidity test using a Power-Exponential model as the physics suggests that a Temperature-Humidity test should be modelled using the Dual-Exponential model.
+When choosing a model, it is important to consider the physics involved in the life-stress model rather than just trying everything to see what fits best. For example, the Power-Exponential model is most appropriate for a dataset that was obtained from an ALT reliability test with a thermal and a non-thermal stress (such as temperature and voltage). It would be inappropriate to model the data from a Temperature-Humidity test using a Power-Exponential model as the physics suggests that a Temperature-Humidity test should be modelled using the Dual-Exponential model.
 
-Each of the fitting functions works in a very similar way so the documentation below can be applied to all of the models with minor modifications where specified. The following documentation is for the Weibull-Power model.
+Each of the fitting functions works in a very similar way so the documentation below can be applied to all of the models with minor modifications to the parameter names of the outputs. The following documentation is for the Weibull-Power model.
 
 Inputs:
 
