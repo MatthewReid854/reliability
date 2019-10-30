@@ -17,7 +17,7 @@ The module ``reliability.ALT`` contains fitting function for 15 different ALT li
 
 Replacing :math:`\alpha` with :math:`L(T)` gives:
 
-:math:`\text{Weibull PDF:} \hspace{11mm} f(t) = \frac{\beta t^{ \beta - 1}}{ \alpha^ \beta} exp \left(-(\frac{t}{\alpha })^ \beta \right)` 
+:math:`\text{Weibull PDF:} \hspace{30mm} f(t) = \frac{\beta t^{ \beta - 1}}{ \left(b.exp\left(\frac{a}{T} \right) \right)^ \beta} exp \left(-(\frac{t}{\left(b.exp\left(\frac{a}{T} \right) \right) })^ \beta \right)` 
 
 The correct substitutions for each type of model are:
 
@@ -27,7 +27,7 @@ The correct substitutions for each type of model are:
 
 :math:`\text{Lognormal:} \hspace{5mm} \mu = ln \left( L(T) \right)`
 
-The `life models <https://reliability.readthedocs.io/en/latest/Equations%20of%20supported%20distributions.html>`_ available in ``reliability.ALT`` are:
+The `life models <https://reliability.readthedocs.io/en/latest/Equations%20of%20supported%20distributions.html>`_ available are:
 
 - Weibull_2P
 - Lognormal_2P
@@ -37,9 +37,9 @@ The life-stress models available are:
 
 :math:`\text{Exponential (also used for Arrhenius equation):} \hspace{30mm} L(T)=b.exp \left(\frac{a}{T} \right)`
 
-:math:`\text{Eyring:} \hspace{35mm} L(T)= \frac{1}{T} .exp \left( - \left( c - \frac{a}{T} \right) \right)`
+:math:`\text{Eyring:} \hspace{75mm} L(T)= \frac{1}{T} .exp \left( - \left( c - \frac{a}{T} \right) \right)`
 
-:math:`\text{Power (also known as inverse power):} \hspace{35mm} L(S)=a.S^n`
+:math:`\text{Power (also known as inverse power):} \hspace{45mm} L(S)=a.S^n`
 
 :math:`\text{Dual-Exponential (also known as Temperature-Humidity):} \hspace{7mm} L(T)=c.exp \left(\frac{a}{T} + \frac{b}{H} \right)`
 
