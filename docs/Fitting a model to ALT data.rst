@@ -15,9 +15,9 @@ The module ``reliability.ALT`` contains fitting function for 15 different ALT li
 
 :math:`\text{Exponential Life-Stress Model:} \hspace{5mm} L(T) = b.exp\left(\frac{a}{T} \right)`
 
-Replacing :math:`\alpha` with :math:`L(T)` gives:
+Replacing :math:`\alpha` with :math:`L(T)` gives the PDF of the Weibull-Exponential model:
 
-:math:`\text{Weibull PDF:} \hspace{40mm} f(t) = \frac{\beta t^{ \beta - 1}}{ \left(b.exp\left(\frac{a}{T} \right) \right)^ \beta} exp \left(-\left(\frac{t}{\left(b.exp\left(\frac{a}{T} \right) \right) }\right)^ \beta \right)` 
+:math:`\text{Weibull-Exponential:} \hspace{25mm} f(t,T) = \frac{\beta t^{ \beta - 1}}{ \left(b.exp\left(\frac{a}{T} \right) \right)^ \beta} exp \left(-\left(\frac{t}{\left(b.exp\left(\frac{a}{T} \right) \right) }\right)^ \beta \right)` 
 
 The correct substitutions for each type of model are:
 
@@ -35,13 +35,13 @@ The `life models <https://reliability.readthedocs.io/en/latest/Equations%20of%20
 
 The life-stress models available are:
 
-:math:`\text{Exponential (also used for Arrhenius equation):} \hspace{35mm} L(T)=b.exp \left(\frac{a}{T} \right)`
+:math:`\text{Exponential (also used for Arrhenius equation):} \hspace{32mm} L(T)=b.exp \left(\frac{a}{T} \right)`
 
-:math:`\text{Eyring:} \hspace{95mm} L(T)= \frac{1}{T} .exp \left( - \left( c - \frac{a}{T} \right) \right)`
+:math:`\text{Eyring:} \hspace{110mm} L(T)= \frac{1}{T} .exp \left( - \left( c - \frac{a}{T} \right) \right)`
 
-:math:`\text{Power (also known as inverse power):} \hspace{53mm} L(S)=a .S^n`
+:math:`\text{Power (also known as inverse power):} \hspace{51mm} L(S)=a .S^n`
 
-:math:`\text{Dual-Exponential (also known as Temperature-Humidity):} \hspace{7mm} L(T.H)=c.exp \left(\frac{a}{T} + \frac{b}{H} \right)`
+:math:`\text{Dual-Exponential (also known as Temperature-Humidity):} \hspace{7mm} L(T,H)=c.exp \left(\frac{a}{T} + \frac{b}{H} \right)`
 
 :math:`\text{Power-Exponential (also known as Thermal-Non-Thermal):} \hspace{5mm} L(T,S)=c.S^n.exp \left(\frac{a}{T} \right)`
 
