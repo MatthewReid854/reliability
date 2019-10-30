@@ -11,19 +11,19 @@ Before reading this section, you should be familiar with `ALT probability plots 
 
 The module ``reliability.ALT`` contains fitting function for 15 different ALT life-stress models. Each model is a combination of the life model with the scale or location parameter replaced with life-stress model. For example, the Weibull-Exponential model is found by replacing the :math:`\alpha` parameter with the equation for the exponential life-stress model as follows:
 
-:math:`\text{Weibull PDF:} \hspace{11mm} f(t) = \frac{\beta t^{ \beta - 1}}{ \alpha^ \beta} {\rm e}^{-(\frac{t}{\alpha })^ \beta }`
+:math:`\text{Weibull PDF:} \hspace{35mm} f(t) = \frac{\beta t^{ \beta - 1}}{ \alpha^ \beta} {\rm e}^{-(\frac{t}{\alpha })^ \beta }`
 
-:math:`\text{Exponential Life-Stress Model:} \hspace{2mm} L(T) = A.exp\left(\frac{a}{T} \right)`
+:math:`\text{Exponential Life-Stress Model:} \hspace{5mm} L(T) = A.exp\left(\frac{a}{T} \right)`
 
-Replacing :math:`\alpha` with L(T) gives:
+Replacing :math:`\alpha` with :math:`L(T)` gives:
 
-:math:`\text{Weibull PDF:} \hspace{11mm} f(t) = \frac{\beta t^{ \beta - 1}}{ \left( A.exp\left(\frac{a}{T} \right) \right)^ \beta} {\rm e}^{-(\frac{t}{\left( A.exp\left(\frac{a}{T} \right) })^ \beta }`
+:math:`\text{Weibull PDF:} \hspace{5mm} f(t,T) = \frac{\beta t^{ \beta - 1}}{ \left( A.exp \left( \frac{a}{T} \right) \right)^ \beta} {\rm e}^{-(\frac{t}{\left( A.exp \left( \frac{a}{T} \right) })^ \beta }`
 
 The correct substitutions for each type of model are:
 
 :math:`\text{Weibull:} \hspace{11mm} \alpha = L(T)`
 
-:math:`\text{Lognormal:} \hspace{11mm} \mu = ln \left( L(T) \right)`
+:math:`\text{Lognormal:} \hspace{5mm} \mu = ln \left( L(T) \right)`
 
 :math:`\text{Normal:} \hspace{11mm} \mu = L(T)`
 
@@ -35,11 +35,12 @@ The `life models <https://reliability.readthedocs.io/en/latest/Equations%20of%20
 
 The life-stress models avialble are:
 
-- Exponential (also used for Arrhenius equation)
-- Eyring
-- Power (also known as inverse power)
-- Dual_Exponential
-- Dual_Power_Exponential
+:math:`\text{Exponential (also used for Arrhenius equation):} \hspace{5mm} L(T)=b.exp \left(\frac{a}{T} \right)`
+:math:`\text{Eyring:} \hspace{35mm} L(T)= \frac{1}{T}.exp \left( -left( c - \frac{a}{T} \right) \right)`
+:math:`\text{Power (also known as inverse power):} \hspace{15mm} L(S)=a.S^n`
+
+:math:`\text{Dual-Exponential (also known as Temperature-Humidity):} \hspace{5mm} L(T)=c.exp \left(\frac{a}{T} + \frac{b}{H} \right)`
+:math:`\text{Power-Exponential (also known as Thermal-Non-Thermal):} \hspace{5mm} L(T)=c.S^n.exp \left(\frac{a}{T} \right)`
 
 .. code:: python
 
