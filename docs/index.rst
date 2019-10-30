@@ -85,6 +85,7 @@ Contents:
 
   Acceleration factor
   ALT probability plots
+  Fitting a model to ALT data
 
 .. toctree::
   :maxdepth: 1
