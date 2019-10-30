@@ -13,11 +13,11 @@ The module ``reliability.ALT`` contains fitting function for 15 different ALT li
 
 :math:`\text{Weibull PDF:} \hspace{35mm} f(t) = \frac{\beta t^{ \beta - 1}}{ \alpha^ \beta} {\rm e}^{-(\frac{t}{\alpha })^ \beta }`
 
-:math:`\text{Exponential Life-Stress Model:} \hspace{5mm} L(T) = A.exp\left(\frac{a}{T} \right)`
+:math:`\text{Exponential Life-Stress Model:} \hspace{5mm} L(T) = b.exp\left(\frac{a}{T} \right)`
 
 Replacing :math:`\alpha` with :math:`L(T)` gives:
 
-:math:`\text{Weibull PDF:} \hspace{5mm} f(t,T) = \frac{\beta t^{ \beta - 1}}{ \left( A.exp \left( \frac{a}{T} \right) \right)^ \beta} {\rm e}^{-(\frac{t}{\left( A.exp \left( \frac{a}{T} \right) })^ \beta }`
+:math:`\text{Weibull PDF:} \hspace{11mm} f(t) = \frac{\beta t^{ \beta - 1}}{ \alpha^ \beta} exp \left(-(\frac{t}{\alpha })^ \beta \right)}` 
 
 The correct substitutions for each type of model are:
 
