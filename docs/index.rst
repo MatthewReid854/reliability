@@ -59,17 +59,6 @@ Contents:
 
 .. toctree::
   :maxdepth: 1
-  :caption: Other functions and data
-  
-  One sample proportion
-  Two proportion test
-  Sample size required for no failures
-  Sequential sampling chart
-  Convert dataframe to grouped lists
-  Datasets
-
-.. toctree::
-  :maxdepth: 1
   :caption: Physics of failure
 
   SN diagram
@@ -89,6 +78,17 @@ Contents:
 
 .. toctree::
   :maxdepth: 1
+  :caption: Other functions and data
+  
+  One sample proportion
+  Two proportion test
+  Sample size required for no failures
+  Sequential sampling chart
+  Convert dataframe to grouped lists
+  Datasets
+
+.. toctree::
+  :maxdepth: 1
   :caption: Administration
   
   Citing reliability in your work
@@ -96,16 +96,3 @@ Contents:
   How to get help
   About the author
   Credits to those who helped
-
-Installation
-------------------------------
-
-.. code-block:: console
-
-    pip install reliability
-
-Source code and issue tracker
-------------------------------
-
-Available on Github, `MatthewReid854/reliability <https://github.com/MatthewReid854/reliability/>`_.
-If you find any errors, bugs, or would like to request any feature extensions, please raise an `issue <https://github.com/MatthewReid854/reliability/issues/>`_ on GitHub
