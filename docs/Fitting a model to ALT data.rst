@@ -33,13 +33,16 @@ The `life models <https://reliability.readthedocs.io/en/latest/Equations%20of%20
 - Lognormal_2P
 - Normal_2P
 
-The life-stress models avialble are:
+The life-stress models available are:
 
 :math:`\text{Exponential (also used for Arrhenius equation):} \hspace{5mm} L(T)=b.exp \left(\frac{a}{T} \right)`
+
 :math:`\text{Eyring:} \hspace{35mm} L(T)= \frac{1}{T}.exp \left( -left( c - \frac{a}{T} \right) \right)`
+
 :math:`\text{Power (also known as inverse power):} \hspace{15mm} L(S)=a.S^n`
 
 :math:`\text{Dual-Exponential (also known as Temperature-Humidity):} \hspace{5mm} L(T)=c.exp \left(\frac{a}{T} + \frac{b}{H} \right)`
+
 :math:`\text{Power-Exponential (also known as Thermal-Non-Thermal):} \hspace{5mm} L(T)=c.S^n.exp \left(\frac{a}{T} \right)`
 
 .. code:: python
