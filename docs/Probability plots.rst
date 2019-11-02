@@ -99,6 +99,7 @@ In this fourth example, we will take a look at the special case of the Exponenti
 
     from reliability.Distributions import Exponential_Distribution
     from reliability.Probability_plotting import Exponential_probability_plot, Weibull_probability_plot, Exponential_probability_plot_Weibull_Scale
+    import matplotlib.pyplot as plt
     data1 = Exponential_Distribution(Lambda=1/10,gamma=5).random_samples(50) #should give Lambda = 0.01 OR alpha = 10
     data2 = Exponential_Distribution(Lambda=1/100,gamma=5).random_samples(50) #should give Lambda = 0.001 OR alpha = 100
     plt.subplot(131)
