@@ -114,7 +114,7 @@ In this fourth example, we will take a look at the special case of the Exponenti
     plt.gcf().set_size_inches(15,7)
     plt.show()
 
-.. image:: images/expon_weibull_scale.png
+.. image:: images/expon_weibull_scale2.png
 
 In this final example, we take a look at how a probability plot can show us that there's something wrong with our assumption of a single distribution. To generate the data, the random samples are drawn from two different distributions which are shown in the left image. In the right image, the scatterplot of failure times is clearly non-linear. The red line is the attempt to fit a single Weibull_2P distribution and this will do a poor job of modelling the data. Also note that the points of the scatterplot do not fall on the True CDF of each distribution. This is because the median rank method of obtaining the plotting positions does not work well if the failure times come from more than one distribution. If you see a pattern like this, try a `mixture model <https://reliability.readthedocs.io/en/latest/Weibull%20mixture%20models.html>`_. Always remember that cusps, corners, and doglegs indicate a mixture of failure modes.
 
