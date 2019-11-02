@@ -12,8 +12,9 @@ The module ``reliability.ALT`` contains three ALT probability plotting functions
 - ALT_probability_plot_Weibull
 - ALT_probability_plot_Lognormal
 - ALT_probability_plot_Normal
+- ALT_probability_plot_Exponential
 
-An ALT probability plot produces a multi-dataset probability plot which includes the probability plots for the data and the fitted distribution at each stress level, as well as a refitted distribution assuming a common shape parameter at each stress level. All of these functions perform in a similar way, with the main difference being the distribution that is fitted. The probability plots provided do not include the Exponential distribution (because of there only being one parameter), the Beta distribution (because there are two shape parameters), the Gamma distribution (because changing the scale parameter will also change the slope of the line even when the shape parameter is constant) or any of the location shifted distributions (because these are not typically used for ALT probability plotting).
+An ALT probability plot produces a multi-dataset probability plot which includes the probability plots for the data and the fitted distribution at each stress level, as well as a refitted distribution assuming a common shape parameter at each stress level. All of these functions perform in a similar way, with the main difference being the distribution that is fitted. The probability plots provided do not include the Beta distribution (because there are two shape parameters), the Gamma distribution (because changing the scale parameter will also change the slope of the line even when the shape parameter is constant) or any of the location shifted distributions (because these are not typically used for ALT probability plotting). The ALT_probability_plot_Exponential is a special case of the ALT_probability_plot_Weibull in which the common shape parameter is forced to be 1. An example of this is shown below.
 
 When producing the ALT probability plot, the function automates the following process; fit a distribution to the data for each unique stress level, find the common shape parameter (several methods are provided), refit the distribution to the data for each unique stress level whilst forcing the shape parameter to be equal to the common shape parameter, plot the data along with the original and new fitted distributions, calculate the change in the common shape parameter from the original shape parameter to see if the model is applicable to this dataset. Each of the ALT plotting functions listed above has the following inputs and outputs.
 
@@ -25,18 +26,18 @@ Inputs:
 - right_censored_stress - an array or list of the corresponding stresses (such as temperature) at which each right_censored datapoint was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
 - print_results - True/False. Default is True
 - show_plot - True/False. Default is True
-- common_beta_method - 'BIC', 'weighted_average', 'average'. Default is 'BIC'. This is the method used to obtain the common_beta parameter. 'BIC' will find the common_beta that gives lowest total BIC (equivalent to the best overall fit), 'weighted_average' will perform a weighted average based on the amount of data (failures and right censored) for each stress, 'average' is simply the average. Note for the Lognormal and Normal plots, this variable is named common_sigma_method as we are forcing sigma to be a common value.
+- common_shape_method - 'BIC', 'weighted_average', 'average'. Default is 'BIC'. This is the method used to obtain the common_shape (beta) parameter. 'BIC' will find the common_shape that gives lowest total BIC (equivalent to the best overall fit), 'weighted_average' will perform a weighted average based on the amount of data (failures and right censored) for each stress, 'average' is simply the average. Note for the Lognormal and Normal plots, this variable is named common_sigma_method as we are forcing sigma to be a common value.
 
 Outputs:
 
 - The plot will be produced if show_plot is True
 - A dataframe of the fitted distributions parameters will be printed if print_results is True
 - results - a dataframe of the fitted distributions parameters and change in the shape parameter
-- common_beta - the common beta parameter. Note in the Lognormal and Normal plots, this variable is common_sigma
-- BIC_sum - the sum of the BIC for each of the distributions when fitted using the common_beta
-- AICc_sum - the sum of the AICc for each of the distributions when fitted using the common_beta
+- common_shape - the common shape parameter. This is Beta for Weibull, Sigma for Lognormal and Normal, and 1 for Exponential.
+- BIC_sum - the sum of the BIC for each of the distributions when fitted using the common_shape
+- AICc_sum - the sum of the AICc for each of the distributions when fitted using the common_shape
 
-The time to run the function will be a few seconds if you have a large amount of data and the common_beta_method is set to 'BIC'. This is because the distributions need to be refitted for each iteration of the optimizer (which is usually around 20 to 30 iterations). With 100 datapoints this should take less than 5 seconds for the 'BIC' method, and less than 1 second for the 'average' and 'weighted_average' methods. The more data you have, the longer it will take, so please be patient as a lot of computation is required.
+The time to run the function will be a few seconds if you have a large amount of data and the common_shape_method is set to 'BIC'. This is because the distributions need to be refitted for each iteration of the optimizer (which is usually around 20 to 30 iterations). With 100 datapoints this should take less than 5 seconds for the 'BIC' method, and less than 1 second for the 'average' and 'weighted_average' methods. The more data you have, the longer it will take, so please be patient as a lot of computation is required.
 
 In the following example we will use a dataset from ``reliability.Datasets`` which contains failures and right_censored data for three stress levels. We will analyse this dataset using the Weibull and Lognormal ALT probability plots to determine which model is a better fit for the data. All other inputs are left to their default values which gives us the plot and the results dataframe. From the printed results we can see how well the model fits our data. The AICc and BIC values suggest that the Lognormal model is a slightly better fit overall for this dataset, but both models would be suitable. The fitted distributions with a common shape parameter still agree well with the majority of our data (except for the lower tail of the 40 degree data), and the amount of change to the shape parameter was within the acceptable limits. See the section `below <https://reliability.readthedocs.io/en/latest/ALT%20probability%20plots.html#what-does-an-alt-probability-plot-show-me>`_ for more details on what we are looking to get out of these plots.
 
@@ -72,6 +73,50 @@ In the following example we will use a dataset from ``reliability.Datasets`` whi
     '''
     
 .. image:: images/ALT_probability_plot_1.png
+
+In this second example, we examine the difference between ALT_probability_plot_Weibull and ALT_probability_plot_Exponential. A dataset is generated from several Exponential distributions. Ideally, we want to fit a distribution to this data which does not overfit, such that it should have as few parameters as necessary. Both the Weibull and Exponential distributions could be used here, but we know the Exponential is a more appropriate distribution since it was the source of the data. Upon examination of the results, we see very little difference between the common shape (from Exponential) and common beta (from Weibull) and very little difference in the plots, but the AICc and BIC are both lower for the Exponential model indicating that the Exponential distribution should be used preferrentially to the Weibull distribution. Conveniently, the function ALT_probability_plot_Exponential also provides the AICc and BIC results from Weibull and will print a warning if it finds Weibull to be a more appropriate fit than Exponential based on the BIC.
+
+.. code:: python
+
+    from reliability.ALT import ALT_probability_plot_Weibull, ALT_probability_plot_Exponential
+    import matplotlib.pyplot as plt
+    import numpy as np
+    from reliability.Distributions import Exponential_Distribution
+    #create the data using an Exponential distribution
+    np.random.seed(42) #for repeatability
+    data1 = Exponential_Distribution(Lambda=1/100).random_samples(10)
+    data2 = Exponential_Distribution(Lambda=1/500).random_samples(10)
+    data3 = Exponential_Distribution(Lambda=1/3000).random_samples(10)
+    f = np.hstack([data1,data2,data3])
+    f_stress = np.hstack([np.ones_like(data1)*50,np.ones_like(data1)*40,np.ones_like(data1)*30])
+    #plot the data
+    plt.subplot(121)
+    ALT_probability_plot_Exponential(failures=f,failure_stress=f_stress)
+    plt.subplot(122)
+    ALT_probability_plot_Weibull(failures=f,failure_stress=f_stress,common_shape_method='average')
+    plt.show()
+
+    '''
+    ALT Exponential probability plot results:
+      stress  weibull alpha  weibull beta  new 1/Lambda  common shape shape change
+        30.0    1935.200724      1.341689   1780.530726           1.0      -25.47%
+        40.0     361.340195      0.843440    398.460299           1.0      +18.56%
+        50.0     105.469663      1.074161    102.697008           1.0        -6.9%
+    Total AICc: 429.58115216256
+    Total BIC: 428.9889074415421
+    Total AICc (weibull): 439.3536223694606
+    Total BIC (weibull): 436.02627578456776
+
+    ALT Weibull probability plot results:
+      stress  original alpha  original beta    new alpha  common beta beta change
+        30.0     1935.200724       1.341689  1793.032874     1.026432      -23.5%
+        40.0      361.340195       0.843440   404.943224     1.026432      +21.7%
+        50.0      105.469663       1.074161   103.692500     1.026432      -4.44%
+    Total AICc: 439.3536223694606
+    Total BIC: 436.02627578456776
+    '''
+
+.. image:: images/ALT_expon_weib_probplot.png
 
 Getting your input data in the right format
 -------------------------------------------
