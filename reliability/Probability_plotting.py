@@ -182,9 +182,9 @@ def Weibull_probability_plot(failures=None, right_censored=None, fit_gamma=False
             raise ValueError('right_censored must be a list or an array')
     # generate the figure and fit the distribution
     if max(failures) < 1:
-        xvals = np.linspace(10 ** -3, 2, 1000)
+        xvals = np.linspace(10 ** -5, 2, 1000)
     else:
-        xvals = np.logspace(-2, np.ceil(np.log10(max(failures))) + 1, 1000)
+        xvals = np.logspace(-4, np.ceil(np.log10(max(failures))) + 1, 1000)
     if fit_gamma is False:
         if __fitted_dist_params is not None:
             alpha = __fitted_dist_params.alpha
@@ -296,9 +296,9 @@ def Exponential_probability_plot_Weibull_Scale(failures=None, right_censored=Non
             raise ValueError('right_censored must be a list or an array')
     # generate the figure and fit the distribution
     if max(failures) < 1:
-        xvals = np.linspace(10 ** -3, 2, 1000)
+        xvals = np.linspace(10 ** -5, 2, 1000)
     else:
-        xvals = np.logspace(-2, np.ceil(np.log10(max(failures))) + 1, 1000)
+        xvals = np.logspace(-4, np.ceil(np.log10(max(failures))) + 1, 1000)
     if fit_gamma is False:
         if __fitted_dist_params is not None:
             Lambda = __fitted_dist_params.Lambda
@@ -1183,3 +1183,4 @@ def QQ_plot_semiparametric(X_data_failures=None, X_data_right_censored=None, Y_d
     plt.ylim([0, endval])
     plt.title('Quantile-Quantile Plot\nSemi-parametric')
     return [m, deg1[0], deg1[1]]
+

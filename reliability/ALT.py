@@ -702,4 +702,3 @@ class ALT_probability_plot_Normal:
             print('Total AICc:', self.AICc_sum)
             print('Total BIC:', self.BIC_sum)
 
-
