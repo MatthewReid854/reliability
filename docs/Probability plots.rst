@@ -14,6 +14,7 @@ The module ``reliability.Probability_plotting`` contains functions for each of t
 - Gamma_probability_plot
 - Beta_probability_plot
 - Exponential_probability_plot
+- Exponential_probability_plot_Weibull_Scale
 
 There is also a function to obtain the plotting positions as well as the functions for custom axes scaling. These are explained more in the help file and will not be discussed further here.
 
@@ -91,6 +92,28 @@ In this third example, we will see how probability plotting can be used to highl
     plt.show()
 
 .. image:: images/Weibull_probability_plot_multi.png
+
+In this fourth example, we will take a look at the special case of the Exponential probability plot using the Weibull Scale. This plot is essentially a Weibull probability plot, but the fitting and plotting functions are Exponential. The reason for plotting an Exponential distribution on Weibull probability paper is to achieve parallel lines for different Lambda parameters rather than having the lines radiating from the origin as we see in the Exponential probability plot on Exponential probability paper. This has applications in ALT probability plotting. An example of the differences between the plots are shown below. Remember that the alpha parameter from the Weibull distribution is equivalent to 1/Lambda from the Exponential distribution and a Weibull distribution with Beta = 1 is the same as an exponential distribution.
+
+.. code:: python
+
+    from reliability.Distributions import Exponential_Distribution
+    from reliability.Probability_plotting import Exponential_probability_plot, Weibull_probability_plot, Exponential_probability_plot_Weibull_Scale
+    data1 = Exponential_Distribution(Lambda=1/10,gamma=5).random_samples(50) #should give Lambda = 0.01 OR alpha = 10
+    data2 = Exponential_Distribution(Lambda=1/100,gamma=5).random_samples(50) #should give Lambda = 0.001 OR alpha = 100
+    plt.subplot(131)
+    Exponential_probability_plot(failures=data1,fit_gamma=True,color='steelblue')
+    Exponential_probability_plot(failures=data2,fit_gamma=True,color='darkorange')
+    plt.subplot(132)
+    Weibull_probability_plot(failures=data1,fit_gamma=True,color='steelblue')
+    Weibull_probability_plot(failures=data2,fit_gamma=True,color='darkorange')
+    plt.subplot(133)
+    Exponential_probability_plot_Weibull_Scale(failures=data1,fit_gamma=True,color='steelblue')
+    Exponential_probability_plot_Weibull_Scale(failures=data2,fit_gamma=True,color='darkorange')
+    plt.gcf().set_size_inches(15,7)
+    plt.show()
+
+.. image:: images/expon_weibull_scale.png
 
 In this final example, we take a look at how a probability plot can show us that there's something wrong with our assumption of a single distribution. To generate the data, the random samples are drawn from two different distributions which are shown in the left image. In the right image, the scatterplot of failure times is clearly non-linear. The red line is the attempt to fit a single Weibull_2P distribution and this will do a poor job of modelling the data. Also note that the points of the scatterplot do not fall on the True CDF of each distribution. This is because the median rank method of obtaining the plotting positions does not work well if the failure times come from more than one distribution. If you see a pattern like this, try a `mixture model <https://reliability.readthedocs.io/en/latest/Weibull%20mixture%20models.html>`_. Always remember that cusps, corners, and doglegs indicate a mixture of failure modes.
 
