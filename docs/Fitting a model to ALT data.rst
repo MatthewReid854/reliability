@@ -103,3 +103,25 @@ In the following example, we will fit the Weibull-Power model to an ALT dataset 
     '''
     
 .. image:: images/Weibull_power.png
+
+In this second example, we will fit a dual stress model to a dual stress dataset. The dataset contains temperature and voltage data so it is most appropriate to model this dataset using a Power-Exponential model. A few differences to note with the dual stress models is that each stress requires a separate input, so if you also have censored data then this will require 6 inputs. If using the Power Exponential model it is essential that the thermal and non-thermal stresses go in their named inputs or the model will likely fail to fit the data. In this example we want to know the life at a use level stress of 325K and 0.5V which the output tells us is 4673 hours.
+
+.. code:: python
+
+    from reliability.Datasets import ALT_temperature_voltage2
+    data = ALT_temperature_voltage2()
+    Fit_Weibull_Power_Exponential(failures=data.failures,failure_stress_thermal=data.failure_stress_temp,failure_stress_nonthermal=data.failure_stress_voltage,use_level_stress=[325,0.5])
+    plt.show()
+
+    '''
+    Results from Fit_Weibull_Power_Exponential (95% CI):
+               Point Estimate  Standard Error     Lower CI     Upper CI
+    Parameter                                                          
+    a             3404.486466      627.676350  2174.263426  4634.709506
+    c                0.087610        0.141217    -0.189171     0.364391
+    n               -0.713424        0.277561    -1.257434    -0.169413
+    beta             4.997525        1.173997     3.153511     7.919826
+    At the use level stresses of 325 and 0.5 , the mean life is 4673.15311
+    '''
+
+.. image:: images/power_expon_plot.png
