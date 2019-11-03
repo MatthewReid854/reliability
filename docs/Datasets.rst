@@ -16,17 +16,22 @@ There are a few datasets that have been included with reliability that users may
 
 - ALT_temperature - conducted at 3 temperatures. 35 failures, 102 right censored.
 - ALT_temperature2 - conducted at 4 temperatures. 40 failures, 20 right censored.
+- ALT_temperature3 - conducted at 3 temperatures. 30 failures, 0 right censored.
 - ALT_load - conducted at 3 loads. 20 failures, 0 censored.
 - ALT_load2 - conducted at 3 loads. 13 failures, 5 right censored.
-- ALT_temperature_voltage - conducted at 3 different temperatures and 2 different voltages. 18 failures, 8 right censored.
+- ALT_temperature_voltage - conducted at 2 different temperatures and 2 different voltages. 12 failures, 0 right censored.
+- ALT_temperature_voltage2 - conducted at 3 different temperatures and 2 different voltages. 18 failures, 8 right censored.
+- ALT_temperature_humidity - conducted at 2 different temperatures and 2 different humidities. 12 failures, 0 right censored.
 
 All datasets are functions which create objects and every dataset object has several values. For most datasets, these are:
 
 - info - a dataframe of statistics about the dataset
 - failures - a list of the failure data
 - right_censored - a list of the right_censored data
+- right_censored_stress - a list of the right_censored stresses (ALT datasets only)
+- some data set specific variations on the above such as failure_stress_humidity, right_censored_stress_voltage, failure_stress_temp, etc.
 
-Some datasets (such as ALT_temperature) have other values in addition to those listed above. If you would like more information on a dataset, you can type the name of the dataset in the help function (after importing it).
+If you would like more information on a dataset, you can type the name of the dataset in the help function (after importing it).
 
 .. code:: python
 
