@@ -6,6 +6,8 @@ Within the module ALT, are the following functions:
 - ALT_probability_plot_Weibull - produces an ALT probability plot by fitting a Weibull distribution to each unique stress and then finding a common shape parameter
 - ALT_probability_plot_Lognormal - produces an ALT probability plot by fitting a Lognormal distribution to each unique stress and then finding a common shape parameter
 - ALT_probability_plot_Normal - produces an ALT probability plot by fitting a Normal distribution to each unique stress and then finding a common shape parameter
+- ALT_probability_plot_Exponential - produces an ALT probability plot by fitting an Weibull distribution to each unique stress and then fitting an Exponential distribution (equivalent to forcing the common shape parameter to be 1)
+
 '''
 
 import numpy as np
@@ -21,7 +23,7 @@ class acceleration_factor:
     '''
     The Arrhenius model for Acceleration factor due to higher temperature is:
     AF = exp(Ea/K(1/T_use-1/T_acc))
-    This function accepts T_use as a mandotory input and the user may specify any two of the three other variables, and the third variable will be found.
+    This function accepts T_use as a mandatory input and the user may specify any two of the three other variables, and the third variable will be found.
 
     Inputs:
     T_use - Temp of usage in Celsius
@@ -31,8 +33,8 @@ class acceleration_factor:
     Two of the three optional inputs must be specified and the third one will be found.
     print_results - True/False. Default is True
 
-    Returns
-    Results will be printed to console if print_results is True
+    Outputs:
+    Outputs will be printed to console if print_results is True
     AF - Acceleration Factor
     T_acc - Accelerated temperature
     T_use - Use temperature
@@ -415,7 +417,7 @@ class ALT_probability_plot_Exponential:
             else:
                 RIGHT_CENSORED = None
             expon_fit = Fit_Expon_1P(failures=FAILURES, right_censored=RIGHT_CENSORED, show_probability_plot=False, print_results=False)
-            weib_fit = Fit_Weibull_2P(failures=FAILURES, right_censored=RIGHT_CENSORED, show_probability_plot=False, print_results=False,force_beta=np.average(weibull_fit_beta_array))
+            weib_fit = Fit_Weibull_2P(failures=FAILURES, right_censored=RIGHT_CENSORED, show_probability_plot=False, print_results=False, force_beta=np.average(weibull_fit_beta_array))
             expon_fit_lambda_array.append(expon_fit.Lambda)
             if type(expon_fit.AICc) == str:
                 AICc = False
@@ -450,7 +452,7 @@ class ALT_probability_plot_Exponential:
                 beta_differences.append(str('+' + str(round(item * 100, 2)) + '%'))
             else:
                 beta_differences.append(str(str(round(item * 100, 2)) + '%'))
-        results = {'stress': unique_stresses_f, 'weibull alpha': weibull_fit_alpha_array, 'weibull beta': weibull_fit_beta_array, 'new 1/Lambda': 1/np.array(expon_fit_lambda_array), 'common shape': np.ones_like(unique_stresses_f), 'shape change': beta_differences}
+        results = {'stress': unique_stresses_f, 'weibull alpha': weibull_fit_alpha_array, 'weibull beta': weibull_fit_beta_array, 'new 1/Lambda': 1 / np.array(expon_fit_lambda_array), 'common shape': np.ones_like(unique_stresses_f), 'shape change': beta_differences}
         results_df = pd.DataFrame(results, columns=['stress', 'weibull alpha', 'weibull beta', 'new 1/Lambda', 'common shape', 'shape change'])
         blankIndex = [''] * len(results_df)
         results_df.index = blankIndex
@@ -464,8 +466,8 @@ class ALT_probability_plot_Exponential:
             print('Total BIC:', self.BIC_sum)
             print('Total AICc (weibull):', self.AICc_sum_weibull)
             print('Total BIC (weibull):', self.BIC_sum_weibull)
-        if self.BIC_sum>self.BIC_sum_weibull:
-            print('The Weibull distribution would be a more appropriate fit for this data set as it has a lower BIC (using the average method to obtain BIC) than the Exponential distribution.')
+        if self.BIC_sum > self.BIC_sum_weibull:
+            print('WARNING: The Weibull distribution would be a more appropriate fit for this data set as it has a lower BIC (using the average method to obtain BIC) than the Exponential distribution.')
 
 
 class ALT_probability_plot_Lognormal:
@@ -883,4 +885,3 @@ class ALT_probability_plot_Normal:
             print(self.results)
             print('Total AICc:', self.AICc_sum)
             print('Total BIC:', self.BIC_sum)
-
