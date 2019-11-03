@@ -109,9 +109,9 @@ In this second example, we will fit a dual stress model to a dual stress data se
 .. code:: python
 
     from reliability.ALT import Fit_Weibull_Power_Exponential
-    from reliability.Datasets import ALT_temperature_voltage2
+    from reliability.Datasets import ALT_temperature_voltage
     import matplotlib.pyplot as plt
-    data = ALT_temperature_voltage2()
+    data = ALT_temperature_voltage()
     Fit_Weibull_Power_Exponential(failures=data.failures,failure_stress_thermal=data.failure_stress_temp,failure_stress_nonthermal=data.failure_stress_voltage,use_level_stress=[325,0.5])
     plt.show()
 
