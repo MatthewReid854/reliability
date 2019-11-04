@@ -553,8 +553,10 @@ class Fit_Weibull_2P:
     '''
 
     def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, force_beta=None):
-        if failures is None or len(failures) < 2:
-            raise ValueError('Maximum likelihood estimates could not be calculated for these data. There must be at least two failures to calculate Weibull parameters.')
+        if force_beta is not None and (failures is None or len(failures)<1):
+            raise ValueError('Maximum likelihood estimates could not be calculated for these data. There must be at least 1 failures to calculate Weibull parameters when force_beta is specified.')
+        elif force_beta is None and (failures is None or len(failures) < 2):
+                raise ValueError('Maximum likelihood estimates could not be calculated for these data. There must be at least two failures to calculate Weibull parameters.')
         if CI <= 0 or CI >= 1:
             raise ValueError('CI must be between 0 and 1. Default is 0.95 for 95% Confidence interval.')
         # fill with empty lists if not specified
@@ -1269,8 +1271,10 @@ class Fit_Normal_2P:
     '''
 
     def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, force_sigma=None):
-        if failures is None or len(failures) < 2:
-            raise ValueError('Maximum likelihood estimates could not be calculated for these data. There must be at least two failures to calculate Normal parameters.')
+        if force_sigma is not None and (failures is None or len(failures)<1):
+            raise ValueError('Maximum likelihood estimates could not be calculated for these data. There must be at least 1 failures to calculate Normal parameters when force_sigma is specified.')
+        elif force_sigma is None and (failures is None or len(failures) < 2):
+                raise ValueError('Maximum likelihood estimates could not be calculated for these data. There must be at least two failures to calculate Normal parameters.')
         if CI <= 0 or CI >= 1:
             raise ValueError('CI must be between 0 and 1. Default is 0.95 for 95% Confidence interval.')
         # fill with empty lists if not specified
@@ -1427,8 +1431,10 @@ class Fit_Lognormal_2P:
     '''
 
     def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, force_sigma=None):
-        if failures is None or len(failures) < 2:
-            raise ValueError('Maximum likelihood estimates could not be calculated for these data. There must be at least two failures to calculate Lognormal parameters.')
+        if force_sigma is not None and (failures is None or len(failures)<1):
+            raise ValueError('Maximum likelihood estimates could not be calculated for these data. There must be at least 1 failures to calculate Lognormal parameters when force_sigma is specified.')
+        elif force_sigma is None and (failures is None or len(failures) < 2):
+                raise ValueError('Maximum likelihood estimates could not be calculated for these data. There must be at least two failures to calculate Lognormal parameters.')
         if CI <= 0 or CI >= 1:
             raise ValueError('CI must be between 0 and 1. Default is 0.95 for 95% Confidence interval.')
         # fill with empty lists if not specified
@@ -1589,8 +1595,10 @@ class Fit_Gamma_2P:
     '''
 
     def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, force_beta=None):
-        if failures is None or len(failures) < 2:
-            raise ValueError('Maximum likelihood estimates could not be calculated for these data. There must be at least two failures to calculate Gamma parameters.')
+        if force_beta is not None and (failures is None or len(failures)<1):
+            raise ValueError('Maximum likelihood estimates could not be calculated for these data. There must be at least 1 failures to calculate Gamma parameters when force_sigma is specified.')
+        elif force_beta is None and (failures is None or len(failures) < 2):
+                raise ValueError('Maximum likelihood estimates could not be calculated for these data. There must be at least two failures to calculate Gamma parameters.')
         if CI <= 0 or CI >= 1:
             raise ValueError('CI must be between 0 and 1. Default is 0.95 for 95% Confidence interval.')
         # fill with empty lists if not specified
