@@ -28,7 +28,7 @@ In the example below, the acceleration factor is found for an accelerated test a
 
 .. code:: python
 
-    from reliability.ALT import acceleration_factor
+    from reliability.PoF import acceleration_factor
     acceleration_factor(T_use=60,T_acc=100,Ea=1.2)
 
     '''
