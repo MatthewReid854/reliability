@@ -1,13 +1,13 @@
 '''
-Accelerated Life Testing
+ALT_probability_plotting
 
-Within the module ALT, are the following functions:
-- acceleration_factor - Given T_use and two out of the three values for AF, T_acc, Ea, it will find the third value.
+Probability plots for accelerated life testing (ALT) models
+
+Within the module ALT_probability_plotting, are the following functions:
 - ALT_probability_plot_Weibull - produces an ALT probability plot by fitting a Weibull distribution to each unique stress and then finding a common shape parameter
 - ALT_probability_plot_Lognormal - produces an ALT probability plot by fitting a Lognormal distribution to each unique stress and then finding a common shape parameter
 - ALT_probability_plot_Normal - produces an ALT probability plot by fitting a Normal distribution to each unique stress and then finding a common shape parameter
 - ALT_probability_plot_Exponential - produces an ALT probability plot by fitting an Weibull distribution to each unique stress and then fitting an Exponential distribution (equivalent to forcing the common shape parameter to be 1)
-
 '''
 
 import numpy as np
@@ -17,69 +17,6 @@ from reliability import Probability_plotting
 from reliability.Fitters import Fit_Weibull_2P, Fit_Lognormal_2P, Fit_Gamma_2P, Fit_Normal_2P, Fit_Expon_1P
 import pandas as pd
 from scipy.optimize import minimize
-
-
-class acceleration_factor:
-    '''
-    The Arrhenius model for Acceleration factor due to higher temperature is:
-    AF = exp(Ea/K(1/T_use-1/T_acc))
-    This function accepts T_use as a mandatory input and the user may specify any two of the three other variables, and the third variable will be found.
-
-    Inputs:
-    T_use - Temp of usage in Celsius
-    T_acc - Temp of acceleration in Celsius (optional input)
-    Ea - Activation energy in eV (optional input)
-    AF - Acceleration factor (optional input)
-    Two of the three optional inputs must be specified and the third one will be found.
-    print_results - True/False. Default is True
-
-    Outputs:
-    Outputs will be printed to console if print_results is True
-    AF - Acceleration Factor
-    T_acc - Accelerated temperature
-    T_use - Use temperature
-    Ea - Activation energy (in eV)
-    '''
-
-    def __init__(self, AF=None, T_use=None, T_acc=None, Ea=None, print_results=True):
-        if T_use is None:
-            raise ValueError('T_use must be specified')
-        args = [AF, T_acc, Ea]
-        nonecounter = 0
-        for item in args:
-            if item is None:
-                nonecounter += 1
-        if nonecounter > 1:
-            raise ValueError('You must specify two out of three of the optional inputs (T_acc, AF, Ea) and the third one will be found.')
-
-        if AF is None:
-            a = Ea / (8.617333262145 * 10 ** -5)
-            AF = np.exp(a / (T_use + 273.15) - a / (T_acc + 273.15))
-            self.AF = AF
-            self.Ea = Ea
-            self.T_acc = T_acc
-            self.T_use = T_use
-
-        if Ea is None:
-            Ea = np.log(AF) * (8.617333262145 * 10 ** -5) / (1 / (T_use + 273.15) - 1 / (T_acc + 273.15))
-            self.AF = AF
-            self.Ea = Ea
-            self.T_acc = T_acc
-            self.T_use = T_use
-
-        if T_acc is None:
-            T_acc = (1 / (1 / (T_use + 273.15) - np.log(AF) * (8.617333262145 * 10 ** -5) / Ea)) - 273.15
-            self.AF = AF
-            self.Ea = Ea
-            self.T_acc = T_acc
-            self.T_use = T_use
-
-        if print_results is True:
-            print('Acceleration Factor:', self.AF)
-            print('Use Temperature:', self.T_use, '°C')
-            print('Accelerated Temperature:', self.T_acc, '°C')
-            print('Activation Energy (eV):', self.Ea, 'eV')
-
 
 class ALT_probability_plot_Weibull:
     '''

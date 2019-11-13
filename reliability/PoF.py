@@ -11,6 +11,7 @@ Within the module PoF, are the following functions:
 - fracture_mechanics_crack_initiation - finds the cycles to initiate a crack
 - fracture_mechanics_crack_growth - finds the cycles to grow a crack to failure (or a specified length) from an initial length
 - palmgren_miner_linear_damage - uses the Palmgren-Miner linear damage model to find various damage and life outputs.
+- acceleration_factor - Given T_use and two out of the three values for AF, T_acc, Ea, it will find the third value.
 '''
 
 import matplotlib.pyplot as plt
@@ -1154,3 +1155,65 @@ def creep_failure_time(temp_low, temp_high, time_low, C=20, print_results=True):
         print('The time to failure at at temperature of', temp_high, '°F is', time_high)
         print('The Larson-Miller parameter was found to be', LMP)
     return time_high
+
+
+class acceleration_factor:
+    '''
+    The Arrhenius model for Acceleration factor due to higher temperature is:
+    AF = exp(Ea/K(1/T_use-1/T_acc))
+    This function accepts T_use as a mandatory input and the user may specify any two of the three other variables, and the third variable will be found.
+
+    Inputs:
+    T_use - Temp of usage in Celsius
+    T_acc - Temp of acceleration in Celsius (optional input)
+    Ea - Activation energy in eV (optional input)
+    AF - Acceleration factor (optional input)
+    Two of the three optional inputs must be specified and the third one will be found.
+    print_results - True/False. Default is True
+
+    Outputs:
+    Outputs will be printed to console if print_results is True
+    AF - Acceleration Factor
+    T_acc - Accelerated temperature
+    T_use - Use temperature
+    Ea - Activation energy (in eV)
+    '''
+
+    def __init__(self, AF=None, T_use=None, T_acc=None, Ea=None, print_results=True):
+        if T_use is None:
+            raise ValueError('T_use must be specified')
+        args = [AF, T_acc, Ea]
+        nonecounter = 0
+        for item in args:
+            if item is None:
+                nonecounter += 1
+        if nonecounter > 1:
+            raise ValueError('You must specify two out of three of the optional inputs (T_acc, AF, Ea) and the third one will be found.')
+
+        if AF is None:
+            a = Ea / (8.617333262145 * 10 ** -5)
+            AF = np.exp(a / (T_use + 273.15) - a / (T_acc + 273.15))
+            self.AF = AF
+            self.Ea = Ea
+            self.T_acc = T_acc
+            self.T_use = T_use
+
+        if Ea is None:
+            Ea = np.log(AF) * (8.617333262145 * 10 ** -5) / (1 / (T_use + 273.15) - 1 / (T_acc + 273.15))
+            self.AF = AF
+            self.Ea = Ea
+            self.T_acc = T_acc
+            self.T_use = T_use
+
+        if T_acc is None:
+            T_acc = (1 / (1 / (T_use + 273.15) - np.log(AF) * (8.617333262145 * 10 ** -5) / Ea)) - 273.15
+            self.AF = AF
+            self.Ea = Ea
+            self.T_acc = T_acc
+            self.T_use = T_use
+
+        if print_results is True:
+            print('Acceleration Factor:', self.AF)
+            print('Use Temperature:', self.T_use, '°C')
+            print('Accelerated Temperature:', self.T_acc, '°C')
+            print('Activation Energy (eV):', self.Ea, 'eV')

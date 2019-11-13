@@ -576,15 +576,15 @@ class Fit_Weibull_2P:
 
         # solve it
         self.gamma = 0
-        sp = ss.weibull_min.fit(all_data, floc=0, optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
+        sp = ss.weibull_min.fit(all_data, floc=0, optimizer='nelder_mead')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
         warnings.filterwarnings('ignore')  # necessary to supress the warning about the jacobian when using the Powell optimizer
 
         if force_beta is None:
             guess = [sp[2], sp[0]]
-            result = minimize(value_and_grad(Fit_Weibull_2P.LL), guess, args=(failures, right_censored), jac=True, tol=1e-6, method='Powell')
+            result = minimize(value_and_grad(Fit_Weibull_2P.LL), guess, args=(failures, right_censored), jac=True, tol=1e-6, method='nelder-mead')
         else:
             guess = [sp[2]]
-            result = minimize(value_and_grad(Fit_Weibull_2P.LL_fb), guess, args=(failures, right_censored, force_beta), jac=True, tol=1e-6, method='Powell')
+            result = minimize(value_and_grad(Fit_Weibull_2P.LL_fb), guess, args=(failures, right_censored, force_beta), jac=True, tol=1e-6, method='nelder-mead')
 
         if result.success is True:
             params = result.x
