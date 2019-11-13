@@ -5,11 +5,9 @@
 Fitting a model to ALT data
 '''''''''''''''''''''''''''
 
-.. note:: This document and the associated functions are a work in progress. This notice will be removed when the models are available in the PyPI release of reliability.
-
 Before reading this section, you should be familiar with `ALT probability plots <https://reliability.readthedocs.io/en/latest/ALT%20probability%20plots.html>`_, and `Fitting distributions <https://reliability.readthedocs.io/en/latest/Fitting%20a%20specific%20distribution%20to%20data.html>`_ to non-ALT datasets.
 
-The module ``reliability.ALT`` contains fitting function for 15 different ALT life-stress models. Each model is a combination of the life model with the scale or location parameter replaced with a life-stress model. For example, the Weibull-Exponential model is found by replacing the :math:`\alpha` parameter with the equation for the exponential life-stress model as follows:
+The module ``reliability.ALT`` contains fitting function for 20 different ALT life-stress models. Each model is a combination of the life model with the scale or location parameter replaced with a life-stress model. For example, the Weibull-Exponential model is found by replacing the :math:`\alpha` parameter with the equation for the exponential life-stress model as follows:
 
 :math:`\text{Weibull PDF:} \hspace{40mm} f(t) = \frac{\beta t^{ \beta - 1}}{ \alpha^ \beta} .exp \left(-(\frac{t}{\alpha })^ \beta \right)`
 
@@ -32,6 +30,7 @@ The `life models <https://reliability.readthedocs.io/en/latest/Equations%20of%20
 - Weibull_2P
 - Normal_2P
 - Lognormal_2P
+- Expon_1P
 
 The life-stress models available are:
 
@@ -85,7 +84,7 @@ In the following example, we will fit the Weibull-Power model to an ALT dataset 
 
 .. code:: python
 
-    from reliability.ALT import Fit_Weibull_Power
+    from reliability.ALT_fitters import Fit_Weibull_Power
     from reliability.Datasets import ALT_load2
     import matplotlib.pyplot as plt
     data = ALT_load2()
@@ -108,7 +107,7 @@ In this second example, we will fit a dual stress model to a dual stress data se
 
 .. code:: python
 
-    from reliability.ALT import Fit_Weibull_Power_Exponential
+    from reliability.ALT_fitters import Fit_Weibull_Power_Exponential
     from reliability.Datasets import ALT_temperature_voltage
     import matplotlib.pyplot as plt
     data = ALT_temperature_voltage()
