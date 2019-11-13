@@ -7,7 +7,7 @@ ALT probability plots
 
 Before reading this section, you should be familiar with what a probability plot is and how to use it. For a detailed explaination, please see the section on `probability plots <https://reliability.readthedocs.io/en/latest/Probability%20plots.html>`_.
 
-The module ``reliability.ALT`` contains three ALT probability plotting functions. These functions are:
+The module ``reliability.ALT_probability_plotting`` contains four ALT probability plotting functions. These functions are:
 
 - ALT_probability_plot_Weibull
 - ALT_probability_plot_Lognormal
@@ -43,7 +43,7 @@ In the following example we will use a dataset from ``reliability.Datasets`` whi
 
 .. code:: python
 
-    from reliability.ALT import ALT_probability_plot_Weibull, ALT_probability_plot_Lognormal
+    from reliability.ALT_probability_plotting import ALT_probability_plot_Weibull, ALT_probability_plot_Lognormal
     from reliability.Datasets import ALT_temperature
     import matplotlib.pyplot as plt
     plt.figure()
@@ -78,7 +78,7 @@ In this second example, we examine the difference between ALT_probability_plot_W
 
 .. code:: python
 
-    from reliability.ALT import ALT_probability_plot_Weibull, ALT_probability_plot_Exponential
+    from reliability.ALT_probability_plotting import ALT_probability_plot_Weibull, ALT_probability_plot_Exponential
     import matplotlib.pyplot as plt
     import numpy as np
     from reliability.Distributions import Exponential_Distribution
@@ -160,7 +160,7 @@ The image provided above shows two distributions that fit well. If we apply the 
 
 .. code:: python
 
-    from reliability.ALT import ALT_probability_plot_Normal
+    from reliability.ALT_probability_plotting import ALT_probability_plot_Normal
     from reliability.Datasets import ALT_temperature
     import matplotlib.pyplot as plt
     ALT_probability_plot_Normal(failures=ALT_temperature().failures,failure_stress=ALT_temperature().failure_stresses,right_censored=ALT_temperature().right_censored,right_censored_stress=ALT_temperature().right_censored_stresses)
