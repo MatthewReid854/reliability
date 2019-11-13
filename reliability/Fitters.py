@@ -576,7 +576,7 @@ class Fit_Weibull_2P:
 
         # solve it
         self.gamma = 0
-        sp = ss.weibull_min.fit(all_data, floc=0, optimizer='nelder-mead')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
+        sp = ss.weibull_min.fit(all_data, floc=0, optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
         warnings.filterwarnings('ignore')  # necessary to supress the warning about the jacobian when using the Powell optimizer
 
         if force_beta is None:
@@ -1988,3 +1988,5 @@ class Fit_Beta_2P:
         LL_f += Fit_Beta_2P.logf(T_f, params[0], params[1]).sum()  # failure times
         LL_rc += Fit_Beta_2P.logR(T_rc, params[0], params[1]).sum()  # right censored times
         return -(LL_f + LL_rc)
+
+Fit_Weibull_2P(failures=[4,6,5,4,5])
