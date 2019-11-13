@@ -60,7 +60,7 @@ Inputs:
 -   print_results - True/False. Default is True
 -   show_plot - True/False. Default is True
 -   CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
--   initial_guess - starting values for [a,n]. Default is [500000,-1.5]. Optional input. If fitting fails, you will be prompted to try a better initial guess and you can use this input to do it.
+-   initial_guess - starting values for [a,n]. Default is calculated using a curvefit to failure data. Optional input. If fitting fails, you will be prompted to try a better initial guess and you can use this input to do it.
 
 Outputs:
 
