@@ -25,6 +25,8 @@ The correct substitutions for each type of model are:
 
 :math:`\text{Lognormal:} \hspace{5mm} \mu = ln \left( L(T) \right)`
 
+:math:`\text{Exponential:} \hspace{2mm} \lambda = \frac{1}{L(T)}`
+
 The `life models <https://reliability.readthedocs.io/en/latest/Equations%20of%20supported%20distributions.html>`_ available are:
 
 - Weibull_2P
