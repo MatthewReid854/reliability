@@ -576,7 +576,7 @@ class Fit_Weibull_2P:
 
         # solve it
         self.gamma = 0
-        sp = ss.weibull_min.fit(all_data, floc=0, optimizer='nelder_mead')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
+        sp = ss.weibull_min.fit(all_data, floc=0, optimizer='nelder-mead')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
         warnings.filterwarnings('ignore')  # necessary to supress the warning about the jacobian when using the Powell optimizer
 
         if force_beta is None:
