@@ -1989,4 +1989,4 @@ class Fit_Beta_2P:
         LL_rc += Fit_Beta_2P.logR(T_rc, params[0], params[1]).sum()  # right censored times
         return -(LL_f + LL_rc)
 
-Fit_Weibull_2P(failures=[4,6,5,4,5])
+
