@@ -37,6 +37,8 @@ The following collection of resources are things I have found useful during my r
 -    `Maintenance optimization <http://www.soft4structures.com/WeibullGRP/JSPageMTN.jsp>`_ - an online calculator for optimal replacement policy (time) under Kijima imperfect repair model.
 -    `Wikipedia <https://en.wikipedia.org/wiki/Reliability_engineering>`_ - it's always worth checking if there's an article on there about the topic you're trying to understand.
 -    `e-Fatigue <https://www.efatigue.com/constantamplitude/stressconcentration/>`_ - This website provides stress concentration factors (Kt) for various notched geometries. You will need this if using the functions for fracture machanics in the Physics of Failure section.
+-    `Reliasoft's Accelerated Life Testing Data Analysis Reference <http://reliawiki.com/index.php/Accelerated_Life_Testing_Data_Analysis_Reference>`_
+-    `Reliasoft's collection of Military Directives, Handbooks and Standards Related to Reliability <https://www.weibull.com/knowledge/milhdbk.htm>`_
 
 **Websites for Mathematics**
 
