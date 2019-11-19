@@ -90,7 +90,7 @@ In the following example, we will fit the Weibull-Power model to an ALT dataset 
     from reliability.Datasets import ALT_load2
     import matplotlib.pyplot as plt
     data = ALT_load2()
-    results = Fit_Weibull_Power(failures=data.failures,failure_stress=data.failure_stresses,right_censored=data.right_censored,right_censored_stress=data.right_censored_stresses,use_level_stress=60)
+    Fit_Weibull_Power(failures=data.failures,failure_stress=data.failure_stresses,right_censored=data.right_censored,right_censored_stress=data.right_censored_stresses,use_level_stress=60)
     plt.show()
     
     '''
