@@ -61,3 +61,7 @@ In the following example (which follows on from the previous example), we will u
     The time to failure at a temperature of 1100 °F is 8.27520045913433
     The Larson-Miller parameter was found to be 32624.83162890552
     '''
+
+**References:**
+
+Probabilistic Physics of Failure Approach to Reliability (2017), by M. Modarres, M. Amiri, and C. Jackson. pp.81-90
