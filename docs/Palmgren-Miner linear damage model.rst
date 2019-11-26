@@ -37,3 +37,7 @@ In the following example, we consider a scenario in which ball bearings fail aft
     Stress =  2 , Damage fraction = 28.463 %.
     Stress =  4 , Damage fraction = 61.66983 %.
     '''
+
+**References:**
+
+Probabilistic Physics of Failure Approach to Reliability (2017), by M. Modarres, M. Amiri, and C. Jackson. pp.33-37
