@@ -64,4 +64,4 @@ In the following example (which follows on from the previous example), we will u
 
 **References:**
 
-Probabilistic Physics of Failure Approach to Reliability (2017), by M. Modarres, M. Amiri, and C. Jackson. pp.81-90
+- Probabilistic Physics of Failure Approach to Reliability (2017), by M. Modarres, M. Amiri, and C. Jackson. pp. 81-90
