@@ -132,4 +132,4 @@ In the following example, a crack of 1mm is grown to failure. The function deter
 
 **References:**
 
-Probabilistic Physics of Failure Approach to Reliability (2017), by M. Modarres, M. Amiri, and C. Jackson. pp.37-57
+- Probabilistic Physics of Failure Approach to Reliability (2017), by M. Modarres, M. Amiri, and C. Jackson. pp. 37-57
