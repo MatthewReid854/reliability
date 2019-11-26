@@ -180,4 +180,4 @@ The image provided above shows two distributions that fit well. If we apply the 
 
 **References:**
 
-Probabilistic Physics of Failure Approach to Reliability (2017), by M. Modarres, M. Amiri, and C. Jackson. pp.117-137
+- Probabilistic Physics of Failure Approach to Reliability (2017), by M. Modarres, M. Amiri, and C. Jackson. pp. 117-137
