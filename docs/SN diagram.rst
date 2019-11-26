@@ -55,4 +55,4 @@ In this second example, we will use the same data as above, but also supply runo
 
 **References:**
 
-Probabilistic Physics of Failure Approach to Reliability (2017), by M. Modarres, M. Amiri, and C. Jackson. pp 17-21.
+- Probabilistic Physics of Failure Approach to Reliability (2017), by M. Modarres, M. Amiri, and C. Jackson. pp. 17-21.
