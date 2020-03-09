@@ -18,13 +18,16 @@ The supported distributions are:
 -   Gamma_2P
 -   Gamma_3P
 -   Lognormal_2P
+-   Lognormal_3P
 -   Normal_2P
 -   Beta_2P
 -   Weibull_Mixture (see the `section <https://reliability.readthedocs.io/en/latest/Weibull%20mixture%20models.html>`_ on this)
 
 .. note:: The Beta distribution is only for data in the range {0,1}. Specifying data outside of this range will cause an error.
 
-.. note:: The current method of fitting the location shifted distributions (Weibull_3P, Exponential_2P, Gamma_3P) is not perfectly accurate as it uses a shortcut of setting γ equal to the lowest datapoint. The optimisation method is highly sensitive to the quality of the initial guess and this initial guess is provided by scipy which does a rather poor job of estimating the parameters for location shifted distributions. This is planned to be solved in a future release by using the least squares estimate (yet to be implemented) as an initial guess which would bypass the need to use scipy. If you are fitting location shifted distributions to small or heavily censored datasets and your work is important, I would recommend using commercial software for maximum accuracy. If you have a lot of data and not too much censored data then ``reliability.Fitters`` should do a reasonable job with location shifted distributions.
+.. note:: If you have a very large amount of data (>100000 samples) then you are likely your computer will take significant time to compute the results. This is a limitation of Python compared to other languages like C++ which many commerial reliability software packages are written in. If you have very large volumes of data, you may want to consider using commercial software to speed up the computation time.
+
+.. note:: Heavily censored data (>99% censoring) may result in a failure of the optimiser to find a solution. If you have heavily censored data, you may have a limited failure population problem, and it is recommended that you do not try fitting one of these standard distributions to such a dataset. Future releases of reliability are likely to include a model for these cases. In the meantime, see JMP Pro's model for `Defective Subpopulations. <https://www.jmp.com/en_my/events/ondemand/statistical-methods-in-reliability/defective-subpopulation-distributions.html>`_
 
 If you do not know which distribution you want to fit, then please see the `section <https://reliability.readthedocs.io/en/latest/Fitting%20all%20available%20distributions%20to%20data.html>`_ on using the Fit_Everything function which will find the best distribution to describe your data.
 
@@ -189,7 +192,5 @@ How does the code work with censored data?
 ------------------------------------------
 
 All functions in this module work using a Python library called `autograd <https://github.com/HIPS/autograd/blob/master/README.md/>`_ to find the derivative of the log-likelihood function. In this way, the code only needs to specify the log PDF and log SF in order to obtain the fitted parameters. Initial guesses of the parameters are essential for autograd and are obtained using scipy.stats on all the data as if it wasn't censored (since scipy doesn't accept censored data). If the distribution is an extremely bad fit or is heavily censored then these guesses may be poor and the fit might not be successful. In this case, the scipy fit is used which will be incorrect if there is any censored data. If this occurs, a warning will be printed. Generally the fit achieved by autograd is highly successful.
-
-For location shifted distributions, the fitting of the gamma parameter is done using the lowest failure time, rather than by using a location shifted log-likelihood function. This is a shortcut way that is usually quite effective. It was found to be necessary because scipy's fit (which is used as the initial guess for autograd) was often wildly inaccurate for location shifted log-likelihood functions. This meant that autograd did not converge to a solution for location shifted distributions when given such a poor initial guess. Because the lognormal distribution is initially slow to increase (compared to Weibull, Gamma, and Exponential), there is often a substantial gap between zero and the smallest failure time in a lognormal distribution. This made it unreliable to use the "lowest failure time" method to find gamma, which is why there is no Fit_Lognormal_3P distribution. If you have a solution to this, please let me know.
 
 A special thanks goes to Cameron Davidson-Pilon (author of the Python library `lifelines <https://github.com/CamDavidsonPilon/lifelines/blob/master/README.md/>`_ and website `dataorigami.net <https://dataorigami.net/>`_) for providing help with getting autograd to work, and for writing the python library `autograd-gamma <https://github.com/CamDavidsonPilon/autograd-gamma/blob/master/README.md/>`_, without which it would be impossible to fit the Beta or Gamma distributions using autograd.
