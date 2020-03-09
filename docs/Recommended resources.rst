@@ -20,12 +20,14 @@ The following collection of resources are things I have found useful during my r
 -    `Parameter Solver v3.0 <https://biostatistics.mdanderson.org/SoftwareDownload/SingleSoftware/Index/6>`_ - a biostatistics tool for quickly making some simple calculations with probability distributions.
 -    `Orange <https://orange.biolab.si/>`_ - a standalone data mining and data visualization program that runs using Python. Beautifully interactive data analysis workflows with a large toolbox. Not much reliability related content but good for data preprocessing.
 -    `R Studio - Survival analysis library <https://r-posts.com/steps-to-perform-survival-analysis-in-r/>`_ - one of the more popular survival analysis libraries available in the open source commmunity.
+-    `CumFreq <https://www.waterlog.info/cumfreq.htm>`_ - a program for cumulative frequency analysis with probability distribution fitting for a wide range of distributions. Limited functionality beyond fitting distributions.
 
 **Paid software**
 
 -    `Minitab <https://www.minitab.com/en-us/>`_ - a great collection of statistical tools. A few reliability focussed tools included.
 -    `Reliasoft <https://www.reliasoft.com/products/reliability-analysis/weibull>`_ - the industry leader for reliability engineering software.
 -    `SAS JMP <https://www.jmp.com/en_us/software/predictive-analytics-software.html>`_ - lots of statistical tools for data modelling and visualization. A few purpose built reliability tools. Its utility for reliability engineering will depend on your application.
+-    `PTC Windchill <https://www.ptc.com/en/products/plm/capabilities/quality/> - a powerful tool for risk and reliability. Similar to Reliasoft but it forms one part of the larger PTC suite of tools. 
 
 **Websites for Reliability**
 
@@ -51,5 +53,3 @@ The following collection of resources are things I have found useful during my r
 
 -    `arXiv <https://arXiv.org>`_ - a database run by Cornell university that provides open access to over 1.5 million academic papers that have been submitted. If you can't find it here then check on Sci-Hub.
 -    `Sci-Hub <https://sci-hub.tw/>`_ - paste in a DOI to get a copy of the academic paper. Accessing academic knowledge should be free and this site makes it possible.
-
-
