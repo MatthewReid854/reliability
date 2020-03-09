@@ -9,12 +9,15 @@ sample_size_no_failures - used to determine the sample size required for a test 
     outcome is the lower bound on the reliability based on the sample size and desired confidence interval.
 sequential_sampling_chart - plots the accept/reject boundaries for a given set of quality and risk levels. If supplied, the test results
     are also plotted on the chart.
+similar_distributions - finds the parameters of distributions that are similar to the input distribution and plots the results.
 convert_dataframe_to_grouped_lists - groups values in a 2-column dataframe based on the values in the left column and returns those groups in a list of lists
 
 '''
 
 import scipy.stats as ss
 import matplotlib.pyplot as plt
+from reliability.Distributions import Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution
+from reliability.Fitters import Fit_Everything
 import numpy as np
 import pandas as pd
 
@@ -221,6 +224,133 @@ def sequential_samling_chart(p1, p2, alpha, beta, show_plot=True, print_results=
         plt.legend()
         plt.show()
     return df
+
+
+class similar_distributions:
+    '''
+    similar_distributions
+
+    This is a tool to find similar distributions when given an input distribution.
+    It is useful to see how similar one distribution is to another. For example, you may look at a Weibull distribution and think it looks like a Normal distribution.
+    Using this tool you can determine the parameters of the normal distribution that most closely matches your Weibull distribution.
+
+    Inputs:
+    distribution - a distribution object created using the reliability.Distributions module
+    include_location_shifted - True/False. Default is True. When set to True it will include Weibull_3P, Lognormal_3P, Gamma_3P, Expon_2P
+    show_plot - True/False. Default is True
+    print_results - True/False. Default is True
+    monte_carlo_trials - the number of monte carlo trials to use in the calculation. Default is 1000. Using over 10000 will be very slow.
+    number_of_distributions_to_show - the number of similar distributions to show. Default is 3. If the number specified exceeds the number available (typically 8), then the number specified will be automatically reduced.
+
+    Outputs:
+    results - an array of distributions objects ranked in order of best fit.
+    most_similar_distribution - a distribution object. This is the first item from results.
+
+    Example usage:
+    dist = Weibull_Distribution(alpha=50,beta=3.3)
+    similar_distributions(distribution=dist)
+    '''
+
+    def __init__(self, distribution=None, include_location_shifted=True, show_plot=True, print_results=True, monte_carlo_trials=1000, number_of_distributions_to_show=3):
+        if type(distribution) not in [Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution]:
+            raise ValueError('distribution must be a probability distribution object from the reliability.Distributions module. First define the distribution using Reliability.Distributions.___')
+        if monte_carlo_trials < 100:
+            print('WARNING: Using less than 100 monte carlo trials will lead to extremely inaccurate results. The number of monte carlo trials has been changed to 100 to ensure accuracy.')
+        elif monte_carlo_trials >= 100 and monte_carlo_trials < 1000:
+            print('WARNING: Using less than 1000 monte carlo trials will lead to inaccurate results.')
+        if monte_carlo_trials > 10000:
+            print('The recommended number of monte carlo trials is 1000. Using over 10000 may take a long time to calculate.')
+
+        RVS = distribution.random_samples(number_of_samples=monte_carlo_trials)  # draw random samples from the original distribution
+        # filter out negative values
+        RVS_filtered = []
+        negative_values_error = False
+        for item in RVS:
+            if item > 0:
+                RVS_filtered.append(item)
+            else:
+                negative_values_error = True
+        if negative_values_error is True:
+            print('WARNING: The input distribution has non-negligible area for x<0. Monte carlo samples from this region have been discarded to enable other distributions to be fitted.')
+
+        fitted_results = Fit_Everything(failures=RVS_filtered, print_results=False, show_probability_plot=False, show_histogram_plot=False, show_PP_plot=False)  # fit all distributions to the filtered samples
+        ranked_distributions = fitted_results.results.index.values[1:]  # this removes the best fit which should be the same as the input distribution provided monte carlo trials is not too low.
+
+        ranked_distributions_objects = []
+        ranked_distributions_labels = []
+        sigfig = 2
+        for dist_name in ranked_distributions:
+            if dist_name == 'Weibull_2P':
+                ranked_distributions_objects.append(Weibull_Distribution(alpha=fitted_results.Weibull_2P_alpha, beta=fitted_results.Weibull_2P_beta))
+                ranked_distributions_labels.append(str('Weibull_2P (α=' + str(round(fitted_results.Weibull_2P_alpha, sigfig)) + ',β=' + str(round(fitted_results.Weibull_2P_beta, sigfig)) + ')'))
+            elif dist_name == 'Gamma_2P':
+                ranked_distributions_objects.append(Gamma_Distribution(alpha=fitted_results.Gamma_2P_alpha, beta=fitted_results.Gamma_2P_beta))
+                ranked_distributions_labels.append(str('Gamma_2P (α=' + str(round(fitted_results.Gamma_2P_alpha, sigfig)) + ',β=' + str(round(fitted_results.Gamma_2P_beta, sigfig)) + ')'))
+            elif dist_name == 'Normal_2P':
+                ranked_distributions_objects.append(Normal_Distribution(mu=fitted_results.Normal_2P_mu, sigma=fitted_results.Normal_2P_sigma))
+                ranked_distributions_labels.append(str('Normal_2P (μ=' + str(round(fitted_results.Normal_2P_mu, sigfig)) + ',σ=' + str(round(fitted_results.Normal_2P_sigma, sigfig)) + ')'))
+            elif dist_name == 'Lognormal_2P':
+                ranked_distributions_objects.append(Lognormal_Distribution(mu=fitted_results.Lognormal_2P_mu, sigma=fitted_results.Lognormal_2P_sigma))
+                ranked_distributions_labels.append(str('Lognormal_2P (μ=' + str(round(fitted_results.Lognormal_2P_mu, sigfig)) + ',σ=' + str(round(fitted_results.Lognormal_2P_sigma, sigfig)) + ')'))
+            elif dist_name == 'Exponential_1P':
+                ranked_distributions_objects.append(Exponential_Distribution(Lambda=fitted_results.Expon_1P_lambda))
+                ranked_distributions_labels.append(str('Exponential_1P (lambda=' + str(round(fitted_results.Expon_1P_lambda, sigfig)) + ')'))
+            elif dist_name == 'Beta_2P':
+                ranked_distributions_objects.append(Beta_Distribution(alpha=fitted_results.Beta_2P_alpha, beta=fitted_results.Beta_2P_beta))
+                ranked_distributions_labels.append(str('Beta_2P (α=' + str(round(fitted_results.Beta_2P_alpha, sigfig)) + ',β=' + str(round(fitted_results.Beta_2P_beta, sigfig)) + ')'))
+
+            if include_location_shifted is True:
+                if dist_name == 'Weibull_3P':
+                    ranked_distributions_objects.append(Weibull_Distribution(alpha=fitted_results.Weibull_3P_alpha, beta=fitted_results.Weibull_3P_beta, gamma=fitted_results.Weibull_3P_gamma))
+                    ranked_distributions_labels.append(str('Weibull_3P (α=' + str(round(fitted_results.Weibull_3P_alpha, sigfig)) + ',β=' + str(round(fitted_results.Weibull_3P_beta, sigfig)) + ',γ=' + str(round(fitted_results.Weibull_3P_gamma, sigfig)) + ')'))
+                elif dist_name == 'Gamma_3P':
+                    ranked_distributions_objects.append(Gamma_Distribution(alpha=fitted_results.Gamma_3P_alpha, beta=fitted_results.Gamma_3P_beta, gamma=fitted_results.Gamma_3P_gamma))
+                    ranked_distributions_labels.append(str('Gamma_3P (α=' + str(round(fitted_results.Gamma_3P_alpha, sigfig)) + ',β=' + str(round(fitted_results.Gamma_3P_beta, sigfig)) + ',γ=' + str(round(fitted_results.Gamma_3P_gamma, sigfig)) + ')'))
+                elif dist_name == 'Lognormal_3P':
+                    ranked_distributions_objects.append(Lognormal_Distribution(mu=fitted_results.Lognormal_3P_mu, sigma=fitted_results.Lognormal_3P_sigma, gamma=fitted_results.Lognormal_3P_gamma))
+                    ranked_distributions_labels.append(str('Lognormal_3P (μ=' + str(round(fitted_results.Lognormal_3P_mu, sigfig)) + ',σ=' + str(round(fitted_results.Lognormal_3P_sigma, sigfig)) + ',γ=' + str(round(fitted_results.Lognormal_3P_gamma, sigfig)) + ')'))
+                elif dist_name == 'Exponential_2P':
+                    ranked_distributions_objects.append(Exponential_Distribution(Lambda=fitted_results.Expon_1P_lambda, gamma=fitted_results.Expon_2P_gamma))
+                    ranked_distributions_labels.append(str('Exponential_1P (lambda=' + str(round(fitted_results.Expon_1P_lambda, sigfig)) + ',γ=' + str(round(fitted_results.Expon_2P_gamma, sigfig)) + ')'))
+
+        number_of_distributions_fitted = len(ranked_distributions_objects)
+        self.results = ranked_distributions_objects
+        self.most_similar_distribution = ranked_distributions_objects[0]
+        if print_results is True:
+            print('The input distribution was:')
+            print(distribution.param_title_long)
+            if number_of_distributions_fitted < number_of_distributions_to_show:
+                number_of_distributions_to_show = number_of_distributions_fitted
+            print('\nThe top', number_of_distributions_to_show, 'most similar distributions are:')
+            counter = 0
+            while counter < number_of_distributions_to_show and counter < number_of_distributions_fitted:
+                dist = ranked_distributions_objects[counter]
+                print(dist.param_title_long)
+                counter += 1
+
+        if show_plot is True:
+            plt.figure(figsize=(14, 6))
+            plt.suptitle(str('Plot of similar distributions to ' + distribution.param_title_long))
+            counter = 0
+            plt.subplot(121)
+            distribution.PDF(label='Input distribution', linestyle='--')
+            while counter < number_of_distributions_to_show and counter < number_of_distributions_fitted:
+                ranked_distributions_objects[counter].PDF(label=ranked_distributions_labels[counter])
+                counter += 1
+            plt.xlim([distribution.quantile(0.001), distribution.quantile(0.999)])
+            plt.legend()
+            plt.title('PDF')
+            counter = 0
+            plt.subplot(122)
+            distribution.CDF(label='Input distribution', linestyle='--')
+            while counter < number_of_distributions_to_show and counter < number_of_distributions_fitted:
+                ranked_distributions_objects[counter].CDF(label=ranked_distributions_labels[counter])
+                counter += 1
+            plt.xlim([distribution.quantile(0.001), distribution.quantile(0.999)])
+            plt.legend()
+            plt.title('CDF')
+            plt.subplots_adjust(left=0.08, right=0.95)
+            plt.show()
 
 
 def convert_dataframe_to_grouped_lists(input_dataframe):

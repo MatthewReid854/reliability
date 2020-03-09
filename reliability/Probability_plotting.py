@@ -155,7 +155,7 @@ def Weibull_probability_plot(failures=None, right_censored=None, fit_gamma=False
     Inputs:
     failures - the array or list of failure times
     right_censored - the array or list of right censored failure times
-    fit_gamma - True/False. Default is False. Specify This as true in order to fit the Weibull_3P distribution and scale the x-axis to time - gamma.
+    fit_gamma - True/False. Default is False. Specify this as True in order to fit the Weibull_3P distribution and scale the x-axis to time - gamma.
     show_fitted_distribution - True/False. If true, the fitted distribution will be plotted on the probability plot. Defaults to True
     h1 and h2 are the heuristic constants for plotting positions of the form (k-h1)/(n+h2). Default is h1=0.3,h2=0.4 which is the median rank method (same as in Minitab).
         For more heuristics, see: https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics
@@ -185,6 +185,11 @@ def Weibull_probability_plot(failures=None, right_censored=None, fit_gamma=False
         xvals = np.linspace(10 ** -5, 2, 1000)
     else:
         xvals = np.logspace(-4, np.ceil(np.log10(max(failures))) + 1, 1000)
+
+    if __fitted_dist_params is not None:
+        if __fitted_dist_params.gamma > 0:
+            fit_gamma = True
+
     if fit_gamma is False:
         if __fitted_dist_params is not None:
             alpha = __fitted_dist_params.alpha
@@ -269,7 +274,7 @@ def Exponential_probability_plot_Weibull_Scale(failures=None, right_censored=Non
     Inputs:
     failures - the array or list of failure times
     right_censored - the array or list of right censored failure times
-    fit_gamma - True/False. Default is False. Specify This as true in order to fit the Weibull_3P distribution and scale the x-axis to time - gamma.
+    fit_gamma - True/False. Default is False. Specify This as true in order to fit the Exponential_2P distribution and scale the x-axis to time - gamma.
     show_fitted_distribution - True/False. If true, the fitted distribution will be plotted on the probability plot. Defaults to True
     h1 and h2 are the heuristic constants for plotting positions of the form (k-h1)/(n+h2). Default is h1=0.3,h2=0.4 which is the median rank method (same as in Minitab).
         For more heuristics, see: https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics
@@ -299,6 +304,11 @@ def Exponential_probability_plot_Weibull_Scale(failures=None, right_censored=Non
         xvals = np.linspace(10 ** -5, 2, 1000)
     else:
         xvals = np.logspace(-4, np.ceil(np.log10(max(failures))) + 1, 1000)
+
+    if __fitted_dist_params is not None:
+        if __fitted_dist_params.gamma > 0:
+            fit_gamma = True
+
     if fit_gamma is False:
         if __fitted_dist_params is not None:
             Lambda = __fitted_dist_params.Lambda
@@ -429,7 +439,7 @@ def Normal_probability_plot(failures=None, right_censored=None, __fitted_dist_pa
     plt.gcf().set_size_inches(9, 7)  # adjust the figsize. This is done post figure creation so that layering is easier
 
 
-def Lognormal_probability_plot(failures=None, right_censored=None, __fitted_dist_params=None, h1=None, h2=None, show_fitted_distribution=True, **kwargs):
+def Lognormal_probability_plot(failures=None, right_censored=None, fit_gamma=False, __fitted_dist_params=None, h1=None, h2=None, show_fitted_distribution=True, **kwargs):
     '''
     Lognormal probability plot
 
@@ -437,6 +447,7 @@ def Lognormal_probability_plot(failures=None, right_censored=None, __fitted_dist
     Inputs:
     failures - the array or list of failure times
     right_censored - the array or list of right censored failure times
+    fit_gamma - True/False. Default is False. Specify This as true in order to fit the Lognormal_3P distribution and scale the x-axis to time - gamma.
     show_fitted_distribution - True/False. If true, the fitted distribution will be plotted on the probability plot. Defaults to True
     h1 and h2 are the heuristic constants for plotting positions of the form (k-h1)/(n+h2). Default is h1=0.3,h2=0.4 which is the median rank method (same as in Minitab).
         For more heuristics, see: https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics
@@ -449,49 +460,96 @@ def Lognormal_probability_plot(failures=None, right_censored=None, __fitted_dist
     '''
     if len(failures) < 2 and __fitted_dist_params is None:
         raise ValueError('Insufficient data to fit a distribution. Minimum number of points is 2')
+    if type(failures) == np.ndarray:
+        pass
+    elif type(failures) == list:
+        failures = np.array(failures)
+    else:
+        raise ValueError('failures must be a list or an array')
+    if right_censored is not None:
+        if type(right_censored) == np.ndarray:
+            pass
+        elif type(right_censored) == list:
+            right_censored = np.array(right_censored)
+        else:
+            raise ValueError('right_censored must be a list or an array')
+    if max(failures) < 1:
+        xvals = np.linspace(10 ** -3, 2, 1000)
+    else:
+        xvals = np.logspace(np.log10(xmin_log) - 2, np.log10(xmax_log) + 2, 1000)
 
+    if __fitted_dist_params is not None:
+        if __fitted_dist_params.gamma > 0:
+            fit_gamma = True
+
+    if fit_gamma is False:
+        if __fitted_dist_params is not None:
+            mu = __fitted_dist_params.mu
+            sigma = __fitted_dist_params.sigma
+        else:
+            from reliability.Fitters import Fit_Lognormal_2P
+            fit = Fit_Lognormal_2P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False)
+            mu = fit.mu
+            sigma = fit.sigma
+        lnf = Lognormal_Distribution(mu=mu, sigma=sigma).CDF(show_plot=False, xvals=xvals)
+        if 'label' in kwargs:
+            label = kwargs.pop('label')
+        else:
+            label = str('Fitted Lognormal_2P (μ=' + str(round(mu, 2)) + ', σ=' + str(round(sigma, 2)) + ')')
+        if 'color' in kwargs:
+            color = kwargs.pop('color')
+            data_color = color
+        else:
+            color = 'red'
+            data_color = 'k'
+        if show_fitted_distribution is True:
+            plt.plot(xvals, lnf, color=color, label=label, **kwargs)
+        plt.xlabel('Time')
+    elif fit_gamma is True:
+        if __fitted_dist_params is not None:
+            mu = __fitted_dist_params.mu
+            sigma = __fitted_dist_params.sigma
+            gamma = __fitted_dist_params.gamma
+        else:
+            from reliability.Fitters import Fit_Lognormal_3P
+            fit = Fit_Lognormal_3P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False)
+            mu = fit.mu
+            sigma = fit.sigma
+            gamma = fit.gamma
+        lnf = Lognormal_Distribution(mu=mu, sigma=sigma).CDF(show_plot=False, xvals=xvals)
+        if 'label' in kwargs:
+            label = kwargs.pop('label')
+        else:
+            label = str('Fitted Lognormal_3P (μ=' + str(round(mu, 2)) + ', σ=' + str(round(sigma, 2)) + ', γ=' + str(round(gamma, 2)) + ')')
+        if 'color' in kwargs:
+            color = kwargs.pop('color')
+            data_color = color
+        else:
+            color = 'red'
+            data_color = 'k'
+        if show_fitted_distribution is True:
+            plt.plot(xvals, lnf, color=color, label=label, **kwargs)
+        plt.xlabel('Time - gamma')
+        failures = failures - gamma
+        if right_censored is not None:
+            right_censored = right_censored - gamma
+    # plot the failure points and format the scale and axes
     x, y = plotting_positions(failures=failures, right_censored=right_censored, h1=h1, h2=h2)
-    plt.ylim([0.0001, 0.9999])
-    xmin_log = 10 ** (int(np.floor(np.log10(min(x)))) - 1)
-    xmax_log = 10 ** (int(np.ceil(np.log10(max(x)))) + 1)
-    plt.xlim([xmin_log, xmax_log])
+    plt.scatter(x, y, marker='.', linewidth=2, c=data_color)
     plt.gca().set_yscale('function', functions=(__normal_forward, __normal_inverse))
+    plt.xscale('log')
     plt.grid(b=True, which='major', color='k', alpha=0.3, linestyle='-')
     plt.grid(b=True, which='minor', color='k', alpha=0.08, linestyle='-')
-    plt.xscale('log')
+    plt.ylim([0.0001, 0.9999])
+    pts_xmin_log = 10 ** (int(np.floor(np.log10(min(x)))) - 1)
+    pts_xmax_log = 10 ** (int(np.ceil(np.log10(max(x)))) + 1)
+    plt.xlim([pts_xmin_log, pts_xmax_log])
     plt.gca().yaxis.set_minor_locator(FixedLocator(np.linspace(0, 1, 51)))
     ytickvals = [0.0001, 0.001, 0.01, 0.03, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.97, 0.99, 0.999, 0.9999]
     plt.yticks(ytickvals)
     plt.gca().set_yticklabels(['{:,.2%}'.format(x) for x in ytickvals])  # formats y ticks as percentage
     plt.gca().tick_params(axis='x', which='minor', labelcolor='w')
-    if max(failures) < 1:
-        xvals = np.linspace(10 ** -3, 2, 1000)
-    else:
-        xvals = np.logspace(np.log10(xmin_log) - 2, np.log10(xmax_log) + 2, 1000)
-    if __fitted_dist_params is not None:
-        mu = __fitted_dist_params.mu
-        sigma = __fitted_dist_params.sigma
-    else:
-        from reliability.Fitters import Fit_Lognormal_2P
-        fit = Fit_Lognormal_2P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False)
-        mu = fit.mu
-        sigma = fit.sigma
-    if 'label' in kwargs:
-        label = kwargs.pop('label')
-    else:
-        label = str('Fitted Lognormal_2P (μ=' + str(round(mu, 2)) + ', σ=' + str(round(sigma, 2)) + ')')
-    if 'color' in kwargs:
-        color = kwargs.pop('color')
-        data_color = color
-    else:
-        color = 'red'
-        data_color = 'k'
-    plt.scatter(x, y, marker='.', linewidth=2, c=data_color)
-    lnf = Lognormal_Distribution(mu=mu, sigma=sigma).CDF(show_plot=False, xvals=xvals)
-    if show_fitted_distribution is True:
-        plt.plot(xvals, lnf, color=color, label=label, **kwargs)
     plt.title('Probability plot\nLognormal CDF')
-    plt.xlabel('Time')
     plt.ylabel('Fraction failing')
     plt.legend(loc='upper left')
     plt.gcf().set_size_inches(9, 7)  # adjust the figsize. This is done post figure creation so that layering is easier
@@ -566,7 +624,7 @@ def Gamma_probability_plot(failures=None, right_censored=None, fit_gamma=False, 
     Inputs:
     failures - the array or list of failure times
     right_censored - the array or list of right censored failure times
-    fit_gamma - True/False. Default is False. Specify This as true in order to fit the Gamma_3P distribution and scale the x-axis to time - gamma.
+    fit_gamma - True/False. Default is False. Specify this as True in order to fit the Gamma_3P distribution and scale the x-axis to time - gamma.
     show_fitted_distribution - True/False. If true, the fitted distribution will be plotted on the probability plot. Defaults to True
     h1 and h2 are the heuristic constants for plotting positions of the form (k-h1)/(n+h2). Default is h1=0.3,h2=0.4 which is the median rank method (same as in Minitab).
         For more heuristics, see: https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics
@@ -596,6 +654,11 @@ def Gamma_probability_plot(failures=None, right_censored=None, fit_gamma=False, 
         xvals = np.linspace(10 ** -3, 2, 1000)
     else:
         xvals = np.logspace(-2, np.ceil(np.log10(max(failures))) + 1, 1000)
+
+    if __fitted_dist_params is not None:
+        if __fitted_dist_params.gamma > 0:
+            fit_gamma = True
+
     if fit_gamma is False:
         if __fitted_dist_params is not None:
             alpha = __fitted_dist_params.alpha
@@ -697,7 +760,7 @@ def Exponential_probability_plot(failures=None, right_censored=None, fit_gamma=F
     Inputs:
     failures - the array or list of failure times
     right_censored - the array or list of right censored failure times
-    fit_gamma - True/False. Default is False. Specify This as true in order to fit the Exponential_2P distribution and scale the x-axis to time - gamma.
+    fit_gamma - True/False. Default is False. Specify this as True in order to fit the Exponential_2P distribution and scale the x-axis to time - gamma.
     show_fitted_distribution - True/False. If true, the fitted distribution will be plotted on the probability plot. Defaults to True
     h1 and h2 are the heuristic constants for plotting positions of the form (k-h1)/(n+h2). Default is h1=0.3,h2=0.4 which is the median rank method (same as in Minitab).
         For more heuristics, see: https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics
@@ -712,6 +775,11 @@ def Exponential_probability_plot(failures=None, right_censored=None, fit_gamma=F
         xvals = np.linspace(10 ** -3, 2, 1000)
     else:
         xvals = np.logspace(-2, np.ceil(np.log10(max(failures))) + 1, 1000)
+
+    if __fitted_dist_params is not None:
+        if __fitted_dist_params.gamma > 0:
+            fit_gamma = True
+
     if fit_gamma is False:
         if __fitted_dist_params is not None:
             Lambda = __fitted_dist_params.Lambda
@@ -1183,4 +1251,3 @@ def QQ_plot_semiparametric(X_data_failures=None, X_data_right_censored=None, Y_d
     plt.ylim([0, endval])
     plt.title('Quantile-Quantile Plot\nSemi-parametric')
     return [m, deg1[0], deg1[1]]
-

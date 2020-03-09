@@ -1152,7 +1152,7 @@ def creep_failure_time(temp_low, temp_high, time_low, C=20, print_results=True):
     LMP = (temp_low + 459.67) * (C + np.log10(time_low))  # larson-miller parameter. 459.67 converts Fahrenheit to Rankine
     time_high = 10 ** (LMP / (temp_high + 459.67) - C)
     if print_results is True:
-        print('The time to failure at at temperature of', temp_high, '°F is', time_high)
+        print('The time to failure at a temperature of', temp_high, '°F is', time_high)
         print('The Larson-Miller parameter was found to be', LMP)
     return time_high
 
