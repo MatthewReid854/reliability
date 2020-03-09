@@ -60,7 +60,7 @@ Inputs:
 -   print_results - True/False. Default is True
 -   show_plot - True/False. Default is True
 -   CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
--   initial_guess - starting values for [a,n]. Default is [500000,-1.5]. Optional input. If fitting fails, you will be prompted to try a better initial guess and you can use this input to do it.
+-   initial_guess - starting values for [a,n]. Default is calculated using a curvefit to failure data. Optional input. If fitting fails, you will be prompted to try a better initial guess and you can use this input to do it.
 
 Outputs:
 
@@ -90,7 +90,7 @@ In the following example, we will fit the Weibull-Power model to an ALT dataset 
     from reliability.Datasets import ALT_load2
     import matplotlib.pyplot as plt
     data = ALT_load2()
-    results = Fit_Weibull_Power(failures=data.failures,failure_stress=data.failure_stresses,right_censored=data.right_censored,right_censored_stress=data.right_censored_stresses,use_level_stress=60)
+    Fit_Weibull_Power(failures=data.failures,failure_stress=data.failure_stresses,right_censored=data.right_censored,right_censored_stress=data.right_censored_stresses,use_level_stress=60)
     plt.show()
     
     '''
@@ -128,3 +128,8 @@ In this second example, we will fit a dual stress model to a dual stress data se
     '''
 
 .. image:: images/power_expon_plot.png
+
+**References:**
+
+- Probabilistic Physics of Failure Approach to Reliability (2017), by M. Modarres, M. Amiri, and C. Jackson. pp. 136-168
+- Accelerated Life Testing Data Analysis Reference - ReliaWiki, Reliawiki.com, 2019. [Online]. Available at: `http://reliawiki.com/index.php/Accelerated_Life_Testing_Data_Analysis_Reference <http://reliawiki.com/index.php/Accelerated_Life_Testing_Data_Analysis_Reference>`_.

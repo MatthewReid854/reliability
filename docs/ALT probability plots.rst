@@ -177,3 +177,7 @@ The image provided above shows two distributions that fit well. If we apply the 
     '''
 
 .. image:: images/ALT_probability_plot_2.png
+
+**References:**
+
+- Probabilistic Physics of Failure Approach to Reliability (2017), by M. Modarres, M. Amiri, and C. Jackson. pp. 117-137

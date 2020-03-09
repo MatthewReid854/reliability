@@ -25,6 +25,8 @@ In the following example (taken from example 2.16 of Probabilistic Physics of Fa
 
 .. code:: python
 
+    from reliability.PoF import creep_rupture_curves
+    import matplotlib.pyplot as plt
     TEMP = [900,900,900,900,1000,1000,1000,1000,1000,1000,1000,1000,1100,1100,1100,1100,1100,1200,1200,1200,1200,1350,1350,1350]
     STRESS = [90,82,78,70,80,75,68,60,56,49,43,38,60.5,50,40,29,22,40,30,25,20,20,15,10]
     TTF = [37,975,3581,9878,7,17,213,1493,2491,5108,7390,10447,18,167,615,2220,6637,19,102,125,331,3.7,8.9,31.8]
@@ -52,9 +54,14 @@ In the following example (which follows on from the previous example), we will u
 
 .. code:: python
 
+    from reliability.PoF import creep_failure_time
     creep_failure_time(temp_low=900,temp_high=1100,time_low=9878)
     
     '''
-    The time to failure at at temperature of 1100 °F is 8.27520045913433
+    The time to failure at a temperature of 1100 °F is 8.27520045913433
     The Larson-Miller parameter was found to be 32624.83162890552
     '''
+
+**References:**
+
+- Probabilistic Physics of Failure Approach to Reliability (2017), by M. Modarres, M. Amiri, and C. Jackson. pp. 81-90

@@ -203,3 +203,7 @@ Outputs:
     '''
 
 .. image:: images/strain_life_diagram1.png
+
+**References:**
+
+- Probabilistic Physics of Failure Approach to Reliability (2017), by M. Modarres, M. Amiri, and C. Jackson. pp. 23-33

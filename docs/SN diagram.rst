@@ -52,3 +52,7 @@ In this second example, we will use the same data as above, but also supply runo
     plt.show()
 
 .. image:: images/Fatigue_2.png
+
+**References:**
+
+- Probabilistic Physics of Failure Approach to Reliability (2017), by M. Modarres, M. Amiri, and C. Jackson. pp. 17-21.
