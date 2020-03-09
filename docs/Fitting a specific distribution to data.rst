@@ -23,9 +23,9 @@ The supported distributions are:
 -   Beta_2P
 -   Weibull_Mixture (see the `section <https://reliability.readthedocs.io/en/latest/Weibull%20mixture%20models.html>`_ on this)
 
-.. note:: The Beta distribution is only for data in the range {0,1}. Specifying data outside of this range will cause an error.
+.. note:: The Beta distribution is only for data in the range 0 to 1. Specifying data outside of this range will cause an error.
 
-.. note:: If you have a very large amount of data (>100000 samples) then you are likely your computer will take significant time to compute the results. This is a limitation of Python compared to other languages like C++ which many commerial reliability software packages are written in. If you have very large volumes of data, you may want to consider using commercial software to speed up the computation time.
+.. note:: If you have a very large amount of data (>100000 samples) then it is likely that your computer will take significant time to compute the results. This is a limitation of interpreted languages like Python compared to compiled languages like C++ which many commerial reliability software packages are written in. If you have very large volumes of data, you may want to consider using commercial software for faster computation time.
 
 .. note:: Heavily censored data (>99% censoring) may result in a failure of the optimiser to find a solution. If you have heavily censored data, you may have a limited failure population problem, and it is recommended that you do not try fitting one of these standard distributions to such a dataset. Future releases of reliability are likely to include a model for these cases. In the meantime, see JMP Pro's model for `Defective Subpopulations. <https://www.jmp.com/en_my/events/ondemand/statistical-methods-in-reliability/defective-subpopulation-distributions.html>`_
 
