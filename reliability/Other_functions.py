@@ -274,7 +274,8 @@ class similar_distributions:
             print('WARNING: The input distribution has non-negligible area for x<0. Monte carlo samples from this region have been discarded to enable other distributions to be fitted.')
 
         fitted_results = Fit_Everything(failures=RVS_filtered, print_results=False, show_probability_plot=False, show_histogram_plot=False, show_PP_plot=False)  # fit all distributions to the filtered samples
-        ranked_distributions = fitted_results.results.index.values[1:]  # this removes the best fit which should be the same as the input distribution provided monte carlo trials is not too low.
+        ranked_distributions = fitted_results.results.index.values
+        ranked_distributions.pop(distribution.name2) #removes the original distribution
 
         ranked_distributions_objects = []
         ranked_distributions_labels = []
@@ -332,12 +333,15 @@ class similar_distributions:
             plt.figure(figsize=(14, 6))
             plt.suptitle(str('Plot of similar distributions to ' + distribution.param_title_long))
             counter = 0
+            xlower = distribution.quantile(0.001)
+            xupper = distribution.quantile(0.999)
+            x_delta = xupper-xlower
             plt.subplot(121)
             distribution.PDF(label='Input distribution', linestyle='--')
             while counter < number_of_distributions_to_show and counter < number_of_distributions_fitted:
                 ranked_distributions_objects[counter].PDF(label=ranked_distributions_labels[counter])
                 counter += 1
-            plt.xlim([distribution.quantile(0.001), distribution.quantile(0.999)])
+            plt.xlim([xlower-x_delta*0.1,xupper+x_delta*0.1])
             plt.legend()
             plt.title('PDF')
             counter = 0
@@ -346,7 +350,7 @@ class similar_distributions:
             while counter < number_of_distributions_to_show and counter < number_of_distributions_fitted:
                 ranked_distributions_objects[counter].CDF(label=ranked_distributions_labels[counter])
                 counter += 1
-            plt.xlim([distribution.quantile(0.001), distribution.quantile(0.999)])
+            plt.xlim([xlower-x_delta*0.1,xupper+x_delta*0.1])
             plt.legend()
             plt.title('CDF')
             plt.subplots_adjust(left=0.08, right=0.95)

@@ -562,7 +562,7 @@ class Fit_Weibull_2P:
     print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
     force_beta - Use this to specify the beta value if you need to force beta to be a certain value. Used in ALT probability plotting. Optional input.
-    kwargs are accepted for the fitted line (eg. linestyle, label, color)
+    kwargs are accepted for the probability plot (eg. linestyle, label, color)
 
     outputs:
     success - Whether the solution was found by autograd (True/False)
@@ -725,6 +725,7 @@ class Fit_Weibull_3P:
     show_probability_plot - True/False. Defaults to True.
     print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
+    kwargs are accepted for the probability plot (eg. linestyle, label, color)
 
     Outputs:
     success - Whether the solution was found by autograd (True/False)
@@ -751,7 +752,7 @@ class Fit_Weibull_3P:
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     '''
 
-    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95):
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, **kwargs):
         if failures is None or len(failures) < 3:
             raise ValueError('Maximum likelihood estimates could not be calculated for these data. There must be at least three failures to calculate Weibull parameters.')
         if right_censored is None:
@@ -854,7 +855,7 @@ class Fit_Weibull_3P:
                 rc = None
             else:
                 rc = right_censored
-            Weibull_probability_plot(failures=failures, right_censored=rc, __fitted_dist_params=self)
+            Weibull_probability_plot(failures=failures, right_censored=rc, __fitted_dist_params=self, **kwargs)
 
     def logf(t, a, b, g):  # Log PDF (3 parameter Weibull)
         return (b - 1) * anp.log((t - g) / a) + anp.log(b / a) - ((t - g) / a) ** b
@@ -1053,6 +1054,7 @@ class Fit_Expon_1P:
     show_probability_plot - True/False. Defaults to True.
     print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
+    kwargs are accepted for the probability plot (eg. linestyle, label, color)
 
     Outputs:
     success - Whether the solution was found by autograd (True/False)
@@ -1071,7 +1073,7 @@ class Fit_Expon_1P:
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for the parameter)
     '''
 
-    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95):
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, **kwargs):
         if failures is None or len(failures) < 1:
             raise ValueError('Maximum likelihood estimates could not be calculated for these data. There must be at least one failure to calculate Exponential parameters.')
         if CI <= 0 or CI >= 1:
@@ -1147,7 +1149,7 @@ class Fit_Expon_1P:
                 rc = None
             else:
                 rc = right_censored
-            Exponential_probability_plot_Weibull_Scale(failures=failures, right_censored=rc, __fitted_dist_params=self)
+            Exponential_probability_plot_Weibull_Scale(failures=failures, right_censored=rc, __fitted_dist_params=self, **kwargs)
 
     def logf(t, L):  # Log PDF (1 parameter Expon)
         return anp.log(L) - L * t
@@ -1175,6 +1177,7 @@ class Fit_Expon_2P:
     show_probability_plot - True/False. Defaults to True.
     print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
+    kwargs are accepted for the probability plot (eg. linestyle, label, color)
 
     Outputs:
     success - Whether the solution was found by autograd (True/False)
@@ -1203,7 +1206,7 @@ class Fit_Expon_2P:
     *Note that this is a 2 parameter distribution but Lambda_inv is also provided as some programs (such as minitab and scipy.stats) use this instead of Lambda
     '''
 
-    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95):
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, **kwargs):
         # Regarding the confidence intervals of the parameters, the gamma parameter is estimated by optimizing the log-likelihood function but
         # it is assumed as fixed because the variance-covariance matrix of the estimated parameters cannot be determined numerically. By assuming
         # the standard error in gamma is zero, we can use Expon_1P to obtain the confidence intervals for Lambda. This is the same procedure
@@ -1323,7 +1326,7 @@ class Fit_Expon_2P:
                 rc = None
             else:
                 rc = right_censored
-            Exponential_probability_plot_Weibull_Scale(failures=failures, right_censored=rc, __fitted_dist_params=self)
+            Exponential_probability_plot_Weibull_Scale(failures=failures, right_censored=rc, __fitted_dist_params=self, **kwargs)
 
     def logf(t, L, g):  # Log PDF (2 parameter Expon)
         return anp.log(L) - L * (t - g)
@@ -1361,6 +1364,7 @@ class Fit_Normal_2P:
     print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
     force_sigma - Use this to specify the sigma value if you need to force sigma to be a certain value. Used in ALT probability plotting. Optional input.
+    kwargs are accepted for the probability plot (eg. linestyle, label, color)
 
     Outputs:
     success - Whether the solution was found by autograd (True/False)
@@ -1384,7 +1388,7 @@ class Fit_Normal_2P:
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     '''
 
-    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, force_sigma=None):
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, force_sigma=None, **kwargs):
         if force_sigma is not None and (failures is None or len(failures) < 1):
             raise ValueError('Maximum likelihood estimates could not be calculated for these data. There must be at least 1 failures to calculate Normal parameters when force_sigma is specified.')
         elif force_sigma is None and (failures is None or len(failures) < 2):
@@ -1486,7 +1490,7 @@ class Fit_Normal_2P:
                 rc = None
             else:
                 rc = right_censored
-            Normal_probability_plot(failures=failures, right_censored=rc, __fitted_dist_params=self)
+            Normal_probability_plot(failures=failures, right_censored=rc, __fitted_dist_params=self, **kwargs)
 
     def logf(t, mu, sigma):  # Log PDF (Normal)
         return anp.log(anp.exp(-0.5 * (((t - mu) / sigma) ** 2))) - anp.log((sigma * (2 * anp.pi) ** 0.5))
@@ -1521,6 +1525,7 @@ class Fit_Lognormal_2P:
     print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
     force_sigma - Use this to specify the sigma value if you need to force sigma to be a certain value. Used in ALT probability plotting. Optional input.
+    kwargs are accepted for the probability plot (eg. linestyle, label, color)
 
     Outputs:
     success - Whether the solution was found by autograd (True/False)
@@ -1544,7 +1549,7 @@ class Fit_Lognormal_2P:
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     '''
 
-    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, force_sigma=None):
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, force_sigma=None, **kwargs):
         if force_sigma is not None and (failures is None or len(failures) < 1):
             raise ValueError('Maximum likelihood estimates could not be calculated for these data. There must be at least 1 failures to calculate Lognormal parameters when force_sigma is specified.')
         elif force_sigma is None and (failures is None or len(failures) < 2):
@@ -1650,7 +1655,7 @@ class Fit_Lognormal_2P:
                 rc = None
             else:
                 rc = right_censored
-            Lognormal_probability_plot(failures=failures, right_censored=rc, __fitted_dist_params=self)
+            Lognormal_probability_plot(failures=failures, right_censored=rc, __fitted_dist_params=self, **kwargs)
 
     def logf(t, mu, sigma):  # Log PDF (Lognormal)
         return anp.log(anp.exp(-0.5 * (((anp.log(t) - mu) / sigma) ** 2)) / (t * sigma * (2 * anp.pi) ** 0.5))
@@ -1685,6 +1690,7 @@ class Fit_Lognormal_3P:
     show_probability_plot - True/False. Defaults to True.
     print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
+    kwargs are accepted for the probability plot (eg. linestyle, label, color)
 
     Outputs:
     success - Whether the solution was found by autograd (True/False)
@@ -1711,7 +1717,7 @@ class Fit_Lognormal_3P:
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     '''
 
-    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95):
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, **kwargs):
         if failures is None or len(failures) < 3:
             raise ValueError('Maximum likelihood estimates could not be calculated for these data. There must be at least three failures to calculate Lognormal parameters.')
         if right_censored is None:
@@ -1830,7 +1836,7 @@ class Fit_Lognormal_3P:
                 rc = None
             else:
                 rc = right_censored
-            Lognormal_probability_plot(failures=failures, right_censored=rc, __fitted_dist_params=self)
+            Lognormal_probability_plot(failures=failures, right_censored=rc, __fitted_dist_params=self, **kwargs)
 
     def gamma_optimizer(gamma_guess, failures, right_censored):
         failures_shifted = failures - gamma_guess[0]
@@ -1879,6 +1885,7 @@ class Fit_Gamma_2P:
     print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
     force_beta - Use this to specify the beta value if you need to force beta to be a certain value. Used in ALT probability plotting. Optional input.
+    kwargs are accepted for the probability plot (eg. linestyle, label, color)
 
     Outputs:
     success - Whether the solution was found by autograd (True/False)
@@ -1902,7 +1909,7 @@ class Fit_Gamma_2P:
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     '''
 
-    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, force_beta=None):
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, force_beta=None, **kwargs):
         if force_beta is not None and (failures is None or len(failures) < 1):
             raise ValueError('Maximum likelihood estimates could not be calculated for these data. There must be at least 1 failures to calculate Gamma parameters when force_sigma is specified.')
         elif force_beta is None and (failures is None or len(failures) < 2):
@@ -2005,7 +2012,7 @@ class Fit_Gamma_2P:
                 rc = None
             else:
                 rc = right_censored
-            Gamma_probability_plot(failures=failures, right_censored=rc, __fitted_dist_params=self)
+            Gamma_probability_plot(failures=failures, right_censored=rc, __fitted_dist_params=self, **kwargs)
 
     def logf(t, a, b):  # Log PDF (2 parameter Gamma)
         return anp.log(t ** (b - 1)) - anp.log((a ** b) * agamma(b)) - (t / a)
@@ -2040,6 +2047,7 @@ class Fit_Gamma_3P:
     show_probability_plot - True/False. Defaults to True.
     print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
+    kwargs are accepted for the probability plot (eg. linestyle, label, color)
 
     Outputs:
     success - Whether the solution was found by autograd (True/False)
@@ -2066,7 +2074,7 @@ class Fit_Gamma_3P:
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     '''
 
-    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95):
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, **kwargs):
         if failures is None or len(failures) < 3:
             raise ValueError('Maximum likelihood estimates could not be calculated for these data. There must be at least three failures to calculate Gamma parameters.')
         if right_censored is None:
@@ -2166,7 +2174,7 @@ class Fit_Gamma_3P:
                 rc = None
             else:
                 rc = right_censored
-            Gamma_probability_plot(failures=failures, right_censored=rc, __fitted_dist_params=self)
+            Gamma_probability_plot(failures=failures, right_censored=rc, __fitted_dist_params=self, **kwargs)
 
     def logf(t, a, b, g):  # Log PDF (3 parameter Gamma)
         return anp.log((t - g) ** (b - 1)) - anp.log((a ** b) * agamma(b)) - ((t - g) / a)
@@ -2194,6 +2202,7 @@ class Fit_Beta_2P:
     show_probability_plot - True/False. Defaults to True.
     print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
+    kwargs are accepted for the probability plot (eg. linestyle, label, color)
 
     Outputs:
     success - Whether the solution was found by autograd (True/False)
@@ -2217,7 +2226,7 @@ class Fit_Beta_2P:
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     '''
 
-    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95):
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, **kwargs):
         if failures is None or len(failures) < 2:
             raise ValueError('Maximum likelihood estimates could not be calculated for these data. There must be at least two failures to calculate Beta parameters.')
         if CI <= 0 or CI >= 1:
@@ -2300,7 +2309,7 @@ class Fit_Beta_2P:
                 rc = None
             else:
                 rc = right_censored
-            Beta_probability_plot(failures=failures, right_censored=rc, __fitted_dist_params=self)
+            Beta_probability_plot(failures=failures, right_censored=rc, __fitted_dist_params=self, **kwargs)
 
     def logf(t, a, b):  # Log PDF (2 parameter Beta)
         return anp.log(((t ** (a - 1)) * ((1 - t) ** (b - 1)))) - anp.log(abeta(a, b))

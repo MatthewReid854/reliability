@@ -473,10 +473,13 @@ def Lognormal_probability_plot(failures=None, right_censored=None, fit_gamma=Fal
             right_censored = np.array(right_censored)
         else:
             raise ValueError('right_censored must be a list or an array')
+
+    pts_xmin_log = 10 ** (int(np.floor(np.log10(min(x)))) - 1)
+    pts_xmax_log = 10 ** (int(np.ceil(np.log10(max(x)))) + 1)
     if max(failures) < 1:
         xvals = np.linspace(10 ** -3, 2, 1000)
     else:
-        xvals = np.logspace(np.log10(xmin_log) - 2, np.log10(xmax_log) + 2, 1000)
+        xvals = np.logspace(np.log10(pts_xmin_log) - 2, np.log10(pts_xmax_log) + 2, 1000)
 
     if __fitted_dist_params is not None:
         if __fitted_dist_params.gamma > 0:
@@ -541,8 +544,6 @@ def Lognormal_probability_plot(failures=None, right_censored=None, fit_gamma=Fal
     plt.grid(b=True, which='major', color='k', alpha=0.3, linestyle='-')
     plt.grid(b=True, which='minor', color='k', alpha=0.08, linestyle='-')
     plt.ylim([0.0001, 0.9999])
-    pts_xmin_log = 10 ** (int(np.floor(np.log10(min(x)))) - 1)
-    pts_xmax_log = 10 ** (int(np.ceil(np.log10(max(x)))) + 1)
     plt.xlim([pts_xmin_log, pts_xmax_log])
     plt.gca().yaxis.set_minor_locator(FixedLocator(np.linspace(0, 1, 51)))
     ytickvals = [0.0001, 0.001, 0.01, 0.03, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.97, 0.99, 0.999, 0.9999]
