@@ -474,12 +474,13 @@ def Lognormal_probability_plot(failures=None, right_censored=None, fit_gamma=Fal
         else:
             raise ValueError('right_censored must be a list or an array')
 
-    pts_xmin_log = 10 ** (int(np.floor(np.log10(min(x)))) - 1)
-    pts_xmax_log = 10 ** (int(np.ceil(np.log10(max(x)))) + 1)
+
+    xmin_log = 10 ** (int(np.floor(np.log10(min(failures)))) - 1)
+    xmax_log = 10 ** (int(np.ceil(np.log10(max(failures)))) + 1)
     if max(failures) < 1:
         xvals = np.linspace(10 ** -3, 2, 1000)
     else:
-        xvals = np.logspace(np.log10(pts_xmin_log) - 2, np.log10(pts_xmax_log) + 2, 1000)
+        xvals = np.logspace(np.log10(xmin_log) - 2, np.log10(xmax_log) + 2, 1000)
 
     if __fitted_dist_params is not None:
         if __fitted_dist_params.gamma > 0:
@@ -538,6 +539,8 @@ def Lognormal_probability_plot(failures=None, right_censored=None, fit_gamma=Fal
             right_censored = right_censored - gamma
     # plot the failure points and format the scale and axes
     x, y = plotting_positions(failures=failures, right_censored=right_censored, h1=h1, h2=h2)
+    pts_xmin_log = 10 ** (int(np.floor(np.log10(min(x)))) - 1)
+    pts_xmax_log = 10 ** (int(np.ceil(np.log10(max(x)))) + 1)
     plt.scatter(x, y, marker='.', linewidth=2, c=data_color)
     plt.gca().set_yscale('function', functions=(__normal_forward, __normal_inverse))
     plt.xscale('log')

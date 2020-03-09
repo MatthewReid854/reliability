@@ -274,8 +274,8 @@ class similar_distributions:
             print('WARNING: The input distribution has non-negligible area for x<0. Monte carlo samples from this region have been discarded to enable other distributions to be fitted.')
 
         fitted_results = Fit_Everything(failures=RVS_filtered, print_results=False, show_probability_plot=False, show_histogram_plot=False, show_PP_plot=False)  # fit all distributions to the filtered samples
-        ranked_distributions = fitted_results.results.index.values
-        ranked_distributions.pop(distribution.name2) #removes the original distribution
+        ranked_distributions = list(fitted_results.results.index.values)
+        ranked_distributions.remove(distribution.name2) #removes the fitted version of the original distribution
 
         ranked_distributions_objects = []
         ranked_distributions_labels = []
