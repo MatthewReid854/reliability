@@ -40,13 +40,14 @@ Inputs:
 -   show_probability_plot - True/False. Defaults to True. Produces a probability plot of the failure data and fitted distribution.
 -   print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
 -   CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
--   force_beta (in Fit_Weibull_2P and Fit_Gamma_2P) or force_sigma (in Fit_Normal_2P and Fit_Lognormal_2P). This allows the user to force the shape parameter to be a set value. Useful for ALT probability plotting. Optional input. Not available for Fit_Beta_2P (due to there being 2 shape parameters), Fit_Expon_1P (due to there being only 1 parameter) or any of the location shifted distributions (due to these not typically being used for ALT probability plotting).
+-   force_beta (in Fit_Weibull_2P) or force_sigma (in Fit_Normal_2P and Fit_Lognormal_2P). This allows the user to force the shape parameter to be a set value. Useful for ALT probability plotting. Optional input. Not available for Fit_Beta_2P (due to there being 2 shape parameters), Fit_Expon_1P (due to there being only 1 parameter), Fit_Gamma_2P (due to Gamma_2P not being suitable for ALT probability plotting) or any of the location shifted distributions (due to these not typically being used for ALT probability plotting).
 
 Outputs (the following example outputs are for the Fit_Weibull_2P distribution but for other distributions the parameter names may be different from alpha and beta):
 
 -   alpha - the fitted Weibull_2P alpha parameter
 -   beta - the fitted Weibull_2P beta parameter
--   loglik2 - LogLikelihood*-2
+-   loglik - Log-Likelihood (as used in Minitab and Reliasoft)
+-   loglik2 - Log-Likelihood*-2 (as used in JMP Pro)
 -   AICc - Akaike Information Criterion
 -   BIC - Bayesian Information Criterion
 -   distribution - a Distribution object with the parameters of the fitted distribution
@@ -76,6 +77,7 @@ To learn how we can fit a distribution, we will start by using a simple example 
     Parameter                                                      
     Alpha           56.682270        6.062572  45.962661  69.901951
     Beta             3.141684        0.733552   1.987995   4.964890
+    Log-Likelihood: -42.426310509309616
     '''
 
 .. image:: images/Fit_Weibull_2P.png
@@ -117,18 +119,18 @@ It is beneficial to see the effectiveness of the fitted distribution in comparis
     '''
     There are 118 censored items.
     Fit_Weibull_3P parameters:
-    Alpha: 27.732547268103584 
-    Beta: 1.8418848813302022 
-    Gamma 21.486647464233737
+    Alpha: 28.836512482682533 
+    Beta: 2.0244823663812843 
+    Gamma 20.42077009102205
     '''
 
-.. image:: images/Fit_Weibull_3P_right_cens.png
+.. image:: images/Fit_Weibull_3P_right_cens_V2.png
 
 As a final example, we will fit a Gamma_2P distribution to some partially right censored data. To provide a comparison of the fitting accuracy as the number of samples increases, we will do the same experiment with varying sample sizes. The results highlight that the accuracy of the fit is proportional to the amount of samples, so you should always try to obtain more data if possible.
 
 .. code:: python
 
-   from reliability.Distributions import Gamma_Distribution
+    from reliability.Distributions import Gamma_Distribution
     from reliability.Fitters import Fit_Gamma_2P
     import matplotlib.pyplot as plt
     import numpy as np
@@ -191,6 +193,6 @@ As a final example, we will fit a Gamma_2P distribution to some partially right 
 How does the code work with censored data?
 ------------------------------------------
 
-All functions in this module work using a Python library called `autograd <https://github.com/HIPS/autograd/blob/master/README.md/>`_ to find the derivative of the log-likelihood function. In this way, the code only needs to specify the log PDF and log SF in order to obtain the fitted parameters. Initial guesses of the parameters are essential for autograd and are obtained using scipy.stats on all the data as if it wasn't censored (since scipy doesn't accept censored data). If the distribution is an extremely bad fit or is heavily censored then these guesses may be poor and the fit might not be successful. In this case, the scipy fit is used which will be incorrect if there is any censored data. If this occurs, a warning will be printed. Generally the fit achieved by autograd is highly successful.
+All functions in this module work using a Python library called `autograd <https://github.com/HIPS/autograd/blob/master/README.md/>`_ to find the derivative of the log-likelihood function. In this way, the code only needs to specify the log PDF and log SF in order to apply Maximum-Likelihood Estimation (MLE) to obtain the fitted parameters. Initial guesses of the parameters are essential for autograd and are obtained using scipy.stats on all the data as if it wasn't censored (since scipy doesn't accept censored data). If the distribution is an extremely bad fit or is heavily censored (>99% censored) then these guesses may be poor and the fit might not be successful. In this case, the scipy fit is used which will be incorrect if there is any censored data. If this occurs, a warning will be printed. Generally the fit achieved by autograd is highly successful.
 
 A special thanks goes to Cameron Davidson-Pilon (author of the Python library `lifelines <https://github.com/CamDavidsonPilon/lifelines/blob/master/README.md/>`_ and website `dataorigami.net <https://dataorigami.net/>`_) for providing help with getting autograd to work, and for writing the python library `autograd-gamma <https://github.com/CamDavidsonPilon/autograd-gamma/blob/master/README.md/>`_, without which it would be impossible to fit the Beta or Gamma distributions using autograd.
