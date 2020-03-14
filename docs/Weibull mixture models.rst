@@ -52,6 +52,7 @@ In this first example, we will create some data using two Weibull distributions 
     Alpha 2: 39.70121344619987 
     Beta 2: 3.9380638152183587 
     Proportion 1: 0.39392990137955697
+    Log-Likelihood: -3868.9285857124737
     '''
 
 .. image:: images/Weibull_Mixture_1.png
@@ -79,8 +80,8 @@ In this second example, we will compare how well the Weibull Mixture performs vs
             failures.append(item)
 
     #fit the Weibull Mixture and Weibull_2P
-    mixture = Fit_Weibull_Mixture(failures=failures,right_censored=censored)
-    single = Fit_Weibull_2P(failures=all_data,right_censored=censored)
+    mixture = Fit_Weibull_Mixture(failures=failures, right_censored=censored,show_plot=False, print_results=False)
+    single = Fit_Weibull_2P(failures=all_data, right_censored=censored, show_probability_plot=False, print_results=False)
 
     #plot the histogram of all the data and shade the censored part white
     N,bins,patches = plt.hist(all_data, density=True, alpha=0.2, color='k', bins=30, edgecolor='k')
