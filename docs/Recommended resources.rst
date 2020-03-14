@@ -27,7 +27,7 @@ The following collection of resources are things I have found useful during my r
 -    `Minitab <https://www.minitab.com/en-us/>`_ - a great collection of statistical tools. A few reliability focussed tools included.
 -    `Reliasoft <https://www.reliasoft.com/products/reliability-analysis/weibull>`_ - the industry leader for reliability engineering software.
 -    `SAS JMP <https://www.jmp.com/en_us/software/predictive-analytics-software.html>`_ - lots of statistical tools for data modelling and visualization. A few purpose built reliability tools. Its utility for reliability engineering will depend on your application.
--    `PTC Windchill <https://www.ptc.com/en/products/plm/capabilities/quality/> - a powerful tool for risk and reliability. Similar to Reliasoft but it forms one part of the larger PTC suite of tools.
+-    `PTC Windchill <https://www.ptc.com/en/products/plm/capabilities/quality/>`_ - a powerful tool for risk and reliability. Similar to Reliasoft but it forms one part of the larger PTC suite of tools.
 -    `Isograph Reliability Workbench <https://www.isograph.com/software/reliability-workbench/>`_ - A collection of tools designed specifically for reliability engineering.
 -    `TopEvent FTA <https://www.fault-tree-analysis.com/>`_ - Fault Tree Analysis software. Tailored specifically for fault tree analysis so it lacks other RAM tools but it is good at its intended function. A demo version exists with size and data export limitations.
 
