@@ -18,6 +18,7 @@ QQ_plot_parametric - quantile-quantile plot. Compares two parametric distributio
 QQ_plot_semiparametric - quantile-quantile plot. Compares failure data with a hypothesised parametric distribution. Useful to assess goodness of fit.
 PP_plot_parametric - probability-probability plot. Compares two parametric distributions using their CDFs. Useful to understand the differences between the quantiles of the distributions.
 PP_plot_semiparametric - probability-probability plot. Compares failure data with a hypothesised parametric distribution. Useful to assess goodness of fit.
+plot_points - plots the failure points on a scatter plot. Useful to overlay the points with CDF, SF, or CHF. Does not scale the axis so can be used with methods like dist.SF()
 '''
 
 import matplotlib.pyplot as plt
@@ -473,7 +474,6 @@ def Lognormal_probability_plot(failures=None, right_censored=None, fit_gamma=Fal
             right_censored = np.array(right_censored)
         else:
             raise ValueError('right_censored must be a list or an array')
-
 
     xmin_log = 10 ** (int(np.floor(np.log10(min(failures)))) - 1)
     xmax_log = 10 ** (int(np.ceil(np.log10(max(failures)))) + 1)
@@ -1255,3 +1255,62 @@ def QQ_plot_semiparametric(X_data_failures=None, X_data_right_censored=None, Y_d
     plt.ylim([0, endval])
     plt.title('Quantile-Quantile Plot\nSemi-parametric')
     return [m, deg1[0], deg1[1]]
+
+
+def plot_points(failures=None, right_censored=None, func='CDF', h1=None, h2=None, **kwargs):
+    '''
+    plot_points
+
+    Plots the failure points as a scatter plot based on the plotting positions.
+    This is similar to a probability plot, just without the axes scaling or the fitted distribution.
+    It may be used to overlay the failure points with a fitted distribution on either the CDF, SF, or CHF.
+    It is not possible to plot the points for PDF or HF as this would require integration and lead to a disjointed plot.
+
+    Inputs:
+    failures - an array or list of the failure times. Minimum number of points allowed is 2.
+    right_censored -  an array or list of the right censored failure times.
+    func - The distribution function to plot. Choose either 'CDF','SF','CHF'. Default is 'CDF'
+    h1 and h2 are the heuristic constants for plotting positions of the form (k-h1)/(n+h2). Default is h1=0.3,h2=0.4 which is the median rank method (same as the default in Minitab).
+        For more heuristics, see: https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics
+    kwargs - keyword arguments for the scatter plot. Defaults are set for color='k' and marker='.' These defaults can be changed using kwargs.
+
+    Outputs:
+    The scatter plot is the only output. Use plt.show to show it.
+    It is recommended that plot_points be used in conjunction with one of the plotting methods from a distribution (see the example below).
+
+    Example usage:
+    from reliability.Fitters import Fit_Lognormal_2P
+    from reliability.Probability_plotting import plot_points
+    import matplotlib.pyplot as plt
+    data = [8.0, 10.2, 7.1, 5.3, 8.5, 15.4, 17.7, 5.4, 5.8, 11.7, 4.4, 18.1, 8.5, 6.6, 9.7, 13.7, 8.2, 15.3, 2.9, 4.3]
+    fitted_dist = Fit_Lognormal_2P(failures=data,show_probability_plot=False,print_results=False) #fit the Lognormal distribution to the failure data
+    plot_points(failures=data,func='SF') #plot the failure points on the scatter plot
+    fitted_dist.distribution.SF() #plot the distribution
+    plt.show()
+    '''
+    if failures is None or len(failures) < 2:
+        raise ValueError('failures must be an array or list with at least 2 failure times')
+
+    x, y = plotting_positions(failures=failures, right_censored=right_censored, h1=h1, h2=h2)  # get the plotting positions
+    y_adjusted = []
+    if func == 'CDF':
+        y_adjusted = y
+    elif func == 'SF':
+        for item in y:
+            y_adjusted.append(1 - item)  # SF = 1-CDF
+    elif func == 'CHF':
+        for item in y:
+            y_adjusted.append(-np.log(1 - item))  # CHF = -ln(SF)
+    else:
+        raise ValueError('func must be either CDF, SF, or CHF. Default is CDF')
+    # set plotting defaults for keywords
+    if 'color' in kwargs:
+        color = kwargs.pop('color')
+    else:
+        color = 'k'
+    if 'marker' in kwargs:
+        marker = kwargs.pop('marker')
+    else:
+        marker = '.'
+    # plot the points
+    plt.scatter(x, y_adjusted, marker=marker, color=color, **kwargs)

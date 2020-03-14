@@ -19,7 +19,7 @@ There is also a Fit_Everything function which will fit all distributions except 
 All functions in this module work using autograd to find the derivative of the log-likelihood function. In this way, the code only needs to specify
 the log PDF and log SF in order to obtain the fitted parameters. Initial guesses of the parameters are essential for autograd and are obtained
 using scipy. If the distribution is an extremely bad fit or is heavily censored (>99%) then these guesses may be poor and the fit might not be successful.
-Generally the fit achieved by autograd is highly successful.
+Generally the fit achieved by autograd is highly successful, and whenever it fails the fit from scipy will be used. Scipy is only correct when there is no censored data.
 '''
 
 import numpy as np
@@ -572,7 +572,8 @@ class Fit_Weibull_2P:
         another distribution.
     alpha - the fitted Weibull_2P alpha parameter
     beta - the fitted Weibull_2P beta parameter
-    loglik2 - LogLikelihood*-2
+    loglik - Log Likelihood (as used in Minitab and Reliasoft)
+    loglik2 - LogLikelihood*-2 (as used in JMP Pro)
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
     distribution - a Weibull_Distribution object with the parameters of the fitted distribution
@@ -608,17 +609,47 @@ class Fit_Weibull_2P:
             raise TypeError('right_censored must be a list or array of right censored failure data')
         all_data = np.hstack([failures, right_censored])
 
-        # solve it
         self.gamma = 0
-        sp = ss.weibull_min.fit(all_data, floc=0, optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
+        if len(right_censored) / len(all_data) > 0.98:  # for heavily censored datasets (>98% censored), all data is used for the initial guess with scipy
+            sp_data = all_data
+        else:  # if not heavily censored then scipy gives a better initial guess with just the failure data
+            sp_data = failures
+        sp = ss.weibull_min.fit(sp_data, floc=0, optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
         warnings.filterwarnings('ignore')  # necessary to supress the warning about the jacobian when using the nelder-mead optimizer
 
-        if force_beta is None:
-            guess = [sp[2], sp[0]]
-            result = minimize(value_and_grad(Fit_Weibull_2P.LL), guess, args=(failures, right_censored), jac=True, tol=1e-6, method='nelder-mead')
+        if len(right_censored) / len(all_data) > 0.5:
+            guess = [sp[2] * 1.5, sp[0] * 0.6]  # correction to the scipy initial guess for large amounts of censored data (>50% censored)
         else:
-            guess = [sp[2]]
-            result = minimize(value_and_grad(Fit_Weibull_2P.LL_fb), guess, args=(failures, right_censored, force_beta), jac=True, tol=1e-6, method='nelder-mead')
+            guess = [sp[2], sp[0]]
+        self.initial_guess = guess
+
+        n = len(all_data)
+        delta_BIC = 1
+        BIC_array = [1000000]
+        runs = 0
+        if force_beta is None:
+            bnds = [(0, None), (0, None)]  # bounds on the solution. Helps a lot with stability
+            k = len(guess)
+            while delta_BIC > 0.001 and runs < 5:  # exits after BIC convergence or 5 iterations
+                runs += 1
+                result = minimize(value_and_grad(Fit_Weibull_2P.LL), guess, args=(failures, right_censored), jac=True, method='L-BFGS-B', bounds=bnds)
+                params = result.x
+                guess = [params[0], params[1]]
+                LL2 = 2 * Fit_Weibull_2P.LL(guess, failures, right_censored)
+                BIC_array.append(np.log(n) * k + LL2)
+                delta_BIC = abs(BIC_array[-1] - BIC_array[-2])
+        else:
+            bnds = [(0, None)]  # bounds on the solution. Helps a lot with stability
+            guess = [guess[0]]
+            k = len(guess)
+            while delta_BIC > 0.001 and runs < 5:  # exits after BIC convergence or 5 iterations
+                runs += 1
+                result = minimize(value_and_grad(Fit_Weibull_2P.LL_fb), guess, args=(failures, right_censored, force_beta), jac=True, method='L-BFGS-B', bounds=bnds)
+                params = result.x
+                guess = [params[0]]
+                LL2 = 2 * Fit_Weibull_2P.LL_fb(guess, failures, right_censored, force_beta)
+                BIC_array.append(np.log(n) * k + LL2)
+                delta_BIC = abs(BIC_array[-1] - BIC_array[-2])
 
         if result.success is True:
             params = result.x
@@ -627,19 +658,40 @@ class Fit_Weibull_2P:
                 self.alpha = params[0]
                 self.beta = params[1]
             else:
-                self.alpha = params * 1  # the *1 converts ndarray to float64
+                self.alpha = params[0]
                 self.beta = force_beta
-        else:
-            self.success = False
-            print('WARNING: Fitting using Autograd FAILED for Weibull_2P. The fit from Scipy was used instead so results may not be accurate.')
-            self.alpha = sp[2]
-            self.beta = sp[0]
+        else:  # if the L-BFGS-B optimizer fails then we have a second attempt using the slower but slightly more reliable nelder-mead optimizer
+            if force_beta is None:
+                guess = [sp[2], sp[0]]
+                result = minimize(value_and_grad(Fit_Weibull_2P.LL), guess, args=(failures, right_censored), jac=True, tol=1e-4, method='nelder-mead')
+            else:
+                guess = [sp[2]]
+                result = minimize(value_and_grad(Fit_Weibull_2P.LL_fb), guess, args=(failures, right_censored, force_beta), jac=True, tol=1e-4, method='nelder-mead')
+            if result.success is True:
+                params = result.x
+                self.success = True
+                if force_beta is None:
+                    self.alpha = params[0]
+                    self.beta = params[1]
+                else:
+                    self.alpha = params[0]
+                    self.beta = force_beta
+            else:
+                self.success = False
+                print('WARNING: Fitting using Autograd FAILED for Weibull_2P. A modified form of the fit from Scipy was used instead so results may not be accurate.')
+                if force_beta is None:
+                    self.alpha = self.initial_guess[0]
+                    self.beta = self.initial_guess[1]
+                else:
+                    self.alpha = self.initial_guess[0]
+                    self.beta = force_beta
 
         params = [self.alpha, self.beta]
         k = len(params)
         n = len(all_data)
         LL2 = 2 * Fit_Weibull_2P.LL(params, failures, right_censored)
         self.loglik2 = LL2
+        self.loglik = LL2 * -0.5
         if n - k - 1 > 0:
             self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
         else:
@@ -683,6 +735,7 @@ class Fit_Weibull_2P:
             pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
             print(str('Results from Fit_Weibull_2P (' + str(int(CI * 100)) + '% CI):'))
             print(self.results)
+            print('Log-Likelihood:', self.loglik)
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Weibull_probability_plot
@@ -713,6 +766,124 @@ class Fit_Weibull_2P:
         return -(LL_f + LL_rc)
 
 
+class Fit_Weibull_2P_fast:
+    '''
+    Fit_Weibull_2P_fast
+
+    This is a faster version of Fit_Weibull_2P. It does not calculate the confidence intervals, AICc, BIC, Loglik2, and does not have an option to force_beta.
+    Removing the features described above enables the calculation to be performed around 10% faster than Fit_Weibull_2P whilst maintaining the same accuracy.
+    Unless you have over 1 million samples then you should not need to use Fit_Weibull_2P_fast and should instead just use Fit_Weibull_2P.
+
+    Inputs:
+    failures - an array or list of failure data
+    right_censored - an array or list of right censored data
+    show_probability_plot - True/False. Defaults to True.
+    print_results - True/False. Defaults to True. Prints alpha and beta.
+    kwargs are accepted for the probability plot (eg. linestyle, label, color)
+
+    Outputs:
+    success - Whether the solution was found by autograd (True/False)
+        if success is False a warning will be printed indicating that scipy's fit was used as autograd failed. This fit will not be accurate if
+        there is censored data as scipy does not have the ability to fit censored data. Failure of autograd to find the solution should be rare and
+        if it occurs, it is likely that the distribution is an extremely bad fit for the data. Try scaling your data, removing extreme values, or using
+        another distribution.
+    alpha - the fitted Weibull_2P alpha parameter
+    beta - the fitted Weibull_2P beta parameter
+    '''
+
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, **kwargs):
+        if failures is None or len(failures) < 2:
+            raise ValueError('Maximum likelihood estimates could not be calculated for these data. There must be at least two failures to calculate Weibull parameters.')
+        # fill with empty lists if not specified
+        if right_censored is None:
+            right_censored = []
+
+        # adjust inputs to be arrays
+        if type(failures) == list:
+            failures = np.array(failures)
+        if type(failures) != np.ndarray:
+            raise TypeError('failures must be a list or array of failure data')
+        if type(right_censored) == list:
+            right_censored = np.array(right_censored)
+        if type(right_censored) != np.ndarray:
+            raise TypeError('right_censored must be a list or array of right censored failure data')
+
+        self.gamma = 0
+        if len(right_censored) / len(all_data) > 0.98:  # for heavily censored datasets (>98% censored), all data is used for the initial guess with scipy
+            sp_data = all_data
+        else:  # if not heavily censored then scipy gives a better initial guess with just the failure data
+            sp_data = failures
+        sp = ss.weibull_min.fit(sp_data, floc=0, optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
+        warnings.filterwarnings('ignore')  # necessary to supress the warning about the jacobian when using the nelder-mead optimizer
+
+        len_all_data = len(failures) + len(right_censored)
+        if len(right_censored) / len_all_data > 0.5:
+            guess = [sp[2] * 1.5, sp[0] * 0.6]  # correction to the scipy initial guess for large amounts of censored data (>50% censored)
+        else:
+            guess = [sp[2], sp[0]]
+        self.initial_guess = guess
+
+        n = len_all_data
+        delta_BIC = 1
+        BIC_array = [1000000]
+        runs = 0
+        bnds = [(0, None), (0, None)]  # bounds on the solution. Helps a lot with stability
+        k = 2
+        while delta_BIC > 0.01 and runs < 5:  # exits after BIC convergence or 5 iterations
+            runs += 1
+            result = minimize(value_and_grad(Fit_Weibull_2P_fast.LL), guess, args=(failures, right_censored), jac=True, method='L-BFGS-B', bounds=bnds)
+            params = result.x
+            guess = [params[0], params[1]]
+            LL2 = 2 * Fit_Weibull_2P_fast.LL(guess, failures, right_censored)
+            BIC_array.append(np.log(n) * k + LL2)
+            delta_BIC = abs(BIC_array[-1] - BIC_array[-2])
+
+        if result.success is True:
+            params = result.x
+            self.success = True
+            self.alpha = params[0]
+            self.beta = params[1]
+        else:  # if the L-BFGS-B optimizer fails then we have a second attempt using the slower but slightly more reliable nelder-mead optimizer
+            guess = [sp[2], sp[0]]
+            result = minimize(value_and_grad(Fit_Weibull_2P_fast.LL), guess, args=(failures, right_censored), jac=True, tol=1e-3, method='nelder-mead')
+            if result.success is True:
+                params = result.x
+                self.success = True
+                self.alpha = params[0]
+                self.beta = params[1]
+            else:
+                self.success = False
+                print('WARNING: Fitting using Autograd FAILED for Weibull_2P. A modified form of the fit from Scipy was used instead so results may not be accurate.')
+                self.alpha = self.initial_guess[0]
+                self.beta = self.initial_guess[1]
+
+        if print_results is True:
+            print('Results from Fit_Weibull_2P_fast:')
+            print('Alpha:', self.alpha)
+            print('Beta:', self.beta)
+
+        if show_probability_plot is True:
+            from reliability.Probability_plotting import Weibull_probability_plot
+            if len(right_censored) == 0:
+                rc = None
+            else:
+                rc = right_censored
+            Weibull_probability_plot(failures=failures, right_censored=rc, __fitted_dist_params=self, **kwargs)
+
+    def logf(t, a, b):  # Log PDF (2 parameter Weibull)
+        return (b - 1) * anp.log(t / a) + anp.log(b / a) - (t / a) ** b
+
+    def logR(t, a, b):  # Log SF (2 parameter Weibull)
+        return -((t / a) ** b)
+
+    def LL(params, T_f, T_rc):  # log likelihood function (2 parameter weibull)
+        LL_f = 0
+        LL_rc = 0
+        LL_f += Fit_Weibull_2P.logf(T_f, params[0], params[1]).sum()  # failure times
+        LL_rc += Fit_Weibull_2P.logR(T_rc, params[0], params[1]).sum()  # right censored times
+        return -(LL_f + LL_rc)
+
+
 class Fit_Weibull_3P:
     '''
     Fit_Weibull_3P
@@ -736,7 +907,8 @@ class Fit_Weibull_3P:
     alpha - the fitted Weibull_3P alpha parameter
     beta - the fitted Weibull_3P beta parameter
     gamma - the fitted Weibull_3P gamma parameter
-    loglik2 - LogLikelihood*-2
+    loglik - Log Likelihood (as used in Minitab and Reliasoft)
+    loglik2 - LogLikelihood*-2 (as used in JMP Pro)
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
     distribution - a Weibull_Distribution object with the parameters of the fitted distribution
@@ -786,7 +958,6 @@ class Fit_Weibull_3P:
         delta_BIC = 1
         BIC_array = [1000000]
         runs = 0
-
         gamma_lower_bound = 0.95 * gamma_initial_guess  # 0.95 is found to be the optimal point to minimise the error while also not causing autograd to fail
         bnds = [(0, None), (0, None), (gamma_lower_bound, min(all_data) - offset)]  # bounds on the solution. Helps a lot with stability
         while delta_BIC > 0.001 and runs < 5:  # exits after BIC convergence or 5 iterations
@@ -814,6 +985,7 @@ class Fit_Weibull_3P:
 
         params = [self.alpha, self.beta, self.gamma]
         self.loglik2 = LL2
+        self.loglik = LL2 * -0.5
         if n - k - 1 > 0:
             self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
         else:
@@ -848,6 +1020,7 @@ class Fit_Weibull_3P:
             pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
             print(str('Results from Fit_Weibull_3P (' + str(int(CI * 100)) + '% CI):'))
             print(self.results)
+            print('Log-Likelihood:', self.loglik)
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Weibull_probability_plot
@@ -897,7 +1070,8 @@ class Fit_Weibull_Mixture:
     beta_2 - the fitted Weibull_2P beta parameter for the second (right) group
     proportion_1 - the fitted proportion of the first (left) group
     proportion_2 - the fitted proportion of the second (right) group. Same as 1-proportion_1
-    loglik2 - LogLikelihood*-2
+    loglik - Log Likelihood (as used in Minitab and Reliasoft)
+    loglik2 - LogLikelihood*-2 (as used in JMP Pro)
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
     '''
@@ -988,6 +1162,7 @@ class Fit_Weibull_Mixture:
         n = len(all_data)
         LL2 = 2 * Fit_Weibull_Mixture.LL(params, failures, right_censored)
         self.loglik2 = LL2
+        self.loglik = LL2 * -0.5
         if n - k - 1 > 0:
             self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
         else:
@@ -996,6 +1171,7 @@ class Fit_Weibull_Mixture:
 
         if print_results is True:
             print('Parameters:', '\nAlpha 1:', self.alpha_1, '\nBeta 1:', self.beta_1, '\nAlpha 2:', self.alpha_2, '\nBeta 2:', self.beta_2, '\nProportion 1:', self.proportion_1)
+            print('Log-Likelihood:', self.loglik)
         if show_plot is True:
             xvals = np.linspace(0, max(failures) * 1.05, 1000)
             plt.figure(figsize=(14, 6))
@@ -1063,7 +1239,8 @@ class Fit_Expon_1P:
         if it occurs, it is likely that the distribution is an extremely bad fit for the data. Try scaling your data, removing extreme values, or using
         another distribution.
     Lambda - the fitted Expon_1P lambda parameter
-    loglik2 - LogLikelihood*-2
+    loglik - Log Likelihood (as used in Minitab and Reliasoft)
+    loglik2 - LogLikelihood*-2 (as used in JMP Pro)
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
     distribution - an Exponential_Distribution object with the parameters of the fitted distribution
@@ -1114,6 +1291,7 @@ class Fit_Expon_1P:
         n = len(all_data)
         LL2 = 2 * Fit_Expon_1P.LL(params, failures, right_censored)
         self.loglik2 = LL2
+        self.loglik = LL2 * -0.5
         if n - k - 1 > 0:
             self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
         else:
@@ -1142,6 +1320,7 @@ class Fit_Expon_1P:
             pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
             print(str('Results from Fit_Expon_1P (' + str(int(CI * 100)) + '% CI):'))
             print(self.results)
+            print('Log-Likelihood:', self.loglik)
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Exponential_probability_plot_Weibull_Scale
@@ -1188,7 +1367,8 @@ class Fit_Expon_2P:
     Lambda - the fitted Expon_2P lambda parameter
     Lambda_inv - the inverse of the Lambda parameter (1/Lambda)
     gamma - the fitted Expon_2P gamma parameter
-    loglik2 - LogLikelihood*-2
+    loglik - Log Likelihood (as used in Minitab and Reliasoft)
+    loglik2 - LogLikelihood*-2 (as used in JMP Pro)
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
     distribution - an Exponential_Distribution object with the parameters of the fitted distribution
@@ -1283,6 +1463,7 @@ class Fit_Expon_2P:
             self.gamma = sp[0]
 
         self.loglik2 = LL2
+        self.loglik = LL2 * -0.5
         if n - k - 1 > 0:
             self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
         else:
@@ -1319,6 +1500,7 @@ class Fit_Expon_2P:
             pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
             print(str('Results from Fit_Expon_2P (' + str(int(CI * 100)) + '% CI):'))
             print(self.results)
+            print('Log-Likelihood:', self.loglik)
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Exponential_probability_plot_Weibull_Scale
@@ -1374,7 +1556,8 @@ class Fit_Normal_2P:
         another distribution.
     mu - the fitted Normal_2P mu parameter
     sigma - the fitted Normal_2P sigma parameter
-    loglik2 - LogLikelihood*-2
+    loglik - Log Likelihood (as used in Minitab and Reliasoft)
+    loglik2 - LogLikelihood*-2 (as used in JMP Pro)
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
     distribution - a Normal_Distribution object with the parameters of the fitted distribution
@@ -1412,13 +1595,13 @@ class Fit_Normal_2P:
 
         # solve it
         sp = ss.norm.fit(all_data, optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
-        warnings.filterwarnings('ignore')  # necessary to supress the warning about the jacobian when using the Powell optimizer
+        warnings.filterwarnings('ignore')  # necessary to supress the warning about the jacobian when using the nelder-mead optimizer
         if force_sigma is None:
             guess = [sp[0], sp[1]]
-            result = minimize(value_and_grad(Fit_Normal_2P.LL), guess, args=(failures, right_censored), jac=True, method='powell', tol=1e-6)
+            result = minimize(value_and_grad(Fit_Normal_2P.LL), guess, args=(failures, right_censored), jac=True, method='nelder-mead', tol=1e-6)
         else:
             guess = [sp[0]]
-            result = minimize(value_and_grad(Fit_Normal_2P.LL_fs), guess, args=(failures, right_censored, force_sigma), jac=True, method='powell', tol=1e-6)
+            result = minimize(value_and_grad(Fit_Normal_2P.LL_fs), guess, args=(failures, right_censored, force_sigma), jac=True, method='nelder-mead', tol=1e-6)
 
         if result.success is True:
             params = result.x
@@ -1440,6 +1623,7 @@ class Fit_Normal_2P:
         n = len(all_data)
         LL2 = 2 * Fit_Normal_2P.LL(params, failures, right_censored)
         self.loglik2 = LL2
+        self.loglik = LL2 * -0.5
         if n - k - 1 > 0:
             self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
         else:
@@ -1483,6 +1667,7 @@ class Fit_Normal_2P:
             pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
             print(str('Results from Fit_Normal_2P (' + str(int(CI * 100)) + '% CI):'))
             print(self.results)
+            print('Log-Likelihood:', self.loglik)
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Normal_probability_plot
@@ -1498,14 +1683,14 @@ class Fit_Normal_2P:
     def logR(t, mu, sigma):  # Log SF (Normal)
         return anp.log((1 + erf(((mu - t) / sigma) / 2 ** 0.5)) / 2)
 
-    def LL(params, T_f, T_rc):  # log likelihood function (2 parameter weibull)
+    def LL(params, T_f, T_rc):  # log likelihood function (2 parameter Normal)
         LL_f = 0
         LL_rc = 0
         LL_f += Fit_Normal_2P.logf(T_f, params[0], params[1]).sum()  # failure times
         LL_rc += Fit_Normal_2P.logR(T_rc, params[0], params[1]).sum()  # right censored times
         return -(LL_f + LL_rc)
 
-    def LL_fs(params, T_f, T_rc, force_sigma):  # log likelihood function (2 parameter weibull) FORCED SIGMA
+    def LL_fs(params, T_f, T_rc, force_sigma):  # log likelihood function (2 parameter Normal) FORCED SIGMA
         LL_f = 0
         LL_rc = 0
         LL_f += Fit_Normal_2P.logf(T_f, params[0], force_sigma).sum()  # failure times
@@ -1535,7 +1720,8 @@ class Fit_Lognormal_2P:
         another distribution.
     mu - the fitted Lognormal_2P mu parameter
     sigma - the fitted Lognormal_2P sigma parameter
-    loglik2 - LogLikelihood*-2
+    loglik - Log Likelihood (as used in Minitab and Reliasoft)
+    loglik2 - LogLikelihood*-2 (as used in JMP Pro)
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
     distribution - a Lognormal_Distribution object with the parameters of the fitted distribution
@@ -1578,11 +1764,11 @@ class Fit_Lognormal_2P:
         if force_sigma is None:
             bnds = [(0.0001, None), (0.0001, None)]  # bounds of solution
             guess = [np.log(sp[2]), sp[0]]
-            result = minimize(value_and_grad(Fit_Lognormal_2P.LL), guess, args=(failures, right_censored), jac=True, bounds=bnds, tol=1e-6)
+            result = minimize(value_and_grad(Fit_Lognormal_2P.LL), guess, args=(failures, right_censored), jac=True, method='L-BFGS-B', bounds=bnds)
         else:
             bnds = [(0.0001, None)]  # bounds of solution
             guess = [np.log(sp[2])]
-            result = minimize(value_and_grad(Fit_Lognormal_2P.LL_fs), guess, args=(failures, right_censored, force_sigma), jac=True, bounds=bnds, tol=1e-6)
+            result = minimize(value_and_grad(Fit_Lognormal_2P.LL_fs), guess, args=(failures, right_censored, force_sigma), jac=True, method='L-BFGS-B', bounds=bnds)
 
         if result.success is True:
             params = result.x
@@ -1596,7 +1782,7 @@ class Fit_Lognormal_2P:
 
         else:
             self.success = False
-            warnings.warn('Fitting using Autograd FAILED for Lognormal_2P. The fit from Scipy was used instead so results may not be accurate.')
+            print('WARNING: Fitting using Autograd FAILED for Lognormal_2P. The fit from Scipy was used instead so results may not be accurate.')
             self.mu = np.log(sp[2])
             self.sigma = sp[0]
 
@@ -1605,6 +1791,7 @@ class Fit_Lognormal_2P:
         n = len(all_data)
         LL2 = 2 * Fit_Lognormal_2P.LL(params, failures, right_censored)
         self.loglik2 = LL2
+        self.loglik = LL2 * -0.5
         if n - k - 1 > 0:
             self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
         else:
@@ -1648,6 +1835,7 @@ class Fit_Lognormal_2P:
             pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
             print(str('Results from Fit_Lognormal_2P (' + str(int(CI * 100)) + '% CI):'))
             print(self.results)
+            print('Log-Likelihood:', self.loglik)
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Lognormal_probability_plot
@@ -1701,7 +1889,8 @@ class Fit_Lognormal_3P:
     mu - the fitted Lognormal_3P mu parameter
     sigma - the fitted Lognormal_3P sigma parameter
     gamma - the fitted Lognormal_3P gamma parameter
-    loglik2 - LogLikelihood*-2
+    loglik - Log Likelihood (as used in Minitab and Reliasoft)
+    loglik2 - LogLikelihood*-2 (as used in JMP Pro)
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
     distribution - a Lognormal_Distribution object with the parameters of the fitted distribution
@@ -1795,6 +1984,7 @@ class Fit_Lognormal_3P:
 
         params = [self.mu, self.sigma, self.gamma]
         self.loglik2 = LL2
+        self.loglik = LL2 * -0.5
         if n - k - 1 > 0:
             self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
         else:
@@ -1829,6 +2019,7 @@ class Fit_Lognormal_3P:
             pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
             print(str('Results from Fit_Lognormal_3P (' + str(int(CI * 100)) + '% CI):'))
             print(self.results)
+            print('Log-Likelihood:', self.loglik)
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Lognormal_probability_plot
@@ -1884,7 +2075,6 @@ class Fit_Gamma_2P:
     show_probability_plot - True/False. Defaults to True.
     print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    force_beta - Use this to specify the beta value if you need to force beta to be a certain value. Used in ALT probability plotting. Optional input.
     kwargs are accepted for the probability plot (eg. linestyle, label, color)
 
     Outputs:
@@ -1895,7 +2085,8 @@ class Fit_Gamma_2P:
         another distribution.
     alpha - the fitted Gamma_2P alpha parameter
     beta - the fitted Gamma_2P beta parameter
-    loglik2 - LogLikelihood*-2
+    loglik - Log Likelihood (as used in Minitab and Reliasoft)
+    loglik2 - LogLikelihood*-2 (as used in JMP Pro)
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
     distribution - a Gamma_Distribution object with the parameters of the fitted distribution
@@ -1909,10 +2100,8 @@ class Fit_Gamma_2P:
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     '''
 
-    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, force_beta=None, **kwargs):
-        if force_beta is not None and (failures is None or len(failures) < 1):
-            raise ValueError('Maximum likelihood estimates could not be calculated for these data. There must be at least 1 failures to calculate Gamma parameters when force_sigma is specified.')
-        elif force_beta is None and (failures is None or len(failures) < 2):
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, **kwargs):
+        if failures is None or len(failures) < 2:
             raise ValueError('Maximum likelihood estimates could not be calculated for these data. There must be at least two failures to calculate Gamma parameters.')
         if CI <= 0 or CI >= 1:
             raise ValueError('CI must be between 0 and 1. Default is 0.95 for 95% Confidence interval.')
@@ -1933,36 +2122,44 @@ class Fit_Gamma_2P:
 
         # solve it
         self.gamma = 0
-        sp = ss.gamma.fit(all_data, floc=0, optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
+        sp = ss.gamma.fit(failures, floc=0, optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
+        guess = [sp[2], sp[0]]
+        if guess[1] > 50:  # guess corrector for gamma distributions with high beta. Scipy tends to overestimate beta and underestimate alpha.
+            guess = [guess[0] * 4, guess[1] * 0.25]
+        self.initial_guess = guess
+
+        k = len(guess)
+        n = len(all_data)
+        delta_BIC = 1
+        BIC_array = [1000000]
+        runs = 0
         warnings.filterwarnings('ignore')
-        if force_beta is None:
-            guess = [sp[2], sp[0]]
-            result = minimize(value_and_grad(Fit_Gamma_2P.LL), guess, args=(failures, right_censored), jac=True, method='nelder-mead', tol=1e-10)
-        else:
-            guess = [sp[2]]
-            result = minimize(value_and_grad(Fit_Gamma_2P.LL_fb), guess, args=(failures, right_censored, force_beta), jac=True, method='nelder-mead', tol=1e-10)
+        bnds = [(0, None), (0, None)]  # bounds on the solution. Helps a lot with stability
+        while delta_BIC > 0.001 and runs < 5:  # exits after BIC convergence or 5 iterations
+            runs += 1
+            result = minimize(value_and_grad(Fit_Gamma_2P.LL), guess, args=(failures, right_censored), jac=True, method='L-BFGS-B', bounds=bnds)
+            params = result.x
+            guess = [params[0], params[1]]
+            LL2 = 2 * Fit_Gamma_2P.LL(guess, failures, right_censored)
+            BIC_array.append(np.log(n) * k + LL2)
+            delta_BIC = abs(BIC_array[-1] - BIC_array[-2])
 
         if result.success is True:
             params = result.x
             self.success = True
-            if force_beta is None:
-                self.alpha = params[0]
-                self.beta = params[1]
-            else:
-                self.alpha = params[0]
-                self.beta = force_beta
+            self.alpha = params[0]
+            self.beta = params[1]
         else:
             self.success = False
-            print('WARNING: Fitting using Autograd FAILED for Gamma_2P. The fit from Scipy was used instead so results may not be accurate.')
-            self.alpha = sp[2]
-            self.beta = sp[0]
-            self.gamma = sp[1]
+            print('WARNING: Fitting using Autograd FAILED for Gamma_2P. A modified form of the fit from Scipy was used instead so results may not be accurate.')
+            self.alpha = self.initial_guess[0]
+            self.beta = self.initial_guess[1]
+            self.gamma = 0
 
         params = [self.alpha, self.beta]
-        k = len(params)
-        n = len(all_data)
         LL2 = 2 * Fit_Gamma_2P.LL(params, failures, right_censored)
         self.loglik2 = LL2
+        self.loglik = LL2 * -0.5
         if n - k - 1 > 0:
             self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
         else:
@@ -1972,26 +2169,15 @@ class Fit_Gamma_2P:
 
         # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
-        if force_beta is None:
-            hessian_matrix = hessian(Fit_Gamma_2P.LL)(np.array(tuple(params)), np.array(tuple(failures)), np.array(tuple(right_censored)))
-            covariance_matrix = np.linalg.inv(hessian_matrix)
-            self.alpha_SE = abs(covariance_matrix[0][0]) ** 0.5
-            self.beta_SE = abs(covariance_matrix[1][1]) ** 0.5
-            self.Cov_alpha_beta = abs(covariance_matrix[0][1])
-            self.alpha_upper = self.alpha * (np.exp(Z * (self.alpha_SE / self.alpha)))
-            self.alpha_lower = self.alpha * (np.exp(-Z * (self.alpha_SE / self.alpha)))
-            self.beta_upper = self.beta * (np.exp(Z * (self.beta_SE / self.beta)))
-            self.beta_lower = self.beta * (np.exp(-Z * (self.beta_SE / self.beta)))
-        else:
-            hessian_matrix = hessian(Fit_Gamma_2P.LL_fb)(np.array(tuple([self.alpha])), np.array(tuple(failures)), np.array(tuple(right_censored)), np.array(tuple([force_beta])))
-            covariance_matrix = np.linalg.inv(hessian_matrix)
-            self.alpha_SE = abs(covariance_matrix[0][0]) ** 0.5
-            self.beta_SE = ''
-            self.Cov_alpha_beta = ''
-            self.alpha_upper = self.alpha * (np.exp(Z * (self.alpha_SE / self.alpha)))
-            self.alpha_lower = self.alpha * (np.exp(-Z * (self.alpha_SE / self.alpha)))
-            self.beta_upper = ''
-            self.beta_lower = ''
+        hessian_matrix = hessian(Fit_Gamma_2P.LL)(np.array(tuple(params)), np.array(tuple(failures)), np.array(tuple(right_censored)))
+        covariance_matrix = np.linalg.inv(hessian_matrix)
+        self.alpha_SE = abs(covariance_matrix[0][0]) ** 0.5
+        self.beta_SE = abs(covariance_matrix[1][1]) ** 0.5
+        self.Cov_alpha_beta = abs(covariance_matrix[0][1])
+        self.alpha_upper = self.alpha * (np.exp(Z * (self.alpha_SE / self.alpha)))
+        self.alpha_lower = self.alpha * (np.exp(-Z * (self.alpha_SE / self.alpha)))
+        self.beta_upper = self.beta * (np.exp(Z * (self.beta_SE / self.beta)))
+        self.beta_lower = self.beta * (np.exp(-Z * (self.beta_SE / self.beta)))
         Data = {'Parameter': ['Alpha', 'Beta'],
                 'Point Estimate': [self.alpha, self.beta],
                 'Standard Error': [self.alpha_SE, self.beta_SE],
@@ -2005,6 +2191,7 @@ class Fit_Gamma_2P:
             pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
             print(str('Results from Fit_Gamma_2P (' + str(int(CI * 100)) + '% CI):'))
             print(self.results)
+            print('Log-Likelihood:', self.loglik)
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Gamma_probability_plot
@@ -2025,13 +2212,6 @@ class Fit_Gamma_2P:
         LL_rc = 0
         LL_f += Fit_Gamma_2P.logf(T_f, params[0], params[1]).sum()  # failure times
         LL_rc += Fit_Gamma_2P.logR(T_rc, params[0], params[1]).sum()  # right censored times
-        return -(LL_f + LL_rc)
-
-    def LL_fb(params, T_f, T_rc, force_beta):  # log likelihood function (2 parameter Gamma) FORCED BETA
-        LL_f = 0
-        LL_rc = 0
-        LL_f += Fit_Gamma_2P.logf(T_f, params[0], force_beta).sum()  # failure times
-        LL_rc += Fit_Gamma_2P.logR(T_rc, params[0], force_beta).sum()  # right censored times
         return -(LL_f + LL_rc)
 
 
@@ -2058,7 +2238,8 @@ class Fit_Gamma_3P:
     alpha - the fitted Gamma_3P alpha parameter
     beta - the fitted Gamma_3P beta parameter
     gamma - the fitted Gamma_3P gamma parameter
-    loglik2 - LogLikelihood*-2
+    loglik - Log Likelihood (as used in Minitab and Reliasoft)
+    loglik2 - LogLikelihood*-2 (as used in JMP Pro)
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
     distribution - a Gamma_Distribution object with the parameters of the fitted distribution
@@ -2096,8 +2277,10 @@ class Fit_Gamma_3P:
         offset = 0.0001  # this is to ensure the upper bound for gamma is not equal to min(data) which would result in inf log-likelihood. This small offset fixes that issue
         self.gamma = min(all_data) - offset
 
-        # obtain the initial guess for alpha and beta
-        data_shifted = all_data - self.gamma
+        if len(failures) < 10:
+            data_shifted = all_data - self.gamma
+        else:
+            data_shifted = failures - self.gamma
         sp = ss.gamma.fit(data_shifted, floc=0, optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
         guess = [sp[2], sp[0], self.gamma]
         self.initial_guess = guess
@@ -2133,6 +2316,7 @@ class Fit_Gamma_3P:
 
         params = [self.alpha, self.beta, self.gamma]
         self.loglik2 = LL2
+        self.loglik = LL2 * -0.5
         if n - k - 1 > 0:
             self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
         else:
@@ -2167,6 +2351,7 @@ class Fit_Gamma_3P:
             pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
             print(str('Results from Fit_Gamma_3P (' + str(int(CI * 100)) + '% CI):'))
             print(self.results)
+            print('Log-Likelihood:', self.loglik)
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Gamma_probability_plot
@@ -2212,7 +2397,8 @@ class Fit_Beta_2P:
         another distribution.
     alpha - the fitted Beta_2P alpha parameter
     beta - the fitted Beta_2P beta parameter
-    loglik2 - LogLikelihood*-2
+    loglik - Log Likelihood (as used in Minitab and Reliasoft)
+    loglik2 - LogLikelihood*-2 (as used in JMP Pro)
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
     distribution - a Beta_Distribution object with the parameters of the fitted distribution
@@ -2253,7 +2439,7 @@ class Fit_Beta_2P:
         self.gamma = 0
         sp = ss.beta.fit(all_data, floc=0, fscale=1, optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
         guess = [sp[0], sp[1]]
-        result = minimize(value_and_grad(Fit_Beta_2P.LL), guess, args=(failures, right_censored), jac=True, bounds=bnds, tol=1e-6)
+        result = minimize(value_and_grad(Fit_Beta_2P.LL), guess, args=(failures, right_censored), jac=True, method='L-BFGS-B', bounds=bnds)
 
         if result.success is True:
             params = result.x
@@ -2262,7 +2448,7 @@ class Fit_Beta_2P:
             self.beta = params[1]
         else:
             self.success = False
-            warnings.warn('Fitting using Autograd FAILED for Beta_2P. The fit from Scipy was used instead so results may not be accurate.')
+            print('WARNING: Fitting using Autograd FAILED for Beta_2P. The fit from Scipy was used instead so results may not be accurate.')
             self.alpha = sp[0]
             self.beta = sp[1]
 
@@ -2271,6 +2457,7 @@ class Fit_Beta_2P:
         n = len(all_data)
         LL2 = 2 * Fit_Beta_2P.LL(params, failures, right_censored)
         self.loglik2 = LL2
+        self.loglik = LL2 * -0.5
         if n - k - 1 > 0:
             self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
         else:
@@ -2302,6 +2489,7 @@ class Fit_Beta_2P:
             pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
             print(str('Results from Fit_Beta_2P (' + str(int(CI * 100)) + '% CI):'))
             print(self.results)
+            print('Log-Likelihood:', self.loglik)
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Beta_probability_plot

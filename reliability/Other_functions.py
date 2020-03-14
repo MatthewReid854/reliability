@@ -232,21 +232,23 @@ class similar_distributions:
 
     This is a tool to find similar distributions when given an input distribution.
     It is useful to see how similar one distribution is to another. For example, you may look at a Weibull distribution and think it looks like a Normal distribution.
-    Using this tool you can determine the parameters of the normal distribution that most closely matches your Weibull distribution.
+    Using this tool you can determine the parameters of the Normal distribution that most closely matches your Weibull distribution.
 
     Inputs:
     distribution - a distribution object created using the reliability.Distributions module
     include_location_shifted - True/False. Default is True. When set to True it will include Weibull_3P, Lognormal_3P, Gamma_3P, Expon_2P
     show_plot - True/False. Default is True
     print_results - True/False. Default is True
-    monte_carlo_trials - the number of monte carlo trials to use in the calculation. Default is 1000. Using over 10000 will be very slow.
-    number_of_distributions_to_show - the number of similar distributions to show. Default is 3. If the number specified exceeds the number available (typically 8), then the number specified will be automatically reduced.
+    monte_carlo_trials - the number of monte carlo trials to use in the calculation. Default is 1000. Using over 10000 will be very slow. Using less than 100 will be inaccurate and will be automatically reset to 100.
+    number_of_distributions_to_show - the number of similar distributions to show. Default is 3. If the number specified exceeds the number available (typically 8), then the number specified will automatically be reduced.
 
     Outputs:
     results - an array of distributions objects ranked in order of best fit.
     most_similar_distribution - a distribution object. This is the first item from results.
 
     Example usage:
+    from reliability.Distributions import Weibull_Distribution
+    from reliability.Other_functions import similar_distributions
     dist = Weibull_Distribution(alpha=50,beta=3.3)
     similar_distributions(distribution=dist)
     '''
@@ -256,6 +258,7 @@ class similar_distributions:
             raise ValueError('distribution must be a probability distribution object from the reliability.Distributions module. First define the distribution using Reliability.Distributions.___')
         if monte_carlo_trials < 100:
             print('WARNING: Using less than 100 monte carlo trials will lead to extremely inaccurate results. The number of monte carlo trials has been changed to 100 to ensure accuracy.')
+            monte_carlo_trials = 100
         elif monte_carlo_trials >= 100 and monte_carlo_trials < 1000:
             print('WARNING: Using less than 1000 monte carlo trials will lead to inaccurate results.')
         if monte_carlo_trials > 10000:
@@ -275,7 +278,7 @@ class similar_distributions:
 
         fitted_results = Fit_Everything(failures=RVS_filtered, print_results=False, show_probability_plot=False, show_histogram_plot=False, show_PP_plot=False)  # fit all distributions to the filtered samples
         ranked_distributions = list(fitted_results.results.index.values)
-        ranked_distributions.remove(distribution.name2) #removes the fitted version of the original distribution
+        ranked_distributions.remove(distribution.name2)  # removes the fitted version of the original distribution
 
         ranked_distributions_objects = []
         ranked_distributions_labels = []
@@ -335,13 +338,13 @@ class similar_distributions:
             counter = 0
             xlower = distribution.quantile(0.001)
             xupper = distribution.quantile(0.999)
-            x_delta = xupper-xlower
+            x_delta = xupper - xlower
             plt.subplot(121)
             distribution.PDF(label='Input distribution', linestyle='--')
             while counter < number_of_distributions_to_show and counter < number_of_distributions_fitted:
                 ranked_distributions_objects[counter].PDF(label=ranked_distributions_labels[counter])
                 counter += 1
-            plt.xlim([xlower-x_delta*0.1,xupper+x_delta*0.1])
+            plt.xlim([xlower - x_delta * 0.1, xupper + x_delta * 0.1])
             plt.legend()
             plt.title('PDF')
             counter = 0
@@ -350,7 +353,7 @@ class similar_distributions:
             while counter < number_of_distributions_to_show and counter < number_of_distributions_fitted:
                 ranked_distributions_objects[counter].CDF(label=ranked_distributions_labels[counter])
                 counter += 1
-            plt.xlim([xlower-x_delta*0.1,xupper+x_delta*0.1])
+            plt.xlim([xlower - x_delta * 0.1, xupper + x_delta * 0.1])
             plt.legend()
             plt.title('CDF')
             plt.subplots_adjust(left=0.08, right=0.95)
