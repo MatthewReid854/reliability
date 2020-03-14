@@ -38,16 +38,17 @@ In this first example, we will use Fit_Everything on some data and will return o
     Fit_Everything(failures=data, show_histogram_plot=False, show_probability_plot=False, show_PP_plot=False)
 
     '''
-                           Alpha     Beta  Gamma       Mu     Sigma    Lambda     AICc      BIC
-    Distribution                                                                            
-    Weibull_2P            4.21932   2.4376                                      117.696  120.054
-    Gamma_2P             0.816685  4.57132                                      118.405  120.763
-    Normal_2P                                      3.73333   1.65193            119.698  122.056
-    Lognormal_2P                                   1.20395  0.503621            120.662   123.02
-    Exponential_                                1                      0.36452  122.693  123.952
-    Weibull_3P            2.92572  1.35444  0.991                               121.671  124.029
-    Gamma_3P              2.20842  1.24221  0.991                               124.168  126.526
-    Exponential_1P                                                    0.267857  141.181  142.439
+                       Alpha      Beta     Gamma       Mu     Sigma    Lambda        AICc         BIC
+    Distribution                                                                                     
+    Weibull_2P       4.21932   2.43761                                         117.696224  120.054175
+    Gamma_2P        0.816685   4.57132                                         118.404666  120.762616
+    Normal_2P                                     3.73333   1.65193            119.697592  122.055543
+    Lognormal_2P                                  1.20395  0.503621            120.662122  123.020072
+    Lognormal_3P                               0  1.20395  0.503621            123.140754  123.020072
+    Weibull_3P       3.04153   1.52774  0.949905                               121.917806  125.198321
+    Exponential_2P                         0.999                      0.36572  124.797704  127.155654
+    Gamma_3P         3.49645  0.781773    0.9999                               125.942453  129.222968
+    Exponential_1P                                                   0.267857  141.180947  142.439287
     '''
 
 In this second example, we will create some right censored data and use Fit_Everything. All outputs are shown, and the best fitting distribution is accessed and printed.
@@ -72,24 +73,25 @@ In this second example, we will create some right censored data and use Fit_Ever
     print('The best fitting distribution was',results.best_distribution_name,'which had parameters',results.best_distribution.parameters)
     
     '''
-                      Alpha     Beta    Gamma       Mu     Sigma     Lambda     AICc      BIC
-    Distribution                                                                             
-    Weibull_2P      11.2773  3.30293                                         488.041  493.128
-    Normal_2P                                  10.1192    3.3742             489.082  494.169
-    Gamma_2P        1.42315  7.21352                                         490.594   495.68
-    Lognormal_2P                               2.26518  0.406349             495.694   500.78
-    Weibull_3P       8.2661  2.00287  2.82002                                496.887  501.974
-    Gamma_3P        3.21732  2.38197  2.82002                                508.779  513.866
-    Exponential_2P                    2.82902                      0.121715  536.287  538.852
-    Exponential_1P                                                0.0870033  594.034  596.598
+                      Alpha     Beta     Gamma       Mu     Sigma     Lambda        AICc         BIC
+    Distribution                                                                                    
+    Weibull_2P      11.2773  3.30301                                          488.041154  493.127783
+    Normal_2P                                   10.1194   3.37466             489.082213  494.168842
+    Gamma_2P        1.42315  7.21352                                          490.593729  495.680358
+    Gamma_3P        1.42315   7.2135         0                                492.720018  500.285528
+    Lognormal_2P                                2.26524  0.406436             495.693518  500.780147
+    Lognormal_3P                      0.883941  2.16125  0.465752             500.938298  500.780147
+    Weibull_3P      8.43021  2.15541   2.68747                                493.617767  501.183278
+    Exponential_2P                     2.82802                      0.121869  538.150905  543.237534
+    Exponential_1P                                                 0.0870022  594.033742  596.598095
     
     The best fitting distribution was Weibull_2P which had parameters [11.27727274  3.30293237  0.        ]
     '''
 
-.. image:: images/Fit_everything_histogram_plot.png
+.. image:: images/Fit_everything_histogram_plot_V2.png
 
-.. image:: images/Fit_everything_probability_plot.png
+.. image:: images/Fit_everything_probability_plot_V2.png
 
-.. image:: images/Fit_everything_PP_plot.png
+.. image:: images/Fit_everything_PP_plot_V2.png
 
-The histogram is scaled based on the amount of censored data. If your censored data is all above or below your failure data then the histogram bars should line up well with the fitted distributions (assuming you have enough data). However, if your censored data is not always greater or less than the max and min of your failure data then the heights of the histogram bars will be scaled down and the plot won't look right. This is to be expected as the histogram is only a plot of the failure data and the totals will not add to 100% if there is censored data.
+The histogram is scaled based on the amount of censored data. If your censored data is all above or below your failure data then the histogram bars should line up well with the fitted distributions (assuming you have enough data). However, if your censored data is not always greater or less than the max and min of your failure data then the heights of the histogram bars will be scaled down and the plot may look incorrect. This is to be expected as the histogram is only a plot of the failure data and the totals will not add to 100% if there is censored data.
