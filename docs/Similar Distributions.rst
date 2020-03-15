@@ -6,7 +6,7 @@ Similar Distributions
 '''''''''''''''''''''
 
 The function similar_distributions is a tool for finding the probability distributions that are most similar to an input distribution.
-It uses Monte Carlo sampling of an input distribution object to the determine the best fitting and therefore most similar distributions.
+It uses Monte Carlo sampling of an input distribution object to determine the best fitting and therefore most similar distributions.
 
 Inputs
 
