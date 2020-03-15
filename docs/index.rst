@@ -84,6 +84,7 @@ Contents:
   Two proportion test
   Sample size required for no failures
   Sequential sampling chart
+  Similar Distributions
   Convert dataframe to grouped lists
   Datasets
 

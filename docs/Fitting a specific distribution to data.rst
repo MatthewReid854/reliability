@@ -36,7 +36,7 @@ Each of the fitters listed above (except Fit_Weibull_Mixture) has the following 
 Inputs:
 
 -   failures - an array or list of failure data
--   right_censored - an array or list of right censored data
+-   right_censored - an array or list of right censored data. Optional input
 -   show_probability_plot - True/False. Defaults to True. Produces a probability plot of the failure data and fitted distribution.
 -   print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
 -   CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
@@ -82,6 +82,32 @@ To learn how we can fit a distribution, we will start by using a simple example 
     '''
 
 .. image:: images/Fit_Weibull_2P.png
+
+The above probability plot is the typical way to visualise how the CDF (the red line) models the failure data (the black points). If you would like to view the failure points alongside the CDF, SF, or CHF without the axis being scaled then you can generate the scatter plot using the function plot_points which is available within reliability.Probability_plotting. In the example below we create some data, then fit a Weibull distribution to the data (ensuring we turn off the probability plot). From the fitted distribution object we plot the Survival Function (SF). We then use plot_points to generate a scatter plot of the plotting positions for the survival function.
+
+For the function plot_points the inputs are:
+
+-   failures - an array or list of failure data
+-   right_censored - an array or list of right censored data. Optional input
+-   func - the function to be plotted. Must be 'CDF', 'SF', or 'CHF'. Default is 'CDF'
+-   h1 and h2 - these are the plotting heuristics. See `probability plotting <https://reliability.readthedocs.io/en/latest/Probability%20plots.html>`_ for more details.
+-   keywords for the scatterplot are also accepted.
+
+.. code:: python
+
+    from reliability.Distributions import Weibull_Distribution
+    from reliability.Distributions import Weibull_Distribution
+    from reliability.Fitters import Fit_Weibull_2P
+    from reliability.Probability_plotting import plot_points
+    import matplotlib.pyplot as plt
+    data = Weibull_Distribution(alpha=25,beta=4).random_samples(30)
+    weibull_fit = Fit_Weibull_2P(failures=data,show_probability_plot=False,print_results=False)
+    weibull_fit.distribution.SF(label='Fitted Distribution',color='steelblue')
+    plot_points(failures=data,func='SF',label='failure data',color='red',alpha=0.7)
+    plt.legend()
+    plt.show()
+
+.. image:: images/plot_points.png
 
 It is beneficial to see the effectiveness of the fitted distribution in comparison to the original distribution. In this second example, we are creating 500 samples from a Weibull distribution and then we will right censor all of the data above our chosen threshold. Then we are fitting a Weibull_3P distribution to the data. Note that we need to specify "show_probability_plot=False, print_results=False" in the Fit_Weibull_3P to prevent the normal outputs from the fitting functions from being displayed.
 
