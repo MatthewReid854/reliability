@@ -95,5 +95,6 @@ Contents:
   Citing reliability in your work
   How to request or contribute a new feature
   How to get help
+  How to donate to the project
   About the author
   Credits to those who helped
