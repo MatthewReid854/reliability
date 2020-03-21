@@ -43,4 +43,4 @@ In the example below, we create a Normal Distribution object using the reliabili
     Lognormal Distribution (μ=3.734717404112832,σ=0.40754640953862314)
     '''
     
-.. image:: images/similar_distributions_2.png
+.. image:: images/similar_distribution_2.png
