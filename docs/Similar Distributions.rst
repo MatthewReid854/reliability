@@ -31,16 +31,16 @@ In the example below, we create a Normal Distribution object using the reliabili
     from reliability.Distributions import Weibull_Distribution
     from reliability.Other_functions import similar_distributions
     dist = Weibull_Distribution(alpha=50,beta=3.3)
-    similar_distributions(distribution=dist)
+    similar_distributions(distribution=dist,include_location_shifted=False)
 
     '''
     The input distribution was:
-    Normal Distribution (μ=5,σ=0.5)
+    Weibull Distribution (α=50,β=3.3)
 
     The top 3 most similar distributions are:
-    Gamma Distribution (α=0.04876125664163177,β=102.52828303114939)
-    Lognormal Distribution (μ=1.604434852780199,σ=0.09941461469363508)
-    Weibull Distribution (α=5.220347779043927,β=10.981371569775174)
+    Normal Distribution (μ=44.942029160424156,σ=15.088282988835628)
+    Gamma Distribution (α=6.208189340870667,β=7.2391525064583995)
+    Lognormal Distribution (μ=3.734717404112832,σ=0.40754640953862314)
     '''
     
-.. image:: images/similar_distributions.png
+.. image:: images/similar_distributions_2.png
