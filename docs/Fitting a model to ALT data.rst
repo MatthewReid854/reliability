@@ -97,10 +97,10 @@ In the following example, we will fit the Weibull-Power model to an ALT dataset 
     Results from Fit_Weibull_Power (95% CI):
                Point Estimate  Standard Error       Lower CI      Upper CI
     Parameter                                                             
-    a           398816.334596   519397.494927 -619184.049122  1.416817e+06
-    n               -1.417306        0.243944      -1.895427 -9.391838e-01
+    a           398816.280655   519397.785342 -619184.672265  1.416817e+06
+    n               -1.417306        0.243944      -1.895428 -9.391834e-01
     beta             3.017297        0.716426       1.894563  4.805374e+00
-    At the use level stress of 60 , the mean life is 1075.32844
+    At the use level stress of 60 , the mean life is 1075.32841
     '''
     
 .. image:: images/Weibull_power.png
@@ -120,11 +120,11 @@ In this second example, we will fit a dual stress model to a dual stress data se
     Results from Fit_Weibull_Power_Exponential (95% CI):
                Point Estimate  Standard Error     Lower CI     Upper CI
     Parameter                                                          
-    a             3404.486466      627.676350  2174.263426  4634.709506
-    c                0.087610        0.141217    -0.189171     0.364391
+    a             3404.486044      627.680074  2174.255705  4634.716383
+    c                0.087610        0.141218    -0.189172     0.364393
     n               -0.713424        0.277561    -1.257434    -0.169413
-    beta             4.997525        1.173997     3.153511     7.919826
-    At the use level stresses of 325 and 0.5 , the mean life is 4673.15311
+    beta             4.997527        1.173998     3.153512     7.919829
+    At the use level stresses of 325 and 0.5 , the mean life is 4673.15246
     '''
 
 .. image:: images/power_expon_plot.png
