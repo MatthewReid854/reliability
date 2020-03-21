@@ -57,19 +57,19 @@ In the following example we will use a dataset from ``reliability.Datasets`` whi
     '''
     ALT Weibull probability plot results:
       stress  original alpha  original beta     new alpha  common beta beta change
-          40    13716.624604       2.232583  22815.702436     1.490394     -33.24%
-          60     7405.866698       1.248765   6813.643461     1.490394     +19.35%
-          80     1801.245476       1.421726   1822.550024     1.490394      +4.83%
-    Total AICc: 693.3617469774094
-    Total BIC: 700.5432420343159
-
+          40    13716.755009       2.232553  22707.011262     1.490544     -33.24%
+          60     7405.864178       1.248765   6811.900885     1.490544     +19.36%
+          80     1801.246209       1.421726   1822.522892     1.490544      +4.84%
+    Total AICc: 693.3622238516346
+    Total BIC: 700.543718908541
+    
     ALT Lognormal probability plot results:
       stress  original mu  original sigma    new mu  common sigma sigma change
-          40     9.815427        1.008857  9.717927      0.939836       -6.84%
-          60     8.644293        1.187866  8.507180      0.939836      -20.88%
-          80     7.140811        0.770266  7.147848      0.939836      +22.01%
-    Total AICc: 690.9683703992655
-    Total BIC: 698.1498654561719
+          40     9.814749        1.008337  9.717867      0.939793        -6.8%
+          60     8.644075        1.187552  8.507165      0.939793      -20.86%
+          80     7.141321        0.770355  7.147846      0.939793      +21.99%
+    Total AICc: 690.9683704897413
+    Total BIC: 698.1498655466478
     '''
     
 .. image:: images/ALT_probability_plot_1.png
@@ -99,21 +99,21 @@ In this second example, we examine the difference between ALT_probability_plot_W
     '''
     ALT Exponential probability plot results:
       stress  weibull alpha  weibull beta  new 1/Lambda  common shape shape change
-        30.0    1935.200724      1.341689   1780.530726           1.0      -25.47%
-        40.0     361.340195      0.843440    398.460299           1.0      +18.56%
-        50.0     105.469663      1.074161    102.697008           1.0        -6.9%
+        30.0    1935.337362      1.341719   1780.530726           1.0      -25.47%
+        40.0     361.343728      0.843442    398.460299           1.0      +18.56%
+        50.0     105.471335      1.074166    102.697008           1.0        -6.9%
     Total AICc: 429.58115216256
     Total BIC: 428.9889074415421
-    Total AICc (weibull): 439.3536223694606
-    Total BIC (weibull): 436.02627578456776
-
+    Total AICc (weibull): 439.39645388941153
+    Total BIC (weibull): 436.06910730451864
+    
     ALT Weibull probability plot results:
       stress  original alpha  original beta    new alpha  common beta beta change
-        30.0     1935.200724       1.341689  1793.032874     1.026432      -23.5%
-        40.0      361.340195       0.843440   404.943224     1.026432      +21.7%
-        50.0      105.469663       1.074161   103.692500     1.026432      -4.44%
-    Total AICc: 439.3536223694606
-    Total BIC: 436.02627578456776
+       30.0     1935.337362       1.341719  1935.336644     1.086442     -19.03%
+       40.0      361.343728       0.843442   419.771773     1.086442     +28.81%
+       50.0      105.471335       1.074166   105.918831     1.086442      +1.14%
+    Total AICc: 439.39645388941153
+    Total BIC: 436.06910730451864
     '''
 
 .. image:: images/ALT_expon_weib_probplot.png
