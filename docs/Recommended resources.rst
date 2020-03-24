@@ -30,6 +30,7 @@ The following collection of resources are things I have found useful during my r
 -    `PTC Windchill <https://www.ptc.com/en/products/plm/capabilities/quality/>`_ - a powerful tool for risk and reliability. Similar to Reliasoft but it forms one part of the larger PTC suite of tools.
 -    `Isograph Reliability Workbench <https://www.isograph.com/software/reliability-workbench/>`_ - A collection of tools designed specifically for reliability engineering.
 -    `TopEvent FTA <https://www.fault-tree-analysis.com/>`_ - Fault Tree Analysis software. Tailored specifically for fault tree analysis so it lacks other RAM tools but it is good at its intended function. A demo version exists with size and data export limitations.
+-   `MADe (Maintenance Aware Design) <https://www.phmtechnology.com/>`_ - FMECA and RCM software that is extremely useful at the product design stage to inform the design and service plan which then improves the inherent reliability and maintainability.
 
 **Websites for Reliability**
 
