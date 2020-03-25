@@ -92,6 +92,7 @@ Contents:
   :maxdepth: 1
   :caption: Administration
   
+  Development roadmap
   Citing reliability in your work
   How to request or contribute a new feature
   How to get help
