@@ -15,10 +15,10 @@
 - Goodness of fit tests (AICc, BIC)
 - Probability plots on probability paper for all supported distributions
 - Quantile-Quantile plots and Probability-Probability plots
-- Reliability growth, optimal replacement time, sequential sampling charts, and many more functions
+- Reliability growth, optimal replacement time, sequential sampling charts, similar distributions
 - Physics of Failure (SN diagram, stress-strain, fracture mechanics, creep)
-- Accelerated Life Testing probability plots
-- Accelerated Life Testing Models coming soon
+- Accelerated Life Testing probability plots (Weibull, Exponential, Normal, Lognormal)
+- Accelerated Life Testing Models (Exponential, Eyring, Power, Dual-Exponential, Power-Exponential).
 
 ## Installation
 ```
