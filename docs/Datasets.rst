@@ -11,6 +11,7 @@ There are a few datasets that have been included with reliability that users may
 
 - automotive - 10 failures, 21 right censored.
 - defective_sample - 1350 failures, 12296 right censored. It exhibits the behavior of a defective sample (aka. Limited fraction defective).
+- electronics - 10 failures, 4072 right censored. It is used in `this example <https://reliability.readthedocs.io/en/latest/Fitting%20a%20specific%20distribution%20to%20data.html#using-fit-weibull-2p-grouped-for-large-data-sets>`_.
 
 **ALT Datasets**
 
