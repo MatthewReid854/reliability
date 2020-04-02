@@ -14,7 +14,7 @@ If you would like more information on a dataset type:
 '''
 
 import pandas as pd
-
+import numpy as np
 
 class automotive:
     '''
@@ -189,6 +189,30 @@ class defective_sample:
         f = len(self.failures)
         tot = f + rc
         data = {'Stat': ['Name', 'Total Values', 'Failures', 'Right Censored'], 'Value': ['defective_sample', tot, str(str(f) + ' (' + str(round(f / tot * 100, 2)) + '%)'), str(str(rc) + ' (' + str(round(rc / tot * 100, 2)) + '%)')]}
+        df = pd.DataFrame(data, columns=['Stat', 'Value'])
+        blankIndex = [''] * len(df)
+        df.index = blankIndex
+        self.info = df
+
+
+class electronics:
+    '''
+    This dataset is heavily right censored without intermixed censoring (all censored values are greater than the largest failure)
+    It is very difficult to fit and requires a specific combination of initial guess (least squares) and optimizer (TNC) to achieve the lowest log-likelihood.
+    Thanks to Jiwon Cha for providing this dataset.
+    '''
+    def __init__(self):
+        time = [220, 179, 123, 146, 199, 181, 191, 216, 1, 73, 44798, 62715, 81474, 80632, 62716]
+        quantity = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 817, 823, 815, 813, 804]
+        category = ['F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'C', 'C', 'C', 'C', 'C']
+        data = {'time': time, 'quantity': quantity, 'category': category}
+        self.dataframe = pd.DataFrame(data, columns=['time', 'quantity', 'category'])
+        self.failures = [220, 179, 123, 146, 199, 181, 191, 216, 1, 73]
+        self.right_censored = np.hstack([np.ones(817) * 44798, np.ones(823) * 62715, np.ones(815) * 81474, np.ones(813) * 80632, np.ones(804) * 62716])
+        rc = len(self.right_censored)
+        f = len(self.failures)
+        tot = f + rc
+        data = {'Stat': ['Name', 'Total Values', 'Failures', 'Right Censored'], 'Value': ['defective_sample2', tot, str(str(f) + ' (' + str(round(f / tot * 100, 2)) + '%)'), str(str(rc) + ' (' + str(round(rc / tot * 100, 2)) + '%)')]}
         df = pd.DataFrame(data, columns=['Stat', 'Value'])
         blankIndex = [''] * len(df)
         df.index = blankIndex

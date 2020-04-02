@@ -1015,7 +1015,7 @@ class Fit_Weibull_2P_grouped:
         if print_results is True:
             pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
             pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
-            print(str('Results from Fit_Weibull_2P (' + str(int(CI * 100)) + '% CI):'))
+            print(str('Results from Fit_Weibull_2P_grouped (' + str(int(CI * 100)) + '% CI):'))
             print(self.results)
             print('Log-Likelihood:', self.loglik)
             print('Number of failures:', sum(failure_qty), '\nNumber of right censored:', sum(right_censored_qty), '\nFraction censored:', round(sum(right_censored_qty) / (sum(right_censored_qty) + sum(failure_qty)) * 100, 5), '%')
