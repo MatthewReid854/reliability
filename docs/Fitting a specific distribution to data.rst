@@ -239,7 +239,7 @@ The following example shows how we can use Fit_Weibull_2P_grouped to fit a Weibu
     filename = 'C:\\Users\\Current User\\Desktop\\data.xlsx'
     df = pd.read_excel(io=filename)
     print(df.head(15),'\n')
-    res = Fit_Weibull_2P_grouped(dataframe=df,optimizer='TNC',show_probability_plot=False)
+    Fit_Weibull_2P_grouped(dataframe=df, optimizer='TNC', show_probability_plot=False)
 
     '''
          time  quantity category
