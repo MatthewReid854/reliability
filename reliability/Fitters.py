@@ -766,109 +766,263 @@ class Fit_Weibull_2P:
         return -(LL_f + LL_rc)
 
 
-class Fit_Weibull_2P_fast:
+class Fit_Weibull_2P_grouped:
     '''
-    Fit_Weibull_2P_fast
+    Fit_Weibull_2P_grouped
 
-    This is a faster version of Fit_Weibull_2P. It does not calculate the confidence intervals, AICc, BIC, Loglik2, and does not have an option to force_beta.
-    Removing the features described above enables the calculation to be performed around 10% faster than Fit_Weibull_2P whilst maintaining the same accuracy.
-    Unless you have over 1 million samples then you should not need to use Fit_Weibull_2P_fast and should instead just use Fit_Weibull_2P.
+    Fits a 2-parameter Weibull distribution (alpha,beta) to the data provided.
+    The data input is a dataframe which allows for efficient handling of large volumes of grouped data.
+    This is almost identical to Fit_Weibull_2P except for the input format.
+    There may be small differences in results due to the initial guess (scipy or least squares), the optimizer (L-BFGS-B or TNC), and rounding errors when processing very heavily censored data.
 
     Inputs:
-    failures - an array or list of failure data
-    right_censored - an array or list of right censored data
+    dataframe - a pandas dataframe of the appropriate format. See the example below.
     show_probability_plot - True/False. Defaults to True.
-    print_results - True/False. Defaults to True. Prints alpha and beta.
+    print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
+    CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
+    force_beta - Use this to specify the beta value if you need to force beta to be a certain value. Used in ALT probability plotting. Optional input.
+    initial_guess_method - 'scipy' OR 'least squares'. Default is 'least squares'. Both do not take into account censored data but scipy uses MLE, and least squares is least squares regression of the plotting positions. Least squares proved more accurate during testing.
+    optimizer - 'L-BFGS-B' OR 'TNC'. These are both bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
     kwargs are accepted for the probability plot (eg. linestyle, label, color)
 
     Outputs:
     success - Whether the solution was found by autograd (True/False)
-        if success is False a warning will be printed indicating that scipy's fit was used as autograd failed. This fit will not be accurate if
-        there is censored data as scipy does not have the ability to fit censored data. Failure of autograd to find the solution should be rare and
+        if success is False a warning will be printed indicating that scipy's fit was used as autograd failed. This fit will not be accurate if there is
+        censored data as scipy and least squares do not have the ability to fit censored data. Failure of autograd to find the solution should be rare and
         if it occurs, it is likely that the distribution is an extremely bad fit for the data. Try scaling your data, removing extreme values, or using
         another distribution.
     alpha - the fitted Weibull_2P alpha parameter
     beta - the fitted Weibull_2P beta parameter
+    loglik - Log Likelihood (as used in Minitab and Reliasoft)
+    loglik2 - LogLikelihood*-2 (as used in JMP Pro)
+    AICc - Akaike Information Criterion
+    BIC - Bayesian Information Criterion
+    distribution - a Weibull_Distribution object with the parameters of the fitted distribution
+    alpha_SE - the standard error (sqrt(variance)) of the parameter
+    beta_SE - the standard error (sqrt(variance)) of the parameter
+    Cov_alpha_beta - the covariance between the parameters
+    alpha_upper - the upper CI estimate of the parameter
+    alpha_lower - the lower CI estimate of the parameter
+    beta_upper - the upper CI estimate of the parameter
+    beta_lower - the lower CI estimate of the parameter
+    results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
+
+    Requirements of the input dataframe:
+    The column titles MUST be 'category', 'time', 'quantity'
+    The category values MUST be 'F' for failure or 'C' for censored (right censored).
+    The time values are the failure or right censored times.
+    The quantity is the number of items at that time. This must be specified for all values even if the quantity is 1.
+
+    Example of the input dataframe:
+    category  time  quantity
+           F    24         1
+           F    29         1
+           F    34         1
+           F    39         2
+           F    40         1
+           F    42         3
+           F    44         1
+           C    50         3
+           C    55         5
+           C    60        10
+
+    This is easiest to achieve by importing data from excel. An example of this is:
+    import pandas as pd
+    from reliability.Fitters import Fit_Weibull_2P_grouped
+    filename = 'C:\\Users\\Current User\\Desktop\\data.xlsx'
+    df = pd.read_excel(io=filename)
+    Fit_Weibull_2P_grouped(dataframe=df)
     '''
 
-    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, **kwargs):
-        if failures is None or len(failures) < 2:
-            raise ValueError('Maximum likelihood estimates could not be calculated for these data. There must be at least two failures to calculate Weibull parameters.')
-        # fill with empty lists if not specified
-        if right_censored is None:
-            right_censored = []
-
-        # adjust inputs to be arrays
-        if type(failures) == list:
-            failures = np.array(failures)
-        if type(failures) != np.ndarray:
-            raise TypeError('failures must be a list or array of failure data')
-        if type(right_censored) == list:
-            right_censored = np.array(right_censored)
-        if type(right_censored) != np.ndarray:
-            raise TypeError('right_censored must be a list or array of right censored failure data')
-
-        self.gamma = 0
-        if len(right_censored) / len(all_data) > 0.98:  # for heavily censored datasets (>98% censored), all data is used for the initial guess with scipy
-            sp_data = all_data
-        else:  # if not heavily censored then scipy gives a better initial guess with just the failure data
-            sp_data = failures
-        sp = ss.weibull_min.fit(sp_data, floc=0, optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
-        warnings.filterwarnings('ignore')  # necessary to supress the warning about the jacobian when using the nelder-mead optimizer
-
-        len_all_data = len(failures) + len(right_censored)
-        if len(right_censored) / len_all_data > 0.5:
-            guess = [sp[2] * 1.5, sp[0] * 0.6]  # correction to the scipy initial guess for large amounts of censored data (>50% censored)
+    def __init__(self, dataframe=None, show_probability_plot=True, print_results=True, CI=0.95, force_beta=None, initial_guess_method='least squares', optimizer='L-BFGS-B', **kwargs):
+        if dataframe is None or type(dataframe) is not pd.core.frame.DataFrame:
+            raise ValueError('dataframe must be a pandas dataframe with the columns "category" (F for failure or C for censored), "time" (the failure times), and "quantity" (the number of events at each time)')
+        for item in dataframe.columns.values:
+            if item not in ['category', 'time', 'quantity']:
+                raise ValueError('The titles of the dataframe columns must be: "category" (F for failure or C for censored), "time" (the failure times), and "quantity" (the number of events at each time)')
+        categories = dataframe.category.unique()
+        for item in categories:
+            if item not in ['F', 'C']:
+                raise ValueError('The category column must have values "F" or "C" for failure or censored (right censored) respectively. Other values were detected.')
+        if initial_guess_method in ['scipy', 'Scipy', 'SP', 'sp']:
+            initial_guess_method = 'scipy'
+        elif initial_guess_method in ['least_squares', 'least squares', 'Least_squares', 'Least squares', 'Least Squares', 'Least_Squares', 'ls', 'LS']:
+            initial_guess_method = 'least squares'
         else:
-            guess = [sp[2], sp[0]]
+            raise ValueError('initial_guess_method must be either "scipy" or "least squares". Default is "least squares".')
+
+        if optimizer not in ['L-BFGS-B', 'TNC']:
+            raise ValueError('optimizer must be either "L-BFGS-B" OR "TNC". Default is "L-BFGS-B".')
+
+        # unpack the dataframe
+        failures_df = dataframe[dataframe['category'] == 'F']
+        right_censored_df = dataframe[dataframe['category'] == 'C']
+        failure_times = failures_df.time.values
+        failure_qty = failures_df.quantity.values
+        right_censored_times = right_censored_df.time.values
+        right_censored_qty = right_censored_df.quantity.values
+
+        # check there is sufficient data
+        if force_beta is not None and (failure_times is None or len(failure_times) < 1):
+            raise ValueError('Maximum likelihood estimates could not be calculated for these data. There must be at least 1 failure to calculate Weibull parameters when force_beta is specified.')
+        elif force_beta is None and (failure_times is None or len(failure_times) < 2):
+            raise ValueError('Maximum likelihood estimates could not be calculated for these data. There must be at least two failures to calculate Weibull parameters.')
+        if CI <= 0 or CI >= 1:
+            raise ValueError('CI must be between 0 and 1. Default is 0.95 for 95% Confidence interval.')
+
+        # recompile the data to get the plotting positions for the initial guess
+        failures = np.array([])
+        right_censored = np.array([])
+        for i in range(len(failure_times)):
+            failures = np.append(failures, failure_times[i] * np.ones(int(failure_qty[i])))
+        for i in range(len(right_censored_times)):
+            right_censored = np.append(right_censored, right_censored_times[i] * np.ones(int(right_censored_qty[i])))
+        self.gamma = 0
+
+        # Obtain initial guess using either Least squares or Scipy
+        if initial_guess_method == 'least squares':
+            # obtain least squares estimate based on the plotting positions
+            from reliability.Probability_plotting import plotting_positions
+            x, y = plotting_positions(failures=failures, right_censored=right_censored)
+            x_linearised = np.log(x)
+            y_linearised = np.log(-np.log(1 - np.array(y)))
+            linreg = np.polyfit(x_linearised, y_linearised, 1)  # linear regression (RRY in Reliasoft)
+            LS_beta = linreg[0]
+            LS_alpha = np.exp(-linreg[1] / LS_beta)
+            guess = [LS_alpha, LS_beta]
+        else:  # scipy method of obtaining the initial guess
+            all_data = np.hstack([failures, right_censored])
+            if len(right_censored) / len(all_data) > 0.98:  # for heavily censored datasets (>98% censored), all data is used for the initial guess with scipy
+                sp_data = all_data
+            else:  # if not heavily censored then scipy gives a better initial guess with just the failure data
+                sp_data = failures
+            sp = ss.weibull_min.fit(sp_data, floc=0, optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
+            if len(right_censored) / len(all_data) > 0.5:
+                guess = [sp[2] * 1.5, sp[0] * 0.6]  # correction to the scipy initial guess for large amounts of censored data (>50% censored)
+            else:
+                guess = [sp[2], sp[0]]
         self.initial_guess = guess
 
-        n = len_all_data
-        delta_BIC = 1
-        BIC_array = [1000000]
-        runs = 0
-        bnds = [(0, None), (0, None)]  # bounds on the solution. Helps a lot with stability
-        k = 2
-        while delta_BIC > 0.01 and runs < 5:  # exits after BIC convergence or 5 iterations
-            runs += 1
-            result = minimize(value_and_grad(Fit_Weibull_2P_fast.LL), guess, args=(failures, right_censored), jac=True, method='L-BFGS-B', bounds=bnds)
-            params = result.x
-            guess = [params[0], params[1]]
-            LL2 = 2 * Fit_Weibull_2P_fast.LL(guess, failures, right_censored)
-            BIC_array.append(np.log(n) * k + LL2)
-            delta_BIC = abs(BIC_array[-1] - BIC_array[-2])
+        warnings.filterwarnings('ignore')  # it is necessary to supress the warning about the jacobian when using the nelder-mead optimizer
+        n = sum(failure_qty) + sum(right_censored_qty)
+        k = len(guess)
+        if force_beta is None:
+            bnds = [(0, None), (0, None)]  # bounds on the solution. Helps a lot with stability
+            runs = 0
+            delta_BIC = 1
+            BIC_array = [1000000]
+            while delta_BIC > 0.001 and runs < 5:  # exits after BIC convergence or 5 iterations
+                runs += 1
+                result = minimize(value_and_grad(Fit_Weibull_2P_grouped.LL), guess, args=(failure_times, right_censored_times, failure_qty, right_censored_qty), jac=True, method=optimizer, bounds=bnds)
+                params = result.x
+                guess = [params[0], params[1]]
+                LL2 = 2 * Fit_Weibull_2P_grouped.LL(guess, failure_times, right_censored_times, failure_qty, right_censored_qty)
+                BIC_array.append(np.log(n) * k + LL2)
+                delta_BIC = abs(BIC_array[-1] - BIC_array[-2])
+        else:  # force beta is True
+            bnds = [(0, None)]  # bounds on the solution. Helps a lot with stability
+            runs = 0
+            delta_BIC = 1
+            BIC_array = [1000000]
+            guess = [guess[0]]
+            k = len(guess)
+            while delta_BIC > 0.001 and runs < 5:  # exits after BIC convergence or 5 iterations
+                runs += 1
+                result = minimize(value_and_grad(Fit_Weibull_2P_grouped.LL_fb), guess, args=(failure_times, right_censored_times, failure_qty, right_censored_qty, force_beta), jac=True, method=optimizer, bounds=bnds)
+                params = result.x
+                guess = [params[0]]
+                LL2 = 2 * Fit_Weibull_2P_grouped.LL_fb(guess, failure_times, right_censored_times, failure_qty, right_censored_qty, force_beta)
+                BIC_array.append(np.log(n) * k + LL2)
+                delta_BIC = abs(BIC_array[-1] - BIC_array[-2])
 
         if result.success is True:
             params = result.x
             self.success = True
-            self.alpha = params[0]
-            self.beta = params[1]
-        else:  # if the L-BFGS-B optimizer fails then we have a second attempt using the slower but slightly more reliable nelder-mead optimizer
-            guess = [sp[2], sp[0]]
-            result = minimize(value_and_grad(Fit_Weibull_2P_fast.LL), guess, args=(failures, right_censored), jac=True, tol=1e-3, method='nelder-mead')
-            if result.success is True:
-                params = result.x
-                self.success = True
+            if force_beta is None:
                 self.alpha = params[0]
                 self.beta = params[1]
             else:
+                self.alpha = params[0]
+                self.beta = force_beta
+        else:  # if the L-BFGS-B or TNC optimizer fails then we have a second attempt using the slower but slightly more reliable nelder-mead optimizer
+            if force_beta is None:
+                guess = self.initial_guess
+                result = minimize(value_and_grad(Fit_Weibull_2P_grouped.LL), guess, args=(failure_times, right_censored_times, failure_qty, right_censored_qty), jac=True, tol=1e-4, method='nelder-mead')
+            else:
+                guess = self.initial_guess[0]
+                result = minimize(value_and_grad(Fit_Weibull_2P_grouped.LL_fb), guess, args=(failure_times, right_censored_times, failure_qty, right_censored_qty, force_beta), jac=True, tol=1e-4, method='nelder-mead')
+            if result.success is True:
+                params = result.x
+                self.success = True
+                if force_beta is None:
+                    self.alpha = params[0]
+                    self.beta = params[1]
+                else:
+                    self.alpha = params[0]
+                    self.beta = force_beta
+            else:
                 self.success = False
-                print('WARNING: Fitting using Autograd FAILED for Weibull_2P. A modified form of the fit from Scipy was used instead so results may not be accurate.')
-                self.alpha = self.initial_guess[0]
-                self.beta = self.initial_guess[1]
+                print('WARNING: Fitting using Autograd FAILED for Weibull_2P_grouped. The', initial_guess_method, 'estimates were used instead so results may not be accurate.')
+                if force_beta is None:
+                    self.alpha = self.initial_guess[0]
+                    self.beta = self.initial_guess[1]
+                else:
+                    self.alpha = self.initial_guess[0]
+                    self.beta = force_beta
+
+        params = [self.alpha, self.beta]
+        LL2 = 2 * Fit_Weibull_2P_grouped.LL(params, failure_times, right_censored_times, failure_qty, right_censored_qty)
+        self.loglik2 = LL2
+        self.loglik = LL2 * -0.5
+        if n - k - 1 > 0:
+            self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
+        else:
+            self.AICc = 'Insufficient data'
+        self.BIC = np.log(n) * k + LL2
+        self.distribution = Weibull_Distribution(alpha=self.alpha, beta=self.beta)
+
+        # confidence interval estimates of parameters
+        Z = -ss.norm.ppf((1 - CI) / 2)
+        if force_beta is None:
+            hessian_matrix = hessian(Fit_Weibull_2P_grouped.LL)(np.array(tuple(params)), np.array(tuple(failure_times)), np.array(tuple(right_censored_times)), np.array(tuple(failure_qty)), np.array(tuple(right_censored_qty)))
+            covariance_matrix = np.linalg.inv(hessian_matrix)
+            self.alpha_SE = abs(covariance_matrix[0][0]) ** 0.5
+            self.beta_SE = abs(covariance_matrix[1][1]) ** 0.5
+            self.Cov_alpha_beta = abs(covariance_matrix[0][1])
+            self.alpha_upper = self.alpha * (np.exp(Z * (self.alpha_SE / self.alpha)))
+            self.alpha_lower = self.alpha * (np.exp(-Z * (self.alpha_SE / self.alpha)))
+            self.beta_upper = self.beta * (np.exp(Z * (self.beta_SE / self.beta)))
+            self.beta_lower = self.beta * (np.exp(-Z * (self.beta_SE / self.beta)))
+        else:  # this is for when force beta is specified
+            hessian_matrix = hessian(Fit_Weibull_2P_grouped.LL_fb)(np.array(tuple([self.alpha])), np.array(tuple(failure_times)), np.array(tuple(right_censored_times)), np.array(tuple(failure_qty)), np.array(tuple(right_censored_qty)), np.array(tuple([force_beta])))
+            covariance_matrix = np.linalg.inv(hessian_matrix)
+            self.alpha_SE = abs(covariance_matrix[0][0]) ** 0.5
+            self.beta_SE = ''
+            self.Cov_alpha_beta = ''
+            self.alpha_upper = self.alpha * (np.exp(Z * (self.alpha_SE / self.alpha)))
+            self.alpha_lower = self.alpha * (np.exp(-Z * (self.alpha_SE / self.alpha)))
+            self.beta_upper = ''
+            self.beta_lower = ''
+
+        Data = {'Parameter': ['Alpha', 'Beta'],
+                'Point Estimate': [self.alpha, self.beta],
+                'Standard Error': [self.alpha_SE, self.beta_SE],
+                'Lower CI': [self.alpha_lower, self.beta_lower],
+                'Upper CI': [self.alpha_upper, self.beta_upper]}
+        df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
+        self.results = df.set_index('Parameter')
 
         if print_results is True:
-            print('Results from Fit_Weibull_2P_fast:')
-            print('Alpha:', self.alpha)
-            print('Beta:', self.beta)
+            pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
+            pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
+            print(str('Results from Fit_Weibull_2P (' + str(int(CI * 100)) + '% CI):'))
+            print(self.results)
+            print('Log-Likelihood:', self.loglik)
+            print('Number of failures:', sum(failure_qty), '\nNumber of right censored:', sum(right_censored_qty), '\nFraction censored:', round(sum(right_censored_qty) / (sum(right_censored_qty) + sum(failure_qty)) * 100, 5), '%')
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Weibull_probability_plot
-            if len(right_censored) == 0:
-                rc = None
-            else:
-                rc = right_censored
-            Weibull_probability_plot(failures=failures, right_censored=rc, __fitted_dist_params=self, **kwargs)
+            Weibull_probability_plot(failures=failures, right_censored=right_censored, __fitted_dist_params=self, **kwargs)
 
     def logf(t, a, b):  # Log PDF (2 parameter Weibull)
         return (b - 1) * anp.log(t / a) + anp.log(b / a) - (t / a) ** b
@@ -876,11 +1030,18 @@ class Fit_Weibull_2P_fast:
     def logR(t, a, b):  # Log SF (2 parameter Weibull)
         return -((t / a) ** b)
 
-    def LL(params, T_f, T_rc):  # log likelihood function (2 parameter weibull)
+    def LL(params, T_f, T_rc, Q_f, Q_rc):  # log likelihood function (2 parameter weibull) ==> T is for time, Q is for quantity
         LL_f = 0
         LL_rc = 0
-        LL_f += Fit_Weibull_2P.logf(T_f, params[0], params[1]).sum()  # failure times
-        LL_rc += Fit_Weibull_2P.logR(T_rc, params[0], params[1]).sum()  # right censored times
+        LL_f += (Fit_Weibull_2P_grouped.logf(T_f, params[0], params[1]) * Q_f).sum()  # failure times
+        LL_rc += (Fit_Weibull_2P_grouped.logR(T_rc, params[0], params[1]) * Q_rc).sum()  # right censored times
+        return -(LL_f + LL_rc)
+
+    def LL_fb(params, T_f, T_rc, Q_f, Q_rc, force_beta):  # log likelihood function (2 parameter weibull) FORCED BETA  ==> T is for time, Q is for quantity
+        LL_f = 0
+        LL_rc = 0
+        LL_f += (Fit_Weibull_2P_grouped.logf(T_f, params[0], force_beta) * Q_f).sum()  # failure times
+        LL_rc += (Fit_Weibull_2P_grouped.logR(T_rc, params[0], force_beta) * Q_rc).sum()  # right censored times
         return -(LL_f + LL_rc)
 
 
