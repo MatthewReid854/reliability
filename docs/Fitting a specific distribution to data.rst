@@ -226,15 +226,49 @@ The function Fit_Weibull_2P_grouped is effectively the same as Fit_Weibull_2P, e
 - initial_guess_method - 'scipy' OR 'least squares'. Default is 'least squares'. Both do not take into account censored data but scipy uses MLE, and least squares is least squares regression of the plotting positions. Least squares proved more accurate during testing.
 - optimizer - 'L-BFGS-B' OR 'TNC'. These are both bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see the `scipy documentation <https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize>`_.
 
-The following example shows how we can use Fit_Weibull_2P_grouped to fit a Weibull_2P distribution to grouped data from a spreadsheet (shown below) on the Windows desktop.
+The following example shows how we can use Fit_Weibull_2P_grouped to fit a Weibull_2P distribution to grouped data from a spreadsheet (shown below) on the Windows desktop. We change the optimiser from the default (L-BFGS-B) to TNC as it is more successful for this dataset. In 99% of cases L-BFGS-B is better but it is worth trying both if the fist does not look good.
 
 .. image:: images/grouped_excel.png
 
 .. code:: python
 
     from reliability.Distributions import Fit_Weibull_2P_grouped
-    The rest of this will be completed soon
+    from reliability.Fitters import Fit_Weibull_2P_grouped
+    import pandas as pd
 
+    filename = 'C:\\Users\\Current User\\Desktop\\data.xlsx'
+    df = pd.read_excel(io=filename)
+    print(df.head(15),'\n')
+    res = Fit_Weibull_2P_grouped(dataframe=df,optimizer='TNC',show_probability_plot=False)
+
+    '''
+         time  quantity category
+    0     220         1        F
+    1     179         1        F
+    2     123         1        F
+    3     146         1        F
+    4     199         1        F
+    5     181         1        F
+    6     191         1        F
+    7     216         1        F
+    8       1         1        F
+    9      73         1        F
+    10  44798       817        C
+    11  62715       823        C
+    12  81474       815        C
+    13  80632       813        C
+    14  62716       804        C 
+
+    Results from Fit_Weibull_2P (95% CI):
+               Point Estimate  Standard Error      Lower CI      Upper CI
+    Parameter                                                            
+    Alpha        6.120094e+21    7.615825e+22  1.564711e+11  2.393769e+32
+    Beta         1.537886e-01    4.830821e-02  8.308907e-02  2.846455e-01
+    Log-Likelihood: -144.61675902805456
+    Number of failures: 10 
+    Number of right censored: 4072 
+    Fraction censored: 99.75502 %
+    '''
 
 How does the code work with censored data?
 ------------------------------------------
