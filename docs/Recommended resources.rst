@@ -13,6 +13,7 @@ The following collection of resources are things I have found useful during my r
 -    Probabilistic Physics of Failure Approach to Reliability (2017), by M. Modarres, M. Amiri, and C. Jackson.
 -    `Probability Distributions Used in Reliability Engineering (2011), by A. O'Conner, M. Modarres, and A. Mosleh. <https://crr.umd.edu/sites/crr.umd.edu/files/Free%20Ebook%20Probability%20Distributions%20Used%20in%20Reliability%20Engineering.pdf>`_
 -    Practical Reliability Engineering, Fifth Edition (2012), by P. O'Conner and A. Kleyner.
+-    Recurrent Events Data Analysis for Product Repairs, Disease Recurrences, and Other Applications (2003), by W. Nelson
 
 **Free software**
 
