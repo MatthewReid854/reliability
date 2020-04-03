@@ -222,9 +222,28 @@ Using Fit_Weibull_2P_grouped for large data sets
 
 The function Fit_Weibull_2P_grouped is effectively the same as Fit_Weibull_2P, except for a few small differences that make it more efficient at handling grouped data sets. Grouped data sets are typically found in very large data that may be heavily censored. The function includes a choice between two optimizers and a choice between two initial guess methods for the initial guess that is given to the optimizer. These help in cases where the data is very heavily censored (>99.9%). The defaults for these options are usually the best but you may want to try different options to see which one gives you the lowest log-likelihood. The inputs and outputs are the same as for Fit_Weibull_2P except for the following:
 
-- dataframe - a pandas dataframe of the appropriate format. See the example below.
+- dataframe - a pandas dataframe of the appropriate format. See the requirements and an example below.
 - initial_guess_method - 'scipy' OR 'least squares'. Default is 'least squares'. Both do not take into account censored data but scipy uses MLE, and least squares is least squares regression of the plotting positions. Least squares proved more accurate during testing.
 - optimizer - 'L-BFGS-B' or 'TNC'. These are both bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see the `scipy documentation <https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize>`_.
+
+Requirements of the input dataframe:
+The column titles MUST be 'category', 'time', 'quantity'
+The category values MUST be 'F' for failure or 'C' for censored (right censored).
+The time values are the failure or right censored times.
+The quantity is the number of items at that time. This must be specified for all values even if the quantity is 1.
+
+Example of the input dataframe:
+    category  time  quantity
+           F    24         1
+           F    29         1
+           F    34         1
+           F    39         2
+           F    40         1
+           F    42         3
+           F    44         1
+           C    50         3
+           C    55         5
+           C    60        10
 
 The following example shows how we can use Fit_Weibull_2P_grouped to fit a Weibull_2P distribution to grouped data from a spreadsheet (shown below) on the Windows desktop. We change the optimiser from the default (L-BFGS-B) to TNC as it is more successful for this dataset. In almost all cases the L-BFGS-B optimizer is better than TNC but it is worth trying both if the first does not look good. You may also want to try changing the initial_guess_method as the results from the optimizers can be sensitive to their initial guess for problems in which there are local minima or insufficient gradients to find the global minima. If you would like to access this data, it is available in reliability.Datasets.electronics and includes both the failures and right_censored format as well as the dataframe format.
 
