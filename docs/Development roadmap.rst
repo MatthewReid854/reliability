@@ -18,6 +18,7 @@ The following development roadmap is the current task list and implementation pl
 -    Add least squares as a method to obtain the initial guess for all Fitters. Currently this has been implemented in Fit_Weibull_2P_grouped but all the other Fitters use scipy which is slower but more accurate for small datasets.
 -    Limited_failure_population for Weibull_2P - Some data sets are from a population which does not all fail. Such populations are best modelled using a limited failure population model. `JMP <https://www.jmp.com/support/help/14-2/distributions-2.shtml>`_ has this distribution, but they call it "defective subpopulation". Meeker and Escobar (1998) call it "Limited Failure Population".
 -    ALT_probability_plot_Weibull prints new alpha in [] when given list as input.
+-    Improvement to the online documentation for how some of these methods work, including the addition of more formulas, algorithms, and better referencing.
 
 **Low priority (more of a wish list at this point)**
 
