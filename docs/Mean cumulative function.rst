@@ -11,6 +11,8 @@ The shape of the MCF is a key indicator that shows whether the systems are impro
 
 Obtaining the MCF from failure times is an inherently non-parametric process (similar to Kaplan-Meier), but once the values are obtained, a model can be fitted to obtain the parametric estimate of the MCF. Each of these two approaches is described below as they are performed by seperate functions within reliability.Repairable_systems.
 
+Note that in some textbooks and academic papers the Mean Cumulative Function is also referred to as the Cumulative Intensity Function (CIF). These are two names for the same thing. If the shape of your MCF is more of an S than a single smooth curve, you may have a change in operating condition or in the repair effectiveness factor. This can be dealt with by splitting the MCF into segments, however, such models are more complex and are generally only found in academic `literature <http://www.math.wm.edu/~leemis/1991mgmtsci.pdf>`_.
+
 Non-parametric MCF
 ------------------
 
