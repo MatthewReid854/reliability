@@ -733,7 +733,11 @@ class Fit_Weibull_2P:
         if print_results is True:
             pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
             pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
-            print(str('Results from Fit_Weibull_2P (' + str(int(CI * 100)) + '% CI):'))
+            if CI*100%1==0:
+                CI_rounded = int(CI*100)
+            else:
+                CI_rounded = CI*100
+            print(str('Results from Fit_Weibull_2P (' + str(CI_rounded) + '% CI):'))
             print(self.results)
             print('Log-Likelihood:', self.loglik)
 
@@ -1015,7 +1019,11 @@ class Fit_Weibull_2P_grouped:
         if print_results is True:
             pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
             pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
-            print(str('Results from Fit_Weibull_2P_grouped (' + str(int(CI * 100)) + '% CI):'))
+            if CI*100%1==0:
+                CI_rounded = int(CI*100)
+            else:
+                CI_rounded = CI*100
+            print(str('Results from Fit_Weibull_2P_grouped (' + str(CI_rounded) + '% CI):'))
             print(self.results)
             print('Log-Likelihood:', self.loglik)
             print('Number of failures:', sum(failure_qty), '\nNumber of right censored:', sum(right_censored_qty), '\nFraction censored:', round(sum(right_censored_qty) / (sum(right_censored_qty) + sum(failure_qty)) * 100, 5), '%')
@@ -1179,7 +1187,11 @@ class Fit_Weibull_3P:
         if print_results is True:
             pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
             pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
-            print(str('Results from Fit_Weibull_3P (' + str(int(CI * 100)) + '% CI):'))
+            if CI*100%1==0:
+                CI_rounded = int(CI*100)
+            else:
+                CI_rounded = CI*100
+            print(str('Results from Fit_Weibull_3P (' + str(CI_rounded) + '% CI):'))
             print(self.results)
             print('Log-Likelihood:', self.loglik)
 
@@ -1479,7 +1491,11 @@ class Fit_Expon_1P:
         if print_results is True:
             pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
             pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
-            print(str('Results from Fit_Expon_1P (' + str(int(CI * 100)) + '% CI):'))
+            if CI*100%1==0:
+                CI_rounded = int(CI*100)
+            else:
+                CI_rounded = CI*100
+            print(str('Results from Fit_Expon_1P (' + str(CI_rounded) + '% CI):'))
             print(self.results)
             print('Log-Likelihood:', self.loglik)
 
@@ -1659,7 +1675,11 @@ class Fit_Expon_2P:
         if print_results is True:
             pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
             pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
-            print(str('Results from Fit_Expon_2P (' + str(int(CI * 100)) + '% CI):'))
+            if CI*100%1==0:
+                CI_rounded = int(CI*100)
+            else:
+                CI_rounded = CI*100
+            print(str('Results from Fit_Expon_2P (' + str(CI_rounded) + '% CI):'))
             print(self.results)
             print('Log-Likelihood:', self.loglik)
 
@@ -1826,7 +1846,11 @@ class Fit_Normal_2P:
         if print_results is True:
             pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
             pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
-            print(str('Results from Fit_Normal_2P (' + str(int(CI * 100)) + '% CI):'))
+            if CI*100%1==0:
+                CI_rounded = int(CI*100)
+            else:
+                CI_rounded = CI*100
+            print(str('Results from Fit_Normal_2P (' + str(CI_rounded) + '% CI):'))
             print(self.results)
             print('Log-Likelihood:', self.loglik)
 
@@ -1994,7 +2018,11 @@ class Fit_Lognormal_2P:
         if print_results is True:
             pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
             pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
-            print(str('Results from Fit_Lognormal_2P (' + str(int(CI * 100)) + '% CI):'))
+            if CI*100%1==0:
+                CI_rounded = int(CI*100)
+            else:
+                CI_rounded = CI*100
+            print(str('Results from Fit_Lognormal_2P (' + str(CI_rounded) + '% CI):'))
             print(self.results)
             print('Log-Likelihood:', self.loglik)
 
@@ -2178,7 +2206,11 @@ class Fit_Lognormal_3P:
         if print_results is True:
             pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
             pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
-            print(str('Results from Fit_Lognormal_3P (' + str(int(CI * 100)) + '% CI):'))
+            if CI*100%1==0:
+                CI_rounded = int(CI*100)
+            else:
+                CI_rounded = CI*100
+            print(str('Results from Fit_Lognormal_3P (' + str(CI_rounded) + '% CI):'))
             print(self.results)
             print('Log-Likelihood:', self.loglik)
 
@@ -2350,7 +2382,11 @@ class Fit_Gamma_2P:
         if print_results is True:
             pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
             pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
-            print(str('Results from Fit_Gamma_2P (' + str(int(CI * 100)) + '% CI):'))
+            if CI*100%1==0:
+                CI_rounded = int(CI*100)
+            else:
+                CI_rounded = CI*100
+            print(str('Results from Fit_Gamma_2P (' + str(CI_rounded) + '% CI):'))
             print(self.results)
             print('Log-Likelihood:', self.loglik)
 
@@ -2510,7 +2546,11 @@ class Fit_Gamma_3P:
         if print_results is True:
             pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
             pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
-            print(str('Results from Fit_Gamma_3P (' + str(int(CI * 100)) + '% CI):'))
+            if CI*100%1==0:
+                CI_rounded = int(CI*100)
+            else:
+                CI_rounded = CI*100
+            print(str('Results from Fit_Gamma_3P (' + str(CI_rounded) + '% CI):'))
             print(self.results)
             print('Log-Likelihood:', self.loglik)
 
@@ -2648,7 +2688,11 @@ class Fit_Beta_2P:
         if print_results is True:
             pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
             pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
-            print(str('Results from Fit_Beta_2P (' + str(int(CI * 100)) + '% CI):'))
+            if CI*100%1==0:
+                CI_rounded = int(CI*100)
+            else:
+                CI_rounded = CI*100
+            print(str('Results from Fit_Beta_2P (' + str(CI_rounded) + '% CI):'))
             print(self.results)
             print('Log-Likelihood:', self.loglik)
 

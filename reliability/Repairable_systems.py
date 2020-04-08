@@ -372,9 +372,9 @@ class MCF_nonparametric:
     MCF_nonparametric(data=times)
     '''
 
-    def __init__(self,data,CI=0.95,print_results=True,show_plot=True,plot_CI=True,**kwargs):
+    def __init__(self, data, CI=0.95, print_results=True, show_plot=True, plot_CI=True, **kwargs):
 
-        #check input is a list
+        # check input is a list
         if type(data) == list:
             pass
         elif type(data) == np.ndarray:
@@ -382,9 +382,9 @@ class MCF_nonparametric:
         else:
             raise ValueError('data must be a list or numpy array')
 
-        #check each item is a list and fix up any ndarrays to be lists.
+        # check each item is a list and fix up any ndarrays to be lists.
         test_for_single_system = []
-        for i,item in enumerate(data):
+        for i, item in enumerate(data):
             if type(item) == list:
                 test_for_single_system.append(False)
             elif type(item) == np.ndarray:
@@ -394,10 +394,10 @@ class MCF_nonparametric:
                 test_for_single_system.append(True)
             else:
                 raise ValueError('Each item in the data must be a list or numpy array. eg. data = [[1,3,5],[3,6,8]]')
-        #Wraps the data in another list if all elements were numbers.
-        if all(test_for_single_system): #checks if all are True
+        # Wraps the data in another list if all elements were numbers.
+        if all(test_for_single_system):  # checks if all are True
             data = [data]
-        elif not any(test_for_single_system): #checks if all are False
+        elif not any(test_for_single_system):  # checks if all are False
             pass
         else:
             raise ValueError('Mixed data types found in the data. Each item in the data must be a list or numpy array. eg. data = [[1,3,5],[3,6,8]].')
@@ -405,9 +405,9 @@ class MCF_nonparametric:
         end_times = []
         repair_times = []
         for system in data:
-            system.sort() #sorts the values in ascending order
-            for i,t in enumerate(system):
-                if i < len(system)-1:
+            system.sort()  # sorts the values in ascending order
+            for i, t in enumerate(system):
+                if i < len(system) - 1:
                     repair_times.append(t)
                 else:
                     end_times.append(t)
@@ -415,67 +415,67 @@ class MCF_nonparametric:
         if CI < 0 or CI > 1:
             raise ValueError('CI must be between 0 and 1. Default is 0.95 for 95% confidence intervals (two sided).')
 
-        if max(end_times)<max(repair_times):
+        if max(end_times) < max(repair_times):
             raise ValueError('The final end time must not be less than the final repair time.')
         last_time = max(end_times)
         C_array = ['C'] * len(end_times)
         F_array = ['F'] * len(repair_times)
 
-        Z = -ss.norm.ppf(1 - CI) #confidence interval converted to Z-value
+        Z = -ss.norm.ppf(1 - CI)  # confidence interval converted to Z-value
 
-        #sort the inputs and extract the sorted values for later use
+        # sort the inputs and extract the sorted values for later use
         times = np.hstack([repair_times, end_times])
-        states = np.hstack([F_array,C_array])
-        data = {'times':times,'states':states}
-        df = pd.DataFrame(data,columns=['times','states'])
-        df_sorted = df.sort_values(by=['times','states'],ascending=[True,False]) #sorts the df by times and then by states, ensuring that states are F then C where the same time occurs. This ensures a failure is counted then the item is retired.
+        states = np.hstack([F_array, C_array])
+        data = {'times': times, 'states': states}
+        df = pd.DataFrame(data, columns=['times', 'states'])
+        df_sorted = df.sort_values(by=['times', 'states'], ascending=[True, False])  # sorts the df by times and then by states, ensuring that states are F then C where the same time occurs. This ensures a failure is counted then the item is retired.
         times_sorted = df_sorted.times.values
         states_sorted = df_sorted.states.values
 
-        #MCF calculations
+        # MCF calculations
         MCF_array = []
         Var_array = []
         MCF_lower_array = []
         MCF_upper_array = []
         r = len(end_times)
-        r_inv = 1/r
-        C_seq = 0 #sequential number of censored values
+        r_inv = 1 / r
+        C_seq = 0  # sequential number of censored values
         for i in range(len(times)):
             if i == 0:
-                if states_sorted[i]=='F':
+                if states_sorted[i] == 'F':
                     MCF_array.append(r_inv)
-                    Var_array.append((r_inv**2)*((1-r_inv)**2+(r-1)*(0-r_inv)**2))
-                    MCF_lower_array.append(MCF_array[i]/np.exp((Z*Var_array[i]**0.5)/MCF_array[i]))
-                    MCF_upper_array.append(MCF_array[i]*np.exp((Z*Var_array[i]**0.5)/MCF_array[i]))
+                    Var_array.append((r_inv ** 2) * ((1 - r_inv) ** 2 + (r - 1) * (0 - r_inv) ** 2))
+                    MCF_lower_array.append(MCF_array[i] / np.exp((Z * Var_array[i] ** 0.5) / MCF_array[i]))
+                    MCF_upper_array.append(MCF_array[i] * np.exp((Z * Var_array[i] ** 0.5) / MCF_array[i]))
                 else:
-                    r-=1
-                    r_inv = 1/r
-                    C_seq+=1
+                    r -= 1
+                    r_inv = 1 / r
+                    C_seq += 1
                     MCF_array.append('')
                     Var_array.append('')
                     MCF_lower_array.append('')
                     MCF_upper_array.append('')
             else:
-                if states_sorted[i]=='F':
-                    i_adj = i-C_seq
-                    MCF_array.append(r_inv+MCF_array[i_adj-1])
-                    Var_array.append((r_inv**2)*((1-r_inv)**2+(r-1)*(0-r_inv)**2)+Var_array[i_adj-1])
-                    MCF_lower_array.append(MCF_array[i]/np.exp((Z*Var_array[i]**0.5)/MCF_array[i]))
-                    MCF_upper_array.append(MCF_array[i]*np.exp((Z*Var_array[i]**0.5)/MCF_array[i]))
-                    C_seq=0
+                if states_sorted[i] == 'F':
+                    i_adj = i - C_seq
+                    MCF_array.append(r_inv + MCF_array[i_adj - 1])
+                    Var_array.append((r_inv ** 2) * ((1 - r_inv) ** 2 + (r - 1) * (0 - r_inv) ** 2) + Var_array[i_adj - 1])
+                    MCF_lower_array.append(MCF_array[i] / np.exp((Z * Var_array[i] ** 0.5) / MCF_array[i]))
+                    MCF_upper_array.append(MCF_array[i] * np.exp((Z * Var_array[i] ** 0.5) / MCF_array[i]))
+                    C_seq = 0
                 else:
-                    r-=1
-                    C_seq+=1
+                    r -= 1
+                    C_seq += 1
                     MCF_array.append('')
                     Var_array.append('')
                     MCF_lower_array.append('')
                     MCF_upper_array.append('')
-                    if r>0:
-                        r_inv = 1/r
+                    if r > 0:
+                        r_inv = 1 / r
 
-        #format output as dataframe
-        data = {'state':states_sorted,'time':times_sorted,'MCF_lower':MCF_lower_array,'MCF':MCF_array,'MCF_upper':MCF_upper_array,'variance':Var_array}
-        df_results1 = pd.DataFrame(data,columns=['state','time','MCF_lower','MCF','MCF_upper','variance'])
+        # format output as dataframe
+        data = {'state': states_sorted, 'time': times_sorted, 'MCF_lower': MCF_lower_array, 'MCF': MCF_array, 'MCF_upper': MCF_upper_array, 'variance': Var_array}
+        df_results1 = pd.DataFrame(data, columns=['state', 'time', 'MCF_lower', 'MCF', 'MCF_upper', 'variance'])
         printable_results = df_results1.set_index('state')
         self.results = printable_results
 
@@ -495,29 +495,29 @@ class MCF_nonparametric:
         if print_results is True:
             pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
             pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
-            print(str('Mean Cumulative Function results ('+str(CI*100)+'% CI)'))
+            print(str('Mean Cumulative Function results (' + str(CI * 100) + '% CI)'))
             print(printable_results)
 
         if show_plot is True:
-            x_MCF = [0,RESULTS_time[0]]
-            y_MCF = [0,0]
-            y_upper = [0,0]
-            y_lower = [0,0]
+            x_MCF = [0, RESULTS_time[0]]
+            y_MCF = [0, 0]
+            y_upper = [0, 0]
+            y_lower = [0, 0]
             x_MCF.append(RESULTS_time[0])
             y_MCF.append(RESULTS_MCF[0])
             y_upper.append(RESULTS_upper[0])
             y_lower.append(RESULTS_lower[0])
-            for i,t in enumerate(RESULTS_time):
+            for i, t in enumerate(RESULTS_time):
                 if i > 0:
                     x_MCF.append(RESULTS_time[i])
-                    y_MCF.append(RESULTS_MCF[i-1])
-                    y_upper.append(RESULTS_upper[i-1])
-                    y_lower.append(RESULTS_lower[i-1])
+                    y_MCF.append(RESULTS_MCF[i - 1])
+                    y_upper.append(RESULTS_upper[i - 1])
+                    y_lower.append(RESULTS_lower[i - 1])
                     x_MCF.append(RESULTS_time[i])
                     y_MCF.append(RESULTS_MCF[i])
                     y_upper.append(RESULTS_upper[i])
                     y_lower.append(RESULTS_lower[i])
-            x_MCF.append(last_time) #add the last horizontal line
+            x_MCF.append(last_time)  # add the last horizontal line
             y_MCF.append(RESULTS_MCF[-1])
             y_upper.append(RESULTS_upper[-1])
             y_lower.append(RESULTS_lower[-1])
@@ -529,17 +529,17 @@ class MCF_nonparametric:
                 col = 'steelblue'
             if plot_CI is True:
                 plt.fill_between(x_MCF, y_lower, y_upper, color=col, alpha=0.3)
-                if CI*100%1==0: #format the text for the CI in the title
-                    CI_rounded = int(CI*100)
+                if CI * 100 % 1 == 0:  # format the text for the CI in the title
+                    CI_rounded = int(CI * 100)
                 else:
-                    CI_rounded = round(CI*100,1)
-                title_str = str(title_str+'\nwith '+str(CI_rounded)+'% one-sided confidence interval bounds')
-            plt.plot(x_MCF,y_MCF,color=col,**kwargs)
+                    CI_rounded = round(CI * 100, 1)
+                title_str = str(title_str + '\nwith ' + str(CI_rounded) + '% one-sided confidence interval bounds')
+            plt.plot(x_MCF, y_MCF, color=col, **kwargs)
             plt.xlabel('Time')
             plt.ylabel('Mean cumulative number of failures')
             plt.title(title_str)
-            plt.xlim(0,last_time)
-            plt.ylim(0,max(RESULTS_upper)*1.05)
+            plt.xlim(0, last_time)
+            plt.ylim(0, max(RESULTS_upper) * 1.05)
 
 
 class MCF_parametric:
@@ -562,8 +562,10 @@ class MCF_parametric:
         censored value. eg. A system that had repairs at 4, 7, and 9 then was retired after the last repair would be entered as data = [4,7,9,9] since the last
         value is treated as a right censored value. If you only have data from 1 system you may enter the data in a single list as data = [3,7,12] and it will be
         nested within another list automatically.
+    CI - the confidence interval. Default is 0.95 for 95% CI.
     print_results - prints the fitted parameters (alpha and beta) of the parametric MCF model.
     show_plot - if True the plot will be shown. Default is True. Use plt.show() to show it.
+    plot_CI - True/False. Plots the confidence intervals. Default is True.
 
     Outputs:
     If print_results is True, the model parameters will be printed along with a brief diagnosis of the long term health of the system based on the beta parameter.
@@ -571,6 +573,14 @@ class MCF_parametric:
     MCF - this is the MCF (y values) from the scatter plot. This value is calculated using MCF_nonparametric.
     alpha - the calculated alpha parameter from MCF = (t/alpha)^beta
     beta - the calculated beta parameter from MCF = (t/alpha)^beta
+    alpha_SE - the standard error in the alpha parameter
+    beta_SE - the standard error in the beta parameter
+    cov_alpha_beta - the covariance between the parameters
+    alpha_upper - the upper CI estimate of the parameter
+    alpha_lower - the lower CI estimate of the parameter
+    beta_upper - the upper CI estimate of the parameter
+    beta_lower - the lower CI estimate of the parameter
+    results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
 
     Example:
     This example is taken from Reliasoft's example (available at http://reliawiki.org/index.php/Recurrent_Event_Data_Analysis).
@@ -587,36 +597,64 @@ class MCF_parametric:
     MCF_parametric(data=times)
     '''
 
-    def __init__(self,data,print_results=True,show_plot=True,**kwargs):
-        MCF_NP = MCF_nonparametric(data=data,print_results=False,show_plot=False) #all the MCF calculations to get the plot points are done in MCF_nonparametric
+    def __init__(self, data, CI=0.95, plot_CI=True, print_results=True, show_plot=True, **kwargs):
+
+        if CI <= 0 or CI >= 1:
+            raise ValueError('CI must be between 0 and 1. Default is 0.95 for 95% Confidence interval.')
+
+        MCF_NP = MCF_nonparametric(data=data, print_results=False, show_plot=False)  # all the MCF calculations to get the plot points are done in MCF_nonparametric
         self.times = MCF_NP.time
         self.MCF = MCF_NP.MCF
 
-        #initial guess using least squares regression of linearised function
+        # initial guess using least squares regression of linearised function
         ln_x = np.log(self.times)
         ln_y = np.log(self.MCF)
         guess_fit = np.polyfit(ln_x, ln_y, deg=1)
         beta_guess = guess_fit[0]
         alpha_guess = np.exp(-guess_fit[1] / beta_guess)
-        guess = [alpha_guess,beta_guess] #guess for curve_fit. This guess is good but curve fit makes it much better.
+        guess = [alpha_guess, beta_guess]  # guess for curve_fit. This guess is good but curve fit makes it much better.
 
         # actual fitting using curve_fit with initial guess from least squares
-        def __MCF_eqn(t,a,b): #objective function for curve_fit
-            return(t/a)**b
-        fit = curve_fit(__MCF_eqn,self.times,self.MCF,p0=guess)
+        def __MCF_eqn(t, a, b):  # objective function for curve_fit
+            return (t / a) ** b
+
+        fit = curve_fit(__MCF_eqn, self.times, self.MCF, p0=guess)
         alpha = fit[0][0]
         beta = fit[0][1]
+        var_alpha = fit[1][0][0]  # curve_fit returns the variance and covariance from the optimizer
+        var_beta = fit[1][1][1]
+        cov_alpha_beta = fit[1][0][1]
+
+        Z = -ss.norm.ppf((1 - CI) / 2)
         self.alpha = alpha
+        self.alpha_SE = var_alpha ** 0.5
         self.beta = beta
+        self.beta_SE = var_beta ** 0.5
+        self.cov_alpha_beta = cov_alpha_beta
+        self.alpha_upper = self.alpha * (np.exp(Z * (self.alpha_SE / self.alpha)))
+        self.alpha_lower = self.alpha * (np.exp(-Z * (self.alpha_SE / self.alpha)))
+        self.beta_upper = self.beta * (np.exp(Z * (self.beta_SE / self.beta)))
+        self.beta_lower = self.beta * (np.exp(-Z * (self.beta_SE / self.beta)))
+
+        Data = {'Parameter': ['Alpha', 'Beta'],
+                'Point Estimate': [self.alpha, self.beta],
+                'Standard Error': [self.alpha_SE, self.beta_SE],
+                'Lower CI': [self.alpha_lower, self.beta_lower],
+                'Upper CI': [self.alpha_upper, self.beta_upper]}
+        df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
+        self.results = df.set_index('Parameter')
 
         if print_results is True:
-            print('Mean Cumulative Function Parametric Model:')
+            if CI * 100 % 1 == 0:
+                CI_rounded = int(CI * 100)
+            else:
+                CI_rounded = CI * 100
+            print(str('Mean Cumulative Function Parametric Model (' + str(CI_rounded) + '% CI):'))
             print('MCF = (t/α)^β')
-            print('Alpha =',alpha)
-            print('Beta =',beta)
-            if beta<=0.9:
+            print(self.results)
+            if self.beta_upper <= 1:
                 print('Since Beta is less than 1, the system repair rate is IMPROVING over time.')
-            elif beta>0.9 and beta<1.1:
+            elif self.beta_lower < 1 and self.beta_upper > 1:
                 print('Since Beta is approximately 1, the system repair rate is remaining CONSTANT over time.')
             else:
                 print('Since Beta is greater than 1, the system repair rate is WORSENING over time.')
@@ -626,7 +664,7 @@ class MCF_parametric:
                 color = kwargs.pop('color')
                 marker_color = 'k'
             else:
-                color='steelblue'
+                color = 'steelblue'
                 marker_color = 'k'
 
             if 'marker' in kwargs:
@@ -639,13 +677,23 @@ class MCF_parametric:
             else:
                 label = r'$\hat{MCF} = (\frac{t}{\alpha})^\beta$'
 
-            x_line = np.linspace(0, max(self.times) * 10, 1000)
+            x_line = np.linspace(0.001, max(self.times) * 10, 1000)
             y_line = (x_line / alpha) ** beta
-            plt.plot(x_line,y_line,color=color,label=label,**kwargs)
-            plt.scatter(self.times,self.MCF,marker=marker,color=marker_color,**kwargs)
+            plt.plot(x_line, y_line, color=color, label=label, **kwargs)
+
+            if plot_CI is True:
+                p1 = -(beta / alpha) * (x_line / alpha) ** beta
+                p2 = ((x_line / alpha) ** beta) * np.log(x_line / alpha)
+                var = var_alpha * p1 ** 2 + var_beta * p2 ** 2 + 2 * p1 * p2 * cov_alpha_beta
+                SD = var ** 0.5
+                y_line_lower = y_line * np.exp((-Z * SD) / y_line)
+                y_line_upper = y_line * np.exp((Z * SD) / y_line)
+                plt.fill_between(x_line, y_line_lower, y_line_upper, color=color, alpha=0.3)
+
+            plt.scatter(self.times, self.MCF, marker=marker, color=marker_color, **kwargs)
             plt.ylabel('Mean cumulative number of failures')
             plt.xlabel('Time')
-            title_str = str('Parametric estimate of the Mean Cumulative Function\n'+r'$MCF = (\frac{t}{\alpha})^\beta$ where α=' + str(round(alpha, 4)) + ', β=' + str(round(beta, 4)))
-            plt.xlim(0,max(self.times)*1.2)
-            plt.ylim(0,max(self.MCF)*1.4)
+            title_str = str('Parametric estimate of the Mean Cumulative Function\n' + r'$MCF = (\frac{t}{\alpha})^\beta$ with α=' + str(round(alpha, 4)) + ', β=' + str(round(beta, 4)))
+            plt.xlim(0, max(self.times) * 1.2)
+            plt.ylim(0, max(self.MCF) * 1.4)
             plt.title(title_str)
