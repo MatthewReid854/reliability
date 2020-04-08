@@ -36,12 +36,8 @@ Outputs:
 -   upper - this is the MCF_upper column from results. Blank lines for censored values are removed
 
 The following example is taken from Reliasoft's `example <available at http://reliawiki.org/index.php/Recurrent_Event_Data_Analysis>`_. The failure times and retirement times (retirement time is indicated by +) of 5 systems are:
-System  Times
-1       5,10,15,17+
-2       6,13,17,19+
-3       12,20,25,26+
-4       13,15,24+
-5       16,22,25,28+
+
+.. image:: images/MCF_data.png
 
 .. code:: python
 
