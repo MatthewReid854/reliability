@@ -327,7 +327,7 @@ class MCF_nonparametric:
     MCF_nonparametric
 
     The Mean Cumulative Function (MCF) is a cumulative history function that shows the cumulative number of recurrences of an event, such as repairs over time.
-    In the context of repairs over time, the value of the MCF can be though of as the average number of repairs that each system will have undergone after a
+    In the context of repairs over time, the value of the MCF can be thought of as the average number of repairs that each system will have undergone after a
     certain time. It is only applicable to repairable systems and assumes that each event (repair) is identical, but it does not assume that each system's MCF is
     identical (which is an assumption of the parametric MCF). The non-parametric estimate of the MCF provides both the estimate of the MCF and the confidence
     bounds at a particular time.
@@ -547,7 +547,7 @@ class MCF_parametric:
     MCF_parametric
 
     The Mean Cumulative Function (MCF) is a cumulative history function that shows the cumulative number of recurrences of an event, such as repairs over time.
-    In the context of repairs over time, the value of the MCF can be though of as the average number of repairs that each system will have undergone after a
+    In the context of repairs over time, the value of the MCF can be thought of as the average number of repairs that each system will have undergone after a
     certain time. It is only applicable to repairable systems and assumes that each event (repair) is identical. In the case of the fitted paramertic MCF, it
     is assumed that each system's MCF is identical.
     The shape (beta parameter) of the MCF is a key indicator that shows whether the systems are improving (beta<1), worsening (beta>1), or staying the same
