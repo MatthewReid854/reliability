@@ -7,13 +7,13 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="reliability",
-    version="0.4.5",
+    version="0.4.6",
     description="Reliability Engineering toolkit for Python",
     author="Matthew Reid",
     author_email="m.reid854@gmail.com",
     license="MIT",
     url="https://github.com/MatthewReid854/reliability",
-    keywords=["reliability","engineering","RAM","weibull","lognormal","exponential","beta","gamma","normal","kaplan meier","kaplan-meier","survival","analysis","censored","data","lifelines","probability","distribution","distributions","quality","ALT","accelerated","life","testing"],
+    keywords=["reliability","engineering","RAM","weibull","lognormal","exponential","beta","gamma","normal","kaplan meier","kaplan-meier","survival","analysis","censored","data","lifelines","probability","distribution","distributions","quality","ALT","accelerated","life","testing","MCF","mean","cumulative","CIF"],
     long_description=long_description,
     long_description_content_type="text/markdown",
     classifiers=[

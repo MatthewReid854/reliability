@@ -6,13 +6,17 @@ Currently included functions are:
 reliability_growth - uses the Duane method to find the instantaneous MTBF and produce a reliability growth plot.
 optimal_replacement_time - Calculates the cost model to determine how cost varies with replacement time. The cost model may be NHPP (as good as old) or HPP (as good as new). Default is HPP.
 ROCOF - rate of occurrence of failures. Uses the Laplace test to determine if there is a trend in the failure times.
+MCF_nonparametric - Mean CUmulative Function Non-parametric. Used to determine if a repairable system (or collection of identical systems) is improving, constant, or worsening based on the rate of failures over time.
+MCF_parametric - Mean Cumulative Function Parametric. Fits a parametric model to the data obtained from MCF_nonparametric
 '''
 
 import numpy as np
 import matplotlib.pyplot as plt
 import warnings
 from scipy import integrate
+import pandas as pd
 import scipy.stats as ss
+from scipy.optimize import curve_fit
 
 
 class reliability_growth:
@@ -316,3 +320,332 @@ class ROCOF:
             title_str = str('Failure interarrival times vs failure number\nAt ' + str(int(CI * 100)) + '% confidence level the ROCOF is ' + self.trend)
             plt.title(title_str)
             plt.legend()
+
+
+class MCF_nonparametric:
+    '''
+    MCF_nonparametric
+
+    The Mean Cumulative Function (MCF) is a cumulative history function that shows the cumulative number of recurrences of an event, such as repairs over time.
+    In the context of repairs over time, the value of the MCF can be though of as the average number of repairs that each system will have undergone after a
+    certain time. It is only applicable to repairable systems and assumes that each event (repair) is identical, but it does not assume that each system's MCF is
+    identical (which is an assumption of the parametric MCF). The non-parametric estimate of the MCF provides both the estimate of the MCF and the confidence
+    bounds at a particular time.
+    The shape of the MCF is a key indicator that shows whether the systems are improving, worsening, or staying the same over time. If the MCF is concave down
+    (appearing to level out) then the system is improving. A straight line (constant increase) indicates it is staying the same. Concave up (getting steeper)
+    shows the system is worsening as repairs are required more frequently as time progresses.
+
+    Inputs:
+    data - the repair times for each system. Format this as a list of lists. eg. data=[[4,7,9],[3,8,12]] would be the data for 2 systems.
+        The largest time for each system is assumed to be the retirement time and is treated as a right censored value.
+        If the system was retired immediately after the last repair then you must include a repeated value at the end as this will be used to indicate a right
+        censored value. eg. A system that had repairs at 4, 7, and 9 then was retired after the last repair would be entered as data = [4,7,9,9] since the last
+        value is treated as a right censored value. If you only have data from 1 system you may enter the data in a single list as data = [3,7,12] and it will be
+        nested within another list automatically.
+    print_results - prints the table of MCF results (state, time, MCF_lower, MCF, MCF_upper, variance)
+    CI - Confidence interval. Default is 0.95 for 95% CI (one sided).
+    show_plot - if True the plot will be shown. Default is True. Use plt.show() to show it.
+    plot_CI - the plot will include the confidence intervals. Default is True.
+
+    Outputs:
+    If print_results is True, a table of the results will be printed showing state, time, MCF_lower, MCF, MCF_upper, variance. In this table state is F for failure or C for right censored (retirement).
+    If show_plot is True, the MCF plot will be shown.
+    results - this is a dataframe of the results that are printed. It includes the blank lines for censored values
+    time - this is the time column from results. Blank lines for censored values are removed
+    MCF - this is the MCF column from results. Blank lines for censored values are removed
+    variance - this is the Variance column from results. Blank lines for censored values are removed
+    lower - this is the MCF_lower column from results. Blank lines for censored values are removed
+    upper - this is the MCF_upper column from results. Blank lines for censored values are removed
+
+    Example:
+    This example is taken from Reliasoft's example (available at http://reliawiki.org/index.php/Recurrent_Event_Data_Analysis).
+    The failure times and retirement times (retirement time is indicated by +) of 5 systems are:
+    System  Times
+    1       5,10,15,17+
+    2       6,13,17,19+
+    3       12,20,25,26+
+    4       13,15,24+
+    5       16,22,25,28+
+
+    from reliability.Repairable_systems import MCF_nonparametric
+    times = [[5, 10, 15, 17], [6, 13, 17, 19], [12, 20, 25, 26], [13, 15, 24], [16, 22, 25, 28]]
+    MCF_nonparametric(data=times)
+    '''
+
+    def __init__(self,data,CI=0.95,print_results=True,show_plot=True,plot_CI=True,**kwargs):
+
+        #check input is a list
+        if type(data) == list:
+            pass
+        elif type(data) == np.ndarray:
+            data = list(data)
+        else:
+            raise ValueError('data must be a list or numpy array')
+
+        #check each item is a list and fix up any ndarrays to be lists.
+        test_for_single_system = []
+        for i,item in enumerate(data):
+            if type(item) == list:
+                test_for_single_system.append(False)
+            elif type(item) == np.ndarray:
+                data[i] = list(item)
+                test_for_single_system.append(False)
+            elif type(item) == int or type(item) == float:
+                test_for_single_system.append(True)
+            else:
+                raise ValueError('Each item in the data must be a list or numpy array. eg. data = [[1,3,5],[3,6,8]]')
+        #Wraps the data in another list if all elements were numbers.
+        if all(test_for_single_system): #checks if all are True
+            data = [data]
+        elif not any(test_for_single_system): #checks if all are False
+            pass
+        else:
+            raise ValueError('Mixed data types found in the data. Each item in the data must be a list or numpy array. eg. data = [[1,3,5],[3,6,8]].')
+
+        end_times = []
+        repair_times = []
+        for system in data:
+            system.sort() #sorts the values in ascending order
+            for i,t in enumerate(system):
+                if i < len(system)-1:
+                    repair_times.append(t)
+                else:
+                    end_times.append(t)
+
+        if CI < 0 or CI > 1:
+            raise ValueError('CI must be between 0 and 1. Default is 0.95 for 95% confidence intervals (two sided).')
+
+        if max(end_times)<max(repair_times):
+            raise ValueError('The final end time must not be less than the final repair time.')
+        last_time = max(end_times)
+        C_array = ['C'] * len(end_times)
+        F_array = ['F'] * len(repair_times)
+
+        Z = -ss.norm.ppf(1 - CI) #confidence interval converted to Z-value
+
+        #sort the inputs and extract the sorted values for later use
+        times = np.hstack([repair_times, end_times])
+        states = np.hstack([F_array,C_array])
+        data = {'times':times,'states':states}
+        df = pd.DataFrame(data,columns=['times','states'])
+        df_sorted = df.sort_values(by=['times','states'],ascending=[True,False]) #sorts the df by times and then by states, ensuring that states are F then C where the same time occurs. This ensures a failure is counted then the item is retired.
+        times_sorted = df_sorted.times.values
+        states_sorted = df_sorted.states.values
+
+        #MCF calculations
+        MCF_array = []
+        Var_array = []
+        MCF_lower_array = []
+        MCF_upper_array = []
+        r = len(end_times)
+        r_inv = 1/r
+        C_seq = 0 #sequential number of censored values
+        for i in range(len(times)):
+            if i == 0:
+                if states_sorted[i]=='F':
+                    MCF_array.append(r_inv)
+                    Var_array.append((r_inv**2)*((1-r_inv)**2+(r-1)*(0-r_inv)**2))
+                    MCF_lower_array.append(MCF_array[i]/np.exp((Z*Var_array[i]**0.5)/MCF_array[i]))
+                    MCF_upper_array.append(MCF_array[i]*np.exp((Z*Var_array[i]**0.5)/MCF_array[i]))
+                else:
+                    r-=1
+                    r_inv = 1/r
+                    C_seq+=1
+                    MCF_array.append('')
+                    Var_array.append('')
+                    MCF_lower_array.append('')
+                    MCF_upper_array.append('')
+            else:
+                if states_sorted[i]=='F':
+                    i_adj = i-C_seq
+                    MCF_array.append(r_inv+MCF_array[i_adj-1])
+                    Var_array.append((r_inv**2)*((1-r_inv)**2+(r-1)*(0-r_inv)**2)+Var_array[i_adj-1])
+                    MCF_lower_array.append(MCF_array[i]/np.exp((Z*Var_array[i]**0.5)/MCF_array[i]))
+                    MCF_upper_array.append(MCF_array[i]*np.exp((Z*Var_array[i]**0.5)/MCF_array[i]))
+                    C_seq=0
+                else:
+                    r-=1
+                    C_seq+=1
+                    MCF_array.append('')
+                    Var_array.append('')
+                    MCF_lower_array.append('')
+                    MCF_upper_array.append('')
+                    if r>0:
+                        r_inv = 1/r
+
+        #format output as dataframe
+        data = {'state':states_sorted,'time':times_sorted,'MCF_lower':MCF_lower_array,'MCF':MCF_array,'MCF_upper':MCF_upper_array,'variance':Var_array}
+        df_results1 = pd.DataFrame(data,columns=['state','time','MCF_lower','MCF','MCF_upper','variance'])
+        printable_results = df_results1.set_index('state')
+        self.results = printable_results
+
+        plotting_results = printable_results.drop('C', axis=0)
+        RESULTS_time = plotting_results.time.values
+        RESULTS_MCF = plotting_results.MCF.values
+        RESULTS_variance = plotting_results.variance.values
+        RESULTS_lower = plotting_results.MCF_lower.values
+        RESULTS_upper = plotting_results.MCF_upper.values
+
+        self.time = list(RESULTS_time)
+        self.MCF = list(RESULTS_MCF)
+        self.lower = list(RESULTS_lower)
+        self.upper = list(RESULTS_upper)
+        self.variance = list(RESULTS_variance)
+
+        if print_results is True:
+            pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
+            pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
+            print(str('Mean Cumulative Function results ('+str(CI*100)+'% CI)'))
+            print(printable_results)
+
+        if show_plot is True:
+            x_MCF = [0,RESULTS_time[0]]
+            y_MCF = [0,0]
+            y_upper = [0,0]
+            y_lower = [0,0]
+            x_MCF.append(RESULTS_time[0])
+            y_MCF.append(RESULTS_MCF[0])
+            y_upper.append(RESULTS_upper[0])
+            y_lower.append(RESULTS_lower[0])
+            for i,t in enumerate(RESULTS_time):
+                if i > 0:
+                    x_MCF.append(RESULTS_time[i])
+                    y_MCF.append(RESULTS_MCF[i-1])
+                    y_upper.append(RESULTS_upper[i-1])
+                    y_lower.append(RESULTS_lower[i-1])
+                    x_MCF.append(RESULTS_time[i])
+                    y_MCF.append(RESULTS_MCF[i])
+                    y_upper.append(RESULTS_upper[i])
+                    y_lower.append(RESULTS_lower[i])
+            x_MCF.append(last_time) #add the last horizontal line
+            y_MCF.append(RESULTS_MCF[-1])
+            y_upper.append(RESULTS_upper[-1])
+            y_lower.append(RESULTS_lower[-1])
+            title_str = 'Non-parametric estimate of the Mean Cumulative Function'
+
+            if 'color' in kwargs:
+                col = kwargs.pop('color')
+            else:
+                col = 'steelblue'
+            if plot_CI is True:
+                plt.fill_between(x_MCF, y_lower, y_upper, color=col, alpha=0.3)
+                if CI*100%1==0: #format the text for the CI in the title
+                    CI_rounded = int(CI*100)
+                else:
+                    CI_rounded = round(CI*100,1)
+                title_str = str(title_str+'\nwith '+str(CI_rounded)+'% one-sided confidence interval bounds')
+            plt.plot(x_MCF,y_MCF,color=col,**kwargs)
+            plt.xlabel('Time')
+            plt.ylabel('Mean cumulative number of failures')
+            plt.title(title_str)
+            plt.xlim(0,last_time)
+            plt.ylim(0,max(RESULTS_upper)*1.05)
+
+
+class MCF_parametric:
+    '''
+    MCF_parametric
+
+    The Mean Cumulative Function (MCF) is a cumulative history function that shows the cumulative number of recurrences of an event, such as repairs over time.
+    In the context of repairs over time, the value of the MCF can be though of as the average number of repairs that each system will have undergone after a
+    certain time. It is only applicable to repairable systems and assumes that each event (repair) is identical. In the case of the fitted paramertic MCF, it
+    is assumed that each system's MCF is identical.
+    The shape (beta parameter) of the MCF is a key indicator that shows whether the systems are improving (beta<1), worsening (beta>1), or staying the same
+    (beta=1) over time. If the MCF is concave down (appearing to level out) then the system is improving. A straight line (constant increase) indicates it is
+    staying the same. Concave up (getting steeper) shows the system is worsening as repairs are required more frequently as time progresses.
+
+    Inputs:
+    data - the repair times for each system. If you have data from multiple systems, format this as a list of lists.
+        eg. data=[[4,7,9],[3,8,12]] would be the data for 2 systems.
+        The largest time for each system is assumed to be the retirement time and is treated as a right censored value.
+        If the system was retired immediately after the last failure/repair then you must include a repeated value at the end as this will be used to indicate a right
+        censored value. eg. A system that had repairs at 4, 7, and 9 then was retired after the last repair would be entered as data = [4,7,9,9] since the last
+        value is treated as a right censored value. If you only have data from 1 system you may enter the data in a single list as data = [3,7,12] and it will be
+        nested within another list automatically.
+    print_results - prints the fitted parameters (alpha and beta) of the parametric MCF model.
+    show_plot - if True the plot will be shown. Default is True. Use plt.show() to show it.
+
+    Outputs:
+    If print_results is True, the model parameters will be printed along with a brief diagnosis of the long term health of the system based on the beta parameter.
+    time - this is the times (x values) from the scatter plot. This value is calculated using MCF_nonparametric.
+    MCF - this is the MCF (y values) from the scatter plot. This value is calculated using MCF_nonparametric.
+    alpha - the calculated alpha parameter from MCF = (t/alpha)^beta
+    beta - the calculated beta parameter from MCF = (t/alpha)^beta
+
+    Example:
+    This example is taken from Reliasoft's example (available at http://reliawiki.org/index.php/Recurrent_Event_Data_Analysis).
+    The failure times and retirement times (retirement time is indicated by +) of 5 systems are:
+    System  Times
+    1       5,10,15,17+
+    2       6,13,17,19+
+    3       12,20,25,26+
+    4       13,15,24+
+    5       16,22,25,28+
+
+    from reliability.Repairable_systems import MCF_parametric
+    times = [[5, 10, 15, 17], [6, 13, 17, 19], [12, 20, 25, 26], [13, 15, 24], [16, 22, 25, 28]]
+    MCF_parametric(data=times)
+    '''
+
+    def __init__(self,data,print_results=True,show_plot=True,**kwargs):
+        MCF_NP = MCF_nonparametric(data=data,print_results=False,show_plot=False) #all the MCF calculations to get the plot points are done in MCF_nonparametric
+        self.times = MCF_NP.time
+        self.MCF = MCF_NP.MCF
+
+        #initial guess using least squares regression of linearised function
+        ln_x = np.log(self.times)
+        ln_y = np.log(self.MCF)
+        guess_fit = np.polyfit(ln_x, ln_y, deg=1)
+        beta_guess = guess_fit[0]
+        alpha_guess = np.exp(-guess_fit[1] / beta_guess)
+        guess = [alpha_guess,beta_guess] #guess for curve_fit. This guess is good but curve fit makes it much better.
+
+        # actual fitting using curve_fit with initial guess from least squares
+        def __MCF_eqn(t,a,b): #objective function for curve_fit
+            return(t/a)**b
+        fit = curve_fit(__MCF_eqn,self.times,self.MCF,p0=guess)
+        alpha = fit[0][0]
+        beta = fit[0][1]
+        self.alpha = alpha
+        self.beta = beta
+
+        if print_results is True:
+            print('Mean Cumulative Function Parametric Model:')
+            print('MCF = (t/α)^β')
+            print('Alpha =',alpha)
+            print('Beta =',beta)
+            if beta<=0.9:
+                print('Since Beta is less than 1, the system repair rate is IMPROVING over time.')
+            elif beta>0.9 and beta<1.1:
+                print('Since Beta is approximately 1, the system repair rate is remaining CONSTANT over time.')
+            else:
+                print('Since Beta is greater than 1, the system repair rate is WORSENING over time.')
+
+        if show_plot is True:
+            if 'color' in kwargs:
+                color = kwargs.pop('color')
+                marker_color = 'k'
+            else:
+                color='steelblue'
+                marker_color = 'k'
+
+            if 'marker' in kwargs:
+                marker = kwargs.pop('marker')
+            else:
+                marker = '.'
+
+            if 'label' in kwargs:
+                label = kwargs.pop('label')
+            else:
+                label = r'$\hat{MCF} = (\frac{t}{\alpha})^\beta$'
+
+            x_line = np.linspace(0, max(self.times) * 10, 1000)
+            y_line = (x_line / alpha) ** beta
+            plt.plot(x_line,y_line,color=color,label=label,**kwargs)
+            plt.scatter(self.times,self.MCF,marker=marker,color=marker_color,**kwargs)
+            plt.ylabel('Mean cumulative number of failures')
+            plt.xlabel('Time')
+            title_str = str('Parametric estimate of the Mean Cumulative Function\n'+r'$MCF = (\frac{t}{\alpha})^\beta$ where α=' + str(round(alpha, 4)) + ', β=' + str(round(beta, 4)))
+            plt.xlim(0,max(self.times)*1.2)
+            plt.ylim(0,max(self.MCF)*1.4)
+            plt.title(title_str)
