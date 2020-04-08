@@ -56,6 +56,7 @@ Contents:
   Reliability growth
   Optimal replacement time
   ROCOF
+  Mean cumulative function
 
 .. toctree::
   :maxdepth: 1
