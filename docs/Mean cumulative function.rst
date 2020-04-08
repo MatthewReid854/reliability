@@ -129,4 +129,4 @@ The following example uses the same data as the MCF_nonparametric example provid
     Since Beta is greater than 1, the system repair rate is WORSENING over time.
     '''
 
-.. image:: images/MCF_parametric2.png
+.. image:: images/MCF_parametric.png
