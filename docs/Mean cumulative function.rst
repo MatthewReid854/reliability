@@ -79,7 +79,7 @@ The estimates of the parametric MCF are obtained using MCF_nonparametric as this
 
 :math:`MCF(t) = (\frac{t}{\alpha})^{\beta}`
 
-You may notice that this looks identical to the `Weibull CHF<https://reliability.readthedocs.io/en/latest/Equations%20of%20supported%20distributions.html#weibull-distribution>`_, but despite this similarity, they are entirely different functions and the alpha and beta parameters from the MCF cannot be applied to a Weibull distribution for fitting the repair times or repair interarrival times.
+You may notice that this looks identical to the `Weibull CHF <https://reliability.readthedocs.io/en/latest/Equations%20of%20supported%20distributions.html#weibull-distribution>`_, but despite this similarity, they are entirely different functions and the alpha and beta parameters from the MCF cannot be applied to a Weibull distribution for fitting the repair times or repair interarrival times.
 
 The puropse of fitting a parametric model is to obtain the shape parameter (β) which indicates the long term health of the system/s. If the MCF is concave down (β<1) then the system is improving. A straight line (β=1) indicates it is staying the same. Concave up (β>1) shows the system is worsening as repairs are required more frequently as time progresses.
 
