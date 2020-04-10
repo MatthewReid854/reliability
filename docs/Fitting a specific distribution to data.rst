@@ -96,7 +96,6 @@ For the function plot_points the inputs are:
 .. code:: python
 
     from reliability.Distributions import Weibull_Distribution
-    from reliability.Distributions import Weibull_Distribution
     from reliability.Fitters import Fit_Weibull_2P
     from reliability.Probability_plotting import plot_points
     import matplotlib.pyplot as plt
