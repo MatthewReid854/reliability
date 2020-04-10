@@ -27,7 +27,7 @@ The following collection of resources are things I have found useful during my r
 
 -    `Minitab <https://www.minitab.com/en-us/>`_ - a great collection of statistical tools. A few reliability focussed tools included.
 -    `Reliasoft <https://www.reliasoft.com/products/reliability-analysis/weibull>`_ - the industry leader for reliability engineering software.
--    `SAS JMP <https://www.jmp.com/en_us/software/predictive-analytics-software.html>`_ - lots of statistical tools for data modelling and visualization. A few purpose built reliability tools. Its utility for reliability engineering will depend on your application.
+-    `SAS JMP <https://www.jmp.com/en_us/software/predictive-analytics-software.html>`_ - lots of statistical tools for data modelling and visualization. A few purpose built reliability tools. Its utility for reliability engineering will depend on your application. SAS has also released the `SAS University Edition <https://www.sas.com/en_us/software/university-edition.html>`_ which is a free software package that runs in VirtualBox and offers a reduced set of tools compared to the paid package.
 -    `PTC Windchill <https://www.ptc.com/en/products/plm/capabilities/quality/>`_ - a powerful tool for risk and reliability. Similar to Reliasoft but it forms one part of the larger PTC suite of tools.
 -    `Isograph Reliability Workbench <https://www.isograph.com/software/reliability-workbench/>`_ - A collection of tools designed specifically for reliability engineering.
 -    `Item Software <https://www.itemsoft.com/reliability_prediction.html>`_ - A collection of tools for reliability engineering including FMECA, fault trees, reliability prediction, and many others.
