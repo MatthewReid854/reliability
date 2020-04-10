@@ -44,25 +44,25 @@ The following methods are available for all distributions:
 -   excess_kurtosis
 -   median
 -   mode
--   b5
--   b95
+-   b5 - the time at which 5% of units have failed. Same as dist.quantile(0.05)
+-   b95 - - the time at which 95% of units have failed. Same as dist.quantile(0.95)
 -   plot() - plots all functions (PDF, CDF, SF, HF, CHF). No additional arguments are accepted.
--   PDF() - plots the probability density function.
--   CDF() - plots the cumulative distribution function.
--   SF() - plots the survival function (also known as reliability function).
--   HF() - plots the hazard function.
--   CHF() - plots the cumulative hazard function.
+-   PDF() - plots the probability density function. Also accepts xvals, xmin, xmax, show_plot.
+-   CDF() - plots the cumulative distribution function. Also accepts xvals, xmin, xmax, show_plot.
+-   SF() - plots the survival function (also known as reliability function). Also accepts xvals, xmin, xmax, show_plot.
+-   HF() - plots the hazard function. Also accepts xvals, xmin, xmax, show_plot.
+-   CHF() - plots the cumulative hazard function. Also accepts xvals, xmin, xmax, show_plot.
 -   quantile() - Calculates the quantile (time until a fraction has failed) for a given fraction failing. Also known as 'b' life where b5 is the time at which 5% have failed. Eg. dist.quantile(0.05) will give the b5 life.
 -   inverse_SF() - Calculates the inverse of the survival function. Useful when producing QQ plots.
 -   mean_residual_life() - Average residual lifetime of an item given that the item has survived up to a given time. Effectively the mean of the remaining amount (right side) of a distribution at a given time. You must specify the x-value at which to calculate MRL. Eg. dist.mean_residual_life(10)
 -   stats() - prints all the descriptive statistics. Same as the statistics shown using .plot() but printed to console.
--   random_samples() - draws random samples from the distribution to which it is applied. Same as rvs in scipy.stats. You must specify the number of samples. Eg. data = dist.random_samples(100) will set data as a list of 100 random samples from the distribution.
+-   random_samples() - draws random samples from the distribution to which it is applied. Same as rvs in scipy.stats. You must specify the number of samples. Eg. data = dist.random_samples(100) will set data as a list of 100 random samples from the distribution. If you want repeatability, set the random seed using numpy.random.seed(1) before drawing the random samples.
 
-For all of the individual plotting functions (PDF, CDF, SF, HF, CHF), all standard matplotlib plotting keywords (such as xlabel, title, color, etc.) are accepted and used. If not specified they are preset. In specifying the plotting positions for the x-axis, there are optional keywords to be used. The first of these is 'xvals' which accepts a list of x-values to use for the horizontal axis. Alternatively, the user may specify 'xmin' and 'xmax' and the axis will be created using np.linspace(xmin, xmax, 1000).
+For all of the individual plotting functions (PDF, CDF, SF, HF, CHF), all standard matplotlib plotting keywords (such as label, color, linestyle, etc.) are accepted and used. If not specified they are preset. In specifying the plotting positions for the x-axis, there are optional keywords to be used. The first of these is 'xvals' which accepts a list of x-values to use for the horizontal axis. Alternatively, the user may specify 'xmin' and 'xmax' and the axis will be created using np.linspace(xmin, xmax, 1000).
 
-Note that .plot() does not require plt.show() to be used as it will automatically show, however the other 5 plotting functions will not be displayed until plt.show() is used. This is to allow the user to overlay multiple plots on the figure or change titles, labels, and legends as required.
+Note that .plot() does not require plt.show() to be used as it will automatically show, however the other 5 plotting functions will not be displayed until plt.show() is used. This is to allow the user to overlay multiple plots on the figure or change titles, labels, and legends as required. The plot can be turned off by specifying show_plot=False.
 
-As another example, we will create a bathtub curve by creating and layering several distributions. The bathtub curve is only for the Hazard function as it shows how a variety of failure modes throughout the life of a population can shape the hazard into a bathtub shape. The three distrinct regions are infant mortality, random failures, and wear out.
+As another example, we will create a bathtub curve by creating and layering several distributions. The bathtub curve is only for the Hazard function as it shows how a variety of failure modes throughout the life of a population can shape the hazard into a bathtub shape. The three distinct regions are infant mortality, random failures, and wear out.
 
 .. code:: python
 
