@@ -17,10 +17,10 @@ The following collection of resources are things I have found useful during my r
 
 **Free software**
 
--    `Lifelines <https://github.com/CamDavidsonPilon/lifelines/blob/master/README.md>`_ - a Python library for survival analysis.
+-    `Lifelines <https://lifelines.readthedocs.io/en/latest/index.html>`_ - a Python library for survival analysis. Very powerful collection of tools, only a few of which overlap with the Python reliability library.
 -    `Parameter Solver v3.0 <https://biostatistics.mdanderson.org/SoftwareDownload/SingleSoftware/Index/6>`_ - a biostatistics tool for quickly making some simple calculations with probability distributions.
 -    `Orange <https://orange.biolab.si/>`_ - a standalone data mining and data visualization program that runs using Python. Beautifully interactive data analysis workflows with a large toolbox. Not much reliability related content but good for data preprocessing.
--    `R Studio - Survival analysis library <https://r-posts.com/steps-to-perform-survival-analysis-in-r/>`_ - one of the more popular survival analysis libraries available in the open source commmunity.
+-    `R (Programming Language) - Survival analysis library <https://www.tutorialspoint.com/r/r_survival_analysis.htm>`_ - one of the more popular survival analysis libraries available in the open source commmunity.
 -    `CumFreq <https://www.waterlog.info/cumfreq.htm>`_ - a program for cumulative frequency analysis with probability distribution fitting for a wide range of distributions. Limited functionality beyond fitting distributions.
 
 **Paid software**
