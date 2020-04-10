@@ -30,6 +30,7 @@ The following collection of resources are things I have found useful during my r
 -    `SAS JMP <https://www.jmp.com/en_us/software/predictive-analytics-software.html>`_ - lots of statistical tools for data modelling and visualization. A few purpose built reliability tools. Its utility for reliability engineering will depend on your application.
 -    `PTC Windchill <https://www.ptc.com/en/products/plm/capabilities/quality/>`_ - a powerful tool for risk and reliability. Similar to Reliasoft but it forms one part of the larger PTC suite of tools.
 -    `Isograph Reliability Workbench <https://www.isograph.com/software/reliability-workbench/>`_ - A collection of tools designed specifically for reliability engineering.
+-    `Item Software <https://www.itemsoft.com/reliability_prediction.html>`_ - A collection of tools for reliability engineering including FMECA, fault trees, reliability prediction, and many others.
 -    `TopEvent FTA <https://www.fault-tree-analysis.com/>`_ - Fault Tree Analysis software. Tailored specifically for fault tree analysis so it lacks other RAM tools but it is good at its intended function. A demo version exists with size and data export limitations.
 -   `MADe (Maintenance Aware Design) <https://www.phmtechnology.com/>`_ - FMECA and RCM software that is extremely useful at the product design stage to inform the design and service plan which then improves the inherent reliability and maintainability.
 
