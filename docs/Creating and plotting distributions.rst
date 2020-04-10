@@ -31,6 +31,7 @@ Understanding how to create and plot distributions is easiest with an example. T
 The following methods are available for all distributions:
 
 -   name - a string of the distribution name. Eg. 'Weibull'
+-   name2 - a string of the distribution name including the number of parameters. Eg. 'Weibull_2P'
 -   param_title_long - Useful in plot titles, legends and in printing strings. Varies by distribution. eg. 'Weibull Distribution (α=5,β=2)'
 -   param_title - Useful in plot titles, legends and in printing strings. Varies by distribution. eg. 'α=5,β=2'
 -   parameters - returns an array of parameters. These are in the order specified in the bullet points above, so for Lognormal it would return [mu,sigma,gamma].
