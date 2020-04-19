@@ -19,6 +19,7 @@
 - Physics of Failure (SN diagram, stress-strain, fracture mechanics, creep)
 - Accelerated Life Testing probability plots (Weibull, Exponential, Normal, Lognormal)
 - Accelerated Life Testing Models (Exponential, Eyring, Power, Dual-Exponential, Power-Exponential).
+- Mean cumulative function for repairable systems
 
 ## Installation
 ```

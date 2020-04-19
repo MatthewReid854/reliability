@@ -9,9 +9,9 @@ sample_size_no_failures - used to determine the sample size required for a test 
     outcome is the lower bound on the reliability based on the sample size and desired confidence interval.
 sequential_sampling_chart - plots the accept/reject boundaries for a given set of quality and risk levels. If supplied, the test results
     are also plotted on the chart.
+reliability_test_planner - Finds the lower confidence bound on MTBF for a given test duration, number of failures, and specified confidence interval.
 similar_distributions - finds the parameters of distributions that are similar to the input distribution and plots the results.
 convert_dataframe_to_grouped_lists - groups values in a 2-column dataframe based on the values in the left column and returns those groups in a list of lists
-
 '''
 
 import scipy.stats as ss
@@ -224,6 +224,124 @@ def sequential_samling_chart(p1, p2, alpha, beta, show_plot=True, print_results=
         plt.legend()
         plt.show()
     return df
+
+
+class reliability_test_planner:
+    '''
+    reliability_test_planner
+
+    Solves for unknown test planner variables, given known variables.
+    The Chi-squared distribution is used to find the lower confidence bound on MTBF for a given test duration, number of failures, and specified confidence interval.
+    The equation used is: MTBF = (2*test_duration)/(chisquared_inverse(CI, 2*number_of_failures+2))
+    This is the formula for a time-truncated test. If you have a failure-turncated test, a slightly different formula is required (this is not currently implemented).
+    This equation can be rearranged to solve for any of the 4 variables. For example, you may want to know how many failures you are allowed to have in a given test duration to achieve a particular MTBF.
+    The user must specify any 3 out of the 4 variables (not including two_sided or print_results) and the remaining variable will be calculated.
+
+    Inputs:
+    MTBF - mean time between failures. This is the lower confidence bound on the MTBF. Units given in same units as the test_duration.
+    number_of_failures - the number of failures recorded (or allowed) to achieve the MTBF. Must be an integer.
+    test_duration - the amount of time on test required (or performed) to achieve the MTBF. May also be distance, rounds fires, cycles, etc. Units given in same units as MTBF.
+    CI - the confidence interval at which the lower confidence bound on the MTBF is given. Must be between 0 and 1. For example, specify 0.95 for 95% confidence interval.
+    print_results - True/False. Default is True.
+    two_sided - True/False. Default is True. If set to False, the 1 sided confidence interval will be returned.
+
+    Outputs:
+    If print_results is True, all the variables will be printed.
+    An output object is also returned with the same values as the inputs and the remaining value also calculated.
+
+    Examples:
+    reliability_test_planner(MTBF=500,test_duration=10000,CI=0.8)
+        Reliability Test Planner
+        Solving for number_of_failures
+        Test duration: 10000
+        MTBF (lower confidence bound): 500
+        Number of failures: 16
+        Confidence interval: 0.8
+
+    output = reliability_test_planner(number_of_failures=6,test_duration=10000,CI=0.8, print_results=False)
+    print(output.MTBF)
+        1101.8815940201118
+    '''
+
+    def __init__(self, MTBF=None, number_of_failures=None, CI=None, test_duration=None, two_sided=True, print_results=True):
+
+        print_CI_warn = False  # used later if the CI is calculated
+        if CI is not None:
+            if CI < 0.5 or CI >= 1:
+                raise ValueError('CI must be between 0.5 and 1. For example, specify CI=0.95 for 95% confidence interval')
+            if two_sided is False:
+                CI_adj = CI
+            else:
+                CI_adj = 1 - ((1 - CI) / 2)
+
+        if two_sided is False:
+            sides = 1
+        elif two_sided is True:
+            sides = 2
+        else:
+            raise ValueError('two_sided must be True or False. Default is True for the two sided confidence interval.')
+
+        if number_of_failures is not None:
+            if number_of_failures % 1 != 0 or number_of_failures < 0:
+                raise ValueError('number_of_failures must be a positive integer')
+
+        if MTBF is None and number_of_failures is not None and CI is not None and test_duration is not None:
+            soln_type = 'MTBF'
+            MTBF = (2 * test_duration) / ss.chi2.ppf(CI_adj, 2 * number_of_failures + 2)
+
+        elif MTBF is not None and number_of_failures is None and CI is not None and test_duration is not None:
+            soln_type = 'failures'
+            number_of_failures = 0
+            while True:  # this requires an iterative search. Begins at 0 and increments by 1 until the solution is found
+                result = (2 * test_duration) / ss.chi2.ppf(CI_adj, 2 * number_of_failures + 2) - MTBF
+                if result < 0:  # solution is found when result returns a negative number (indicating too many failures)
+                    break
+                number_of_failures += 1
+
+            MTBF_check = (2 * test_duration) / ss.chi2.ppf(CI_adj, 2 * 0 + 2)  # checks that the maximum possible MTBF (when there are 0 failures) is within the test_duration
+            if MTBF_check < MTBF:
+                raise ValueError('The specified MTBF is not possible given the specified test_duration. You must increase your test_duration or decrease your MTBF.')
+
+        elif MTBF is not None and number_of_failures is not None and CI is None and test_duration is not None:
+            soln_type = 'CI'
+            CI_calc = ss.chi2.cdf(test_duration / (MTBF * 0.5), 2 * number_of_failures + 2)
+            if two_sided is False:
+                CI = CI_calc
+            else:
+                CI = 1 - (2 * (1 - CI_calc))  # this can give negative numbers, but only when the inputs result in an impossible CI.
+            if CI < 0.5:
+                print_CI_warn = True
+
+        elif MTBF is not None and number_of_failures is not None and CI is not None and test_duration is None:
+            soln_type = 'test_duration'
+            test_duration = ss.chi2.ppf(CI_adj, 2 * number_of_failures + 2) * MTBF / 2
+
+        elif MTBF is not None and number_of_failures is not None and CI is not None and test_duration is not None:
+            raise ValueError('All inputs were specified. Nothing to calculate.')
+
+        else:
+            raise ValueError('More than one input was not specified. You must specify any 3 out of the 4 inputs (not including two_sided or print_results) and the remaining input will be calculated.')
+
+        self.test_duration = test_duration
+        self.MTBF = MTBF
+        self.number_of_failures = number_of_failures
+        self.CI = CI
+        if print_results is True:
+            print('\nReliability Test Planner')
+            if soln_type == 'MTBF':
+                print('Solving for MTBF')
+            elif soln_type == 'failures':
+                print('Solving for number_of_failures')
+            elif soln_type == 'CI':
+                print('Solving for CI')
+            else:
+                print('Solving for test_duration')
+            print('Test duration:', self.test_duration)
+            print('MTBF (lower confidence bound):', self.MTBF)
+            print('Number of failures:', self.number_of_failures)
+            print(str('Confidence interval (' + str(sides) + ' sided):' + str(self.CI)))
+            if print_CI_warn is True:
+                print('WARNING: The calculated CI is less than 0.5. This indicates that the desired MTBF is unachievable for the specified test_duration and number_of_failures.')
 
 
 class similar_distributions:

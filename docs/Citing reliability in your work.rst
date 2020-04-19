@@ -7,14 +7,14 @@ Citing reliability in your work
 
 The following reference is using APA (6th edition):
 
-**Reid, M. (2020). Reliability – a Python library for reliability engineering (Version 0.4.3) [Python].**
+**Reid, M. (2020). Reliability – a Python library for reliability engineering (Version 0.4.8) [Python].**
 
 If you would like to use another referencing style, the details you may need are:
 
 - **Author:** Matthew Reid
 - **Year published:** 2020
 - **Title:** Reliability – a Python library for reliability engineering
-- **Version:** 0.4.3
+- **Version:** 0.4.8
 - **Platform:** Python
 - **Available from:** https://pypi.org/project/reliability/
 

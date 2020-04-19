@@ -9,12 +9,10 @@ The following development roadmap is the current task list and implementation pl
 
 **Next task (currently in development)**
 
--    Improvement to how plots set the axes limits by looking at all data in a plot rather than just the current data being plotted. For plots in which the axes are rescaled (such as in all the probability plots), the axes limits are set based on the limits of the data. This is fine unless you call for two plots on top of each other, in which case the second plot will set the axes limits and not take into account data that is already on the plot, potentially leading to some data being hidden by the axes limits.
+-    Add least squares as a method to obtain the initial guess for all Fitters. Currently this has been implemented in Fit_Weibull_2P_grouped but all the other Fitters use scipy which is slower but more accurate for small datasets.
 
 **High priority (expected by the end of 2020)**
 
--    Reliability_test_plan - To determine the test time or sample size required to demonstrate reliability requirements. `Minitab <https://support.minitab.com/en-us/minitab/18/help-and-how-to/modeling-statistics/reliability/supporting-topics/basics/reliability-analyses-in-minitab/>`_ has this feature.
--    Add least squares as a method to obtain the initial guess for all Fitters. Currently this has been implemented in Fit_Weibull_2P_grouped but all the other Fitters use scipy which is slower but more accurate for small datasets.
 -    Limited_failure_population for Weibull_2P - Some data sets are from a population which does not all fail. Such populations are best modelled using a limited failure population model. `JMP <https://www.jmp.com/support/help/14-2/distributions-2.shtml>`_ has this distribution, but they call it "defective subpopulation". Meeker and Escobar (1998) call it "Limited Failure Population".
 -    ALT_probability_plot_Weibull prints new alpha in [] when given list as input.
 -    Improvement to the online documentation for how some of these methods work, including the addition of more formulas, algorithms, and better referencing.
