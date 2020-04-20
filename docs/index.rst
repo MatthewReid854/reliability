@@ -85,6 +85,7 @@ Contents:
   Two proportion test
   Sample size required for no failures
   Sequential sampling chart
+  Reliability test planner
   Similar Distributions
   Convert dataframe to grouped lists
   Datasets
