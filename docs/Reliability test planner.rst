@@ -44,7 +44,7 @@ In the example below, we have a component that needs to perform with a MTBF of 5
     result = reliability_test_planner(MTBF=500,test_duration=10000,CI=0.8)
 
     #to access individual variables from the output, call them by name
-    print('\n,result.number_of_failures)
+    print('\n',result.number_of_failures)
 
     '''
     Reliability Test Planner
