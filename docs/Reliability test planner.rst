@@ -9,7 +9,7 @@ A solver to determine the parameters of a reliability test when given 3 out of t
 
 The underlying assumption is that the failures follow an exponential distribution (ie. failures occur randomly and the hazard rate does not change with age). Using this assumption, the The Chi-squared distribution is used to find the lower confidence bound on MTBF for a given test duration, number of failures, and specified confidence interval.:
 
-:math:`MTBF = (\frac{2T}{\chi^2})`
+:math:`MTBF = \frac{2T}{\chi^2(1-CI,2F+2)}`
 
 Where:
 
