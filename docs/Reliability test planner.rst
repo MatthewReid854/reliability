@@ -13,7 +13,7 @@ The underlying assumption is that the failures follow an exponential distributio
 
 Where:
 
-- MTBF = Mean time between failures (same as mean time to failure (MTTF) when the hazard rate is constant as it is here). Note that this is the lower confidence interval on MTBF. If you want the point estimate then see the example below.
+- MTBF = Mean time between failures (same as mean time to failure (MTTF) when the hazard rate is constant as it is here). Note that this is the lower confidence interval on MTBF. If you want the point estimate then specify CI=0.5 and two_sided=False.
 - T = Test duration (this is the total time on test across all units being tested)
 - CI = Confidence interval (the confidence interval to be used for the lower bound on the MTBF)
 - F = number of failures during the test
