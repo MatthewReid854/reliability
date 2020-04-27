@@ -9,16 +9,18 @@ A solver to determine the parameters of a reliability test when given 3 out of t
 
 The underlying assumption is that the failures follow an exponential distribution (ie. failures occur randomly and the hazard rate does not change with age). Using this assumption, the The Chi-squared distribution is used to find the lower confidence bound on MTBF for a given test duration, number of failures, and specified confidence interval.:
 
-:math:` MTBF = \frac{2T}{\chi^2_inverse (CI,2F+2)}` 
+:math:`MTBF = \frac{2T}{\chi^{2}\left((1-CI)/n,2F+p\right)}`
 
 Where:
 
-- MTBF = Mean time between failures (same as mean time to failure (MTTF) when the hazard rate is constant as it is here). Note that this is the lower confidence interval on MTBF. If you want the point estimate then see the example below.
+- MTBF = Mean time between failures (same as mean time to failure (MTTF) when the hazard rate is constant as it is here). Note that this is the lower confidence interval on MTBF. If you want the point estimate then specify CI=0.5 and two_sided=False.
 - T = Test duration (this is the total time on test across all units being tested)
 - CI = Confidence interval (the confidence interval to be used for the lower bound on the MTBF)
 - F = number of failures during the test
+- n = adjustment for one sided (n=1) or two sided (n=2) test
+- p = adjustment for time terminated (p=2) or failure terminated (p=0) test
 
-The above formula can be rearranged, or solved iteratively to determine any of these parameters when given the other 3. The user must specify any 3 out of the 4 variables (not including two_sided or print_results) and the remaining variable will be calculated. This implementation is for a time-truncated test. If you want a failure-truncated test, the formula is different and this is not yet implemented within the python reliability library. Also note the difference between the one-sided and two-sided confidence intervals which are specified using the input two_sided=True/False described below. A description of the difference between one-sided and two-sided confidence intervals is provided at the end of this page.
+The above formula can be rearranged, or solved iteratively to determine any of these parameters when given the other 3. The user must specify any 3 out of the 4 variables (not including two_sided or print_results) and the remaining variable will be calculated. Note the difference between the one-sided and two-sided confidence intervals which are specified using the input two_sided=True/False described below. A description of the difference between one-sided and two-sided confidence intervals is provided at the end of this page. The formula used defaults to a time_terminated test (where the test was stopped at a particular time which was not related to the number of failures). If the test was stopped after a particulat number of failures (such as all items failing) then you must specify time_terminated=False to ensure the correct formula is used.
 
 A similar calculator is available in the `reliability analytics toolkit <https://reliabilityanalyticstoolkit.appspot.com/confidence_limits_exponential_distribution>`_.
 
@@ -30,6 +32,7 @@ Inputs:
 -   CI - the confidence interval at which the lower confidence bound on the MTBF is given. Must be between 0.5 and 1. For example, specify 0.95 for 95% confidence interval.
 -   print_results - True/False. Default is True.
 -   two_sided - True/False. Default is True. If set to False, the 1 sided confidence interval will be returned.
+-   time_terminated - True/False. Default is True. If set to False, the formula for the failure-terminated test will be used.
 
 Outputs:
 
@@ -39,22 +42,25 @@ Outputs:
 In the example below, we have a component that needs to perform with a MTBF of 500 hours (units are not important here as it may be days, cycles, rounds, etc.). We have been allocated 10000 hours of test time, and we want to know the number of failures permitted during the test to ensure we meet the MTBF to within an 80% confidence (two-sided).
 
 .. code:: python
-
+    #example 1
     from reliability.Other_functions import reliability_test_planner
-    result = reliability_test_planner(MTBF=500,test_duration=10000,CI=0.8)
-
-    #to access individual variables from the output, call them by name
-    print('\n,result.number_of_failures)
-
+    reliability_test_planner(test_duration=19520,CI=0.8,number_of_failures=7)
+        
     '''
-    Reliability Test Planner
-    Solving for number_of_failures
-    Test duration: 10000
-    MTBF (lower confidence bound): 500
-    Number of failures: 16
-    Confidence interval: 0.8
-
-    16 #this was printed after we called it by name
+    Reliability Test Planner results for time-terminated test
+    Solving for MTBF
+    Test duration: 19520
+    MTBF (lower confidence bound): 1658.3248534993454
+    Number of failures: 7
+    Confidence interval (2 sided):0.8
+    '''
+    
+    #example 2
+    output = reliability_test_planner(number_of_failures=6,test_duration=10000,CI=0.8, print_results=False)
+    print(output.MTBF)
+    
+    '''
+    949.4807763260345
     '''
 
 One-sided vs two-sided confidence interval

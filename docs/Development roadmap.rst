@@ -9,18 +9,22 @@ The following development roadmap is the current task list and implementation pl
 
 **Next task (currently in development)**
 
--    Add least squares as a method to obtain the initial guess for all Fitters. Currently this has been implemented in Fit_Weibull_2P_grouped but all the other Fitters use scipy which is slower but more accurate for small datasets.
+-    Minor improvements to reliability_test_planner so that failure-terminated tests can also be calculated.
+-    Confidence intervals (both time and reliability) on the probability plots. `Weibull Example <https://www.weibull.com/hotwire/issue17/relbasics17.htm>`_.
 
 **High priority (expected by the end of 2020)**
 
+-    Add least squares as a method to obtain the initial guess for all Fitters. Currently this has been implemented in Fit_Weibull_2P_grouped but all the other Fitters use scipy which is slower but more accurate for small datasets.
 -    Limited_failure_population for Weibull_2P - Some data sets are from a population which does not all fail. Such populations are best modelled using a limited failure population model. `JMP <https://www.jmp.com/support/help/14-2/distributions-2.shtml>`_ has this distribution, but they call it "defective subpopulation". Meeker and Escobar (1998) call it "Limited Failure Population".
 -    ALT_probability_plot_Weibull prints new alpha in [] when given list as input.
 -    Improvement to the online documentation for how some of these methods work, including the addition of more formulas, algorithms, and better referencing.
--    Confidence intervals (both time and reliability) on the probability plots.
+-    RAM_test_planners module. This will incorporate all the test planners that are currently included in Other_functions.
 
 **Low priority (more of a wish list at this point)**
 
 -    Logistic Distribution - This is another useful, but less common `probability distribution <https://en.wikipedia.org/wiki/Logistic_distribution>`_.
+-    Warranty Module. This will be a new module of many tools for warranty calculation.
 -    Cox Proportional Hazards Model - This is available in `Lifelines <https://lifelines.readthedocs.io/en/latest/Survival%20Regression.html#cox-s-proportional-hazard-model>`_.
 -    Add the rank adjustment method to Nonparametric. Rank adjustment is the method used in Probability plotting (eg. to obtain the Median Ranks) and is a common and useful nonparametric estimate of the CDF, SF, and CHF.
 -    3D ALT probability plots (reliability vs time vs stress). This feature is seen in `Reliasoft <http://reliawiki.com/index.php/File:ALTA6.9.png>`_.
+-    Graphical User Interface (GUI), potentially written as a standalone executable.
