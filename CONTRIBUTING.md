@@ -2,7 +2,7 @@
 
 ### Questions about reliability engineering or survival analysis?
 
-If you are using reliablity to perform reliability engineering or survival analysis and have a question about "how do I do X?" or "what does Y do?", you should firstly consult the `online documentation <https://reliability.readthedocs.io/en/latest/>`_. If you are unable to get an answer there, please email me (m.reid854@gmail.com) and I will try to help. Note that the documentation is designed for users with some background in reliability engineering so the documentation is largely focussed on how the software achieves a particular task, rather than providing the statistical background for these methods.
+If you are using reliablity to perform reliability engineering or survival analysis and have a question about "how do I do X?" or "what does Y do?", you should firstly consult the [online documentation](https://reliability.readthedocs.io/en/latest/). If you are unable to get an answer there, please email me (m.reid854@gmail.com) and I will try to help. Note that the documentation is designed for users with some background in reliability engineering so the documentation is largely focussed on how the software achieves a particular task, rather than providing the statistical background for these methods.
 
 ### Submitting bugs or other errors observed
 
