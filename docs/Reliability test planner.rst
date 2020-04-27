@@ -9,7 +9,7 @@ A solver to determine the parameters of a reliability test when given 3 out of t
 
 The underlying assumption is that the failures follow an exponential distribution (ie. failures occur randomly and the hazard rate does not change with age). Using this assumption, the The Chi-squared distribution is used to find the lower confidence bound on MTBF for a given test duration, number of failures, and specified confidence interval.:
 
-:math:`MTBF = \frac{2T}{\chi^{2}\left(1-CI,2F+p\right)}`
+:math:`MTBF = \frac{2T}{\chi^{2}\left((1-CI)/n,2F+p\right)}`
 
 Where:
 
@@ -17,7 +17,8 @@ Where:
 - T = Test duration (this is the total time on test across all units being tested)
 - CI = Confidence interval (the confidence interval to be used for the lower bound on the MTBF)
 - F = number of failures during the test
-- p = adjustment for time-terminated (p=2) or failure terminated (p=0) test
+- n = adjustment for one sided (n=1) or two sided (n=2) test
+- p = adjustment for time terminated (p=2) or failure terminated (p=0) test
 
 The above formula can be rearranged, or solved iteratively to determine any of these parameters when given the other 3. The user must specify any 3 out of the 4 variables (not including two_sided or print_results) and the remaining variable will be calculated. Note the difference between the one-sided and two-sided confidence intervals which are specified using the input two_sided=True/False described below. A description of the difference between one-sided and two-sided confidence intervals is provided at the end of this page. The formula used defaults to a time_terminated test (where the test was stopped at a particular time which was not related to the number of failures). If the test was stopped after a particulat number of failures (such as all items failing) then you must specify time_terminated=False to ensure the correct formula is used.
 
