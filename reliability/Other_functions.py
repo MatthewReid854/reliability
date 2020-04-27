@@ -232,10 +232,10 @@ class reliability_test_planner:
 
     Solves for unknown test planner variables, given known variables.
     The Chi-squared distribution is used to find the lower confidence bound on MTBF for a given test duration, number of failures, and specified confidence interval.
-    The equation used is: MTBF = (2*test_duration)/(chisquared_inverse(CI, 2*number_of_failures+2))
-    This is the formula for a time-truncated test. If you have a failure-turncated test, a slightly different formula is required (this is not currently implemented).
+    The equation for time-terminated tests is: MTBF = (2*test_duration)/(chisquared_inverse(CI, 2*number_of_failures+2))
+    The equation for failure-terminated tests is: MTBF = (2*test_duration)/(chisquared_inverse(CI, 2*number_of_failures))
     This equation can be rearranged to solve for any of the 4 variables. For example, you may want to know how many failures you are allowed to have in a given test duration to achieve a particular MTBF.
-    The user must specify any 3 out of the 4 variables (not including two_sided or print_results) and the remaining variable will be calculated.
+    The user must specify any 3 out of the 4 variables (not including two_sided, print_results, or time_terminated) and the remaining variable will be calculated.
 
     Inputs:
     MTBF - mean time between failures. This is the lower confidence bound on the MTBF. Units given in same units as the test_duration.
@@ -244,26 +244,27 @@ class reliability_test_planner:
     CI - the confidence interval at which the lower confidence bound on the MTBF is given. Must be between 0.5 and 1. For example, specify 0.95 for 95% confidence interval.
     print_results - True/False. Default is True.
     two_sided - True/False. Default is True. If set to False, the 1 sided confidence interval will be returned.
+    time_terminated - True/False. Default is True. If set to False, the formula for the failure-terminated test will be used.
 
     Outputs:
     If print_results is True, all the variables will be printed.
     An output object is also returned with the same values as the inputs and the remaining value also calculated.
 
     Examples:
-    reliability_test_planner(MTBF=500,test_duration=10000,CI=0.8)
-        Reliability Test Planner
-        Solving for number_of_failures
-        Test duration: 10000
-        MTBF (lower confidence bound): 500
-        Number of failures: 16
-        Confidence interval: 0.8
+    reliability_test_planner(test_duration=19520,CI=0.8,number_of_failures=7)
+        Reliability Test Planner results for time-terminated test
+        Solving for MTBF
+        Test duration: 19520
+        MTBF (lower confidence bound): 1658.3248534993454
+        Number of failures: 7
+        Confidence interval (2 sided):0.8
 
     output = reliability_test_planner(number_of_failures=6,test_duration=10000,CI=0.8, print_results=False)
     print(output.MTBF)
-        1101.8815940201118
+        949.4807763260345
     '''
 
-    def __init__(self, MTBF=None, number_of_failures=None, CI=None, test_duration=None, two_sided=True, print_results=True):
+    def __init__(self, MTBF=None, number_of_failures=None, CI=None, test_duration=None, two_sided=True, time_terminated=True, print_results=True):
 
         print_CI_warn = False  # used later if the CI is calculated
         if CI is not None:
@@ -273,6 +274,13 @@ class reliability_test_planner:
                 CI_adj = CI
             else:
                 CI_adj = 1 - ((1 - CI) / 2)
+
+        if time_terminated is True:
+            p = 2
+        elif time_terminated is False:
+            p = 0
+        else:
+            raise ValueError('time_terminated must be True or False. Default is True for the time terminated test (a test stopped after a set time rather than after a set number of failures).')
 
         if two_sided is False:
             sides = 1
@@ -287,24 +295,24 @@ class reliability_test_planner:
 
         if MTBF is None and number_of_failures is not None and CI is not None and test_duration is not None:
             soln_type = 'MTBF'
-            MTBF = (2 * test_duration) / ss.chi2.ppf(CI_adj, 2 * number_of_failures + 2)
+            MTBF = (2 * test_duration) / ss.chi2.ppf(CI_adj, 2 * number_of_failures + p)
 
         elif MTBF is not None and number_of_failures is None and CI is not None and test_duration is not None:
             soln_type = 'failures'
             number_of_failures = 0
             while True:  # this requires an iterative search. Begins at 0 and increments by 1 until the solution is found
-                result = (2 * test_duration) / ss.chi2.ppf(CI_adj, 2 * number_of_failures + 2) - MTBF
+                result = (2 * test_duration) / ss.chi2.ppf(CI_adj, 2 * number_of_failures + p) - MTBF
                 if result < 0:  # solution is found when result returns a negative number (indicating too many failures)
                     break
                 number_of_failures += 1
 
-            MTBF_check = (2 * test_duration) / ss.chi2.ppf(CI_adj, 2 * 0 + 2)  # checks that the maximum possible MTBF (when there are 0 failures) is within the test_duration
+            MTBF_check = (2 * test_duration) / ss.chi2.ppf(CI_adj, 2 * 0 + p)  # checks that the maximum possible MTBF (when there are 0 failures) is within the test_duration
             if MTBF_check < MTBF:
                 raise ValueError('The specified MTBF is not possible given the specified test_duration. You must increase your test_duration or decrease your MTBF.')
 
         elif MTBF is not None and number_of_failures is not None and CI is None and test_duration is not None:
             soln_type = 'CI'
-            CI_calc = ss.chi2.cdf(test_duration / (MTBF * 0.5), 2 * number_of_failures + 2)
+            CI_calc = ss.chi2.cdf(test_duration / (MTBF * 0.5), 2 * number_of_failures + p)
             if two_sided is False:
                 CI = CI_calc
             else:
@@ -314,7 +322,7 @@ class reliability_test_planner:
 
         elif MTBF is not None and number_of_failures is not None and CI is not None and test_duration is None:
             soln_type = 'test_duration'
-            test_duration = ss.chi2.ppf(CI_adj, 2 * number_of_failures + 2) * MTBF / 2
+            test_duration = ss.chi2.ppf(CI_adj, 2 * number_of_failures + p) * MTBF / 2
 
         elif MTBF is not None and number_of_failures is not None and CI is not None and test_duration is not None:
             raise ValueError('All inputs were specified. Nothing to calculate.')
@@ -327,7 +335,10 @@ class reliability_test_planner:
         self.number_of_failures = number_of_failures
         self.CI = CI
         if print_results is True:
-            print('\nReliability Test Planner')
+            if time_terminated is True:
+                print('\nReliability Test Planner results for time-terminated test')
+            else:
+                print('\nReliability Test Planner results for failure-terminated test')
             if soln_type == 'MTBF':
                 print('Solving for MTBF')
             elif soln_type == 'failures':
