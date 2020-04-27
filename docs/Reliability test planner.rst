@@ -9,7 +9,7 @@ A solver to determine the parameters of a reliability test when given 3 out of t
 
 The underlying assumption is that the failures follow an exponential distribution (ie. failures occur randomly and the hazard rate does not change with age). Using this assumption, the The Chi-squared distribution is used to find the lower confidence bound on MTBF for a given test duration, number of failures, and specified confidence interval.:
 
-:math:`MTBF = \frac{2T}{\chi^{2}\left((1-CI)/n,2F+p\right)}`
+:math:`MTBF = \frac{2T}{\chi^{2}\left(\frac{(1-CI)}{n},2F+p\right)}`
 
 Where:
 
@@ -39,7 +39,7 @@ Outputs:
 -   If print_results is True, all the variables will be printed.
 -   An output object is also returned with the same values as the inputs and the remaining value also calculated. This allows for any of the outputs to be called by name.
 
-In the example below, we have a component that needs to perform with a MTBF of 500 hours (units are not important here as it may be days, cycles, rounds, etc.). We have been allocated 10000 hours of test time, and we want to know the number of failures permitted during the test to ensure we meet the MTBF to within an 80% confidence (two-sided).
+In the example below, we have done a time-terminated reliability test for 19520 hours (units are not important here as it may be days, cycles, rounds, etc.). During the test there were 7 failures. We want to know the MTBF that was achieved during the test within an 80% confidence (two-sided). The second example shows how the output may be supressed and the results accessed by name.
 
 .. code:: python
 
