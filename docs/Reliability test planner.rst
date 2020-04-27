@@ -42,6 +42,7 @@ Outputs:
 In the example below, we have a component that needs to perform with a MTBF of 500 hours (units are not important here as it may be days, cycles, rounds, etc.). We have been allocated 10000 hours of test time, and we want to know the number of failures permitted during the test to ensure we meet the MTBF to within an 80% confidence (two-sided).
 
 .. code:: python
+
     #example 1
     from reliability.Other_functions import reliability_test_planner
     reliability_test_planner(test_duration=19520,CI=0.8,number_of_failures=7)
