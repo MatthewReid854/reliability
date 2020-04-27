@@ -94,6 +94,7 @@ Contents:
   :maxdepth: 1
   :caption: Administration
   
+  Changelog
   Development roadmap
   Citing reliability in your work
   How to request or contribute a new feature
