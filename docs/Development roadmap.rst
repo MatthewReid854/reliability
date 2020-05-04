@@ -9,7 +9,6 @@ The following development roadmap is the current task list and implementation pl
 
 **Next task (currently in development)**
 
--    Minor improvements to reliability_test_planner so that failure-terminated tests can also be calculated.
 -    Confidence intervals (both time and reliability) on the probability plots. `Weibull Example <https://www.weibull.com/hotwire/issue17/relbasics17.htm>`_.
 
 **High priority (expected by the end of 2020)**
@@ -18,6 +17,7 @@ The following development roadmap is the current task list and implementation pl
 -    Limited_failure_population for Weibull_2P - Some data sets are from a population which does not all fail. Such populations are best modelled using a limited failure population model. `JMP <https://www.jmp.com/support/help/14-2/distributions-2.shtml>`_ has this distribution, but they call it "defective subpopulation". Meeker and Escobar (1998) call it "Limited Failure Population".
 -    ALT_probability_plot_Weibull prints new alpha in [] when given list as input.
 -    Improvement to the online documentation for how some of these methods work, including the addition of more formulas, algorithms, and better referencing.
+-    Creation of a Mixture_Distribution object. This will have the same methods as any of the other distribution objects but will consist of a mixture distribution of any two of the supported distributions. It will also be able to be created (with two Weibull distributions) by fitting a Weibull Mixture Model.
 -    RAM_test_planners module. This will incorporate all the test planners that are currently included in Other_functions.
 
 **Low priority (more of a wish list at this point)**
