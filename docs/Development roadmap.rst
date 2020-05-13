@@ -22,7 +22,7 @@ The following development roadmap is the current task list and implementation pl
 
 **Low priority (more of a wish list at this point)**
 
--    Logistic Distribution - This is another useful, but less common `probability distribution <https://en.wikipedia.org/wiki/Logistic_distribution>`_.
+-    SEV / Gumbel Distribution - This is another useful, but less common `probability distribution <http://reliawiki.org/index.php/The_Gumbel/SEV_Distribution>`_.
 -    Warranty Module. This will be a new module of many tools for warranty calculation.
 -    Cox Proportional Hazards Model - This is available in `Lifelines <https://lifelines.readthedocs.io/en/latest/Survival%20Regression.html#cox-s-proportional-hazard-model>`_.
 -    Add the rank adjustment method to Nonparametric. Rank adjustment is the method used in Probability plotting (eg. to obtain the Median Ranks) and is a common and useful nonparametric estimate of the CDF, SF, and CHF.
