@@ -7,6 +7,7 @@ Probability_of_failure_normdist - works only when both the stress and strength d
     Uses an exact method (formula) rather than monte carlo simulation. Use this function if you have two Normal Distributions.
 '''
 from reliability.Distributions import Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution
+from scipy import integrate
 import scipy.stats as ss
 import numpy as np
 import matplotlib.pyplot as plt
@@ -41,26 +42,29 @@ class Probability_of_failure:
 
     '''
 
-    def __init__(self, stress, strength, monte_carlo_trials=100000, show_distribution_plot=True, show_convergence_plot=True, print_results=True, warn=True):
+    def __init__(self, stress, strength,
+                 show_distribution_plot=True,
+                 print_results=True,
+                 warn=True):
         if type(stress) not in [Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution] or type(strength) not in [Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution]:
             raise ValueError('Stress and Strength must both be probability distributions. First define the distribution using Reliability.Distributions.___')
-        if monte_carlo_trials < 100000:
-            print('Warning: Using less than 100000 monte carlo trials will lead to very inaccurate results.')
         if type(stress) == Normal_Distribution and type(strength) == Normal_Distribution and warn is True:  # supress the warning by setting warn=False
             print('If strength and stress are both Normal distributions, it is more accurate to use the exact formula rather than monte carlo estimation. The exact formula is supported in the function Probability_of_failure_normdist')
 
-        # draw random samples from stress and strength distributions
-        self.stress_RVS = stress.random_samples(number_of_samples=monte_carlo_trials)
-        self.strength_RVS = strength.random_samples(number_of_samples=monte_carlo_trials)
-
-        # calculate the probability of failure array and the final value
-        pof_array = []
-        failures = 0
-        for i in range(monte_carlo_trials):
-            if self.stress_RVS[i] > self.strength_RVS[i]:
-                failures += 1
-            pof_array.append(failures / (i + 1))
-        self.prob_of_failure = failures / monte_carlo_trials
+        # calculate the probability of failure
+        def func(x):
+            fail = stress._pdf(x)
+            power = strength._cdf(x)
+            return fail * power
+        
+        # integral transformation [0.0 ; inf] --> [0.0; 1.0]
+        integrant = lambda t: func(t / (1.0 - t)) / ((1.0 - t)*(1.0 - t))
+        
+        # integrate 
+        self.prob_of_failure = integrate.quad(              \
+            integrant, 0.0, 1.0,                            \
+            epsabs=1.0e-11, epsrel=1.0e-11, limit=100       \
+        )[0]
 
         if show_distribution_plot is True:
             xmin = stress.b5
@@ -78,24 +82,16 @@ class Probability_of_failure:
             intercept = np.argmin(abs(stress_PDF - strength_PDF)[1::])  # for use in fill_between. The slice ignores any instances where both distributions are 0 at x=0
             plt.fill_between(xvals[intercept::], 0, stress_PDF[intercept::], color='peachpuff')
             plt.fill_between(xvals[0:intercept], 0, strength_PDF[0:intercept], color='peachpuff')
-            failure_text = str('Probability of\nfailure = ' + str(round(self.prob_of_failure * 100, int(np.log10(monte_carlo_trials)))) + '%')
+            failure_text = str('Probability of\nfailure = ' + str(round(self.prob_of_failure * 100, int(np.ceil(abs(np.log10(self.prob_of_failure * 100)))) + 3)) + '%')
             plt.legend(title=failure_text)
             plt.title('Stress - Strength Interference Plot')
             plt.xlabel('Probability Density')
             plt.ylabel('Stress and Strength Units')
 
-        if show_convergence_plot is True:
-            plt.figure()
-            plt.plot(range(monte_carlo_trials), pof_array)
-            plt.title('Monte Carlo convergence plot\nof probability of failure results')
-            plt.xlabel('Monte Carlo trial')
-            plt.ylabel('Probability of failure')
-            plt.subplots_adjust(left=0.15, right=0.93)
-
         if print_results is True:
             print('Probability of failure:', self.prob_of_failure)
 
-        if show_convergence_plot is True or show_distribution_plot is True:
+        if show_distribution_plot is True:
             plt.show()
 
 
@@ -142,10 +138,11 @@ class Probability_of_failure_normdist:
             intercept = np.argmin(abs(stress_PDF - strength_PDF)[1::])  # for use in fill_between. The slice ignores any instances where both distributions are 0 at x=0
             plt.fill_between(xvals[intercept::], 0, stress_PDF[intercept::], color='peachpuff')
             plt.fill_between(xvals[0:intercept], 0, strength_PDF[0:intercept], color='peachpuff')
-            failure_text = str('Probability of\nfailure = ' + str(round(self.prob_of_failure * 100, 4)) + '%')
+            failure_text = str('Probability of\nfailure = ' + str(round(self.prob_of_failure * 100, int(np.ceil(abs(np.log10(self.prob_of_failure * 100)))) + 3)) + '%')
             plt.legend(title=failure_text)
             plt.title('Stress - Strength Interference Plot')
             plt.xlabel('Probability Density')
             plt.ylabel('Stress and Strength Units')
             plt.subplots_adjust(left=0.15, right=0.93)
             plt.show()
+    

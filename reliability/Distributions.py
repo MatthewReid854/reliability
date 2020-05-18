@@ -139,6 +139,12 @@ class Weibull_Distribution:
         self.b5 = ss.weibull_min.ppf(0.05, self.beta, scale=self.alpha, loc=self.gamma)
         self.b95 = ss.weibull_min.ppf(0.95, self.beta, scale=self.alpha, loc=self.gamma)
 
+    def _cdf(self, X):
+        return ss.weibull_min.cdf(X, self.beta, scale=self.alpha, loc=self.gamma)
+    
+    def _pdf(self, X):
+        return ss.weibull_min.pdf(X, self.beta, scale=self.alpha, loc=self.gamma)
+    
     def plot(self, xvals=None, xmin=None, xmax=None):
         '''
         Plots all functions (PDF, CDF, SF, HF, CHF) and descriptive statistics in a single figure
@@ -522,6 +528,12 @@ class Normal_Distribution:
         self.param_title_long = str('Normal Distribution (μ=' + str(self.mu) + ',σ=' + str(self.sigma) + ')')
         self.b5 = ss.norm.ppf(0.05, loc=self.mu, scale=self.sigma)
         self.b95 = ss.norm.ppf(0.95, loc=self.mu, scale=self.sigma)
+
+    def _cdf(self, X):
+        return ss.norm.cdf(X, self.mu, self.sigma)
+    
+    def _pdf(self, X):
+        return ss.norm.pdf(X, self.mu, self.sigma)
 
     def plot(self, xvals=None, xmin=None, xmax=None):
         '''
@@ -913,6 +925,12 @@ class Lognormal_Distribution:
         self.b5 = ss.lognorm.ppf(0.05, self.sigma, self.gamma, np.exp(self.mu))  # note that scipy uses mu in a log way compared to most other software, so we must take the exp of the input
         self.b95 = ss.lognorm.ppf(0.95, self.sigma, self.gamma, np.exp(self.mu))
 
+    def _cdf(self, X):
+        return ss.lognorm.cdf(X, self.sigma, self.gamma, np.exp(self.mu))
+    
+    def _pdf(self, X):
+        return ss.lognorm.pdf(X, self.sigma, self.gamma, np.exp(self.mu))
+    
     def plot(self, xvals=None, xmin=None, xmax=None):
         '''
         Plots all functions (PDF, CDF, SF, HF, CHF) and descriptive statistics in a single figure
@@ -1303,6 +1321,12 @@ class Exponential_Distribution:
         self.b5 = ss.expon.ppf(0.05, scale=1 / self.Lambda, loc=self.gamma)
         self.b95 = ss.expon.ppf(0.95, scale=1 / self.Lambda, loc=self.gamma)
 
+    def _cdf(self, X):
+        return ss.expon.cdf(X, scale=1 / self.Lambda, loc=self.gamma)
+    
+    def _pdf(self, X):
+        return ss.expon.pdf(X, scale=1 / self.Lambda, loc=self.gamma)
+    
     def plot(self, xvals=None, xmin=None, xmax=None):
         '''
         Plots all functions (PDF, CDF, SF, HF, CHF) and descriptive statistics in a single figure
@@ -1699,6 +1723,12 @@ class Gamma_Distribution:
         self.b5 = ss.gamma.ppf(0.05, self.beta, scale=self.alpha, loc=self.gamma)
         self.b95 = ss.gamma.ppf(0.95, self.beta, scale=self.alpha, loc=self.gamma)
 
+    def _cdf(self, X):
+        return ss.gamma.cdf(X, self.beta, scale=self.alpha, loc=self.gamma)
+    
+    def _pdf(self, X):
+        return ss.gamma.pdf(X, self.beta, scale=self.alpha, loc=self.gamma)
+    
     def plot(self, xvals=None, xmin=None, xmax=None):
         '''
         Plots all functions (PDF, CDF, SF, HF, CHF) and descriptive statistics in a single figure
@@ -2087,6 +2117,12 @@ class Beta_Distribution:
         self.b5 = ss.beta.ppf(0.05, self.alpha, self.beta, 0, 1)
         self.b95 = ss.beta.ppf(0.95, self.alpha, self.beta, 0, 1)
 
+    def _cdf(self, X):
+        return ss.beta.cdf(X, self.alpha, self.beta, 0, 1)
+    
+    def _pdf(self, X):
+        return ss.beta.pdf(X, self.alpha, self.beta, 0, 1)
+    
     def plot(self, xvals=None, xmin=None, xmax=None):
         '''
         Plots all functions (PDF, CDF, SF, HF, CHF) and descriptive statistics in a single figure
