@@ -41,7 +41,7 @@ class Probability_of_failure:
     Probability_of_failure(stress=stress, strength=strength, monte_carlo_trials=1000000)
 
     '''
-
+    
     def __init__(self, stress, strength,
                  show_distribution_plot=True,
                  print_results=True,
@@ -50,7 +50,7 @@ class Probability_of_failure:
             raise ValueError('Stress and Strength must both be probability distributions. First define the distribution using Reliability.Distributions.___')
         if type(stress) == Normal_Distribution and type(strength) == Normal_Distribution and warn is True:  # supress the warning by setting warn=False
             print('If strength and stress are both Normal distributions, it is more accurate to use the exact formula rather than monte carlo estimation. The exact formula is supported in the function Probability_of_failure_normdist')
-
+        
         # calculate the probability of failure
         def func(x):
             fail = stress._pdf(x)
@@ -65,7 +65,7 @@ class Probability_of_failure:
             integrant, 0.0, 1.0,                            \
             epsabs=1.0e-11, epsrel=1.0e-11, limit=100       \
         )[0]
-
+        
         if show_distribution_plot is True:
             xmin = stress.b5
             xmax = strength.b95
@@ -87,10 +87,10 @@ class Probability_of_failure:
             plt.title('Stress - Strength Interference Plot')
             plt.xlabel('Probability Density')
             plt.ylabel('Stress and Strength Units')
-
+        
         if print_results is True:
             print('Probability of failure:', self.prob_of_failure)
-
+        
         if show_distribution_plot is True:
             plt.show()
 
@@ -110,22 +110,22 @@ class Probability_of_failure_normdist:
     returns:
     prob_of_failure - the probability of failure
     '''
-
+    
     def __init__(self, stress=None, strength=None, show_distribution_plot=True, print_results=True):
         if type(stress) is not Normal_Distribution:
             raise ValueError('Both stress and strength must be a Normal_Distribution. If you need another distribution then use Probability_of_failure rather than Probability_of_failure_normdist')
         if type(strength) is not Normal_Distribution:
             raise ValueError('Both stress and strength must be a Normal_Distribution. If you need another distribution then use Probability_of_failure rather than Probability_of_failure_normdist')
-
+        
         sigma_strength = strength.sigma
         mu_strength = strength.mu
         sigma_stress = stress.sigma
         mu_stress = stress.mu
         self.prob_of_failure = ss.norm.cdf(-(mu_strength - mu_stress) / ((sigma_strength ** 2 + sigma_stress ** 2) ** 0.5))
-
+        
         if print_results is True:
             print('Probability of failure:', self.prob_of_failure)
-
+        
         if show_distribution_plot is True:
             xmin = stress.b5
             xmax = strength.b95
@@ -145,4 +145,4 @@ class Probability_of_failure_normdist:
             plt.ylabel('Stress and Strength Units')
             plt.subplots_adjust(left=0.15, right=0.93)
             plt.show()
-    
+        
