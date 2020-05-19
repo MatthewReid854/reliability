@@ -52,18 +52,15 @@ class Probability_of_failure:
             print('If strength and stress are both Normal distributions, it is more accurate to use the exact formula rather than monte carlo estimation. The exact formula is supported in the function Probability_of_failure_normdist')
         
         # calculate the probability of failure
-        def func(x):
-            fail = stress._pdf(x)
-            power = strength._cdf(x)
-            return fail * power
+        func = lambda x: stress._pdf(x) * strength._cdf(x)
         
         # integral transformation [0.0 ; inf] --> [0.0; 1.0]
         integrant = lambda t: func(t / (1.0 - t)) / ((1.0 - t)*(1.0 - t))
         
-        # integrate 
+        # integrate
         self.prob_of_failure = integrate.quad(              \
             integrant, 0.0, 1.0,                            \
-            epsabs=1.0e-11, epsrel=1.0e-11, limit=100       \
+            epsabs=1.0e-4, epsrel=1.0e-6, limit=100         \
         )[0]
         
         if show_distribution_plot is True:
