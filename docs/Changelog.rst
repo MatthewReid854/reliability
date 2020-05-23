@@ -9,7 +9,7 @@ Changelog
 
 -    Confidence intervals on fitted distributions (this is quite difficult and is taking longer than expected)
 -    Minor improvements to color inheritance for probability_plotting.
--    The probability plot in Fit_everything now uses the Exponential_probability_plot_Weibull_Scale instead of Exponential_probability_plot. It is much clearer to see the effectiveness of the fit using the Weibull scale.
+-    The probability plot in Fit_Everything now uses the Exponential_probability_plot_Weibull_Scale instead of Exponential_probability_plot. It is much clearer to see the effectiveness of the fit using the Weibull scale.
 -    Added and option to seed to all random_samples modules in Distributions for repeatable results.
 -    Improvements to rounding of all titles, labels, and stats in Distributions and Probability_plotting using a new function, round_to_decimals
 -    Added Other_functions.round_to_decimals which is keeps the specified number of decimals after leading zeros. This is useful as round would make very small values appear as 0.
