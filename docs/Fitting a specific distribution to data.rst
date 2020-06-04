@@ -231,7 +231,6 @@ The following example shows how we can use Fit_Weibull_2P_grouped to fit a Weibu
 
 .. code:: python
 
-    from reliability.Distributions import Fit_Weibull_2P_grouped
     from reliability.Fitters import Fit_Weibull_2P_grouped
     import pandas as pd
 
