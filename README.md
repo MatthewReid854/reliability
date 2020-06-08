@@ -1,7 +1,7 @@
 ![](https://github.com/MatthewReid854/reliability/blob/master/docs/images/logo.png)
-[![Downloads](https://pepy.tech/badge/reliability)](https://pepy.tech/project/reliability)
+
 [![PyPI version](https://badge.fury.io/py/reliability.svg)](https://badge.fury.io/py/reliability)
-[![Build Status](https://travis-ci.org/MatthewReid854/reliability.svg?branch=master)](https://travis-ci.org/MatthewReid854/reliability)
+[![Downloads](https://pepy.tech/badge/reliability)](https://pepy.tech/project/reliability)
 
 # reliability
 *reliability* is a Python library for reliability engineering and survival analysis. It offers the ability to create and fit probability distributions intuitively and to explore and plot their properties. *reliability* is designed to be much easier to use than scipy.stats whilst also extending the functionality to include many of the same tools that are typically only found in proprietary software such as Minitab, Reliasoft, and JMP Pro.
