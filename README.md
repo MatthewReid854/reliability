@@ -3,7 +3,8 @@
 [![PyPI version](https://badge.fury.io/py/reliability.svg)](https://badge.fury.io/py/reliability)
 [![Downloads](https://pepy.tech/badge/reliability)](https://pepy.tech/project/reliability)
 [![made-with-python](https://img.shields.io/badge/Made%20with-Python-1f425f.svg)](https://www.python.org/)
-[![forthebadge made-with-python](http://ForTheBadge.com/images/badges/made-with-python.svg)](https://www.python.org/)
+[![Documentation Status](https://readthedocs.org/projects/ansicolortags/badge/?version=latest)](http://ansicolortags.readthedocs.io/?badge=latest)
+[![Ask Me Anything !](https://img.shields.io/badge/Ask%20me-anything-1abc9c.svg)](https://reliability.readthedocs.io/en/latest/How%20to%20get%20help.html)
 
 
 # reliability
