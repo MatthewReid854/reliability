@@ -5,7 +5,6 @@
 [![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/MatthewReid854/reliability.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/MatthewReid854/reliability/context:python)
 [![Downloads](https://pepy.tech/badge/reliability)](https://pepy.tech/project/reliability)
 [![LGPLv3 license](https://img.shields.io/badge/License-LGPLv3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0.txt)
-[![Lines Of Code](https://tokei.rs/b1/github/XAMPPRocky/tokei?category=code)](https://github.com/XAMPPRocky/tokei)
 [![Lines Of Code](https://tokei.rs/b1/github/MatthewReid854/reliability?category=code)](https://github.com/MatthewReid854/reliability)
 
 # reliability
