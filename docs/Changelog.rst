@@ -10,11 +10,11 @@ Changelog
 
 **What I'm working on**
 
-    - Confidence intervals for Normal and Lognormal distributions (Gamma and Beta will come later)
-    - New models ==> Mixure Model, Competing Risks Model, Defective Sample Model (the only one with a Fitter is the Mixture Model. Other fitters will be developed).
-    - Better visualisation of results from Fit_Weibull_Mixture to use a probability plot
-    - Improving the documentation to reflect the changes from Version 0.5.0
-    - Any bug fixes that are necessary as a result of the large number of new features in Version 0.5.0
+-    Confidence intervals for Normal and Lognormal distributions (Gamma and Beta will come later)
+-    New models ==> Mixure Model, Competing Risks Model, Defective Sample Model (the only one with a Fitter is the Mixture Model. Other fitters will be developed).
+-    Better visualisation of results from Fit_Weibull_Mixture to use a probability plot
+-    Improving the documentation to reflect the changes from Version 0.5.0
+-    Any bug fixes that are necessary as a result of the large number of new features in Version 0.5.0
 
 **Version: 0.5.0 --- Due to be released: 04 July 2020**
 '''''''''''''''''''''''''''''''''''''''''''''
@@ -29,18 +29,18 @@ Changelog
 -    Added Other_functions.round_to_decimals which keeps the specified number of decimals after leading zeros. This is useful as round would make very small values appear as 0.
 -    Minor improvements to color inheritance for probability_plotting.
 -    Minor improvements to confidence interval color inheritance for Nonparametric.Kaplan_Meier and Nonparametric.Nelson_Aalen.
--    Within Stress_strength, the method of obtaining the solution has been changed from monte carlo to integration. Thanks to Thomas Enzinger for providing the formula for this method in response to an `Issue<https://github.com/MatthewReid854/reliability/issues/4>`_ that was raised. Using the integration method, accuracy is much higher (1e-11 error now vs 1e-3 error previously) and always consistent, and the speed is significantly improved over the monte carlo method. As noted below in API changes, there is no need to specify the number of monte_carlo_samples and no option to obtain the convergence plot.
+-    Within Stress_strength, the method of obtaining the solution has been changed from monte carlo to integration. Thanks to Thomas Enzinger for providing the formula for this method in response to an `Issue <https://github.com/MatthewReid854/reliability/issues/4>`_ that was raised. Using the integration method, accuracy is much higher (1e-11 error now vs 1e-3 error previously) and always consistent, and the speed is significantly improved over the monte carlo method. As noted below in API changes, there is no need to specify the number of monte_carlo_samples and no option to obtain the convergence plot.
 -    Within Stress_strength, the colors used for shading have been changed to improve the style.
 -    Probability_plotting.plot_points now includes the option to plot the points for the PDF and HF. These are not very useful as they appear messy due to the discontinuous nature of the function, but they are added for completeness.
 -    Added Other_functions.transform_spaced. This is similar to np.linspace and np.logspace but it creates an array that is 'weibull spaced', 'normal spaced', 'exponential spaced', 'beta spaced', or 'gamma spaced'. It is used to get data points for the confidence intervals so they are as evenly spaced as possible, particularly on probability paper. This function is likely to be moved into utils.
 -    Other_functions.make_right_censored has been added. This function accepts uncensored data and a threshold, and returns failures and right_censored arrays.
--    Added `mplcursors<https://mplcursors.readthedocs.io/en/stable/index.html>`_ to requirements in setup.py as it is needed for the crosshairs function.
+-    Added `mplcursors <https://mplcursors.readthedocs.io/en/stable/index.html>`_ to requirements in setup.py as it is needed for the crosshairs function.
 -    Added crosshairs function to Other_functions. This is a very useful feature that provides interactive crosshairs to the plot using snap-to feature and also adds annotations on click events. Thanks to Antony Lee (the author of mplcursors) for help with getting this to work using his library.
 
 **Bug fixes**
 
 -    Within Stress_strength, there are improvements to the fill_between method as it had errors in some special cases.
--    Fixed an `Issue<https://github.com/MatthewReid854/reliability/issues/6>`_ in Lognormal_Probability_Plot that occurred for very large numbers (above 1e20)
+-    Fixed an `Issue <https://github.com/MatthewReid854/reliability/issues/6>`_ in Lognormal_Probability_Plot that occurred for very large numbers (above 1e20)
 
 **API Changes**
 
