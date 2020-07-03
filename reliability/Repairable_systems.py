@@ -528,7 +528,7 @@ class MCF_nonparametric:
             else:
                 col = 'steelblue'
             if plot_CI is True:
-                plt.fill_between(x_MCF, y_lower, y_upper, color=col, alpha=0.3)
+                plt.fill_between(x_MCF, y_lower, y_upper, color=col, alpha=0.3,linewidth=0)
                 if CI * 100 % 1 == 0:  # format the text for the CI in the title
                     CI_rounded = int(CI * 100)
                 else:
@@ -688,7 +688,7 @@ class MCF_parametric:
                 SD = var ** 0.5
                 y_line_lower = y_line * np.exp((-Z * SD) / y_line)
                 y_line_upper = y_line * np.exp((Z * SD) / y_line)
-                plt.fill_between(x_line, y_line_lower, y_line_upper, color=color, alpha=0.3)
+                plt.fill_between(x_line, y_line_lower, y_line_upper, color=color, alpha=0.3, linewidth=0)
 
             plt.scatter(self.times, self.MCF, marker=marker, color=marker_color, **kwargs)
             plt.ylabel('Mean cumulative number of failures')

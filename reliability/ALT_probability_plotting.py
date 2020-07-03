@@ -188,8 +188,8 @@ class ALT_probability_plot_Weibull:
                 AICc_total += weibull_fit_common_shape.AICc
             BIC_total += weibull_fit_common_shape.BIC
             if show_plot is True:
-                weibull_fit_common_shape.distribution.CDF(linestyle='--', color=color_list[i], xvals=xvals)
-                Probability_plotting.Weibull_probability_plot(failures=FAILURES, right_censored=RIGHT_CENSORED, color=color_list[i], label=str(stress))
+                weibull_fit_common_shape.distribution.CDF(linestyle='--', color=color_list[i], xvals=xvals) #this will also plot the confidence intervals
+                Probability_plotting.Weibull_probability_plot(failures=FAILURES, right_censored=RIGHT_CENSORED,plot_CI=False, color=color_list[i], label=str(stress))
                 plt.legend(title='Stress')
                 plt.xlim(10 ** (xmin + 1), 10 ** (xmax - 1))
                 if common_shape_method == 'BIC':
@@ -366,8 +366,8 @@ class ALT_probability_plot_Exponential:
             BIC_total += expon_fit.BIC
             BIC_total_weib += weib_fit.BIC
             if show_plot is True:
-                expon_fit.distribution.CDF(linestyle='--', color=color_list[i], xvals=xvals)
-                Probability_plotting.Weibull_probability_plot(failures=FAILURES, right_censored=RIGHT_CENSORED, color=color_list[i], label=str(stress))
+                expon_fit.distribution.CDF(linestyle='--', color=color_list[i], xvals=xvals) #this will also plot the confidence intervals
+                Probability_plotting.Weibull_probability_plot(failures=FAILURES, right_censored=RIGHT_CENSORED,plot_CI=False, color=color_list[i], label=str(stress))
                 plt.legend(title='Stress')
                 plt.xlim(10 ** (xmin + 1), 10 ** (xmax - 1))
                 plt.title('ALT Exponential Probability Plot')
@@ -779,7 +779,7 @@ class ALT_probability_plot_Normal:
             else:
                 RIGHT_CENSORED = None
             normal_fit_common_shape = Fit_Normal_2P(failures=FAILURES, right_censored=RIGHT_CENSORED, show_probability_plot=False, print_results=False, force_sigma=common_shape)
-            normal_fit_mu_array_common_shape.append(normal_fit_common_shape.mu)
+            normal_fit_mu_array_common_shape.append(normal_fit_common_shape.mu[0])
             if type(normal_fit_common_shape.AICc) == str:
                 AICc = False
             else:

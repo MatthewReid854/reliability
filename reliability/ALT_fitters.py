@@ -249,11 +249,14 @@ class Fit_Weibull_Exponential:
                         self2.alpha = alpha
                         self2.beta = beta
                         self2.gamma = 0
+                        self2.alpha_SE = None
+                        self2.beta_SE = None
+                        self2.Cov_alpha_beta = None
 
                 life = self.b * np.exp(self.a / stress)
                 fitted_dist_params = __make_fitted_dist_params_weibull(alpha=life, beta=self.beta)
                 original_fit = Fit_Weibull_2P(failures=FAILURES, right_censored=RIGHT_CENSORED, show_probability_plot=False, print_results=False)
-                original_fit.distribution.CDF(color=color_list[i], label=str(stress), xvals=xvals)
+                original_fit.distribution.CDF(color=color_list[i], label=str(stress), plot_CI=False, xvals=xvals)
                 Weibull_probability_plot(failures=FAILURES, right_censored=RIGHT_CENSORED, __fitted_dist_params=fitted_dist_params, color=color_list[i], linestyle='--', label='')
             if use_level_stress is not None:
                 use_label_str = str(str(use_level_stress) + ' (use level)')
@@ -474,11 +477,14 @@ class Fit_Weibull_Eyring:
                         self2.alpha = alpha
                         self2.beta = beta
                         self2.gamma = 0
+                        self2.alpha_SE = None
+                        self2.beta_SE = None
+                        self2.Cov_alpha_beta = None
 
                 life = 1 / stress * np.exp(-(self.c - self.a / stress))
                 fitted_dist_params = __make_fitted_dist_params_weibull(alpha=life, beta=self.beta)
                 original_fit = Fit_Weibull_2P(failures=FAILURES, right_censored=RIGHT_CENSORED, show_probability_plot=False, print_results=False)
-                original_fit.distribution.CDF(color=color_list[i], label=str(stress), xvals=xvals)
+                original_fit.distribution.CDF(color=color_list[i], label=str(stress), plot_CI=False, xvals=xvals)
                 Weibull_probability_plot(failures=FAILURES, right_censored=RIGHT_CENSORED, __fitted_dist_params=fitted_dist_params, color=color_list[i], linestyle='--', label='')
             if use_level_stress is not None:
                 use_label_str = str(str(use_level_stress) + ' (use level)')
@@ -699,11 +705,14 @@ class Fit_Weibull_Power:
                         self2.alpha = alpha
                         self2.beta = beta
                         self2.gamma = 0
+                        self2.alpha_SE = None
+                        self2.beta_SE = None
+                        self2.Cov_alpha_beta = None
 
                 life = self.a * stress ** self.n
                 fitted_dist_params = __make_fitted_dist_params_weibull(alpha=life, beta=self.beta)
                 original_fit = Fit_Weibull_2P(failures=FAILURES, right_censored=RIGHT_CENSORED, show_probability_plot=False, print_results=False)
-                original_fit.distribution.CDF(color=color_list[i], label=str(stress), xvals=xvals)
+                original_fit.distribution.CDF(color=color_list[i], label=str(stress),plot_CI=False, xvals=xvals)
                 Weibull_probability_plot(failures=FAILURES, right_censored=RIGHT_CENSORED, __fitted_dist_params=fitted_dist_params, color=color_list[i], linestyle='--', label='')
             if use_level_stress is not None:
                 use_label_str = str(str(use_level_stress) + ' (use level)')
@@ -957,6 +966,9 @@ class Fit_Weibull_Dual_Exponential:
                         self2.alpha = alpha
                         self2.beta = beta
                         self2.gamma = 0
+                        self2.alpha_SE = None
+                        self2.beta_SE = None
+                        self2.Cov_alpha_beta = None
 
                 pair = stress_pair.split(' , ')
                 stress_1 = float(pair[0])
@@ -964,7 +976,7 @@ class Fit_Weibull_Dual_Exponential:
                 life = self.c * np.exp(self.a / stress_1 + self.b / stress_2)
                 fitted_dist_params = __make_fitted_dist_params_weibull(alpha=life, beta=self.beta)
                 original_fit = Fit_Weibull_2P(failures=FAILURES, right_censored=RIGHT_CENSORED, show_probability_plot=False, print_results=False)
-                original_fit.distribution.CDF(color=color_list[i], label=str(stress_pair), xvals=xvals)
+                original_fit.distribution.CDF(color=color_list[i], label=str(stress_pair), plot_CI=False, xvals=xvals)
                 Weibull_probability_plot(failures=FAILURES, right_censored=RIGHT_CENSORED, __fitted_dist_params=fitted_dist_params, color=color_list[i], linestyle='--', label='')
             if use_level_stress is not None:
                 use_label_str = str(str(float(use_level_stress[0])) + ' , ' + str(float(use_level_stress[1])) + ' (use level)')
@@ -1220,6 +1232,9 @@ class Fit_Weibull_Power_Exponential:
                         self2.alpha = alpha
                         self2.beta = beta
                         self2.gamma = 0
+                        self2.alpha_SE = None
+                        self2.beta_SE = None
+                        self2.Cov_alpha_beta = None
 
                 pair = stress_pair.split(' , ')
                 stress_1 = float(pair[0])
@@ -1227,7 +1242,7 @@ class Fit_Weibull_Power_Exponential:
                 life = self.c * stress_2 ** self.n * np.exp(self.a / stress_1)
                 fitted_dist_params = __make_fitted_dist_params_weibull(alpha=life, beta=self.beta)
                 original_fit = Fit_Weibull_2P(failures=FAILURES, right_censored=RIGHT_CENSORED, show_probability_plot=False, print_results=False)
-                original_fit.distribution.CDF(color=color_list[i], label=str(stress_pair), xvals=xvals)
+                original_fit.distribution.CDF(color=color_list[i], label=str(stress_pair), plot_CI=False, xvals=xvals)
                 Weibull_probability_plot(failures=FAILURES, right_censored=RIGHT_CENSORED, __fitted_dist_params=fitted_dist_params, color=color_list[i], linestyle='--', label='')
             if use_level_stress is not None:
                 use_label_str = str(str(float(use_level_stress[0])) + ' , ' + str(float(use_level_stress[1])) + ' (use level)')
@@ -3842,11 +3857,12 @@ class Fit_Exponential_Exponential:
                     def __init__(self2, Lambda):
                         self2.Lambda = Lambda
                         self2.gamma = 0
+                        self2.Lambda_SE = None
 
                 life = self.b * np.exp(self.a / stress)
                 fitted_dist_params = __make_fitted_dist_params_expon(Lambda=1 / life)
                 original_fit = Fit_Expon_1P(failures=FAILURES, right_censored=RIGHT_CENSORED, show_probability_plot=False, print_results=False)
-                original_fit.distribution.CDF(color=color_list[i], label=str(stress), xvals=xvals)
+                original_fit.distribution.CDF(color=color_list[i], label=str(stress),plot_CI=False, xvals=xvals)
                 Exponential_probability_plot_Weibull_Scale(failures=FAILURES, right_censored=RIGHT_CENSORED, __fitted_dist_params=fitted_dist_params, color=color_list[i], linestyle='--', label='')
             if use_level_stress is not None:
                 use_label_str = str(str(use_level_stress) + ' (use level)')
@@ -4054,11 +4070,12 @@ class Fit_Exponential_Eyring:
                     def __init__(self2, Lambda):
                         self2.Lambda = Lambda
                         self2.gamma = 0
+                        self2.Lambda_SE = None
 
                 life = 1 / stress * np.exp(-(self.c - self.a / stress))
                 fitted_dist_params = __make_fitted_dist_params_expon(Lambda=1 / life)
                 original_fit = Fit_Expon_1P(failures=FAILURES, right_censored=RIGHT_CENSORED, show_probability_plot=False, print_results=False)
-                original_fit.distribution.CDF(color=color_list[i], label=str(stress), xvals=xvals)
+                original_fit.distribution.CDF(color=color_list[i], label=str(stress),plot_CI=False, xvals=xvals)
                 Exponential_probability_plot_Weibull_Scale(failures=FAILURES, right_censored=RIGHT_CENSORED, __fitted_dist_params=fitted_dist_params, color=color_list[i], linestyle='--', label='')
             if use_level_stress is not None:
                 use_label_str = str(str(use_level_stress) + ' (use level)')
@@ -4266,11 +4283,12 @@ class Fit_Exponential_Power:
                     def __init__(self2, Lambda):
                         self2.Lambda = Lambda
                         self2.gamma = 0
+                        self2.Lambda_SE = None
 
                 life = self.a * stress ** self.n
                 fitted_dist_params = __make_fitted_dist_params_expon(Lambda=1 / life)
                 original_fit = Fit_Expon_1P(failures=FAILURES, right_censored=RIGHT_CENSORED, show_probability_plot=False, print_results=False)
-                original_fit.distribution.CDF(color=color_list[i], label=str(stress), xvals=xvals)
+                original_fit.distribution.CDF(color=color_list[i], label=str(stress),plot_CI=False, xvals=xvals)
                 Exponential_probability_plot_Weibull_Scale(failures=FAILURES, right_censored=RIGHT_CENSORED, __fitted_dist_params=fitted_dist_params, color=color_list[i], linestyle='--', label='')
             if use_level_stress is not None:
                 use_label_str = str(str(use_level_stress) + ' (use level)')
@@ -4508,6 +4526,7 @@ class Fit_Exponential_Dual_Exponential:
                     def __init__(self2, Lambda):
                         self2.Lambda = Lambda
                         self2.gamma = 0
+                        self2.Lambda_SE = None
 
                 pair = stress_pair.split(' , ')
                 stress_1 = float(pair[0])
@@ -4515,7 +4534,7 @@ class Fit_Exponential_Dual_Exponential:
                 life = self.c * np.exp(self.a / stress_1 + self.b / stress_2)
                 fitted_dist_params = __make_fitted_dist_params_expon(Lambda=1 / life)
                 original_fit = Fit_Expon_1P(failures=FAILURES, right_censored=RIGHT_CENSORED, show_probability_plot=False, print_results=False)
-                original_fit.distribution.CDF(color=color_list[i], label=str(stress_pair), xvals=xvals)
+                original_fit.distribution.CDF(color=color_list[i], label=str(stress_pair),plot_CI=False, xvals=xvals)
                 Exponential_probability_plot_Weibull_Scale(failures=FAILURES, right_censored=RIGHT_CENSORED, __fitted_dist_params=fitted_dist_params, color=color_list[i], linestyle='--', label='')
             if use_level_stress is not None:
                 use_label_str = str(str(float(use_level_stress[0])) + ' , ' + str(float(use_level_stress[1])) + ' (use level)')
@@ -4755,6 +4774,7 @@ class Fit_Exponential_Power_Exponential:
                     def __init__(self2, Lambda):
                         self2.Lambda = Lambda
                         self2.gamma = 0
+                        self2.Lambda_SE = None
 
                 pair = stress_pair.split(' , ')
                 stress_1 = float(pair[0])
@@ -4762,7 +4782,7 @@ class Fit_Exponential_Power_Exponential:
                 life = self.c * stress_2 ** self.n * np.exp(self.a / stress_1)
                 fitted_dist_params = __make_fitted_dist_params_expon(Lambda=1 / life)
                 original_fit = Fit_Expon_1P(failures=FAILURES, right_censored=RIGHT_CENSORED, show_probability_plot=False, print_results=False)
-                original_fit.distribution.CDF(color=color_list[i], label=str(stress_pair), xvals=xvals)
+                original_fit.distribution.CDF(color=color_list[i], label=str(stress_pair),plot_CI=False, xvals=xvals)
                 Exponential_probability_plot_Weibull_Scale(failures=FAILURES, right_censored=RIGHT_CENSORED, __fitted_dist_params=fitted_dist_params, color=color_list[i], linestyle='--', label='')
             if use_level_stress is not None:
                 use_label_str = str(str(float(use_level_stress[0])) + ' , ' + str(float(use_level_stress[1])) + ' (use level)')

@@ -12,15 +12,18 @@ sequential_sampling_chart - plots the accept/reject boundaries for a given set o
 reliability_test_planner - Finds the lower confidence bound on MTBF for a given test duration, number of failures, and specified confidence interval.
 similar_distributions - finds the parameters of distributions that are similar to the input distribution and plots the results.
 convert_dataframe_to_grouped_lists - groups values in a 2-column dataframe based on the values in the left column and returns those groups in a list of lists
+transform_spaced - Creates linearly spaced vector (in transform space) based on a specified transform
+annotations - adds x,y annotations to plots based on user mouse click
+crosshairs - adds x,y crosshairs to plots based on mouse position
 '''
 
 import scipy.stats as ss
 import matplotlib.pyplot as plt
-from reliability.Distributions import Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution
-from reliability.Fitters import Fit_Everything
 import numpy as np
 import pandas as pd
-
+from matplotlib.lines import Line2D
+from mplcursors import cursor  # Need to add dependancy to reliability
+import warnings
 
 def one_sample_proportion(trials=None, successes=None, CI=0.95):
     '''
@@ -257,7 +260,7 @@ class reliability_test_planner:
         Test duration: 19520
         MTBF (lower confidence bound): 1658.3248534993454
         Number of failures: 7
-        Confidence interval (2 sided): 0.8
+        Confidence interval (2 sided):0.8
 
     output = reliability_test_planner(number_of_failures=6,test_duration=10000,CI=0.8, print_results=False)
     print(output.MTBF)
@@ -350,7 +353,7 @@ class reliability_test_planner:
             print('Test duration:', self.test_duration)
             print('MTBF (lower confidence bound):', self.MTBF)
             print('Number of failures:', self.number_of_failures)
-            print(str('Confidence interval (' + str(sides) + ' sided): ' + str(self.CI)))
+            print(str('Confidence interval (' + str(sides) + ' sided):' + str(self.CI)))
             if print_CI_warn is True:
                 print('WARNING: The calculated CI is less than 0.5. This indicates that the desired MTBF is unachievable for the specified test_duration and number_of_failures.')
 
@@ -383,6 +386,11 @@ class similar_distributions:
     '''
 
     def __init__(self, distribution=None, include_location_shifted=True, show_plot=True, print_results=True, monte_carlo_trials=1000, number_of_distributions_to_show=3):
+
+        # these imports need to be here because there is a circular import error if they are at the top. This is caused by distributions calling round_to_decimals which sits in the module Other_functions which has this function that also calls on distributions
+        from reliability.Distributions import Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution
+        from reliability.Fitters import Fit_Everything
+
         if type(distribution) not in [Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution]:
             raise ValueError('distribution must be a probability distribution object from the reliability.Distributions module. First define the distribution using Reliability.Distributions.___')
         if monte_carlo_trials < 100:
@@ -519,3 +527,230 @@ def convert_dataframe_to_grouped_lists(input_dataframe):
         grouped_lists.append(values)
         group_list_names.append(key)
     return grouped_lists, group_list_names
+
+
+def round_to_decimals(number, decimals=5, integer_floats_to_ints=True):
+    '''
+    This function is used to round a number to a specified number of decimals. It is used heavily in the formatting of the parameter titles within reliability.Distributions
+    It is not the same as rounding to a number of significant figures as it keeps preceeding zeros.
+
+    Inputs:
+    number - the number to be rounded
+    decimals - the number of decimals (not including preceeding zeros) that are to be in the output
+    integer_floats_to_ints - removes trailing zeros if there are no significant decimals (eg. 12.0 becomes 12)
+
+    examples (with decimals = 5):
+    1234567.1234567 ==> 1234567.12345
+    0.0001234567 ==> 0.00012345
+    1234567 ==> 1234567
+    0.00 ==> 0
+    '''
+
+    if number < 0:
+        sign = -1
+        num = number * -1
+        skip_to_end = False
+    elif number > 0:
+        sign = 1
+        num = number
+        skip_to_end = False
+    else:  # number == 0
+        if integer_floats_to_ints is True:
+            out = int(number)
+        else:
+            out = number
+        sign = 0
+        skip_to_end = True
+    if skip_to_end is False:
+        if num > 1:
+            decimal = num % 1
+            whole = num - decimal
+            if decimal == 0:
+                if integer_floats_to_ints is True:
+                    out = int(whole)
+                else:
+                    out = whole
+            else:
+                out = np.round(num, decimals)
+        else:  # num<1
+            out = np.round(num, decimals - int(np.floor(np.log10(abs(num)))) - 1)
+    return out * sign
+
+
+def transform_spaced(transform, y_lower=1e-8, y_upper=1 - 1e-8, num=1000,alpha=None,beta=None):
+    '''
+    Creates linearly spaced vector based on a specified transform
+    This is similar to np.linspace or np.logspace but is designed for weibull space, exponential space, normal space, gamma space, and beta space.
+    It is useful if the points generated are going to be plotted on axes that are scaled using the same transform and need to look equally spaced in the transform space
+
+    :param transform: the transform name. Must be either weibull, exponential, normal, gamma, or beta.
+    :param y_upper: the lower bound (must be within the bounds 0 to 1). Default is 1e-8
+    :param y_lower: the upper bound (must be within the bounds 0 to 1). Default is 1-1e-8
+    :param num: the number of values in the vector
+    :param alpha: the alpha value of the beta distribution. Only used if the transform is beta
+    :param beta: the alpha value of the beta or gamma distribution. Only used if the transform is beta or gamma
+    :return: linearly spaced vector (appears linearly spaced when plotted in transform space)
+    '''
+    np.seterr('ignore')  # this is required due to an error in scipy.stats
+    if y_lower>y_upper:
+        y_lower, y_upper = y_upper, y_lower
+    if y_lower <= 0 or y_upper >= 1:
+        raise ValueError('start and stop must be within the range 0 to 1')
+    if num <= 2:
+        raise ValueError('num must be greater than 2')
+    if transform in ['normal','Normal','norm','Norm']:
+        fwd = lambda x: ss.norm.ppf(x)
+        inv = lambda x: ss.norm.cdf(x)
+    elif transform in ['weibull','Weibull','weib','Weib','wbl']:
+        fwd = lambda x: np.log(-np.log(1 - x))
+        inv = lambda x: 1 - np.exp(-np.exp(x))
+    elif transform in ['exponential','Exponential','expon','Expon','exp','Exp']:
+        fwd = lambda x: ss.expon.ppf(x)
+        inv = lambda x: ss.expon.cdf(x)
+    elif transform in ['gamma','Gamma','gam','Gam']:
+        if beta is None:
+            raise ValueError('beta must be specified to use the gamma transform')
+        else:
+            fwd = lambda x: ss.gamma.ppf(x, a=beta)
+            inv = lambda x: ss.gamma.cdf(x, a=beta)
+    elif transform in ['beta','Beta']:
+        if alpha is None or beta is None:
+            raise ValueError('alpha and beta must be specified to use the beta transform')
+        else:
+            fwd = lambda x: ss.beta.ppf(x, a=alpha, b=beta)
+            inv = lambda x: ss.beta.cdf(x, a=alpha, b=beta)
+    elif transform in ['lognormal','Lognormal','LN','ln','lognorm','Lognorm']: #the transform is the same, it's just the xscale that is ln for lognormal
+        return ValueError('the Lognormal transform is the same as the normal transform. Specify normal and try again')
+    else:
+        raise ValueError('transform must be either exponential, normal, weibull, gamma, beta')
+
+    #find the value of the bounds in tranform space
+    upper = fwd(y_upper)
+    lower = fwd(y_lower)
+    #generate the vector in transform space
+    vector = np.linspace(lower,upper,num)
+    #convert the vector back from transform space
+    transform_vector = inv(vector)
+    return transform_vector
+
+class make_right_censored:
+    '''
+    make_right_censored
+    Right censors data based on specified threshold
+    Inputs:
+    data - list or array of data
+    threshold - point to right censor (right censoring is done if value is > threshold)
+
+    Outputs:
+    failures - array of failures (<= threshold)
+    right_censored - array of right_censored values (all at the value of the threshold)
+    '''
+    def __init__(self,data,threshold):
+        if type(data) is list:
+            data = np.array(data)
+        self.failures = data[data<=threshold]
+        self.right_censored = np.ones_like(data[data>threshold])*threshold
+
+class crosshairs:
+    '''
+    Adds interactive crosshairs to matplotlib plots
+    Ensure this is used after you plot everything as anything plotted after crosshairs() is called will not be recognised by the snap-to feature.
+
+    :param xlabel: the xlabel for annotations. Default is 'x'
+    :param ylabel: the ylabel for annotations. Default is 'y'
+    :param decimals: the number of decimals for rounding. Default is 2.
+    :param kwargs: plotting kwargs to change the style of the crosshairs (eg. color, linestyle, etc.)
+    '''
+    def __init__(self,xlabel=None, ylabel=None, decimals=2, **kwargs):
+        crosshairs.__generate_crosshairs(self,xlabel=xlabel, ylabel=ylabel, decimals=decimals, **kwargs)
+
+    def __add_lines_and_text_to_crosshairs(sel, decimals, **kwargs):
+        # set the default properties of the lines and text if they were not provided as kwargs
+        if 'c' in kwargs:
+            color = kwargs.pop('c')
+        elif 'color' in kwargs:
+            color = kwargs.pop('color')
+        else:
+            color = 'k'
+        if 'lw' in kwargs:
+            linewidth = kwargs.pop('lw')
+        elif 'linewidth' in kwargs:
+            linewidth = kwargs.pop('linewidth')
+        else:
+            linewidth = 0.5
+        if 'ls' in kwargs:
+            linestyle = kwargs.pop('ls')
+        elif 'linestyle' in kwargs:
+            linestyle = kwargs.pop('linestyle')
+        else:
+            linestyle = '--'
+        if 'size' in kwargs:
+            fontsize = kwargs.pop('size')
+        elif 'fontsize' in kwargs:
+            fontsize = kwargs.pop('fontsize')
+        else:
+            fontsize = 10
+        if 'fontweight' in kwargs:
+            fontweight = kwargs.pop('fontweight')
+        elif 'weight' in kwargs:
+            fontweight = kwargs.pop('weight')
+        else:
+            fontweight = 0
+        if 'fontstyle' in kwargs:
+            fontstyle = kwargs.pop('fontstyle')
+        elif 'style' in kwargs:
+            fontstyle = kwargs.pop('style')
+        else:
+            fontstyle = 'normal'
+
+        sel.annotation.set(visible=False)  # Hide the normal annotation during hover
+        try:
+            ax = sel.artist.axes
+        except:
+            ax = sel.annotation.axes  # this exception occurs for bar charts
+        x, y = sel.target
+        lines = [Line2D([x, x], [0, 1], transform=ax.get_xaxis_transform(), c=color, lw=linewidth, ls=linestyle, **kwargs),
+                 Line2D([0, 1], [y, y], transform=ax.get_yaxis_transform(), c=color, lw=linewidth, ls=linestyle, **kwargs)]
+        texts = [ax.text(s=round(y, decimals), x=0, y=y, transform=ax.get_yaxis_transform(), color=color, fontsize=fontsize, fontweight=fontweight, fontstyle=fontstyle, **kwargs),
+                 ax.text(s=round(x, decimals), x=x, y=0, transform=ax.get_xaxis_transform(), color=color, fontsize=fontsize, fontweight=fontweight, fontstyle=fontstyle, **kwargs)]
+        for i in [0, 1]:
+            line = lines[i]
+            text = texts[i]
+            ax.add_line(line)
+            # the lines and text need to be registered with sel so that they are updated during mouse motion events
+            sel.extras.append(line)
+            sel.extras.append(text)
+
+    def __format_annotation(sel, decimals, label):  # this is some simple formatting for the annotations (applied on click)
+        [x, y] = sel.annotation.xy
+        text = str(label[0] + ' = ' + str(round(x, decimals)) + '\n' + label[1] + ' = ' + str(round(y, decimals)))
+        sel.annotation.set_text(text)
+        sel.annotation.get_bbox_patch().set(fc="white")
+
+    def __hide_crosshairs(event):
+        ax = event.inaxes  # this gets the axes where the event occurred.
+        if len(ax.texts) >= 2:  # the lines can't be deleted if they haven't been drawn.
+            if ax.texts[-1].get_position()[1] == 0 and ax.texts[-2].get_position()[0] == 0:  # this identifies the texts (crosshair text coords) based on their combination of unique properties
+                ax.lines[-1].set_visible(False)
+                ax.lines[-2].set_visible(False)
+                ax.texts[-1].set_visible(False)
+                ax.texts[-2].set_visible(False)
+        event.canvas.draw()
+
+    def __generate_crosshairs(self,xlabel=None, ylabel=None, decimals=2, **kwargs): #this is the main program
+        warnings.simplefilter('ignore')  # required when using fill_between due to warning in mplcursors: "UserWarning: Pick support for PolyCollection is missing."
+        ch = cursor(hover=True)
+        add_lines_and_text_with_kwargs = lambda _: crosshairs.__add_lines_and_text_to_crosshairs(_, decimals, **kwargs)  # adds the line's kwargs before connecting it to cursor
+        ch.connect("add", add_lines_and_text_with_kwargs)
+        plt.gcf().canvas.mpl_connect('axes_leave_event', crosshairs.__hide_crosshairs)  # hide the crosshairs and text when the mouse leaves the axes
+
+        # does the annotation part
+        if xlabel is None:
+            xlabel = 'x'
+        if ylabel is None:
+            ylabel = 'y'
+        warnings.simplefilter('ignore')  # required when using fill_between due to warning in mplcursors: "UserWarning: Pick support for PolyCollection is missing."
+        annot = cursor(multiple=True, bindings={"toggle_visible": "h"})
+        format_annotation_labeled = lambda _: crosshairs.__format_annotation(_, decimals, [xlabel, ylabel])  # adds the labels to the 'format_annotation' function before connecting it to cursor
+        annot.connect("add", format_annotation_labeled)
+

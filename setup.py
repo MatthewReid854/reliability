@@ -7,11 +7,11 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="reliability",
-    version="0.4.9",
+    version="0.5.0",
     description="Reliability Engineering toolkit for Python",
     author="Matthew Reid",
     author_email="m.reid854@gmail.com",
-    license="MIT",
+    license="LGPLv3",
     url="https://github.com/MatthewReid854/reliability",
     keywords=["reliability","engineering","RAM","weibull","lognormal","exponential","beta","gamma","normal","kaplan meier","kaplan-meier","survival","analysis","censored","data","lifelines","probability","distribution","distributions","quality","ALT","accelerated","life","testing","MCF","mean","cumulative","CIF"],
     long_description=long_description,
@@ -19,7 +19,7 @@ setuptools.setup(
     classifiers=[
         "Intended Audience :: Science/Research",
         "Topic :: Scientific/Engineering",
-        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3"
     ],
     install_requires=["autograd>=1.3",
                       "scipy>=1.3.1",
@@ -27,6 +27,7 @@ setuptools.setup(
                       "matplotlib>=3.1.1",
                       "pandas>=0.23.4",
                       "autograd-gamma>=0.4.1",
+                      "mplcursors>=0.3"
     ],
-    packages=setuptools.find_packages(),
+    packages=setuptools.find_packages(exclude=["*.tests", "*.tests.*"]),
 )
