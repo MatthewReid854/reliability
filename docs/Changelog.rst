@@ -5,17 +5,6 @@
 Changelog
 ---------
 
-**Version: 0.5.1 --- Unreleased: Currently in Development**
-'''''''''''''''''''''''''''''''''''''''''''''
-
-**What I'm working on**
-
--    Confidence intervals for Normal and Lognormal distributions (Gamma and Beta will come later)
--    New models ==> Mixure Model, Competing Risks Model, Defective Sample Model (the only one with a Fitter is the Mixture Model. Other fitters will be developed).
--    Better visualisation of results from Fit_Weibull_Mixture to use a probability plot
--    Improving the documentation to reflect the changes from Version 0.5.0
--    Any bug fixes that are necessary as a result of the large number of new features in Version 0.5.0
-
 **Version: 0.5.0 --- Due to be released: 04 July 2020**
 '''''''''''''''''''''''''''''''''''''''''''''
 
