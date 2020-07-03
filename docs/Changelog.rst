@@ -49,7 +49,7 @@ Changelog
 -    Added the options initial_guess_method and optimizer to Fit_Weibull_2P and Fit_Weibull_3P. They were previously only in Fit_Weibull_2P_grouped. It is planned to add these options to all fitters.
 -    There is now the option CI_type for the Weibull and Exponential fitters. This allows users to chose between confidence bounds on reliability and time. This option will be added to all fitters as the confidence intervals for the other distributions are completed.
 
-**Other***
+**Other**
 
 -    Added tests folder. This is planned to include automated tests.
 -    Created utils module. I plan to move some utilities into here that are currently inside other modules where users can access them, but users should never need to access them so they just create clutter in the dropdown lists of your IDE.
@@ -62,6 +62,6 @@ Changelog
 
 -    Updates to reliability_test_planner to include option for failure terminated test
 
-**Other***
+**Other**
 
 -    Addition of this changelog to the documentation
