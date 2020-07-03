@@ -10,7 +10,7 @@ Changelog
 
 **New features**
 
--    Confidence intervals on fitted distributions ==> this has only been implemented for Weibull and Exponential. Is is quite difficult and takes considerable time and testing. I will do Normal and Lognormal distributions next, then Gammma and Beta distributions. I hope to finish them all by September 2020.
+-    Confidence intervals on fitted distributions ==> this has only been implemented for Weibull and Exponential. Is is quite difficult and takes considerable time and testing. I will do Normal and Lognormal distributions next, then Gamma and Beta distributions. I hope to finish them all by September 2020.
 -    Confidence intervals also appear in ALT_probability_plotting for Weibull and Exponential. They have been disabled in ALT_fitters to avoid clutter on the plot.
 -    The probability plot in Fit_Everything now uses the Exponential_probability_plot_Weibull_Scale instead of Exponential_probability_plot. It is much clearer to see the effectiveness of the fit using the Weibull scale.
 -    Added an option to seed the random_samples functions within the Distributions module. This allows for repeatable results.
