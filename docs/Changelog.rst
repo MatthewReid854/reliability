@@ -12,7 +12,7 @@ Changelog
 
 -    Some of the functions in reliability.Other_functions have been moved into reliability.Utils and reliability.Reliability_testing. The new layout is:
 -    Utils ==> round_to_decimals, transform_spaced, axes_transforms
--    Other_functions ==> similar_distributions, convert_dataframe_to_grouped_lists, crosshairs, make_right_censored
+-    Other_functions ==> similar_distributions, convert_dataframe_to_grouped_lists, crosshairs, make_right_censored_data
 -    Reliability_testing ==> one_sample_proportion, two_proportion_test, sample_size_no_failures, sequential_sampling_chart, reliability_test_planner
 
 **Other**
@@ -37,7 +37,7 @@ Changelog
 -    Within Stress_strength, the colors used for shading have been changed to improve the style.
 -    Probability_plotting.plot_points now includes the option to plot the points for the PDF and HF. These are not very useful as they appear messy due to the discontinuous nature of the function, but they are added for completeness.
 -    Added Other_functions.transform_spaced. This is similar to np.linspace and np.logspace but it creates an array that is 'weibull spaced', 'normal spaced', 'exponential spaced', 'beta spaced', or 'gamma spaced'. It is used to get data points for the confidence intervals so they are as evenly spaced as possible, particularly on probability paper. This function is likely to be moved into utils.
--    Other_functions.make_right_censored has been added. This function accepts uncensored data and a threshold, and returns failures and right_censored arrays.
+-    Other_functions.make_right_censored_data has been added. This function accepts uncensored data and a threshold, and returns failures and right_censored arrays.
 -    Added `mplcursors <https://mplcursors.readthedocs.io/en/stable/index.html>`_ to requirements in setup.py as it is needed for the crosshairs function.
 -    Added crosshairs function to Other_functions. This is a very useful feature that provides interactive crosshairs to the plot using snap-to feature and also adds annotations on click events. Thanks to Antony Lee (the author of mplcursors) for help with getting this to work using his library.
 
