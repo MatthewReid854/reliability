@@ -5,7 +5,7 @@ This is a collection of several other functions that did not otherwise fit withi
 Included functions are:
 similar_distributions - finds the parameters of distributions that are similar to the input distribution and plots the results.
 convert_dataframe_to_grouped_lists - groups values in a 2-column dataframe based on the values in the left column and returns those groups in a list of lists
-make_right_censored - a simple tool to right censor a complete dataset based on a threshold. Primarily used for testing Fitters when some right censored data is needed.
+make_right_censored_data - a simple tool to right censor a complete dataset based on a threshold. Primarily used for testing Fitters when some right censored data is needed.
 crosshairs - adds x,y crosshairs to plots based on mouse position
 '''
 
@@ -188,17 +188,17 @@ def convert_dataframe_to_grouped_lists(input_dataframe):
     return grouped_lists, group_list_names
 
 
-class make_right_censored:
+class make_right_censored_data:
     '''
-    make_right_censored
+    make_right_censored_data
     Right censors data based on specified threshold
     Inputs:
     data - list or array of data
     threshold - point to right censor (right censoring is done if value is > threshold)
 
     Outputs:
-    failures - array of failures (<= threshold)
-    right_censored - array of right_censored values (all at the value of the threshold)
+    failures - array of failures (data <= threshold)
+    right_censored - array of right_censored values (data > threshold). These will be set to the value of the threshold.
     '''
 
     def __init__(self, data, threshold):
