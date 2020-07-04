@@ -16,7 +16,7 @@ Changelog
 
 -    Some of the functions in reliability.Other_functions have been moved into reliability.Utils and reliability.Reliability_testing. The new layout is:
 
-     - Utils ==> round_to_decimals, transform_spaced, axes_transforms
+     - Utils :math:`\rightarrow` round_to_decimals, transform_spaced, axes_transforms
      - Other_functions ==> similar_distributions, convert_dataframe_to_grouped_lists, crosshairs, make_right_censored_data
      - Reliability_testing ==> one_sample_proportion, two_proportion_test, sample_size_no_failures, sequential_sampling_chart, reliability_test_planner
      
