@@ -20,7 +20,7 @@ Changelog
      - Other_functions :math:`\Rightarrow` similar_distributions, convert_dataframe_to_grouped_lists, crosshairs, make_right_censored_data
      - Reliability_testing :math:`\Rightarrow` one_sample_proportion, two_proportion_test, sample_size_no_failures, sequential_sampling_chart, reliability_test_planner
      
--    Within Other_functions.similar_distributions the option 'monte_carlo_trials' has been changes to 'samples' to reflect the fact that it is no longer a random sample.
+-    Within Other_functions.similar_distributions the option 'monte_carlo_trials' has been changed to 'samples' to reflect the fact that it is no longer a random sample.
 
 **Other**
 
