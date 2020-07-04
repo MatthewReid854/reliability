@@ -9,7 +9,7 @@ This function provides interactive crosshairs on matplotlib plots. The crosshair
 
 Note that crosshairs should be called after everything is added to the plot (but before plt.show()) so that the objects in the plot are identified for the 'snap to' feature. If something is added to the plot after calling crosshairs then you will not be able to move the crosshairs onto it.
 
-If your interactive development environment does not generate the plot it its own window then your plot is not interactive and this will not work. For iPython notebook users, the interactive window should be available by typing "%matplotlib qt" after importing matplotlib as described `here <https://stackoverflow.com/questions/14261903/how-can-i-open-the-interactive-matplotlib-window-in-ipython-notebook>`_.
+If your interactive development environment does not generate the plot in its own window then your plot is not interactive and this will not work. For iPython notebook users, the interactive window should be available by typing "%matplotlib qt" after importing matplotlib as described `here <https://stackoverflow.com/questions/14261903/how-can-i-open-the-interactive-matplotlib-window-in-ipython-notebook>`_.
 
 There are some customisable attributes of the crosshairs and annotations using the following inputs:
 
@@ -32,7 +32,7 @@ In the following example, we see the crosshairs being used to display the value 
 
 .. image:: images/crosshairs.png
 
-This is a test of embedding a video. The actual video using the crosshairs will come soon.
+This is a test of embedding a youtube video. The actual video using the crosshairs will come soon.
 
 .. raw:: html
 
