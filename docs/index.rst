@@ -81,14 +81,21 @@ Contents:
   :maxdepth: 1
   :caption: Other functions and data
   
+  Similar Distributions
+  Convert dataframe to grouped lists
+  Crosshairs
+  Make right censored data
+  Datasets
+
+.. toctree::
+  :maxdepth: 1
+  :caption: Reliability testing
+  
   One sample proportion
   Two proportion test
   Sample size required for no failures
   Sequential sampling chart
   Reliability test planner
-  Similar Distributions
-  Convert dataframe to grouped lists
-  Datasets
 
 .. toctree::
   :maxdepth: 1

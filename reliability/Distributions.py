@@ -58,7 +58,7 @@ import scipy.stats as ss
 import numpy as np
 from scipy import integrate
 import matplotlib.pyplot as plt
-from reliability.Other_functions import round_to_decimals, transform_spaced
+from reliability.Utils import round_to_decimals, transform_spaced
 from scipy.optimize import fsolve, root
 from autograd import jacobian as jac
 import autograd.numpy as anp

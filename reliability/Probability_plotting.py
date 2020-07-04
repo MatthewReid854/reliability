@@ -30,50 +30,51 @@ from matplotlib.ticker import FixedLocator
 import scipy.stats as ss
 from reliability.Distributions import Weibull_Distribution, Lognormal_Distribution, Normal_Distribution, Gamma_Distribution, Beta_Distribution, Exponential_Distribution
 from reliability.Nonparametric import KaplanMeier, NelsonAalen
-from reliability.Other_functions import round_to_decimals
 
 np.seterr('ignore')
 dec = 3  # number of decimals to use when rounding fitted parameters in labels
 
-# Custom scale functions
-def __weibull_forward(F):
-    return np.log(-np.log(1 - F))
+from reliability.Utils import axes_transforms, round_to_decimals
 
-
-def __weibull_inverse(R):
-    return 1 - np.exp(-np.exp(R))
-
-
-def __expon_forward(F):
-    return ss.expon.ppf(F)
-
-
-def __expon_inverse(R):
-    return ss.expon.cdf(R)
-
-
-def __normal_forward(F):
-    return ss.norm.ppf(F)
-
-
-def __normal_inverse(R):
-    return ss.norm.cdf(R)
-
-
-def __gamma_forward(F, beta):
-    return ss.gamma.ppf(F, a=beta)
-
-
-def __gamma_inverse(R, beta):
-    return ss.gamma.cdf(R, a=beta)
-
-
-def __beta_forward(F, alpha, beta):
-    return ss.beta.ppf(F, a=alpha, b=beta)
-
-
-def __beta_inverse(R, alpha, beta):
-    return ss.beta.cdf(R, a=alpha, b=beta)
+# # Custom scale functions
+# def __weibull_forward(F):
+#     return np.log(-np.log(1 - F))
+#
+#
+# def __weibull_inverse(R):
+#     return 1 - np.exp(-np.exp(R))
+#
+#
+# def __expon_forward(F):
+#     return ss.expon.ppf(F)
+#
+#
+# def __expon_inverse(R):
+#     return ss.expon.cdf(R)
+#
+#
+# def __normal_forward(F):
+#     return ss.norm.ppf(F)
+#
+#
+# def __normal_inverse(R):
+#     return ss.norm.cdf(R)
+#
+#
+# def __gamma_forward(F, beta):
+#     return ss.gamma.ppf(F, a=beta)
+#
+#
+# def __gamma_inverse(R, beta):
+#     return ss.gamma.cdf(R, a=beta)
+#
+#
+# def __beta_forward(F, alpha, beta):
+#     return ss.beta.ppf(F, a=alpha, b=beta)
+#
+#
+# def __beta_inverse(R, alpha, beta):
+#     return ss.beta.cdf(R, a=alpha, b=beta)
 
 
 def plotting_positions(failures=None, right_censored=None, h1=None, h2=None):
@@ -263,7 +264,7 @@ def Weibull_probability_plot(failures=None, right_censored=None, fit_gamma=False
     # plot the failure points and format the scale and axes
     x, y = plotting_positions(failures=failures, right_censored=right_censored, h1=h1, h2=h2)
     plt.scatter(x, y, marker='.', linewidth=2, c=data_color)
-    plt.gca().set_yscale('function', functions=(__weibull_forward, __weibull_inverse))
+    plt.gca().set_yscale('function', functions=(axes_transforms.weibull_forward, axes_transforms.weibull_inverse))
     plt.xscale('log')
     plt.grid(b=True, which='major', color='k', alpha=0.3, linestyle='-')
     plt.grid(b=True, which='minor', color='k', alpha=0.08, linestyle='-')
@@ -390,7 +391,7 @@ def Exponential_probability_plot_Weibull_Scale(failures=None, right_censored=Non
     # plot the failure points and format the scale and axes
     x, y = plotting_positions(failures=failures, right_censored=right_censored, h1=h1, h2=h2)
     plt.scatter(x, y, marker='.', linewidth=2, c=data_color)
-    plt.gca().set_yscale('function', functions=(__weibull_forward, __weibull_inverse))
+    plt.gca().set_yscale('function', functions=(axes_transforms.weibull_forward, axes_transforms.weibull_inverse))
     plt.xscale('log')
     plt.grid(b=True, which='major', color='k', alpha=0.3, linestyle='-')
     plt.grid(b=True, which='minor', color='k', alpha=0.08, linestyle='-')
@@ -436,7 +437,7 @@ def Normal_probability_plot(failures=None, right_censored=None, __fitted_dist_pa
         raise ValueError('Insufficient data to fit a distribution. Minimum number of points is 2')
     x, y = plotting_positions(failures=failures, right_censored=right_censored, h1=h1, h2=h2)
     plt.ylim([0.0001, 0.9999])
-    plt.gca().set_yscale('function', functions=(__normal_forward, __normal_inverse))
+    plt.gca().set_yscale('function', functions=(axes_transforms.normal_forward, axes_transforms.normal_inverse))
     plt.grid(b=True, which='major', color='k', alpha=0.3, linestyle='-')
     plt.grid(b=True, which='minor', color='k', alpha=0.08, linestyle='-')
     plt.gca().yaxis.set_minor_locator(FixedLocator(np.linspace(0, 1, 51)))
@@ -574,7 +575,7 @@ def Lognormal_probability_plot(failures=None, right_censored=None, fit_gamma=Fal
     # plot the failure points and format the scale and axes
     x, y = plotting_positions(failures=failures, right_censored=right_censored, h1=h1, h2=h2)
     plt.scatter(x, y, marker='.', linewidth=2, c=data_color)
-    plt.gca().set_yscale('function', functions=(__normal_forward, __normal_inverse))
+    plt.gca().set_yscale('function', functions=(axes_transforms.normal_forward, axes_transforms.normal_inverse))
     plt.xscale('log')
     plt.grid(b=True, which='major', color='k', alpha=0.3, linestyle='-')
     plt.grid(b=True, which='minor', color='k', alpha=0.08, linestyle='-')
@@ -648,8 +649,8 @@ def Beta_probability_plot(failures=None, right_censored=None, __fitted_dist_para
     plt.scatter(x, y, marker='.', linewidth=2, c=data_color)
     if show_fitted_distribution is True:
         bf = Beta_Distribution(alpha=alpha, beta=beta).CDF(show_plot=False, xvals=xvals)
-    f_beta = lambda x: __beta_forward(x, alpha, beta)
-    fi_beta = lambda x: __beta_inverse(x, alpha, beta)
+    f_beta = lambda x: axes_transforms.beta_forward(x, alpha, beta)
+    fi_beta = lambda x: axes_transforms.beta_inverse(x, alpha, beta)
     plt.gca().set_yscale('function', functions=(f_beta, fi_beta))
     plt.plot(xvals, bf, color=color, label=label, **kwargs)
     plt.title('Probability plot\nBeta CDF')
@@ -752,8 +753,8 @@ def Gamma_probability_plot(failures=None, right_censored=None, fit_gamma=False, 
     # plot the failure points and format the scale and axes
     x, y = plotting_positions(failures=failures, right_censored=right_censored, h1=h1, h2=h2)
     plt.scatter(x, y, marker='.', linewidth=2, c=data_color)
-    f_gamma = lambda x: __gamma_forward(x, beta)
-    fi_gamma = lambda x: __gamma_inverse(x, beta)
+    f_gamma = lambda x: axes_transforms.gamma_forward(x, beta)
+    fi_gamma = lambda x: axes_transforms.gamma_inverse(x, beta)
     plt.gca().set_yscale('function', functions=(f_gamma, fi_gamma))
     plt.grid(b=True, which='major', color='k', alpha=0.3, linestyle='-')
     plt.grid(b=True, which='minor', color='k', alpha=0.08, linestyle='-')
@@ -880,7 +881,7 @@ def Exponential_probability_plot(failures=None, right_censored=None, fit_gamma=F
     xrange = plt.gca().get_xlim()  # this ensures the previously plotted objects are considered when setting the range
     xrange_max = max(max(x) * 1.2, xrange[1])
     plt.xlim([0, xrange_max])
-    plt.gca().set_yscale('function', functions=(__expon_forward, __expon_inverse))
+    plt.gca().set_yscale('function', functions=(axes_transforms.expon_forward, axes_transforms.expon_inverse))
     plt.grid(b=True, which='major', color='k', alpha=0.3, linestyle='-')
     plt.grid(b=True, which='minor', color='k', alpha=0.08, linestyle='-')
     if max(y) < 0.9:

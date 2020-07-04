@@ -31,7 +31,7 @@ import warnings
 from reliability.Distributions import Weibull_Distribution, Gamma_Distribution, Beta_Distribution, Exponential_Distribution, Normal_Distribution, Lognormal_Distribution
 from reliability.Nonparametric import KaplanMeier
 from reliability.Probability_plotting import plotting_positions
-from reliability.Other_functions import round_to_decimals
+from reliability.Utils import round_to_decimals
 import autograd.numpy as anp
 from autograd import value_and_grad
 from autograd.scipy.special import gamma as agamma
