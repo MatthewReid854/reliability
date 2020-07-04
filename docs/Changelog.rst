@@ -5,7 +5,7 @@
 Changelog
 ---------
 
-**Version: 0.5.1 --- Released: 04 July 2020**
+**Version: 0.5.1 --- Not yet released. Scheduled for release on 05 July 2020**
 '''''''''''''''''''''''''''''''''''''''''''''
 
 **New features**
@@ -16,15 +16,15 @@ Changelog
 
 -    Some of the functions in reliability.Other_functions have been moved into reliability.Utils and reliability.Reliability_testing. The new layout is:
 
-     - Utils :math:`\rightarrow` round_to_decimals, transform_spaced, axes_transforms
-     - Other_functions ==> similar_distributions, convert_dataframe_to_grouped_lists, crosshairs, make_right_censored_data
-     - Reliability_testing ==> one_sample_proportion, two_proportion_test, sample_size_no_failures, sequential_sampling_chart, reliability_test_planner
+     - Utils :math:`\Rightarrow` round_to_decimals, transform_spaced, axes_transforms
+     - Other_functions :math:`\Rightarrow` similar_distributions, convert_dataframe_to_grouped_lists, crosshairs, make_right_censored_data
+     - Reliability_testing :math:`\Rightarrow` one_sample_proportion, two_proportion_test, sample_size_no_failures, sequential_sampling_chart, reliability_test_planner
      
 -    Within Other_functions.similar_distributions the option 'monte_carlo_trials' has been changes to 'samples' to reflect the fact that it is no longer a random sample.
 
 **Other**
 
--    Documentation updates to reflect the above API changes
+-    Documentation updates to reflect the API changes in Version 0.5.1
 
 
 **Version: 0.5.0 --- Released: 04 July 2020**
@@ -65,6 +65,7 @@ Changelog
 -    Added tests folder. This is planned to include automated tests.
 -    Created utils module. I plan to move some utilities into here that are currently inside other modules where users can access them, but users should never need to access them so they just create clutter in the dropdown lists of your IDE.
 -    Added Reliability_testing module. I plan to move everything related to reliability testing out of Other_functions as there is now enough functions to justify a new module dedicated to reliability testing.
+-    Documentation updates to reflect the changes in Version 0.5.0
 
 **Version: 0.4.9 --- Released: 27 April 2020**
 ''''''''''''''''''''''''''''''''''''''''''''''
@@ -75,4 +76,4 @@ Changelog
 
 **Other**
 
--    Addition of this changelog to the documentation
+-    Addition of this Changelog to the documentation
