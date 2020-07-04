@@ -15,7 +15,7 @@ import numpy as np
 from matplotlib.lines import Line2D
 from mplcursors import cursor
 import warnings
-
+#future coding note. Any functions with dependancies on other parts of reliability need to have their import statements internal to prevent circular import.
 
 class similar_distributions:
     '''
@@ -30,7 +30,7 @@ class similar_distributions:
     include_location_shifted - True/False. Default is True. When set to True it will include Weibull_3P, Lognormal_3P, Gamma_3P, Expon_2P
     show_plot - True/False. Default is True
     print_results - True/False. Default is True
-    monte_carlo_trials - the number of monte carlo trials to use in the calculation. Default is 1000. Using over 10000 will be very slow. Using less than 100 will be inaccurate and will be automatically reset to 100.
+    samples - the number of samples to use in the calculation. Default is 1000. Using over 10000 will be very slow. Using less than 100 will be inaccurate and will be automatically reset to 100.
     number_of_distributions_to_show - the number of similar distributions to show. Default is 3. If the number specified exceeds the number available (typically 8), then the number specified will automatically be reduced.
 
     Outputs:
@@ -44,7 +44,7 @@ class similar_distributions:
     similar_distributions(distribution=dist)
     '''
 
-    def __init__(self, distribution=None, include_location_shifted=True, show_plot=True, print_results=True, monte_carlo_trials=1000, number_of_distributions_to_show=3):
+    def __init__(self, distribution=None, include_location_shifted=True, show_plot=True, print_results=True, samples=1000, number_of_distributions_to_show=3):
 
         # these imports need to be here because there is a circular import error if they are at the top. This is caused by distributions calling round_to_decimals which sits in the module Other_functions which has this function that also calls on distributions
         from reliability.Distributions import Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution
@@ -52,15 +52,17 @@ class similar_distributions:
 
         if type(distribution) not in [Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution]:
             raise ValueError('distribution must be a probability distribution object from the reliability.Distributions module. First define the distribution using Reliability.Distributions.___')
-        if monte_carlo_trials < 100:
-            print('WARNING: Using less than 100 monte carlo trials will lead to extremely inaccurate results. The number of monte carlo trials has been changed to 100 to ensure accuracy.')
-            monte_carlo_trials = 100
-        elif monte_carlo_trials >= 100 and monte_carlo_trials < 1000:
-            print('WARNING: Using less than 1000 monte carlo trials will lead to inaccurate results.')
-        if monte_carlo_trials > 10000:
-            print('The recommended number of monte carlo trials is 1000. Using over 10000 may take a long time to calculate.')
+        if samples < 100:
+            print('WARNING: Using less than 100 samples will lead to extremely inaccurate results. The number of samples has been changed to 100 to ensure accuracy.')
+            samples = 100
+        elif samples >= 100 and samples < 1000:
+            print('WARNING: Using less than 1000 samples will lead to inaccurate results.')
+        elif samples >= 1000 and samples < 10000:
+            pass #this is fine
+        else: #samples > 10000 is too slow. print warning
+            print('The recommended number of samples is 1000. Using over 10000 may take a long time to calculate.')
 
-        RVS = distribution.random_samples(number_of_samples=monte_carlo_trials)  # draw random samples from the original distribution
+        RVS = distribution.quantile(np.linspace (0.001,0.999,samples)) #sample the CDF from 0.001 to 0.999. These samples will be used to fit all other distributions.
         # filter out negative values
         RVS_filtered = []
         negative_values_error = False
@@ -70,7 +72,7 @@ class similar_distributions:
             else:
                 negative_values_error = True
         if negative_values_error is True:
-            print('WARNING: The input distribution has non-negligible area for x<0. Monte carlo samples from this region have been discarded to enable other distributions to be fitted.')
+            print('WARNING: The input distribution has non-negligible area for x<0. Samples from this region have been discarded to enable other distributions to be fitted.')
 
         fitted_results = Fit_Everything(failures=RVS_filtered, print_results=False, show_probability_plot=False, show_histogram_plot=False, show_PP_plot=False)  # fit all distributions to the filtered samples
         ranked_distributions = list(fitted_results.results.index.values)
@@ -136,7 +138,7 @@ class similar_distributions:
             xupper = distribution.quantile(0.999)
             x_delta = xupper - xlower
             plt.subplot(121)
-            distribution.PDF(label='Input distribution', linestyle='--')
+            distribution.PDF(label=str('Input distribution ['+distribution.name2+']'), linestyle='--')
             while counter < number_of_distributions_to_show and counter < number_of_distributions_fitted:
                 ranked_distributions_objects[counter].PDF(label=ranked_distributions_labels[counter])
                 counter += 1
@@ -145,7 +147,7 @@ class similar_distributions:
             plt.title('PDF')
             counter = 0
             plt.subplot(122)
-            distribution.CDF(label='Input distribution', linestyle='--')
+            distribution.CDF(label=str('Input distribution ['+distribution.name2+']'), linestyle='--')
             while counter < number_of_distributions_to_show and counter < number_of_distributions_fitted:
                 ranked_distributions_objects[counter].CDF(label=ranked_distributions_labels[counter])
                 counter += 1

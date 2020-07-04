@@ -6,7 +6,7 @@ Similar Distributions
 '''''''''''''''''''''
 
 The function similar_distributions is a tool for finding the probability distributions that are most similar to an input distribution.
-It uses Monte Carlo sampling of an input distribution object to determine the best fitting and therefore most similar distributions.
+It samples the CDF of an input distribution and then fits all other distributions to those samples to determine the best fitting and therefore most similar distributions.
 
 Inputs
 
@@ -14,7 +14,7 @@ Inputs
 -   include_location_shifted - True/False. Default is True. When set to True it will include Weibull_3P, Lognormal_3P, Gamma_3P, Expon_2P
 -   show_plot - True/False. Default is True
 -   print_results - True/False. Default is True
--   monte_carlo_trials - the number of monte carlo trials to use in the calculation. Default is 1000. Using over 10000 will be very slow. Using less than 100 will be inaccurate and will be automatically reset to 100.
+-   samples - the number of samples to use in the calculation. Default is 1000. Using over 10000 will be very slow. Using less than 100 will be inaccurate and will be automatically reset to 100.
 -   number_of_distributions_to_show - the number of similar distributions to show. Default is 3. If the number specified exceeds the number available (typically 8), then the number specified will automatically be reduced.
 
 Outputs
