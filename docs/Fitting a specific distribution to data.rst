@@ -197,7 +197,7 @@ As a final example, we will fit a Gamma_2P distribution to some partially right 
     Beta: 3.960086262727073
     '''
     
-.. image:: images/Fit_Gamma_2P_right_cens_V3.png
+.. image:: images/Fit_Gamma_2P_right_cens_V4.png
 
 Using Fit_Weibull_2P_grouped for large data sets
 ------------------------------------------------
