@@ -5,12 +5,13 @@
 Changelog
 ---------
 
-**Version: 0.5.1 --- Not yet released. Scheduled for release on 05 July 2020**
+**Version: 0.5.1 --- Not yet released. Scheduled for release on 07 July 2020**
 '''''''''''''''''''''''''''''''''''''''''''''
 
 **New features**
 
 -    More efficient method used within Other_functions.similar_distributions. Results are always consistent and more accurate now.
+-    Other_functions.histogram. This plots a histogram with optimal bin width, better default formatting, and an option to shade bins white above a threshold.
 
 **API Changes**
 
