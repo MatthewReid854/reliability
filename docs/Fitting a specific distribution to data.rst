@@ -169,7 +169,7 @@ As a final example, we will fit a Gamma_2P distribution to some partially right 
     for sample_size in trials:
         dist = Gamma_Distribution(alpha=a, beta=b)
         raw_data = dist.random_samples(sample_size, seed=2)  # create some data. Seeded for repeatability
-        data = make_right_censored_data(raw_data, threshold=180) # right censor the data
+        data = make_right_censored_data(raw_data, threshold=threshold) # right censor the data
         gf = Fit_Gamma_2P(failures=data.failures, right_censored=data.right_censored, show_probability_plot=False, print_results=False)  # fit the Gamma_2P distribution
         print('\nFit_Gamma_2P parameters using', sample_size, 'samples:', '\nAlpha:', gf.alpha, '\nBeta:', gf.beta) #print the results
         plt.subplot(subplot_id)
