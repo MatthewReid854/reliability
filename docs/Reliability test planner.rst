@@ -44,7 +44,7 @@ In the example below, we have done a time-terminated reliability test for 19520 
 .. code:: python
 
     #example 1
-    from reliability.Other_functions import reliability_test_planner
+    from reliability.Reliability_testing import reliability_test_planner
     reliability_test_planner(test_duration=19520,CI=0.8,number_of_failures=7)
         
     '''
