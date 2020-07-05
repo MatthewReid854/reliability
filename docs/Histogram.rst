@@ -5,7 +5,7 @@
 Histogram
 '''''''''
 
-This function plots a histogram using the matplotlib histogram (plt.hist()), but adds some additional features. Default formatting is improved. The number of bins is optimized using the `Freedman–Diaconis rule <https://en.wikipedia.org/wiki/Freedman%E2%80%93Diaconis_rule>`_, and there is an option to shade the bins white above a chosen threshold. If you would like to specify the number of bins rather than having the optimal number calculated, then the bins argument allows this.
+This function plots a histogram using the matplotlib histogram (plt.hist()), but adds some additional features. Default formatting is improved, the number of bins is optimized using the `Freedman–Diaconis rule <https://en.wikipedia.org/wiki/Freedman%E2%80%93Diaconis_rule>`_, and there is an option to shade the bins white above a chosen threshold. If you would like to specify the number of bins rather than having the optimal number calculated, then the bins argument allows this.
 
 Inputs:
 
@@ -15,6 +15,8 @@ Inputs:
 -   density - True/False. Default is True. Always use True if plotting with a probability distribution.
 -   cumulative - True/False. Default is False. Use False for PDF and True for CDF.
 -   kwargs - plotting kwargs for the histogram (color, alpha, etc.)
+
+The following example shows the difference between the appearance of the default histogram in matplotlib, and the histogram in reliability.
 
 .. code:: python
 
@@ -33,15 +35,15 @@ Inputs:
     
     plt.subplot(121)
     gf.distribution.PDF()
-    plt.hist(raw_data,density=True) # default histogram from matplotlib
+    plt.hist(raw_data, density=True) # default histogram from matplotlib
     plt.title('matplotlib histogram')
     
     plt.subplot(122)
     gf.distribution.PDF()
-    histogram(raw_data,white_above=threshold) # histogram from reliability - better formatting, optimal bin width, white_above option
+    histogram(raw_data, white_above=threshold) # histogram from reliability - better formatting, optimal bin width, white_above option
     plt.title('reliability histogram')
     
-    plt.subplots_adjust(right=0.95,wspace=0.38)
+    plt.subplots_adjust(right=0.95, wspace=0.38)
     plt.show()
 
 .. image:: images/histogram.png
