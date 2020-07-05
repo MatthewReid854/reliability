@@ -29,6 +29,8 @@ The supported distributions are:
 
 .. note:: Heavily censored data (>99.9% censoring) may result in a failure of the optimizer to find a solution. If you have heavily censored data, you may have a limited failure population problem. It is recommended that you do not try fitting one of these standard distributions to such a dataset as your results (while they may have achieved a successful fit) will be a poor description of your overall population statistic and you risk drawing the wrong conclusions when the wrong model is fitted. The limited failure population model is planned for a future release of reliability, though development on this model is yet to commence. In the meantime, see JMP Pro's model for `Defective Subpopulations. <https://www.jmp.com/en_my/events/ondemand/statistical-methods-in-reliability/defective-subpopulation-distributions.html>`_
 
+.. note:: The confidence intervals shown on the plots below are only available for the Exponential (1P and 2P) and Weibull (2P and 3P) fitters. This library is in active development and over the next few months the confidence intervals will be added to the Normal and Lognormal Fitters followed by the Gamma and Beta Fitters.
+
 If you do not know which distribution you want to fit, then please see the `section <https://reliability.readthedocs.io/en/latest/Fitting%20all%20available%20distributions%20to%20data.html>`_ on using the Fit_Everything function which will find the best distribution to describe your data. It is highly recommended that you always try to fit everything and accept the best fit rather than choosing a particular distribution for other reasons.
 
 Each of the fitters listed above (except Fit_Weibull_Mixture and Fit_Weibull_2P_grouped) has the following inputs and outputs:
@@ -76,12 +78,12 @@ To learn how we can fit a distribution, we will start by using a simple example 
     Results from Fit_Weibull_2P (95% CI):
                Point Estimate  Standard Error   Lower CI   Upper CI
     Parameter                                                      
-    Alpha           56.682270        6.062572  45.962661  69.901951
-    Beta             3.141684        0.733552   1.987995   4.964890
-    Log-Likelihood: -42.426310509309616
+    Alpha           56.682213        6.062570  45.962610  69.901889
+    Beta             3.141680        0.733552   1.987993   4.964886
+    Log-Likelihood: -42.4263105092607
     '''
 
-.. image:: images/Fit_Weibull_2P.png
+.. image:: images/Fit_Weibull_2P_V2.png
 
 The above probability plot is the typical way to visualise how the CDF (the red line) models the failure data (the black points). If you would like to view the failure points alongside the CDF, SF, or CHF without the axis being scaled then you can generate the scatter plot using the function plot_points which is available within reliability.Probability_plotting. In the example below we create some data, then fit a Weibull distribution to the data (ensuring we turn off the probability plot). From the fitted distribution object we plot the Survival Function (SF). We then use plot_points to generate a scatter plot of the plotting positions for the survival function.
 
@@ -106,51 +108,46 @@ For the function plot_points the inputs are:
     plt.legend()
     plt.show()
 
-.. image:: images/plot_points.png
+.. image:: images/plot_points_V2.png
 
-It is beneficial to see the effectiveness of the fitted distribution in comparison to the original distribution. In this second example, we are creating 500 samples from a Weibull distribution and then we will right censor all of the data above our chosen threshold. Then we are fitting a Weibull_3P distribution to the data. Note that we need to specify "show_probability_plot=False, print_results=False" in the Fit_Weibull_3P to prevent the normal outputs from the fitting functions from being displayed.
+It is beneficial to see the effectiveness of the fitted distribution in comparison to the original distribution. In this second example, we are creating 500 samples from a Weibull distribution and then we will right censor all of the data above our chosen threshold. Then we are fitting a Weibull_3P distribution to the data. Note that we need to specify "show_probability_plot=False, print_results=False" in the Fit_Weibull_3P to prevent the normal outputs of the fitting function from being displayed.
 
 .. code:: python
 
     from reliability.Distributions import Weibull_Distribution
     from reliability.Fitters import Fit_Weibull_3P
+    from reliability.Other_functions import make_right_censored_data
     import matplotlib.pyplot as plt
     import numpy as np
-    np.random.seed(2)  # this is just for repeatability in this tutorial
+
     a = 30
     b = 2
     g = 20
-    uncensored_failure_data = Weibull_Distribution(alpha=a, beta=b, gamma=g).random_samples(500)  # create some data
-    cens = []
-    fail = []
-    threshold = 55  # censoring cutoff
-    for item in uncensored_failure_data:
-        if item >= threshold:  # this will right censor any value above the threshold
-            cens.append(threshold)
-        else:
-            fail.append(item)
-    print('There are' ,len(cens) ,'censored items.')
-    wbf = Fit_Weibull_3P(failures=fail, right_censored=cens,show_probability_plot=False,print_results=False)  # fit the Weibull_3P distribution
+    threshold=55
+    dist = Weibull_Distribution(alpha=a, beta=b, gamma=g) # generate a weibull distribution
+    raw_data = dist.random_samples(500, seed=2)  # create some data from the distribution
+    data = make_right_censored_data(raw_data,threshold=threshold) #right censor some of the data
+    print('There are', len(data.right_censored), 'right censored items.')
+    wbf = Fit_Weibull_3P(failures=data.failures, right_censored=data.right_censored, show_probability_plot=False, print_results=False)  # fit the Weibull_3P distribution
     print('Fit_Weibull_3P parameters:\nAlpha:', wbf.alpha, '\nBeta:', wbf.beta, '\nGamma', wbf.gamma)
-    xvals = np.linspace(0 ,150 ,1000)
-    N ,bins ,patches = plt.hist(uncensored_failure_data, density=True, alpha=0.2, color='k', bins=30, edgecolor='k')  # histogram of the data
-    for i in range(np.argmin(abs(np.array(bins ) -threshold)) ,len(patches)):  # this is to shade the censored part of the histogram as white
+    N, bins, patches = plt.hist(raw_data, density=True, alpha=0.2, color='k', bins=30, edgecolor='k')  # histogram of the data
+    for i in range(np.argmin(abs(np.array(bins) - threshold)), len(patches)):  # this is to shade the censored part of the histogram as white
         patches[i].set_facecolor('white')
-    Weibull_Distribution(alpha=a ,beta=b ,gamma=g).PDF(xvals=xvals ,label='True Distribution')  # plots the true distribution
-    Weibull_Distribution(alpha=wbf.alpha, beta=wbf.beta, gamma=wbf.gamma).PDF(xvals=xvals, label='Fit_Weibull_3P' ,linestyle='--')  # plots the fitted Weibull_3P
+    dist.PDF(label='True Distribution')  # plots the true distribution's PDF
+    wbf.distribution.PDF(label='Fit_Weibull_3P', linestyle='--')  # plots to PDF of the fitted Weibull_3P
     plt.title('Fitting comparison for failures and right censored data')
     plt.legend()
     plt.show()
 
     '''
-    There are 118 censored items.
+    There are 118 right censored items.
     Fit_Weibull_3P parameters:
-    Alpha: 28.836512482682533 
-    Beta: 2.0244823663812843 
-    Gamma 20.42077009102205
+    Alpha: 28.87483648004299 
+    Beta: 2.0295019039127347 
+    Gamma 20.383900235710296
     '''
 
-.. image:: images/Fit_Weibull_3P_right_cens_V2.png
+.. image:: images/Fit_Weibull_3P_right_cens_V3.png
 
 As a final example, we will fit a Gamma_2P distribution to some partially right censored data. To provide a comparison of the fitting accuracy as the number of samples increases, we will do the same experiment with varying sample sizes. The results highlight that the accuracy of the fit is proportional to the amount of samples, so you should always try to obtain more data if possible.
 
@@ -158,63 +155,58 @@ As a final example, we will fit a Gamma_2P distribution to some partially right 
 
     from reliability.Distributions import Gamma_Distribution
     from reliability.Fitters import Fit_Gamma_2P
+    from reliability.Other_functions import make_right_censored_data
     import matplotlib.pyplot as plt
     import numpy as np
 
-    np.random.seed(2)  # this is just for repeatability in this tutorial
     a = 30
     b = 4
-    xvals = np.linspace(0, 500, 1000)
-
+    threshold = 180  # this is used when right censoring the data
     trials = [10, 100, 1000, 10000]
     subplot_id = 141
     plt.figure(figsize=(12, 5))
-    for t in trials:
-        uncensored_failure_data = Gamma_Distribution(alpha=a, beta=b).random_samples(t)  # create some data
-        cens = []
-        fail = []
-        threshold = 180  # censoring cutoff
-        for item in uncensored_failure_data:
-            if item > threshold:  # this will right censor any value above the threshold
-                cens.append(threshold)
-            else:
-                fail.append(item)
-        gf = Fit_Gamma_2P(failures=fail, right_censored=cens, show_probability_plot=False, print_results=False)  # fit the Gamma_2P distribution
-        print('\nFit_Gamma_2P parameters using', t, 'samples:', '\nAlpha:', gf.alpha, '\nBeta:', gf.beta)
+
+    for sample_size in trials:
+        dist = Gamma_Distribution(alpha=a, beta=b)
+        raw_data = dist.random_samples(sample_size, seed=2)  # create some data. Seeded for repeatability
+        data = make_right_censored_data(raw_data, threshold=180) # right censor the data
+        gf = Fit_Gamma_2P(failures=data.failures, right_censored=data.right_censored, show_probability_plot=False, print_results=False)  # fit the Gamma_2P distribution
+        print('\nFit_Gamma_2P parameters using', sample_size, 'samples:', '\nAlpha:', gf.alpha, '\nBeta:', gf.beta) #print the results
         plt.subplot(subplot_id)
-        num_bins = min(int(len(fail) / 2), 30)
-        N, bins, patches = plt.hist(uncensored_failure_data, density=True, alpha=0.2, color='k', bins=num_bins, edgecolor='k')  # histogram of the data
-        for i in range(np.argmin(abs(np.array(bins ) -threshold)) ,len(patches)):  # this is to shade the censored part of the histogram as white
+        num_bins = min(int(len(data.failures) / 2), 30)
+        N, bins, patches = plt.hist(raw_data, density=True, alpha=0.2, color='k', bins=num_bins, edgecolor='k')  # histogram of the data
+        for i in range(np.argmin(abs(np.array(bins) - threshold)), len(patches)):  # this is to shade the censored part of the histogram as white
             patches[i].set_facecolor('white')
-        Gamma_Distribution(alpha=a, beta=b).PDF(xvals=xvals, label='True')  # plots the true distribution
-        Gamma_Distribution(alpha=gf.alpha, beta=gf.beta).PDF(xvals=xvals, label='Fitted', linestyle='--')  # plots the fitted Gamma_2P
-        plt.title(str(str(t) + ' samples\n'+r'$\alpha$ error: '+str(round(abs(gf.alpha-a)/a*100,2))+'%\n'+r'$\beta$ error: '+str(round(abs(gf.beta-b)/b*100,2))+'%'))
+        dist.PDF(label='True')  # plots the true distribution
+        gf.distribution.PDF(label='Fitted', linestyle='--')  # plots the fitted Gamma_2P distribution
+        plt.title(str(str(sample_size) + ' samples\n' + r'$\alpha$ error: ' + str(round(abs(gf.alpha - a) / a * 100, 2)) + '%\n' + r'$\beta$ error: ' + str(round(abs(gf.beta - b) / b * 100, 2)) + '%'))
         plt.ylim([0, 0.012])
         plt.xlim([0, 500])
         plt.legend()
         subplot_id += 1
+
     plt.subplots_adjust(left=0.09, right=0.96, wspace=0.41)
     plt.show()
 
     '''
     Fit_Gamma_2P parameters using 10 samples: 
-    Alpha: 19.426045595196136 
-    Beta: 4.690125911226989
+    Alpha: 19.426036067937076 
+    Beta: 4.690126148584235
 
     Fit_Gamma_2P parameters using 100 samples: 
-    Alpha: 37.668605543885036 
-    Beta: 3.282138545140892
+    Alpha: 36.26423078012859 
+    Beta: 3.292935791420746
 
     Fit_Gamma_2P parameters using 1000 samples: 
-    Alpha: 28.836133518634924 
-    Beta: 4.07244603642164
+    Alpha: 28.825237245698354 
+    Beta: 4.062929181298052
 
     Fit_Gamma_2P parameters using 10000 samples: 
-    Alpha: 30.703267251417966 
-    Beta: 3.9158594820597834
+    Alpha: 30.30127379917658 
+    Beta: 3.960086262727073
     '''
-
-.. image:: images/Fit_Gamma_2P_right_cens.png
+    
+.. image:: images/Fit_Gamma_2P_right_cens_V2.png
 
 Using Fit_Weibull_2P_grouped for large data sets
 ------------------------------------------------
@@ -225,7 +217,7 @@ The function Fit_Weibull_2P_grouped is effectively the same as Fit_Weibull_2P, e
 - optimizer - 'L-BFGS-B' or 'TNC'. These are both bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see the `scipy documentation <https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize>`_.
 - dataframe - a pandas dataframe of the appropriate format. The requirements of the input dataframe are: The column titles MUST be 'category', 'time', 'quantity'. The category values MUST be 'F' for failure or 'C' for censored (right censored). The time values are the failure or right censored times. The quantity is the number of items at that time. The quantity must be specified for all values even if the quantity is 1.
 
-The following example shows how we can use Fit_Weibull_2P_grouped to fit a Weibull_2P distribution to grouped data from a spreadsheet (shown below) on the Windows desktop. We change the optimiser from the default (L-BFGS-B) to TNC as it is more successful for this dataset. In almost all cases the L-BFGS-B optimizer is better than TNC but it is worth trying both if the first does not look good. You may also want to try changing the initial_guess_method as the results from the optimizers can be sensitive to their initial guess for problems in which there are local minima or insufficient gradients to find the global minima. If you would like to access this data, it is available in reliability.Datasets.electronics and includes both the failures and right_censored format as well as the dataframe format.
+The following example shows how we can use Fit_Weibull_2P_grouped to fit a Weibull_2P distribution to grouped data from a spreadsheet (shown below) on the Windows desktop. We change the optimiser from the default (L-BFGS-B) to TNC as it is more successful for this dataset. In almost all cases the L-BFGS-B optimizer is better than TNC but it is worth trying both if the first does not look good. You may also want to try changing the initial_guess_method as the results from the optimizers can be sensitive to their initial guess for problems in which there are local minima or insufficient gradients to find the global minima. If you would like to access this data, it is available in reliability.Datasets.electronics and includes both the failures and right_censored format as well as the dataframe format. An example of this is provided in the code below (option 2).
 
 .. image:: images/grouped_excel.png
 
@@ -234,10 +226,16 @@ The following example shows how we can use Fit_Weibull_2P_grouped to fit a Weibu
     from reliability.Fitters import Fit_Weibull_2P_grouped
     import pandas as pd
 
+    # option 1 for importing this dataset (from an excel file on your desktop)
     filename = 'C:\\Users\\Current User\\Desktop\\data.xlsx'
     df = pd.read_excel(io=filename)
+    
+    ## option 2 for importing this dataset (from the dataset in reliability)
+    # from reliability.Datasets import electronics
+    # df = electronics().dataframe
+    
     print(df.head(15),'\n')
-    Fit_Weibull_2P_grouped(dataframe=df, optimizer='TNC', show_probability_plot=False)
+    Fit_Weibull_2P_grouped(dataframe=df, optimizer='TNC', show_probability_plot=False) #note that the TNC optimiser usually underperforms the default (L-BFGS-B) optimiser but in this case it is better
 
     '''
          time  quantity category
@@ -260,9 +258,9 @@ The following example shows how we can use Fit_Weibull_2P_grouped to fit a Weibu
     Results from Fit_Weibull_2P_grouped (95% CI):
                Point Estimate  Standard Error      Lower CI      Upper CI
     Parameter                                                            
-    Alpha        6.120094e+21    7.615825e+22  1.564711e+11  2.393769e+32
-    Beta         1.537886e-01    4.830821e-02  8.308907e-02  2.846455e-01
-    Log-Likelihood: -144.61675902805456
+    Alpha        6.205380e+21    7.780317e+22  1.319435e+11  2.918427e+32
+    Beta         1.537356e-01    4.863029e-02  8.270253e-02  2.857789e-01
+    Log-Likelihood: -144.61675864154972
     Number of failures: 10 
     Number of right censored: 4072 
     Fraction censored: 99.75502 %
