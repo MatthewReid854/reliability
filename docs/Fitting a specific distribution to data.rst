@@ -116,9 +116,8 @@ It is beneficial to see the effectiveness of the fitted distribution in comparis
 
     from reliability.Distributions import Weibull_Distribution
     from reliability.Fitters import Fit_Weibull_3P
-    from reliability.Other_functions import make_right_censored_data
+    from reliability.Other_functions import make_right_censored_data, histogram
     import matplotlib.pyplot as plt
-    import numpy as np
 
     a = 30
     b = 2
@@ -130,9 +129,7 @@ It is beneficial to see the effectiveness of the fitted distribution in comparis
     print('There are', len(data.right_censored), 'right censored items.')
     wbf = Fit_Weibull_3P(failures=data.failures, right_censored=data.right_censored, show_probability_plot=False, print_results=False)  # fit the Weibull_3P distribution
     print('Fit_Weibull_3P parameters:\nAlpha:', wbf.alpha, '\nBeta:', wbf.beta, '\nGamma', wbf.gamma)
-    N, bins, patches = plt.hist(raw_data, density=True, alpha=0.2, color='k', bins=30, edgecolor='k')  # histogram of the data
-    for i in range(np.argmin(abs(np.array(bins) - threshold)), len(patches)):  # this is to shade the censored part of the histogram as white
-        patches[i].set_facecolor('white')
+    histogram(raw_data,white_above=threshold) # generates the histogram using optimal bin width and shades the censored part as white
     dist.PDF(label='True Distribution')  # plots the true distribution's PDF
     wbf.distribution.PDF(label='Fit_Weibull_3P', linestyle='--')  # plots to PDF of the fitted Weibull_3P
     plt.title('Fitting comparison for failures and right censored data')
@@ -147,7 +144,7 @@ It is beneficial to see the effectiveness of the fitted distribution in comparis
     Gamma 20.383900235710296
     '''
 
-.. image:: images/Fit_Weibull_3P_right_cens_V3.png
+.. image:: images/Fit_Weibull_3P_right_cens_V4.png
 
 As a final example, we will fit a Gamma_2P distribution to some partially right censored data. To provide a comparison of the fitting accuracy as the number of samples increases, we will do the same experiment with varying sample sizes. The results highlight that the accuracy of the fit is proportional to the amount of samples, so you should always try to obtain more data if possible.
 
@@ -155,28 +152,23 @@ As a final example, we will fit a Gamma_2P distribution to some partially right 
 
     from reliability.Distributions import Gamma_Distribution
     from reliability.Fitters import Fit_Gamma_2P
-    from reliability.Other_functions import make_right_censored_data
+    from reliability.Other_functions import make_right_censored_data, histogram
     import matplotlib.pyplot as plt
-    import numpy as np
 
     a = 30
     b = 4
     threshold = 180  # this is used when right censoring the data
     trials = [10, 100, 1000, 10000]
     subplot_id = 141
-    plt.figure(figsize=(12, 5))
-
+    plt.figure(figsize=(15, 5))
     for sample_size in trials:
         dist = Gamma_Distribution(alpha=a, beta=b)
         raw_data = dist.random_samples(sample_size, seed=2)  # create some data. Seeded for repeatability
-        data = make_right_censored_data(raw_data, threshold=threshold) # right censor the data
+        data = make_right_censored_data(raw_data, threshold=threshold)  # right censor the data
         gf = Fit_Gamma_2P(failures=data.failures, right_censored=data.right_censored, show_probability_plot=False, print_results=False)  # fit the Gamma_2P distribution
-        print('\nFit_Gamma_2P parameters using', sample_size, 'samples:', '\nAlpha:', gf.alpha, '\nBeta:', gf.beta) #print the results
+        print('\nFit_Gamma_2P parameters using', sample_size, 'samples:', '\nAlpha:', gf.alpha, '\nBeta:', gf.beta)  # print the results
         plt.subplot(subplot_id)
-        num_bins = min(int(len(data.failures) / 2), 30)
-        N, bins, patches = plt.hist(raw_data, density=True, alpha=0.2, color='k', bins=num_bins, edgecolor='k')  # histogram of the data
-        for i in range(np.argmin(abs(np.array(bins) - threshold)), len(patches)):  # this is to shade the censored part of the histogram as white
-            patches[i].set_facecolor('white')
+        histogram(raw_data,white_above=threshold) # plots the histogram using optimal bin width and shades the right censored part white
         dist.PDF(label='True')  # plots the true distribution
         gf.distribution.PDF(label='Fitted', linestyle='--')  # plots the fitted Gamma_2P distribution
         plt.title(str(str(sample_size) + ' samples\n' + r'$\alpha$ error: ' + str(round(abs(gf.alpha - a) / a * 100, 2)) + '%\n' + r'$\beta$ error: ' + str(round(abs(gf.beta - b) / b * 100, 2)) + '%'))
@@ -184,8 +176,7 @@ As a final example, we will fit a Gamma_2P distribution to some partially right 
         plt.xlim([0, 500])
         plt.legend()
         subplot_id += 1
-
-    plt.subplots_adjust(left=0.09, right=0.96, wspace=0.41)
+    plt.subplots_adjust(left=0.07, right=0.97, wspace=0.33)
     plt.show()
 
     '''
