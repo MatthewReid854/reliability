@@ -15,7 +15,8 @@ import numpy as np
 from matplotlib.lines import Line2D
 from mplcursors import cursor
 import warnings
-#future coding note. Any functions with dependancies on other parts of reliability need to have their import statements internal to prevent circular import.
+from reliability.Distributions import Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution
+from reliability.Fitters import Fit_Everything
 
 class similar_distributions:
     '''
@@ -30,7 +31,6 @@ class similar_distributions:
     include_location_shifted - True/False. Default is True. When set to True it will include Weibull_3P, Lognormal_3P, Gamma_3P, Expon_2P
     show_plot - True/False. Default is True
     print_results - True/False. Default is True
-    samples - the number of samples to use in the calculation. Default is 1000. Using over 10000 will be very slow. Using less than 100 will be inaccurate and will be automatically reset to 100.
     number_of_distributions_to_show - the number of similar distributions to show. Default is 3. If the number specified exceeds the number available (typically 8), then the number specified will automatically be reduced.
 
     Outputs:
@@ -44,25 +44,14 @@ class similar_distributions:
     similar_distributions(distribution=dist)
     '''
 
-    def __init__(self, distribution=None, include_location_shifted=True, show_plot=True, print_results=True, samples=1000, number_of_distributions_to_show=3):
-
-        # these imports need to be here because there is a circular import error if they are at the top. This is caused by distributions calling round_to_decimals which sits in the module Other_functions which has this function that also calls on distributions
-        from reliability.Distributions import Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution
-        from reliability.Fitters import Fit_Everything
-
+    def __init__(self, distribution, include_location_shifted=True, show_plot=True, print_results=True, number_of_distributions_to_show=3):
+        #ensure the input is a distribution object
         if type(distribution) not in [Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution]:
             raise ValueError('distribution must be a probability distribution object from the reliability.Distributions module. First define the distribution using Reliability.Distributions.___')
-        if samples < 100:
-            print('WARNING: Using less than 100 samples will lead to extremely inaccurate results. The number of samples has been changed to 100 to ensure accuracy.')
-            samples = 100
-        elif samples >= 100 and samples < 1000:
-            print('WARNING: Using less than 1000 samples will lead to inaccurate results.')
-        elif samples >= 1000 and samples < 10000:
-            pass #this is fine
-        else: #samples > 10000 is too slow. print warning
-            print('The recommended number of samples is 1000. Using over 10000 may take a long time to calculate.')
 
-        RVS = distribution.quantile(np.linspace (0.001,0.999,samples)) #sample the CDF from 0.001 to 0.999. These samples will be used to fit all other distributions.
+        # sample the CDF from 0.001 to 0.999. These samples will be used to fit all other distributions.
+        RVS = distribution.quantile(np.linspace (0.001,0.999,698)) #698 samples is the ideal number for the points to align. Evidenced using plot_points.
+
         # filter out negative values
         RVS_filtered = []
         negative_values_error = False
