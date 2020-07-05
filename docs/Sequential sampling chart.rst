@@ -26,7 +26,7 @@ In the example below, we use the inputs p1=0.01, p2=0.10, alpha=0.05, beta=0.10.
 
 .. code:: python
 
-    from reliability.Other_functions import sequential_samling_chart
+    from reliability.Reliability_testing import sequential_samling_chart
     test_results = [0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1]
     sequential_samling_chart(p1=0.01,p2=0.10,alpha=0.05,beta=0.10,test_results=test_results)
 
