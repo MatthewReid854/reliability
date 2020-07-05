@@ -14,7 +14,6 @@ Inputs
 -   include_location_shifted - True/False. Default is True. When set to True it will include Weibull_3P, Lognormal_3P, Gamma_3P, Expon_2P
 -   show_plot - True/False. Default is True
 -   print_results - True/False. Default is True
--   samples - the number of samples to use in the calculation. Default is 1000. Using over 10000 will be very slow. Using less than 100 will be inaccurate and will be automatically reset to 100.
 -   number_of_distributions_to_show - the number of similar distributions to show. Default is 3. If the number specified exceeds the number available (typically 8), then the number specified will automatically be reduced.
 
 Outputs
