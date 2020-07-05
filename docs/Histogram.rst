@@ -12,7 +12,9 @@ Inputs:
 -   data - the data to plot. Array or list.
 -   white_above - bins above this value will be shaded white
 -   bins - the number of bins to use. Must be int. Leave empty to have the optimal number calculated automatically
--   plotting kwargs for the histogram (color, alpha, etc.) are accepted
+-   density - True/False. Default is True. Always use True if plotting with a probability distribution.
+-   cumulative - True/False. Default is False. Use False for PDF and True for CDF.
+-   kwargs - plotting kwargs for the histogram (color, alpha, etc.)
 
 .. code:: python
 

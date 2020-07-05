@@ -149,7 +149,7 @@ class similar_distributions:
             plt.show()
 
 
-def histogram(data, white_above=None, bins=None, **kwargs):
+def histogram(data, white_above=None, bins=None, density=True, cumulative=False, **kwargs):
     '''
     histogram
 
@@ -162,6 +162,8 @@ def histogram(data, white_above=None, bins=None, **kwargs):
     data - the data to plot. Array or list.
     white_above - bins above this value will be shaded white
     bins - the number of bins to use. Must be int. Leave empty to have the optimal number calculated automatically
+    density - True/False. Default is True. Always use True if plotting with a probability distribution.
+    cumulative - True/False. Default is False. Use False for PDF and True for CDF.
     kwargs - plotting kwargs for the histogram (color, alpha, etc.)
     '''
 
@@ -201,7 +203,7 @@ def histogram(data, white_above=None, bins=None, **kwargs):
     else:
         linewidth = 0.5
 
-    _, bins_out, patches = plt.hist(data, density=True, color=color, bins=bins, edgecolor=edgecolor, linewidth=linewidth, **kwargs)  # plots the histogram of the data
+    _, bins_out, patches = plt.hist(data, density=density, cumulative=cumulative, color=color, bins=bins, edgecolor=edgecolor, linewidth=linewidth, **kwargs)  # plots the histogram of the data
 
     if white_above is not None:
         for i in range(np.argmin(abs(np.array(bins_out) - white_above)), len(patches)):  # this is to shade part of the histogram as white
