@@ -159,8 +159,8 @@ As a final example, we will fit a Gamma_2P distribution to some partially right 
     b = 4
     threshold = 180  # this is used when right censoring the data
     trials = [10, 100, 1000, 10000]
-    subplot_id = 141
-    plt.figure(figsize=(15, 5))
+    subplot_id = 221
+    plt.figure(figsize=(9, 7))
     for sample_size in trials:
         dist = Gamma_Distribution(alpha=a, beta=b)
         raw_data = dist.random_samples(sample_size, seed=2)  # create some data. Seeded for repeatability
@@ -176,7 +176,7 @@ As a final example, we will fit a Gamma_2P distribution to some partially right 
         plt.xlim([0, 500])
         plt.legend()
         subplot_id += 1
-    plt.subplots_adjust(left=0.07, right=0.97, wspace=0.33)
+    plt.subplots_adjust(left=0.11, bottom=0.08, right=0.95, top=0.89, wspace=0.33, hspace=0.58)
     plt.show()
 
     '''
