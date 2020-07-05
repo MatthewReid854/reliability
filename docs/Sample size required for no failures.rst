@@ -21,7 +21,7 @@ As an example, consider a scenario in which we want to be sure that a batch of L
 
 .. code:: python
 
-    from reliability.Other_functions import sample_size_no_failures
+    from reliability.Reliability_testing import sample_size_no_failures
     result = sample_size_no_failures(reliability=0.999)
     print(result)
     
