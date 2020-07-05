@@ -24,7 +24,7 @@ Outputs
 -   results - an array of distributions objects ranked in order of best fit.
 -   most_similar_distribution - a distribution object. This is the first item from results.
 
-In the example below, we create a Normal Distribution object using the reliability.Distributions module. We then provide the Normal Distribution as input to simiar_distributions and the output reveals the top 3 most similar distributions. The optional input of include_location_shifted has been set to False.
+In the example below, we create a Weibull Distribution object using the reliability.Distributions module. We then provide the Weibull Distribution as input to simiar_distributions and the output reveals the top 3 most similar distributions. The optional input of include_location_shifted has been set to False.
 
 .. code:: python
 
@@ -36,11 +36,11 @@ In the example below, we create a Normal Distribution object using the reliabili
     '''
     The input distribution was:
     Weibull Distribution (α=50,β=3.3)
-
+    
     The top 3 most similar distributions are:
-    Normal Distribution (μ=44.942029160424156,σ=15.088282988835628)
-    Gamma Distribution (α=6.208189340870667,β=7.2391525064583995)
-    Lognormal Distribution (μ=3.734717404112832,σ=0.40754640953862314)
+    Normal Distribution (μ=44.8471,σ=14.9226)
+    Gamma Distribution (α=5.7607,β=7.7849)
+    Lognormal Distribution (μ=3.7377,σ=0.3856)
     '''
     
-.. image:: images/similar_distribution_2.png
+.. image:: images/similar_distributions_3.png
