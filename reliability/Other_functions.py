@@ -6,6 +6,7 @@ Included functions are:
 similar_distributions - finds the parameters of distributions that are similar to the input distribution and plots the results.
 convert_dataframe_to_grouped_lists - groups values in a 2-column dataframe based on the values in the left column and returns those groups in a list of lists
 make_right_censored_data - a simple tool to right censor a complete dataset based on a threshold. Primarily used for testing Fitters when some right censored data is needed.
+histogram - generates a histogram with optimal bin width and has an option to shade some bins white above a chosen threshold.
 crosshairs - adds x,y crosshairs to plots based on mouse position
 '''
 
@@ -17,6 +18,7 @@ from mplcursors import cursor
 import warnings
 from reliability.Distributions import Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution
 from reliability.Fitters import Fit_Everything
+
 
 class similar_distributions:
     '''
@@ -45,12 +47,12 @@ class similar_distributions:
     '''
 
     def __init__(self, distribution, include_location_shifted=True, show_plot=True, print_results=True, number_of_distributions_to_show=3):
-        #ensure the input is a distribution object
+        # ensure the input is a distribution object
         if type(distribution) not in [Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution]:
             raise ValueError('distribution must be a probability distribution object from the reliability.Distributions module. First define the distribution using Reliability.Distributions.___')
 
         # sample the CDF from 0.001 to 0.999. These samples will be used to fit all other distributions.
-        RVS = distribution.quantile(np.linspace (0.001,0.999,698)) #698 samples is the ideal number for the points to align. Evidenced using plot_points.
+        RVS = distribution.quantile(np.linspace(0.001, 0.999, 698))  # 698 samples is the ideal number for the points to align. Evidenced using plot_points.
 
         # filter out negative values
         RVS_filtered = []
@@ -127,7 +129,7 @@ class similar_distributions:
             xupper = distribution.quantile(0.999)
             x_delta = xupper - xlower
             plt.subplot(121)
-            distribution.PDF(label=str('Input distribution ['+distribution.name2+']'), linestyle='--')
+            distribution.PDF(label=str('Input distribution [' + distribution.name2 + ']'), linestyle='--')
             while counter < number_of_distributions_to_show and counter < number_of_distributions_fitted:
                 ranked_distributions_objects[counter].PDF(label=ranked_distributions_labels[counter])
                 counter += 1
@@ -136,7 +138,7 @@ class similar_distributions:
             plt.title('PDF')
             counter = 0
             plt.subplot(122)
-            distribution.CDF(label=str('Input distribution ['+distribution.name2+']'), linestyle='--')
+            distribution.CDF(label=str('Input distribution [' + distribution.name2 + ']'), linestyle='--')
             while counter < number_of_distributions_to_show and counter < number_of_distributions_fitted:
                 ranked_distributions_objects[counter].CDF(label=ranked_distributions_labels[counter])
                 counter += 1
@@ -145,6 +147,65 @@ class similar_distributions:
             plt.title('CDF')
             plt.subplots_adjust(left=0.08, right=0.95)
             plt.show()
+
+
+def histogram(data, white_above=None, bins=None, **kwargs):
+    '''
+    histogram
+
+    plots a histogram using the data specified
+    This is similar to plt.hist except that it calculates the optimal number of bins to use based on the Freedman–Diaconis rule ==> https://en.wikipedia.org/wiki/Freedman%E2%80%93Diaconis_rule
+    If you would like to specify the number of bins rather than having the optimal number calculated, then the bins argument allows this.
+    This function also shades the bins white above a specified value (white_above). This is useful for representing complete data as right censored data in a histogram.
+
+    Inputs:
+    data - the data to plot. Array or list.
+    white_above - bins above this value will be shaded white
+    bins - the number of bins to use. Must be int. Leave empty to have the optimal number calculated automatically
+    kwargs - plotting kwargs for the histogram (color, alpha, etc.)
+    '''
+
+    if type(data) not in [np.ndarray, list]:
+        raise ValueError('data must be an array or list')
+
+    if white_above is not None:
+        if type(white_above) not in [int, float, np.float64]:
+            raise ValueError('white_above must be int or float')
+        if white_above < min(data):
+            raise ValueError('white_above must be greater than min(data)')
+
+    if bins is not None:
+        if type(bins) is not int:
+            raise ValueError('bins is the number of bins to use. It must be type int. Leave empty to calculate the optimal number')
+    else:
+        iqr = np.subtract(*np.percentile(data, [75, 25]))  # interquartile range
+        bin_width = 2 * iqr * len(data) ** -(1 / 3)  # Freedman–Diaconis rule ==> https://en.wikipedia.org/wiki/Freedman%E2%80%93Diaconis_rule
+        bins = int(np.ceil((max(data) - min(data)) / bin_width))
+
+    if 'color' in kwargs:
+        color = kwargs.pop('color')
+    elif 'c' in kwargs:
+        color = kwargs.pop('c')
+    else:
+        color = 'lightgrey'
+
+    if 'edgecolor' in kwargs:
+        edgecolor = kwargs.pop('egdecolor')
+    else:
+        edgecolor = 'k'
+
+    if 'linewidth' in kwargs:
+        linewidth = kwargs.pop('linewidth')
+    elif 'lw' in kwargs:
+        linewidth = kwargs.pop('lw')
+    else:
+        linewidth = 0.5
+
+    _, bins_out, patches = plt.hist(data, density=True, color=color, bins=bins, edgecolor=edgecolor, linewidth=linewidth, **kwargs)  # plots the histogram of the data
+
+    if white_above is not None:
+        for i in range(np.argmin(abs(np.array(bins_out) - white_above)), len(patches)):  # this is to shade part of the histogram as white
+            patches[i].set_facecolor('white')
 
 
 def convert_dataframe_to_grouped_lists(input_dataframe):
