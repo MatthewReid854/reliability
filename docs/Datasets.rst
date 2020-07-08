@@ -66,8 +66,9 @@ The following example shows how to import a dataset and use it. Note that we mus
     Results from Fit_Weibull_2P (95% CI):
                Point Estimate  Standard Error      Lower CI       Upper CI
     Parameter                                                             
-    Alpha       134689.767900    42803.509190  72248.433622  251096.565941
-    Beta             1.153904        0.296028      0.697909       1.907835
+    Alpha       140882.303527    49299.609699  70956.382925  279718.647273
+    Beta             1.132769        0.301468      0.672370       1.908422
+    Log-Likelihood: -128.98350896528038
     '''
 
 If you have an interesting dataset, please email me (m.reid854@gmail.com) and I may include it in this database.
