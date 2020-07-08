@@ -37,7 +37,7 @@ Outputs:
 -   lower - this is the MCF_lower column from results. Blank lines for censored values are removed
 -   upper - this is the MCF_upper column from results. Blank lines for censored values are removed
 
-The following example is taken from Reliasoft's `example <available at http://reliawiki.org/index.php/Recurrent_Event_Data_Analysis>`_. The failure times and retirement times (retirement time is indicated by +) of 5 systems are:
+The following example is taken from an `example <http://reliawiki.org/index.php/Recurrent_Event_Data_Analysis>`_ provided by Reliasoft. The failure times and retirement times (retirement time is indicated by +) of 5 systems are:
 
 .. image:: images/MCF_data.png
 
