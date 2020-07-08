@@ -69,8 +69,8 @@ def Probability_of_failure(stress, strength, show_distribution_plot=True, print_
         failure_text = str('Probability of\nfailure = ' + str(round(prob_of_failure * 100, 4)) + '%')
         plt.legend(title=failure_text, loc='upper right')
         plt.title('Stress - Strength Interference Plot')
-        plt.xlabel('Probability Density')
-        plt.ylabel('Stress and Strength Units')
+        plt.ylabel('Probability Density')
+        plt.xlabel('Stress and Strength Units')
 
     if print_results is True:
         print('Probability of failure:', prob_of_failure)
@@ -124,8 +124,8 @@ def Probability_of_failure_normdist(stress=None, strength=None, show_distributio
         failure_text = str('Probability of\nfailure = ' + str(round(prob_of_failure * 100, 4)) + '%')
         plt.legend(title=failure_text,loc='upper right')
         plt.title('Stress - Strength Interference Plot')
-        plt.xlabel('Probability Density')
-        plt.ylabel('Stress and Strength Units')
+        plt.ylabel('Probability Density')
+        plt.xlabel('Stress and Strength Units')
         plt.subplots_adjust(left=0.15, right=0.93)
 
     return prob_of_failure
