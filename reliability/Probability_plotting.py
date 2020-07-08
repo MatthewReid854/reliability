@@ -27,54 +27,12 @@ import pandas as pd
 from matplotlib import scale
 from matplotlib import transforms as mtransforms
 from matplotlib.ticker import FixedLocator
-import scipy.stats as ss
 from reliability.Distributions import Weibull_Distribution, Lognormal_Distribution, Normal_Distribution, Gamma_Distribution, Beta_Distribution, Exponential_Distribution
 from reliability.Nonparametric import KaplanMeier, NelsonAalen
+from reliability.Utils import axes_transforms, round_to_decimals
 
 np.seterr('ignore')
 dec = 3  # number of decimals to use when rounding fitted parameters in labels
-
-from reliability.Utils import axes_transforms, round_to_decimals
-
-# # Custom scale functions
-# def __weibull_forward(F):
-#     return np.log(-np.log(1 - F))
-#
-#
-# def __weibull_inverse(R):
-#     return 1 - np.exp(-np.exp(R))
-#
-#
-# def __expon_forward(F):
-#     return ss.expon.ppf(F)
-#
-#
-# def __expon_inverse(R):
-#     return ss.expon.cdf(R)
-#
-#
-# def __normal_forward(F):
-#     return ss.norm.ppf(F)
-#
-#
-# def __normal_inverse(R):
-#     return ss.norm.cdf(R)
-#
-#
-# def __gamma_forward(F, beta):
-#     return ss.gamma.ppf(F, a=beta)
-#
-#
-# def __gamma_inverse(R, beta):
-#     return ss.gamma.cdf(R, a=beta)
-#
-#
-# def __beta_forward(F, alpha, beta):
-#     return ss.beta.ppf(F, a=alpha, b=beta)
-#
-#
-# def __beta_inverse(R, alpha, beta):
-#     return ss.beta.cdf(R, a=alpha, b=beta)
 
 
 def plotting_positions(failures=None, right_censored=None, h1=None, h2=None):
@@ -199,25 +157,17 @@ def Weibull_probability_plot(failures=None, right_censored=None, fit_gamma=False
         if __fitted_dist_params is not None:
             alpha = __fitted_dist_params.alpha
             beta = __fitted_dist_params.beta
-            gamma = 0
             alpha_SE = __fitted_dist_params.alpha_SE
             beta_SE = __fitted_dist_params.beta_SE
-            gamma_SE = 0
             Cov_alpha_beta = __fitted_dist_params.Cov_alpha_beta
-            Cov_alpha_gamma = 0
-            Cov_beta_gamma = 0
         else:
             from reliability.Fitters import Fit_Weibull_2P
             fit = Fit_Weibull_2P(failures=failures, right_censored=right_censored, CI=CI, show_probability_plot=False, print_results=False)
             alpha = fit.alpha
             beta = fit.beta
-            gamma = 0
             alpha_SE = fit.alpha_SE
             beta_SE = fit.beta_SE
-            gamma_SE = 0
             Cov_alpha_beta = fit.Cov_alpha_beta
-            Cov_alpha_gamma = 0
-            Cov_beta_gamma = 0
         if 'label' in kwargs:
             label = kwargs.pop('label')
         else:
@@ -234,7 +184,6 @@ def Weibull_probability_plot(failures=None, right_censored=None, fit_gamma=False
             gamma = __fitted_dist_params.gamma
             alpha_SE = __fitted_dist_params.alpha_SE
             beta_SE = __fitted_dist_params.beta_SE
-            gamma_SE = __fitted_dist_params.gamma_SE
             Cov_alpha_beta = __fitted_dist_params.Cov_alpha_beta
         else:
             from reliability.Fitters import Fit_Weibull_3P
@@ -244,7 +193,6 @@ def Weibull_probability_plot(failures=None, right_censored=None, fit_gamma=False
             gamma = fit.gamma
             alpha_SE = fit.alpha_SE
             beta_SE = fit.beta_SE
-            gamma_SE = fit.gamma_SE
             Cov_alpha_beta = fit.Cov_alpha_beta
 
         if 'label' in kwargs:
@@ -272,8 +220,8 @@ def Weibull_probability_plot(failures=None, right_censored=None, fit_gamma=False
     xrange = plt.gca().get_xlim()  # this ensures the previously plotted objects are considered when setting the range
     xrange_min = min(min(x), xrange[0])
     xrange_max = max(max(x), xrange[1])
-    if xrange_min <=0:
-        xrange_min=1e-2
+    if xrange_min <= 0:
+        xrange_min = 1e-2
     pts_min_log = 10 ** (int(np.floor(np.log10(xrange_min))))  # second smallest point is rounded down to nearest power of 10
     pts_max_log = 10 ** (int(np.ceil(np.log10(xrange_max))))  # largest point is rounded up to nearest power of 10
     plt.xlim([pts_min_log, pts_max_log])
@@ -284,12 +232,13 @@ def Weibull_probability_plot(failures=None, right_censored=None, fit_gamma=False
 
     plt.gcf().set_size_inches(9, 7)  # adjust the figsize. This is done post figure creation so that layering is easier
     if show_fitted_distribution is True:
-        wbf.CDF(xvals=xvals,label=label, **kwargs)
+        wbf.CDF(xvals=xvals, label=label, **kwargs)
         plt.legend(loc='upper left')
     plt.title('Probability plot\nWeibull CDF')
     plt.ylabel('Fraction failing')
-    plt.xlabel(xlabel) #### needs to be set after plotting the CDF to override the default 'xvals'
+    plt.xlabel(xlabel)  #### needs to be set after plotting the CDF to override the default 'xvals'
     return plt.gcf()
+
 
 def Exponential_probability_plot_Weibull_Scale(failures=None, right_censored=None, fit_gamma=False, __fitted_dist_params=None, h1=None, h2=None, CI=0.95, show_fitted_distribution=True, **kwargs):
     '''
@@ -341,52 +290,52 @@ def Exponential_probability_plot_Weibull_Scale(failures=None, right_censored=Non
     if fit_gamma is False:
         if __fitted_dist_params is not None:
             Lambda = __fitted_dist_params.Lambda
-            Lambda_SE = __fitted_dist_params.Lambda_SE ####
+            Lambda_SE = __fitted_dist_params.Lambda_SE  ####
         else:
             from reliability.Fitters import Fit_Expon_1P
             fit = Fit_Expon_1P(failures=failures, right_censored=right_censored, CI=CI, show_probability_plot=False, print_results=False)
             Lambda = fit.Lambda
-            Lambda_SE = fit.Lambda_SE ####
+            Lambda_SE = fit.Lambda_SE  ####
         if 'label' in kwargs:
             label = kwargs.pop('label')
         else:
             label = str('Fitted Exponential_1P (λ=' + str(round_to_decimals(Lambda, dec)) + ')')
-        if 'color' in kwargs: ####
-            data_color = kwargs.get('color') ####
-        else: ####
-            data_color = 'k' ####
-        xlabel = 'Time' ####
+        if 'color' in kwargs:  ####
+            data_color = kwargs.get('color')  ####
+        else:  ####
+            data_color = 'k'  ####
+        xlabel = 'Time'  ####
     elif fit_gamma is True:
         if __fitted_dist_params is not None:
             Lambda = __fitted_dist_params.Lambda
-            Lambda_SE = __fitted_dist_params.Lambda_SE ####
-            gamma = __fitted_dist_params.gamma ####
+            Lambda_SE = __fitted_dist_params.Lambda_SE  ####
+            gamma = __fitted_dist_params.gamma  ####
         else:
             from reliability.Fitters import Fit_Expon_2P
             fit = Fit_Expon_2P(failures=failures, right_censored=right_censored, CI=CI, show_probability_plot=False, print_results=False)
             Lambda = fit.Lambda
-            Lambda_SE = fit.Lambda_SE ####
-            gamma = fit.gamma ####
+            Lambda_SE = fit.Lambda_SE  ####
+            gamma = fit.gamma  ####
 
         if 'label' in kwargs:
             label = kwargs.pop('label')
         else:
             label = str('Fitted Exponential_2P\n(λ=' + str(round_to_decimals(Lambda, dec)) + ', γ=' + str(round_to_decimals(gamma, dec)) + ')')
-        if 'color' in kwargs: ####
-            data_color = kwargs.get('color') ####
-        else: ####
-            data_color = 'k' ####
-        xlabel = 'Time - gamma' ####
+        if 'color' in kwargs:  ####
+            data_color = kwargs.get('color')  ####
+        else:  ####
+            data_color = 'k'  ####
+        xlabel = 'Time - gamma'  ####
         failures = failures - gamma + 0.009  # this 0.009 adjustment is to avoid taking the log of 0. It causes negligible difference to the fit and plot. 0.009 is chosen to be the same as Weibull_Fit_3P adjustment.
         if right_censored is not None:
             right_censored = right_censored - gamma + 0.009  # this 0.009 adjustment is to avoid taking the log of 0. It causes negligible difference to the fit and plot. 0.009 is chosen to be the same as Weibull_Fit_3P adjustment.
 
         #### recalculate the xvals for the plotting range when gamma>0
-        if max(failures)-gamma < 1:
+        if max(failures) - gamma < 1:
             xvals = np.logspace(-5, 1, 1000)
         else:
-            xvals = np.logspace(-4, np.ceil(np.log10(max(failures)-gamma)) + 1, 1000) ####needed to adjust the lower lim here so it is > 0
-    ef = Exponential_Distribution(Lambda=Lambda, Lambda_SE=Lambda_SE, CI=CI) ####added extra params and removed .CDF
+            xvals = np.logspace(-4, np.ceil(np.log10(max(failures) - gamma)) + 1, 1000)  ####needed to adjust the lower lim here so it is > 0
+    ef = Exponential_Distribution(Lambda=Lambda, Lambda_SE=Lambda_SE, CI=CI)  ####added extra params and removed .CDF
 
     # plot the failure points and format the scale and axes
     x, y = plotting_positions(failures=failures, right_censored=right_censored, h1=h1, h2=h2)
@@ -399,8 +348,8 @@ def Exponential_probability_plot_Weibull_Scale(failures=None, right_censored=Non
     xrange = plt.gca().get_xlim()  # this ensures the previously plotted objects are considered when setting the range
     xrange_min = min(min(x), xrange[0])
     xrange_max = max(max(x), xrange[1])
-    if xrange_min <=0:
-        xrange_min=1e-2
+    if xrange_min <= 0:
+        xrange_min = 1e-2
     pts_min_log = 10 ** (int(np.floor(np.log10(xrange_min))))  # second smallest point is rounded down to nearest power of 10
     pts_max_log = 10 ** (int(np.ceil(np.log10(xrange_max))))  # largest point is rounded up to nearest power of 10
     plt.xlim([pts_min_log, pts_max_log])
@@ -410,12 +359,13 @@ def Exponential_probability_plot_Weibull_Scale(failures=None, right_censored=Non
     plt.gca().set_yticklabels(['{:,.2%}'.format(x) for x in ytickvals])  # formats y ticks as percentage
     plt.gcf().set_size_inches(9, 7)  # adjust the figsize. This is done post figure creation so that layering is easier
     if show_fitted_distribution is True:
-        ef.CDF(xvals=xvals, label=label, **kwargs) #### remove color
+        ef.CDF(xvals=xvals, label=label, **kwargs)  #### remove color
         plt.legend(loc='upper left')
-    plt.ylabel('Fraction failing') ####
-    plt.title('Probability plot\nExponential CDF (Weibull Scale)') ####
-    plt.xlabel(xlabel) #### needs to be set after plotting the CDF to override the default 'xvals'
+    plt.ylabel('Fraction failing')  ####
+    plt.title('Probability plot\nExponential CDF (Weibull Scale)')  ####
+    plt.xlabel(xlabel)  #### needs to be set after plotting the CDF to override the default 'xvals'
     return plt.gcf()
+
 
 def Normal_probability_plot(failures=None, right_censored=None, __fitted_dist_params=None, h1=None, h2=None, show_fitted_distribution=True, **kwargs):
     '''
@@ -478,6 +428,7 @@ def Normal_probability_plot(failures=None, right_censored=None, __fitted_dist_pa
         plt.plot(xvals, nf, color=color, label=label, **kwargs)
         plt.legend(loc='upper left')
     return plt.gcf()
+
 
 def Lognormal_probability_plot(failures=None, right_censored=None, fit_gamma=False, __fitted_dist_params=None, h1=None, h2=None, show_fitted_distribution=True, **kwargs):
     '''
@@ -583,8 +534,8 @@ def Lognormal_probability_plot(failures=None, right_censored=None, fit_gamma=Fal
     xrange = plt.gca().get_xlim()  # this ensures the previously plotted objects are considered when setting the range
     xrange_min = min(min(x), xrange[0])
     xrange_max = max(max(x), xrange[1])
-    if xrange_min <=0:
-        xrange_min=1e-2
+    if xrange_min <= 0:
+        xrange_min = 1e-2
     pts_min_log = 10 ** (np.floor(np.log10(xrange_min)))  # second smallest point is rounded down to nearest power of 10
     pts_max_log = 10 ** (np.ceil(np.log10(xrange_max)))  # largest point is rounded up to nearest power of 10
     plt.xlim([pts_min_log, pts_max_log])
@@ -599,6 +550,7 @@ def Lognormal_probability_plot(failures=None, right_censored=None, fit_gamma=Fal
         plt.plot(xvals, lnf, color=color, label=label, **kwargs)
         plt.legend(loc='upper left')
     return plt.gcf()
+
 
 def Beta_probability_plot(failures=None, right_censored=None, __fitted_dist_params=None, h1=None, h2=None, show_fitted_distribution=True, **kwargs):
     '''
@@ -659,6 +611,7 @@ def Beta_probability_plot(failures=None, right_censored=None, __fitted_dist_para
     plt.legend(loc='upper left')
     plt.gcf().set_size_inches(9, 7)  # adjust the figsize. This is done post figure creation so that layering is easier
     return plt.gcf()
+
 
 def Gamma_probability_plot(failures=None, right_censored=None, fit_gamma=False, __fitted_dist_params=None, h1=None, h2=None, show_fitted_distribution=True, **kwargs):
     '''
@@ -795,6 +748,7 @@ def Gamma_probability_plot(failures=None, right_censored=None, fit_gamma=False, 
         plt.legend(loc='upper left')
     return plt.gcf()
 
+
 def Exponential_probability_plot(failures=None, right_censored=None, fit_gamma=False, __fitted_dist_params=None, h1=None, h2=None, CI=0.95, show_fitted_distribution=True, **kwargs):
     '''
     Exponential probability plot
@@ -869,7 +823,7 @@ def Exponential_probability_plot(failures=None, right_censored=None, fit_gamma=F
         if right_censored is not None:
             right_censored = right_censored - gamma
 
-        #recalculate the xvals for the plotting range when gamma>0
+        # recalculate the xvals for the plotting range when gamma>0
         if max(failures) - gamma < 1:
             xvals = np.logspace(-5, 2, 1000)
         else:
@@ -918,6 +872,7 @@ def Exponential_probability_plot(failures=None, right_censored=None, fit_gamma=F
     plt.ylabel('Fraction failing')
     plt.xlabel(xlabel)  #### needs to be set after plotting the CDF to override the default 'xvals'
     return plt.gcf()
+
 
 def PP_plot_parametric(X_dist=None, Y_dist=None, y_quantile_lines=None, x_quantile_lines=None, show_diagonal_line=False, **kwargs):
     '''
@@ -1010,6 +965,7 @@ def PP_plot_parametric(X_dist=None, Y_dist=None, y_quantile_lines=None, x_quanti
     plt.xlim([0, 1])
     plt.ylim([0, 1])
     return plt.gcf()
+
 
 def QQ_plot_parametric(X_dist=None, Y_dist=None, show_fitted_lines=True, show_diagonal_line=False, **kwargs):
     '''
@@ -1203,6 +1159,7 @@ def PP_plot_semiparametric(X_data_failures=None, X_data_right_censored=None, Y_d
     plt.title('Probability-Probability Plot\nSemi-parametric')
     return plt.gcf()
 
+
 def QQ_plot_semiparametric(X_data_failures=None, X_data_right_censored=None, Y_dist=None, show_fitted_lines=True, show_diagonal_line=False, method='KM', **kwargs):
     '''
     A QQ plot is a quantile-quantile plot which consists of plotting failure units vs failure units for shared quantiles. A quantile is simply the fraction failing (ranging from 0 to 1).
@@ -1345,19 +1302,19 @@ def plot_points(failures=None, right_censored=None, func='CDF', h1=None, h2=None
     y = np.array(y)
     x = np.array(x)
 
-    if func in ['pdf','PDF']: #the output of this looks messy because the derivative is of discrete points and not a continuous function
-        dy = np.diff(np.hstack([[0],y]))
-        dx = np.diff(np.hstack([[0],x]))
-        y_adjusted = dy / dx  # PDF = dy/dx CDF
-    elif func in ['cdf','CDF']:
-        y_adjusted = y
-    elif func in ['sf','SF']:
-        y_adjusted = 1 - y  # SF = 1 - CDF
-    elif func in ['hf','HF']: # the output of this looks messy because the derivative is of discrete points and not a continuous function
-        dy = np.diff(np.hstack([[0],-np.log(1-y)]))
+    if func in ['pdf', 'PDF']:  # the output of this looks messy because the derivative is of discrete points and not a continuous function
+        dy = np.diff(np.hstack([[0], y]))
         dx = np.diff(np.hstack([[0], x]))
-        y_adjusted = dy/dx # HF = dy/dx CHF
-    elif func in ['chf','CHF']:
+        y_adjusted = dy / dx  # PDF = dy/dx CDF
+    elif func in ['cdf', 'CDF']:
+        y_adjusted = y
+    elif func in ['sf', 'SF']:
+        y_adjusted = 1 - y  # SF = 1 - CDF
+    elif func in ['hf', 'HF']:  # the output of this looks messy because the derivative is of discrete points and not a continuous function
+        dy = np.diff(np.hstack([[0], -np.log(1 - y)]))
+        dx = np.diff(np.hstack([[0], x]))
+        y_adjusted = dy / dx  # HF = dy/dx CHF
+    elif func in ['chf', 'CHF']:
         y_adjusted = -np.log(1 - y)  # CHF = -ln(SF)
     else:
         raise ValueError('func must be either CDF, SF, or CHF. Default is CDF')

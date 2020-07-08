@@ -59,10 +59,8 @@ import numpy as np
 from scipy import integrate
 import matplotlib.pyplot as plt
 from reliability.Utils import round_to_decimals, transform_spaced
-from scipy.optimize import fsolve, root
 from autograd import jacobian as jac
 import autograd.numpy as anp
-import warnings
 
 dec = 4  # number of decimals to use when rounding descriptive statistics and parameter titles
 np.seterr(divide='ignore', invalid='ignore')  # ignore the divide by zero warnings
@@ -359,7 +357,6 @@ class Weibull_Distribution:
         if show_plot == False:
             return cdf
         else:
-            xrange = plt.xlim()  # this ensures the previously plotted objects are considered when setting the range
             p = plt.plot(X, cdf, **kwargs)
             plt.xlabel('x values')
             plt.ylabel('Fraction failing')
@@ -423,7 +420,6 @@ class Weibull_Distribution:
         if show_plot == False:
             return sf
         else:
-            xrange = plt.xlim()  # this ensures the previously plotted objects are considered when setting the range
             p = plt.plot(X, sf, **kwargs)
             plt.xlabel('x values')
             plt.ylabel('Fraction surviving')
@@ -667,10 +663,10 @@ class Weibull_Distribution:
                     yy = -np.log(R)
 
                 plt.fill_betweenx(yy, T_lower, T_upper, color=color, alpha=0.3, linewidth=0)
-                p_lower = plt.plot(T_lower, yy, linewidth=0, color=color)
-                p_upper = plt.plot(T_upper, yy, linewidth=0, color=color)
-                # p_lower = plt.scatter(T_lower, yy, linewidth=1, color='blue')
-                # p_upper = plt.scatter(T_upper, yy, linewidth=1, color='red')
+                plt.plot(T_lower, yy, linewidth=0, color=color)  # these are invisible but need to be added to the plot for crosshairs() to find them
+                plt.plot(T_upper, yy, linewidth=0, color=color)  # still need to specify color otherwise the invisible CI lines will consume default colors
+                # plt.scatter(T_lower, yy, linewidth=1, color='blue')
+                # plt.scatter(T_upper, yy, linewidth=1, color='red')
 
             elif self.CI_type == 'reliability':  # Confidence bounds on Reliability (in terms of time)
                 if plt.gca().get_xscale() != 'linear':  # just for probability plot
@@ -714,14 +710,14 @@ class Weibull_Distribution:
                     yy_upper = -np.log(R_upper)
 
                 plt.fill_between(t + self.gamma, yy_lower, yy_upper, color=color, alpha=0.3, linewidth=0)
-                p_lower = plt.plot(t + self.gamma, yy_lower, linewidth=0, color=color)
-                p_upper = plt.plot(t + self.gamma, yy_upper, linewidth=0, color=color)  # still need to specify color otherwise the invisible CI lines will consume default colors
-                # p_upper = plt.scatter(t + self.gamma, yy_upper, color='red')
-                # p_lower = plt.scatter(t + self.gamma, yy_lower, color='blue')
+                plt.plot(t + self.gamma, yy_lower, linewidth=0, color=color)  # these are invisible but need to be added to the plot for crosshairs() to find them
+                plt.plot(t + self.gamma, yy_upper, linewidth=0, color=color)  # still need to specify color otherwise the invisible CI lines will consume default colors
+                # plt.scatter(t + self.gamma, yy_upper, color='red')
+                # plt.scatter(t + self.gamma, yy_lower, color='blue')
 
             # reimpose the xlim and ylim to be what it was before the CI were plotted
-            plt.xlim(x_lims)
-            plt.ylim(y_lims)
+            plt.gca().set_xlim(x_lims, auto=True)
+            plt.gca().set_ylim(y_lims, auto=True)
 
     def quantile(self, q):
         '''
@@ -1987,7 +1983,6 @@ class Exponential_Distribution:
         if show_plot == False:
             return cdf
         else:
-            xrange = plt.xlim()  #### this ensures the previously plotted objects are considered when setting the range
             p = plt.plot(X, cdf, **kwargs)  ####
             plt.xlabel('x values')
             plt.ylabel('Fraction failing')
@@ -2253,8 +2248,8 @@ class Exponential_Distribution:
             plt.plot(t + self.gamma, yy_lower, color=color, linewidth=0)
             plt.plot(t + self.gamma, yy_upper, color=color, linewidth=0)
             # reimpose the xlim and ylim to be what it was before the CI was plotted
-            plt.xlim(x_lims)
-            plt.ylim(y_lims)
+            plt.gca().set_xlim(x_lims, auto=True)
+            plt.gca().set_ylim(y_lims, auto=True)
 
     def quantile(self, q):
         '''

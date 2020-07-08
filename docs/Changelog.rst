@@ -5,6 +5,29 @@
 Changelog
 ---------
 
+**Version: 0.5.2 --- Unreleased: Scheduled for release by end of July 2020**
+'''''''''''''''''''''''''''''''''''''''''''''
+
+**New features**
+
+-    New distributions
+
+    - Mixture_Distribution
+    - Competing_Risks_Distribution
+    - Defective_Subpopulation_Distribution
+
+**API Changes**
+
+-    None yet.
+
+**Bug Fixes**
+
+-    Fixed the autoscale in Weibull and Exponential distributions that locked autoscaling when confidence intervals were plotted sequentially.
+
+**Other**
+
+-    Minor clean up of code. Removed unnecessary imports, removed unused variables, etc. Hopefully this will have no noticable effects.
+
 **Version: 0.5.1 --- Released: 08 July 2020**
 '''''''''''''''''''''''''''''''''''''''''''''
 

@@ -10,7 +10,6 @@ histogram - generates a histogram with optimal bin width and has an option to sh
 crosshairs - adds x,y crosshairs to plots based on mouse position
 '''
 
-import scipy.stats as ss
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.lines import Line2D
