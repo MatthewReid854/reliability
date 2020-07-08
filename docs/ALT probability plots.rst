@@ -57,12 +57,12 @@ In the following example we will use a dataset from ``reliability.Datasets`` whi
     '''
     ALT Weibull probability plot results:
       stress  original alpha  original beta     new alpha  common beta beta change
-          40    13716.755009       2.232553  22707.011262     1.490544     -33.24%
-          60     7405.864178       1.248765   6811.900885     1.490544     +19.36%
-          80     1801.246209       1.421726   1822.522892     1.490544      +4.84%
-    Total AICc: 693.3622238516346
-    Total BIC: 700.543718908541
-    
+          40    21671.954375       1.625115  21671.954523     1.519015      -6.53%
+          60     6628.557163       1.315739   6628.557053     1.519015     +15.45%
+          80     1708.487268       1.397979   1831.456045     1.519015      +8.66%
+    Total AICc: 693.399657861714
+    Total BIC: 700.5811529186203
+
     ALT Lognormal probability plot results:
       stress  original mu  original sigma    new mu  common sigma sigma change
           40     9.814749        1.008337  9.717867      0.939793        -6.8%
@@ -72,7 +72,7 @@ In the following example we will use a dataset from ``reliability.Datasets`` whi
     Total BIC: 698.1498655466478
     '''
     
-.. image:: images/ALT_probability_plot_1.png
+.. image:: images/ALT_probability_plot_1_V2.png
 
 In this second example, we examine the difference between ALT_probability_plot_Weibull and ALT_probability_plot_Exponential. A dataset is generated from several Exponential distributions. Ideally, we want to fit a distribution to this data which does not overfit, such that it should have as few parameters as necessary. Both the Weibull and Exponential distributions could be used here, but we know the Exponential is a more appropriate distribution since it was the source of the data. Upon examination of the results, we see very little difference between the common shape (from Exponential) and common beta (from Weibull) and very little difference in the plots, but the AICc and BIC are both lower for the Exponential model indicating that the Exponential distribution should be used preferrentially to the Weibull distribution. Conveniently, the function ALT_probability_plot_Exponential also provides the AICc and BIC results from Weibull and will print a warning if it finds Weibull to be a more appropriate fit than Exponential based on the BIC.
 
@@ -82,41 +82,41 @@ In this second example, we examine the difference between ALT_probability_plot_W
     import matplotlib.pyplot as plt
     import numpy as np
     from reliability.Distributions import Exponential_Distribution
-    #create the data using an Exponential distribution
-    np.random.seed(42) #for repeatability
-    data1 = Exponential_Distribution(Lambda=1/100).random_samples(10)
-    data2 = Exponential_Distribution(Lambda=1/500).random_samples(10)
-    data3 = Exponential_Distribution(Lambda=1/3000).random_samples(10)
-    f = np.hstack([data1,data2,data3])
-    f_stress = np.hstack([np.ones_like(data1)*50,np.ones_like(data1)*40,np.ones_like(data1)*30])
-    #plot the data
+
+    # create the data using an Exponential distribution
+    data1 = Exponential_Distribution(Lambda=1 / 100).random_samples(10, seed=42)
+    data2 = Exponential_Distribution(Lambda=1 / 500).random_samples(10, seed=42)
+    data3 = Exponential_Distribution(Lambda=1 / 3000).random_samples(10, seed=42)
+    f = np.hstack([data1, data2, data3])
+    f_stress = np.hstack([np.ones_like(data1) * 50, np.ones_like(data1) * 40, np.ones_like(data1) * 30])
+    # plot the data
     plt.subplot(121)
-    ALT_probability_plot_Exponential(failures=f,failure_stress=f_stress)
+    ALT_probability_plot_Exponential(failures=f, failure_stress=f_stress)
     plt.subplot(122)
-    ALT_probability_plot_Weibull(failures=f,failure_stress=f_stress,common_shape_method='average')
+    ALT_probability_plot_Weibull(failures=f, failure_stress=f_stress, common_shape_method='average')
     plt.show()
 
     '''
     ALT Exponential probability plot results:
       stress  weibull alpha  weibull beta  new 1/Lambda  common shape shape change
-        30.0    1935.337362      1.341719   1780.530726           1.0      -25.47%
-        40.0     361.343728      0.843442    398.460299           1.0      +18.56%
-        50.0     105.471335      1.074166    102.697008           1.0        -6.9%
-    Total AICc: 429.58115216256
-    Total BIC: 428.9889074415421
-    Total AICc (weibull): 439.39645388941153
-    Total BIC (weibull): 436.06910730451864
-    
+        30.0    3304.561499      1.085037   3080.910234           1.0       -7.84%
+        40.0     527.347816      1.074161    513.485039           1.0        -6.9%
+        50.0     105.469669      1.074162    102.697008           1.0        -6.9%
+    Total AICc: 445.619684746024
+    Total BIC: 445.0274400250061
+    Total AICc (weibull): 455.05689896150307
+    Total BIC (weibull): 451.7295523766102
+
     ALT Weibull probability plot results:
       stress  original alpha  original beta    new alpha  common beta beta change
-       30.0     1935.337362       1.341719  1935.336644     1.086442     -19.03%
-       40.0      361.343728       0.843442   419.771773     1.086442     +28.81%
-       50.0      105.471335       1.074166   105.918831     1.086442      +1.14%
-    Total AICc: 439.39645388941153
-    Total BIC: 436.06910730451864
+        30.0     3304.561499       1.085037  3304.561393     1.077786      -0.67%
+        40.0      527.347816       1.074161   528.205229     1.077786      +0.34%
+        50.0      105.469669       1.074162   105.603906     1.077786      +0.34%
+    Total AICc: 455.05689896150307
+    Total BIC: 451.7295523766102
     '''
 
-.. image:: images/ALT_expon_weib_probplot.png
+.. image:: images/ALT_expon_weib_probplot_V2.png
 
 Getting your input data in the right format
 -------------------------------------------
