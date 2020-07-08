@@ -44,8 +44,10 @@ The following example is taken from Reliasoft's `example <available at http://re
 .. code:: python
 
     from reliability.Repairable_systems import MCF_nonparametric
+    import matplotlib.pyplot as plt
     times = [[5, 10, 15, 17], [6, 13, 17, 19], [12, 20, 25, 26], [13, 15, 24], [16, 22, 25, 28]]
     MCF_nonparametric(data=times)
+    plt.show()
 
     '''
     Mean Cumulative Function results (95.0% CI)
@@ -116,8 +118,10 @@ The following example uses the same data as the MCF_nonparametric example provid
 .. code:: python
 
     from reliability.Repairable_systems import MCF_parametric
+    import matplotlib.pyplot as plt
     times = [[5, 10, 15, 17], [6, 13, 17, 19], [12, 20, 25, 26], [13, 15, 24], [16, 22, 25, 28]]
     MCF_parametric(data=times)
+    plt.show()
 
     '''
     Mean Cumulative Function Parametric Model (95% CI):
