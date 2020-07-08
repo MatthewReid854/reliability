@@ -188,7 +188,7 @@ class ALT_probability_plot_Weibull:
                 AICc_total += weibull_fit_common_shape.AICc
             BIC_total += weibull_fit_common_shape.BIC
             if show_plot is True:
-                weibull_fit_common_shape.distribution.CDF(linestyle='--', color=color_list[i], xvals=xvals) #this will also plot the confidence intervals
+                weibull_fit_common_shape.distribution.CDF(linestyle='--', color=color_list[i], xvals=xvals, plot_CI=False) # plotting of the confidence intervals has been turned off
                 Probability_plotting.Weibull_probability_plot(failures=FAILURES, right_censored=RIGHT_CENSORED,plot_CI=False, color=color_list[i], label=str(stress))
                 plt.legend(title='Stress')
                 plt.xlim(10 ** (xmin + 1), 10 ** (xmax - 1))
@@ -366,7 +366,7 @@ class ALT_probability_plot_Exponential:
             BIC_total += expon_fit.BIC
             BIC_total_weib += weib_fit.BIC
             if show_plot is True:
-                expon_fit.distribution.CDF(linestyle='--', color=color_list[i], xvals=xvals) #this will also plot the confidence intervals
+                expon_fit.distribution.CDF(linestyle='--', color=color_list[i], xvals=xvals, plot_CI=False) # plotting of the confidence intervals has been turned off
                 Probability_plotting.Weibull_probability_plot(failures=FAILURES, right_censored=RIGHT_CENSORED,plot_CI=False, color=color_list[i], label=str(stress))
                 plt.legend(title='Stress')
                 plt.xlim(10 ** (xmin + 1), 10 ** (xmax - 1))
