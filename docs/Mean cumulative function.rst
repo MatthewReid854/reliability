@@ -85,7 +85,7 @@ The estimates of the parametric MCF are obtained using MCF_nonparametric as this
 
 You may notice that this looks identical to the `Weibull CHF <https://reliability.readthedocs.io/en/latest/Equations%20of%20supported%20distributions.html#weibull-distribution>`_, but despite this similarity, they are entirely different functions and the alpha and beta parameters from the MCF cannot be applied to a Weibull distribution for fitting the repair times or repair interarrival times.
 
-The puropse of fitting a parametric model is to obtain the shape parameter (β) which indicates the long term health of the system/s. If the MCF is concave down (β<1) then the system is improving. A straight line (β=1) indicates it is staying the same. Concave up (β>1) shows the system is worsening as repairs are required more frequently as time progresses.
+The purpose of fitting a parametric model is to obtain the shape parameter (β) which indicates the long term health of the system/s. If the MCF is concave down (β<1) then the system is improving. A straight line (β=1) indicates it is staying the same. Concave up (β>1) shows the system is worsening as repairs are required more frequently as time progresses.
 
 Many methods exist for fitting the model to the data. Within reliability, scipy.optimize.curve_fit is used which returns the covariance matrix and allows for the confidence intervals to be calculated using formulas provided by `Minitab <https://support.minitab.com/en-us/minitab/18/help-and-how-to/modeling-statistics/reliability/how-to/parametric-growth-curve/methods-and-formulas/mean-cumulative-function-mcf-and-failure-rate-rocof/>`_.
 
