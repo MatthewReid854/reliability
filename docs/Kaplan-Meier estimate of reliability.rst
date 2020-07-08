@@ -46,8 +46,8 @@ In this first example, we will provide Kaplan-Meier with a list of failure times
     import matplotlib.pyplot as plt
     f = [5248, 7454, 16890, 17200, 38700, 45000, 49390, 69040, 72280, 131900]
     rc = [3961, 4007, 4734, 6054, 7298, 10190, 23060, 27160, 28690, 37100, 40060, 45670, 53000, 67000, 69630, 77350, 78470, 91680, 105700, 106300, 150400]
-    KaplanMeier(failures=f, right_censored=rc, label='Failures + right censored', color='steelblue',print_results=False)
-    KaplanMeier(failures=f, label='Failures only', color='red') #this will print results to console
+    KaplanMeier(failures=f, right_censored=rc, label='Failures + right censored',print_results=False)
+    KaplanMeier(failures=f, label='Failures only') #this will print results to console
     plt.title('Kaplan-Meier estimates showing the\nimportance of including censored data')
     plt.xlabel('Miles to failure')
     plt.legend()
@@ -68,7 +68,7 @@ In this first example, we will provide Kaplan-Meier with a list of failure times
     131900.0                               1.0                1                    0.0        0.000000        0.000000
     '''
     
-.. image:: images/KaplanMeier2.png
+.. image:: images/KaplanMeier_V2.png
 
 In this second example, we will create some data from a Weibull distribution, and then right censor the data above our chosen threshold. We will then fit a Weibull_2P distribution to the censored data, and also obtain the Kaplan-Meier estimate of this data. Using the results from the Fit_Weibull_2P and the Kaplan-Meier estimate, we will plot the CDF, SF, and CHF, for both the Weibull and Kaplan-Meier results. Note that the default plot from KaplanMeier will only give you the SF, but the results object provides everything you need to reconstruct the SF plot yourself, as well as what we need to plot the CDF and CHF.
 
@@ -77,43 +77,35 @@ In this second example, we will create some data from a Weibull distribution, an
     from reliability.Distributions import Weibull_Distribution
     from reliability.Fitters import Fit_Weibull_2P
     from reliability.Nonparametric import KaplanMeier
+    from reliability.Other_functions import make_right_censored_data
     import matplotlib.pyplot as plt
     import numpy as np
-    np.random.seed(1) #this is for repeatability in this tutorial
-    dist = Weibull_Distribution(alpha=5,beta=2) #create a distribution
-    data_raw = dist.random_samples(100) #get some data from the distribution
 
-    #censor the data above our chosen threshold
-    fail=[]
-    cens = []
-    threshold = 9
-    for item in data_raw:
-        if item>threshold:
-            cens.append(threshold)
-        else:
-            fail.append(item)
-
-    # Fit the Weibull_2P
-    wbf = Fit_Weibull_2P(failures=fail,right_censored=cens,show_probability_plot=False,print_results=False)
+    np.random.seed(1)  # this is for repeatability in this tutorial
+    dist = Weibull_Distribution(alpha=5, beta=2)  # create a distribution
+    raw_data = dist.random_samples(100, seed=2)  # get some data from the distribution
+    data = make_right_censored_data(raw_data, threshold=9)
+    wbf = Fit_Weibull_2P(failures=data.failures, right_censored=data.right_censored, show_probability_plot=False, print_results=False)  # Fit the Weibull_2P
 
     # Create the subplots and in each subplot we will plot the parametric distribution and obtain the Kaplan Meier fit.
     # Note that the plot_type is being changed each time
-    plt.figure(figsize=(12,5))
+    plt.figure(figsize=(12, 5))
     plt.subplot(131)
-    KaplanMeier(failures=fail,right_censored=cens,plot_type='SF',print_results=False,label='Kaplan-Meier')
+    KaplanMeier(failures=data.failures, right_censored=data.right_censored, plot_type='SF', print_results=False, label='Kaplan-Meier')
     wbf.distribution.SF(label='Parametric')
     plt.legend()
     plt.title('SF')
     plt.subplot(132)
-    KaplanMeier(failures=fail,right_censored=cens,plot_type='CDF',print_results=False,label='Kaplan-Meier')
+    KaplanMeier(failures=data.failures, right_censored=data.right_censored, plot_type='CDF', print_results=False, label='Kaplan-Meier')
     wbf.distribution.CDF(label='Parametric')
     plt.legend()
     plt.title('CDF')
     plt.subplot(133)
-    KaplanMeier(failures=fail,right_censored=cens,plot_type='CHF',print_results=False,label='Kaplan-Meier')
+    KaplanMeier(failures=data.failures, right_censored=data.right_censored, plot_type='CHF', print_results=False, label='Kaplan-Meier')
     wbf.distribution.CHF(label='Parametric')
     plt.legend()
     plt.title('CHF')
+    plt.subplots_adjust(left=0.07, right=0.95, top=0.92, wspace=0.25)  # format the plot layout
     plt.show()
 
-.. image:: images/KM_all3functionsV2.png
+.. image:: images/KM_all3functions_V2.png
