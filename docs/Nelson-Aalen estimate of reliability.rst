@@ -47,16 +47,16 @@ In the example below, we will compare the results from the Kaplan-Meier estimato
   import pandas as pd
   failures = [5248,7454,16890,17200,38700,45000,49390,69040,72280,131900]
   censored = [3961,4007,4734,6054,7298,10190,23060,27160,28690,37100,40060,45670,53000,67000,69630,77350,78470,91680,105700,106300,150400]
-  KM = KaplanMeier(failures=failures,right_censored=censored,color='red',label='Kaplan-Meier',print_results=False)
-  NA = NelsonAalen(failures=failures,right_censored=censored,color='steelblue',label='Nelson-Aalen',print_results=False)
+  KM = KaplanMeier(failures=failures,right_censored=censored,label='Kaplan-Meier',print_results=False)
+  NA = NelsonAalen(failures=failures,right_censored=censored,label='Nelson-Aalen',print_results=False)
   plt.title('Comparison of Kaplan-Meier vs Nelson-Aalen\nwith 95% CI bounds')
   plt.legend()
-  
+
   #print a table of the SF estimates for each method
   data = {'Kaplan-Meier': KM.KM,'Nelson-Aalen': NA.NA}
   df = pd.DataFrame (data, columns = ['Kaplan-Meier','Nelson-Aalen'])
   print(df)
-  
+
   plt.show()
 
   '''
@@ -94,7 +94,7 @@ In the example below, we will compare the results from the Kaplan-Meier estimato
   30      0.269858      0.335524
   '''
 
-.. image:: images/KMvsNA.png
+.. image:: images/KMvsNA_V2.png
 
 Two further examples are provided in the documentation for the `Kaplan-Meier estimator <https://reliability.readthedocs.io/en/latest/Kaplan-Meier%20estimate%20of%20reliability.html>`_ as this function is written to work exactly the same way as the Nelson-Aalen estimator.
 
