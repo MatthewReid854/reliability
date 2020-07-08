@@ -5,7 +5,7 @@
 Changelog
 ---------
 
-**Version: 0.5.1 --- Not yet released. Scheduled for release on 07 July 2020**
+**Version: 0.5.1 --- Not yet released. Scheduled for release on 10 July 2020**
 '''''''''''''''''''''''''''''''''''''''''''''
 
 **New features**
