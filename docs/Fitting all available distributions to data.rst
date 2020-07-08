@@ -45,7 +45,7 @@ In this first example, we will use Fit_Everything on some data and will return o
     Normal_2P                                     3.73333   1.65193            119.697592  122.055543
     Lognormal_2P                                  1.20395  0.503621            120.662122  123.020072
     Lognormal_3P                               0  1.20395  0.503621            123.140754  123.020072
-    Weibull_3P       3.04153   1.52774  0.949905                               121.917806  125.198321
+    Weibull_3P       3.61252   2.02388  0.530239                               119.766821  123.047337
     Exponential_2P                         0.999                      0.36572  124.797704  127.155654
     Gamma_3P         3.49645  0.781773    0.9999                               125.942453  129.222968
     Exponential_1P                                                   0.267857  141.180947  142.439287
@@ -57,20 +57,12 @@ In this second example, we will create some right censored data and use Fit_Ever
 
     from reliability.Fitters import Fit_Everything
     from reliability.Distributions import Weibull_Distribution
-    import numpy as np
-    #create some failures and right censored data
-    np.random.seed(2) #this is just for repeatability for this tutorial
-    uncensored_data = Weibull_Distribution(alpha=12, beta=3).random_samples(100)
-    failures = []
-    censored = []
-    for item in uncensored_data:
-        if item >=14:
-            censored.append(14)
-        else:
-            failures.append(item)
-    #fit everything
-    results = Fit_Everything(failures=failures,right_censored=censored)
-    print('The best fitting distribution was',results.best_distribution_name,'which had parameters',results.best_distribution.parameters)
+    from reliability.Other_functions import make_right_censored_data
+    
+    raw_data = Weibull_Distribution(alpha=12, beta=3).random_samples(100, seed=2)  # create some data
+    data = make_right_censored_data(raw_data, threshold=14)  # right censor the data
+    results = Fit_Everything(failures=data.failures, right_censored=data.right_censored)  # fit all the models
+    print('The best fitting distribution was', results.best_distribution_name, 'which had parameters', results.best_distribution.parameters)
     
     '''
                       Alpha     Beta     Gamma       Mu     Sigma     Lambda        AICc         BIC
@@ -78,20 +70,22 @@ In this second example, we will create some right censored data and use Fit_Ever
     Weibull_2P      11.2773  3.30301                                          488.041154  493.127783
     Normal_2P                                   10.1194   3.37466             489.082213  494.168842
     Gamma_2P        1.42315  7.21352                                          490.593729  495.680358
+    Weibull_3P      10.0786  2.85825   1.15083                                489.807329  497.372839
     Gamma_3P        1.42315   7.2135         0                                492.720018  500.285528
     Lognormal_2P                                2.26524  0.406436             495.693518  500.780147
     Lognormal_3P                      0.883941  2.16125  0.465752             500.938298  500.780147
-    Weibull_3P      8.43021  2.15541   2.68747                                493.617767  501.183278
     Exponential_2P                     2.82802                      0.121869  538.150905  543.237534
     Exponential_1P                                                 0.0870022  594.033742  596.598095
-    
-    The best fitting distribution was Weibull_2P which had parameters [11.27727274  3.30293237  0.        ]
+
+    The best fitting distribution was Weibull_2P which had parameters [11.27730642  3.30300716  0.        ]
     '''
 
-.. image:: images/Fit_everything_histogram_plot_V2.png
+.. image:: images/Fit_everything_histogram_plot_V3.png
 
-.. image:: images/Fit_everything_probability_plot_V2.png
+.. image:: images/Fit_everything_probability_plot_V3.png
 
-.. image:: images/Fit_everything_PP_plot_V2.png
+.. image:: images/Fit_everything_PP_plot_V3.png
 
 The histogram is scaled based on the amount of censored data. If your censored data is all above or below your failure data then the histogram bars should line up well with the fitted distributions (assuming you have enough data). However, if your censored data is not always greater than the max of your failure data then the heights of the histogram bars will be scaled down and the plot may look incorrect. This is to be expected as the histogram is only a plot of the failure data and the totals will not add to 100% if there is censored data.
+
+.. note:: The confidence intervals shown on the probability plots are only available for the Exponential (1P and 2P) and Weibull (2P and 3P) fitters. This library is in active development and over the next few months the confidence intervals will be added to the Normal and Lognormal Fitters followed by the Gamma and Beta Fitters.
