@@ -61,7 +61,7 @@ class KaplanMeier:
             raise ValueError('failures must be provided to calculate non-parametric estimates.')
         if right_censored is None:
             right_censored = []  # create empty array so it can be added in hstack
-        if plot_type not in ['CDF','SF','CHF','cdf','sf','chf']:
+        if plot_type not in ['CDF', 'SF', 'CHF', 'cdf', 'sf', 'chf']:
             raise ValueError('plot_type must be CDF, SF, or CHF. Default is SF.')
 
         # turn the failures and right censored times into a two lists of times and censoring codes
@@ -180,16 +180,12 @@ class KaplanMeier:
         # plotting section
         if show_plot is True:
             # extract certain keyword arguments or specify them if they are not set. We cannot pass all kwargs to CI plots as some are not appropriate (eg. label)
-            if 'color' in kwargs:
-                CI_color = kwargs.get('color')
-            else:
-                CI_color = 'steelblue'
 
             if plot_type == 'SF':
-                plt.plot(self.xvals, self.SF, **kwargs)
+                p = plt.plot(self.xvals, self.SF, **kwargs)
                 if plot_CI is True:  # plots the confidence bounds
                     title_text = str('Kaplan-Meier SF estimate\n with ' + str(int(CI * 100)) + '% confidence bounds')
-                    plt.fill_between(self.xvals, self.SF_lower, self.SF_upper, color=CI_color, alpha=0.3)
+                    plt.fill_between(self.xvals, self.SF_lower, self.SF_upper, color=p[0].get_color(), alpha=0.3)
                 else:
                     title_text = 'Kaplan-Meier estimate of Survival Function'
                 plt.xlabel('Failure units')
@@ -198,10 +194,10 @@ class KaplanMeier:
                 plt.xlim([0, max(KM_x)])
                 plt.ylim([0, 1.1])
             if plot_type == 'CDF':
-                plt.plot(self.xvals, self.CDF, **kwargs)
+                p = plt.plot(self.xvals, self.CDF, **kwargs)
                 if plot_CI is True:  # plots the confidence bounds
                     title_text = str('Kaplan-Meier CDF estimate\n with ' + str(int(CI * 100)) + '% confidence bounds')
-                    plt.fill_between(self.xvals, self.CDF_lower, self.CDF_upper, color=CI_color, alpha=0.3)
+                    plt.fill_between(self.xvals, self.CDF_lower, self.CDF_upper, color=p[0].get_color(), alpha=0.3)
                 else:
                     title_text = 'Kaplan-Meier estimate of Cumulative Density Function'
                 plt.xlabel('Failure units')
@@ -210,16 +206,17 @@ class KaplanMeier:
                 plt.xlim([0, max(KM_x)])
                 plt.ylim([0, 1.1])
             if plot_type == 'CHF':
-                plt.plot(self.xvals, self.CHF, **kwargs)
+                p = plt.plot(self.xvals, self.CHF, **kwargs)
                 if plot_CI is True:  # plots the confidence bounds
                     title_text = str('Kaplan-Meier CHF estimate\n with ' + str(int(CI * 100)) + '% confidence bounds')
-                    plt.fill_between(self.xvals, self.CHF_lower, self.CHF_upper, color=CI_color, alpha=0.3)
+                    plt.fill_between(self.xvals, self.CHF_lower, self.CHF_upper, color=p[0].get_color(), alpha=0.3)
                 else:
                     title_text = 'Kaplan-Meier estimate of Cumulative Hazard Function'
                 plt.xlabel('Failure units')
                 plt.ylabel('Cumulative Hazard')
                 plt.title(title_text)
                 plt.xlim([0, max(KM_x)])
+
 
 class NelsonAalen:
     '''
@@ -261,14 +258,14 @@ class NelsonAalen:
     NelsonAalen(failures = f, right_censored = rc)
     '''
 
-    def __init__(self, failures=None, right_censored=None, show_plot=True, print_results=True, plot_CI=True, CI=0.95,plot_type='SF', **kwargs):
+    def __init__(self, failures=None, right_censored=None, show_plot=True, print_results=True, plot_CI=True, CI=0.95, plot_type='SF', **kwargs):
         np.seterr(divide='ignore')  # divide by zero occurs if last detapoint is a failure so risk set is zero
 
         if failures is None:
             raise ValueError('failures must be provided to calculate non-parametric estimates.')
         if right_censored is None:
             right_censored = []  # create empty array so it can be added in hstack
-        if plot_type not in ['CDF','SF','CHF','cdf','sf','chf']:
+        if plot_type not in ['CDF', 'SF', 'CHF', 'cdf', 'sf', 'chf']:
             raise ValueError('plot_type must be CDF, SF, or CHF. Default is SF.')
 
         # turn the failures and right censored times into a two lists of times and censoring codes
@@ -389,16 +386,11 @@ class NelsonAalen:
         # plotting section
         if show_plot is True:
             # extract certain keyword arguments or specify them if they are not set. We cannot pass all kwargs to CI plots as some are not appropriate (eg. label)
-            if 'color' in kwargs:
-                CI_color = kwargs.get('color')
-            else:
-                CI_color = 'steelblue'
-
             if plot_type == 'SF':
-                plt.plot(self.xvals, self.SF, **kwargs)
+                p = plt.plot(self.xvals, self.SF, **kwargs)
                 if plot_CI is True:  # plots the confidence bounds
                     title_text = str('Nelson-Aalen SF estimate\n with ' + str(int(CI * 100)) + '% confidence bounds')
-                    plt.fill_between(self.xvals, self.SF_lower, self.SF_upper, color=CI_color, alpha=0.3)
+                    plt.fill_between(self.xvals, self.SF_lower, self.SF_upper, color=p[0].get_color(), alpha=0.3)
                 else:
                     title_text = 'Nelson-Aalen estimate of Survival Function'
                 plt.xlabel('Failure units')
@@ -407,10 +399,10 @@ class NelsonAalen:
                 plt.xlim([0, max(NA_x)])
                 plt.ylim([0, 1.1])
             if plot_type == 'CDF':
-                plt.plot(self.xvals, self.CDF, **kwargs)
+                p = plt.plot(self.xvals, self.CDF, **kwargs)
                 if plot_CI is True:  # plots the confidence bounds
                     title_text = str('Nelson-Aalen CDF estimate\n with ' + str(int(CI * 100)) + '% confidence bounds')
-                    plt.fill_between(self.xvals, self.CDF_lower, self.CDF_upper, color=CI_color, alpha=0.3)
+                    plt.fill_between(self.xvals, self.CDF_lower, self.CDF_upper, color=p[0].get_color(), alpha=0.3)
                 else:
                     title_text = 'Nelson-Aalen estimate of Cumulative Density Function'
                 plt.xlabel('Failure units')
@@ -419,10 +411,10 @@ class NelsonAalen:
                 plt.xlim([0, max(NA_x)])
                 plt.ylim([0, 1.1])
             if plot_type == 'CHF':
-                plt.plot(self.xvals, self.CHF, **kwargs)
+                p = plt.plot(self.xvals, self.CHF, **kwargs)
                 if plot_CI is True:  # plots the confidence bounds
                     title_text = str('Nelson-Aalen CHF estimate\n with ' + str(int(CI * 100)) + '% confidence bounds')
-                    plt.fill_between(self.xvals, self.CHF_lower, self.CHF_upper, color=CI_color, alpha=0.3)
+                    plt.fill_between(self.xvals, self.CHF_lower, self.CHF_upper, color=p[0].get_color(), alpha=0.3)
                 else:
                     title_text = 'Nelson-Aalen estimate of Cumulative Hazard Function'
                 plt.xlabel('Failure units')
