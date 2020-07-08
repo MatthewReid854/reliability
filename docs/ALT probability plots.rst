@@ -94,6 +94,7 @@ In this second example, we examine the difference between ALT_probability_plot_W
     ALT_probability_plot_Exponential(failures=f, failure_stress=f_stress)
     plt.subplot(122)
     ALT_probability_plot_Weibull(failures=f, failure_stress=f_stress, common_shape_method='average')
+    plt.subplots_adjust(right=0.94,wspace=0.35)
     plt.show()
 
     '''
@@ -116,7 +117,7 @@ In this second example, we examine the difference between ALT_probability_plot_W
     Total BIC: 451.7295523766102
     '''
 
-.. image:: images/ALT_expon_weib_probplot_V2.png
+.. image:: images/ALT_expon_weib_probplot_V3.png
 
 Getting your input data in the right format
 -------------------------------------------
