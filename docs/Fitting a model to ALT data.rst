@@ -132,4 +132,4 @@ In this second example, we will fit a dual stress model to a dual stress data se
 **References:**
 
 - Probabilistic Physics of Failure Approach to Reliability (2017), by M. Modarres, M. Amiri, and C. Jackson. pp. 136-168
-- Accelerated Life Testing Data Analysis Reference - ReliaWiki, Reliawiki.com, 2019. [Online]. Available at: `http://reliawiki.com/index.php/Accelerated_Life_Testing_Data_Analysis_Reference <http://reliawiki.com/index.php/Accelerated_Life_Testing_Data_Analysis_Reference>`_.
+- Accelerated Life Testing Data Analysis Reference - ReliaWiki, Reliawiki.com, 2019. [`Online <http://reliawiki.com/index.php/Accelerated_Life_Testing_Data_Analysis_Reference <http://reliawiki.com/index.php/Accelerated_Life_Testing_Data_Analysis_Reference>`_].
