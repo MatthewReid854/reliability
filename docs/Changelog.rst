@@ -23,6 +23,10 @@ Changelog
      
 -    Within Other_functions.similar_distributions the option 'monte_carlo_trials' has been removed as the distribution sampling method is no longer random.
 
+**Bug Fixes**
+
+-    Fixed confidence interval color inheritance for Nonparametric.Kaplan_Meier and Nonparametric.Nelson_Aalen. Previously the color was only inherited if specified rather than left as default.
+
 **Other**
 
 -    Documentation updates to reflect the API changes in Version 0.5.1
