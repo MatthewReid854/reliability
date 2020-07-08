@@ -37,25 +37,24 @@ In this first example, we will create some data using two Weibull distributions 
     from reliability.Fitters import Fit_Weibull_Mixture
     from reliability.Distributions import Weibull_Distribution
     import numpy as np
-    #create some failures and right censored data
-    np.random.seed(2) #this is just for repeatability for this tutorial
-    group_1 = Weibull_Distribution(alpha=10,beta=3).random_samples(400)
-    group_2 = Weibull_Distribution(alpha=40,beta=4).random_samples(600)
-    all_data = np.hstack([group_1,group_2])
-    #fit the Weibull Mixture
-    results = Fit_Weibull_Mixture(failures=all_data,show_plot=True,print_results=True)
+
+    # create some failures from two distributions
+    group_1 = Weibull_Distribution(alpha=10, beta=3).random_samples(400, seed=2)
+    group_2 = Weibull_Distribution(alpha=40, beta=4).random_samples(600, seed=2)
+    all_data = np.hstack([group_1, group_2])  # combine the data
+    results = Fit_Weibull_Mixture(failures=all_data, show_plot=True, print_results=True)  # fit the Weibull Mixture
 
     '''
     Parameters: 
-    Alpha 1: 9.597584120116744 
-    Beta 1: 3.103406441496059 
-    Alpha 2: 39.70121344619987 
-    Beta 2: 3.9380638152183587 
-    Proportion 1: 0.39392990137955697
-    Log-Likelihood: -3868.9285857124737
+    Alpha 1: 9.708498369449849 
+    Beta 1: 3.0251443787488177 
+    Alpha 2: 39.66530473061036 
+    Beta 2: 3.995733646779686 
+    Proportion 1: 0.39834952546436553
+    Log-Likelihood: -3867.2974045227447
     '''
 
-.. image:: images/Weibull_Mixture_1.png
+.. image:: images/Weibull_Mixture_V2.png
 
 In this second example, we will compare how well the Weibull Mixture performs vs a single Weibull_2P. Firstly, we generate some data from two Weibull distributions, combine the data, and right censor it above our chosen threshold. Next, we will fit the Mixture and Weibull_2P distributions. Then we will build the mixture PDF using the components of the fitted Weibull distributions. Everything is then plotted and a goodness of fit measure is used to check whether the Weibull_Mixture is really a much better fit than a single Weibull_2P distribution (which it is due to the lower BIC).
 
@@ -65,48 +64,42 @@ In this second example, we will compare how well the Weibull Mixture performs vs
     from reliability.Distributions import Weibull_Distribution
     import numpy as np
     import matplotlib.pyplot as plt
-    #create some failures and right censored data
-    np.random.seed(2) #this is just for repeatability for this tutorial
-    group_1 = Weibull_Distribution(alpha=10,beta=2).random_samples(700)
-    group_2 = Weibull_Distribution(alpha=30,beta=3).random_samples(300)
-    all_data = np.hstack([group_1,group_2])
-    failures = []
-    censored = []
-    threshold = 30
-    for item in all_data:
-        if item>threshold:
-            censored.append(threshold)
-        else:
-            failures.append(item)
+    from reliability.Other_functions import histogram, make_right_censored_data
 
-    #fit the Weibull Mixture and Weibull_2P
-    mixture = Fit_Weibull_Mixture(failures=failures, right_censored=censored,show_plot=False, print_results=False)
-    single = Fit_Weibull_2P(failures=all_data, right_censored=censored, show_probability_plot=False, print_results=False)
+    # create some failures and right censored data
+    group_1 = Weibull_Distribution(alpha=10, beta=2).random_samples(700, seed=2)
+    group_2 = Weibull_Distribution(alpha=30, beta=3).random_samples(300, seed=2)
+    all_data = np.hstack([group_1, group_2])
+    data = make_right_censored_data(all_data, threshold=30)
 
-    #plot the histogram of all the data and shade the censored part white
-    N,bins,patches = plt.hist(all_data, density=True, alpha=0.2, color='k', bins=30, edgecolor='k')
-    for i in range(np.argmin(abs(np.array(bins)-threshold)),len(patches)): #this is to shade the censored part of the histogram as white
-        patches[i].set_facecolor('white')
-    
-    #extract the y_vals from the mixture and build the Mixture PDF using the proportions
-    xvals = np.linspace(0,60,1000)
-    part_1 = Weibull_Distribution(alpha=mixture.alpha_1,beta=mixture.beta_1).PDF(xvals=xvals,show_plot=False)
-    part_2 = Weibull_Distribution(alpha=mixture.alpha_2,beta=mixture.beta_2).PDF(xvals=xvals,show_plot=False)
-    Mixture_PDF = part_1*mixture.proportion_1+part_2*mixture.proportion_2
-    
-    #plot the Mixture and Weibull_2P
-    plt.plot(xvals,Mixture_PDF,label='Weibull_Mixture')
-    Weibull_Distribution(alpha=single.alpha,beta=single.beta).PDF(xvals=xvals,label='Weibull_2P')
+    # fit the Weibull Mixture and Weibull_2P
+    mixture = Fit_Weibull_Mixture(failures=data.failures, right_censored=data.right_censored, show_plot=False, print_results=False)
+    single = Fit_Weibull_2P(failures=data.failures, right_censored=data.right_censored, show_probability_plot=False, print_results=False)
+
+    # print the goodness of fit measure
+    print('Weibull_Mixture BIC:', mixture.BIC, '\nWeibull_2P BIC:', single.BIC)
+
+    # plot the histogram of all the data and shade the censored part white
+    histogram(all_data, white_above=30)
+
+    # extract the y_vals from the mixture and build the Mixture PDF using the proportions
+    xvals = np.linspace(0, 60, 1000)
+    part_1 = Weibull_Distribution(alpha=mixture.alpha_1, beta=mixture.beta_1).PDF(xvals=xvals, show_plot=False)
+    part_2 = Weibull_Distribution(alpha=mixture.alpha_2, beta=mixture.beta_2).PDF(xvals=xvals, show_plot=False)
+    Mixture_PDF = part_1 * mixture.proportion_1 + part_2 * mixture.proportion_2  # this is a mixture model that will be available in Version 0.5.2
+
+    # plot the Mixture and Weibull_2P
+    plt.plot(xvals, Mixture_PDF, label='Weibull_Mixture')
+    Weibull_Distribution(alpha=single.alpha, beta=single.beta).PDF(xvals=xvals, label='Weibull_2P')
     plt.title('Comparison of Weibull_2P with Weibull Mixture')
     plt.legend()
     plt.show()
-    
-    #print the goodness of fit measure
-    print('Weibull_Mixture BIC:',mixture.BIC,'\nWeibull_2P BIC:',single.BIC)
 
     '''
-    Weibull_Mixture BIC: 6422.214522142318 
-    Weibull_2P BIC: 7571.421531337183
+    Weibull_Mixture BIC: 6432.417425636481 
+    Weibull_2P BIC: 6511.51175959736
     '''
 
-.. image:: images/Weibull_mixture_vs_Weibull_2P.png
+.. image:: images/Weibull_mixture_vs_Weibull_2P_V2.png
+
+.. note:: Significant work is being done to develop mixture models within the python reliability library. Version 0.5.2 is expected to incorporate a mixture model that will work like any of the other distributions in reliability.Distributions and have all the same methods. Additionally, Version 0.5.2 is expected to include the results from the Fit_Weibull_Mixture on a probability plot rather than just the PDF and CDF shown in the first example.
