@@ -112,6 +112,7 @@ In this fourth example, we will take a look at the special case of the Exponenti
     Exponential_probability_plot_Weibull_Scale(failures=data1, fit_gamma=True)
     Exponential_probability_plot_Weibull_Scale(failures=data2, fit_gamma=True)
     plt.gcf().set_size_inches(15, 7)
+    plt.subplots_adjust(left=0.08, right=0.97, top=0.91, wspace=0.30)  # format the plot
     plt.show()
 
 .. image:: images/expon_weibull_scale_V3.png
