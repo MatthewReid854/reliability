@@ -12,9 +12,9 @@ Changelog
 
 -    New distributions
 
-    - Mixture_Distribution
-    - Competing_Risks_Distribution
-    - Defective_Subpopulation_Distribution
+     - Mixture_Distribution
+     - Competing_Risks_Distribution
+     - Defective_Subpopulation_Distribution
 
 **API Changes**
 
