@@ -1,20 +1,24 @@
 .. image:: images/logo.png
 
 -------------------------------------
+[![DOI](https://zenodo.org/badge/198305660.svg)](https://zenodo.org/badge/latestdoi/198305660)
 
 Citing reliability in your work
 '''''''''''''''''''''''''''''''
 
-The following reference is using APA (6th edition):
+If ``reliability`` contributes to a project that leads to a scientific publication, please acknowledge this fact by citing the DOI.
 
-**Reid, M. (2020). Reliability – a Python library for reliability engineering (Version 0.4.8) [Python].**
+The DOI for reliability is `10.5281/zenodo.3938000 <https://zenodo.org/record/3938000>`_.
+
+The following reference is using APA:
+**Reid, M. (2020). Reliability – a Python library for reliability engineering (Version 0.5.1) [Computer software]. Zenodo. https://doi.org/10.5281/ZENODO.3938000**
 
 If you would like to use another referencing style, the details you may need are:
 
 - **Author:** Matthew Reid
 - **Year published:** 2020
 - **Title:** Reliability – a Python library for reliability engineering
-- **Version:** 0.4.8
+- **Version:** 0.5.1
 - **Platform:** Python
 - **Available from:** https://pypi.org/project/reliability/
 
