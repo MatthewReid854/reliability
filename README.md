@@ -11,7 +11,7 @@
 # reliability
 *reliability* is a Python library for reliability engineering and survival analysis. It significantly extends the functionality of scipy.stats and also includes many specialist tools that are otherwise only available in proprietary software.
 
-.. image:: images/readme_image.png
+![](https://github.com/MatthewReid854/reliability/blob/master/docs/images/readme_image.png)
 
 ## Key features
 - Fitting probability distributions to data including right censored data
