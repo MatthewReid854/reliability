@@ -10,16 +10,15 @@ The following development roadmap is the current task list and implementation pl
 **Next task (currently in development)**
 
 -    Confidence intervals for Normal and Lognormal distributions (Gamma and Beta will come later). Currently the confidence intervals have only been completed for Weibull and Exponential distributions.
--    Improving the documentation to reflect the changes from Version 0.5.0
--    Any bug fixes that are necessary as a result of the large number of new features in Version 0.5.0
--    Reliability_testing module. This will incorporate all the reliability tests and test planners that are currently included in Other_functions.
--    Move utilities into Utils module.
 
 **High priority (expected by the end of 2020)**
 
--    New Distributions ==> `Mixure_Distribution <https://reliability.readthedocs.io/en/latest/Weibull%20mixture%20models.html>`_, Competing_Risks_Distribution, and `Defective_Subpopulation_Distribution <https://www.jmp.com/support/help/14-2/distributions-2.shtml>`_. The only one with a Fitter is the Mixture_Distribution. Other fitters will be developed.
--    Better visualisation of results from Fit_Weibull_Mixture to use a probability plot and the Mixture_Distribution object.
--    Fitters for Fit_Weibull_Defective_Subpopulation and Fit_Weibull_Competing_Risks.
+-    New Distributions
+
+     - `Defective Subpopulation_Distribution <https://www.jmp.com/support/help/14-2/distributions-2.shtml>`_. This is for when the CDF does not reach 1 due to a lot of right censored data.
+     - `Zero Inflated Distribution <https://www.jmp.com/support/help/14-2/distributions-2.shtml>`_. This is for when the CDF starts above 0 due to a lot of 'dead on arrival' products in the dataset.
+
+-    New Fitters (Fit_Weibull_DS and Fit_Weibull_ZI) for the above 2 new distributions.
 -    Add least squares as a method to obtain the initial guess for all Fitters. Currently this has been implemented in Fit_Weibull_2P, Fit_Weibull_2P_grouped, and Fit_Weibull_3P but all the other Fitters use scipy which is slower but more accurate for small datasets.
 -    Amalgamate Fit_Weibull_2P and Fit_Weibull_2P_grouped under a single function. Need to decide the best input format ==> failures=[], right_censored=[], xcn=[[x],[c],[n]] or df. If this works, do it for all Fitters so they are fast for large datasets.
 -    Improvement to the online documentation for how some of these methods work, including the addition of more formulas, algorithms, and better referencing.
