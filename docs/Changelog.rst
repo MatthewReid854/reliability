@@ -14,11 +14,14 @@ Changelog
 
      - Mixture_Distribution
      - Competing_Risks_Distribution
-     - Defective_Subpopulation_Distribution
+
+-    A new fitter for the Weibull competing risks model (Fit_Weibull_CR)
+-    The output of the Fit_Weibull_Mixture now includes a probability plot instead of a histogram of the PDF and CDF
+-    The output of the Fit_Weibull_Mixture now prints the confidence interval estimates of the parameters
 
 **API Changes**
 
--    None yet.
+-    Within Fitters.Fit_Weibull_mixture the option show_plot has been changed to show_probability_plot to align with all the other fitters now that the plot is a probability plot.
 
 **Bug Fixes**
 
