@@ -716,8 +716,8 @@ class Weibull_Distribution:
                 # plt.scatter(t + self.gamma, yy_lower, color='blue')
 
             # reimpose the xlim and ylim to be what it was before the CI were plotted
-            plt.gca().set_xlim(x_lims, auto=True)
-            plt.gca().set_ylim(y_lims, auto=True)
+            plt.xlim(x_lims)
+            plt.ylim(y_lims)
 
     def quantile(self, q):
         '''
@@ -2248,8 +2248,8 @@ class Exponential_Distribution:
             plt.plot(t + self.gamma, yy_lower, color=color, linewidth=0)
             plt.plot(t + self.gamma, yy_upper, color=color, linewidth=0)
             # reimpose the xlim and ylim to be what it was before the CI was plotted
-            plt.gca().set_xlim(x_lims, auto=True)
-            plt.gca().set_ylim(y_lims, auto=True)
+            plt.xlim(x_lims)
+            plt.ylim(y_lims)
 
     def quantile(self, q):
         '''
@@ -3280,3 +3280,985 @@ class Beta_Distribution:
             np.random.seed(seed)
         RVS = ss.beta.rvs(self.alpha, self.beta, 0, 1, size=number_of_samples)
         return RVS
+
+
+class Competing_Risks_Model:
+    '''
+    The competing risks model is used to model the effect of multiple risks (expressed as probability distributions) that act on a system over time.
+    The model is obtained using the product of the survival functions: SF_total = SF_1 x SF_2 x SF_3 x ....x SF_n
+    An equivalent form of this model is to sum the hazard or cumulative hazard functions. The result is the same.
+    In this way, we see the CDF, HF, and CHF of the overall model being equal to or higher than any of the constituent distributions.
+    Similarly, the SF of the overall model will always be equal to or lower than any of the constituent distributions.
+    The PDF occurs earlier in time since the earlier risks cause the population to fail sooner leaving less to fail due to the later risks.
+
+    This mode should be used when a data set has been divided by failure mode and each failure mode has been modelled separately.
+    The competing risks model can then be used to recombine the constituent distributions into a single model.
+    Unlike the mixture model, there are no proportions as the risks are competing to cause failure rather than being mixed.
+
+    As this process is multiplicative for the survival function, and may accept many distributions of different types, the mathematical formulation quickly gets complex.
+    For this reason, the algorithm combines the models numerically rather than empirically so there are no simple formulas for many of the descriptive statistics (mean, median, etc.)
+    Also, the accuracy of the model is dependent on xvals. If the xvals array is small (<100 values) then the answer will be "blocky" and inaccurate.
+    the variable xvals is only accepted for PDF, CDF, SF, HF, CHF. The other methods (like random samples) use the default xvals for maximum accuracy.
+    The default number of values generated when xvals is not given is 1000. Consider this carefully when specifying xvals in order to avoid inaccuracies in the results.
+
+    The API is similar to the other probability distributions (Weibull, Normal, etc.) and has the following inputs and methods:
+
+    Inputs:
+    distributions - a list or array of probability distributions used to construct the model
+
+    Methods:
+    name - 'Competing risks'
+    name2 - 'Competing risks using 3 distributions'
+    mean
+    median
+    mode
+    variance
+    standard_deviation
+    skewness
+    kurtosis
+    excess_kurtosis
+    b5 - The time where 5% have failed. Same as quantile(0.05)
+    b95 - The time where 95% have failed. Same as quantile(0.95)
+    plot() - plots all functions (PDF,CDF,SF,HF,CHF)
+    PDF() - plots the probability density function
+    CDF() - plots the cumulative distribution function
+    SF() - plots the survival function (also known as reliability function)
+    HF() - plots the hazard function
+    CHF() - plots the cumulative hazard function
+    quantile() - Calculates the quantile (time until a fraction has failed) for a given fraction failing.
+                 Also known as b life where b5 is the time at which 5% have failed.
+    inverse_SF() - the inverse of the Survival Function. This is useful when producing QQ plots.
+    mean_residual_life() - Average residual lifetime of an item given that the item has survived up to a given time.
+                           Effectively the mean of the remaining amount (right side) of a distribution at a given time.
+    stats() - prints all the descriptive statistics. Same as the statistics shown using .plot() but printed to console.
+    random_samples() - draws random samples from the distribution to which it is applied.
+    '''
+
+    def __init__(self, distributions):
+        if type(distributions) not in [list, np.ndarray]:
+            raise ValueError('distributions must be a list or array of distribution objects.')
+        for dist in distributions:
+            if type(dist) not in [Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Beta_Distribution, Gamma_Distribution]:
+                raise ValueError('distributions must be an array or list of probability distributions. Each distribution must be created using the reliability.Distributions module.')
+        self.distributions = distributions  # this just passes the distributions to the __combiner which is used by the other functions along with the xvals. No combining can occur without xvals.
+        self.name = 'Competing risks'
+        self.num_dists = len(distributions)
+        self.name2 = str('Competing risks using ' + str(self.num_dists) + ' distributions')
+
+        # This is essentially just the same as the __combiner method but more automated with a high amount of detail for the X array to avoid errors
+        xmax0 = 0
+        for dist in distributions:
+            xmax0 = max(xmax0, dist.quantile(0.99))
+
+        X = np.linspace(0, xmax0 * 4, 500000)  # an xmax0 multiplier of 4 with 500k samples was found optimal in simulations
+        sf = np.ones_like(X)
+        # combine the distributions using the product of the survival functions: SF_total = SF_1 x SF_2 x SF_3 x ....x SF_n
+        for i in range(len(distributions)):
+            sf *= distributions[i].SF(X, show_plot=False)
+        pdf = np.diff(np.hstack([[0], 1 - sf])) / np.diff(np.hstack([[0], X]))  # this formula is equivalent to dy/dx of the CDF
+        pdf[0] = 0
+        self.__xvals_init = X  # used by random_samples
+        self.__pdf_init = pdf  # used by random_samples
+        self.mean = integrate.simps(pdf * X, x=X)
+        self.standard_deviation = (integrate.simps(pdf * (X - self.mean) ** 2, x=X)) ** 0.5
+        self.skewness = (integrate.simps(pdf * ((X - self.mean) / self.standard_deviation) ** 3, x=X))
+        self.kurtosis = (integrate.simps(pdf * ((X - self.mean) / self.standard_deviation) ** 4, x=X))
+        self.mode = X[np.argmax(pdf)]
+        self.median = X[np.argmin(abs(sf - 0.5))]
+        self.variance = self.standard_deviation ** 2
+        self.excess_kurtosis = self.kurtosis - 3
+        self.b5 = X[np.argmin(abs((1 - sf) - 0.05))]
+        self.b95 = X[np.argmin(abs((1 - sf) - 0.95))]
+
+    def __combiner(self, xvals=None, xmin=None, xmax=None):
+        '''
+        This is where the combination happens.
+        It is necessary to do this outside of the __init__ method as it needs to be called by each function (PDF, CDF...) so that xvals is used consistently.
+        This approach keeps the API the same as the other probability distributions.
+        This is a hidden function as the user should never need to access it directly.
+        '''
+        distributions = self.distributions
+
+        # obtain the X values
+        if xvals is not None:
+            X = xvals
+        elif xmin is not None and xmax is not None:
+            X = np.linspace(xmin, xmax, 1000)
+        else:
+            xmin0 = 10 ** 30  # these are just initial values which get changed during the xmin0 xmax0 update as each distribution is examined
+            xmax0 = 0
+            for dist in distributions:
+                xmin0 = min(xmin0, dist.quantile(0.01))
+                xmax0 = max(xmax0, dist.quantile(0.99))
+            delta = xmax0 - xmin0
+            if xmin0 < 0:
+                xmin0 = 0
+            else:
+                if xmin0 - 0.3 * delta <= 0:
+                    if plt.gca().get_yscale() != 'linear':
+                        xmin0 = plt.xlim()[0]
+                    else:
+                        xmin0 = 0
+            X = np.linspace(xmin0, xmax0*2, 1000)  # this is a big array because everything is numerical rather than empirical. Small array sizes will lead to blocky (inaccurate) results.
+
+        # convert to numpy array if given list. raise error for other types. check for values below 0.
+        if type(X) is list:
+            X = np.array(X)
+        elif type(X) is np.ndarray:
+            pass
+        else:
+            raise ValueError('unexpected type in xvals. Must be  list, or array')
+        if min(X) < 0:
+            raise ValueError('xvals was found to contain values below 0')
+
+        sf = np.ones_like(X)
+        # combine the distributions using the product of the survival functions: SF_total = SF_1 x SF_2 x SF_3 x ....x SF_n
+        for i in range(len(distributions)):
+            sf *= distributions[i].SF(X, show_plot=False)
+
+        pdf = np.diff(np.hstack([[0], 1 - sf])) / np.diff(np.hstack([[0], X]))  # this formula is equivalent to dy/dx of the CDF
+        pdf[0] = 0  # fixes a nan artifact of np.diff for the first value
+        hf = np.diff(np.hstack([[0], -np.log(sf)])) / np.diff(np.hstack([[0], X]))  # this formula is equivalent to dy/dx of the CHF
+        hf[0] = hf[1] + (X[0] - X[1]) * (hf[2] - hf[1]) / (X[2] - X[1])  # linear interpolation for hf[0] to correct for nan artifact from np.diff. Can't just set it equal to 0 as it's not like the pdf.
+        if hf[0] < 0:
+            hf[0] = 0
+        # these are all hidden to the user but can be accessed by the other functions in this module
+        self.__xvals = X
+        self.__pdf = pdf
+        self.__cdf = 1 - sf
+        self.__sf = sf
+        self.__hf = hf
+        self.__chf = -np.log(sf)
+        # NEED TO DEVELOP mean_residual_life()
+
+    def plot(self, xvals=None, xmin=None, xmax=None):
+        '''
+        Plots all functions (PDF, CDF, SF, HF, CHF) and descriptive statistics in a single figure
+
+        Inputs:
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *no plotting keywords are accepted
+
+        Outputs:
+        The plot will be shown. No need to use plt.show()
+        '''
+        Competing_Risks_Model.__combiner(self, xvals=xvals, xmin=xmin, xmax=xmax)
+        plt.figure(figsize=(9, 7))
+        text_title = str('Competing Risks Model')
+        plt.suptitle(text_title, fontsize=15)
+        plt.subplot(231)
+        plt.plot(self.__xvals, self.__pdf)
+        plt.title('Probability Density\nFunction')
+        plt.subplot(232)
+        plt.plot(self.__xvals, self.__cdf)
+        plt.title('Cumulative Distribution\nFunction')
+        plt.subplot(233)
+        plt.plot(self.__xvals, self.__sf)
+        plt.title('Survival Function')
+        plt.subplot(234)
+        plt.plot(self.__xvals, self.__hf)
+        plt.title('Hazard Function')
+        plt.subplot(235)
+        plt.plot(self.__xvals, self.__chf)
+        plt.title('Cumulative Hazard\nFunction')
+
+        # descriptive statistics section
+        plt.subplot(236)
+        plt.axis('off')
+        plt.ylim([0, 10])
+        plt.xlim([0, 10])
+        text_mean = str('Mean = ' + str(round_to_decimals(float(self.mean), dec)))
+        text_median = str('Median = ' + str(round_to_decimals(self.median, dec)))
+        try:
+            text_mode = str('Mode = ' + str(round_to_decimals(self.mode, dec)))
+        except:
+            text_mode = str('Mode = ' + str(self.mode))  # required when mode is str
+        text_b5 = str('$5^{th}$ quantile = ' + str(round_to_decimals(self.b5, dec)))
+        text_b95 = str('$95^{th}$ quantile = ' + str(round_to_decimals(self.b95, dec)))
+        text_std = str('Standard deviation = ' + str(round_to_decimals(self.variance ** 0.5, dec)))
+        text_var = str('Variance = ' + str(round_to_decimals(float(self.variance), dec)))
+        text_skew = str('Skewness = ' + str(round_to_decimals(float(self.skewness), dec)))
+        text_ex_kurt = str('Excess kurtosis = ' + str(round_to_decimals(float(self.excess_kurtosis), dec)))
+        plt.text(0, 9, text_mean)
+        plt.text(0, 8, text_median)
+        plt.text(0, 7, text_mode)
+        plt.text(0, 6, text_b5)
+        plt.text(0, 5, text_b95)
+        plt.text(0, 4, text_std)
+        plt.text(0, 3, text_var)
+        plt.text(0, 2, text_skew)
+        plt.text(0, 1, text_ex_kurt)
+        plt.tight_layout()
+        plt.subplots_adjust(hspace=0.3, top=0.84)
+        plt.show()
+
+    def PDF(self, xvals=None, xmin=None, xmax=None, show_plot=True, plot_components=False, **kwargs):
+        '''
+        Plots the PDF (probability density function)
+
+        Inputs:
+        show_plot - True/False. Default is True
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *plotting keywords are also accepted (eg. color, linestyle)
+
+        Outputs:
+        yvals - this is the y-values of the plot
+        The plot will be shown if show_plot is True (which it is by default).
+        '''
+        Competing_Risks_Model.__combiner(self, xvals=xvals, xmin=xmin, xmax=xmax)
+
+        if show_plot == False:
+            return self.__pdf
+        else:
+            if plot_components is True:  # this will plot the distributions that make up the components of the model
+                for dist in self.distributions:
+                    dist.PDF(xvals=self.__xvals, label=dist.param_title_long)
+            if 'label' in kwargs:
+                textlabel = kwargs.pop('label')
+            else:
+                textlabel = 'Competing risks model'
+            plt.plot(self.__xvals, self.__pdf, label=textlabel, **kwargs)
+            plt.xlabel('x values')
+            plt.ylabel('Probability density')
+            text_title = str('Competing Risks Model\n' + ' Probability Density Function')
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.87)
+            return self.__pdf
+
+    def CDF(self, xvals=None, xmin=None, xmax=None, show_plot=True, plot_components=False, **kwargs):
+        '''
+        Plots the CDF (cumulative distribution function)
+
+        Inputs:
+        show_plot - True/False. Default is True
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *plotting keywords are also accepted (eg. color, linestyle)
+
+        Outputs:
+        yvals - this is the y-values of the plot
+        The plot will be shown if show_plot is True (which it is by default).
+        '''
+        Competing_Risks_Model.__combiner(self, xvals=xvals, xmin=xmin, xmax=xmax)
+
+        if show_plot == False:
+            return self.__cdf
+        else:
+            if plot_components is True:  # this will plot the distributions that make up the components of the model
+                for dist in self.distributions:
+                    dist.CDF(xvals=self.__xvals, label=dist.param_title_long)
+            if 'label' in kwargs:
+                textlabel = kwargs.pop('label')
+            else:
+                textlabel = 'Competing risks model'
+            plt.plot(self.__xvals, self.__cdf, label=textlabel, **kwargs)
+            plt.xlabel('x values')
+            plt.ylabel('Fraction failing')
+            text_title = str('Competing Risks Model\n' + ' Cumulative Distribution Function')
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.87)
+            return self.__cdf
+
+    def SF(self, xvals=None, xmin=None, xmax=None, show_plot=True, plot_components=False, **kwargs):
+        '''
+        Plots the SF (survival function)
+
+        Inputs:
+        show_plot - True/False. Default is True
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *plotting keywords are also accepted (eg. color, linestyle)
+
+        Outputs:
+        yvals - this is the y-values of the plot
+        The plot will be shown if show_plot is True (which it is by default).
+        '''
+        Competing_Risks_Model.__combiner(self, xvals=xvals, xmin=xmin, xmax=xmax)
+
+        if show_plot == False:
+            return self.__sf
+        else:
+            if plot_components is True:  # this will plot the distributions that make up the components of the model
+                for dist in self.distributions:
+                    dist.SF(xvals=self.__xvals, label=dist.param_title_long)
+            if 'label' in kwargs:
+                textlabel = kwargs.pop('label')
+            else:
+                textlabel = 'Competing risks model'
+            plt.plot(self.__xvals, self.__sf, label=textlabel, **kwargs)
+            plt.xlabel('x values')
+            plt.ylabel('Fraction surviving')
+            text_title = str('Competing Risks Model\n' + ' Survival Function')
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.87)
+            return self.__sf
+
+    def HF(self, xvals=None, xmin=None, xmax=None, show_plot=True, plot_components=False, **kwargs):
+        '''
+        Plots the HF (hazard function)
+
+        Inputs:
+        show_plot - True/False. Default is True
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *plotting keywords are also accepted (eg. color, linestyle)
+
+        Outputs:
+        yvals - this is the y-values of the plot
+        The plot will be shown if show_plot is True (which it is by default).
+        '''
+        Competing_Risks_Model.__combiner(self, xvals=xvals, xmin=xmin, xmax=xmax)
+
+        if show_plot == False:
+            return self.__hf
+        else:
+            if 'label' in kwargs:
+                textlabel = kwargs.pop('label')
+            else:
+                textlabel = 'Competing risks model'
+            plt.plot(self.__xvals, self.__hf, label=textlabel, **kwargs)
+            ylims = plt.ylim()
+            if plot_components is True:  # this will plot the distributions that make up the components of the model
+                for dist in self.distributions:
+                    dist.HF(xvals=self.__xvals, label=dist.param_title_long)
+            plt.ylim(0, ylims[1])
+            plt.xlabel('x values')
+            plt.ylabel('Hazard')
+            text_title = str('Competing Risks Model\n' + ' Hazard Function')
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.87)
+            return self.__hf
+
+    def CHF(self, xvals=None, xmin=None, xmax=None, show_plot=True, plot_components=False, **kwargs):
+        '''
+        Plots the CHF (cumulative hazard function)
+
+        Inputs:
+        show_plot - True/False. Default is True
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *plotting keywords are also accepted (eg. color, linestyle)
+
+        Outputs:
+        yvals - this is the y-values of the plot
+        The plot will be shown if show_plot is True (which it is by default).
+        '''
+        Competing_Risks_Model.__combiner(self, xvals=xvals, xmin=xmin, xmax=xmax)
+
+        if show_plot == False:
+            return self.__chf
+        else:
+            if plot_components is True:  # this will plot the distributions that make up the components of the model
+                for dist in self.distributions:
+                    dist.CHF(xvals=self.__xvals, label=dist.param_title_long)
+            if 'label' in kwargs:
+                textlabel = kwargs.pop('label')
+            else:
+                textlabel = 'Competing risks model'
+            plt.plot(self.__xvals, self.__chf, label=textlabel, **kwargs)
+            plt.xlabel('x values')
+            plt.ylabel('Cumulative Hazard')
+            text_title = str('Competing Risks Model\n' + ' Cumulative Hazard Function')
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.87)
+            return self.__chf
+
+    def quantile(self, q):
+        '''Quantile calculator
+
+        :param q: quantile to be calculated
+        :return: the probability (area under the curve) that a random variable from the distribution is < q
+        '''
+        if type(q) == int or type(q) == float:
+            if q < 0 or q > 1:
+                raise ValueError('Quantile must be between 0 and 1')
+        elif type(q) == np.ndarray or type(q) == list:
+            if min(q) < 0 or max(q) > 1:
+                raise ValueError('Quantile must be between 0 and 1')
+        else:
+            raise ValueError('Quantile must be of type int, float, list, array')
+        return self.__xvals[np.argmin(abs(self.__cdf - q))]
+
+    def inverse_SF(self, q):
+        '''Inverse survival function calculator
+
+        :param q: quantile to be calculated
+        :return: :return: the inverse of the survival function at q
+        '''
+        if type(q) == int or type(q) == float:
+            if q < 0 or q > 1:
+                raise ValueError('Quantile must be between 0 and 1')
+        elif type(q) == np.ndarray or type(q) == list:
+            if min(q) < 0 or max(q) > 1:
+                raise ValueError('Quantile must be between 0 and 1')
+        else:
+            raise ValueError('Quantile must be of type int, float, list, array')
+        return self.__xvals[np.argmin(abs(self.__sf - q))]
+
+    def stats(self):
+        print('Descriptive statistics for Competing Risks Model')
+        print('Mean = ', self.mean)
+        print('Median =', self.median)
+        print('Mode =', self.mode)
+        print('5th quantile =', self.b5)
+        print('95th quantile =', self.b95)
+        print('Standard deviation =', self.standard_deviation)
+        print('Variance =', self.variance)
+        print('Skewness =', self.skewness)
+        print('Excess kurtosis =', self.excess_kurtosis)
+
+    def mean_residual_life(self, t):
+        '''
+        Mean Residual Life calculator
+
+        :param t: time at which MRL is to be evaluated
+        :return: MRL
+        '''
+
+        def __subcombiner(X):  # this does what __combiner does but more efficiently and also accepts single values
+            if type(X) is np.ndarray:
+                sf = np.ones_like(X)
+            else:
+                sf = 1
+            for i in range(len(self.distributions)):
+                sf *= self.distributions[i].SF(X, show_plot=False)
+            return sf
+
+        xmax = 0
+        for dist in self.distributions:
+            xmax = max(xmax, dist.quantile(0.99))  # find the effective infinity for integration
+        t_full = np.linspace(t, xmax * 4, 500000)
+        sf_full = __subcombiner(t_full)
+        sf_single = __subcombiner(t)
+        MRL = integrate.simps(sf_full, x=t_full) / sf_single
+        return MRL
+
+    def random_samples(self, number_of_samples, seed=None):
+        '''
+        random_samples
+        Draws random samples from the probability distribution
+
+        :param number_of_samples: the number of samples to be drawn
+        :param seed: the random seed. Default is None
+        :return: the random samples
+        '''
+        if type(number_of_samples) != int or number_of_samples < 1:
+            raise ValueError('number_of_samples must be an integer greater than 1')
+        if seed is not None:
+            np.random.seed(seed)
+        return np.random.choice(self.__xvals_init, size=number_of_samples, p=self.__pdf_init / sum(self.__pdf_init))
+
+
+class Mixture_Model:
+    '''
+    The mixture model is used to create a distribution that contains parts from multiple distributions.
+    This allows for a more complex model to be constructed as the sum of other distributions, each multiplied by a proportion (where the proportions sum to 1)
+    The model is obtained using the sum of the survival functions: SF_total = (SF_1 x p_1) + (SF_2 x p2) x (SF_3 x p3) + .... + (SF_n x pn)
+    An equivalent form of this model is to sum the CDF. The result is the same. Note that you cannot simply sum the HF or CHF as this method would be equivalent to the competing risks model.
+    In this way, we see the mixture model will always lie somewhere between the constituent models.
+
+    This mode should be used when a data set cannot be modelled by a single distribution, as evidenced by the shape of the PDF, CDF or probability plot (points do not form a straight line)
+    Unlike the competing risks model, this model requires the proportions to be supplied.
+
+    As this process is additive for the survival function, and may accept many distributions of different types, the mathematical formulation quickly gets complex.
+    For this reason, the algorithm combines the models numerically rather than empirically so there are no simple formulas for many of the descriptive statistics (mean, median, etc.)
+    Also, the accuracy of the model is dependent on xvals. If the xvals array is small (<100 values) then the answer will be "blocky" and inaccurate.
+    the variable xvals is only accepted for PDF, CDF, SF, HF, CHF. The other methods (like random samples) use the default xvals for maximum accuracy.
+    The default number of values generated when xvals is not given is 1000. Consider this carefully when specifying xvals in order to avoid inaccuracies in the results.
+
+    The API is similar to the other probability distributions (Weibull, Normal, etc.) and has the following inputs and methods:
+
+    Inputs:
+    distributions - a list or array of probability distributions used to construct the model
+    proportions - how much of each distribution to add to the mixture. The sum of proportions must always be 1.
+
+    Methods:
+    name - 'Mixture'
+    name2 - 'Mixture using 3 distributions'
+    mean
+    median
+    mode
+    variance
+    standard_deviation
+    skewness
+    kurtosis
+    excess_kurtosis
+    b5 - The time where 5% have failed. Same as quantile(0.05)
+    b95 - The time where 95% have failed. Same as quantile(0.95)
+    plot() - plots all functions (PDF,CDF,SF,HF,CHF)
+    PDF() - plots the probability density function
+    CDF() - plots the cumulative distribution function
+    SF() - plots the survival function (also known as reliability function)
+    HF() - plots the hazard function
+    CHF() - plots the cumulative hazard function
+    quantile() - Calculates the quantile (time until a fraction has failed) for a given fraction failing.
+                 Also known as b life where b5 is the time at which 5% have failed.
+    inverse_SF() - the inverse of the Survival Function. This is useful when producing QQ plots.
+    mean_residual_life() - Average residual lifetime of an item given that the item has survived up to a given time.
+                           Effectively the mean of the remaining amount (right side) of a distribution at a given time.
+    stats() - prints all the descriptive statistics. Same as the statistics shown using .plot() but printed to console.
+    random_samples() - draws random samples from the distribution to which it is applied.
+    '''
+
+    def __init__(self, distributions, proportions=None):
+        if type(distributions) not in [list, np.ndarray]:
+            raise ValueError('distributions must be a list or array of distribution objects.')
+        for dist in distributions:
+            if type(dist) not in [Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Beta_Distribution, Gamma_Distribution]:
+                raise ValueError('distributions must be an array or list of probability distributions. Each distribution must be created using the reliability.Distributions module.')
+
+        if proportions is not None:
+            if sum(proportions) != 1:
+                raise ValueError('the sum of the proportions must be 1')
+            if len(proportions) != len(distributions):
+                raise ValueError('the length of the proportions array must match the length of the distributions array')
+        else:
+            proportions = np.ones_like(distributions) / len(distributions)  # if proportions are not specified they are assumed to all be the same proportion
+
+        self.proportions = proportions  # this just passes the proportions to the __combiner which is used by the other functions along with the xvals. No combining can occur without xvals.
+        self.distributions = distributions  # this just passes the distributions to the __combiner which is used by the other functions along with the xvals. No combining can occur without xvals.
+        self.name = 'Mixture'
+        self.num_dists = len(distributions)
+        self.name2 = str('Mixture using ' + str(self.num_dists) + ' distributions')
+
+        # This is essentially just the same as the __combiner method but more automated with a high amount of detail for the X array to avoid errors
+        xmax0 = 0
+        for dist in distributions:
+            xmax0 = max(xmax0, dist.quantile(0.99))
+        X = np.linspace(0, xmax0 * 4, 500000)  # an xmax0 multiplier of 4 with 500k samples was found optimal in simulations
+        sf = np.zeros_like(X)
+        # combine the distributions using the sum of the survival functions: SF_total = (SF_1 x p_1) + (SF_2 x p2) x (SF_3 x p3) + .... + (SF_n x pn)
+        for i in range(len(distributions)):
+            sf += distributions[i].SF(X, show_plot=False) * proportions[i]
+        pdf = np.diff(np.hstack([[0], 1 - sf])) / np.diff(np.hstack([[0], X]))  # this formula is equivalent to dy/dx of the CDF
+        pdf[0] = 0
+        self.__pdf_init = pdf  # used by random_samples
+        self.__xvals_init = X  # used by random_samples
+        self.mean = integrate.simps(pdf * X, x=X)
+        self.standard_deviation = (integrate.simps(pdf * (X - self.mean) ** 2, x=X)) ** 0.5
+        self.skewness = (integrate.simps(pdf * ((X - self.mean) / self.standard_deviation) ** 3, x=X))
+        self.kurtosis = (integrate.simps(pdf * ((X - self.mean) / self.standard_deviation) ** 4, x=X))
+        self.mode = X[np.argmax(pdf)]
+        self.median = X[np.argmin(abs(sf - 0.5))]
+        self.variance = self.standard_deviation ** 2
+        self.excess_kurtosis = self.kurtosis - 3
+        self.b5 = X[np.argmin(abs((1 - sf) - 0.05))]
+        self.b95 = X[np.argmin(abs((1 - sf) - 0.95))]
+
+    def __combiner(self, xvals=None, xmin=None, xmax=None):
+        '''
+        This is where the combination happens.
+        It is necessary to do this outside of the __init__ method as it needs to be called by each function (PDF, CDF...) so that xvals is used consistently.
+        This approach keeps the API the same as the other probability distributions.
+        This is a hidden function as the user should never need to access it directly.
+        '''
+        distributions = self.distributions
+        proportions = self.proportions
+
+        n = 1000
+        # obtain the X values
+        if xvals is not None:
+            X = xvals
+        elif xmin is not None and xmax is not None:
+            X = np.linspace(xmin, xmax, n)
+        else:
+            xmin0 = 10 ** 30  # these are just initial values which get changed during the xmin0 xmax0 update as each distribution is examined
+            xmax0 = 0
+            for dist in distributions:
+                xmin0 = min(xmin0, dist.quantile(0.01))
+                xmax0 = max(xmax0, dist.quantile(0.99))
+            delta = xmax0 - xmin0
+            if xmin0 < 0:
+                xmin0 = 0
+            else:
+                if xmin0 - 0.3 * delta <= 0:
+                    if plt.gca().get_yscale() != 'linear':
+                        xmin0 = plt.xlim()[0]
+                    else:
+                        xmin0 = 0
+            X = np.linspace(xmin0, xmax0*2, n)  # this is a big array because everything is numerical rather than empirical. Small array sizes will lead to blocky (inaccurate) results.
+
+        # convert to numpy array if given list. raise error for other types. check for values below 0.
+        if type(X) is list:
+            X = np.array(X)
+        elif type(X) is np.ndarray:
+            pass
+        else:
+            raise ValueError('unexpected type in xvals. Must be  list, or array')
+        if min(X) < 0:
+            raise ValueError('xvals was found to contain values below 0')
+
+        sf = np.zeros_like(X)
+        # combine the distributions using the sum of the survival functions: SF_total = (SF_1 x p_1) + (SF_2 x p2) x (SF_3 x p3) + .... + (SF_n x pn)
+        for i in range(len(distributions)):
+            sf += distributions[i].SF(X, show_plot=False) * proportions[i]
+
+        pdf = np.diff(np.hstack([[0], 1 - sf])) / np.diff(np.hstack([[0], X]))  # this formula is equivalent to dy/dx of the CDF
+        pdf[0] = 0  # fixes a nan artifact of np.diff for the first value
+        hf = np.diff(np.hstack([[0], -np.log(sf)])) / np.diff(np.hstack([[0], X]))  # this formula is equivalent to dy/dx of the CHF
+        hf[0] = hf[1] + (X[0] - X[1]) * (hf[2] - hf[1]) / (X[2] - X[1])  # linear interpolation for hf[0] to correct for nan artifact from np.diff. Can't just set it equal to 0 as it's not like the pdf.
+        if hf[0] < 0:
+            hf[0] = 0
+        # these are all hidden to the user but can be accessed by the other functions in this module
+        self.__xvals = X
+        self.__pdf = pdf
+        self.__cdf = 1 - sf
+        self.__sf = sf
+        self.__hf = hf
+        self.__chf = -np.log(sf)
+
+    def plot(self, xvals=None, xmin=None, xmax=None):
+        '''
+        Plots all functions (PDF, CDF, SF, HF, CHF) and descriptive statistics in a single figure
+
+        Inputs:
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *no plotting keywords are accepted
+
+        Outputs:
+        The plot will be shown. No need to use plt.show()
+        '''
+        Mixture_Model.__combiner(self, xvals=xvals, xmin=xmin, xmax=xmax)
+
+        plt.figure(figsize=(9, 7))
+        text_title = str('Mixture Model')
+        plt.suptitle(text_title, fontsize=15)
+        plt.subplot(231)
+        plt.plot(self.__xvals, self.__pdf)
+        plt.title('Probability Density\nFunction')
+        plt.subplot(232)
+        plt.plot(self.__xvals, self.__cdf)
+        plt.title('Cumulative Distribution\nFunction')
+        plt.subplot(233)
+        plt.plot(self.__xvals, self.__sf)
+        plt.title('Survival Function')
+        plt.subplot(234)
+        plt.plot(self.__xvals, self.__hf)
+        plt.title('Hazard Function')
+        plt.subplot(235)
+        plt.plot(self.__xvals, self.__chf)
+        plt.title('Cumulative Hazard\nFunction')
+
+        # descriptive statistics section
+        plt.subplot(236)
+        plt.axis('off')
+        plt.ylim([0, 10])
+        plt.xlim([0, 10])
+        text_mean = str('Mean = ' + str(round_to_decimals(float(self.mean), dec)))
+        text_median = str('Median = ' + str(round_to_decimals(self.median, dec)))
+        try:
+            text_mode = str('Mode = ' + str(round_to_decimals(self.mode, dec)))
+        except:
+            text_mode = str('Mode = ' + str(self.mode))  # required when mode is str
+        text_b5 = str('$5^{th}$ quantile = ' + str(round_to_decimals(self.b5, dec)))
+        text_b95 = str('$95^{th}$ quantile = ' + str(round_to_decimals(self.b95, dec)))
+        text_std = str('Standard deviation = ' + str(round_to_decimals(self.variance ** 0.5, dec)))
+        text_var = str('Variance = ' + str(round_to_decimals(float(self.variance), dec)))
+        text_skew = str('Skewness = ' + str(round_to_decimals(float(self.skewness), dec)))
+        text_ex_kurt = str('Excess kurtosis = ' + str(round_to_decimals(float(self.excess_kurtosis), dec)))
+        plt.text(0, 9, text_mean)
+        plt.text(0, 8, text_median)
+        plt.text(0, 7, text_mode)
+        plt.text(0, 6, text_b5)
+        plt.text(0, 5, text_b95)
+        plt.text(0, 4, text_std)
+        plt.text(0, 3, text_var)
+        plt.text(0, 2, text_skew)
+        plt.text(0, 1, text_ex_kurt)
+        plt.tight_layout()
+        plt.subplots_adjust(hspace=0.3, top=0.84)
+        plt.show()
+
+    def PDF(self, xvals=None, xmin=None, xmax=None, show_plot=True, plot_components=False, **kwargs):
+        '''
+        Plots the PDF (probability density function)
+
+        Inputs:
+        show_plot - True/False. Default is True
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *plotting keywords are also accepted (eg. color, linestyle)
+
+        Outputs:
+        yvals - this is the y-values of the plot
+        The plot will be shown if show_plot is True (which it is by default).
+        '''
+        Mixture_Model.__combiner(self, xvals=xvals, xmin=xmin, xmax=xmax)
+
+        if show_plot == False:
+            return self.__pdf
+        else:
+            if plot_components is True:  # this will plot the distributions that make up the components of the model
+                for dist in self.distributions:
+                    dist.PDF(xvals=self.__xvals, label=dist.param_title_long)
+            if 'label' in kwargs:
+                textlabel = kwargs.pop('label')
+            else:
+                textlabel = 'Mixture model'
+            plt.plot(self.__xvals, self.__pdf, label=textlabel, **kwargs)
+            plt.xlabel('x values')
+            plt.ylabel('Probability density')
+            text_title = str('Mixture Model\n' + ' Probability Density Function')
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.87)
+            return self.__pdf
+
+    def CDF(self, xvals=None, xmin=None, xmax=None, show_plot=True, plot_components=False, **kwargs):
+        '''
+        Plots the CDF (cumulative distribution function)
+
+        Inputs:
+        show_plot - True/False. Default is True
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *plotting keywords are also accepted (eg. color, linestyle)
+
+        Outputs:
+        yvals - this is the y-values of the plot
+        The plot will be shown if show_plot is True (which it is by default).
+        '''
+        Mixture_Model.__combiner(self, xvals=xvals, xmin=xmin, xmax=xmax)
+
+        if show_plot == False:
+            return self.__cdf
+        else:
+            if plot_components is True:  # this will plot the distributions that make up the components of the model
+                for dist in self.distributions:
+                    dist.CDF(xvals=self.__xvals, label=dist.param_title_long)
+            if 'label' in kwargs:
+                textlabel = kwargs.pop('label')
+            else:
+                textlabel = 'Mixture model'
+            plt.plot(self.__xvals, self.__cdf, label=textlabel, **kwargs)
+            plt.xlabel('x values')
+            plt.ylabel('Fraction failing')
+            text_title = str('Mixture Model\n' + ' Cumulative Distribution Function')
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.87)
+            return self.__cdf
+
+    def SF(self, xvals=None, xmin=None, xmax=None, show_plot=True, plot_components=False, **kwargs):
+        '''
+        Plots the SF (survival function)
+
+        Inputs:
+        show_plot - True/False. Default is True
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *plotting keywords are also accepted (eg. color, linestyle)
+
+        Outputs:
+        yvals - this is the y-values of the plot
+        The plot will be shown if show_plot is True (which it is by default).
+        '''
+        Mixture_Model.__combiner(self, xvals=xvals, xmin=xmin, xmax=xmax)
+
+        if show_plot == False:
+            return self.__sf
+        else:
+            if plot_components is True:  # this will plot the distributions that make up the components of the model
+                for dist in self.distributions:
+                    dist.SF(xvals=self.__xvals, label=dist.param_title_long)
+            if 'label' in kwargs:
+                textlabel = kwargs.pop('label')
+            else:
+                textlabel = 'Mixture model'
+            plt.plot(self.__xvals, self.__sf, label=textlabel, **kwargs)
+            plt.xlabel('x values')
+            plt.ylabel('Fraction surviving')
+            text_title = str('Mixture Model\n' + ' Survival Function')
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.87)
+            return self.__sf
+
+    def HF(self, xvals=None, xmin=None, xmax=None, show_plot=True, plot_components=False, **kwargs):
+        '''
+        Plots the HF (hazard function)
+
+        Inputs:
+        show_plot - True/False. Default is True
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *plotting keywords are also accepted (eg. color, linestyle)
+
+        Outputs:
+        yvals - this is the y-values of the plot
+        The plot will be shown if show_plot is True (which it is by default).
+        '''
+        Mixture_Model.__combiner(self, xvals=xvals, xmin=xmin, xmax=xmax)
+
+        if show_plot == False:
+            return self.__hf
+        else:
+            if plot_components is True:  # this will plot the distributions that make up the components of the model
+                for dist in self.distributions:
+                    dist.HF(xvals=self.__xvals, label=dist.param_title_long)
+            if 'label' in kwargs:
+                textlabel = kwargs.pop('label')
+            else:
+                textlabel = 'Mixture model'
+            plt.plot(self.__xvals, self.__hf, label=textlabel, **kwargs)
+            plt.xlabel('x values')
+            plt.ylabel('Hazard')
+            text_title = str('Mixture Model\n' + ' Hazard Function')
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.87)
+            return self.__hf
+
+    def CHF(self, xvals=None, xmin=None, xmax=None, show_plot=True, plot_components=False, **kwargs):
+        '''
+        Plots the CHF (cumulative hazard function)
+
+        Inputs:
+        show_plot - True/False. Default is True
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *plotting keywords are also accepted (eg. color, linestyle)
+
+        Outputs:
+        yvals - this is the y-values of the plot
+        The plot will be shown if show_plot is True (which it is by default).
+        '''
+        Mixture_Model.__combiner(self, xvals=xvals, xmin=xmin, xmax=xmax)
+
+        if show_plot == False:
+            return self.__chf
+        else:
+            if plot_components is True:  # this will plot the distributions that make up the components of the model
+                for dist in self.distributions:
+                    dist.CHF(xvals=self.__xvals, label=dist.param_title_long)
+            if 'label' in kwargs:
+                textlabel = kwargs.pop('label')
+            else:
+                textlabel = 'Mixture model'
+            plt.plot(self.__xvals, self.__chf, label=textlabel, **kwargs)
+            plt.xlabel('x values')
+            plt.ylabel('Cumulative Hazard')
+            text_title = str('Mixture Model\n' + ' Cumulative Hazard Function')
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.87)
+            return self.__chf
+
+    def quantile(self, q):
+        '''Quantile calculator
+
+        :param q: quantile to be calculated
+        :return: the probability (area under the curve) that a random variable from the distribution is < q
+        '''
+        if type(q) == int or type(q) == float:
+            if q < 0 or q > 1:
+                raise ValueError('Quantile must be between 0 and 1')
+        elif type(q) == np.ndarray or type(q) == list:
+            if min(q) < 0 or max(q) > 1:
+                raise ValueError('Quantile must be between 0 and 1')
+        else:
+            raise ValueError('Quantile must be of type int, float, list, array')
+        return self.__xvals[np.argmin(abs(self.__cdf - q))]
+
+    def inverse_SF(self, q):
+        '''Inverse survival function calculator
+
+        :param q: quantile to be calculated
+        :return: :return: the inverse of the survival function at q
+        '''
+        if type(q) == int or type(q) == float:
+            if q < 0 or q > 1:
+                raise ValueError('Quantile must be between 0 and 1')
+        elif type(q) == np.ndarray or type(q) == list:
+            if min(q) < 0 or max(q) > 1:
+                raise ValueError('Quantile must be between 0 and 1')
+        else:
+            raise ValueError('Quantile must be of type int, float, list, array')
+        return self.__xvals[np.argmin(abs(self.__sf - q))]
+
+    def stats(self):
+        print('Descriptive statistics for Mixture Model')
+        print('Mean = ', self.mean)
+        print('Median =', self.median)
+        print('Mode =', self.mode)
+        print('5th quantile =', self.b5)
+        print('95th quantile =', self.b95)
+        print('Standard deviation =', self.standard_deviation)
+        print('Variance =', self.variance)
+        print('Skewness =', self.skewness)
+        print('Excess kurtosis =', self.excess_kurtosis)
+
+    def mean_residual_life(self, t):
+        '''
+        Mean Residual Life calculator
+
+        :param t: time at which MRL is to be evaluated
+        :return: MRL
+        '''
+
+        def __subcombiner(X):  # this does what __combiner does but more efficiently and also accepts single values
+            if type(X) is np.ndarray:
+                sf = np.zeros_like(X)
+            else:
+                sf = 0
+            for i in range(len(self.distributions)):
+                sf += self.distributions[i].SF(X, show_plot=False) * self.proportions[i]
+            return sf
+
+        xmax = 0
+        for dist in self.distributions:
+            xmax = max(xmax, dist.quantile(0.99))  # find the effective infinity for integration
+        t_full = np.linspace(t, xmax * 4, 500000)
+        sf_full = __subcombiner(t_full)
+        sf_single = __subcombiner(t)
+        MRL = integrate.simps(sf_full, x=t_full) / sf_single
+        return MRL
+
+    def random_samples(self, number_of_samples, seed=None):
+        '''
+        random_samples
+        Draws random samples from the probability distribution
+
+        :param number_of_samples: the number of samples to be drawn
+        :param seed: the random seed. Default is None
+        :return: the random samples
+        '''
+        if type(number_of_samples) != int or number_of_samples < 1:
+            raise ValueError('number_of_samples must be an integer greater than 1')
+        if seed is not None:
+            np.random.seed(seed)
+        return np.random.choice(self.__xvals_init, size=number_of_samples, p=self.__pdf_init / sum(self.__pdf_init))

@@ -121,7 +121,7 @@ def Weibull_probability_plot(failures=None, right_censored=None, fit_gamma=False
     h1 and h2 are the heuristic constants for plotting positions of the form (k-h1)/(n+h2). Default is h1=0.3,h2=0.4 which is the median rank method (same as in Minitab).
         For more heuristics, see: https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics
     CI - the confidence interval for the bounds. Default is 0.95 for 95% CI.
-    CI_type - 'time' or 'reliability'. Default is 'time'. This is the type of CI bounds. i.e. bounds on time or bounds on reliability.
+    CI_type - time, reliability, None. Default is time' This is the type of CI bounds. i.e. bounds on time or bounds on reliability. Use None to turn off the confidence intervals.
     kwargs are accepted for the fitted line (eg. linestyle, label, color)
 
     Outputs:

@@ -28,7 +28,7 @@ import pandas as pd
 from scipy.optimize import minimize, curve_fit
 import scipy.stats as ss
 import warnings
-from reliability.Distributions import Weibull_Distribution, Gamma_Distribution, Beta_Distribution, Exponential_Distribution, Normal_Distribution, Lognormal_Distribution
+from reliability.Distributions import Weibull_Distribution, Gamma_Distribution, Beta_Distribution, Exponential_Distribution, Normal_Distribution, Lognormal_Distribution, Mixture_Model, Competing_Risks_Model
 from reliability.Nonparametric import KaplanMeier
 from reliability.Probability_plotting import plotting_positions
 from reliability.Utils import round_to_decimals
@@ -92,7 +92,7 @@ class Fit_Everything:
     print('Weibull Alpha =',output.Weibull_2P_alpha,'\nWeibull Beta =',output.Weibull_2P_beta)
     '''
 
-    def __init__(self, failures=None, right_censored=None, sort_by='BIC', print_results=True, show_histogram_plot=True, show_PP_plot=None, show_probability_plot=True):
+    def __init__(self, failures=None, right_censored=None, sort_by='BIC', print_results=True, show_histogram_plot=True, show_PP_plot=True, show_probability_plot=True):
         if failures is None or len(failures) < 3:
             raise ValueError('Maximum likelihood estimates could not be calculated for these data. There must be at least three failures to calculate 3 parameter models.')
         if sort_by not in ['AICc', 'BIC']:
@@ -101,21 +101,44 @@ class Fit_Everything:
             raise ValueError('show_histogram_plot must be either True or False. Defaults to True.')
         if print_results not in [True, False]:
             raise ValueError('print_results must be either True or False. Defaults to True.')
-        if show_PP_plot not in [True, False, None]:
+        if show_PP_plot not in [True, False]:
             raise ValueError('show_PP_plot must be either True or False. Defaults to True.')
         if show_probability_plot not in [True, False]:
             raise ValueError('show_probability_plot must be either True or False. Defaults to True.')
 
+        # fill with empty lists if not specified
+        if right_censored is None:
+            right_censored = []
+
+        # adjust inputs to be arrays
+        if type(failures) == list:
+            failures = np.array(failures)
+        if type(failures) != np.ndarray:
+            raise TypeError('failures must be a list or array of failure data')
+        if type(right_censored) == list:
+            right_censored = np.array(right_censored)
+        if type(right_censored) != np.ndarray:
+            raise TypeError('right_censored must be a list or array of right censored failure data')
+
+        #remove zeros. These are impossible since the pdf should be 0 at t=0. Leaving them in causes an error.
+        f0 = np.array(failures)
+        failures = f0[f0 != 0]
+        if len(failures)!=len(f0):
+            print('WARNING: failures contained zeros. These have been removed to enable fitting.')
+        rc0 = np.array(right_censored)
+        right_censored = rc0[rc0 != 0]
+        if len(right_censored)!=len(rc0):
+            print('WARNING: right_censored contained zeros. These have been removed to enable fitting.')
+
         self.failures = failures
         self.right_censored = right_censored
-        if show_PP_plot is None:
-            show_PP_plot = True
-        if right_censored is None:
-            RC = []
-        else:
-            RC = right_censored
-        self._all_data = np.hstack([failures, RC])
-        if min(self._all_data) <= 0:
+        # if right_censored is None:
+        #     RC = np.array([])
+        # else:
+        #     RC = right_censored
+
+        self._all_data = np.hstack([failures, right_censored])
+        if min(self._all_data) < 0:
             raise ValueError('All failure and censoring times must be greater than zero.')
 
         # These are all used for scaling the histogram when there is censored data
@@ -283,12 +306,15 @@ class Fit_Everything:
         plt.subplot(121)  # PDF
 
         # make this histogram. Can't use plt.hist due to need to scale the heights when there's censored data
-        num_bins = min(int(len(X) / 2), 30)
+        iqr = np.subtract(*np.percentile(X, [75, 25]))  # interquartile range
+        bin_width = 2 * iqr * len(X) ** -(1 / 3)  # Freedman–Diaconis rule ==> https://en.wikipedia.org/wiki/Freedman%E2%80%93Diaconis_rule
+        num_bins = int(np.ceil((max(X) - min(X)) / bin_width))
         hist, bins = np.histogram(X, bins=num_bins, density=True)
+        upper_lim = max(hist)*1.5
         hist_cumulative = np.cumsum(hist) / sum(hist)
         width = np.diff(bins)
         center = (bins[:-1] + bins[1:]) / 2
-        plt.bar(center, hist * self._frac_fail, align='center', width=width, alpha=0.2, color='k', edgecolor='k')
+        plt.bar(center, hist * self._frac_fail, align='center', width=width, color='lightgrey', edgecolor='k',linewidth=0.5)
 
         Weibull_Distribution(alpha=self.Weibull_2P_alpha, beta=self.Weibull_2P_beta).PDF(xvals=xvals, label=r'Weibull ($\alpha , \beta$)')
         Weibull_Distribution(alpha=self.Weibull_3P_alpha, beta=self.Weibull_3P_beta, gamma=self.Weibull_3P_gamma).PDF(xvals=xvals, label=r'Weibull ($\alpha , \beta , \gamma$)')
@@ -302,14 +328,15 @@ class Fit_Everything:
         if max(X) <= 1:  # condition for Beta Dist to be fitted
             Beta_Distribution(alpha=self.Beta_2P_alpha, beta=self.Beta_2P_beta).PDF(xvals=xvals, label=r'Beta ($\alpha , \beta$)')
         plt.legend()
-        plt.xlim([xmin, xmax])
+        plt.xlim(xmin, xmax)
+        plt.ylim(0,upper_lim)
         plt.title('Probability Density Function')
         plt.xlabel('Data')
         plt.ylabel('Probability density')
         plt.legend()
 
         plt.subplot(122)  # CDF
-        plt.bar(center, hist_cumulative * self._frac_fail, align='center', width=width, alpha=0.2, color='k', edgecolor='k')
+        plt.bar(center, hist_cumulative * self._frac_fail, align='center', width=width, color='lightgrey', edgecolor='k',linewidth=0.5)
         Weibull_Distribution(alpha=self.Weibull_2P_alpha, beta=self.Weibull_2P_beta).CDF(xvals=xvals, label=r'Weibull ($\alpha , \beta$)')
         Weibull_Distribution(alpha=self.Weibull_3P_alpha, beta=self.Weibull_3P_beta, gamma=self.Weibull_3P_gamma).CDF(xvals=xvals, label=r'Weibull ($\alpha , \beta , \gamma$)')
         Gamma_Distribution(alpha=self.Gamma_2P_alpha, beta=self.Gamma_2P_beta).CDF(xvals=xvals, label=r'Gamma ($\alpha , \beta$)')
@@ -566,7 +593,7 @@ class Fit_Weibull_2P:
     initial_guess_method - 'scipy' OR 'least squares'. Default is 'least squares'. Both do not take into account censored data but scipy uses MLE, and least squares is least squares regression of the plotting positions. Least squares proved more accurate during testing.
     optimizer - 'L-BFGS-B' OR 'TNC'. These are both bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    CI_type - time or reliability. Default is time. This is the confidence bounds on time or on reliability.
+    CI_type - time, reliability, None. Default is time. This is the confidence bounds on time or on reliability. Use None to turn off the confidence intervals.
     force_beta - Use this to specify the beta value if you need to force beta to be a certain value. Used in ALT probability plotting. Optional input.
     kwargs are accepted for the probability plot (eg. linestyle, label, color)
 
@@ -625,8 +652,20 @@ class Fit_Weibull_2P:
             right_censored = np.array(right_censored)
         if type(right_censored) != np.ndarray:
             raise TypeError('right_censored must be a list or array of right censored failure data')
-        all_data = np.hstack([failures, right_censored])
 
+        #remove zeros. These are impossible since the pdf should be 0 at t=0. Leaving them in causes an error.
+        rc0 = right_censored
+        f0 = failures
+        right_censored = rc0[rc0 != 0]
+        failures = f0[f0 != 0]
+        if len(failures)!=len(f0):
+            print('WARNING: failures contained zeros. These have been removed to enable fitting.')
+        if len(right_censored)!=len(rc0):
+            print('WARNING: right_censored contained zeros. These have been removed to enable fitting.')
+
+        all_data = np.hstack([failures, right_censored])
+        if min(all_data) < 0:
+            raise ValueError('All failure and censoring times must be greater than zero.')
         self.gamma = 0
         # Obtain initial guess using either Least squares or Scipy
         if initial_guess_method == 'least squares':
@@ -769,7 +808,7 @@ class Fit_Weibull_2P:
                 CI_rounded = CI * 100
             print(str('Results from Fit_Weibull_2P (' + str(CI_rounded) + '% CI):'))
             print(self.results)
-            print('Log-Likelihood:', self.loglik)
+            print('Log-Likelihood:', self.loglik, '\n')
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Weibull_probability_plot
@@ -888,6 +927,14 @@ class Fit_Weibull_2P_grouped:
         if optimizer not in ['L-BFGS-B', 'TNC']:
             raise ValueError('optimizer must be either "L-BFGS-B" OR "TNC". Default is "L-BFGS-B".')
 
+        if min(dataframe.time.values)<0:
+            raise ValueError('All failure and censoring times must be greater than zero.') #raise an error is there are values below 0
+
+        dataframe0 = dataframe
+        dataframe = dataframe0[dataframe0['time'] > 0]
+        if dataframe0.time.values != dataframe.time.values:
+            print('WARNING: dataframe contained zeros. These have been removed to enable fitting.') #automatically filter out zeros and print warning if zeros have been removed
+
         # unpack the dataframe
         failures_df = dataframe[dataframe['category'] == 'F']
         right_censored_df = dataframe[dataframe['category'] == 'C']
@@ -911,8 +958,8 @@ class Fit_Weibull_2P_grouped:
             failures = np.append(failures, failure_times[i] * np.ones(int(failure_qty[i])))
         for i in range(len(right_censored_times)):
             right_censored = np.append(right_censored, right_censored_times[i] * np.ones(int(right_censored_qty[i])))
-        self.gamma = 0
 
+        self.gamma = 0
         # Obtain initial guess using either Least squares or Scipy
         if initial_guess_method == 'least squares':
             # obtain least squares estimate based on the plotting positions
@@ -1058,11 +1105,11 @@ class Fit_Weibull_2P_grouped:
             print(str('Results from Fit_Weibull_2P_grouped (' + str(CI_rounded) + '% CI):'))
             print(self.results)
             print('Log-Likelihood:', self.loglik)
-            print('Number of failures:', sum(failure_qty), '\nNumber of right censored:', sum(right_censored_qty), '\nFraction censored:', round(sum(right_censored_qty) / (sum(right_censored_qty) + sum(failure_qty)) * 100, 5), '%')
+            print('Number of failures:', sum(failure_qty), '\nNumber of right censored:', sum(right_censored_qty), '\nFraction censored:', round(sum(right_censored_qty) / (sum(right_censored_qty) + sum(failure_qty)) * 100, 5), '%\n')
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Weibull_probability_plot
-            Weibull_probability_plot(failures=failures, right_censored=right_censored, __fitted_dist_params=self,CI=CI,CI_type=CI_type, **kwargs)
+            Weibull_probability_plot(failures=failures, right_censored=right_censored, __fitted_dist_params=self, CI=CI, CI_type=CI_type, **kwargs)
 
     def logf(t, a, b):  # Log PDF (2 parameter Weibull)
         return (b - 1) * anp.log(t / a) + anp.log(b / a) - (t / a) ** b
@@ -1158,8 +1205,20 @@ class Fit_Weibull_3P:
         if optimizer not in ['L-BFGS-B', 'TNC']:
             raise ValueError('optimizer must be either "L-BFGS-B" OR "TNC". Default is "L-BFGS-B".')
 
+        #remove zeros. These are impossible since the pdf should be 0 at t=0. Leaving them in causes an error.
+        rc0 = right_censored
+        f0 = failures
+        right_censored = rc0[rc0 != 0]
+        failures = f0[f0 != 0]
+        if len(failures)!=len(f0):
+            print('WARNING: failures contained zeros. These have been removed to enable fitting.')
+        if len(right_censored)!=len(rc0):
+            print('WARNING: right_censored contained zeros. These have been removed to enable fitting.')
+
         # Weibull_3P INITIAL GUESS SECTION
         all_data = np.hstack([failures, right_censored])
+        if min(all_data) < 0:
+            raise ValueError('All failure and censoring times must be greater than zero.')
         offset = 0.0001  # this is to ensure the upper bound for gamma is not equal to min(data) which would result in inf log-likelihood. This small offset fixes that issue
         gamma_initial_guess = min(all_data) - offset  # get a quick guess for gamma by setting it as the minimum of the data
         if initial_guess_method == 'scipy':  # default method
@@ -1300,7 +1359,7 @@ class Fit_Weibull_3P:
                 CI_rounded = CI * 100
             print(str('Results from Fit_Weibull_3P (' + str(CI_rounded) + '% CI):'))
             print(self.results)
-            print('Log-Likelihood:', self.loglik)
+            print('Log-Likelihood:', self.loglik, '\n')
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Weibull_probability_plot
@@ -1334,6 +1393,14 @@ class Fit_Weibull_Mixture:
     Right censoring is supported, though care should be taken to ensure that there still appears to be two groups when plotting only the failure data.
     A second group cannot be made from a mostly or totally censored set of samples.
     Use this model when you think there are multiple failure modes acting to create the failure data.
+
+    This is different to the Weibull Competing Risks as the overall Survival Function is the sum of the individual Survival Functions multiplied by a proportion
+    rather than being the product as is the case in the Weibull Competing Risks Model.
+    Mixture ==> SF_model = (proportion_1 x SF_1) + ((1-proportion_1) x SF_2)
+    Competing Risks ==> SF_model = SF_1 x SF_2
+
+    Similar to the competing risks model, you can use this model when you think there are multiple failure modes acting to create the failure data.
+
     Whilst some failure modes may not be fitted as well by a Weibull distribution as they may be by another distribution, it
     is unlikely that a mixture of data from two distributions (particularly if they are overlapping) will be fitted
     noticeably better by other types of mixtures than would be achieved by a Weibull mixture. For this reason, other types
@@ -1344,7 +1411,8 @@ class Fit_Weibull_Mixture:
         less than 20 failures.
     right_censored - an array or list of right censored data
     print_results - True/False. This will print results to console. Default is True
-    show_plot - True/False. This will show the PDF and CDF of the Weibull mixture with a histogram of the data. Default is True.
+    CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
+    show_probability_plot - True/False. This will show the probability plot with the fitted mixture CDF. Default is True.
 
     Outputs:
     alpha_1 - the fitted Weibull_2P alpha parameter for the first (left) group
@@ -1353,16 +1421,33 @@ class Fit_Weibull_Mixture:
     beta_2 - the fitted Weibull_2P beta parameter for the second (right) group
     proportion_1 - the fitted proportion of the first (left) group
     proportion_2 - the fitted proportion of the second (right) group. Same as 1-proportion_1
+    alpha_1_SE - the standard error on the parameter
+    beta_1_SE - the standard error on the parameter
+    alpha_2_SE - the standard error on the parameter
+    beta_2_SE - the standard error on the parameter
+    proportion_1_SE - the standard error on the parameter
+    alpha_1_upper - the upper confidence interval estimate of the parameter
+    alpha_1_lower - the lower confidence interval estimate of the parameter
+    beta_1_upper - the upper confidence interval estimate of the parameter
+    beta_1_lower - the lower confidence interval estimate of the parameter
+    alpha_2_upper - the upper confidence interval estimate of the parameter
+    alpha_2_lower - the lower confidence interval estimate of the parameter
+    beta_2_upper - the upper confidence interval estimate of the parameter
+    beta_2_lower - the lower confidence interval estimate of the parameter
+    proportion_1_upper - the upper confidence interval estimate of the parameter
+    proportion_1_lower - the lower confidence interval estimate of the parameter
     loglik - Log Likelihood (as used in Minitab and Reliasoft)
     loglik2 - LogLikelihood*-2 (as used in JMP Pro)
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
+    results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     '''
 
-    def __init__(self, failures=None, right_censored=None, show_plot=True, print_results=True):
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95):
         if failures is None or len(failures) < 4:  # it is possible to fit a mixture model with as few as 4 samples but it is inappropriate to do so. You should have at least 10, and preferably a lot more (>20) samples before using a mixture model.
             raise ValueError('The minimum number of failures to fit a mixture model is 4 (2 failures for each weibull). It is highly recommended that a mixture model is only used when sufficient data (>10 samples) is available.')
-
+        if CI <= 0 or CI >= 1:
+            raise ValueError('CI must be between 0 and 1. Default is 0.95 for 95% Confidence interval.')
         # fill with empty lists if not specified
         if right_censored is None:
             right_censored = []
@@ -1376,10 +1461,20 @@ class Fit_Weibull_Mixture:
             right_censored = np.array(right_censored)
         if type(right_censored) != np.ndarray:
             raise TypeError('right_censored must be a list or array of right censored failure data')
-        all_data = np.hstack([failures, right_censored])
-        if min(all_data) <= 0:
-            raise ValueError('All failure and censoring times must be greater than zero.')
 
+        #remove zeros. These are impossible since the pdf should be 0 at t=0. Leaving them in causes an error.
+        rc0 = right_censored
+        f0 = failures
+        right_censored = rc0[rc0 != 0]
+        failures = f0[f0 != 0]
+        if len(failures)!=len(f0):
+            print('WARNING: failures contained zeros. These have been removed to enable fitting.')
+        if len(right_censored)!=len(rc0):
+            print('WARNING: right_censored contained zeros. These have been removed to enable fitting.')
+
+        all_data = np.hstack([failures, right_censored])
+        if min(all_data) < 0:
+            raise ValueError('All failure and censoring times must be greater than zero.')
         # find the division line. This is to assign data to each group
         h = np.histogram(failures, bins=50, density=True)
         hist_counts = h[0]
@@ -1439,6 +1534,9 @@ class Fit_Weibull_Mixture:
         self.beta_2 = params[3]
         self.proportion_1 = params[4]
         self.proportion_2 = 1 - params[4]
+        dist_1 = Weibull_Distribution(alpha=self.alpha_1, beta=self.beta_1)
+        dist_2 = Weibull_Distribution(alpha=self.alpha_2, beta=self.beta_2)
+        self.distribution = Mixture_Model(distributions=[dist_1, dist_2], proportions=[self.proportion_1, self.proportion_2])
 
         params = [self.alpha_1, self.beta_1, self.alpha_2, self.beta_2, self.proportion_1]
         k = len(params)
@@ -1452,41 +1550,52 @@ class Fit_Weibull_Mixture:
             self.AICc = 'Insufficient data'
         self.BIC = np.log(n) * k + LL2
 
+        # confidence interval estimates of parameters
+        Z = -ss.norm.ppf((1 - CI) / 2)
+        hessian_matrix = hessian(Fit_Weibull_Mixture.LL)(np.array(tuple(params)), np.array(tuple(failures)), np.array(tuple(right_censored)))
+        covariance_matrix = np.linalg.inv(hessian_matrix)
+        self.alpha_1_SE = abs(covariance_matrix[0][0]) ** 0.5
+        self.beta_1_SE = abs(covariance_matrix[1][1]) ** 0.5
+        self.alpha_2_SE = abs(covariance_matrix[2][2]) ** 0.5
+        self.beta_2_SE = abs(covariance_matrix[3][3]) ** 0.5
+        self.proportion_1_SE = abs(covariance_matrix[4][4]) ** 0.5
+        self.alpha_1_upper = self.alpha_1 * (np.exp(Z * (self.alpha_1_SE / self.alpha_1)))
+        self.alpha_1_lower = self.alpha_1 * (np.exp(-Z * (self.alpha_1_SE / self.alpha_1)))
+        self.beta_1_upper = self.beta_1 * (np.exp(Z * (self.beta_1_SE / self.beta_1)))
+        self.beta_1_lower = self.beta_1 * (np.exp(-Z * (self.beta_1_SE / self.beta_1)))
+        self.alpha_2_upper = self.alpha_2 * (np.exp(Z * (self.alpha_2_SE / self.alpha_2)))
+        self.alpha_2_lower = self.alpha_2 * (np.exp(-Z * (self.alpha_2_SE / self.alpha_2)))
+        self.beta_2_upper = self.beta_2 * (np.exp(Z * (self.beta_2_SE / self.beta_2)))
+        self.beta_2_lower = self.beta_2 * (np.exp(-Z * (self.beta_2_SE / self.beta_2)))
+        self.proportion_1_upper = self.proportion_1 / (self.proportion_1 + (1 - self.proportion_1) * (np.exp(-Z * self.proportion_1_SE / (self.proportion_1 * (1 - self.proportion_1)))))  # ref: http://reliawiki.org/index.php/The_Mixed_Weibull_Distribution
+        self.proportion_1_lower = self.proportion_1 / (self.proportion_1 + (1 - self.proportion_1) * (np.exp(Z * self.proportion_1_SE / (self.proportion_1 * (1 - self.proportion_1)))))
+
+        Data = {'Parameter': ['Alpha 1', 'Beta 1', 'Alpha 2', 'Beta 2', 'Proportion 1'],
+                'Point Estimate': [self.alpha_1, self.beta_1, self.alpha_2, self.beta_2, self.proportion_1],
+                'Standard Error': [self.alpha_1_SE, self.beta_1_SE, self.alpha_2_SE, self.beta_2_SE, self.proportion_1_SE],
+                'Lower CI': [self.alpha_1_lower, self.beta_1_lower, self.alpha_2_lower, self.beta_2_lower, self.proportion_1_lower],
+                'Upper CI': [self.alpha_1_upper, self.beta_1_upper, self.alpha_2_upper, self.beta_2_upper, self.proportion_1_upper]}
+        df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
+        self.results = df.set_index('Parameter')
+
         if print_results is True:
-            print('Parameters:', '\nAlpha 1:', self.alpha_1, '\nBeta 1:', self.beta_1, '\nAlpha 2:', self.alpha_2, '\nBeta 2:', self.beta_2, '\nProportion 1:', self.proportion_1)
-            print('Log-Likelihood:', self.loglik)
-        if show_plot is True:
-            xvals = np.linspace(0, max(failures) * 1.05, 1000)
-            plt.figure(figsize=(14, 6))
-            plt.subplot(121)
-            # make the histogram. Can't use plt.hist due to need to scale the heights when there's censored data
-            num_bins = min(int(len(failures) / 2), 30)
-            hist, bins = np.histogram(failures, bins=num_bins, density=True)
-            hist_cumulative = np.cumsum(hist) / sum(hist)
-            width = np.diff(bins)
-            center = (bins[:-1] + bins[1:]) / 2
-            frac_failing = len(failures) / len(all_data)
-            plt.bar(center, hist * frac_failing, align='center', width=width, alpha=0.2, color='k', edgecolor='k')
-
-            yvals_p1_pdf = Weibull_Distribution(alpha=self.alpha_1, beta=self.beta_1).PDF(xvals=xvals, show_plot=False)
-            yvals_p2_pdf = Weibull_Distribution(alpha=self.alpha_2, beta=self.beta_2).PDF(xvals=xvals, show_plot=False)
-            plt.plot(xvals, yvals_p1_pdf * self.proportion_1)
-            plt.plot(xvals, yvals_p2_pdf * self.proportion_2)
-            plt.title('Weibull Mixture PDF')
-            plt.xlabel('Failure Times')
-            plt.ylabel('Probability Density')
-
-            plt.subplot(122)
-            # make the histogram. Can't use plt.hist due to need to scale the heights when there's censored data
-            plt.bar(center, hist_cumulative * frac_failing, align='center', width=width, alpha=0.2, color='k', edgecolor='k')
-            yvals_p1_cdf = Weibull_Distribution(alpha=self.alpha_1, beta=self.beta_1).CDF(xvals=xvals, show_plot=False)
-            yvals_p2_cdf = Weibull_Distribution(alpha=self.alpha_2, beta=self.beta_2).CDF(xvals=xvals, show_plot=False)
-            y_mixture = yvals_p1_cdf * self.proportion_1 + yvals_p2_cdf * self.proportion_2
-            plt.plot(xvals, y_mixture)
-            plt.title('Weibull Mixture CDF')
-            plt.xlabel('Failure Times')
-            plt.ylabel('Cumulative Probability Density')
-            plt.show()
+            pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
+            pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
+            if CI * 100 % 1 == 0:
+                CI_rounded = int(CI * 100)
+            else:
+                CI_rounded = CI * 100
+            print(str('Results from Fit_Weibull_Mixture (' + str(CI_rounded) + '% CI):'))
+            print(self.results)
+            print('Log-Likelihood:', self.loglik, '\n')
+        if show_probability_plot is True:
+            from reliability.Probability_plotting import Weibull_probability_plot
+            Weibull_probability_plot(failures=failures, right_censored=right_censored, show_fitted_distribution=False)
+            label_str = str(r'Fitted Weibull MM ' + str(round_to_decimals(self.proportion_1, dec)) + r' ($\alpha_1=$' + str(round_to_decimals(self.alpha_1, dec)) + r', $\beta_1=$' + str(round_to_decimals(self.beta_1, dec))
+                            + ')+\n                             ' + str(round_to_decimals(self.proportion_2, dec)) + r' ($\alpha_2=$' + str(round_to_decimals(self.alpha_2, dec)) + r', $\beta_2=$' + str(round_to_decimals(self.beta_2, dec)) + ')')
+            xvals = np.logspace(np.log10(min(failures)) - 3, np.log10(max(failures)) + 1, 1000)
+            self.distribution.CDF(xvals=xvals, label=label_str)
+            plt.title('Probability Plot\nWeibull Mixture CDF')
 
     def logf(t, a1, b1, a2, b2, p):  # Log Mixture PDF (2 parameter Weibull)
         return anp.log(p * ((b1 * t ** (b1 - 1)) / (a1 ** b1)) * anp.exp(-((t / a1) ** b1)) + (1 - p) * ((b2 * t ** (b2 - 1)) / (a2 ** b2)) * anp.exp(-((t / a2) ** b2)))
@@ -1499,6 +1608,215 @@ class Fit_Weibull_Mixture:
         LL_rc = 0
         LL_f += Fit_Weibull_Mixture.logf(T_f, params[0], params[1], params[2], params[3], params[4]).sum()  # failure times
         LL_rc += Fit_Weibull_Mixture.logR(T_rc, params[0], params[1], params[2], params[3], params[4]).sum()  # right censored times
+        return -(LL_f + LL_rc)
+
+
+class Fit_Weibull_CR:
+    '''
+    Fit_Weibull_CR
+    Fits a Weibull Competing Risks Model consisting of 2 x Weibull_2P distributions (this does not fit the gamma parameter).
+    This is different to the Weibull Mixture model as the overall Survival Function is the product of the individual Survival Functions rather than
+    being the sum as is the case in the Weibull Mixture Model.
+    Competing Risks ==> SF_model = SF_1 x SF_2
+    Mixture ==> SF_model = (proportion_1 x SF_1) + ((1-proportion_1) x SF_2)
+
+    Similar to the mixture model, you can use this model when you think there are multiple failure modes acting to create the failure data.
+
+    Whilst some failure modes may not be fitted as well by a Weibull distribution as they may be by another distribution, it is unlikely that data
+    from a competing risks model will be fitted noticeably better by other types of competing risks models than would be achieved by a Weibull
+    Competing Risks model. For this reason, other types of competing risks models are not implemented.
+
+    Inputs:
+    failures - an array or list of the failure data. There must be at least 4 failures, but it is highly recommended to use another model if you have
+        less than 20 failures.
+    right_censored - an array or list of right censored data
+    print_results - True/False. This will print results to console. Default is True.
+    CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
+    show_probability_plot - True/False. This will show the probability plot with the fitted Weibull_CR CDF. Default is True.
+
+    Outputs:
+    alpha_1 - the fitted Weibull_2P alpha parameter for the first distribution
+    beta_1 - the fitted Weibull_2P beta parameter for the first distribution
+    alpha_2 - the fitted Weibull_2P alpha parameter for the second distribution
+    beta_2 - the fitted Weibull_2P beta parameter for the second distribution
+    alpha_1_SE - the standard error on the parameter
+    beta_1_SE - the standard error on the parameter
+    alpha_2_SE - the standard error on the parameter
+    beta_2_SE - the standard error on the parameter
+    alpha_1_upper - the upper confidence interval estimate of the parameter
+    alpha_1_lower - the lower confidence interval estimate of the parameter
+    beta_1_upper - the upper confidence interval estimate of the parameter
+    beta_1_lower - the lower confidence interval estimate of the parameter
+    alpha_2_upper - the upper confidence interval estimate of the parameter
+    alpha_2_lower - the lower confidence interval estimate of the parameter
+    beta_2_upper - the upper confidence interval estimate of the parameter
+    beta_2_lower - the lower confidence interval estimate of the parameter
+    loglik - Log Likelihood (as used in Minitab and Reliasoft)
+    loglik2 - LogLikelihood*-2 (as used in JMP Pro)
+    AICc - Akaike Information Criterion
+    BIC - Bayesian Information Criterion
+    results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
+    '''
+
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95):
+        if failures is None or len(failures) < 4:  # it is possible to fit a competing risks model with as few as 4 samples but it is inappropriate to do so. You should have at least 10, and preferably a lot more (>20) samples before using a competing risks model.
+            raise ValueError('The minimum number of failures to fit a Competing Risks Model is 4 (2 failures for each weibull). It is highly recommended that a Competing Risks Model is only used when sufficient data (>10 samples) is available.')
+        if CI <= 0 or CI >= 1:
+            raise ValueError('CI must be between 0 and 1. Default is 0.95 for 95% Confidence interval.')
+        # fill with empty lists if not specified
+        if right_censored is None:
+            right_censored = []
+
+        # adjust inputs to be arrays
+        if type(failures) == list:
+            failures = np.array(failures)
+        if type(failures) != np.ndarray:
+            raise TypeError('failures must be a list or array of failure data')
+        if type(right_censored) == list:
+            right_censored = np.array(right_censored)
+        if type(right_censored) != np.ndarray:
+            raise TypeError('right_censored must be a list or array of right censored failure data')
+
+        #remove zeros. These are impossible since the pdf should be 0 at t=0. Leaving them in causes an error.
+        rc0 = right_censored
+        f0 = failures
+        right_censored = rc0[rc0 != 0]
+        failures = f0[f0 != 0]
+        if len(failures)!=len(f0):
+            print('WARNING: failures contained zeros. These have been removed to enable fitting.')
+        if len(right_censored)!=len(rc0):
+            print('WARNING: right_censored contained zeros. These have been removed to enable fitting.')
+
+        all_data = np.hstack([failures, right_censored])
+        if min(all_data) < 0:
+            raise ValueError('All failure and censoring times must be greater than zero.')
+        # find the division line. This is to assign data to each group
+        h = np.histogram(failures, bins=50, density=True)
+        hist_counts = h[0]
+        hist_bins = h[1]
+        midbins = []
+        for i in range(len(hist_bins)):
+            if i > 0 and i < len(hist_bins):
+                midbins.append((hist_bins[i] + hist_bins[i - 1]) / 2)
+        peaks_x = []
+        peaks_y = []
+        batch_width = 8
+        for i, x in enumerate(hist_counts):
+            if i < batch_width:
+                batch = hist_counts[0:i + batch_width]
+            elif i > batch_width and i > len(hist_counts - batch_width):
+                batch = hist_counts[i - batch_width:len(hist_counts)]
+            else:
+                batch = hist_counts[i - batch_width:i + batch_width]  # the histogram counts are batched (actual batch size = 2 x batch_width)
+            if max(batch) == x:  # if the current point is higher than the rest of the batch then it is counted as a peak
+                peaks_x.append(midbins[i])
+                peaks_y.append(x)
+        if len(peaks_x) > 2:  # if there are more than 2 peaks, the mean is moved based on the height of the peaks. Higher peaks will attract the mean towards them more than smaller peaks.
+            yfracs = np.array(peaks_y) / sum(peaks_y)
+            division_line = sum(peaks_x * yfracs)
+        else:
+            division_line = np.average(peaks_x)
+        self.division_line = division_line
+        # this is the point at which data is assigned to one group or another for the purpose of generating the initial guess
+        GROUP_1_failures = []
+        GROUP_2_failures = []
+        GROUP_1_right_cens = []
+        GROUP_2_right_cens = []
+        for item in failures:
+            if item < division_line:
+                GROUP_1_failures.append(item)
+            else:
+                GROUP_2_failures.append(item)
+        for item in right_censored:
+            if item < division_line:
+                GROUP_1_right_cens.append(item)
+            else:
+                GROUP_2_right_cens.append(item)
+
+        # get inputs for the guess by fitting a weibull to each of the groups with their respective censored data
+        group_1_estimates = Fit_Weibull_2P(failures=GROUP_1_failures, right_censored=GROUP_1_right_cens, show_probability_plot=False, print_results=False)
+        group_2_estimates = Fit_Weibull_2P(failures=GROUP_2_failures, right_censored=GROUP_2_right_cens, show_probability_plot=False, print_results=False)
+        guess = [group_1_estimates.alpha, group_1_estimates.beta, group_2_estimates.alpha, group_2_estimates.beta]  # A1,B1,A2,B2
+
+        # solve it
+        bnds = [(0.0001, None), (0.0001, None), (0.0001, None), (0.0001, None)]  # bounds of solution
+        result = minimize(value_and_grad(Fit_Weibull_CR.LL), guess, args=(failures, right_censored), jac=True, bounds=bnds, tol=1e-6)
+        params = result.x
+        self.alpha_1 = params[0]
+        self.beta_1 = params[1]
+        self.alpha_2 = params[2]
+        self.beta_2 = params[3]
+        dist_1 = Weibull_Distribution(alpha=self.alpha_1, beta=self.beta_1)
+        dist_2 = Weibull_Distribution(alpha=self.alpha_2, beta=self.beta_2)
+        self.distribution = Competing_Risks_Model(distributions=[dist_1, dist_2])
+
+        params = [self.alpha_1, self.beta_1, self.alpha_2, self.beta_2]
+        k = len(params)
+        n = len(all_data)
+        LL2 = 2 * Fit_Weibull_CR.LL(params, failures, right_censored)
+        self.loglik2 = LL2
+        self.loglik = LL2 * -0.5
+        if n - k - 1 > 0:
+            self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
+        else:
+            self.AICc = 'Insufficient data'
+        self.BIC = np.log(n) * k + LL2
+
+        # confidence interval estimates of parameters
+        Z = -ss.norm.ppf((1 - CI) / 2)
+        hessian_matrix = hessian(Fit_Weibull_CR.LL)(np.array(tuple(params)), np.array(tuple(failures)), np.array(tuple(right_censored)))
+        covariance_matrix = np.linalg.inv(hessian_matrix)
+        self.alpha_1_SE = abs(covariance_matrix[0][0]) ** 0.5
+        self.beta_1_SE = abs(covariance_matrix[1][1]) ** 0.5
+        self.alpha_2_SE = abs(covariance_matrix[2][2]) ** 0.5
+        self.beta_2_SE = abs(covariance_matrix[3][3]) ** 0.5
+        self.alpha_1_upper = self.alpha_1 * (np.exp(Z * (self.alpha_1_SE / self.alpha_1)))
+        self.alpha_1_lower = self.alpha_1 * (np.exp(-Z * (self.alpha_1_SE / self.alpha_1)))
+        self.beta_1_upper = self.beta_1 * (np.exp(Z * (self.beta_1_SE / self.beta_1)))
+        self.beta_1_lower = self.beta_1 * (np.exp(-Z * (self.beta_1_SE / self.beta_1)))
+        self.alpha_2_upper = self.alpha_2 * (np.exp(Z * (self.alpha_2_SE / self.alpha_2)))
+        self.alpha_2_lower = self.alpha_2 * (np.exp(-Z * (self.alpha_2_SE / self.alpha_2)))
+        self.beta_2_upper = self.beta_2 * (np.exp(Z * (self.beta_2_SE / self.beta_2)))
+        self.beta_2_lower = self.beta_2 * (np.exp(-Z * (self.beta_2_SE / self.beta_2)))
+
+        Data = {'Parameter': ['Alpha 1', 'Beta 1', 'Alpha 2', 'Beta 2'],
+                'Point Estimate': [self.alpha_1, self.beta_1, self.alpha_2, self.beta_2],
+                'Standard Error': [self.alpha_1_SE, self.beta_1_SE, self.alpha_2_SE, self.beta_2_SE],
+                'Lower CI': [self.alpha_1_lower, self.beta_1_lower, self.alpha_2_lower, self.beta_2_lower],
+                'Upper CI': [self.alpha_1_upper, self.beta_1_upper, self.alpha_2_upper, self.beta_2_upper]}
+        df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
+        self.results = df.set_index('Parameter')
+
+        if print_results is True:
+            pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
+            pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
+            if CI * 100 % 1 == 0:
+                CI_rounded = int(CI * 100)
+            else:
+                CI_rounded = CI * 100
+            print(str('Results from Fit_Weibull_CR (' + str(CI_rounded) + '% CI):'))
+            print(self.results)
+            print('Log-Likelihood:', self.loglik, '\n')
+        if show_probability_plot is True:
+            from reliability.Probability_plotting import Weibull_probability_plot
+            Weibull_probability_plot(failures=failures, right_censored=right_censored, show_fitted_distribution=False)
+            label_str = str(r'Fitted Weibull CR ' + r' ($\alpha_1=$' + str(round_to_decimals(self.alpha_1, dec)) + r', $\beta_1=$' + str(round_to_decimals(self.beta_1, dec))
+                            + ') ×\n                            ' + r' ($\alpha_2=$' + str(round_to_decimals(self.alpha_2, dec)) + r', $\beta_2=$' + str(round_to_decimals(self.beta_2, dec)) + ')')
+            xvals = np.logspace(np.log10(min(failures)) - 3, np.log10(max(failures)) + 1, 1000)
+            self.distribution.CDF(xvals=xvals, label=label_str)
+            plt.title('Probability Plot\nWeibull Competing Risks CDF')
+
+    def logf(t, a1, b1, a2, b2):  # Log PDF (Competing Risks)
+        return anp.log(-(-(b2 * (t / a2) ** b2) / t - (b1 * (t / a1) ** b1) / t) * anp.exp(-(t / a2) ** b2 - (t / a1) ** b1))
+
+    def logR(t, a1, b1, a2, b2):  # Log SF (Competing Risks)
+        return -((t / a1) ** b1) - ((t / a2) ** b2)
+
+    def LL(params, T_f, T_rc):  # Log Likelihood function (Competing Risks)
+        LL_f = 0
+        LL_rc = 0
+        LL_f += Fit_Weibull_CR.logf(T_f, params[0], params[1], params[2], params[3]).sum()  # failure times
+        LL_rc += Fit_Weibull_CR.logR(T_rc, params[0], params[1], params[2], params[3]).sum()  # right censored times
         return -(LL_f + LL_rc)
 
 
@@ -1551,8 +1869,20 @@ class Fit_Expon_1P:
             right_censored = np.array(right_censored)
         if type(right_censored) != np.ndarray:
             raise TypeError('right_censored must be a list or array of right censored failure data')
-        all_data = np.hstack([failures, right_censored])
 
+        #remove zeros. These are impossible since the pdf should be 0 at t=0. Leaving them in causes an error.
+        rc0 = right_censored
+        f0 = failures
+        right_censored = rc0[rc0 != 0]
+        failures = f0[f0 != 0]
+        if len(failures)!=len(f0):
+            print('WARNING: failures contained zeros. These have been removed to enable fitting.')
+        if len(right_censored)!=len(rc0):
+            print('WARNING: right_censored contained zeros. These have been removed to enable fitting.')
+
+        all_data = np.hstack([failures, right_censored])
+        if min(all_data) < 0:
+            raise ValueError('All failure and censoring times must be greater than zero.')
         # solve it
         self.gamma = 0
         sp = ss.expon.fit(all_data, floc=0, optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
@@ -1607,7 +1937,7 @@ class Fit_Expon_1P:
                 CI_rounded = CI * 100
             print(str('Results from Fit_Expon_1P (' + str(CI_rounded) + '% CI):'))
             print(self.results)
-            print('Log-Likelihood:', self.loglik)
+            print('Log-Likelihood:', self.loglik, '\n')
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Exponential_probability_plot_Weibull_Scale
@@ -1694,8 +2024,20 @@ class Fit_Expon_2P:
             right_censored = np.array(right_censored)
         if type(right_censored) != np.ndarray:
             raise TypeError('right_censored must be a list or array of right censored failure data')
-        all_data = np.hstack([failures, right_censored])
 
+        #remove zeros. These are impossible since the pdf should be 0 at t=0. Leaving them in causes an error.
+        rc0 = right_censored
+        f0 = failures
+        right_censored = rc0[rc0 != 0]
+        failures = f0[f0 != 0]
+        if len(failures)!=len(f0):
+            print('WARNING: failures contained zeros. These have been removed to enable fitting.')
+        if len(right_censored)!=len(rc0):
+            print('WARNING: right_censored contained zeros. These have been removed to enable fitting.')
+
+        all_data = np.hstack([failures, right_censored])
+        if min(all_data) < 0:
+            raise ValueError('All failure and censoring times must be greater than zero.')
         # get a quick initial guess for gamma by setting gamma as the minimum of all data
         offset = 0.001  # this is to ensure the upper bound for gamma is not equal to min(data) which would result in inf log-likelihood. This small offset fixes that issue
         self.gamma = min(all_data) - offset
@@ -1791,7 +2133,7 @@ class Fit_Expon_2P:
                 CI_rounded = CI * 100
             print(str('Results from Fit_Expon_2P (' + str(CI_rounded) + '% CI):'))
             print(self.results)
-            print('Log-Likelihood:', self.loglik)
+            print('Log-Likelihood:', self.loglik, '\n')
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Exponential_probability_plot_Weibull_Scale
@@ -1882,6 +2224,7 @@ class Fit_Normal_2P:
             right_censored = np.array(right_censored)
         if type(right_censored) != np.ndarray:
             raise TypeError('right_censored must be a list or array of right censored failure data')
+
         all_data = np.hstack([failures, right_censored])
 
         # solve it
@@ -1962,7 +2305,7 @@ class Fit_Normal_2P:
                 CI_rounded = CI * 100
             print(str('Results from Fit_Normal_2P (' + str(CI_rounded) + '% CI):'))
             print(self.results)
-            print('Log-Likelihood:', self.loglik)
+            print('Log-Likelihood:', self.loglik, '\n')
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Normal_probability_plot
@@ -2051,8 +2394,20 @@ class Fit_Lognormal_2P:
         if type(right_censored) != np.ndarray:
             raise TypeError('right_censored must be a list or array of right censored failure data')
 
+        #remove zeros. These are impossible since the pdf should be 0 at t=0. Leaving them in causes an error.
+        rc0 = right_censored
+        f0 = failures
+        right_censored = rc0[rc0 != 0]
+        failures = f0[f0 != 0]
+        if len(failures)!=len(f0):
+            print('WARNING: failures contained zeros. These have been removed to enable fitting.')
+        if len(right_censored)!=len(rc0):
+            print('WARNING: right_censored contained zeros. These have been removed to enable fitting.')
+
         self.gamma = 0
         all_data = np.hstack([failures, right_censored])
+        if min(all_data) < 0:
+            raise ValueError('All failure and censoring times must be greater than zero.')
 
         # solve it
         sp = ss.lognorm.fit(all_data, floc=0, optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
@@ -2134,7 +2489,7 @@ class Fit_Lognormal_2P:
                 CI_rounded = CI * 100
             print(str('Results from Fit_Lognormal_2P (' + str(CI_rounded) + '% CI):'))
             print(self.results)
-            print('Log-Likelihood:', self.loglik)
+            print('Log-Likelihood:', self.loglik, '\n')
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Lognormal_probability_plot
@@ -2221,7 +2576,20 @@ class Fit_Lognormal_3P:
             right_censored = np.array(right_censored)
         if type(right_censored) != np.ndarray:
             raise TypeError('right_censored must be a list or array of right censored failure data')
+
+        #remove zeros. These are impossible since the pdf should be 0 at t=0. Leaving them in causes an error.
+        rc0 = right_censored
+        f0 = failures
+        right_censored = rc0[rc0 != 0]
+        failures = f0[f0 != 0]
+        if len(failures)!=len(f0):
+            print('WARNING: failures contained zeros. These have been removed to enable fitting.')
+        if len(right_censored)!=len(rc0):
+            print('WARNING: right_censored contained zeros. These have been removed to enable fitting.')
+
         all_data = np.hstack([failures, right_censored])
+        if min(all_data) < 0:
+            raise ValueError('All failure and censoring times must be greater than zero.')
 
         # this tries two methods to get the guess for gamma. If the fast way fails (which is about 1 in 1000 chance) then it will do the slower more reliable way.
         success = False
@@ -2322,7 +2690,7 @@ class Fit_Lognormal_3P:
                 CI_rounded = CI * 100
             print(str('Results from Fit_Lognormal_3P (' + str(CI_rounded) + '% CI):'))
             print(self.results)
-            print('Log-Likelihood:', self.loglik)
+            print('Log-Likelihood:', self.loglik, '\n')
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Lognormal_probability_plot
@@ -2365,7 +2733,6 @@ class Fit_Lognormal_3P:
         LL_f += Fit_Lognormal_3P.logf(T_f, params[0], params[1], params[2]).sum()  # failure times
         LL_rc += Fit_Lognormal_3P.logR(T_rc, params[0], params[1], params[2]).sum()  # right censored times
         return -(LL_f + LL_rc)
-
 
 class Fit_Gamma_2P:
     '''
@@ -2421,7 +2788,20 @@ class Fit_Gamma_2P:
             right_censored = np.array(right_censored)
         if type(right_censored) != np.ndarray:
             raise TypeError('right_censored must be a list or array of right censored failure data')
+
+        #remove zeros. These are impossible since the pdf should be 0 at t=0. Leaving them in causes an error.
+        rc0 = right_censored
+        f0 = failures
+        right_censored = rc0[rc0 != 0]
+        failures = f0[f0 != 0]
+        if len(failures)!=len(f0):
+            print('WARNING: failures contained zeros. These have been removed to enable fitting.')
+        if len(right_censored)!=len(rc0):
+            print('WARNING: right_censored contained zeros. These have been removed to enable fitting.')
+
         all_data = np.hstack([failures, right_censored])
+        if min(all_data) < 0:
+            raise ValueError('All failure and censoring times must be greater than zero.')
 
         # solve it
         self.gamma = 0
@@ -2498,7 +2878,7 @@ class Fit_Gamma_2P:
                 CI_rounded = CI * 100
             print(str('Results from Fit_Gamma_2P (' + str(CI_rounded) + '% CI):'))
             print(self.results)
-            print('Log-Likelihood:', self.loglik)
+            print('Log-Likelihood:', self.loglik, '\n')
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Gamma_probability_plot
@@ -2578,7 +2958,20 @@ class Fit_Gamma_3P:
             right_censored = np.array(right_censored)
         if type(right_censored) != np.ndarray:
             raise TypeError('right_censored must be a list or array of right censored failure data')
+
+        #remove zeros. These are impossible since the pdf should be 0 at t=0. Leaving them in causes an error.
+        rc0 = right_censored
+        f0 = failures
+        right_censored = rc0[rc0 != 0]
+        failures = f0[f0 != 0]
+        if len(failures)!=len(f0):
+            print('WARNING: failures contained zeros. These have been removed to enable fitting.')
+        if len(right_censored)!=len(rc0):
+            print('WARNING: right_censored contained zeros. These have been removed to enable fitting.')
+
         all_data = np.hstack([failures, right_censored])
+        if min(all_data) < 0:
+            raise ValueError('All failure and censoring times must be greater than zero.')
 
         # get a quick guess for gamma by setting it as the minimum of all the data.
         offset = 0.0001  # this is to ensure the upper bound for gamma is not equal to min(data) which would result in inf log-likelihood. This small offset fixes that issue
@@ -2662,7 +3055,7 @@ class Fit_Gamma_3P:
                 CI_rounded = CI * 100
             print(str('Results from Fit_Gamma_3P (' + str(CI_rounded) + '% CI):'))
             print(self.results)
-            print('Log-Likelihood:', self.loglik)
+            print('Log-Likelihood:', self.loglik, '\n')
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Gamma_probability_plot
@@ -2742,7 +3135,7 @@ class Fit_Beta_2P:
         if type(right_censored) != np.ndarray:
             raise TypeError('right_censored must be a list or array of right censored failure data')
         all_data = np.hstack([failures, right_censored])
-        if min(all_data) < 0 or max(all_data) > 1:
+        if min(all_data) <= 0 or max(all_data) >= 1:
             raise ValueError('All data must be between 0 and 1 to use the beta distribution.')
         bnds = [(0.0001, None), (0.0001, None)]  # bounds of solution
 
@@ -2804,7 +3197,7 @@ class Fit_Beta_2P:
                 CI_rounded = CI * 100
             print(str('Results from Fit_Beta_2P (' + str(CI_rounded) + '% CI):'))
             print(self.results)
-            print('Log-Likelihood:', self.loglik)
+            print('Log-Likelihood:', self.loglik, '\n')
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Beta_probability_plot

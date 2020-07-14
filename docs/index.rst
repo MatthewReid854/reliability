@@ -25,6 +25,7 @@ Contents:
   Fitting a specific distribution to data
   Fitting all available distributions to data
   Weibull mixture models
+  Weibull competing risk models
 
 .. toctree::
   :maxdepth: 1
