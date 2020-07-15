@@ -16,7 +16,15 @@ The formula for the competing risks model is written in terms of the survival fu
 
 :math:`{SF}_{Competing_Risks} = {SF}_1 \times {SF}_2`
 
-:math:`{CDF}_{Competing_Risks} = 1-{SF}_{Competing Risks}`
+TEST
+
+:math:`{CDF}_{Competing\;Risks} = 1-{SF}_{Competing Risks}`
+
+:math:`{CDF}_{Competing\,Risks} = 1-{SF}_{Competing Risks}`
+
+:math:`{CDF}_{Competing\!Risks} = 1-{SF}_{Competing Risks}`
+
+:math:`{CDF}_{Competing\:Risks} = 1-{SF}_{Competing Risks}`
 
 To obtain the PDF, we must find the derivative of the CDF. This is easiest to do numerically since the formula for the SF of the competing risks model can get quite complex as more risks are added. Since :math:`{SF} = exp(-CHF)` we may equivalently write the competing risks model in terms of the hazard or cumulative hazard function as:
 
