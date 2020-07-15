@@ -10,23 +10,23 @@ What are mixture models?
 
 Mixture models are a combination of two or more distributions added together to create a distribution that has a shape with more flexibility than a single distribution. Each of the mixture's components must be multiplied by a proportion, and the sum of all the proportions is equal to 1. The mixture is generally written in terms of the PDF, but since the CDF is the integral (cumulative sum) of the PDF, we can equivalently write the Mixture model in terms of the PDF, CDF, or SF. For a mixture model with 2 distributions, the equation is shown below:
 
-:math:`{PDF}_{mixture model} = p\times{PDF}_1 + (1-p)\times{PDF}_2`
+:math:`{PDF}_{mixture} = p\times{PDF}_1 + (1-p)\times{PDF}_2`
 
-:math:`{CDF}_{mixture model} = p\times{CDF}_1 + (1-p)\times{CDF}_2`
+:math:`{CDF}_{mixture} = p\times{CDF}_1 + (1-p)\times{CDF}_2`
 
-:math:`{SF}_{mixture model} = p\times{SF}_1 + (1-p)\times{SF}_2`
+:math:`{SF}_{mixture} = p\times{SF}_1 + (1-p)\times{SF}_2`
 
-Mixture models are useful when there is more than one failure modes that is generating the failure data. This can be recognised by the shape of the PDF and CDF being outside of what any single distribution can accurately model. On a probability plot, a mixture of failure modes can be identified by bends or S-shapes in the data that should otherwise be linear. An example of this is shown in the second last example `here <https://reliability.readthedocs.io/en/latest/Probability%20plots.html>`_. You should not use a mixture model just because it can fit almost anything really well, but you should use a mixture model if you suspect that there are multiple failure modes contributing to the failure data you are observing. To judge whether a mixture model is justified, look at the goodness of fit criterion (AICc or BIC) which penalises the score based on the number of parameters in the model. The closer the goodness of fit criterion is to zero, the better the fit.
+Mixture models are useful when there is more than one failure mode that is generating the failure data. This can be recognised by the shape of the PDF and CDF being outside of what any single distribution can accurately model. On a probability plot, a mixture of failure modes can be identified by bends or S-shapes in the data that you might otherwise expect to be linear. An example of this is shown in the second last example `here <https://reliability.readthedocs.io/en/latest/Probability%20plots.html>`_. You should not use a mixture model just because it can fit almost anything really well, but you should use a mixture model if you suspect that there are multiple failure modes contributing to the failure data you are observing. To judge whether a mixture model is justified, look at the goodness of fit criterion (AICc or BIC) which penalises the score based on the number of parameters in the model. The closer the goodness of fit criterion is to zero, the better the fit.
 
 See also `competing risk models <https://reliability.readthedocs.io/en/latest/Competing%20risk%20models.html>`_ for another method of combining distributions using the product of the survival functions rather than the sum.
 
 Creating a mixture model
 ========================
 
-Within ``reliability.Distributions`` is the Mixture_Model. This class accepts an array or list of distribution objects created using the reliability.Distributions module (available distributions are Exponential, Weibull, Normal, Lognormal, Gamma, Beta). There is no limit to the number of components you can add to the mixture, but is is generally preferable to use as few as are required to fit the data appropriately (typically 2 or 3). In addition to the distributions, you can specify the proportions contributed by each distribution in the mixture. These proportions must sum to 1. If not specified the proportions will be set as equal for each component. The Mixture_Distribution object has all the same `methods <https://reliability.readthedocs.io/en/latest/Creating%20and%20plotting%20distributions.html>`_ as any of the other distributions.
+Within ``reliability.Distributions`` is the Mixture_Model. This class accepts an array or list of distribution objects created using the reliability.Distributions module (available distributions are Exponential, Weibull, Normal, Lognormal, Gamma, Beta). There is no limit to the number of components you can add to the mixture, but is is generally preferable to use as few as are required to fit the data appropriately (typically 2 or 3). In addition to the distributions, you can specify the proportions contributed by each distribution in the mixture. These proportions must sum to 1. If not specified the proportions will be set as equal for each component.
 
 As this process is additive for the survival function, and may accept many distributions of different types, the mathematical formulation quickly gets complex.
-For this reason, the algorithm combines the models numerically rather than empirically so there are no simple formulas for many of the descriptive statistics (mean, median, etc.). Also, the accuracy of the model is dependent on xvals. If the xvals array is small (<100 values) then the answer will be "blocky" and inaccurate. The variable xvals is only accepted for PDF, CDF, SF, HF, CHF. The other methods (like random samples) use the default xvals for maximum accuracy. The default number of values generated when xvals is not given is 1000. Consider this carefully when specifying xvals in order to avoid inaccuracies in the results.
+For this reason, the algorithm combines the models numerically rather than empirically so there are no simple formulas for many of the descriptive statistics (mean, median, etc.). Also, the accuracy of the model is dependent on xvals. If the xvals array is small (<100 values) then the answer will be "blocky" and inaccurate. The variable xvals is only accepted for PDF, CDF, SF, HF, and CHF. The other methods (like random samples) use the default xvals for maximum accuracy. The default number of values generated when xvals is not given is 1000. Consider this carefully when specifying xvals in order to avoid inaccuracies in the results.
 
 The API is similar to the other probability distributions (Weibull, Normal, etc.) and has the following inputs and methods:
 
@@ -142,7 +142,7 @@ Outputs:
 -   BIC - Bayesian Information Criterion
 -   results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
 
-In this first example, we will create some data using two Weibull distributions and then combine the data using np.hstack. We will then fit the Weibull mixture model to the combined data and will print the results and show the plot. As the input data is made up of 40% from the first group, we expect the proportion to be 0.4.
+In this first example, we will create some data using two Weibull distributions and then combine the data using np.hstack. We will then fit the Weibull mixture model to the combined data and will print the results and show the plot. As the input data is made up of 40% from the first group, we expect the proportion to be around 0.4.
 
 .. code:: python
 
@@ -186,7 +186,7 @@ In this first example, we will create some data using two Weibull distributions 
 
 .. image:: images/Weibull_Mixture_hist.png
 
-In this second example, we will compare how well the Weibull Mixture performs vs a single Weibull_2P. Firstly, we generate some data from two Weibull distributions, combine the data, and right censor it above our chosen threshold. Next, we will fit the Mixture and Weibull_2P distributions. Then we will build the mixture PDF using the components of the fitted Weibull distributions. Everything is then plotted and a goodness of fit measure is used to check whether the Weibull_Mixture is really a much better fit than a single Weibull_2P distribution (which it is due to the lower BIC).
+In this second example, we will compare how well the Weibull Mixture performs vs a single Weibull_2P. Firstly, we generate some data from two Weibull distributions, combine the data, and right censor it above our chosen threshold. Next, we will fit the Mixture and Weibull_2P distributions. Then we will visualise the histogram, PDF and CDF of the fitted mixture model and Weibull_2P distributions. The goodness of fit measure is used to check whether the mixture model is really a much better fit than a single Weibull_2P distribution (which it is due to the lower BIC).
 
 .. code:: python
   
