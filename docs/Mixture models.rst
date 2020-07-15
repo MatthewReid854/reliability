@@ -10,7 +10,11 @@ What are mixture models?
 
 Mixture models are a combination of two or more distributions added together to create a distribution that has a shape with more flexibility than a single distribution. Each of the mixture's components must be multiplied by a proportion, and the sum of all the proportions is equal to 1. The mixture is generally written in terms of the PDF, but since the CDF is the integral (cumulative sum) of the PDF, we can equivalently write the Mixture model in terms of the PDF, CDF, or SF. For a mixture model with 2 distributions, the equation is shown below:
 
-:math:`\text{PDF:} \hspace{5mm} {PDF}_{model} = p\times{PDF}_1 + (1-p)\times{PDF}_1
+:math:`\text{PDF:} \hspace{5mm} {PDF}_{model} = p\times{PDF}_1 + (1-p)\times{PDF}_1`
+
+:math:`\text{CDF:} \hspace{5mm} {CDF}_{model} = p\times{CDF}_1 + (1-p)\times{CDF}_1`
+
+:math:`\text{SF:} \hspace{5mm} {SF}_{model} = p\times{SF}_1 + (1-p)\times{SF}_1`
 
 Mixture models are useful when there is more than one failure modes that is generating the failure data. This can be recognised by the shape of the PDF and CDF being outside of what any single distribution can accurately model. On a probability plot, a mixture of failure modes can be identified by bends or S-shapes in the data that should otherwise be linear. An example of this is shown in the second last example `here <https://reliability.readthedocs.io/en/latest/Probability%20plots.html>`_. You should not use a mixture model just because it can fit almost anything really well, but you should use a mixture model if you suspect that there are multiple failure modes contributing to the failure data you are observing. To judge whether a mixture model is justified, look at the goodness of fit criterion (AICc or BIC) which penalises the score based on the number of parameters in the model. The closer the goodness of fit criterion is to zero, the better the fit.
 
