@@ -5,6 +5,8 @@
 Mixture models
 ''''''''''''''
 
+.. note:: This documentation is valid for Version 0.5.2 which is currently unreleased.
+
 What are mixture models?
 ========================
 
@@ -186,7 +188,7 @@ In this first example, we will create some data using two Weibull distributions 
 
 .. image:: images/Weibull_Mixture_hist.png
 
-In this second example, we will compare how well the Weibull Mixture performs vs a single Weibull_2P. Firstly, we generate some data from two Weibull distributions, combine the data, and right censor it above our chosen threshold. Next, we will fit the Mixture and Weibull_2P distributions. Then we will visualise the histogram, PDF and CDF of the fitted mixture model and Weibull_2P distributions. The goodness of fit measure is used to check whether the mixture model is really a much better fit than a single Weibull_2P distribution (which it is due to the lower BIC).
+In this second example, we will compare how well the Weibull Mixture performs vs a single Weibull_2P. Firstly, we generate some data from two Weibull distributions, combine the data, and right censor it above our chosen threshold. Next, we will fit the Mixture and Weibull_2P distributions. Then we will visualise the histogram and PDF of the fitted mixture model and Weibull_2P distributions. The goodness of fit measure is used to check whether the mixture model is really a much better fit than a single Weibull_2P distribution (which it is due to the lower BIC).
 
 .. code:: python
   
