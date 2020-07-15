@@ -2,7 +2,7 @@
 
 -------------------------------------
 
-Weibull competing risk models
-'''''''''''''''''''''''''''''
+Competing risk models
+'''''''''''''''''''''
 
 This section will be written soon.
