@@ -215,6 +215,6 @@ In this second example, we will compare how well the Weibull Mixture performs vs
     Weibull_2P BIC: 6511.51175959736
     '''
 
-.. image:: images/Weibull_mixture_vs_Weibull_2P_V2.png
+.. image:: images/Weibull_mixture_vs_Weibull_2P_V3.png
 
 .. note:: This documentation is valid for Version 0.5.2 which is currently unreleased.
