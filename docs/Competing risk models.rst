@@ -5,7 +5,7 @@
 Competing risk models
 '''''''''''''''''''''
 
-What are competing risks Models?
+What are competing risks models?
 ================================
 
 Competing risks models are a combination of two or more distributions that represent failure modes which are "competing" to end the life of the system being modelled. This model is similar to mixture models in the sense that it uses multiple distributions to create a new model that has a shape with more flexibility than a single distribution. However, unlike mixture models, we are not adding proportions of the PDF or CDF, but are instead multiplying the survival functions. The resultant distribution will have a CDF that is equal to or above all other CDFs in the model, rather than lying between CDFs as is the case in the mixture model. The formula for the competing risks model is typically written in terms of the survival function (SF). Since we may consider the system's reliability to depend on the reliability of all the parts of the system (each with its own failure modes), the equation is written as if the system was in series, using the product of the survival functions for each failure mode. For a competing risks model with 2 distributions, the equations are shown below:
