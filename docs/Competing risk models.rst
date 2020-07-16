@@ -37,8 +37,49 @@ See also `mixture models <https://reliability.readthedocs.io/en/latest/Mixture%2
 Creating a competing risks model
 ================================
 
-This section will be written soon
+Within ``reliability.Distributions`` is the Competing_Risks_Model. This class accepts an array or list of distribution objects created using the reliability.Distributions module (available distributions are Exponential, Weibull, Normal, Lognormal, Gamma, Beta). There is no limit to the number of components you can add to the model, but is is generally preferable to use as few as are required to fit the data appropriately (typically 2 or 3). Unlike the mixture model, you do not need to specify any proportions.
 
+As this process is multiplicative for the survival function (or additive for the hazard function), and may accept many distributions of different types, the mathematical formulation quickly gets complex. For this reason, the algorithm combines the models numerically rather than empirically so there are no simple formulas for many of the descriptive statistics (mean, median, etc.). Also, the accuracy of the model is dependent on xvals. If the xvals array is small (<100 values) then the answer will be “blocky” and inaccurate. The variable xvals is only accepted for PDF, CDF, SF, HF, and CHF. The other methods (like random samples) use the default xvals for maximum accuracy. The default number of values generated when xvals is not given is 1000. Consider this carefully when specifying xvals in order to avoid inaccuracies in the results.
+
+The API is similar to the other probability distributions (Weibull, Normal, etc.) and has the following inputs and methods:
+
+Inputs:
+
+-   distributions - a list or array of probability distributions used to construct the model
+
+Methods:
+
+-   name - 'Competing risks'
+-   name2 - 'Competing risks using 3 distributions'
+-   mean
+-   median
+-   mode
+-   variance
+-   standard_deviation
+-   skewness
+-   kurtosis
+-   excess_kurtosis
+-   b5 - The time where 5% have failed. Same as quantile(0.05)
+-   b95 - The time where 95% have failed. Same as quantile(0.95)
+-   plot() - plots all functions (PDF,CDF,SF,HF,CHF)
+-   PDF() - plots the probability density function
+-   CDF() - plots the cumulative distribution function
+-   SF() - plots the survival function (also known as reliability function)
+-   HF() - plots the hazard function
+-   CHF() - plots the cumulative hazard function
+-   quantile() - Calculates the quantile (time until a fraction has failed) for a given fraction failing. Also known as b life where b5 is the time at which 5% have failed.
+-   inverse_SF() - the inverse of the Survival Function. This is useful when producing QQ plots.
+-   mean_residual_life() - Average residual lifetime of an item given that the item has survived up to a given time. Effectively the mean of the remaining amount (right side) of a distribution at a given time.
+-   stats() - prints all the descriptive statistics. Same as the statistics shown using .plot() but printed to console.
+-   random_samples() - draws random samples from the distribution to which it is applied.
+
+The following example shows how the Competing_Risks_Model object can be created, visualised and used.
+
+.. code:: python
+
+    from reliability.Distributions
+
+The remainder of this section will be written soon
 
 Fitting a competing risks model
 ===============================
