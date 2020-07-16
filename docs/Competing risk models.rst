@@ -5,6 +5,8 @@
 Competing risk models
 '''''''''''''''''''''
 
+.. note:: This documentation is valid for Version 0.5.2 which is currently unreleased.
+
 What are competing risks models?
 ================================
 
@@ -77,12 +79,43 @@ The following example shows how the Competing_Risks_Model object can be created,
 
 .. code:: python
 
-    from reliability.Distributions
+    from reliability.Distributions import Lognormal_Distribution, Gamma_Distribution, Weibull_Distribution, Competing_Risks_Model
+    import matplotlib.pyplot as plt
 
-The remainder of this section will be written soon
+    # create the competing risks model
+    d1 = Lognormal_Distribution(mu=4, sigma=0.1)
+    d2 = Weibull_Distribution(alpha=50, beta=2)
+    d3 = Gamma_Distribution(alpha=30,beta=1.5)
+    CR_model = Competing_Risks_Model(distributions=[d1, d2, d3])
+
+
+    # plot the 5 functions using the plot() function
+    CR_model.plot(xmin=0,xmax=100)
+
+    # plot the PDF and CDF
+    plot_components = True
+    plt.figure(figsize=(9, 5))
+    plt.subplot(121)
+    CR_model.PDF(plot_components=plot_components, color='red', linestyle='--',xmin=0,xmax=130)
+    plt.subplot(122)
+    CR_model.CDF(plot_components=plot_components, color='red', linestyle='--',xmin=0,xmax=130)
+    plt.subplots_adjust(left=0.1, right=0.95)
+    plt.show()
+
+    # extract the mean of the distribution
+    print('The mean of the distribution is:', CR_model.mean)
+
+    '''
+    The mean of the distribution is: 27.04449126275214
+    '''
+
+.. image:: images/CR_model_plot.png
+
+.. image:: images/CR_model_PDF_CDF.png
 
 Fitting a competing risks model
 ===============================
 
 This section will be written soon
 
+.. note:: This documentation is valid for Version 0.5.2 which is currently unreleased.
