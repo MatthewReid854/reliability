@@ -12,7 +12,7 @@ This section will be written soon.
 
 
 
-The formula for the competing risks model is written in terms of the survival function (SF). Since we may consider the system's reliability to depend on the reliability of each component (or the absence of a failure mode), the equation is written in the same way as a series system, using the product of the survival functions for each failure mode. 
+The formula for the competing risks model is written in terms of the survival function (SF). Since we may consider the system's reliability to depend on the reliability of each component (or the absence of a failure mode), the equation is written in the same way as a series system, using the product of the survival functions for each failure mode. For a competing risks model with 2 distributions, the equations are shown below:
 
 :math:`{SF}_{Competing  Risks} = {SF}_1 \times {SF}_2`
 
