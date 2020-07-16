@@ -88,12 +88,11 @@ The following example shows how the Competing_Risks_Model object can be created,
     d3 = Gamma_Distribution(alpha=30,beta=1.5)
     CR_model = Competing_Risks_Model(distributions=[d1, d2, d3])
 
-
     # plot the 5 functions using the plot() function
     CR_model.plot(xmin=0,xmax=100)
 
     # plot the PDF and CDF
-    plot_components = True
+    plot_components = True # this plots the component distributions. Default is False
     plt.figure(figsize=(9, 5))
     plt.subplot(121)
     CR_model.PDF(plot_components=plot_components, color='red', linestyle='--',xmin=0,xmax=130)
