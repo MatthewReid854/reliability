@@ -71,7 +71,7 @@ Methods:
 -    stats() - prints all the descriptive statistics. Same as the statistics shown using .plot() but printed to console.
 -    random_samples() - draws random samples from the distribution to which it is applied.
 
-The following example shows how the Mixture_Distribution object can be created, visualised and used.
+The following example shows how the Mixture_Model object can be created, visualised and used.
 
 .. code:: python
 
