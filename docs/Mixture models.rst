@@ -18,9 +18,11 @@ Mixture models are a combination of two or more distributions added together to 
 
 :math:`{SF}_{mixture} = 1-{CDF}_{mixture}`
 
+:math:`{HF}_{mixture} = \frac{{PDF}_{mixture}}{{SF}_{mixture}}`
+
 :math:`{CHF}_{mixture} = -ln({SF}_{mixture})`
 
-To obtain the hazard function (HF), we must find the derivative of the CHF. This is easiest to do numerically since the formula for the mixture model can get quite complex as more distributions are added.
+Another option to obtain the hazard function is to find the numerical derivative of the CHF. This is often more reliable since the PDF/SF approach can lead to noisy results caused by limitations in floating point precision when the SF is near zero.
 
 Mixture models are useful when there is more than one failure mode that is generating the failure data. This can be recognised by the shape of the PDF and CDF being outside of what any single distribution can accurately model. On a probability plot, a mixture of failure modes can be identified by bends or S-shapes in the data that you might otherwise expect to be linear. An example of this is shown in the image below. You should not use a mixture model just because it can fit almost anything really well, but you should use a mixture model if you suspect that there are multiple failure modes contributing to the failure data you are observing. To judge whether a mixture model is justified, look at the goodness of fit criterion (AICc or BIC) which penalises the score based on the number of parameters in the model. The closer the goodness of fit criterion is to zero, the better the fit.
 
