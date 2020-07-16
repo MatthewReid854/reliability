@@ -85,8 +85,8 @@ The following example shows how the Mixture_Distribution object can be created, 
     # plot the 5 functions using the plot() function
     mixture_model.plot()
 
-    # plot the PDF and CDF()
-    plot_components = True
+    # plot the PDF and CDF
+    plot_components = True # this plots the component distributions. Default is False
     plt.figure(figsize=(9, 5))
     plt.subplot(121)
     mixture_model.PDF(plot_components=plot_components, color='red', linestyle='--')
