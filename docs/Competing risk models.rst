@@ -115,6 +115,137 @@ The following example shows how the Competing_Risks_Model object can be created,
 Fitting a competing risks model
 ===============================
 
-This section will be written soon
+Within ``reliability.Fitters`` is Fit_Weibull_CR. This function will fit a weibull competing risks model consisting of 2 x Weibull_2P distributions (this does not fit the gamma parameter). Just as with all of the other distributions in reliability.Fitters, right censoring is supported.
+
+Whilst some failure modes may not be fitted as well by a Weibull distribution as they may be by another distribution, it is unlikely that a competing risks model of data from two distributions (particularly if they are overlapping) will be fitted noticeably better by other types of competing risks models than would be achieved by a Weibull competing risks model. For this reason, other types of competing risks models are not implemented.
+
+Inputs:
+
+-   failures - an array or list of the failure data. There must be at least 4 failures, but it is highly recommended to use another model if you have less than 20 failures.
+-   right_censored - an array or list of right censored data
+-   print_results - True/False. This will print results to console. Default is True.
+-   CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
+-   show_probability_plot - True/False. This will show the probability plot with the fitted Weibull_CR CDF. Default is True.
+
+Outputs:
+
+-   alpha_1 - the fitted Weibull_2P alpha parameter for the first distribution
+-   beta_1 - the fitted Weibull_2P beta parameter for the first distribution
+-   alpha_2 - the fitted Weibull_2P alpha parameter for the second distribution
+-   beta_2 - the fitted Weibull_2P beta parameter for the second distribution
+-   alpha_1_SE - the standard error on the parameter
+-   beta_1_SE - the standard error on the parameter
+-   alpha_2_SE - the standard error on the parameter
+-   beta_2_SE - the standard error on the parameter
+-   alpha_1_upper - the upper confidence interval estimate of the parameter
+-   alpha_1_lower - the lower confidence interval estimate of the parameter
+-   beta_1_upper - the upper confidence interval estimate of the parameter
+-   beta_1_lower - the lower confidence interval estimate of the parameter
+-   alpha_2_upper - the upper confidence interval estimate of the parameter
+-   alpha_2_lower - the lower confidence interval estimate of the parameter
+-   beta_2_upper - the upper confidence interval estimate of the parameter
+-   beta_2_lower - the lower confidence interval estimate of the parameter
+-   loglik - Log Likelihood (as used in Minitab and Reliasoft)
+-   loglik2 - LogLikelihood*-2 (as used in JMP Pro)
+-   AICc - Akaike Information Criterion
+-   BIC - Bayesian Information Criterion
+-   results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
+
+In this first example, we will create some data using a competing risks model from two Weibull distributions. We will then fit the Weibull mixture model to the data and will print the results and show the plot.
+
+.. code:: python
+
+    from reliability.Distributions import Weibull_Distribution, Competing_Risks_Model
+    from reliability.Fitters import Fit_Weibull_CR
+    from reliability.Other_functions import histogram
+    import matplotlib.pyplot as plt
+
+    # create some data that requires a competing risks models
+    d1 = Weibull_Distribution(alpha=50, beta=2)
+    d2 = Weibull_Distribution(alpha=40, beta=10)
+    CR_model = Competing_Risks_Model(distributions=[d1, d2])
+    data = CR_model.random_samples(100, seed=2)
+
+    # fit the Weibull competing risks model
+    results = Fit_Weibull_CR(failures=data)
+
+    # this section is to visualise the histogram with PDF and CDF
+    # it is not part of the default output from the Fitter
+    plt.figure(figsize=(9, 5))
+    plt.subplot(121)
+    histogram(data)
+    results.distribution.PDF(xmin=0, xmax=60)
+    plt.subplot(122)
+    histogram(data, cumulative=True)
+    results.distribution.CDF(xmin=0, xmax=60)
+
+    plt.show()
+
+    '''
+    Results from Fit_Weibull_CR (95% CI):
+               Point Estimate  Standard Error   Lower CI   Upper CI
+    Parameter                                                      
+    Alpha 1         55.185550       14.385243  33.108711  91.983192
+    Beta 1           1.896577        0.454578   1.185637   3.033816
+    Alpha 2         38.192099        1.083595  36.126262  40.376067
+    Beta 2           7.978213        1.181428   5.968403  10.664810
+    Log-Likelihood: -352.47978488894165 
+    '''
+
+.. image:: images/CR_fit_probplot.png
+
+.. image:: images/CR_fit_hist.png
+
+In this second example, we will compare the mixture model to the competing risks model. The data is generated from a competing risks model so we expect the Weibull competing risks model to be more appropriate than the Mixture model. Through comparison of the AICc or BIC we can see which model is more appropriate. Since the AICc and BIC penalise the goodness of fit criterion based on the number of parameters and the mixture model has 5 parameters compared to the competing risk model's 4 parameters, we expect the competing risks model to have a lower (closer to zero) goodness of fit than the Mixture model, and this is what we observe in the results. Notice how the log-likelihood of the mixture model indicates a better fit (because the value is closer to zero), but this does not take into account the number of parameters in the model.
+
+.. code:: python
+
+    from reliability.Distributions import Weibull_Distribution, Competing_Risks_Model
+    from reliability.Fitters import Fit_Weibull_CR, Fit_Weibull_Mixture
+    import matplotlib.pyplot as plt
+    import pandas as pd
+
+    # create some data that requires a competing risks models
+    d1 = Weibull_Distribution(alpha=250, beta=2)
+    d2 = Weibull_Distribution(alpha=210, beta=10)
+    CR_model = Competing_Risks_Model(distributions=[d1, d2])
+    data = CR_model.random_samples(50, seed=2)
+
+    CR_fit = Fit_Weibull_CR(failures=data)  # fit the Weibull competing risks model
+    MM_fit = Fit_Weibull_Mixture(failures=data)  # fit the Weibull mixture model
+    plt.legend()
+    plt.show()
+
+    # create a dataframe to display the goodness of fit criterion as a table
+    goodness_of_fit = {'Model': ['Competing Risks', 'Mixture'], 'AICc': [CR_fit.AICc, MM_fit.AICc], 'BIC': [CR_fit.BIC, MM_fit.BIC]}
+    df = pd.DataFrame(goodness_of_fit, columns=['Model', 'AICc', 'BIC'])
+    print(df)
+
+    '''
+    Results from Fit_Weibull_CR (95% CI):
+               Point Estimate  Standard Error    Lower CI    Upper CI
+    Parameter                                                        
+    Alpha 1        229.232894       50.606249  148.717724  353.338649
+    Beta 1           2.509209        0.747318    1.399663    4.498318
+    Alpha 2        199.827204        8.581465  183.696232  217.374691
+    Beta 2           9.220198        2.205702    5.769147   14.735637
+    Log-Likelihood: -255.44381150244595 
+
+    Results from Fit_Weibull_Mixture (95% CI):
+                  Point Estimate  Standard Error    Lower CI    Upper CI
+    Parameter                                                           
+    Alpha 1           103.714797       14.256788   79.219721  135.783855
+    Beta 1              4.029494        1.329587    2.110497    7.693363
+    Alpha 2           190.242625        5.107832  180.490306  200.521884
+    Beta 2              7.851357        1.365270    5.583796   11.039768
+    Proportion 1        0.226028        0.084489    0.101793    0.429403
+    Log-Likelihood: -254.50393768335337 
+
+                 Model        AICc         BIC
+    0  Competing Risks  519.776512  526.535715
+    1          Mixture  520.371512  528.567990
+    '''
+
+.. image:: images/CRvsMM_fit.png
 
 .. note:: This documentation is valid for Version 0.5.2 which is currently unreleased.
