@@ -81,9 +81,8 @@ In this second example, we will create some data from a Weibull distribution, an
     import matplotlib.pyplot as plt
     import numpy as np
 
-    np.random.seed(1)  # this is for repeatability in this tutorial
     dist = Weibull_Distribution(alpha=5, beta=2)  # create a distribution
-    raw_data = dist.random_samples(100, seed=2)  # get some data from the distribution
+    raw_data = dist.random_samples(100, seed=2)  # get some data from the distribution. Seeded for repeatability
     data = make_right_censored_data(raw_data, threshold=9)
     wbf = Fit_Weibull_2P(failures=data.failures, right_censored=data.right_censored, show_probability_plot=False, print_results=False)  # Fit the Weibull_2P
 
