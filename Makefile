@@ -1,11 +1,11 @@
 init:
 ifeq ($(TRAVIS), true)
-		pip install -r reqs/travis-requirements.txt
+		pip install -r tests/travis-requirements.txt
 		pip install pandas==${PANDAS_VERSION}
 		pip install numpy==${NUMPY_VERSION}
 		pip freeze --local
 else
-		pip install -r reqs/dev-requirements.txt
+		pip install -r tests/dev-requirements.txt
 		pre-commit install
 endif
 
@@ -24,7 +24,7 @@ black:
 ifeq ($(TRAVIS_PYTHON_VERSION), 2.7)
 		echo "Skip linting for Python2.7"
 else
-		black lifelines/ -l 120 --fast
+		black reliability/ -l 120 --fast
 endif
 
 check_format:
