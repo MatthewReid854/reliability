@@ -5,7 +5,7 @@
 Changelog
 ---------
 
-**Version: 0.5.2 --- Unreleased: Scheduled for release by end of July 2020**
+**Version: 0.5.2 --- Unreleased: Scheduled for release by mid-August 2020**
 '''''''''''''''''''''''''''''''''''''''''''''
 
 **New features**
@@ -18,6 +18,7 @@ Changelog
 -    A new fitter for the Weibull competing risks model (Fit_Weibull_CR)
 -    The output of the Fit_Weibull_Mixture now includes a probability plot instead of a histogram of the PDF and CDF
 -    The output of the Fit_Weibull_Mixture now prints the confidence interval estimates of the parameters
+-    Added some datasets for use with the mean cumulative function (MCF_1 and MCF_2).
 
 **API Changes**
 
@@ -27,11 +28,14 @@ Changelog
 
 -    Fixed the autoscale in Weibull and Exponential distributions that locked autoscaling when confidence intervals were plotted sequentially.
 -    Automatic removal of zeros for all fitters (except Normal_2P). Previously the zeros were left in the data and resulted in NaNs and crashes. Also added a dedicated error to report input with times below zero.
+-    Fixed the confidence interval bounds for Kaplan-Meier and Nelson-Aalen CHF plots. Some of the bounds were inf since the CHF = -ln(SF) which will be inf when SF=0.
+-    MCF_Nonparametric and MCF_Parametric had a bug which caused crashes when the dataset included a system with only one censored time. This has now been fixed. 
 
 **Other**
 
 -    Minor clean up of code. Removed unnecessary imports, removed unused variables, etc. Hopefully this will have no noticable effects.
 -    Within Fitters.Fit_Everything the histogram output has been improved with better formatting and it now uses the Freedman-Diaconis rule for obtaining optimal bin width.
+-    Fixed Weibull HF and CHF equations to use actual equations and not PDF/SF or -ln(SF) as these result in NaN when SF=0 (an issue at high xvals).
 
 **Version: 0.5.1 --- Released: 08 July 2020**
 '''''''''''''''''''''''''''''''''''''''''''''
