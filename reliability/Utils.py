@@ -13,6 +13,9 @@ axes_transforms - Custom scale functions used in Probability_plotting
 
 import numpy as np
 import scipy.stats as ss
+import matplotlib.pyplot as plt
+from matplotlib.collections import PolyCollection, LineCollection
+
 
 def round_to_decimals(number, decimals=5, integer_floats_to_ints=True):
     '''
@@ -124,23 +127,53 @@ class axes_transforms:
     '''
     Custom scale functions used in Probability_plotting
     '''
+
     def weibull_forward(F):
         return np.log(-np.log(1 - F))
+
     def weibull_inverse(R):
         return 1 - np.exp(-np.exp(R))
+
     def expon_forward(F):
         return ss.expon.ppf(F)
+
     def expon_inverse(R):
         return ss.expon.cdf(R)
+
     def normal_forward(F):
         return ss.norm.ppf(F)
+
     def normal_inverse(R):
         return ss.norm.cdf(R)
+
     def gamma_forward(F, beta):
         return ss.gamma.ppf(F, a=beta)
+
     def gamma_inverse(R, beta):
         return ss.gamma.cdf(R, a=beta)
+
     def beta_forward(F, alpha, beta):
         return ss.beta.ppf(F, a=alpha, b=beta)
+
     def beta_inverse(R, alpha, beta):
         return ss.beta.cdf(R, a=alpha, b=beta)
+
+
+def fill_no_autoscale(xlower, xupper, ylower, yupper, **kwargs):
+    '''
+    creates a filled region (polygon) without adding it to the global list of autoscale objects.
+    Use this when you want to plot something but not have it considered when autoscale sets the range
+    '''
+    polygon = np.column_stack([np.hstack([xlower, xupper[::-1]]), np.hstack([ylower, yupper[::-1]])])  # this is equivalent to fill as it makes a polygon
+    col = PolyCollection([polygon], **kwargs)
+    plt.gca().add_collection(col, autolim=False)
+
+
+def line_no_autoscale(x, y, **kwargs):
+    '''
+    creates a line without adding it to the global list of autoscale objects.
+    Use this when you want to plot something but not have it considered when autoscale sets the range
+    '''
+    line = np.column_stack([x, y])  # this is equivalent to plot as it makes a line
+    col = LineCollection([line], **kwargs)
+    plt.gca().add_collection(col, autolim=False)

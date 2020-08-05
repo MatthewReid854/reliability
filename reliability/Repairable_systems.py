@@ -442,28 +442,35 @@ class MCF_nonparametric:
         C_seq = 0  # sequential number of censored values
         for i in range(len(times)):
             if i == 0:
-                if states_sorted[i] == 'F':
+                if states_sorted[i] == 'F':  # first event is a failure
                     MCF_array.append(r_inv)
                     Var_array.append((r_inv ** 2) * ((1 - r_inv) ** 2 + (r - 1) * (0 - r_inv) ** 2))
                     MCF_lower_array.append(MCF_array[i] / np.exp((Z * Var_array[i] ** 0.5) / MCF_array[i]))
                     MCF_upper_array.append(MCF_array[i] * np.exp((Z * Var_array[i] ** 0.5) / MCF_array[i]))
-                else:
-                    r -= 1
-                    r_inv = 1 / r
-                    C_seq += 1
+                else:  # first event is censored
                     MCF_array.append('')
                     Var_array.append('')
                     MCF_lower_array.append('')
                     MCF_upper_array.append('')
-            else:
-                if states_sorted[i] == 'F':
+                    r -= 1
+                    if times_sorted[i] not in end_times:  # check if this system only has one event. If not then increment the number censored count for this system
+                        C_seq += 1
+            else:  # everything after the first time
+                if states_sorted[i] == 'F':  # failure event
                     i_adj = i - C_seq
-                    MCF_array.append(r_inv + MCF_array[i_adj - 1])
-                    Var_array.append((r_inv ** 2) * ((1 - r_inv) ** 2 + (r - 1) * (0 - r_inv) ** 2) + Var_array[i_adj - 1])
-                    MCF_lower_array.append(MCF_array[i] / np.exp((Z * Var_array[i] ** 0.5) / MCF_array[i]))
-                    MCF_upper_array.append(MCF_array[i] * np.exp((Z * Var_array[i] ** 0.5) / MCF_array[i]))
+                    r_inv = 1 / r
+                    if MCF_array[i_adj - 1] == '':  # this is the case where the first system only has one event that was censored and there is no data on the first line
+                        MCF_array.append(r_inv)
+                        Var_array.append((r_inv ** 2) * ((1 - r_inv) ** 2 + (r - 1) * (0 - r_inv) ** 2))
+                        MCF_lower_array.append(MCF_array[i] / np.exp((Z * Var_array[i] ** 0.5) / MCF_array[i]))
+                        MCF_upper_array.append(MCF_array[i] * np.exp((Z * Var_array[i] ** 0.5) / MCF_array[i]))
+                    else:  # this the normal case where there was previous data
+                        MCF_array.append(r_inv + MCF_array[i_adj - 1])
+                        Var_array.append((r_inv ** 2) * ((1 - r_inv) ** 2 + (r - 1) * (0 - r_inv) ** 2) + Var_array[i_adj - 1])
+                        MCF_lower_array.append(MCF_array[i] / np.exp((Z * Var_array[i] ** 0.5) / MCF_array[i]))
+                        MCF_upper_array.append(MCF_array[i] * np.exp((Z * Var_array[i] ** 0.5) / MCF_array[i]))
                     C_seq = 0
-                else:
+                else:  # censored event
                     r -= 1
                     C_seq += 1
                     MCF_array.append('')
@@ -528,7 +535,7 @@ class MCF_nonparametric:
             else:
                 col = 'steelblue'
             if plot_CI is True:
-                plt.fill_between(x_MCF, y_lower, y_upper, color=col, alpha=0.3,linewidth=0)
+                plt.fill_between(x_MCF, y_lower, y_upper, color=col, alpha=0.3, linewidth=0)
                 if CI * 100 % 1 == 0:  # format the text for the CI in the title
                     CI_rounded = int(CI * 100)
                 else:

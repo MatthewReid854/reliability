@@ -932,7 +932,7 @@ class Fit_Weibull_2P_grouped:
 
         dataframe0 = dataframe
         dataframe = dataframe0[dataframe0['time'] > 0]
-        if dataframe0.time.values != dataframe.time.values:
+        if len(dataframe0.time.values) != len(dataframe.time.values):
             print('WARNING: dataframe contained zeros. These have been removed to enable fitting.') #automatically filter out zeros and print warning if zeros have been removed
 
         # unpack the dataframe

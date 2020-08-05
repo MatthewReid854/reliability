@@ -173,15 +173,12 @@ class KaplanMeier:
         self.CDF_upper = 1 - self.SF_lower
         self.CHF = -np.log(self.SF)
         self.CHF_lower = -np.log(self.SF_upper)
-        self.CHF_upper = -np.log(self.SF_lower)
+        self.CHF_upper = -np.log(self.SF_lower)  # this will be inf when SF=0
 
         if print_results is True:
             print(dfy)  # this will print the pandas dataframe
-        # plotting section
         if show_plot is True:
-            # extract certain keyword arguments or specify them if they are not set. We cannot pass all kwargs to CI plots as some are not appropriate (eg. label)
-
-            if plot_type == 'SF':
+            if plot_type in ['SF', 'sf']:
                 p = plt.plot(self.xvals, self.SF, **kwargs)
                 if plot_CI is True:  # plots the confidence bounds
                     title_text = str('Kaplan-Meier SF estimate\n with ' + str(int(CI * 100)) + '% confidence bounds')
@@ -193,7 +190,7 @@ class KaplanMeier:
                 plt.title(title_text)
                 plt.xlim([0, max(KM_x)])
                 plt.ylim([0, 1.1])
-            if plot_type == 'CDF':
+            elif plot_type in ['CDF', 'cdf']:
                 p = plt.plot(self.xvals, self.CDF, **kwargs)
                 if plot_CI is True:  # plots the confidence bounds
                     title_text = str('Kaplan-Meier CDF estimate\n with ' + str(int(CI * 100)) + '% confidence bounds')
@@ -205,17 +202,22 @@ class KaplanMeier:
                 plt.title(title_text)
                 plt.xlim([0, max(KM_x)])
                 plt.ylim([0, 1.1])
-            if plot_type == 'CHF':
+            elif plot_type in ['CHF', 'chf']:
+                ylims = plt.ylim(auto=None)  # get the existing ylims so other plots are considered when setting the limits
                 p = plt.plot(self.xvals, self.CHF, **kwargs)
+                CHF_upper = np.nan_to_num(self.CHF_upper, posinf=1e10)
                 if plot_CI is True:  # plots the confidence bounds
                     title_text = str('Kaplan-Meier CHF estimate\n with ' + str(int(CI * 100)) + '% confidence bounds')
-                    plt.fill_between(self.xvals, self.CHF_lower, self.CHF_upper, color=p[0].get_color(), alpha=0.3)
+                    plt.fill_between(self.xvals, self.CHF_lower, CHF_upper, color=p[0].get_color(), alpha=0.3)
                 else:
                     title_text = 'Kaplan-Meier estimate of Cumulative Hazard Function'
                 plt.xlabel('Failure units')
                 plt.ylabel('Cumulative Hazard')
                 plt.title(title_text)
                 plt.xlim([0, max(KM_x)])
+                plt.ylim([0, max(ylims[1], self.CHF[-2] * 1.2)])  # set the limits for y. Need to do this because the upper CI bound is inf.
+            else:
+                raise ValueError('plot_type must be CDF, SF, CHF')
 
 
 class NelsonAalen:
@@ -379,14 +381,12 @@ class NelsonAalen:
         self.CDF_upper = 1 - self.SF_lower
         self.CHF = -np.log(self.SF)
         self.CHF_lower = -np.log(self.SF_upper)
-        self.CHF_upper = -np.log(self.SF_lower)
+        self.CHF_upper = -np.log(self.SF_lower)  # this will be inf when SF=0
 
         if print_results is True:
             print(dfy)  # this will print the pandas dataframe
-        # plotting section
         if show_plot is True:
-            # extract certain keyword arguments or specify them if they are not set. We cannot pass all kwargs to CI plots as some are not appropriate (eg. label)
-            if plot_type == 'SF':
+            if plot_type in ['SF', 'sf']:
                 p = plt.plot(self.xvals, self.SF, **kwargs)
                 if plot_CI is True:  # plots the confidence bounds
                     title_text = str('Nelson-Aalen SF estimate\n with ' + str(int(CI * 100)) + '% confidence bounds')
@@ -398,7 +398,7 @@ class NelsonAalen:
                 plt.title(title_text)
                 plt.xlim([0, max(NA_x)])
                 plt.ylim([0, 1.1])
-            if plot_type == 'CDF':
+            elif plot_type in ['CDF', 'cdf']:
                 p = plt.plot(self.xvals, self.CDF, **kwargs)
                 if plot_CI is True:  # plots the confidence bounds
                     title_text = str('Nelson-Aalen CDF estimate\n with ' + str(int(CI * 100)) + '% confidence bounds')
@@ -410,14 +410,19 @@ class NelsonAalen:
                 plt.title(title_text)
                 plt.xlim([0, max(NA_x)])
                 plt.ylim([0, 1.1])
-            if plot_type == 'CHF':
+            elif plot_type in ['CHF', 'chf']:
+                ylims = plt.ylim(auto=None)  # get the existing ylims so other plots are considered when setting the limits
                 p = plt.plot(self.xvals, self.CHF, **kwargs)
+                CHF_upper = np.nan_to_num(self.CHF_upper, posinf=1e10)
                 if plot_CI is True:  # plots the confidence bounds
                     title_text = str('Nelson-Aalen CHF estimate\n with ' + str(int(CI * 100)) + '% confidence bounds')
-                    plt.fill_between(self.xvals, self.CHF_lower, self.CHF_upper, color=p[0].get_color(), alpha=0.3)
+                    plt.fill_between(self.xvals, self.CHF_lower, CHF_upper, color=p[0].get_color(), alpha=0.3)
                 else:
                     title_text = 'Nelson-Aalen estimate of Cumulative Hazard Function'
                 plt.xlabel('Failure units')
                 plt.ylabel('Cumulative Hazard')
                 plt.title(title_text)
                 plt.xlim([0, max(NA_x)])
+                plt.ylim([0, max(ylims[1], self.CHF[-2] * 1.2)])  # set the limits for y. Need to do this because the upper CI bound is inf.
+            else:
+                raise ValueError('plot_type must be CDF, SF, CHF')

@@ -128,6 +128,7 @@ def Weibull_probability_plot(failures=None, right_censored=None, fit_gamma=False
     The plot is the only output. Use plt.show() to show it.
     '''
     # ensure the input data is arrays
+
     if len(failures) < 2 and __fitted_dist_params is None:
         raise ValueError('Insufficient data to fit a distribution. Minimum number of points is 2')
     if type(failures) == np.ndarray:
@@ -211,32 +212,31 @@ def Weibull_probability_plot(failures=None, right_censored=None, fit_gamma=False
 
     # plot the failure points and format the scale and axes
     x, y = plotting_positions(failures=failures, right_censored=right_censored, h1=h1, h2=h2)
+    xrange = plt.xlim(auto=None)  # this ensures the previously plotted objects are considered when setting the range
+    xrange_min = min(min(x), xrange[0])
+    xrange_max = max(max(x), xrange[1])
+    if xrange_min <= 0:
+        xrange_min = min(x)
     plt.scatter(x, y, marker='.', linewidth=2, c=data_color)
     plt.gca().set_yscale('function', functions=(axes_transforms.weibull_forward, axes_transforms.weibull_inverse))
     plt.xscale('log')
     plt.grid(b=True, which='major', color='k', alpha=0.3, linestyle='-')
     plt.grid(b=True, which='minor', color='k', alpha=0.08, linestyle='-')
     plt.ylim([0.0001, 0.9999])
-    xrange = plt.gca().get_xlim()  # this ensures the previously plotted objects are considered when setting the range
-    xrange_min = min(min(x), xrange[0])
-    xrange_max = max(max(x), xrange[1])
-    if xrange_min <= 0:
-        xrange_min = 1e-2
     pts_min_log = 10 ** (int(np.floor(np.log10(xrange_min))))  # second smallest point is rounded down to nearest power of 10
     pts_max_log = 10 ** (int(np.ceil(np.log10(xrange_max))))  # largest point is rounded up to nearest power of 10
-    plt.xlim([pts_min_log, pts_max_log])
     plt.gca().yaxis.set_minor_locator(FixedLocator(np.linspace(0, 1, 51)))
     ytickvals = [0.0001, 0.0003, 0.001, 0.002, 0.003, 0.005, 0.01, 0.02, 0.03, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99, 0.999, 0.9999]
     plt.yticks(ytickvals)
     plt.gca().set_yticklabels(['{:,.2%}'.format(x) for x in ytickvals])  # formats y ticks as percentage
-
     plt.gcf().set_size_inches(9, 7)  # adjust the figsize. This is done post figure creation so that layering is easier
     if show_fitted_distribution is True:
         wbf.CDF(xvals=xvals, label=label, **kwargs)
         plt.legend(loc='upper left')
     plt.title('Probability plot\nWeibull CDF')
     plt.ylabel('Fraction failing')
-    plt.xlabel(xlabel)  #### needs to be set after plotting the CDF to override the default 'xvals'
+    plt.xlabel(xlabel)  # needs to be set after plotting the CDF to override the default 'xvals'
+    plt.xlim([pts_min_log, pts_max_log])
     return plt.gcf()
 
 
@@ -339,20 +339,19 @@ def Exponential_probability_plot_Weibull_Scale(failures=None, right_censored=Non
 
     # plot the failure points and format the scale and axes
     x, y = plotting_positions(failures=failures, right_censored=right_censored, h1=h1, h2=h2)
+    xrange = plt.xlim(auto=None)  # this ensures the previously plotted objects are considered when setting the range
+    xrange_min = min(min(x), xrange[0])
+    xrange_max = max(max(x), xrange[1])
+    if xrange_min <= 0:
+        xrange_min = min(x)
     plt.scatter(x, y, marker='.', linewidth=2, c=data_color)
     plt.gca().set_yscale('function', functions=(axes_transforms.weibull_forward, axes_transforms.weibull_inverse))
     plt.xscale('log')
     plt.grid(b=True, which='major', color='k', alpha=0.3, linestyle='-')
     plt.grid(b=True, which='minor', color='k', alpha=0.08, linestyle='-')
     plt.ylim([0.0001, 0.9999])
-    xrange = plt.gca().get_xlim()  # this ensures the previously plotted objects are considered when setting the range
-    xrange_min = min(min(x), xrange[0])
-    xrange_max = max(max(x), xrange[1])
-    if xrange_min <= 0:
-        xrange_min = 1e-2
     pts_min_log = 10 ** (int(np.floor(np.log10(xrange_min))))  # second smallest point is rounded down to nearest power of 10
     pts_max_log = 10 ** (int(np.ceil(np.log10(xrange_max))))  # largest point is rounded up to nearest power of 10
-    plt.xlim([pts_min_log, pts_max_log])
     plt.gca().yaxis.set_minor_locator(FixedLocator(np.linspace(0, 1, 51)))
     ytickvals = [0.0001, 0.0003, 0.001, 0.002, 0.003, 0.005, 0.01, 0.02, 0.03, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99, 0.999, 0.9999]
     plt.yticks(ytickvals)
@@ -364,6 +363,7 @@ def Exponential_probability_plot_Weibull_Scale(failures=None, right_censored=Non
     plt.ylabel('Fraction failing')  ####
     plt.title('Probability plot\nExponential CDF (Weibull Scale)')  ####
     plt.xlabel(xlabel)  #### needs to be set after plotting the CDF to override the default 'xvals'
+    plt.xlim([pts_min_log, pts_max_log])
     return plt.gcf()
 
 
@@ -386,6 +386,10 @@ def Normal_probability_plot(failures=None, right_censored=None, __fitted_dist_pa
     if len(failures) < 2 and __fitted_dist_params is None:
         raise ValueError('Insufficient data to fit a distribution. Minimum number of points is 2')
     x, y = plotting_positions(failures=failures, right_censored=right_censored, h1=h1, h2=h2)
+    xrange = plt.xlim(auto=None)  # this ensures the previously plotted objects are considered when setting the range
+    delta = max(x) - min(x)
+    xrange_min = min(min(x) - delta * 0.2, xrange[0])
+    xrange_max = max(max(x) + delta * 0.2, xrange[1])
     plt.ylim([0.0001, 0.9999])
     plt.gca().set_yscale('function', functions=(axes_transforms.normal_forward, axes_transforms.normal_inverse))
     plt.grid(b=True, which='major', color='k', alpha=0.3, linestyle='-')
@@ -394,7 +398,6 @@ def Normal_probability_plot(failures=None, right_censored=None, __fitted_dist_pa
     ytickvals = [0.0001, 0.001, 0.01, 0.03, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.97, 0.99, 0.999, 0.9999]
     plt.yticks(ytickvals)
     plt.gca().set_yticklabels(['{:,.2%}'.format(x) for x in ytickvals])  # formats y ticks as percentage
-    delta = max(x) - min(x)
     xvals = np.linspace(min(x) - delta * 0.5, max(x) + delta * 0.5, 1000)
     if __fitted_dist_params is not None:
         mu = __fitted_dist_params.mu
@@ -416,10 +419,6 @@ def Normal_probability_plot(failures=None, right_censored=None, __fitted_dist_pa
         data_color = 'k'
     plt.scatter(x, y, marker='.', linewidth=2, c=data_color)
     nf = Normal_Distribution(mu=mu, sigma=sigma).CDF(show_plot=False, xvals=xvals)
-    xrange = plt.gca().get_xlim()  # this ensures the previously plotted objects are considered when setting the range
-    xrange_min = min(min(x) - delta * 0.2, xrange[0])
-    xrange_max = max(max(x) + delta * 0.2, xrange[1])
-    plt.xlim([xrange_min, xrange_max])
     plt.title('Probability plot\nNormal CDF')
     plt.xlabel('Time')
     plt.ylabel('Fraction failing')
@@ -427,6 +426,7 @@ def Normal_probability_plot(failures=None, right_censored=None, __fitted_dist_pa
     if show_fitted_distribution is True:
         plt.plot(xvals, nf, color=color, label=label, **kwargs)
         plt.legend(loc='upper left')
+    plt.xlim([xrange_min, xrange_max])
     return plt.gcf()
 
 
@@ -525,20 +525,19 @@ def Lognormal_probability_plot(failures=None, right_censored=None, fit_gamma=Fal
             right_censored = right_censored - gamma
     # plot the failure points and format the scale and axes
     x, y = plotting_positions(failures=failures, right_censored=right_censored, h1=h1, h2=h2)
+    xrange = plt.xlim()  # this ensures the previously plotted objects are considered when setting the range
+    xrange_min = min(min(x), xrange[0])
+    xrange_max = max(max(x), xrange[1])
+    if xrange_min <= 0:
+        xrange_min = min(x)
     plt.scatter(x, y, marker='.', linewidth=2, c=data_color)
     plt.gca().set_yscale('function', functions=(axes_transforms.normal_forward, axes_transforms.normal_inverse))
     plt.xscale('log')
     plt.grid(b=True, which='major', color='k', alpha=0.3, linestyle='-')
     plt.grid(b=True, which='minor', color='k', alpha=0.08, linestyle='-')
     plt.ylim([0.0001, 0.9999])
-    xrange = plt.gca().get_xlim()  # this ensures the previously plotted objects are considered when setting the range
-    xrange_min = min(min(x), xrange[0])
-    xrange_max = max(max(x), xrange[1])
-    if xrange_min <= 0:
-        xrange_min = 1e-2
     pts_min_log = 10 ** (np.floor(np.log10(xrange_min)))  # second smallest point is rounded down to nearest power of 10
     pts_max_log = 10 ** (np.ceil(np.log10(xrange_max)))  # largest point is rounded up to nearest power of 10
-    plt.xlim([pts_min_log, pts_max_log])
     plt.gca().yaxis.set_minor_locator(FixedLocator(np.linspace(0, 1, 51)))
     ytickvals = [0.0001, 0.001, 0.01, 0.03, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.97, 0.99, 0.999, 0.9999]
     plt.yticks(ytickvals)
@@ -549,6 +548,7 @@ def Lognormal_probability_plot(failures=None, right_censored=None, fit_gamma=Fal
     if show_fitted_distribution is True:
         plt.plot(xvals, lnf, color=color, label=label, **kwargs)
         plt.legend(loc='upper left')
+    plt.xlim([pts_min_log, pts_max_log])
     return plt.gcf()
 
 
@@ -705,15 +705,14 @@ def Gamma_probability_plot(failures=None, right_censored=None, fit_gamma=False, 
             right_censored = right_censored - gamma
     # plot the failure points and format the scale and axes
     x, y = plotting_positions(failures=failures, right_censored=right_censored, h1=h1, h2=h2)
+    xrange = plt.xlim(auto=None)  # this ensures the previously plotted objects are considered when setting the range
+    xrange_max = max(max(x) * 1.2, xrange[1])
     plt.scatter(x, y, marker='.', linewidth=2, c=data_color)
     f_gamma = lambda x: axes_transforms.gamma_forward(x, beta)
     fi_gamma = lambda x: axes_transforms.gamma_inverse(x, beta)
     plt.gca().set_yscale('function', functions=(f_gamma, fi_gamma))
     plt.grid(b=True, which='major', color='k', alpha=0.3, linestyle='-')
     plt.grid(b=True, which='minor', color='k', alpha=0.08, linestyle='-')
-    xrange = plt.gca().get_xlim()  # this ensures the previously plotted objects are considered when setting the range
-    xrange_max = max(max(x) * 1.2, xrange[1])
-    plt.xlim([0, xrange_max])
     if max(y) < 0.9:
         ytickvals = [0.05, 0.2, 0.4, 0.6, 0.7, 0.8, 0.9]
         plt.gca().yaxis.set_minor_locator(FixedLocator(np.linspace(0.01, 0.9, 90)))
@@ -746,6 +745,7 @@ def Gamma_probability_plot(failures=None, right_censored=None, fit_gamma=False, 
     if show_fitted_distribution is True:
         plt.plot(xvals, gf, color=color, label=label, **kwargs)
         plt.legend(loc='upper left')
+    plt.xlim([0, xrange_max])
     return plt.gcf()
 
 
@@ -831,10 +831,9 @@ def Exponential_probability_plot(failures=None, right_censored=None, fit_gamma=F
     ef = Exponential_Distribution(Lambda=Lambda, Lambda_SE=Lambda_SE, CI=CI)
 
     x, y = plotting_positions(failures=failures, right_censored=right_censored, h1=h1, h2=h2)
-    plt.scatter(x, y, marker='.', linewidth=2, c=data_color)
-    xrange = plt.gca().get_xlim()  # this ensures the previously plotted objects are considered when setting the range
+    xrange = plt.xlim(auto=None)  # this ensures the previously plotted objects are considered when setting the range
     xrange_max = max(max(x) * 1.2, xrange[1])
-    plt.xlim([0, xrange_max])
+    plt.scatter(x, y, marker='.', linewidth=2, c=data_color)
     plt.gca().set_yscale('function', functions=(axes_transforms.expon_forward, axes_transforms.expon_inverse))
     plt.grid(b=True, which='major', color='k', alpha=0.3, linestyle='-')
     plt.grid(b=True, which='minor', color='k', alpha=0.08, linestyle='-')
@@ -871,6 +870,7 @@ def Exponential_probability_plot(failures=None, right_censored=None, fit_gamma=F
     plt.title('Probability plot\nExponential CDF')
     plt.ylabel('Fraction failing')
     plt.xlabel(xlabel)  #### needs to be set after plotting the CDF to override the default 'xvals'
+    plt.xlim([0, xrange_max])
     return plt.gcf()
 
 

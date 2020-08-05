@@ -58,7 +58,7 @@ import scipy.stats as ss
 import numpy as np
 from scipy import integrate
 import matplotlib.pyplot as plt
-from reliability.Utils import round_to_decimals, transform_spaced
+from reliability.Utils import round_to_decimals, transform_spaced, line_no_autoscale, fill_no_autoscale
 from autograd import jacobian as jac
 import autograd.numpy as anp
 
@@ -479,8 +479,12 @@ class Weibull_Distribution:
             print('WARNING: unexpected value in kwargs. To show/hide the CI you can specify either show_CI=True/False or plot_CI=True/False')
             plot_CI = True
 
-        hf = ss.weibull_min.pdf(X, self.beta, scale=self.alpha, loc=self.gamma) / ss.weibull_min.sf(X, self.beta, scale=self.alpha, loc=self.gamma)
+        # hf = ss.weibull_min.pdf(X, self.beta, scale=self.alpha, loc=self.gamma) / ss.weibull_min.sf(X, self.beta, scale=self.alpha, loc=self.gamma)
+        hf = (self.beta / self.alpha) * ((X - self.gamma) / self.alpha) ** (self.beta - 1)
         self._hf = hf  # required by the CI plotting part
+
+        chf = ((X - self.gamma) / self.alpha) ** self.beta
+        self._chf = chf  # required by the CI plotting part
 
         if show_plot == False:
             return hf
@@ -543,7 +547,8 @@ class Weibull_Distribution:
             print('WARNING: unexpected value in kwargs. To show/hide the CI you can specify either show_CI=True/False or plot_CI=True/False')
             plot_CI = True
 
-        chf = -np.log(ss.weibull_min.sf(X, self.beta, scale=self.alpha, loc=self.gamma))
+        # chf = -np.log(ss.weibull_min.sf(X, self.beta, scale=self.alpha, loc=self.gamma))
+        chf = ((X - self.gamma) / self.alpha) ** self.beta
         self._chf = chf  # required by the CI plotting part
 
         if show_plot == False:
@@ -565,10 +570,10 @@ class Weibull_Distribution:
         Generates the confidence intervals for CDF, SF, HF, CHF
         This is a hidden function intended only for use by other functions.
         '''
-        # determine the xrange so it can be reimposed after plotting the CI. Without this the xrange gets too large as some CI can extend a long way.
-        x_lims = plt.xlim()
-        y_lims = plt.ylim()
         if self.alpha_SE is not None and self.beta_SE is not None and self.Cov_alpha_beta is not None and self.Z is not None and plot_CI is True:
+            # determine the xrange so it can be reimposed after plotting the CI. Without this the xrange gets too large as some CI can extend a long way.
+            # x_lims = plt.xlim()
+            # y_lims = plt.ylim()
             if self.CI_type in ['time', 't', 'T', 'TIME', 'Time']:
                 self.CI_type = 'time'
             elif self.CI_type in ['reliability', 'r', 'R', 'RELIABILITY', 'rel', 'REL', 'Reliability']:
@@ -662,9 +667,9 @@ class Weibull_Distribution:
                 elif func == 'CHF':
                     yy = -np.log(R)
 
-                plt.fill_betweenx(yy, T_lower, T_upper, color=color, alpha=0.3, linewidth=0)
-                plt.plot(T_lower, yy, linewidth=0, color=color)  # these are invisible but need to be added to the plot for crosshairs() to find them
-                plt.plot(T_upper, yy, linewidth=0, color=color)  # still need to specify color otherwise the invisible CI lines will consume default colors
+                fill_no_autoscale(xlower=T_lower,xupper=T_upper, ylower=yy, yupper=yy, color=color, alpha=0.3, linewidth=0)
+                line_no_autoscale(x=T_lower,y=yy, color=color, linewidth=0) # these are invisible but need to be added to the plot for crosshairs() to find them
+                line_no_autoscale(x=T_upper,y=yy, color=color, linewidth=0) # still need to specify color otherwise the invisible CI lines will consume default colors
                 # plt.scatter(T_lower, yy, linewidth=1, color='blue')
                 # plt.scatter(T_upper, yy, linewidth=1, color='red')
 
@@ -709,15 +714,152 @@ class Weibull_Distribution:
                     yy_lower = -np.log(R_lower)
                     yy_upper = -np.log(R_upper)
 
-                plt.fill_between(t + self.gamma, yy_lower, yy_upper, color=color, alpha=0.3, linewidth=0)
-                plt.plot(t + self.gamma, yy_lower, linewidth=0, color=color)  # these are invisible but need to be added to the plot for crosshairs() to find them
-                plt.plot(t + self.gamma, yy_upper, linewidth=0, color=color)  # still need to specify color otherwise the invisible CI lines will consume default colors
+                fill_no_autoscale(xlower=t + self.gamma,xupper=t + self.gamma, ylower=yy_lower, yupper=yy_upper, color=color, alpha=0.3, linewidth=0)
+                line_no_autoscale(x=t + self.gamma,y=yy_lower, color=color, linewidth=0) # these are invisible but need to be added to the plot for crosshairs() to find them
+                line_no_autoscale(x=t + self.gamma,y=yy_upper, color=color, linewidth=0) # still need to specify color otherwise the invisible CI lines will consume default colors
+
                 # plt.scatter(t + self.gamma, yy_upper, color='red')
                 # plt.scatter(t + self.gamma, yy_lower, color='blue')
 
-            # reimpose the xlim and ylim to be what it was before the CI were plotted
-            plt.xlim(x_lims)
-            plt.ylim(y_lims)
+
+    def __weibull_CInew(self, func, plot_CI, text_title, color):
+        '''
+        Generates the confidence intervals for CDF, SF, HF, CHF
+        This is a hidden function intended only for use by other functions.
+        '''
+        # determine the xrange so it can be reimposed after plotting the CI. Without this the xrange gets too large as some CI can extend a long way.
+        if self.alpha_SE is not None and self.beta_SE is not None and self.Cov_alpha_beta is not None and self.Z is not None and plot_CI is True:
+            if self.CI_type in ['time', 't', 'T', 'TIME', 'Time']:
+                self.CI_type = 'time'
+            elif self.CI_type in ['reliability', 'r', 'R', 'RELIABILITY', 'rel', 'REL', 'Reliability']:
+                self.CI_type = 'reliability'
+            if func not in ['CDF', 'SF', 'HF', 'CHF']:
+                raise ValueError('func must be either CDF, SF, HF, or CHF')
+            CI_100 = round((1 - ss.norm.cdf(-self.Z) * 2) * 100, 4)  # Converts Z to CI and formats the confidence interval value ==> 0.95 becomes 95
+            if CI_100 % 1 == 0:
+                CI_100 = int(CI_100)  # removes decimals if the only decimal is 0
+            text_title = str(text_title + '\n' + str(CI_100) + '% confidence bounds on ' + self.CI_type)  # Adds the CI and CI_type to the title
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.83)
+
+            # functions for upper and lower confidence bounds on time and reliability
+            def uR(t, alpha, beta):  # u = ln(-ln(R))
+                return beta * (anp.log(t) - anp.log(alpha))
+
+            du_da_R = jac(uR, 1)  # derivative wrt alpha (for bounds on reliability)
+            du_db_R = jac(uR, 2)  # derivative wrt beta (for bounds on reliability)
+
+            def uT(R, alpha, beta):  # u = ln(t)
+                return (1 / beta) * anp.log(-anp.log(R)) + anp.log(alpha)
+
+            du_da_T = jac(uT, 1)  # derivative wrt alpha (for bounds on time)
+            du_db_T = jac(uT, 2)  # derivative wrt beta (for bounds on time)
+
+            def var_uR(self, t):
+                return du_da_R(t, self.alpha, self.beta) ** 2 * self.alpha_SE ** 2 \
+                       + du_db_R(t, self.alpha, self.beta) ** 2 * self.beta_SE ** 2 \
+                       + 2 * du_da_R(t, self.alpha, self.beta) * du_db_R(t, self.alpha, self.beta) * self.Cov_alpha_beta
+
+            def var_uT(self, R):
+                return du_da_T(R, self.alpha, self.beta) ** 2 * self.alpha_SE ** 2 \
+                       + du_db_T(R, self.alpha, self.beta) ** 2 * self.beta_SE ** 2 \
+                       + 2 * du_da_T(R, self.alpha, self.beta) * du_db_T(R, self.alpha, self.beta) * self.Cov_alpha_beta
+
+            if self.CI_type == 'time':  # Confidence bounds on time (in terms of reliability)
+                if func == 'CHF':  # CHF and CDF probability plot
+                    chf_array = np.logspace(-8, np.log10(self._chf[-1] * 1.5), 100)
+                    # chf_array = np.linspace(1e-8, self._chf[-1] * 1.5, 100)
+                    R = np.exp(-chf_array)
+                elif func == 'HF':
+                    # chf_array = np.linspace(1e-5, self._chf[-1] * 1.5, 1000)
+                    chf_array = np.logspace(-8, np.log10(self._chf[-1] * 1.5), 1000)  # higher detail required for numerical derivative
+                    R = np.exp(-chf_array)
+                else:
+                    R = transform_spaced('weibull', y_lower=1e-8, y_upper=1 - 1e-8, num=100)
+
+                u_T_lower = uT(R, self.alpha, self.beta) - self.Z * (var_uT(self, R) ** 0.5)
+                T_lower0 = np.exp(u_T_lower) + self.gamma
+                u_T_upper = uT(R, self.alpha, self.beta) + self.Z * (var_uT(self, R) ** 0.5)
+                T_upper0 = np.exp(u_T_upper) + self.gamma
+
+                min_time, max_time = 1e-12, 1e12  # these are the plotting limits for the CIs
+                T_lower = np.where(T_lower0 < min_time, min_time, T_lower0)  # this applies a limit along time (x-axis) so that fill_betweenx is not plotting to infinity
+                T_upper = np.where(T_upper0 > max_time, max_time, T_upper0)
+
+                if func == 'CDF':
+                    yy = 1 - R
+                elif func == 'SF':
+                    yy = R
+                elif func == 'HF':
+                    yy0 = -np.log(R)  # CHF
+                    yy_lower = np.diff(np.hstack([[0], yy0])) / np.diff(np.hstack([[0], T_lower]))  # this formula is equivalent to dy/dx of the CHF
+                    yy_upper = np.diff(np.hstack([[0], yy0])) / np.diff(np.hstack([[0], T_upper]))  # this formula is equivalent to dy/dx of the CHF
+                elif func == 'CHF':
+                    yy = -np.log(R)
+
+                if func in ['CDF', 'SF', 'CHF']:
+                    plt.fill_betweenx(yy, T_lower, T_upper, color=color, alpha=0.3, linewidth=0)
+                    plt.plot(T_lower, yy, linewidth=0, color=color)  # these are invisible but need to be added to the plot for crosshairs() to find them
+                    plt.plot(T_upper, yy, linewidth=0, color=color)  # still need to specify color otherwise the invisible CI lines will consume default colors
+                    plt.scatter(T_lower, yy, linewidth=1, color='blue')
+                    plt.scatter(T_upper, yy, linewidth=1, color='red')
+                else:  # HF
+                    plt.fill(np.hstack([T_lower, T_upper[::-1]]), np.hstack([yy_lower, yy_upper[::-1]]), color=color, alpha=0.3, linewidth=0)
+                    plt.plot(T_lower, yy_lower, linewidth=0, color=color)  # these are invisible but need to be added to the plot for crosshairs() to find them
+                    plt.plot(T_upper, yy_upper, linewidth=0, color=color)  # still need to specify color otherwise the invisible CI lines will consume default colors
+                    plt.scatter(T_lower, yy_lower, linewidth=1, color='blue')
+                    plt.scatter(T_upper, yy_upper, linewidth=1, color='red')
+
+            elif self.CI_type == 'reliability':  # Confidence bounds on Reliability (in terms of time)
+                if plt.gca().get_xscale() != 'linear':  # just for probability plot
+                    t_max = ss.weibull_min.ppf(0.99999, self.beta, scale=self.alpha) * 1e4
+                    t = np.geomspace(1e-5, t_max, 100)
+                else:
+                    if func in ['SF', 'CDF']:
+                        t_max = self.b95 * 5
+                        t = np.linspace(1e-5, t_max, 100)
+                    elif func == 'HF':
+                        t_max = self.b95 * 1.5
+                        if self.beta <= 1:
+                            t = np.logspace(-5, np.log10(t_max), 1000)  # higher detail required because of numerical derivative
+                        else:  # beta>1
+                            t = np.linspace(1e-5, t_max, 1000)  # higher detail required because of numerical derivative
+                    else:  # CHF
+                        t_max = self.b95 * 1.5
+                        t = np.linspace(1e-5, t_max, 100)
+
+                u_R_lower = uR(t, self.alpha, self.beta) + self.Z * var_uR(self, t) ** 0.5  # note that gamma is incorporated into uR but not in var_uR. This is the same as just shifting a Weibull_2P across
+                R_lower0 = np.exp(-np.exp(u_R_lower))
+                u_R_upper = uR(t, self.alpha, self.beta) - self.Z * var_uR(self, t) ** 0.5
+                R_upper0 = np.exp(-np.exp(u_R_upper))
+
+                if func in ['HF', 'CHF']:
+                    min_R, max_R = np.exp(-self._chf[-1] * 10), np.exp(-self._chf[0])
+                else:  # CDF, SF
+                    min_R, max_R = 1e-12, 1 - 1e-12
+                R_lower = np.where(R_lower0 < min_R, min_R, R_lower0)  # this applies a limit along Reliability (y-axis) so that fill_between is not plotting to infinity
+                R_upper = np.where(R_upper0 > max_R, max_R, np.where(R_upper0 < min_R, min_R, R_upper0))
+
+                if func == 'CDF':
+                    yy_lower = 1 - R_lower
+                    yy_upper = 1 - R_upper
+                elif func == 'SF':
+                    yy_lower = R_lower
+                    yy_upper = R_upper
+                elif func == 'HF':
+                    yy_lower0 = -np.log(R_lower)
+                    yy_upper0 = -np.log(R_upper)
+                    yy_lower = np.diff(np.hstack([[0], yy_lower0])) / np.diff(np.hstack([[0], t]))  # this formula is equivalent to dy/dx of the CHF
+                    yy_upper = np.diff(np.hstack([[0], yy_upper0])) / np.diff(np.hstack([[0], t]))  # this formula is equivalent to dy/dx of the CHF
+                elif func == 'CHF':
+                    yy_lower = -np.log(R_lower)
+                    yy_upper = -np.log(R_upper)
+
+                plt.fill_between(t + self.gamma, yy_lower, yy_upper, color=color, alpha=0.3, linewidth=0)
+                plt.plot(t + self.gamma, yy_lower, linewidth=0, color=color)  # these are invisible but need to be added to the plot for crosshairs() to find them
+                plt.plot(t + self.gamma, yy_upper, linewidth=0, color=color)  # still need to specify color otherwise the invisible CI lines will consume default colors
+                plt.scatter(t + self.gamma, yy_upper, color='red')
+                plt.scatter(t + self.gamma, yy_lower, color='blue')
 
     def quantile(self, q):
         '''
@@ -2200,10 +2342,6 @@ class Exponential_Distribution:
         if func not in ['CDF', 'SF', 'HF', 'CHF']:
             raise ValueError('func must be either CDF, SF, HF, or CHF')
 
-        # determine the xrange so it can be reimposed after plotting the CI. Without this the xrange gets too large as some CI can extend a long way.
-        x_lims = plt.xlim()
-        y_lims = plt.ylim()
-
         # this section plots the confidence interval
         if self.Lambda_SE is not None and self.Z is not None and plot_CI is True:
 
@@ -2244,12 +2382,10 @@ class Exponential_Distribution:
             # impose plotting limits so not plotting to infinity
             yy_lower = np.where(yy_lower0 < y_min, y_min, np.where(yy_lower0 > y_max, y_max, yy_lower0))
             yy_upper = np.where(yy_upper0 < y_min, y_min, np.where(yy_upper0 > y_max, y_max, yy_upper0))
-            plt.fill_between(t + self.gamma, yy_lower, yy_upper, color=color, alpha=0.3, linewidth=0)  # the linewidth and linestyle hides the boundary between the two parts
-            plt.plot(t + self.gamma, yy_lower, color=color, linewidth=0)
-            plt.plot(t + self.gamma, yy_upper, color=color, linewidth=0)
-            # reimpose the xlim and ylim to be what it was before the CI was plotted
-            plt.xlim(x_lims)
-            plt.ylim(y_lims)
+
+            fill_no_autoscale(xlower=t + self.gamma, xupper=t + self.gamma, ylower=yy_lower, yupper=yy_upper, color=color, alpha=0.3, linewidth=0)
+            line_no_autoscale(x=t + self.gamma, y=yy_lower, color=color, linewidth=0)  # these are invisible but need to be added to the plot for crosshairs() to find them
+            line_no_autoscale(x=t + self.gamma, y=yy_upper, color=color, linewidth=0)  # still need to specify color otherwise the invisible CI lines will consume default colors
 
     def quantile(self, q):
         '''
@@ -3352,11 +3488,14 @@ class Competing_Risks_Model:
 
         X = np.linspace(0, xmax0 * 4, 500000)  # an xmax0 multiplier of 4 with 500k samples was found optimal in simulations
         sf = np.ones_like(X)
+        hf = np.zeros_like(X)
         # combine the distributions using the product of the survival functions: SF_total = SF_1 x SF_2 x SF_3 x ....x SF_n
         for i in range(len(distributions)):
             sf *= distributions[i].SF(X, show_plot=False)
-        pdf = np.diff(np.hstack([[0], 1 - sf])) / np.diff(np.hstack([[0], X]))  # this formula is equivalent to dy/dx of the CDF
-        pdf[0] = 0
+            hf += distributions[i].HF(X, show_plot=False)
+        pdf = hf * sf
+        np.nan_to_num(pdf, copy=False, nan=0.0, posinf=None, neginf=None)  # because the hf is nan (which is expected due to being pdf/sf=0/0)
+
         self.__xvals_init = X  # used by random_samples
         self.__pdf_init = pdf  # used by random_samples
         self.mean = integrate.simps(pdf * X, x=X)
@@ -3395,11 +3534,8 @@ class Competing_Risks_Model:
                 xmin0 = 0
             else:
                 if xmin0 - 0.3 * delta <= 0:
-                    if plt.gca().get_yscale() != 'linear':
-                        xmin0 = plt.xlim()[0]
-                    else:
-                        xmin0 = 0
-            X = np.linspace(xmin0, xmax0*2, 1000)  # this is a big array because everything is numerical rather than empirical. Small array sizes will lead to blocky (inaccurate) results.
+                    xmin0 = 1e-5
+            X = np.linspace(xmin0, xmax0 * 2, 1000)  # this is a big array because everything is numerical rather than empirical. Small array sizes will lead to blocky (inaccurate) results.
 
         # convert to numpy array if given list. raise error for other types. check for values below 0.
         if type(X) is list:
@@ -3412,16 +3548,14 @@ class Competing_Risks_Model:
             raise ValueError('xvals was found to contain values below 0')
 
         sf = np.ones_like(X)
+        hf = np.zeros_like(X)
         # combine the distributions using the product of the survival functions: SF_total = SF_1 x SF_2 x SF_3 x ....x SF_n
         for i in range(len(distributions)):
             sf *= distributions[i].SF(X, show_plot=False)
+            hf += distributions[i].HF(X, show_plot=False)
+        pdf = sf * hf
+        np.nan_to_num(pdf, copy=False, nan=0.0, posinf=None, neginf=None)  # because the hf is nan (which is expected due to being pdf/sf=0/0)
 
-        pdf = np.diff(np.hstack([[0], 1 - sf])) / np.diff(np.hstack([[0], X]))  # this formula is equivalent to dy/dx of the CDF
-        pdf[0] = 0  # fixes a nan artifact of np.diff for the first value
-        hf = np.diff(np.hstack([[0], -np.log(sf)])) / np.diff(np.hstack([[0], X]))  # this formula is equivalent to dy/dx of the CHF
-        hf[0] = hf[1] + (X[0] - X[1]) * (hf[2] - hf[1]) / (X[2] - X[1])  # linear interpolation for hf[0] to correct for nan artifact from np.diff. Can't just set it equal to 0 as it's not like the pdf.
-        if hf[0] < 0:
-            hf[0] = 0
         # these are all hidden to the user but can be accessed by the other functions in this module
         self.__xvals = X
         self.__pdf = pdf
@@ -3429,7 +3563,6 @@ class Competing_Risks_Model:
         self.__sf = sf
         self.__hf = hf
         self.__chf = -np.log(sf)
-        # NEED TO DEVELOP mean_residual_life()
 
     def plot(self, xvals=None, xmin=None, xmax=None):
         '''
@@ -3892,11 +4025,8 @@ class Mixture_Model:
                 xmin0 = 0
             else:
                 if xmin0 - 0.3 * delta <= 0:
-                    if plt.gca().get_yscale() != 'linear':
-                        xmin0 = plt.xlim()[0]
-                    else:
-                        xmin0 = 0
-            X = np.linspace(xmin0, xmax0*2, n)  # this is a big array because everything is numerical rather than empirical. Small array sizes will lead to blocky (inaccurate) results.
+                    xmin0 = 1e-5
+            X = np.linspace(xmin0, xmax0 * 2, n)  # this is a big array because everything is numerical rather than empirical. Small array sizes will lead to blocky (inaccurate) results.
 
         # convert to numpy array if given list. raise error for other types. check for values below 0.
         if type(X) is list:
@@ -3942,6 +4072,7 @@ class Mixture_Model:
         Outputs:
         The plot will be shown. No need to use plt.show()
         '''
+
         Mixture_Model.__combiner(self, xvals=xvals, xmin=xmin, xmax=xmax)
 
         plt.figure(figsize=(9, 7))

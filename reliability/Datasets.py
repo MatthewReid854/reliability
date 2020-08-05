@@ -16,6 +16,7 @@ If you would like more information on a dataset type:
 import pandas as pd
 import numpy as np
 
+
 class automotive:
     '''
     This dataset is relatively small and a challenging task to fit with any distribution due to its size and shape
@@ -201,6 +202,7 @@ class electronics:
     It is very difficult to fit and requires a specific combination of initial guess (least squares) and optimizer (TNC) to achieve the lowest log-likelihood.
     Thanks to Jiwon Cha for providing this dataset.
     '''
+
     def __init__(self):
         time = [220, 179, 123, 146, 199, 181, 191, 216, 1, 73, 44798, 62715, 81474, 80632, 62716]
         quantity = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 817, 823, 815, 813, 804]
@@ -217,6 +219,94 @@ class electronics:
         blankIndex = [''] * len(df)
         df.index = blankIndex
         self.info = df
+
+
+class MCF_1:
+    '''
+    This dataset is formatted for use with the Mean Cumulative Function (MCF_parametric or MCF_nonparametric)
+    It consists of failure times for 5 systems.
+    It exhibits a fairly constant failure rate, appearing to be slightly increasing (beta > 1)
+    '''
+
+    def __init__(self):
+        times = [
+            [5, 10, 15, 17],
+            [6, 13, 17, 19],
+            [12, 20, 25, 26],
+            [13, 15, 24],
+            [16, 22, 25, 28]]
+        self.times = times
+        self.number_of_systems = len(times)
+
+
+class MCF_2:
+    '''
+    This dataset is formatted for use with the Mean Cumulative Function (MCF_parametric or MCF_nonparametric)
+    It consists of failure times for 56 systems.
+    It exhibits an increasing failure rate at the start and a decreasing failure rate near the end.
+    Due to this shape it is not fitted well by the power law model used in MCF parametric.
+    '''
+
+    def __init__(self):
+        times = [
+            [1276, 1317, 1449, 1475, 1475, 1476, 1489, 1492, 1511, 1568, 1575, 1581, 1581, 1582, 1583, 1585, 1588, 1600, 1607, 1613, 1617, 1708, 1716, 1718, 1733, 1737, 1746, 1756, 1763, 1827, 1829, 1935],
+            [1054, 1087, 1147, 1156, 1199, 1232, 1276, 1278, 1283, 1320, 1491, 1620, 1660, 1662, 1681, 1702, 1811, 1815, 1818, 1820, 1838, 1945],
+            [1803, 2024, 2032, 2033, 2039, 2304, 2418],
+            [1436, 2070, 2216, 2222, 2240, 2539],
+            [1441, 1799, 1960, 1961, 1964, 2064],
+            [776, 830, 836, 966, 1265, 1641],
+            [1845, 2132, 2436],
+            [2809, 2812, 3116],
+            [2102, 2886, 3495],
+            [1793, 1800, 3150],
+            [1895, 2217, 2301],
+            [796, 1499, 2147],
+            [1288, 2763],
+            [2552, 2896],
+            [2731, 2781],
+            [1459, 2967],
+            [3289],
+            [3401],
+            [3492],
+            [2984],
+            [2532],
+            [2715],
+            [2778],
+            [2408],
+            [2349],
+            [2460],
+            [2451],
+            [2449],
+            [2450],
+            [2450],
+            [3131],
+            [3789],
+            [3837],
+            [3351],
+            [2862],
+            [2972],
+            [3489],
+            [1118],
+            [1496],
+            [711],
+            [277],
+            [299],
+            [622],
+            [253],
+            [255],
+            [255],
+            [255],
+            [255],
+            [255],
+            [255],
+            [255],
+            [255],
+            [255],
+            [255],
+            [255],
+            [151]]
+        self.times = times
+        self.number_of_systems = len(times)
 
 
 class ALT_temperature:
@@ -267,6 +357,7 @@ class ALT_temperature2:
         blankIndex = [''] * len(df)
         df.index = blankIndex
         self.info = df
+
 
 class ALT_temperature3:
     '''
