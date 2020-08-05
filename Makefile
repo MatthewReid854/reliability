@@ -4,9 +4,6 @@ ifeq ($(TRAVIS), true)
 		pip install pandas==${PANDAS_VERSION}
 		pip install numpy==${NUMPY_VERSION}
 		pip freeze --local
-else
-		pip install -r tests/dev-requirements.txt
-		pre-commit install
 endif
 
 test:
