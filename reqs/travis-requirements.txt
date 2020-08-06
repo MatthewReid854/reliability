@@ -1,0 +1,5 @@
+# installs base requirements
+-r base-requirements.txt
+
+python-coveralls
+pytest-travis-fold
