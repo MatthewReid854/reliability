@@ -1,4 +1,7 @@
 language: python
+#This will run all the tests on python versions 3.6, 3.7, 3.8
+#The default OS to run these is Linux.
+#To use other OS see: https://docs.travis-ci.com/user/languages/python/#running-python-tests-on-multiple-operating-systems
 python:
   - "3.6"
   - "3.7"
@@ -6,9 +9,9 @@ python:
 # command to install dependencies
 install:
   - pip install -r requirements.txt
-  - pip install .
 # command to run tests
-script: pytest
+script:
+  - pytest
 #don't want email results
 notifications:
   email: false
