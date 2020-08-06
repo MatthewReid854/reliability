@@ -11,3 +11,6 @@ install:
   - pip install .
 # command to run tests
 script: pytest
+#don't want email results
+notifications:
+  email: false
