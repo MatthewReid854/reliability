@@ -9,3 +9,10 @@ def test_Normal_Distribution():
     assert dist.mean == 5
     assert dist.standard_deviation == 2
     assert dist.variance == 4
+
+
+def test_Normal_Distribution_willfail():
+    dist = Normal_Distribution(mu=5, sigma=2)
+    assert dist.mean == 0
+    assert dist.standard_deviation == 0
+    assert dist.variance == 0
