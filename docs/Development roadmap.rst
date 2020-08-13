@@ -16,20 +16,25 @@ The following development roadmap is the current task list and implementation pl
 
 **High priority (expected by the end of 2020)**
 
--    New Distributions
+-    New Distributions:
 
      - `Defective_Subpopulation_Distribution <https://www.jmp.com/support/help/14-2/distributions-2.shtml>`_. This is for when the CDF does not reach 1 due to a lot of right censored data.
      - `Zero_Inflated_Distribution <https://www.jmp.com/support/help/14-2/distributions-2.shtml>`_. This is for when the CDF starts above 0 due to a lot of 'dead on arrival' products in the dataset.
      - `Loglogistic_Distribution <http://reliawiki.org/index.php/The_Loglogistic_Distribution>`_.
      - `Gumbel_Distribution <http://reliawiki.org/index.php/The_Gumbel/SEV_Distribution>`_.
 
--    New Fitters for the above 4 new distributions
+-    New Fitters for the above 4 new distributions:
 
      - Fit_Weibull_DS
      - Fit_Weibull_ZI
      - Fit_Loglogistic
      - Fit_Gumbel
-     
+
+-    New probability plots for the 2 new standard distributions:
+
+     - Loglogistic_probability_plot
+     - Gumbel_probability_plot
+
 -    Add least squares as a method to obtain the initial guess for all Fitters. Currently this has only been implemented in Fit_Weibull_2P, Fit_Weibull_2P_grouped, and Fit_Weibull_3P but all the other Fitters use scipy which is slower but more accurate for small datasets.
 -    Amalgamate Fit_Weibull_2P and Fit_Weibull_2P_grouped under a single function. Need to decide the best input format ==> failures=[], right_censored=[], xcn=[[x],[c],[n]] or df. If this works, do it for all Fitters so they are fast for large datasets.
 -    Improvement to the online documentation for how some of these methods work, including the addition of more formulas, algorithms, and better referencing.
