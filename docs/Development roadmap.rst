@@ -18,10 +18,10 @@ The following development roadmap is the current task list and implementation pl
 
 -    New Distributions
 
-     - `Defective Subpopulation_Distribution <https://www.jmp.com/support/help/14-2/distributions-2.shtml>`_. This is for when the CDF does not reach 1 due to a lot of right censored data.
-     - `Zero Inflated Distribution <https://www.jmp.com/support/help/14-2/distributions-2.shtml>`_. This is for when the CDF starts above 0 due to a lot of 'dead on arrival' products in the dataset.
-     - `Loglogistic Distribution <http://reliawiki.org/index.php/The_Loglogistic_Distribution>`_.
-     - `Gumbel Distribution <http://reliawiki.org/index.php/The_Gumbel/SEV_Distribution>`_.
+     - `Defective_Subpopulation_Distribution <https://www.jmp.com/support/help/14-2/distributions-2.shtml>`_. This is for when the CDF does not reach 1 due to a lot of right censored data.
+     - `Zero_Inflated_Distribution <https://www.jmp.com/support/help/14-2/distributions-2.shtml>`_. This is for when the CDF starts above 0 due to a lot of 'dead on arrival' products in the dataset.
+     - `Loglogistic_Distribution <http://reliawiki.org/index.php/The_Loglogistic_Distribution>`_.
+     - `Gumbel_Distribution <http://reliawiki.org/index.php/The_Gumbel/SEV_Distribution>`_.
 
 -    New Fitters for the above 4 new distributions
 
