@@ -80,7 +80,7 @@ In this second example, we will create some right censored data and use Fit_Ever
     The best fitting distribution was Weibull_2P which had parameters [11.27730642  3.30300716  0.        ]
     '''
 
-.. image:: images/Fit_everything_histogram_plot_V3.png
+.. image:: images/Fit_everything_histogram_plot_V4.png
 
 .. image:: images/Fit_everything_probability_plot_V3.png
 
