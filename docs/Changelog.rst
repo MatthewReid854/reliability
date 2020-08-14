@@ -5,7 +5,18 @@
 Changelog
 ---------
 
-**Version: 0.5.2 --- Unreleased: Scheduled for release by mid-August 2020**
+**Version: 0.5.3 --- Currently Unreleased --- Scheduled for release around mid-September**
+'''''''''''''''''''''''''''''''''''''''''''''
+
+**New features**
+
+**API Changes**
+
+**Bug Fixes**
+
+**Other**
+
+**Version: 0.5.2 --- Released: 14 August 2020**
 '''''''''''''''''''''''''''''''''''''''''''''
 
 **New features**
@@ -36,6 +47,10 @@ Changelog
 -    Minor clean up of code. Removed unnecessary imports, removed unused variables, etc. Hopefully this will have no noticable effects.
 -    Within Fitters.Fit_Everything the histogram output has been improved with better formatting and it now uses the Freedman-Diaconis rule for obtaining optimal bin width.
 -    Fixed Weibull HF and CHF equations to use actual equations and not PDF/SF or -ln(SF) as these result in NaN when SF=0 (an issue at high xvals).
+-    Improved creation of xvals for PDF,CDF,SF,HF,CHF within the Weibull Distribution. The changes now generate datapoints where there is more detail (between the 0.1% and 99.9% quantiles) such that only 100 datapoints are needed to show more detail than was previously achieved with 1000 datapoints. This is most noticable with Weibull distributions that have high beta values and are significantly location shifted. An example of this is shown in the plot below. These changes are only implemented for Weibull_Distribution but will be extended to all distributions in the very near future.
+-    Improved autoscaling for the Weibull Distribution plots. For location shifted distributions, this zooms in on the 0.1% to 99.9% quantiles allowing users to see more detail. The HF and CHF ylimits are also limited based on the quantiles so that they do not obscure the detail if there is an asymptote to large values or infinity. An example of this is shown in the plot below. These changes are only implemented for Weibull_Distribution but will be extended to all distributions in the very near future.
+
+.. image:: images/autoscale_improvement_v052.png
 
 **Version: 0.5.1 --- Released: 08 July 2020**
 '''''''''''''''''''''''''''''''''''''''''''''
