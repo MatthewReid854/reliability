@@ -134,3 +134,17 @@ The following example uses the same data as the MCF_nonparametric example provid
     '''
 
 .. image:: images/MCF_parametric.png
+
+The parametric model that is fitted to the MCF is not always an appropriate model. The example below shows data from a collection of systems, some of which are improving and some are worsening. The net effect is an S-shaped MCF. A power model is not able to accurately follow this shape. In this case, the nonparametric model is more appropriate, though there are some other parametric models (discussed in the fisrt paragraph) which may be able to deal with this dataset.
+
+.. code:: python
+
+    from reliability.Repairable_systems import MCF_parametric
+    from reliability.Datasets import MCF_2
+    import matplotlib.pyplot as plt
+
+    times = MCF_2().times
+    MCF_parametric(data=times, print_results=False)
+    plt.show()
+
+.. image:: images/MCF_parametric_badfit.png
