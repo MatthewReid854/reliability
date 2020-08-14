@@ -1328,5 +1328,13 @@ def plot_points(failures=None, right_censored=None, func='CDF', h1=None, h2=None
         marker = kwargs.pop('marker')
     else:
         marker = '.'
-    # plot the points
-    plt.scatter(x, y_adjusted, marker=marker, color=color, **kwargs)
+
+    # check the previous axes limits
+    xlims = plt.xlim(auto=None)  # get previous xlim
+    ylims = plt.ylim(auto=None)  # get previous ylim
+    if xlims == (0, 1) and ylims == (0, 1):  # this checks if there was a previous plot. If the lims were 0,1 and 0,1 then there probably wasn't.
+        plt.scatter(x, y_adjusted, marker=marker, color=color, **kwargs)  # plot the points. Do not restore any limits
+    else:
+        plt.scatter(x, y_adjusted, marker=marker, color=color, **kwargs)  # plot the points. Restore the previous limits
+        plt.xlim(*xlims,auto=None)
+        plt.ylim(*ylims,auto=None)
