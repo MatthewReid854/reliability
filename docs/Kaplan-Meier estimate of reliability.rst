@@ -79,7 +79,6 @@ In this second example, we will create some data from a Weibull distribution, an
     from reliability.Nonparametric import KaplanMeier
     from reliability.Other_functions import make_right_censored_data
     import matplotlib.pyplot as plt
-    import numpy as np
 
     dist = Weibull_Distribution(alpha=5, beta=2)  # create a distribution
     raw_data = dist.random_samples(100, seed=2)  # get some data from the distribution. Seeded for repeatability
@@ -107,4 +106,4 @@ In this second example, we will create some data from a Weibull distribution, an
     plt.subplots_adjust(left=0.07, right=0.95, top=0.92, wspace=0.25)  # format the plot layout
     plt.show()
 
-.. image:: images/KM_all3functions_V2.png
+.. image:: images/KM_all3functions_V3.png
