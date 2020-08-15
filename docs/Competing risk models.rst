@@ -5,8 +5,6 @@
 Competing risk models
 '''''''''''''''''''''
 
-.. note:: This documentation is valid for Version 0.5.2 which is currently unreleased.
-
 What are competing risks models?
 ================================
 
@@ -247,5 +245,3 @@ In this second example, we will compare the mixture model to the competing risks
     '''
 
 .. image:: images/CRvsMM_fit.png
-
-.. note:: This documentation is valid for Version 0.5.2 which is currently unreleased.
