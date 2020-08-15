@@ -38,7 +38,7 @@ The following collection of resources are things I have found useful during my r
 -   `@RISK <https://www.palisade.com/risk/key-features.asp>`_ - A comprehensive Excel addon that allows for distribution fitting, reliability modelling, MC simulation and much more.
 -    `Quanterion Automated Reliability Toolkit (QuART) <https://www.quanterion.com/projects/quart/>`_ - A collection of reliability tools including reliability prediction, FMECA, derating, stress-strength interference, and many other. Quanterion produces several software products so their tools are not all available in one place.
 -    `TopEvent FTA <https://www.fault-tree-analysis.com/>`_ - Fault Tree Analysis software. Tailored specifically for fault tree analysis so it lacks other RAM tools but it is good at its intended function. A demo version is available with size and data export limitations.
--   `MADe (Maintenance Aware Design) <https://www.phmtechnology.com/>`_ - FMECA and RCM software that is extremely useful at the product design stage to inform the design and service plan which then improves the inherent reliability and maintainability. There is an academic license which allows non-profit users to run the software for free.
+-   `Maintenance Aware Design (MADe) <https://www.phmtechnology.com/>`_ - FMECA and RCM software that is extremely useful at the product design stage to inform the design and service plan which then improves the inherent reliability and maintainability. There is an academic license which allows non-profit users to run the software for free.
 
 **Websites for Reliability**
 
