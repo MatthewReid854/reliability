@@ -5,7 +5,9 @@
 Recommended resources
 '''''''''''''''''''''
 
-The following collection of resources are things I have found useful during my reliability engineering studies and also while writing ``reliability``. There are many other resources available (especially textbooks and academic papers), so I encourage you to do your own research. If you find something you think is worth adding here, please send me an email.
+The following collection of resources are things I have found useful during my reliability engineering studies and also while writing the Python reliability library. There are many other resources available (especially textbooks and academic papers), so I encourage you to do your own research. If you find something you think is worth adding here, please send me an email.
+
+The listing of a resource or software package here does not imply my endorsement, and is only intended to give readers an understanding of the broad range of resources available. It is difficult to find a comprehensive list of software resources since most the producers of proprietary software rarely acknowledge the existence of any software other than their own. I have not used most of the paid software listed due to the high cost, so most of my comments in the paid software section are based purely on the content from their websites.
 
 **Textbooks**
 
@@ -23,6 +25,7 @@ The following collection of resources are things I have found useful during my r
 -    `Orange <https://orange.biolab.si/>`_ - a standalone data mining and data visualization program that runs using Python. Beautifully interactive data analysis workflows with a large toolbox. Not much reliability related content but good for data preprocessing.
 -    `R (Programming Language) - Survival analysis library <https://www.tutorialspoint.com/r/r_survival_analysis.htm>`_ - one of the more popular survival analysis libraries available in the open source commmunity.
 -    `CumFreq <https://www.waterlog.info/cumfreq.htm>`_ - a program for cumulative frequency analysis with probability distribution fitting for a wide range of distributions. Limited functionality beyond fitting distributions.
+-    `Fault Tree Analyser <https://www.fault-tree-analysis-software.com/fault-tree-analysis>`_ - A simple online tool where you can build a fault tree, give each branch a failure rate and run a variety of reports including reliability prediction at time, minimal cut sets, and several others.
 
 **Paid software**
 
