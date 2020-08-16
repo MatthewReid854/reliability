@@ -57,6 +57,7 @@ The listing of a resource or software package here does not imply my endorsement
 -    `e-Fatigue <https://www.efatigue.com/constantamplitude/stressconcentration/>`_ - This website provides stress concentration factors (Kt) for various notched geometries. You will need this if using the functions for fracture machanics in the Physics of Failure section.
 -    `Reliasoft's Accelerated Life Testing Data Analysis Reference <http://reliawiki.com/index.php/Accelerated_Life_Testing_Data_Analysis_Reference>`_
 -    `Reliasoft's collection of Military Directives, Handbooks and Standards Related to Reliability <https://www.weibull.com/knowledge/milhdbk.htm>`_
+-    `Weibull App <https://carlescg.shinyapps.io/abrem_app//>`_ - The reliability analysis app contains the basic tools for an introduction to the life data analysis field, specially the weibull plot.
 
 **Websites for Mathematics**
 
