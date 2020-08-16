@@ -47,7 +47,7 @@ The listing of a resource or software package here does not imply my endorsement
 
 -    `Reliawiki <http://reliawiki.org/index.php/Life_Data_Analysis_Reference_Book>`_ - an excellent reference written by Reliasoft that is intended largely as a guide to reliability engineering when using Reliasoft's software but is equally as good to understand concepts without using their software.
 -    `Reliability Analytics Toolkit <https://reliabilityanalyticstoolkit.appspot.com/>`_ - a collection of tools which run using the Google App Engine.
--    ` Weibull App <https://carlescg.shinyapps.io/abrem_app/> - An online tool for fitting a Weibull_2P distibution. Download the example template to see what format the app is expecting your data to be in before you can upload your own data. The backend is powered by the abrem R package.
+-    `Weibull App <https://carlescg.shinyapps.io/abrem_app/>`_ - An online tool for fitting a Weibull_2P distibution. Download the example template to see what format the app is expecting your data to be in before you can upload your own data. The backend is powered by the abrem R package.
 -    `Univariate distributions relationships <http://www.math.wm.edu/~leemis/chart/UDR/UDR.html>`_ - an excellent resource for understanding more about probability distributions and how they are related. Some strange parametrisations are used in the documentation.
 -    `Kijima G-renewal process <http://www.soft4structures.com/WeibullGRP/JSPageGRP.jsp>`_ - an online calculator for simulating the G-renewal process.
 -    `Prediction of future recurrent events <http://www.soft4structures.com/WeibullGRP/JSPageGRPinverse_1.jsp>`_ - an online calculator for predicting future recurrent events with different underlying probability functions.
