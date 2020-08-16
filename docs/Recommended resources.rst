@@ -26,7 +26,7 @@ The following collection of resources are things I have found useful during my r
 
 **Paid software**
 
-The listing of a software package here does not imply my endorsement, and is only intended to give readers an understanding of the broad range of reliability engineering software packages that are available. It is difficult to find a comprehensive list of software resources since most the producers of proprietary software rarely acknowledge the existence of any software other than their own. I have not used most of the paid software listed due to the high cost, so most of my comments in this section are based purely on the content from their websites.
+The listing of a software package here does not imply my endorsement, and is only intended to give readers an understanding of the broad range of reliability engineering software packages that are available. It is difficult to find a comprehensive list of software resources since most developers of proprietary software rarely acknowledge the existence of any software other than their own. I have not used most of the paid software listed here due to the high cost, so most of my comments in this section are based purely on the content from their websites.
 
 -    `Minitab <https://www.minitab.com/en-us/>`_ - a great collection of statistical tools. A few reliability focussed tools included.
 -    `Reliasoft <https://www.reliasoft.com/products/reliability-analysis/weibull>`_ - the industry leader for reliability engineering software.
