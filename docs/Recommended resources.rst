@@ -24,6 +24,7 @@ The listing of a resource or software package here does not imply my endorsement
 -    `Parameter Solver v3.0 <https://biostatistics.mdanderson.org/SoftwareDownload/SingleSoftware/Index/6>`_ - a biostatistics tool for quickly making some simple calculations with probability distributions.
 -    `Orange <https://orange.biolab.si/>`_ - a standalone data mining and data visualization program that runs using Python. Beautifully interactive data analysis workflows with a large toolbox. Not much reliability related content but good for data preprocessing.
 -    `R (Programming Language) - Survival analysis library <https://www.tutorialspoint.com/r/r_survival_analysis.htm>`_ - one of the more popular survival analysis libraries available in the open source commmunity.
+-    `R (Programming Language) - Weibull Analysis for Reliability Engineering <https://github.com/openrelia/WeibullR.gallery>`_ - Life data analysis in the graphical tradition of Waloddi Weibull.
 -    `CumFreq <https://www.waterlog.info/cumfreq.htm>`_ - a program for cumulative frequency analysis with probability distribution fitting for a wide range of distributions. Limited functionality beyond fitting distributions.
 -    `Fault Tree Analyser <https://www.fault-tree-analysis-software.com/fault-tree-analysis>`_ - A simple online tool where you can build a fault tree, give each branch a failure rate and run a variety of reports including reliability prediction at time, minimal cut sets, and several others.
 
