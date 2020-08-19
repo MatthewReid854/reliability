@@ -24,13 +24,26 @@ There are a few datasets that have been included with reliability that users may
 - ALT_temperature_voltage2 - conducted at 3 different temperatures and 2 different voltages. 18 failures, 8 right censored.
 - ALT_temperature_humidity - conducted at 2 different temperatures and 2 different humidities. 12 failures, 0 right censored.
 
-All datasets are functions which create objects and every dataset object has several values. For most datasets, these are:
+**MCF Datasets**
+
+- MCF_1 - this dataset contains failure and retirement times for 5 repairable systems. Exhibits a worsening repair rate.
+- MCF_2 - this dataset contains failure and retirement times for 56 repairable systems. Exhibits a worsening then improving repair rate. Difficult to fit this dataset.
+
+All datasets are functions which create objects and every dataset object has several attributes.
+
+For the standard datasets, these attributes are:
 
 - info - a dataframe of statistics about the dataset
 - failures - a list of the failure data
 - right_censored - a list of the right_censored data
 - right_censored_stress - a list of the right_censored stresses (ALT datasets only)
-- some data set specific variations on the above such as failure_stress_humidity, right_censored_stress_voltage, failure_stress_temp, etc.
+
+For the standard datasets, these attributes are similar to the above standard attributes, just with some variation for the specific dataset. These include failure_stress_humidity, right_censored_stress_voltage, failure_stress_temp, etc.
+
+For the MCF datasets these attributes are:
+
+- times
+- number_of_systems
 
 If you would like more information on a dataset, you can type the name of the dataset in the help function (after importing it).
 
