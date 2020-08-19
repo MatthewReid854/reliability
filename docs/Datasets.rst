@@ -38,7 +38,12 @@ For the standard datasets, these attributes are:
 - right_censored - a list of the right_censored data
 - right_censored_stress - a list of the right_censored stresses (ALT datasets only)
 
-For the standard datasets, these attributes are similar to the above standard attributes, just with some variation for the specific dataset. These include failure_stress_humidity, right_censored_stress_voltage, failure_stress_temp, etc.
+For the ALT datasets, these attributes are similar to the above standard attributes, just with some variation for the specific dataset. These include things like:
+
+- failure_stress_humidity
+- right_censored_stress_voltage
+- failure_stress_temp
+- other similarly named attributes based on the dataset
 
 For the MCF datasets these attributes are:
 
