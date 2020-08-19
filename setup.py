@@ -22,7 +22,7 @@ setuptools.setup(
         "Programming Language :: Python :: 3"
     ],
     install_requires=["autograd>=1.3",
-                      "scipy>=1.3.1",
+                      "scipy>=1.3.2",
                       "numpy>=1.17.1",
                       "matplotlib>=3.1.1",
                       "pandas>=0.23.4",

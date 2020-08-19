@@ -5,8 +5,6 @@
 Mixture models
 ''''''''''''''
 
-.. note:: This documentation is valid for Version 0.5.2 which is currently unreleased.
-
 What are mixture models?
 ========================
 
@@ -232,5 +230,3 @@ In this second example, we will compare how well the Weibull Mixture performs vs
     '''
 
 .. image:: images/Weibull_mixture_vs_Weibull_2P_V3.png
-
-.. note:: This documentation is valid for Version 0.5.2 which is currently unreleased.

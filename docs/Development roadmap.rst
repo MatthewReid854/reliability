@@ -9,8 +9,9 @@ The following development roadmap is the current task list and implementation pl
 
 **Next task (currently in development)**
 
--    Plotting enhancements to increase the detail in plots using less points (by generating more points where the plots curve and less where the plots are flat). Using 100 instead of 1000 points will make the plots much faster, particularly when multiple distributions are layered.
--    Plotting enhancements to the x and y scale such that the limits are based on the quantiles. This will ensure more relevant detail is shown, particularly for location shifted distributions.
+-    Fix HF and CHF to use actual equations and not PDF/SF. Done for Weibull but need to implement for the rest.
+-    Plotting enhancements to increase the detail in plots using less points (by generating more points where the plots curve and less where the plots are flat). Using 100 instead of 1000 points will make the plots much faster, particularly when multiple distributions are layered. Done for Weibull but need to implement for the rest.
+-    Plotting enhancements to the x and y scale such that the limits are based on the quantiles. This will ensure more relevant detail is shown, particularly for location shifted distributions. Done for Weibull but need to implement for the rest.
 -    Writing more automated tests. This will speed up the code development processes and help prevent future changes having unidentified effects.
 -    Confidence intervals for Normal and Lognormal distributions (Gamma and Beta will come later). Currently the confidence intervals have only been completed for Weibull and Exponential distributions.
 
@@ -27,8 +28,8 @@ The following development roadmap is the current task list and implementation pl
 
      - Fit_Weibull_DS
      - Fit_Weibull_ZI
-     - Fit_Loglogistic
-     - Fit_Gumbel
+     - Fit_Loglogistic_2P, Fit_Loglogistic_3P
+     - Fit_Gumbel_2P, Fit_Gumbel_3P
 
 -    New probability plots for the 2 new standard distributions:
 
