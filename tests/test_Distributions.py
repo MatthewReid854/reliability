@@ -1,5 +1,5 @@
 from reliability.Distributions import Normal_Distribution, Weibull_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution
-
+from numpy.testing import assert_allclose
 
 def test_Normal_Distribution():
     dist = Normal_Distribution(mu=5, sigma=2)
@@ -53,7 +53,7 @@ def test_Weibull_Distribution():
     assert dist.inverse_SF(q=0.7) == 12.9861134604144417
     assert dist.mean_residual_life(20) == 1.1316926249544481
     xvals=[dist.gamma-1, dist.quantile(0.001),dist.quantile(0.01),dist.quantile(0.1),dist.quantile(0.9),dist.quantile(0.99),dist.quantile(0.999)]
-    assert list(dist.PDF(xvals=xvals, show_plot=False)) == [0.0, 0.012639622357755485, 0.03969953988653618, 0.11685342455082046, 0.06069708517540586, 0.008583864105157392, 0.0010513043539513882]
+    assert_allclose(dist.PDF(xvals=xvals, show_plot=False), [0.0, 0.012639622357755485, 0.03969953988653618, 0.11685342455082046, 0.06069708517540586, 0.008583864105157392, 0.0010513043539513882], rtol=1e-6)
     # assert all([a==b for a,b in zip(dist.PDF(xvals=xvals, show_plot=False),[0.0, 0.012639622357755485, 0.03969953988653618, 0.11685342455082046, 0.06069708517540586, 0.008583864105157392, 0.0010513043539513882])])
     # assert all([a==b for a,b in zip(dist.CDF(xvals=xvals, show_plot=False),[0.0, 0.001000000000000002, 0.009999999999999967, 0.1, 0.9, 0.99, 0.999])])
     # assert all([a==b for a,b in zip(dist.SF(xvals=xvals, show_plot=False),[1.0, 0.999, 0.99, 0.9, 0.10000000000000002, 0.010000000000000004, 0.001000000000000002])])
