@@ -9,11 +9,12 @@ The following development roadmap is the current task list and implementation pl
 
 **Next task (currently in development)**
 
--    Fix HF and CHF to use actual equations and not PDF/SF. Done for Weibull but need to implement for the rest.
 -    Plotting enhancements to increase the detail in plots using less points (by generating more points where the plots curve and less where the plots are flat). Using 100 instead of 1000 points will make the plots much faster, particularly when multiple distributions are layered. Done for Weibull but need to implement for the rest.
 -    Plotting enhancements to the x and y scale such that the limits are based on the quantiles. This will ensure more relevant detail is shown, particularly for location shifted distributions. Done for Weibull but need to implement for the rest.
 -    Writing more automated tests. This will speed up the code development processes and help prevent future changes having unidentified effects.
 -    Confidence intervals for Normal and Lognormal distributions (Gamma and Beta will come later). Currently the confidence intervals have only been completed for Weibull and Exponential distributions.
+- Fitters for Loglogistic_Distribution: Fit_Loglogistic_2P, Fit_Loglogistic_3P
+- Probability plot for loglogistic distribution: Loglogistic_probability_plot
 
 **High priority (expected by the end of 2020)**
 
@@ -21,20 +22,15 @@ The following development roadmap is the current task list and implementation pl
 
      - `Defective_Subpopulation_Distribution <https://www.jmp.com/support/help/14-2/distributions-2.shtml>`_. This is for when the CDF does not reach 1 due to a lot of right censored data.
      - `Zero_Inflated_Distribution <https://www.jmp.com/support/help/14-2/distributions-2.shtml>`_. This is for when the CDF starts above 0 due to a lot of 'dead on arrival' products in the dataset.
-     - `Loglogistic_Distribution <http://reliawiki.org/index.php/The_Loglogistic_Distribution>`_.
      - `Gumbel_Distribution <http://reliawiki.org/index.php/The_Gumbel/SEV_Distribution>`_.
 
--    New Fitters for the above 4 new distributions:
+-    New Fitters for the above 3 new distributions:
 
      - Fit_Weibull_DS
      - Fit_Weibull_ZI
-     - Fit_Loglogistic_2P, Fit_Loglogistic_3P
      - Fit_Gumbel_2P, Fit_Gumbel_3P
 
--    New probability plots for the 2 new standard distributions:
-
-     - Loglogistic_probability_plot
-     - Gumbel_probability_plot
+-    New probability plot for Gumbel_Distribution: Gumbel_probability_plot
 
 -    Add least squares as a method to obtain the initial guess for all Fitters. Currently this has only been implemented in Fit_Weibull_2P, Fit_Weibull_2P_grouped, and Fit_Weibull_3P but all the other Fitters use scipy which is slower but more accurate for small datasets.
 -    Amalgamate Fit_Weibull_2P and Fit_Weibull_2P_grouped under a single function. Need to decide the best input format ==> failures=[], right_censored=[], xcn=[[x],[c],[n]] or df. If this works, do it for all Fitters so they are fast for large datasets.
