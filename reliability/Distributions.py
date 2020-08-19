@@ -1,13 +1,17 @@
 '''
 Probability Distributions Module
 
-Available distributions are:
+Standard distributions are:
     Weibull_Distribution
     Normal_Distribution
     Lognormal_Distribution
     Exponential_Distribution
     Gamma_Distribution
     Beta_Distribution
+
+Mixture distributions are:
+    Mixture_Model - this must be created using 2 or more of the above standard distributions
+    Competing_Risks_Model - this must be created using 2 or more of the above standard distributions
 
 Methods:
     name - the name of the distribution. eg. 'Weibull'
@@ -130,7 +134,7 @@ class Weibull_Distribution:
         if self.beta >= 1:
             self.mode = self.alpha * ((self.beta - 1) / self.beta) ** (1 / self.beta) + self.gamma
         else:
-            self.mode = r'No mode exists when $\beta$ < 1'
+            self.mode = self.gamma
         if self.gamma != 0:
             self.param_title = str('α=' + str(round_to_decimals(self.alpha, dec)) + ',β=' + str(round_to_decimals(self.beta, dec)) + ',γ=' + str(round_to_decimals(self.gamma, dec)))
             self.param_title_long = str('Weibull Distribution (α=' + str(round_to_decimals(self.alpha, dec)) + ',β=' + str(round_to_decimals(self.beta, dec)) + ',γ=' + str(round_to_decimals(self.gamma, dec)) + ')')
@@ -166,8 +170,8 @@ class Weibull_Distribution:
             self.CI_type = 'time'
         for item in kwargs.keys():
             print('WARNING:', item, 'not recognised as an appropriate entry in kwargs. Appropriate entries are alpha_SE, beta_SE, Cov_alpha_beta, CI, and CI_type')
-        self._pdf0 = ss.weibull_min.pdf(0, self.beta, scale=self.alpha, loc=0) #the pdf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
-        self._hf0 = ss.weibull_min.pdf(0, self.beta, scale=self.alpha, loc=0)/ss.weibull_min.sf(0, self.beta, scale=self.alpha, loc=0) #the hf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
+        self._pdf0 = ss.weibull_min.pdf(0, self.beta, scale=self.alpha, loc=0)  # the pdf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
+        self._hf0 = ss.weibull_min.pdf(0, self.beta, scale=self.alpha, loc=0) / ss.weibull_min.sf(0, self.beta, scale=self.alpha, loc=0)  # the hf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
 
     def plot(self, xvals=None, xmin=None, xmax=None):
         '''
@@ -177,7 +181,7 @@ class Weibull_Distribution:
         xvals - x-values for plotting
         xmin - minimum x-value for plotting
         xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 100 elements
         will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
         *no plotting keywords are accepted
 
@@ -185,18 +189,17 @@ class Weibull_Distribution:
         The plot will be shown. No need to use plt.show()
         '''
 
-        # obtain the X array for PDF, CDF, SF
-        X = generate_X_array(dist=self, func='CDF', xvals=xvals, xmin=xmin, xmax=xmax)
-        # obtain the X array for CHF and HF
-        Xhf = generate_X_array(dist=self, func='HF', xvals=xvals, xmin=xmin, xmax=xmax)
+        X = generate_X_array(dist=self, func='CDF', xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array for PDF, CDF, SF
+        Xhf = generate_X_array(dist=self, func='HF', xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array for HF
+        Xchf = generate_X_array(dist=self, func='CHF', xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array for CHF
 
         pdf = ss.weibull_min.pdf(X, self.beta, scale=self.alpha, loc=self.gamma)
         cdf = ss.weibull_min.cdf(X, self.beta, scale=self.alpha, loc=self.gamma)
         sf = ss.weibull_min.sf(X, self.beta, scale=self.alpha, loc=self.gamma)
         hf = (self.beta / self.alpha) * ((Xhf - self.gamma) / self.alpha) ** (self.beta - 1)
-        hf = zeroise_below_gamma(X=X, Y=hf, gamma=self.gamma)
-        chf = ((Xhf - self.gamma) / self.alpha) ** self.beta
-        chf = zeroise_below_gamma(X=X, Y=chf, gamma=self.gamma)
+        hf = zeroise_below_gamma(X=Xhf, Y=hf, gamma=self.gamma)
+        chf = ((Xchf - self.gamma) / self.alpha) ** self.beta
+        chf = zeroise_below_gamma(X=Xchf, Y=chf, gamma=self.gamma)
 
         plt.figure(figsize=(9, 7))
         text_title = str('Weibull Distribution' + '\n' + self.param_title)
@@ -223,8 +226,8 @@ class Weibull_Distribution:
         plt.title('Hazard Function')
 
         plt.subplot(235)
-        plt.plot(Xhf, chf)
-        restore_axes_limits([(0, 1), (0, 1), False], dist=self, func='CHF', X=Xhf, Y=chf, xvals=xvals, xmin=xmin, xmax=xmax)
+        plt.plot(Xchf, chf)
+        restore_axes_limits([(0, 1), (0, 1), False], dist=self, func='CHF', X=Xchf, Y=chf, xvals=xvals, xmin=xmin, xmax=xmax)
         plt.title('Cumulative Hazard\nFunction')
 
         # descriptive statistics section
@@ -234,10 +237,7 @@ class Weibull_Distribution:
         plt.xlim([0, 10])
         text_mean = str('Mean = ' + str(round_to_decimals(float(self.mean), dec)))
         text_median = str('Median = ' + str(round_to_decimals(self.median, dec)))
-        try:
-            text_mode = str('Mode = ' + str(round_to_decimals(self.mode, dec)))
-        except:
-            text_mode = str('Mode = ' + str(self.mode))  # required when mode is str
+        text_mode = str('Mode = ' + str(round_to_decimals(self.mode, dec)))
         text_b5 = str('$5^{th}$ quantile = ' + str(round_to_decimals(self.b5, dec)))
         text_b95 = str('$95^{th}$ quantile = ' + str(round_to_decimals(self.b95, dec)))
         text_std = str('Standard deviation = ' + str(round_to_decimals(self.variance ** 0.5, dec)))
@@ -266,7 +266,7 @@ class Weibull_Distribution:
         xvals - x-values for plotting
         xmin - minimum x-value for plotting
         xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 100 elements
         will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
         *plotting keywords are also accepted (eg. color, linestyle)
 
@@ -305,7 +305,7 @@ class Weibull_Distribution:
         xvals - x-values for plotting
         xmin - minimum x-value for plotting
         xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 100 elements
         will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
         *plotting keywords are also accepted (eg. color, linestyle)
 
@@ -359,7 +359,7 @@ class Weibull_Distribution:
         xvals - x-values for plotting
         xmin - minimum x-value for plotting
         xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 100 elements
         will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
         *plotting keywords are also accepted (eg. color, linestyle)
 
@@ -412,7 +412,7 @@ class Weibull_Distribution:
         xvals - x-values for plotting
         xmin - minimum x-value for plotting
         xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 100 elements
         will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
         *plotting keywords are also accepted (eg. color, linestyle)
 
@@ -472,7 +472,7 @@ class Weibull_Distribution:
         xvals - x-values for plotting
         xmin - minimum x-value for plotting
         xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 100 elements
         will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
         *plotting keywords are also accepted (eg. color, linestyle)
 
@@ -549,7 +549,7 @@ class Weibull_Distribution:
                 return (1 / beta) * anp.log(-anp.log(R)) + anp.log(alpha)
 
             du_da_T = jac(uT, 1)  # derivative wrt alpha (for bounds on time)
-            du_db_T = jac(uT, 2)  # derivative wrt beta (for bounds on time)  ----------- this causes nan for some cases. a=50,b=5,g=500,seed=5,samples=20
+            du_db_T = jac(uT, 2)  # derivative wrt beta (for bounds on time)
 
             def var_uR(self, t):
                 return du_da_R(t, self.alpha, self.beta) ** 2 * self.alpha_SE ** 2 \
@@ -803,6 +803,8 @@ class Normal_Distribution:
         self.param_title_long = str('Normal Distribution (μ=' + str(round_to_decimals(self.mu, dec)) + ',σ=' + str(round_to_decimals(self.sigma, dec)) + ')')
         self.b5 = ss.norm.ppf(0.05, loc=self.mu, scale=self.sigma)
         self.b95 = ss.norm.ppf(0.95, loc=self.mu, scale=self.sigma)
+        self._pdf0 = 0  # the pdf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
+        self._hf0 = 0  # the hf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
 
     def plot(self, xvals=None, xmin=None, xmax=None):
         '''
@@ -812,7 +814,7 @@ class Normal_Distribution:
         xvals - x-values for plotting
         xmin - minimum x-value for plotting
         xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 100 elements
         will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
         *no plotting keywords are accepted
 
@@ -863,10 +865,7 @@ class Normal_Distribution:
         plt.xlim([0, 10])
         text_mean = str('Mean = ' + str(round_to_decimals(float(self.mean), dec)))
         text_median = str('Median = ' + str(round_to_decimals(self.median, dec)))
-        try:
-            text_mode = str('Mode = ' + str(round_to_decimals(self.mode, dec)))
-        except:
-            text_mode = str('Mode = ' + str(self.mode))  # required when mode is str
+        text_mode = str('Mode = ' + str(round_to_decimals(self.mode, dec)))
         text_b5 = str('$5^{th}$ quantile = ' + str(round_to_decimals(self.b5, dec)))
         text_b95 = str('$95^{th}$ quantile = ' + str(round_to_decimals(self.b95, dec)))
         text_std = str('Standard deviation = ' + str(round_to_decimals(self.variance ** 0.5, dec)))
@@ -895,7 +894,7 @@ class Normal_Distribution:
         xvals - x-values for plotting
         xmin - minimum x-value for plotting
         xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 100 elements
         will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
         *plotting keywords are also accepted (eg. color, linestyle)
 
@@ -937,7 +936,7 @@ class Normal_Distribution:
         xvals - x-values for plotting
         xmin - minimum x-value for plotting
         xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 100 elements
         will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
         *plotting keywords are also accepted (eg. color, linestyle)
 
@@ -979,7 +978,7 @@ class Normal_Distribution:
         xvals - x-values for plotting
         xmin - minimum x-value for plotting
         xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 100 elements
         will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
         *plotting keywords are also accepted (eg. color, linestyle)
 
@@ -1021,7 +1020,7 @@ class Normal_Distribution:
         xvals - x-values for plotting
         xmin - minimum x-value for plotting
         xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 100 elements
         will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
         *plotting keywords are also accepted (eg. color, linestyle)
 
@@ -1063,7 +1062,7 @@ class Normal_Distribution:
         xvals - x-values for plotting
         xmin - minimum x-value for plotting
         xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 100 elements
         will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
         *plotting keywords are also accepted (eg. color, linestyle)
 
@@ -1243,6 +1242,8 @@ class Lognormal_Distribution:
             self.name2 = 'Lognormal_2P'
         self.b5 = ss.lognorm.ppf(0.05, self.sigma, self.gamma, np.exp(self.mu))  # note that scipy uses mu in a log way compared to most other software, so we must take the exp of the input
         self.b95 = ss.lognorm.ppf(0.95, self.sigma, self.gamma, np.exp(self.mu))
+        self._pdf0 = 0  # the pdf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
+        self._hf0 = 0  # the hf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
 
     def plot(self, xvals=None, xmin=None, xmax=None):
         '''
@@ -1252,7 +1253,7 @@ class Lognormal_Distribution:
         xvals - x-values for plotting
         xmin - minimum x-value for plotting
         xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 100 elements
         will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
         *no plotting keywords are accepted
 
@@ -1309,10 +1310,7 @@ class Lognormal_Distribution:
         plt.xlim([0, 10])
         text_mean = str('Mean = ' + str(round_to_decimals(float(self.mean), dec)))
         text_median = str('Median = ' + str(round_to_decimals(self.median, dec)))
-        try:
-            text_mode = str('Mode = ' + str(round_to_decimals(self.mode, dec)))
-        except:
-            text_mode = str('Mode = ' + str(self.mode))  # required when mode is str
+        text_mode = str('Mode = ' + str(round_to_decimals(self.mode, dec)))
         text_b5 = str('$5^{th}$ quantile = ' + str(round_to_decimals(self.b5, dec)))
         text_b95 = str('$95^{th}$ quantile = ' + str(round_to_decimals(self.b95, dec)))
         text_std = str('Standard deviation = ' + str(round_to_decimals(self.variance ** 0.5, dec)))
@@ -1341,7 +1339,7 @@ class Lognormal_Distribution:
         xvals - x-values for plotting
         xmin - minimum x-value for plotting
         xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 100 elements
         will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
         *plotting keywords are also accepted (eg. color, linestyle)
 
@@ -1389,7 +1387,7 @@ class Lognormal_Distribution:
         xvals - x-values for plotting
         xmin - minimum x-value for plotting
         xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 100 elements
         will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
         *plotting keywords are also accepted (eg. color, linestyle)
 
@@ -1437,7 +1435,7 @@ class Lognormal_Distribution:
         xvals - x-values for plotting
         xmin - minimum x-value for plotting
         xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 100 elements
         will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
         *plotting keywords are also accepted (eg. color, linestyle)
 
@@ -1485,7 +1483,7 @@ class Lognormal_Distribution:
         xvals - x-values for plotting
         xmin - minimum x-value for plotting
         xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 100 elements
         will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
         *plotting keywords are also accepted (eg. color, linestyle)
 
@@ -1533,7 +1531,7 @@ class Lognormal_Distribution:
         xvals - x-values for plotting
         xmin - minimum x-value for plotting
         xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 100 elements
         will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
         *plotting keywords are also accepted (eg. color, linestyle)
 
@@ -1732,6 +1730,8 @@ class Exponential_Distribution:
             self.Z = None
         for item in kwargs.keys():
             print('WARNING:', item, 'not recognised as an appropriate entry in kwargs. Appropriate entries are Lambda_SE and CI')
+        self._pdf0 = ss.expon.pdf(0, scale=1 / self.Lambda, loc=0)  # the pdf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
+        self._hf0 = self.Lambda  # the hf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
 
     def plot(self, xvals=None, xmin=None, xmax=None):
         '''
@@ -1741,7 +1741,7 @@ class Exponential_Distribution:
         xvals - x-values for plotting
         xmin - minimum x-value for plotting
         xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 100 elements
         will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
         *no plotting keywords are accepted
 
@@ -1769,8 +1769,10 @@ class Exponential_Distribution:
         pdf = ss.expon.pdf(X, scale=1 / self.Lambda, loc=self.gamma)
         cdf = ss.expon.cdf(X, scale=1 / self.Lambda, loc=self.gamma)
         sf = ss.expon.sf(X, scale=1 / self.Lambda, loc=self.gamma)
-        hf = pdf / sf
-        chf = -np.log(sf)
+        hf = np.ones_like(X) * self.Lambda
+        hf = zeroise_below_gamma(X=X, Y=hf, gamma=self.gamma)
+        chf = (X - self.gamma) * self.Lambda
+        chf = zeroise_below_gamma(X=X, Y=chf, gamma=self.gamma)
 
         plt.figure(figsize=(9, 7))
         text_title = str('Exponential Distribution' + '\n' + self.param_title)
@@ -1798,10 +1800,7 @@ class Exponential_Distribution:
         plt.xlim([0, 10])
         text_mean = str('Mean = ' + str(round_to_decimals(float(self.mean), dec)))
         text_median = str('Median = ' + str(round_to_decimals(self.median, dec)))
-        try:
-            text_mode = str('Mode = ' + str(round_to_decimals(self.mode, dec)))
-        except:
-            text_mode = str('Mode = ' + str(self.mode))  # required when mode is str
+        text_mode = str('Mode = ' + str(round_to_decimals(self.mode, dec)))
         text_b5 = str('$5^{th}$ quantile = ' + str(round_to_decimals(self.b5, dec)))
         text_b95 = str('$95^{th}$ quantile = ' + str(round_to_decimals(self.b95, dec)))
         text_std = str('Standard deviation = ' + str(round_to_decimals(self.variance ** 0.5, dec)))
@@ -1830,7 +1829,7 @@ class Exponential_Distribution:
         xvals - x-values for plotting
         xmin - minimum x-value for plotting
         xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 100 elements
         will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
         *plotting keywords are also accepted (eg. color, linestyle)
 
@@ -1879,7 +1878,7 @@ class Exponential_Distribution:
         xvals - x-values for plotting
         xmin - minimum x-value for plotting
         xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 100 elements
         will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
         *plotting keywords are also accepted (eg. color, linestyle)
 
@@ -1946,7 +1945,7 @@ class Exponential_Distribution:
         xvals - x-values for plotting
         xmin - minimum x-value for plotting
         xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 100 elements
         will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
         *plotting keywords are also accepted (eg. color, linestyle)
 
@@ -2012,7 +2011,7 @@ class Exponential_Distribution:
         xvals - x-values for plotting
         xmin - minimum x-value for plotting
         xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 100 elements
         will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
         *plotting keywords are also accepted (eg. color, linestyle)
 
@@ -2053,7 +2052,9 @@ class Exponential_Distribution:
             print('WARNING: unexpected value in kwargs. To show/hide the CI you can specify either show_CI=True/False or plot_CI=True/False')
             plot_CI = True
 
-        hf = ss.expon.pdf(X, scale=1 / self.Lambda, loc=self.gamma) / ss.expon.sf(X, scale=1 / self.Lambda, loc=self.gamma)
+        hf = np.ones_like(X) * self.Lambda
+        hf = zeroise_below_gamma(X=X, Y=hf, gamma=self.gamma)
+
         if show_plot == False:
             return hf
         else:
@@ -2077,7 +2078,7 @@ class Exponential_Distribution:
         xvals - x-values for plotting
         xmin - minimum x-value for plotting
         xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 100 elements
         will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
         *plotting keywords are also accepted (eg. color, linestyle)
 
@@ -2120,7 +2121,9 @@ class Exponential_Distribution:
             print('WARNING: unexpected value in kwargs. To show/hide the CI you can specify either show_CI=True/False or plot_CI=True/False')
             plot_CI = True
 
-        chf = -np.log(ss.expon.sf(X, scale=1 / self.Lambda, loc=self.gamma))
+        chf = (X - self.gamma) * self.Lambda
+        chf = zeroise_below_gamma(X=X, Y=chf, gamma=self.gamma)
+
         if show_plot == False:
             return chf
         else:
@@ -2173,13 +2176,14 @@ class Exponential_Distribution:
                 yy_upper0 = Lambda_upper * np.ones_like(t)
                 yy_lower0 = Lambda_lower * np.ones_like(t)
                 y_min = 0
-                y_max = Lambda_upper * 2
-                y_lims = (0, Lambda_upper * 1.2)  # this changes the ylims to ensure the CI will be included as it is a constant
+                y_max = Lambda_upper * 1.2
+                plt.ylim(0, y_max)  # this changes the ylims to ensure the CI will be included as it is a constant
             if func == 'CHF':
                 yy_upper0 = -np.log(np.exp(-Lambda_upper * t))  # same as -np.log(SF)
                 yy_lower0 = -np.log(np.exp(-Lambda_lower * t))
                 y_min = 0
                 y_max = 1e10
+
             # impose plotting limits so not plotting to infinity
             yy_lower = np.where(yy_lower0 < y_min, y_min, np.where(yy_lower0 > y_max, y_max, yy_lower0))
             yy_upper = np.where(yy_upper0 < y_min, y_min, np.where(yy_upper0 > y_max, y_max, yy_upper0))
@@ -2330,7 +2334,7 @@ class Gamma_Distribution:
         if self.beta >= 1:
             self.mode = (self.beta - 1) * self.alpha + self.gamma
         else:
-            self.mode = r'No mode exists when $\beta$ < 1'
+            self.mode = self.gamma
         if self.gamma != 0:
             self.param_title = str('α=' + str(round_to_decimals(self.alpha, dec)) + ',β=' + str(round_to_decimals(self.beta, dec)) + ',γ=' + str(round_to_decimals(self.gamma, dec)))
             self.param_title_long = str('Gamma Distribution (α=' + str(round_to_decimals(self.alpha, dec)) + ',β=' + str(round_to_decimals(self.beta, dec)) + ',γ=' + str(round_to_decimals(self.gamma, dec)) + ')')
@@ -2341,6 +2345,8 @@ class Gamma_Distribution:
             self.name2 = 'Gamma_2P'
         self.b5 = ss.gamma.ppf(0.05, self.beta, scale=self.alpha, loc=self.gamma)
         self.b95 = ss.gamma.ppf(0.95, self.beta, scale=self.alpha, loc=self.gamma)
+        self._pdf0 = ss.gamma.pdf(0, self.beta, scale=self.alpha, loc=0)  # the pdf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
+        self._hf0 = ss.gamma.pdf(0, self.beta, scale=self.alpha, loc=0) / ss.gamma.sf(0, self.beta, scale=self.alpha, loc=0)  # the hf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
 
     def plot(self, xvals=None, xmin=None, xmax=None):
         '''
@@ -2350,7 +2356,7 @@ class Gamma_Distribution:
         xvals - x-values for plotting
         xmin - minimum x-value for plotting
         xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 100 elements
         will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
         *no plotting keywords are accepted
 
@@ -2407,10 +2413,7 @@ class Gamma_Distribution:
         plt.xlim([0, 10])
         text_mean = str('Mean = ' + str(round_to_decimals(float(self.mean), dec)))
         text_median = str('Median = ' + str(round_to_decimals(self.median, dec)))
-        try:
-            text_mode = str('Mode = ' + str(round_to_decimals(self.mode, dec)))
-        except:
-            text_mode = str('Mode = ' + str(self.mode))  # required when mode is str
+        text_mode = str('Mode = ' + str(round_to_decimals(self.mode, dec)))
         text_b5 = str('$5^{th}$ quantile = ' + str(round_to_decimals(self.b5, dec)))
         text_b95 = str('$95^{th}$ quantile = ' + str(round_to_decimals(self.b95, dec)))
         text_std = str('Standard deviation = ' + str(round_to_decimals(self.variance ** 0.5, dec)))
@@ -2439,7 +2442,7 @@ class Gamma_Distribution:
         xvals - x-values for plotting
         xmin - minimum x-value for plotting
         xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 100 elements
         will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
         *plotting keywords are also accepted (eg. color, linestyle)
 
@@ -2487,7 +2490,7 @@ class Gamma_Distribution:
         xvals - x-values for plotting
         xmin - minimum x-value for plotting
         xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 100 elements
         will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
         *plotting keywords are also accepted (eg. color, linestyle)
 
@@ -2535,7 +2538,7 @@ class Gamma_Distribution:
         xvals - x-values for plotting
         xmin - minimum x-value for plotting
         xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 100 elements
         will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
         *plotting keywords are also accepted (eg. color, linestyle)
 
@@ -2583,7 +2586,7 @@ class Gamma_Distribution:
         xvals - x-values for plotting
         xmin - minimum x-value for plotting
         xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 100 elements
         will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
         *plotting keywords are also accepted (eg. color, linestyle)
 
@@ -2631,7 +2634,7 @@ class Gamma_Distribution:
         xvals - x-values for plotting
         xmin - minimum x-value for plotting
         xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 100 elements
         will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
         *plotting keywords are also accepted (eg. color, linestyle)
 
@@ -2815,6 +2818,8 @@ class Beta_Distribution:
         self.param_title_long = str('Beta Distribution (α=' + str(round_to_decimals(self.alpha, dec)) + ',β=' + str(round_to_decimals(self.beta, dec)) + ')')
         self.b5 = ss.beta.ppf(0.05, self.alpha, self.beta, 0, 1)
         self.b95 = ss.beta.ppf(0.95, self.alpha, self.beta, 0, 1)
+        self._pdf0 = ss.beta.pdf(0, self.alpha, self.beta, 0, 1)  # the pdf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
+        self._hf0 = ss.beta.pdf(0, self.alpha, self.beta, 0, 1) / ss.beta.sf(0, self.alpha, self.beta, 0, 1)  # the hf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
 
     def plot(self, xvals=None, xmin=None, xmax=None):
         '''
@@ -2824,7 +2829,7 @@ class Beta_Distribution:
         xvals - x-values for plotting
         xmin - minimum x-value for plotting
         xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 100 elements
         will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
         *no plotting keywords are accepted
 
@@ -2881,10 +2886,10 @@ class Beta_Distribution:
         plt.xlim([0, 10])
         text_mean = str('Mean = ' + str(round_to_decimals(float(self.mean), dec)))
         text_median = str('Median = ' + str(round_to_decimals(self.median, dec)))
-        try:
-            text_mode = str('Mode = ' + str(round_to_decimals(self.mode, dec)))
-        except:
+        if type(self.mode) == str:
             text_mode = str('Mode = ' + str(self.mode))  # required when mode is str
+        else:
+            text_mode = str('Mode = ' + str(round_to_decimals(self.mode, dec)))
         text_b5 = str('$5^{th}$ quantile = ' + str(round_to_decimals(self.b5, dec)))
         text_b95 = str('$95^{th}$ quantile = ' + str(round_to_decimals(self.b95, dec)))
         text_std = str('Standard deviation = ' + str(round_to_decimals(self.variance ** 0.5, dec)))
@@ -2913,7 +2918,7 @@ class Beta_Distribution:
         xvals - x-values for plotting
         xmin - minimum x-value for plotting
         xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 100 elements
         will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
         *plotting keywords are also accepted (eg. color, linestyle)
 
@@ -2961,7 +2966,7 @@ class Beta_Distribution:
         xvals - x-values for plotting
         xmin - minimum x-value for plotting
         xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 100 elements
         will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
         *plotting keywords are also accepted (eg. color, linestyle)
 
@@ -3009,7 +3014,7 @@ class Beta_Distribution:
         xvals - x-values for plotting
         xmin - minimum x-value for plotting
         xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 100 elements
         will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
         *plotting keywords are also accepted (eg. color, linestyle)
 
@@ -3057,7 +3062,7 @@ class Beta_Distribution:
         xvals - x-values for plotting
         xmin - minimum x-value for plotting
         xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 100 elements
         will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
         *plotting keywords are also accepted (eg. color, linestyle)
 
@@ -3105,7 +3110,7 @@ class Beta_Distribution:
         xvals - x-values for plotting
         xmin - minimum x-value for plotting
         xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 100 elements
         will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
         *plotting keywords are also accepted (eg. color, linestyle)
 
@@ -3219,6 +3224,572 @@ class Beta_Distribution:
         return RVS
 
 
+class Loglogistic_Distribution:
+    '''
+    Loglogistic probability distribution
+
+    Creates a Distribution object.
+
+    inputs:
+    alpha - scale parameter
+    beta - shape parameter
+    gamma - threshold (offset) parameter. Default = 0
+
+    methods:
+    name - 'Loglogistic'
+    name2 = 'Loglogistic_2P' or 'Loglogistic_3P' depending on the value of the gamma parameter
+    param_title_long - Useful in plot titles, legends and in printing strings. eg. 'Loglogistic Distribution (α=5,β=2)'
+    param_title - Useful in plot titles, legends and in printing strings. eg. 'α=5,β=2'
+    parameters - [alpha,beta,gamma]
+    alpha
+    beta
+    gamma
+    mean
+    variance
+    standard_deviation
+    skewness
+    kurtosis
+    excess_kurtosis
+    median
+    mode
+    b5
+    b95
+    plot() - plots all functions (PDF,CDF,SF,HF,CHF)
+    PDF() - plots the probability density function
+    CDF() - plots the cumulative distribution function
+    SF() - plots the survival function (also known as reliability function)
+    HF() - plots the hazard function
+    CHF() - plots the cumulative hazard function
+    quantile() - Calculates the quantile (time until a fraction has failed) for a given fraction failing.
+                 Also known as b life where b5 is the time at which 5% have failed.
+    inverse_SF() - the inverse of the Survival Function. This is useful when producing QQ plots.
+    mean_residual_life() - Average residual lifetime of an item given that the item has survived up to a given time.
+                           Effectively the mean of the remaining amount (right side) of a distribution at a given time.
+    stats() - prints all the descriptive statistics. Same as the statistics shown using .plot() but printed to console.
+    random_samples() - draws random samples from the distribution to which it is applied. Same as rvs in scipy.stats.
+    '''
+
+    def __init__(self, alpha=None, beta=None, gamma=0, **kwargs):
+        self.name = 'Loglogistic'
+        self.alpha = float(alpha)
+        self.beta = float(beta)
+        if self.alpha is None or self.beta is None:
+            raise ValueError('Parameters alpha and beta must be specified. Eg. Loglogistic_Distribution(alpha=5,beta=2)')
+        self.gamma = float(gamma)
+        self.parameters = np.array([self.alpha, self.beta, self.gamma])
+
+        if self.beta > 1:
+            self.mean = float(ss.fisk.stats(self.beta, scale=self.alpha, loc=self.gamma, moments='m'))
+        else:
+            self.mean = r'no mean when $\beta \leq 1$'
+        if self.beta > 2:
+            self.variance = float(ss.fisk.stats(self.beta, scale=self.alpha, loc=self.gamma, moments='v'))
+            self.standard_deviation = self.variance ** 0.5
+        else:
+            self.variance = r'no variance when $\beta \leq 2$'
+            self.standard_deviation = r'no stdev when $\beta \leq 2$'
+        if self.beta > 3:
+            self.skewness = float(ss.fisk.stats(self.beta, scale=self.alpha, loc=self.gamma, moments='s'))
+        else:
+            self.skewness = r'no skewness when $\beta \leq 3$'
+        if self.beta > 4:
+            self.excess_kurtosis = float(ss.fisk.stats(self.beta, scale=self.alpha, loc=self.gamma, moments='k'))
+            self.kurtosis = self.excess_kurtosis + 3
+        else:
+            self.excess_kurtosis = r'no kurtosis when $\beta \leq 4$'  # excess kurtosis cannot be calculated when beta <= 4
+            self.kurtosis = r'no kurtosis when $\beta \leq 4$'
+
+        self.median = ss.fisk.median(self.beta, scale=self.alpha, loc=self.gamma)
+        if self.beta >= 1:
+            self.mode = self.alpha * ((self.beta - 1) / (self.beta + 1)) ** (1 / self.beta) + self.gamma
+        else:
+            self.mode = self.gamma
+        if self.gamma != 0:
+            self.param_title = str('α=' + str(round_to_decimals(self.alpha, dec)) + ',β=' + str(round_to_decimals(self.beta, dec)) + ',γ=' + str(round_to_decimals(self.gamma, dec)))
+            self.param_title_long = str('Loglogistic Distribution (α=' + str(round_to_decimals(self.alpha, dec)) + ',β=' + str(round_to_decimals(self.beta, dec)) + ',γ=' + str(round_to_decimals(self.gamma, dec)) + ')')
+            self.name2 = 'Loglogistic_3P'
+        else:
+            self.param_title = str('α=' + str(round_to_decimals(self.alpha, dec)) + ',β=' + str(round_to_decimals(self.beta, dec)))
+            self.param_title_long = str('Loglogistic Distribution (α=' + str(round_to_decimals(self.alpha, dec)) + ',β=' + str(round_to_decimals(self.beta, dec)) + ')')
+            self.name2 = 'Loglogistic_2P'
+        self.b5 = ss.fisk.ppf(0.05, self.beta, scale=self.alpha, loc=self.gamma)
+        self.b95 = ss.fisk.ppf(0.95, self.beta, scale=self.alpha, loc=self.gamma)
+
+        # extracts values for confidence interval plotting
+        if 'alpha_SE' in kwargs:
+            self.alpha_SE = kwargs.pop('alpha_SE')
+        else:
+            self.alpha_SE = None
+        if 'beta_SE' in kwargs:
+            self.beta_SE = kwargs.pop('beta_SE')
+        else:
+            self.beta_SE = None
+        if 'Cov_alpha_beta' in kwargs:
+            self.Cov_alpha_beta = kwargs.pop('Cov_alpha_beta')
+        else:
+            self.Cov_alpha_beta = None
+        if 'CI' in kwargs:
+            CI = kwargs.pop('CI')
+            self.Z = -ss.norm.ppf((1 - CI) / 2)
+        else:
+            self.Z = None
+        if 'CI_type' in kwargs:
+            self.CI_type = kwargs.pop('CI_type')
+        else:
+            self.CI_type = 'time'
+        for item in kwargs.keys():
+            print('WARNING:', item, 'not recognised as an appropriate entry in kwargs. Appropriate entries are alpha_SE, beta_SE, Cov_alpha_beta, CI, and CI_type')
+        self._pdf0 = ss.fisk.pdf(0, self.beta, scale=self.alpha, loc=0)  # the pdf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
+        if self.beta <= 1:
+            self._hf0 = np.inf  # the hf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
+        else:
+            self._hf0 = 0
+
+    def plot(self, xvals=None, xmin=None, xmax=None):
+        '''
+        Plots all functions (PDF, CDF, SF, HF, CHF) and descriptive statistics in a single figure
+
+        Inputs:
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 100 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *no plotting keywords are accepted
+
+        Outputs:
+        The plot will be shown. No need to use plt.show()
+        '''
+
+        X = generate_X_array(dist=self, func='CDF', xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array for PDF, CDF, SF
+        Xhf = generate_X_array(dist=self, func='HF', xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array for HF
+        Xchf = generate_X_array(dist=self, func='CHF', xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array for CHF
+
+        pdf = ss.fisk.pdf(X, self.beta, scale=self.alpha, loc=self.gamma)
+        cdf = ss.fisk.cdf(X, self.beta, scale=self.alpha, loc=self.gamma)
+        sf = ss.fisk.sf(X, self.beta, scale=self.alpha, loc=self.gamma)
+        hf = (self.beta / self.alpha) * ((Xhf - self.gamma) / self.alpha) ** (self.beta - 1)
+        hf = zeroise_below_gamma(X=Xhf, Y=hf, gamma=self.gamma)
+        chf = np.log(1 + ((X - self.gamma) / self.alpha) ** self.beta)
+        chf = zeroise_below_gamma(X=Xchf, Y=chf, gamma=self.gamma)
+
+        plt.figure(figsize=(9, 7))
+        text_title = str('Loglogistic Distribution' + '\n' + self.param_title)
+        plt.suptitle(text_title, fontsize=15)
+
+        plt.subplot(231)
+        plt.plot(X, pdf)
+        restore_axes_limits([(0, 1), (0, 1), False], dist=self, func='PDF', X=X, Y=pdf, xvals=xvals, xmin=xmin, xmax=xmax)
+        plt.title('Probability Density\nFunction')
+
+        plt.subplot(232)
+        plt.plot(X, cdf)
+        restore_axes_limits([(0, 1), (0, 1), False], dist=self, func='CDF', X=X, Y=cdf, xvals=xvals, xmin=xmin, xmax=xmax)
+        plt.title('Cumulative Distribution\nFunction')
+
+        plt.subplot(233)
+        plt.plot(X, sf)
+        restore_axes_limits([(0, 1), (0, 1), False], dist=self, func='SF', X=X, Y=sf, xvals=xvals, xmin=xmin, xmax=xmax)
+        plt.title('Survival Function')
+
+        plt.subplot(234)
+        plt.plot(Xhf, hf)
+        restore_axes_limits([(0, 1), (0, 1), False], dist=self, func='HF', X=Xhf, Y=hf, xvals=xvals, xmin=xmin, xmax=xmax)
+        plt.title('Hazard Function')
+
+        plt.subplot(235)
+        plt.plot(Xchf, chf)
+        restore_axes_limits([(0, 1), (0, 1), False], dist=self, func='CHF', X=Xchf, Y=chf, xvals=xvals, xmin=xmin, xmax=xmax)
+        plt.title('Cumulative Hazard\nFunction')
+
+        # descriptive statistics section
+        plt.subplot(236)
+        plt.axis('off')
+        plt.ylim([0, 10])
+        plt.xlim([0, 10])
+        text_median = str('Median = ' + str(round_to_decimals(self.median, dec)))
+        text_b5 = str('$5^{th}$ quantile = ' + str(round_to_decimals(self.b5, dec)))
+        text_b95 = str('$95^{th}$ quantile = ' + str(round_to_decimals(self.b95, dec)))
+        text_mode = str('Mode = ' + str(round_to_decimals(self.mode, dec)))
+
+        if type(self.mean) == str:
+            text_mean = str('Mean = ' + str(self.mean))  # required when mean is str
+        else:
+            text_mean = str('Mean = ' + str(round_to_decimals(float(self.mean), dec)))
+
+        if type(self.standard_deviation) == str:
+            text_std = str('Standard deviation = ' + str(self.standard_deviation))  # required when standard deviation is str
+        else:
+            text_std = str('Standard deviation = ' + str(round_to_decimals(float(self.standard_deviation), dec)))
+
+        if type(self.variance) == str:
+            text_var = str('Variance = ' + str(self.variance))  # required when variance is str
+        else:
+            text_var = str('Variance = ' + str(round_to_decimals(float(self.variance), dec)))
+
+        if type(self.skewness) == str:
+            text_skew = str('Skewness = ' + str(self.skewness))  # required when skewness is str
+        else:
+            text_skew = str('Skewness = ' + str(round_to_decimals(float(self.skewness), dec)))
+
+        if type(self.excess_kurtosis) == str:
+            text_ex_kurt = str('Excess kurtosis = ' + str(self.excess_kurtosis))  # required when excess kurtosis is str
+        else:
+            text_ex_kurt = str('Excess kurtosis = ' + str(round_to_decimals(float(self.excess_kurtosis), dec)))
+
+        plt.text(0, 9, text_mean)
+        plt.text(0, 8, text_median)
+        plt.text(0, 7, text_mode)
+        plt.text(0, 6, text_b5)
+        plt.text(0, 5, text_b95)
+        plt.text(0, 4, text_std)
+        plt.text(0, 3, text_var)
+        plt.text(0, 2, text_skew)
+        plt.text(0, 1, text_ex_kurt)
+        plt.tight_layout()
+        plt.subplots_adjust(hspace=0.3, top=0.84)
+        plt.show()
+
+    def PDF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
+        '''
+        Plots the PDF (probability density function)
+
+        Inputs:
+        show_plot - True/False. Default is True
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 100 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *plotting keywords are also accepted (eg. color, linestyle)
+
+        Outputs:
+        yvals - this is the y-values of the plot
+        The plot will be shown if show_plot is True (which it is by default).
+        '''
+
+        # obtain the X array
+        X = generate_X_array(dist=self, func='PDF', xvals=xvals, xmin=xmin, xmax=xmax)
+
+        pdf = ss.fisk.pdf(X, self.beta, scale=self.alpha, loc=self.gamma)
+
+        if show_plot == False:
+            return pdf
+        else:
+            limits = get_axes_limits()  # get the previous axes limits
+
+            plt.plot(X, pdf, **kwargs)
+            plt.xlabel('x values')
+            plt.ylabel('Probability density')
+            text_title = str('Loglogistic Distribution\n' + ' Probability Density Function ' + '\n' + self.param_title)
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.87)
+
+            restore_axes_limits(limits, dist=self, func='PDF', X=X, Y=pdf, xvals=xvals, xmin=xmin, xmax=xmax)
+
+            return pdf
+
+    def CDF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
+        '''
+        Plots the CDF (cumulative distribution function)
+
+        Inputs:
+        show_plot - True/False. Default is True
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 100 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *plotting keywords are also accepted (eg. color, linestyle)
+
+        Outputs:
+        yvals - this is the y-values of the plot
+        The plot will be shown if show_plot is True (which it is by default).
+        '''
+
+        # obtain the X array
+        X = generate_X_array(dist=self, func='CDF', xvals=xvals, xmin=xmin, xmax=xmax)
+
+        # this determines if the user has specified for the CI bounds to be shown or hidden.
+        kwargs_list = kwargs.keys()
+        if 'plot_CI' in kwargs_list:
+            plot_CI = kwargs.pop('plot_CI')
+        elif 'show_CI' in kwargs_list:
+            plot_CI = kwargs.pop('show_CI')
+        else:
+            plot_CI = True  # default
+        if plot_CI not in [True, False]:
+            print('WARNING: unexpected value in kwargs. To show/hide the CI you can specify either show_CI=True/False or plot_CI=True/False')
+            plot_CI = True
+
+        cdf = ss.fisk.cdf(X, self.beta, scale=self.alpha, loc=self.gamma)
+
+        if show_plot == False:
+            return cdf
+        else:
+
+            limits = get_axes_limits()  # get the previous axes limits
+
+            p = plt.plot(X, cdf, **kwargs)
+            plt.xlabel('x values')
+            plt.ylabel('Fraction failing')
+            text_title = str('Loglogistic Distribution\n' + ' Cumulative Distribution Function ' + '\n' + self.param_title)
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.87)
+
+            restore_axes_limits(limits, dist=self, func='CDF', X=X, Y=cdf, xvals=xvals, xmin=xmin, xmax=xmax)
+
+            # Weibull_Distribution.__weibull_CI(self, func='CDF', plot_CI=plot_CI, text_title=text_title, color=p[0].get_color()) # commenting CI for now
+
+            return cdf
+
+    def SF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
+        '''
+        Plots the SF (survival function)
+
+        Inputs:
+        show_plot - True/False. Default is True
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 100 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *plotting keywords are also accepted (eg. color, linestyle)
+
+        Outputs:
+        yvals - this is the y-values of the plot
+        The plot will be shown if show_plot is True (which it is by default).
+        '''
+
+        # obtain the X array
+        X = generate_X_array(dist=self, func='SF', xvals=xvals, xmin=xmin, xmax=xmax)
+
+        # this determines if the user has specified for the CI bounds to be shown or hidden. Applicable kwargs are show_CI or plot_CI
+        kwargs_list = kwargs.keys()
+        if 'plot_CI' in kwargs_list:
+            plot_CI = kwargs.pop('plot_CI')
+        elif 'show_CI' in kwargs_list:
+            plot_CI = kwargs.pop('show_CI')
+        else:
+            plot_CI = True  # default
+        if plot_CI not in [True, False]:
+            print('WARNING: unexpected value in kwargs. To show/hide the CI you can specify either show_CI=True/False or plot_CI=True/False')
+            plot_CI = True
+
+        sf = ss.fisk.sf(X, self.beta, scale=self.alpha, loc=self.gamma)
+
+        if show_plot == False:
+            return sf
+        else:
+            limits = get_axes_limits()  # get the previous axes limits
+
+            p = plt.plot(X, sf, **kwargs)
+            plt.xlabel('x values')
+            plt.ylabel('Fraction surviving')
+            text_title = str('Loglogistic Distribution\n' + ' Survival Function ' + '\n' + self.param_title)
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.87)
+
+            restore_axes_limits(limits, dist=self, func='SF', X=X, Y=sf, xvals=xvals, xmin=xmin, xmax=xmax)
+
+            # Weibull_Distribution.__weibull_CI(self, func='SF', plot_CI=plot_CI, text_title=text_title, color=p[0].get_color()) # Commenting CI for now
+
+            return sf
+
+    def HF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
+        '''
+        Plots the HF (hazard function)
+
+        Inputs:
+        show_plot - True/False. Default is True
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 100 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *plotting keywords are also accepted (eg. color, linestyle)
+
+        Outputs:
+        yvals - this is the y-values of the plot
+        The plot will be shown if show_plot is True (which it is by default).
+        '''
+
+        # obtain the X array
+        X = generate_X_array(dist=self, func='HF', xvals=xvals, xmin=xmin, xmax=xmax)
+
+        # this determines if the user has specified for the CI bounds to be shown or hidden. Applicable kwargs are show_CI or plot_CI
+        kwargs_list = kwargs.keys()
+        if 'plot_CI' in kwargs_list:
+            plot_CI = kwargs.pop('plot_CI')
+        elif 'show_CI' in kwargs_list:
+            plot_CI = kwargs.pop('show_CI')
+        else:
+            plot_CI = True  # default
+        if plot_CI not in [True, False]:
+            print('WARNING: unexpected value in kwargs. To show/hide the CI you can specify either show_CI=True/False or plot_CI=True/False')
+            plot_CI = True
+
+        hf = (self.beta / self.alpha) * ((X - self.gamma) / self.alpha) ** (self.beta - 1)
+        hf = zeroise_below_gamma(X=X, Y=hf, gamma=self.gamma)
+        self._hf = hf  # required by the CI plotting part
+
+        chf = np.log(1 + ((X - self.gamma) / self.alpha) ** self.beta)
+        chf = zeroise_below_gamma(X=X, Y=chf, gamma=self.gamma)
+        self._chf = chf  # required by the CI plotting part
+        self._X = X
+
+        if show_plot == False:
+            return hf
+        else:
+            limits = get_axes_limits()  # get the previous axes limits
+
+            p = plt.plot(X, hf, **kwargs)
+            plt.xlabel('x values')
+            plt.ylabel('Hazard')
+            text_title = str('Loglogistic Distribution\n' + ' Hazard Function ' + '\n' + self.param_title)
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.87)
+
+            restore_axes_limits(limits, dist=self, func='HF', X=X, Y=hf, xvals=xvals, xmin=xmin, xmax=xmax)
+
+            # Weibull_Distribution.__weibull_CI(self, func='HF', plot_CI=plot_CI, text_title=text_title, color=p[0].get_color())
+
+            return hf
+
+    def CHF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
+        '''
+        Plots the CHF (cumulative hazard function)
+
+        Inputs:
+        show_plot - True/False. Default is True
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 100 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *plotting keywords are also accepted (eg. color, linestyle)
+
+        Outputs:
+        yvals - this is the y-values of the plot
+        The plot will be shown if show_plot is True (which it is by default).
+        '''
+
+        # obtain the X array
+        X = generate_X_array(dist=self, func='CHF', xvals=xvals, xmin=xmin, xmax=xmax)
+
+        # this determines if the user has specified for the CI bounds to be shown or hidden. Applicable kwargs are show_CI or plot_CI
+        kwargs_list = kwargs.keys()
+        if 'plot_CI' in kwargs_list:
+            plot_CI = kwargs.pop('plot_CI')
+        elif 'show_CI' in kwargs_list:
+            plot_CI = kwargs.pop('show_CI')
+        else:
+            plot_CI = True  # default
+        if plot_CI not in [True, False]:
+            print('WARNING: unexpected value in kwargs. To show/hide the CI you can specify either show_CI=True/False or plot_CI=True/False')
+            plot_CI = True
+
+        chf = np.log(1 + ((X - self.gamma) / self.alpha) ** self.beta)
+        chf = zeroise_below_gamma(X=X, Y=chf, gamma=self.gamma)
+        self._chf = chf  # required by the CI plotting part
+        self._X = X
+
+        if show_plot == False:
+            return chf
+        else:
+            limits = get_axes_limits()  # get the previous axes limits
+
+            p = plt.plot(X, chf, **kwargs)
+            plt.xlabel('x values')
+            plt.ylabel('Cumulative hazard')
+            text_title = str('Loglogistic Distribution\n' + ' Cumulative Hazard Function ' + '\n' + self.param_title)
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.87)
+
+            restore_axes_limits(limits, dist=self, func='CHF', X=X, Y=chf, xvals=xvals, xmin=xmin, xmax=xmax)
+
+            # Weibull_Distribution.__weibull_CI(self, func='CHF', plot_CI=plot_CI, text_title=text_title, color=p[0].get_color())
+
+            return chf
+
+    def quantile(self, q):
+        '''
+        Quantile calculator
+
+        :param q: quantile to be calculated
+        :return: the probability (area under the curve) that a random variable from the distribution is < q
+        '''
+        if type(q) == int or type(q) == float:
+            if q < 0 or q > 1:
+                raise ValueError('Quantile must be between 0 and 1')
+        elif type(q) == np.ndarray or type(q) == list:
+            if min(q) < 0 or max(q) > 1:
+                raise ValueError('Quantile must be between 0 and 1')
+        else:
+            raise ValueError('Quantile must be of type int, float, list, array')
+        return ss.fisk.ppf(q, self.beta, scale=self.alpha, loc=self.gamma)
+
+    def inverse_SF(self, q):
+        '''
+        Inverse Survival function calculator
+
+        :param q: quantile to be calculated
+        :return: the inverse of the survival function at q
+        '''
+        if type(q) == int or type(q) == float:
+            if q < 0 or q > 1:
+                raise ValueError('Quantile must be between 0 and 1')
+        elif type(q) == np.ndarray or type(q) == list:
+            if min(q) < 0 or max(q) > 1:
+                raise ValueError('Quantile must be between 0 and 1')
+        else:
+            raise ValueError('Quantile must be of type int, float, list, array')
+        return ss.fisk.isf(q, self.beta, scale=self.alpha, loc=self.gamma)
+
+    def mean_residual_life(self, t):
+        '''
+        Mean Residual Life calculator
+
+        :param t: time at which MRL is to be evaluated
+        :return: MRL
+        '''
+        R = lambda x: ss.fisk.sf(x, self.beta, scale=self.alpha, loc=self.gamma)
+        integral_R, error = integrate.quad(R, t, np.inf)
+        MRL = integral_R / R(t)
+        return MRL
+
+    def stats(self):
+        if self.gamma == 0:
+            print('Descriptive statistics for Weibull distribution with alpha =', self.alpha, 'and beta =', self.beta)
+        else:
+            print('Descriptive statistics for Weibull distribution with alpha =', self.alpha, ', beta =', self.beta, ', and gamma =', self.gamma)
+        print('Mean = ', self.mean)
+        print('Median =', self.median)
+        print('Mode =', self.mode)
+        print('5th quantile =', self.b5)
+        print('95th quantile =', self.b95)
+        print('Standard deviation =', self.standard_deviation)
+        print('Variance =', self.variance)
+        print('Skewness =', self.skewness)
+        print('Excess kurtosis =', self.excess_kurtosis)
+
+    def random_samples(self, number_of_samples, seed=None):
+        '''
+        random_samples
+        Draws random samples from the probability distribution
+
+        :param number_of_samples: the number of samples to be drawn
+        :param seed: the random seed. Default is None
+        :return: the random samples
+        '''
+        if type(number_of_samples) != int or number_of_samples < 1:
+            raise ValueError('number_of_samples must be an integer greater than 1')
+        if seed is not None:
+            np.random.seed(seed)
+        RVS = ss.fisk.rvs(self.beta, scale=self.alpha, loc=self.gamma, size=number_of_samples)
+        return RVS
+
+
 class Competing_Risks_Model:
     '''
     The competing risks model is used to model the effect of multiple risks (expressed as probability distributions) that act on a system over time.
@@ -3228,7 +3799,7 @@ class Competing_Risks_Model:
     Similarly, the SF of the overall model will always be equal to or lower than any of the constituent distributions.
     The PDF occurs earlier in time since the earlier risks cause the population to fail sooner leaving less to fail due to the later risks.
 
-    This mode should be used when a data set has been divided by failure mode and each failure mode has been modelled separately.
+    This model should be used when a data set has been divided by failure mode and each failure mode has been modelled separately.
     The competing risks model can then be used to recombine the constituent distributions into a single model.
     Unlike the mixture model, there are no proportions as the risks are competing to cause failure rather than being mixed.
 
@@ -3373,7 +3944,7 @@ class Competing_Risks_Model:
         xvals - x-values for plotting
         xmin - minimum x-value for plotting
         xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 100 elements
         will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
         *no plotting keywords are accepted
 
@@ -3407,10 +3978,7 @@ class Competing_Risks_Model:
         plt.xlim([0, 10])
         text_mean = str('Mean = ' + str(round_to_decimals(float(self.mean), dec)))
         text_median = str('Median = ' + str(round_to_decimals(self.median, dec)))
-        try:
-            text_mode = str('Mode = ' + str(round_to_decimals(self.mode, dec)))
-        except:
-            text_mode = str('Mode = ' + str(self.mode))  # required when mode is str
+        text_mode = str('Mode = ' + str(round_to_decimals(self.mode, dec)))
         text_b5 = str('$5^{th}$ quantile = ' + str(round_to_decimals(self.b5, dec)))
         text_b95 = str('$95^{th}$ quantile = ' + str(round_to_decimals(self.b95, dec)))
         text_std = str('Standard deviation = ' + str(round_to_decimals(self.variance ** 0.5, dec)))
@@ -3439,7 +4007,7 @@ class Competing_Risks_Model:
         xvals - x-values for plotting
         xmin - minimum x-value for plotting
         xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 100 elements
         will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
         *plotting keywords are also accepted (eg. color, linestyle)
 
@@ -3476,7 +4044,7 @@ class Competing_Risks_Model:
         xvals - x-values for plotting
         xmin - minimum x-value for plotting
         xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 100 elements
         will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
         *plotting keywords are also accepted (eg. color, linestyle)
 
@@ -3513,7 +4081,7 @@ class Competing_Risks_Model:
         xvals - x-values for plotting
         xmin - minimum x-value for plotting
         xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 100 elements
         will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
         *plotting keywords are also accepted (eg. color, linestyle)
 
@@ -3550,7 +4118,7 @@ class Competing_Risks_Model:
         xvals - x-values for plotting
         xmin - minimum x-value for plotting
         xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 100 elements
         will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
         *plotting keywords are also accepted (eg. color, linestyle)
 
@@ -3589,7 +4157,7 @@ class Competing_Risks_Model:
         xvals - x-values for plotting
         xmin - minimum x-value for plotting
         xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 100 elements
         will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
         *plotting keywords are also accepted (eg. color, linestyle)
 
@@ -3711,7 +4279,7 @@ class Mixture_Model:
     An equivalent form of this model is to sum the CDF. The result is the same. Note that you cannot simply sum the HF or CHF as this method would be equivalent to the competing risks model.
     In this way, we see the mixture model will always lie somewhere between the constituent models.
 
-    This mode should be used when a data set cannot be modelled by a single distribution, as evidenced by the shape of the PDF, CDF or probability plot (points do not form a straight line)
+    This model should be used when a data set cannot be modelled by a single distribution, as evidenced by the shape of the PDF, CDF or probability plot (points do not form a straight line)
     Unlike the competing risks model, this model requires the proportions to be supplied.
 
     As this process is additive for the survival function, and may accept many distributions of different types, the mathematical formulation quickly gets complex.
@@ -3866,7 +4434,7 @@ class Mixture_Model:
         xvals - x-values for plotting
         xmin - minimum x-value for plotting
         xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 100 elements
         will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
         *no plotting keywords are accepted
 
@@ -3902,10 +4470,7 @@ class Mixture_Model:
         plt.xlim([0, 10])
         text_mean = str('Mean = ' + str(round_to_decimals(float(self.mean), dec)))
         text_median = str('Median = ' + str(round_to_decimals(self.median, dec)))
-        try:
-            text_mode = str('Mode = ' + str(round_to_decimals(self.mode, dec)))
-        except:
-            text_mode = str('Mode = ' + str(self.mode))  # required when mode is str
+        text_mode = str('Mode = ' + str(round_to_decimals(self.mode, dec)))
         text_b5 = str('$5^{th}$ quantile = ' + str(round_to_decimals(self.b5, dec)))
         text_b95 = str('$95^{th}$ quantile = ' + str(round_to_decimals(self.b95, dec)))
         text_std = str('Standard deviation = ' + str(round_to_decimals(self.variance ** 0.5, dec)))
@@ -3934,7 +4499,7 @@ class Mixture_Model:
         xvals - x-values for plotting
         xmin - minimum x-value for plotting
         xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 100 elements
         will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
         *plotting keywords are also accepted (eg. color, linestyle)
 
@@ -3971,7 +4536,7 @@ class Mixture_Model:
         xvals - x-values for plotting
         xmin - minimum x-value for plotting
         xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 100 elements
         will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
         *plotting keywords are also accepted (eg. color, linestyle)
 
@@ -4008,7 +4573,7 @@ class Mixture_Model:
         xvals - x-values for plotting
         xmin - minimum x-value for plotting
         xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 100 elements
         will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
         *plotting keywords are also accepted (eg. color, linestyle)
 
@@ -4045,7 +4610,7 @@ class Mixture_Model:
         xvals - x-values for plotting
         xmin - minimum x-value for plotting
         xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 100 elements
         will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
         *plotting keywords are also accepted (eg. color, linestyle)
 
@@ -4082,7 +4647,7 @@ class Mixture_Model:
         xvals - x-values for plotting
         xmin - minimum x-value for plotting
         xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 100 elements
         will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
         *plotting keywords are also accepted (eg. color, linestyle)
 

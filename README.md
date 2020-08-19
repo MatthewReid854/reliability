@@ -18,7 +18,7 @@
 - Fitting probability distributions to data including right censored data
 - Fitting Weibull mixture models
 - Calculating the probability of failure for stress-strength interference between any combination of the supported distributions
-- Support for Exponential, Weibull, Gamma, Normal, Lognormal, and Beta probability distributions
+- Support for Exponential, Weibull, Gamma, Normal, Lognormal, Loglogistic, and Beta probability distributions
 - Mean residual life, quantiles, descriptive statistics summaries, random sampling from distributions
 - Plots of probability density function (PDF), cumulative distribution function (CDF), survival function (SF), hazard function (HF), and cumulative hazard function (CHF)
 - Easy creation of distribution objects. Eg. dist = Weibull_Distribution(alpha=4,beta=2)

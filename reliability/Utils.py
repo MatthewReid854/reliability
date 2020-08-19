@@ -268,11 +268,14 @@ def restore_axes_limits(limits, dist, func, X, Y, xvals=None, xmin=None, xmax=No
     elif func in ['cdf', 'CDF', 'SF', 'sf']:
         ylim_upper = 1.05
     elif func in ['hf', 'HF']:
-        if dist._hf0 == 0:  # when the hazard function is increasing
-            idx = np.where(X >= xlim_upper)[0][0]  # index of the hf where it is equal to b95
-        else:  # when the hazard function is decreasing
-            idx = np.where(X >= dist.quantile(0.01))[0][0]
-        ylim_upper = Y[idx]
+        if Y[-1]!=Y[0]: #non-constant hazard
+            if dist._hf0 == 0:  # when the hazard function is increasing
+                idx = np.where(X >= xlim_upper)[0][0]  # index of the hf where it is equal to b95
+            else:  # when the hazard function is decreasing
+                idx = np.where(X >= dist.quantile(0.01))[0][0]
+            ylim_upper = Y[idx]
+        else: #constant hazard
+            ylim_upper = Y[0]*1.2 #this ensures the upper lim of a constant hazard does not place the hazard along the top edge of the plot
     elif func in ['chf', 'CHF']:
         idx = np.where(X >= xlim_upper)[0][0]  # index of the chf where it is equal to b95
         ylim_upper = Y[idx]
@@ -386,10 +389,7 @@ def generate_X_array(dist, func, xvals=None, xmin=None, xmax=None):
                     else:  # pdf is asymptotic to inf at x=0
                         X = np.hstack([xmin, np.geomspace(QL, QU, points - 2), xmax])
                 elif func in ['hf', 'HF']:
-                    if dist._hf0 == 0:
-                        X = np.hstack([xmin, np.linspace(QL, xmax, points - 1)])
-                    else:
-                        X = np.hstack([xmin, np.geomspace(QL, xmax, points - 1)])
+                    X = np.hstack([xmin, np.geomspace(QL, xmax, points - 1)]) #geomspace works better as it typically asymptotes
                 elif func in ['chf', 'CHF']:
                     X = np.hstack([xmin, np.linspace(QL, xmax, points - 1)])
                 else:
@@ -402,11 +402,8 @@ def generate_X_array(dist, func, xvals=None, xmin=None, xmax=None):
                         detail = np.geomspace(QL - dist.gamma, QU - dist.gamma, points - 3) + dist.gamma
                         X = np.hstack([xmin, dist.gamma - 1e-8, detail, xmax])
                 elif func in ['hf', 'HF']:
-                    if dist._hf0 == 0:
-                        X = np.hstack([xmin, dist.gamma - 1e-8, np.linspace(QL, xmax, points - 2)])
-                    else:  # hf is asymptotic to inf at x=0
-                        detail = np.geomspace(QL - dist.gamma, xmax - dist.gamma, points - 2) + dist.gamma
-                        X = np.hstack([xmin, dist.gamma - 1e-8, detail])
+                    detail = np.geomspace(QL - dist.gamma, xmax - dist.gamma, points - 2) + dist.gamma #geomspace works better as it typically asymptotes
+                    X = np.hstack([xmin, dist.gamma - 1e-8, detail])
                 elif func in ['chf', 'CHF']:
                     X = np.hstack([xmin, dist.gamma - 1e-8, np.linspace(QL, xmax, points - 2)])
                 else:
