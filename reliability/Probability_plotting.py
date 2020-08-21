@@ -24,8 +24,6 @@ plot_points - plots the failure points on a scatter plot. Useful to overlay the 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from matplotlib import scale
-from matplotlib import transforms as mtransforms
 from matplotlib.ticker import FixedLocator
 from reliability.Distributions import Weibull_Distribution, Lognormal_Distribution, Normal_Distribution, Gamma_Distribution, Beta_Distribution, Exponential_Distribution
 from reliability.Nonparametric import KaplanMeier, NelsonAalen

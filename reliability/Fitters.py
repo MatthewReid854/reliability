@@ -818,12 +818,15 @@ class Fit_Weibull_2P:
                 rc = right_censored
             Weibull_probability_plot(failures=failures, right_censored=rc, __fitted_dist_params=self, CI=CI, CI_type=CI_type, **kwargs)
 
+    @staticmethod
     def logf(t, a, b):  # Log PDF (2 parameter Weibull)
         return (b - 1) * anp.log(t / a) + anp.log(b / a) - (t / a) ** b
 
+    @staticmethod
     def logR(t, a, b):  # Log SF (2 parameter Weibull)
         return -((t / a) ** b)
 
+    @staticmethod
     def LL(params, T_f, T_rc):  # log likelihood function (2 parameter weibull)
         LL_f = 0
         LL_rc = 0
@@ -831,6 +834,7 @@ class Fit_Weibull_2P:
         LL_rc += Fit_Weibull_2P.logR(T_rc, params[0], params[1]).sum()  # right censored times
         return -(LL_f + LL_rc)
 
+    @staticmethod
     def LL_fb(params, T_f, T_rc, force_beta):  # log likelihood function (2 parameter weibull) FORCED BETA
         LL_f = 0
         LL_rc = 0
@@ -1111,12 +1115,15 @@ class Fit_Weibull_2P_grouped:
             from reliability.Probability_plotting import Weibull_probability_plot
             Weibull_probability_plot(failures=failures, right_censored=right_censored, __fitted_dist_params=self, CI=CI, CI_type=CI_type, **kwargs)
 
+    @staticmethod
     def logf(t, a, b):  # Log PDF (2 parameter Weibull)
         return (b - 1) * anp.log(t / a) + anp.log(b / a) - (t / a) ** b
 
+    @staticmethod
     def logR(t, a, b):  # Log SF (2 parameter Weibull)
         return -((t / a) ** b)
 
+    @staticmethod
     def LL(params, T_f, T_rc, Q_f, Q_rc):  # log likelihood function (2 parameter weibull) ==> T is for time, Q is for quantity
         LL_f = 0
         LL_rc = 0
@@ -1124,6 +1131,7 @@ class Fit_Weibull_2P_grouped:
         LL_rc += (Fit_Weibull_2P_grouped.logR(T_rc, params[0], params[1]) * Q_rc).sum()  # right censored times
         return -(LL_f + LL_rc)
 
+    @staticmethod
     def LL_fb(params, T_f, T_rc, Q_f, Q_rc, force_beta):  # log likelihood function (2 parameter weibull) FORCED BETA  ==> T is for time, Q is for quantity
         LL_f = 0
         LL_rc = 0
@@ -1253,7 +1261,7 @@ class Fit_Weibull_3P:
                 try:
                     popt, _ = curve_fit(__F, x2, y2, p0=[LS_alpha, LS_beta, gamma_initial_guess], bounds=curve_fit_bounds)  # This is the non-linear least squares method
                     self.initial_guess = [popt[0], popt[1], popt[2]]
-                except:  # Sometimes the curve_fit fails due to "RuntimeError: Optimal parameters not found: The maximum number of function evaluations is exceeded."
+                except RuntimeError:  # Sometimes the curve_fit fails due to "RuntimeError: Optimal parameters not found: The maximum number of function evaluations is exceeded."
                     self.initial_guess = [LS_alpha, LS_beta, gamma_initial_guess]
                     print('WARNING: non-linear least squares failed to obtain the initial guess. Using least squares instead.')
                 guess = self.initial_guess
@@ -1372,12 +1380,15 @@ class Fit_Weibull_3P:
                 # manually change the legend to reflect that Weibull_3P was fitted. The default legend in the probability plot thinks Weibull_2P was fitted when gamma=0
                 fig.axes[0].legend_.get_texts()[0].set_text(str('Fitted Weibull_3P\n(α=' + str(round_to_decimals(self.alpha, dec)) + ', β=' + str(round_to_decimals(self.beta, dec)) + ', γ=' + str(round_to_decimals(self.gamma, dec)) + ')'))
 
+    @staticmethod
     def logf(t, a, b, g):  # Log PDF (3 parameter Weibull)
         return (b - 1) * anp.log((t - g) / a) + anp.log(b / a) - ((t - g) / a) ** b
 
+    @staticmethod
     def logR(t, a, b, g):  # Log SF (3 parameter Weibull)
         return -(((t - g) / a) ** b)
 
+    @staticmethod
     def LL(params, T_f, T_rc):  # log likelihood function (3 parameter Weibull)
         LL_f = 0
         LL_rc = 0
@@ -1597,12 +1608,15 @@ class Fit_Weibull_Mixture:
             self.distribution.CDF(xvals=xvals, label=label_str)
             plt.title('Probability Plot\nWeibull Mixture CDF')
 
+    @staticmethod
     def logf(t, a1, b1, a2, b2, p):  # Log Mixture PDF (2 parameter Weibull)
         return anp.log(p * ((b1 * t ** (b1 - 1)) / (a1 ** b1)) * anp.exp(-((t / a1) ** b1)) + (1 - p) * ((b2 * t ** (b2 - 1)) / (a2 ** b2)) * anp.exp(-((t / a2) ** b2)))
 
+    @staticmethod
     def logR(t, a1, b1, a2, b2, p):  # Log Mixture SF (2 parameter Weibull)
         return anp.log(p * anp.exp(-((t / a1) ** b1)) + (1 - p) * anp.exp(-((t / a2) ** b2)))
 
+    @staticmethod
     def LL(params, T_f, T_rc):  # Log Mixture Likelihood function (2 parameter weibull)
         LL_f = 0
         LL_rc = 0
@@ -1806,12 +1820,15 @@ class Fit_Weibull_CR:
             self.distribution.CDF(xvals=xvals, label=label_str)
             plt.title('Probability Plot\nWeibull Competing Risks CDF')
 
+    @staticmethod
     def logf(t, a1, b1, a2, b2):  # Log PDF (Competing Risks)
         return anp.log(-(-(b2 * (t / a2) ** b2) / t - (b1 * (t / a1) ** b1) / t) * anp.exp(-(t / a2) ** b2 - (t / a1) ** b1))
 
+    @staticmethod
     def logR(t, a1, b1, a2, b2):  # Log SF (Competing Risks)
         return -((t / a1) ** b1) - ((t / a2) ** b2)
 
+    @staticmethod
     def LL(params, T_f, T_rc):  # Log Likelihood function (Competing Risks)
         LL_f = 0
         LL_rc = 0
@@ -1947,12 +1964,15 @@ class Fit_Expon_1P:
                 rc = right_censored
             Exponential_probability_plot_Weibull_Scale(failures=failures, right_censored=rc, CI=CI, __fitted_dist_params=self, **kwargs)  ####
 
+    @staticmethod
     def logf(t, L):  # Log PDF (1 parameter Expon)
         return anp.log(L) - L * t
 
+    @staticmethod
     def logR(t, L):  # Log SF (1 parameter Expon)
         return -(L * t)
 
+    @staticmethod
     def LL(params, T_f, T_rc):  # log likelihood function (1 parameter Expon)
         LL_f = 0
         LL_rc = 0
@@ -2143,12 +2163,15 @@ class Fit_Expon_2P:
                 rc = right_censored
             Exponential_probability_plot_Weibull_Scale(failures=failures, right_censored=rc, CI=CI, __fitted_dist_params=self, **kwargs)
 
+    @staticmethod
     def logf(t, L, g):  # Log PDF (2 parameter Expon)
         return anp.log(L) - L * (t - g)
 
+    @staticmethod
     def logR(t, L, g):  # Log SF (2 parameter Expon)
         return -(L * (t - g))
 
+    @staticmethod
     def LL(params, T_f, T_rc):  # log likelihood function (2 parameter Expon)
         LL_f = 0
         LL_rc = 0
@@ -2157,6 +2180,7 @@ class Fit_Expon_2P:
         return -(LL_f + LL_rc)
 
     # #this is the inverted forms of the above functions. It simply changes Lambda to be 1/Lambda which is necessary when Lambda<<1
+    @staticmethod
     def LL_inv(params, T_f, T_rc):  # log likelihood function (2 parameter Expon)
         LL_f = 0
         LL_rc = 0
@@ -2315,12 +2339,15 @@ class Fit_Normal_2P:
                 rc = right_censored
             Normal_probability_plot(failures=failures, right_censored=rc, __fitted_dist_params=self, **kwargs)
 
+    @staticmethod
     def logf(t, mu, sigma):  # Log PDF (Normal)
         return anp.log(anp.exp(-0.5 * (((t - mu) / sigma) ** 2))) - anp.log((sigma * (2 * anp.pi) ** 0.5))
 
+    @staticmethod
     def logR(t, mu, sigma):  # Log SF (Normal)
         return anp.log((1 + erf(((mu - t) / sigma) / 2 ** 0.5)) / 2)
 
+    @staticmethod
     def LL(params, T_f, T_rc):  # log likelihood function (2 parameter Normal)
         LL_f = 0
         LL_rc = 0
@@ -2328,6 +2355,7 @@ class Fit_Normal_2P:
         LL_rc += Fit_Normal_2P.logR(T_rc, params[0], params[1]).sum()  # right censored times
         return -(LL_f + LL_rc)
 
+    @staticmethod
     def LL_fs(params, T_f, T_rc, force_sigma):  # log likelihood function (2 parameter Normal) FORCED SIGMA
         LL_f = 0
         LL_rc = 0
@@ -2499,12 +2527,15 @@ class Fit_Lognormal_2P:
                 rc = right_censored
             Lognormal_probability_plot(failures=failures, right_censored=rc, __fitted_dist_params=self, **kwargs)
 
+    @staticmethod
     def logf(t, mu, sigma):  # Log PDF (Lognormal)
         return anp.log(anp.exp(-0.5 * (((anp.log(t) - mu) / sigma) ** 2)) / (t * sigma * (2 * anp.pi) ** 0.5))
 
+    @staticmethod
     def logR(t, mu, sigma):  # Log SF (Lognormal)
         return anp.log(0.5 - 0.5 * erf((anp.log(t) - mu) / (sigma * 2 ** 0.5)))
 
+    @staticmethod
     def LL(params, T_f, T_rc):  # log likelihood function (2 parameter lognormal)
         LL_f = 0
         LL_rc = 0
@@ -2512,6 +2543,7 @@ class Fit_Lognormal_2P:
         LL_rc += Fit_Lognormal_2P.logR(T_rc, params[0], params[1]).sum()  # right censored times
         return -(LL_f + LL_rc)
 
+    @staticmethod
     def LL_fs(params, T_f, T_rc, force_sigma):  # log likelihood function (2 parameter lognormal) FORCED SIGMA
         LL_f = 0
         LL_rc = 0
@@ -2700,6 +2732,7 @@ class Fit_Lognormal_3P:
                 rc = right_censored
             Lognormal_probability_plot(failures=failures, right_censored=rc, __fitted_dist_params=self, **kwargs)
 
+    @staticmethod
     def gamma_optimizer(gamma_guess, failures, right_censored):
         failures_shifted = failures - gamma_guess[0]
         right_censored_shifted = right_censored - gamma_guess[0]
@@ -2721,12 +2754,15 @@ class Fit_Lognormal_3P:
         LL2 = 2 * Fit_Lognormal_2P.LL([mu, sigma], failures_shifted, right_censored_shifted)
         return LL2
 
+    @staticmethod
     def logf(t, mu, sigma, gamma):  # Log PDF (3 parameter Lognormal)
         return anp.log(anp.exp(-0.5 * (((anp.log(t - gamma) - mu) / sigma) ** 2)) / ((t - gamma) * sigma * (2 * anp.pi) ** 0.5))
 
+    @staticmethod
     def logR(t, mu, sigma, gamma):  # Log SF (3 parameter Lognormal)
         return anp.log(0.5 - 0.5 * erf((anp.log(t - gamma) - mu) / (sigma * 2 ** 0.5)))
 
+    @staticmethod
     def LL(params, T_f, T_rc):  # log likelihood function (3 parameter Lognormal)
         LL_f = 0
         LL_rc = 0
@@ -2888,12 +2924,15 @@ class Fit_Gamma_2P:
                 rc = right_censored
             Gamma_probability_plot(failures=failures, right_censored=rc, __fitted_dist_params=self, **kwargs)
 
+    @staticmethod
     def logf(t, a, b):  # Log PDF (2 parameter Gamma)
         return anp.log(t ** (b - 1)) - anp.log((a ** b) * agamma(b)) - (t / a)
 
+    @staticmethod
     def logR(t, a, b):  # Log SF (2 parameter Gamma)
         return anp.log(gammaincc(b, t / a))
 
+    @staticmethod
     def LL(params, T_f, T_rc):  # log likelihood function (2 parameter Gamma)
         LL_f = 0
         LL_rc = 0
@@ -3065,12 +3104,15 @@ class Fit_Gamma_3P:
                 rc = right_censored
             Gamma_probability_plot(failures=failures, right_censored=rc, __fitted_dist_params=self, **kwargs)
 
+    @staticmethod
     def logf(t, a, b, g):  # Log PDF (3 parameter Gamma)
         return anp.log((t - g) ** (b - 1)) - anp.log((a ** b) * agamma(b)) - ((t - g) / a)
 
+    @staticmethod
     def logR(t, a, b, g):  # Log SF (3 parameter Gamma)
         return anp.log(gammaincc(b, (t - g) / a))
 
+    @staticmethod
     def LL(params, T_f, T_rc):  # log likelihood function (3 parameter Gamma)
         LL_f = 0
         LL_rc = 0
@@ -3207,12 +3249,15 @@ class Fit_Beta_2P:
                 rc = right_censored
             Beta_probability_plot(failures=failures, right_censored=rc, __fitted_dist_params=self, **kwargs)
 
+    @staticmethod
     def logf(t, a, b):  # Log PDF (2 parameter Beta)
         return anp.log(((t ** (a - 1)) * ((1 - t) ** (b - 1)))) - anp.log(abeta(a, b))
 
+    @staticmethod
     def logR(t, a, b):  # Log SF (2 parameter Beta)
         return anp.log(1 - betainc(a, b, t))
 
+    @staticmethod
     def LL(params, T_f, T_rc):  # log likelihood function (2 parameter beta)
         LL_f = 0
         LL_rc = 0

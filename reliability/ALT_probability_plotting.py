@@ -13,7 +13,7 @@ Within the module ALT_probability_plotting, are the following functions:
 import numpy as np
 import matplotlib.pyplot as plt
 from reliability import Probability_plotting
-from reliability.Fitters import Fit_Weibull_2P, Fit_Lognormal_2P, Fit_Gamma_2P, Fit_Normal_2P, Fit_Expon_1P
+from reliability.Fitters import Fit_Weibull_2P, Fit_Lognormal_2P, Fit_Normal_2P, Fit_Expon_1P
 import pandas as pd
 from scipy.optimize import minimize
 

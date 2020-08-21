@@ -363,6 +363,7 @@ class stress_strain_diagram:
         self.n = n
 
         warnings.filterwarnings('ignore')  # sometimes fsolve has issues when delta_sigma crosses zero. It almost always resolves itself so the warning is just an annoyance
+
         # these functions are used for solving the equation for sigma_max as it can not be rearranged
         def ramberg_osgood(epsilon, sigma, E, K, n):
             return (sigma / E) + ((sigma / K) ** (1 / n)) - epsilon
@@ -400,7 +401,7 @@ class stress_strain_diagram:
         stress_array1 = []
         sigma = 10  # initial guess for fsolve which get updated once the first value is found
         for epsilon in strain_array1:
-            fun = lambda x: ramberg_osgood(epsilon, x, E, self.K, self.n)
+            fun = lambda x: ramberg_osgood(epsilon=epsilon, sigma=x, E=E, K=self.K, n=self.n)
             result = fsolve(fun, np.array(sigma))
             sigma = result[0]
             stress_array1.append(sigma)
@@ -415,7 +416,7 @@ class stress_strain_diagram:
         initial_stress = stress_array1[-1]
         delta_sigma = 10  # initial guess for fsolve which get updated once the first value is found
         for epsilon in strain_delta_array2:
-            fun_delta = lambda x: ramberg_osgood_delta(epsilon, x, E, self.K, self.n)
+            fun_delta = lambda x: ramberg_osgood_delta(delta_epsilon=epsilon, delta_sigma=x, E=E, K=self.K, n=self.n)
             result2 = fsolve(fun_delta, np.array(delta_sigma))
             delta_sigma = result2[0]
             if initial_load_direction == 'tension':
@@ -433,7 +434,7 @@ class stress_strain_diagram:
         stress_array3 = []
         initial_stress = stress_array2[-1]
         for delta_epsilon in strain_delta_array3:
-            fun_delta = lambda x: ramberg_osgood_delta(delta_epsilon, x, E, self.K, self.n)
+            fun_delta = lambda x: ramberg_osgood_delta(delta_epsilon=delta_epsilon, delta_sigma=x, E=E, K=self.K, n=self.n)
             result3 = fsolve(fun_delta, np.array(delta_sigma))
             delta_sigma = result3[0]
             if initial_load_direction == 'tension':
@@ -555,8 +556,8 @@ class strain_life_diagram:
                 def ramberg_osgood(epsilon, sigma, E, K, n):
                     return (sigma / E) + ((sigma / K) ** (1 / n)) - epsilon
 
-                fun_max_strain = lambda x: ramberg_osgood(self.max_strain, x, E, K, n)
-                fun_min_strain = lambda x: ramberg_osgood(self.min_strain, x, E, K, n)
+                fun_max_strain = lambda x: ramberg_osgood(epsilon=self.max_strain, sigma=x, E=E, K=K, n=n)
+                fun_min_strain = lambda x: ramberg_osgood(epsilon=self.min_strain, sigma=x, E=E, K=K, n=n)
                 self.max_stress = fsolve(fun_max_strain, np.array(100))
                 self.min_stress = fsolve(fun_min_strain, np.array(-100))
 
@@ -571,7 +572,7 @@ class strain_life_diagram:
                 def coffin_manson(eps_tot, sigma_f, E, cycles_2Nf, epsilon_f, b, c):
                     return sigma_f / E * cycles_2Nf ** b + epsilon_f * cycles_2Nf ** c - eps_tot
 
-                fun_cm = lambda x: coffin_manson(self.max_strain, self.sigma_f, E, x, self.epsilon_f, self.b, self.c)
+                fun_cm = lambda x: coffin_manson(eps_tot=self.max_strain, sigma_f=self.sigma_f, E=E, cycles_2Nf=x, epsilon_f=self.epsilon_f, b=self.b, c=self.c)
                 use_cycles_2Nf = fsolve(fun_cm, np.array(10))
                 cycles_2Nt = (self.epsilon_f * E / self.sigma_f) ** (1 / (self.b - self.c))
                 epsilon_total = (self.sigma_f / E) * cycles_2Nf_array ** self.b + self.epsilon_f * cycles_2Nf_array ** self.c
@@ -584,7 +585,7 @@ class strain_life_diagram:
                     def morrow(eps_tot, sigma_f, sigma_mean, E, cycles_2Nf, epsilon_f, b, c):
                         return (sigma_f - sigma_mean) / E * cycles_2Nf ** b + epsilon_f * cycles_2Nf ** c - eps_tot
 
-                    fun_m = lambda x: morrow(delta_epsilon_half, self.sigma_f, mean_stress, E, x, self.epsilon_f, self.b, self.c)
+                    fun_m = lambda x: morrow(eps_tot=delta_epsilon_half, sigma_f=self.sigma_f, sigma_mean=mean_stress, E=E, cycles_2Nf=x, epsilon_f=self.epsilon_f, b=self.b, c=self.c)
                     use_cycles_2Nf = fsolve(fun_m, np.array(10))
                     cycles_2Nt = (self.epsilon_f * E / (self.sigma_f - mean_stress)) ** (1 / (self.b - self.c))
                     epsilon_total = ((self.sigma_f - mean_stress) / E) * cycles_2Nf_array ** self.b + self.epsilon_f * cycles_2Nf_array ** self.c
@@ -597,7 +598,7 @@ class strain_life_diagram:
                     def modified_morrow(eps_tot, sigma_f, sigma_mean, E, cycles_2Nf, epsilon_f, b, c):
                         return (sigma_f - sigma_mean) / E * cycles_2Nf ** b + epsilon_f * ((sigma_f - sigma_mean) / sigma_f) ** (c / b) * cycles_2Nf ** c - eps_tot
 
-                    fun_mm = lambda x: modified_morrow(delta_epsilon_half, self.sigma_f, mean_stress, E, x, self.epsilon_f, self.b, self.c)
+                    fun_mm = lambda x: modified_morrow(eps_tot=delta_epsilon_half, sigma_f=self.sigma_f, sigma_mean=mean_stress, E=E, cycles_2Nf=x, epsilon_f=self.epsilon_f, b=self.b, c=self.c)
                     use_cycles_2Nf = fsolve(fun_mm, np.array(10))
                     cycles_2Nt = (self.epsilon_f * E * ((self.sigma_f - mean_stress) / self.sigma_f) ** (self.c / self.b) / (self.sigma_f - mean_stress)) ** (1 / (self.b - self.c))
                     epsilon_total = ((self.sigma_f - mean_stress) / E) * cycles_2Nf_array ** self.b + self.epsilon_f * ((self.sigma_f - mean_stress) / self.sigma_f) ** (self.c / self.b) * cycles_2Nf_array ** self.c
@@ -609,7 +610,7 @@ class strain_life_diagram:
                     def SWT(eps_tot, sigma_f, E, cycles_2Nf, epsilon_f, b, c, sigma_max):
                         return ((sigma_f ** 2) / E * cycles_2Nf ** (2 * b) + sigma_f * epsilon_f * (cycles_2Nf) ** (b + c)) / sigma_max - eps_tot
 
-                    fun_swt = lambda x: SWT(delta_epsilon_half, self.sigma_f, E, x, self.epsilon_f, self.b, self.c, self.max_stress)
+                    fun_swt = lambda x: SWT(eps_tot=delta_epsilon_half, sigma_f=self.sigma_f, E=E, cycles_2Nf=x, epsilon_f=self.epsilon_f, b=self.b, c=self.c, sigma_max=self.max_stress)
                     use_cycles_2Nf = fsolve(fun_swt, np.array(10))
                     cycles_2Nt = (self.epsilon_f * E / self.sigma_f) ** (1 / (self.b - self.c))
                     epsilon_total = ((self.sigma_f ** 2 / E) * cycles_2Nf_array ** (2 * self.b) + self.sigma_f * self.epsilon_f * cycles_2Nf_array ** (self.b + self.c)) / self.max_stress
@@ -786,7 +787,7 @@ class fracture_mechanics_crack_initiation:
             delta_sigma = fsolve(massing_delta_sigma, x0=100)[0]
             delta_epsilon = delta_epsilon_delta_sigma / delta_sigma
 
-            if delta_epsilon>1:#this checks that the delta_epsilon that was found is realistic
+            if delta_epsilon > 1:  # this checks that the delta_epsilon that was found is realistic
                 raise ValueError('As a results of the inputs, delta_epsilon has been calculated to be greater than 1. This will result in immediate failure of the component. You should check your inputs to ensure they are in the correct units, especially for P (units of MPa) and A (units of mm^2).')
 
             self.sigma_min = sigma - delta_sigma
@@ -799,18 +800,21 @@ class fracture_mechanics_crack_initiation:
             if mean_stress_correction_method == 'morrow':
                 def morrow(delta_epsilon, sigma_f, sigma_mean, E, Nf2, b, epsilon_f, c):
                     return ((sigma_f - sigma_mean) / E) * Nf2 ** b + epsilon_f * Nf2 ** c - delta_epsilon * 0.5
+
                 morrow_2Nf = lambda x: morrow(delta_epsilon, sigma_f, self.sigma_mean, E, x, b, epsilon_f, c)
                 Nf2 = fsolve(morrow_2Nf, x0=np.array([100]))[0]
 
             elif mean_stress_correction_method == 'modified_morrow':
                 def modified_morrow(delta_epsilon, sigma_f, sigma_mean, E, Nf2, b, epsilon_f, c):
                     return ((sigma_f - sigma_mean) / E) * Nf2 ** b + epsilon_f * ((sigma_f - sigma_mean) / sigma_f) ** (c / b) * Nf2 ** c - delta_epsilon * 0.5
+
                 modified_morrow_2Nf = lambda x: modified_morrow(delta_epsilon, sigma_f, self.sigma_mean, E, x, b, epsilon_f, c)
                 Nf2 = fsolve(modified_morrow_2Nf, x0=np.array([100]))[0]
 
             elif mean_stress_correction_method == 'SWT':
                 def SWT(sigma, delta_epsilon, sigma_f, E, Nf2, b, epsilon_f, c):
                     return ((sigma_f ** 2) / E) * Nf2 ** (2 * b) + sigma_f * epsilon_f * Nf2 ** (b + c) - sigma * delta_epsilon * 0.5
+
                 SWT_2Nf = lambda x: SWT(sigma, delta_epsilon, sigma_f, E, x, b, epsilon_f, c)
                 Nf2 = fsolve(SWT_2Nf, x0=np.array([100]))[0]
         else:  # fully elastic model
@@ -924,8 +928,8 @@ class fracture_mechanics_crack_growth:
             d = 0
         else:
             d = D
-        if W-2*d < 0:
-            error_str = str('The specified geometry is invalid. A doubly notched specimen with specified values of the d = '+str(d)+'mm will have notches deeper than the width of the plate W = '+str(W)+'mm. This would result in a negative cross sectional area.')
+        if W - 2 * d < 0:
+            error_str = str('The specified geometry is invalid. A doubly notched specimen with specified values of the d = ' + str(d) + 'mm will have notches deeper than the width of the plate W = ' + str(W) + 'mm. This would result in a negative cross sectional area.')
             raise ValueError(error_str)
         # Simplified method (assuming fg, S_max, af to be constant)
         S_max = P / (t * (W - 2 * d)) * 10 ** 6

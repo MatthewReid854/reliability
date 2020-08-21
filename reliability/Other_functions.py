@@ -275,6 +275,7 @@ class crosshairs:
     def __init__(self, xlabel=None, ylabel=None, decimals=2, **kwargs):
         crosshairs.__generate_crosshairs(self, xlabel=xlabel, ylabel=ylabel, decimals=decimals, **kwargs)
 
+    @staticmethod
     def __add_lines_and_text_to_crosshairs(sel, decimals, **kwargs):
         # set the default properties of the lines and text if they were not provided as kwargs
         if 'c' in kwargs:
@@ -317,7 +318,7 @@ class crosshairs:
         sel.annotation.set(visible=False)  # Hide the normal annotation during hover
         try:
             ax = sel.artist.axes
-        except:
+        except AttributeError:
             ax = sel.annotation.axes  # this exception occurs for bar charts
         x, y = sel.target
         lines = [Line2D([x, x], [0, 1], transform=ax.get_xaxis_transform(), c=color, lw=linewidth, ls=linestyle, **kwargs),
@@ -332,12 +333,14 @@ class crosshairs:
             sel.extras.append(line)
             sel.extras.append(text)
 
+    @staticmethod
     def __format_annotation(sel, decimals, label):  # this is some simple formatting for the annotations (applied on click)
         [x, y] = sel.annotation.xy
         text = str(label[0] + ' = ' + str(round(x, decimals)) + '\n' + label[1] + ' = ' + str(round(y, decimals)))
         sel.annotation.set_text(text)
         sel.annotation.get_bbox_patch().set(fc="white")
 
+    @staticmethod
     def __hide_crosshairs(event):
         ax = event.inaxes  # this gets the axes where the event occurred.
         if len(ax.texts) >= 2:  # the lines can't be deleted if they haven't been drawn.

@@ -14,7 +14,7 @@ axes_transforms - Custom scale functions used in Probability_plotting
 import numpy as np
 import scipy.stats as ss
 import matplotlib.pyplot as plt
-from matplotlib.collections import PolyCollection, LineCollection, PathCollection
+from matplotlib.collections import PolyCollection, LineCollection
 
 
 def round_to_decimals(number, decimals=5, integer_floats_to_ints=True):
@@ -128,33 +128,43 @@ class axes_transforms:
     Custom scale functions used in Probability_plotting
     '''
 
+    @staticmethod
     def weibull_forward(F):
         return np.log(-np.log(1 - F))
 
+    @staticmethod
     def weibull_inverse(R):
         return 1 - np.exp(-np.exp(R))
 
+    @staticmethod
     def expon_forward(F):
         return ss.expon.ppf(F)
 
+    @staticmethod
     def expon_inverse(R):
         return ss.expon.cdf(R)
 
+    @staticmethod
     def normal_forward(F):
         return ss.norm.ppf(F)
 
+    @staticmethod
     def normal_inverse(R):
         return ss.norm.cdf(R)
 
+    @staticmethod
     def gamma_forward(F, beta):
         return ss.gamma.ppf(F, a=beta)
 
+    @staticmethod
     def gamma_inverse(R, beta):
         return ss.gamma.cdf(R, a=beta)
 
+    @staticmethod
     def beta_forward(F, alpha, beta):
         return ss.beta.ppf(F, a=alpha, b=beta)
 
+    @staticmethod
     def beta_inverse(R, alpha, beta):
         return ss.beta.cdf(R, a=alpha, b=beta)
 
