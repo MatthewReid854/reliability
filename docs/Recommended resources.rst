@@ -15,6 +15,7 @@ The following collection of resources are things I have found useful during my r
 -    Practical Reliability Engineering, Fifth Edition (2012), by P. O'Conner and A. Kleyner.
 -    Recurrent Events Data Analysis for Product Repairs, Disease Recurrences, and Other Applications (2003), by W. Nelson
 -    Reliasoft has compiled a much more comprehensive `list of textbooks <https://www.weibull.com/knowledge/books.htm>`_.
+-    The reliability analytics toolkit (linked below in free online tools and calculators) has also compiled a much more comprehensive `list of textbooks <https://reliabilityanalyticstoolkit.appspot.com/static/books.htm#0486438678>`_.
 
 **Free software**
 
