@@ -265,14 +265,17 @@ class Fit_Weibull_Exponential:
             plt.legend(title='Stress')
             plt.title('Weibull-Exponential Model')
 
+    @staticmethod
     def logf(t, T, a, b, beta):  # Log PDF
         life = b * anp.exp(a / T)
         return (beta - 1) * anp.log(t / life) + anp.log(beta / life) - (t / life) ** beta
 
+    @staticmethod
     def logR(t, T, a, b, beta):  # Log SF
         life = b * anp.exp(a / T)
         return -((t / life) ** beta)
 
+    @staticmethod
     def LL(params, t_f, t_rc, T_f, T_rc):  # log likelihood function
         LL_f = 0
         LL_rc = 0
@@ -493,14 +496,17 @@ class Fit_Weibull_Eyring:
             plt.legend(title='Stress')
             plt.title('Weibull-Eyring Model')
 
+    @staticmethod
     def logf(t, T, a, c, beta):  # Log PDF
         life = 1 / T * anp.exp(-(c - a / T))
         return (beta - 1) * anp.log(t / life) + anp.log(beta / life) - (t / life) ** beta
 
+    @staticmethod
     def logR(t, T, a, c, beta):  # Log SF
         life = 1 / T * anp.exp(-(c - a / T))
         return -((t / life) ** beta)
 
+    @staticmethod
     def LL(params, t_f, t_rc, T_f, T_rc):  # log likelihood function
         LL_f = 0
         LL_rc = 0
@@ -721,14 +727,17 @@ class Fit_Weibull_Power:
             plt.legend(title='Stress')
             plt.title('Weibull-Power Model')
 
+    @staticmethod
     def logf(t, T, a, n, beta):  # Log PDF
         life = a * T ** n
         return (beta - 1) * anp.log(t / life) + anp.log(beta / life) - (t / life) ** beta
 
+    @staticmethod
     def logR(t, T, a, n, beta):  # Log SF
         life = a * T ** n
         return -((t / life) ** beta)
 
+    @staticmethod
     def LL(params, t_f, t_rc, T_f, T_rc):  # log likelihood function
         LL_f = 0
         LL_rc = 0
@@ -986,14 +995,17 @@ class Fit_Weibull_Dual_Exponential:
             leg._legend_box.align = 'left'
             plt.title('Weibull-Dual-Exponential Model')
 
+    @staticmethod
     def logf(t, S1, S2, a, b, c, beta):  # Log PDF
         life = c * anp.exp(a / S1 + b / S2)
         return (beta - 1) * anp.log(t / life) + anp.log(beta / life) - (t / life) ** beta
 
+    @staticmethod
     def logR(t, S1, S2, a, b, c, beta):  # Log SF
         life = c * anp.exp(a / S1 + b / S2)
         return -((t / life) ** beta)
 
+    @staticmethod
     def LL(params, t_f, t_rc, S1_f, S2_f, S1_rc, S2_rc):  # log likelihood function
         LL_f = 0
         LL_rc = 0
@@ -1252,14 +1264,17 @@ class Fit_Weibull_Power_Exponential:
             leg._legend_box.align = 'left'
             plt.title('Weibull-Power-Exponential Model')
 
+    @staticmethod
     def logf(t, S1, S2, a, c, n, beta):  # Log PDF
         life = c * S2 ** n * anp.exp(a / S1)
         return (beta - 1) * anp.log(t / life) + anp.log(beta / life) - (t / life) ** beta
 
+    @staticmethod
     def logR(t, S1, S2, a, c, n, beta):  # Log SF
         life = c * S2 ** n * anp.exp(a / S1)
         return -((t / life) ** beta)
 
+    @staticmethod
     def LL(params, t_f, t_rc, S1_f, S2_f, S1_rc, S2_rc):  # log likelihood function
         LL_f = 0
         LL_rc = 0
@@ -1479,14 +1494,17 @@ class Fit_Lognormal_Exponential:
             plt.legend(title='Stress')
             plt.title('Lognormal-Exponential Model')
 
+    @staticmethod
     def logf(t, T, a, b, sigma):  # Log PDF
         life = b * anp.exp(a / T)
         return anp.log(anp.exp(-0.5 * (((anp.log(t) - anp.log(life)) / sigma) ** 2)) / (t * sigma * (2 * anp.pi) ** 0.5))
 
+    @staticmethod
     def logR(t, T, a, b, sigma):  # Log SF
         life = b * anp.exp(a / T)
         return anp.log(0.5 - 0.5 * erf((anp.log(t) - anp.log(life)) / (sigma * 2 ** 0.5)))
 
+    @staticmethod
     def LL(params, t_f, t_rc, T_f, T_rc):  # log likelihood function
         LL_f = 0
         LL_rc = 0
@@ -1704,14 +1722,17 @@ class Fit_Lognormal_Eyring:
             plt.legend(title='Stress')
             plt.title('Lognormal-Eyring Model')
 
+    @staticmethod
     def logf(t, T, a, c, sigma):  # Log PDF
         life = 1 / T * anp.exp(-(c - a / T))
         return anp.log(anp.exp(-0.5 * (((anp.log(t) - anp.log(life)) / sigma) ** 2)) / (t * sigma * (2 * anp.pi) ** 0.5))
 
+    @staticmethod
     def logR(t, T, a, c, sigma):  # Log SF
         life = 1 / T * anp.exp(-(c - a / T))
         return anp.log(0.5 - 0.5 * erf((anp.log(t) - anp.log(life)) / (sigma * 2 ** 0.5)))
 
+    @staticmethod
     def LL(params, t_f, t_rc, T_f, T_rc):  # log likelihood function
         LL_f = 0
         LL_rc = 0
@@ -1929,14 +1950,17 @@ class Fit_Lognormal_Power:
             plt.legend(title='Stress')
             plt.title('Lognormal-Power Model')
 
+    @staticmethod
     def logf(t, T, a, n, sigma):  # Log PDF
         life = a * T ** n
         return anp.log(anp.exp(-0.5 * (((anp.log(t) - anp.log(life)) / sigma) ** 2)) / (t * sigma * (2 * anp.pi) ** 0.5))
 
+    @staticmethod
     def logR(t, T, a, n, sigma):  # Log SF
         life = a * T ** n
         return anp.log(0.5 - 0.5 * erf((anp.log(t) - anp.log(life)) / (sigma * 2 ** 0.5)))
 
+    @staticmethod
     def LL(params, t_f, t_rc, T_f, T_rc):  # log likelihood function
         LL_f = 0
         LL_rc = 0
@@ -2191,14 +2215,17 @@ class Fit_Lognormal_Dual_Exponential:
             leg._legend_box.align = 'left'
             plt.title('Lognormal-Dual-Exponential Model')
 
+    @staticmethod
     def logf(t, S1, S2, a, b, c, sigma):  # Log PDF
         life = c * anp.exp(a / S1 + b / S2)
         return anp.log(anp.exp(-0.5 * (((anp.log(t) - anp.log(life)) / sigma) ** 2)) / (t * sigma * (2 * anp.pi) ** 0.5))
 
+    @staticmethod
     def logR(t, S1, S2, a, b, c, sigma):  # Log SF
         life = c * anp.exp(a / S1 + b / S2)
         return anp.log(0.5 - 0.5 * erf((anp.log(t) - anp.log(life)) / (sigma * 2 ** 0.5)))
 
+    @staticmethod
     def LL(params, t_f, t_rc, S1_f, S2_f, S1_rc, S2_rc):  # log likelihood function
         LL_f = 0
         LL_rc = 0
@@ -2454,14 +2481,17 @@ class Fit_Lognormal_Power_Exponential:
             leg._legend_box.align = 'left'
             plt.title('Lognormal-Power-Exponential Model')
 
+    @staticmethod
     def logf(t, S1, S2, a, c, n, sigma):  # Log PDF
         life = c * S2 ** n * anp.exp(a / S1)
         return anp.log(anp.exp(-0.5 * (((anp.log(t) - anp.log(life)) / sigma) ** 2)) / (t * sigma * (2 * anp.pi) ** 0.5))
 
+    @staticmethod
     def logR(t, S1, S2, a, c, n, sigma):  # Log SF
         life = c * S2 ** n * anp.exp(a / S1)
         return anp.log(0.5 - 0.5 * erf((anp.log(t) - anp.log(life)) / (sigma * 2 ** 0.5)))
 
+    @staticmethod
     def LL(params, t_f, t_rc, S1_f, S2_f, S1_rc, S2_rc):  # log likelihood function
         LL_f = 0
         LL_rc = 0
@@ -2681,14 +2711,17 @@ class Fit_Normal_Exponential:
             plt.legend(title='Stress')
             plt.title('Normal-Exponential Model')
 
+    @staticmethod
     def logf(t, T, a, b, sigma):  # Log PDF
         life = b * anp.exp(a / T)
         return anp.log(anp.exp(-0.5 * (((t - life) / sigma) ** 2))) - anp.log((sigma * (2 * anp.pi) ** 0.5))
 
+    @staticmethod
     def logR(t, T, a, b, sigma):  # Log SF
         life = b * anp.exp(a / T)
         return anp.log((1 + erf(((life - t) / sigma) / 2 ** 0.5)) / 2)
 
+    @staticmethod
     def LL(params, t_f, t_rc, T_f, T_rc):  # log likelihood function
         LL_f = 0
         LL_rc = 0
@@ -2906,14 +2939,17 @@ class Fit_Normal_Eyring:
             plt.legend(title='Stress')
             plt.title('Normal-Eyring Model')
 
+    @staticmethod
     def logf(t, T, a, c, sigma):  # Log PDF
         life = 1 / T * anp.exp(-(c - a / T))
         return anp.log(anp.exp(-0.5 * (((t - life) / sigma) ** 2))) - anp.log((sigma * (2 * anp.pi) ** 0.5))
 
+    @staticmethod
     def logR(t, T, a, c, sigma):  # Log SF
         life = 1 / T * anp.exp(-(c - a / T))
         return anp.log((1 + erf(((life - t) / sigma) / 2 ** 0.5)) / 2)
 
+    @staticmethod
     def LL(params, t_f, t_rc, T_f, T_rc):  # log likelihood function
         LL_f = 0
         LL_rc = 0
@@ -3131,14 +3167,17 @@ class Fit_Normal_Power:
             plt.legend(title='Stress')
             plt.title('Normal-Power Model')
 
+    @staticmethod
     def logf(t, T, a, n, sigma):  # Log PDF
         life = a * T ** n
         return anp.log(anp.exp(-0.5 * (((t - life) / sigma) ** 2))) - anp.log((sigma * (2 * anp.pi) ** 0.5))
 
+    @staticmethod
     def logR(t, T, a, n, sigma):  # Log SF
         life = a * T ** n
         return anp.log((1 + erf(((life - t) / sigma) / 2 ** 0.5)) / 2)
 
+    @staticmethod
     def LL(params, t_f, t_rc, T_f, T_rc):  # log likelihood function
         LL_f = 0
         LL_rc = 0
@@ -3393,14 +3432,17 @@ class Fit_Normal_Dual_Exponential:
             leg._legend_box.align = 'left'
             plt.title('Normal-Dual-Exponential Model')
 
+    @staticmethod
     def logf(t, S1, S2, a, b, c, sigma):  # Log PDF
         life = c * anp.exp(a / S1 + b / S2)
         return anp.log(anp.exp(-0.5 * (((t - life) / sigma) ** 2))) - anp.log((sigma * (2 * anp.pi) ** 0.5))
 
+    @staticmethod
     def logR(t, S1, S2, a, b, c, sigma):  # Log SF
         life = c * anp.exp(a / S1 + b / S2)
         return anp.log((1 + erf(((life - t) / sigma) / 2 ** 0.5)) / 2)
 
+    @staticmethod
     def LL(params, t_f, t_rc, S1_f, S2_f, S1_rc, S2_rc):  # log likelihood function
         LL_f = 0
         LL_rc = 0
@@ -3656,14 +3698,17 @@ class Fit_Normal_Power_Exponential:
             leg._legend_box.align = 'left'
             plt.title('Normal-Power-Exponential Model')
 
+    @staticmethod
     def logf(t, S1, S2, a, c, n, sigma):  # Log PDF
         life = c * S2 ** n * anp.exp(a / S1)
         return anp.log(anp.exp(-0.5 * (((t - life) / sigma) ** 2))) - anp.log((sigma * (2 * anp.pi) ** 0.5))
 
+    @staticmethod
     def logR(t, S1, S2, a, c, n, sigma):  # Log SF
         life = c * S2 ** n * anp.exp(a / S1)
         return anp.log((1 + erf(((life - t) / sigma) / 2 ** 0.5)) / 2)
 
+    @staticmethod
     def LL(params, t_f, t_rc, S1_f, S2_f, S1_rc, S2_rc):  # log likelihood function
         LL_f = 0
         LL_rc = 0
@@ -3871,14 +3916,17 @@ class Fit_Exponential_Exponential:
             plt.legend(title='Stress')
             plt.title('Exponential-Exponential Model')
 
+    @staticmethod
     def logf(t, T, a, b):  # Log PDF
         life = b * anp.exp(a / T)
         return anp.log(1 / life) - 1 / life * t
 
+    @staticmethod
     def logR(t, T, a, b):  # Log SF
         life = b * anp.exp(a / T)
         return -(1 / life * t)
 
+    @staticmethod
     def LL(params, t_f, t_rc, T_f, T_rc):  # log likelihood function
         LL_f = 0
         LL_rc = 0
@@ -4084,14 +4132,17 @@ class Fit_Exponential_Eyring:
             plt.legend(title='Stress')
             plt.title('Exponential-Eyring Model')
 
+    @staticmethod
     def logf(t, T, a, c):  # Log PDF
         life = 1 / T * anp.exp(-(c - a / T))
         return anp.log(1 / life) - 1 / life * t
 
+    @staticmethod
     def logR(t, T, a, c):  # Log SF
         life = 1 / T * anp.exp(-(c - a / T))
         return -(1 / life * t)
 
+    @staticmethod
     def LL(params, t_f, t_rc, T_f, T_rc):  # log likelihood function
         LL_f = 0
         LL_rc = 0
@@ -4297,14 +4348,17 @@ class Fit_Exponential_Power:
             plt.legend(title='Stress')
             plt.title('Exponential-Power Model')
 
+    @staticmethod
     def logf(t, T, a, n):  # Log PDF
         life = a * T ** n
         return anp.log(1 / life) - 1 / life * t
 
+    @staticmethod
     def logR(t, T, a, n):  # Log SF
         life = a * T ** n
         return -(1 / life * t)
 
+    @staticmethod
     def LL(params, t_f, t_rc, T_f, T_rc):  # log likelihood function
         LL_f = 0
         LL_rc = 0
@@ -4544,14 +4598,17 @@ class Fit_Exponential_Dual_Exponential:
             leg._legend_box.align = 'left'
             plt.title('Exponential-Dual-Exponential Model')
 
+    @staticmethod
     def logf(t, S1, S2, a, b, c):  # Log PDF
         life = c * anp.exp(a / S1 + b / S2)
         return anp.log(1 / life) - 1 / life * t
 
+    @staticmethod
     def logR(t, S1, S2, a, b, c):  # Log SF
         life = c * anp.exp(a / S1 + b / S2)
         return -(1 / life * t)
 
+    @staticmethod
     def LL(params, t_f, t_rc, S1_f, S2_f, S1_rc, S2_rc):  # log likelihood function
         LL_f = 0
         LL_rc = 0
@@ -4792,14 +4849,17 @@ class Fit_Exponential_Power_Exponential:
             leg._legend_box.align = 'left'
             plt.title('Exponential-Power-Exponential Model')
 
+    @staticmethod
     def logf(t, S1, S2, a, c, n):  # Log PDF
         life = c * S2 ** n * anp.exp(a / S1)
         return anp.log(1 / life) - 1 / life * t
 
+    @staticmethod
     def logR(t, S1, S2, a, c, n):  # Log SF
         life = c * S2 ** n * anp.exp(a / S1)
         return -(1 / life * t)
 
+    @staticmethod
     def LL(params, t_f, t_rc, S1_f, S2_f, S1_rc, S2_rc):  # log likelihood function
         LL_f = 0
         LL_rc = 0

@@ -134,7 +134,7 @@ class ALT_probability_plot_Weibull:
             weibull_fit_beta_array.append(weibull_fit.beta)
         common_shape_guess = np.average(weibull_fit_beta_array)
 
-        def __BIC_minimizer(common_shape_X):
+        def __BIC_minimizer(common_shape_X): #lgtm [py/similar-function]
             '''
             __BIC_minimizer is used by the minimize function to get the shape which gives the lowest overall BIC
             '''
@@ -523,7 +523,7 @@ class ALT_probability_plot_Lognormal:
             lognormal_fit_sigma_array.append(lognormal_fit.sigma)
         common_shape_guess = np.average(lognormal_fit_sigma_array)
 
-        def __BIC_minimizer(common_shape_X):
+        def __BIC_minimizer(common_shape_X): #lgtm [py/similar-function]
             '''
             __BIC_minimizer is used by the minimize function to get the sigma which gives the lowest overall BIC
             '''
@@ -732,7 +732,7 @@ class ALT_probability_plot_Normal:
             normal_fit_sigma_array.append(normal_fit.sigma)
         common_shape_guess = np.average(normal_fit_sigma_array)
 
-        def __BIC_minimizer(common_shape_X):
+        def __BIC_minimizer(common_shape_X): #lgtm [py/similar-function]
             '''
             __BIC_minimizer is used by the minimize function to get the sigma which gives the lowest overall BIC
             '''
