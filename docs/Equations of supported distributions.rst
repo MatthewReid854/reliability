@@ -172,32 +172,34 @@ Note that there is a parameterization of the Beta distribution that changes the 
 Loglogistic Distribution
 ====================
 
+::note: The Loglogistic distribution will be available in version 0.5.3 which is currently unreleased.
+
 :math:`\alpha` = scale parameter :math:`( \alpha > 0 )`
 
 :math:`\beta` = shape parameter :math:`( \beta > 0 )`
 
 Limits :math:`( t \geq 0 )`
 
-:math:`\text{PDF:} \hspace{11mm} f(t) = \frac{\left( \frac{\beta}{\alpha}\right) {\left( \frac{x}{\alpha} \right)}^{\beta - 1}}{{\left(1+{\left(\frac{x}{\alpha}\right)}^{\beta} \right)}^{2}}` 
+:math:`\text{PDF:} \hspace{11mm} f(t) = \frac{\left( \frac{\beta}{\alpha}\right) {\left( \frac{t}{\alpha} \right)}^{\beta - 1}}{{\left(1+{\left(\frac{t}{\alpha}\right)}^{\beta} \right)}^{2}}` 
 
-:math:`\text{CDF:} \hspace{10mm} F(t) = \frac{1}{1+{\left(\frac{x}{\alpha} \right)}^{-\beta}}`
+:math:`\text{CDF:} \hspace{10mm} F(t) = \frac{1}{1+{\left(\frac{t}{\alpha} \right)}^{-\beta}}`
 
-:math:`\hspace{31mm} = \frac{{\left(\frac{x}{\alpha} \right)}^{\beta}}{1+{\left(\frac{x}{\alpha} \right)}^{\beta}}`
+:math:`\hspace{31mm} = \frac{{\left(\frac{t}{\alpha} \right)}^{\beta}}{1+{\left(\frac{t}{\alpha} \right)}^{\beta}}`
 
-:math:`\hspace{31mm} = \frac{{x}^{\beta}}{{\alpha}^{\beta}+{x}^{\beta}}`
+:math:`\hspace{31mm} = \frac{{t}^{\beta}}{{\alpha}^{\beta}+{t}^{\beta}}`
 
-:math:`\text{SF:} \hspace{14mm} R(t) = 1 - \frac{1}{1+{\left(\frac{x}{\alpha} \right)}^{-\beta}}`
+:math:`\text{SF:} \hspace{14mm} R(t) = \frac{1}{1+{\left(\frac{t}{\alpha} \right)}^{\beta}}`
 
-:math:`\text{HF:} \hspace{14mm} h(t) = `
+:math:`\text{HF:} \hspace{14mm} h(t) = \frac{\left( \frac{\beta}{\alpha}\right) {\left( \frac{t}{\alpha} \right)}^{\beta - 1}}{1+{\left(\frac{t}{\alpha} \right)}^{\beta}}`
 
-:math:`\text{CHF:} \hspace{9mm} H(t) = `
+:math:`\text{CHF:} \hspace{9mm} H(t) = -ln\ left(1+{\left(\frac{t}{\alpha} \right)}^{\beta} \right)`
 
-There is another parameterization of the loglogistic distribution using :math:`\mu` and :math:`\sigma` which looks substantially different but is related by :math:`\mu = ln(\alpha)` and :math:`\sigma = \frac{1}{\beta}`.This parametrisation can be found `here <http://reliawiki.org/index.php/The_Loglogistic_Distribution>`_.
+There is another parameterization of the loglogistic distribution using :math:`\mu` and :math:`\sigma` which is designed to look more like the logistic distribution and is related to the above parametrization by :math:`\mu = ln(\alpha)` and :math:`\sigma = \frac{1}{\beta}`.This parametrisation can be found `here <http://reliawiki.org/index.php/The_Loglogistic_Distribution>`_.
 
 Location shifting the distributions
 ===================================
 
-Within ``reliability`` the parametrization of the Exponential, Weibull, Gamma, and Lognormal distributions allows for location shifting using the gamma parameter. This will simply shift the distribution's lower limit to the right from 0 to :math:`\gamma`. In the location shifted form of the distributions, the equations listed above are almost identical, except everywhere you see :math:`t` replace it with :math:`t - \gamma`. The reason for using the location shifted form of the distribution is because some phenomena that can be modelled well by a certain probability distribution do not begin to occur immediately, so it becomes necessary to shift the lower limit of the distribution so that the data can be accurately modelled by the distribution.
+Within ``reliability`` the parametrization of the Exponential, Weibull, Gamma, Lognormal, and Loglogistic distributions allows for location shifting using the gamma parameter. This will simply shift the distribution's lower limit to the right from 0 to :math:`\gamma`. In the location shifted form of the distributions, the equations listed above are almost identical, except everywhere you see :math:`t` replace it with :math:`t - \gamma`. The reason for using the location shifted form of the distribution is because some phenomena that can be modelled well by a certain probability distribution do not begin to occur immediately, so it becomes necessary to shift the lower limit of the distribution so that the data can be accurately modelled by the distribution. If implementing this yourself, ensure you set all y-values to 0 for :math:`t \leq gamma` as the raw form of the location shifted distributions above will not automatically zeroise these values for you and may result in negative values. This zeroizing is done automatically within ``reliability``.
 
 Relationships between the five functions
 ========================================
