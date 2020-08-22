@@ -169,6 +169,31 @@ where :math:`I_t(t|x,y)` is the regularized incomplete beta function which is de
 
 Note that there is a parameterization of the Beta distribution that changes the lower and upper limits beyond 0 and 1. For this parametrization, see the reference listed in the opening paragraph of this page.
 
+Loglogistic Distribution
+====================
+
+:math:`\alpha` = scale parameter :math:`( \alpha > 0 )`
+
+:math:`\beta` = shape parameter :math:`( \beta > 0 )`
+
+Limits :math:`( t \geq 0 )`
+
+:math:`\text{PDF:} \hspace{11mm} f(t) = \frac{\left( \frac{\beta}{\alpha}\right) {\left( \frac{x}{\alpha} \right)}^{\beta - 1}}{{\left(1+{\left(\frac{x}{\alpha}\right)}^{\beta} \right)}^{2}}` 
+
+:math:`\text{CDF:} \hspace{10mm} F(t) = \frac{1}{1+{\left(\frac{x}{\alpha} \right)}^{-\beta}}`
+
+:math:`\hspace{31mm} = \frac{{\left(\frac{x}{\alpha} \right)}^{\beta}}{1+{\left(\frac{x}{\alpha} \right)}^{\beta}}`
+
+:math:`\hspace{31mm} = \frac{{x}^{\beta}}{{\alpha}^{\beta}+{x}^{\beta}}`
+
+:math:`\text{SF:} \hspace{14mm} R(t) = 1 - \frac{1}{1+{\left(\frac{x}{\alpha} \right)}^{-\beta}}`
+
+:math:`\text{HF:} \hspace{14mm} h(t) = `
+
+:math:`\text{CHF:} \hspace{9mm} H(t) = `
+
+There is another parameterization of the loglogistic distribution using :math:`\mu` and :math:`\sigma` which looks substantially different but is related by :math:`\mu = ln(\alpha)` and :math:`\sigma = \frac{1}{\beta}`.This parametrisation can be found `here <http://reliawiki.org/index.php/The_Loglogistic_Distribution>`_.
+
 Location shifting the distributions
 ===================================
 
