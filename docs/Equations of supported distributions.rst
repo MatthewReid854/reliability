@@ -172,7 +172,7 @@ Note that there is a parameterization of the Beta distribution that changes the 
 Loglogistic Distribution
 ====================
 
-::note: The Loglogistic distribution will be available in version 0.5.3 which is currently unreleased.
+.. note:: The Loglogistic distribution will be available in version 0.5.3 which is currently unreleased.
 
 :math:`\alpha` = scale parameter :math:`( \alpha > 0 )`
 
