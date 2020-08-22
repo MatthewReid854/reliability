@@ -194,7 +194,7 @@ Limits :math:`( t \geq 0 )`
 
 :math:`\text{CHF:} \hspace{9mm} H(t) = -ln \left(1+{\left(\frac{t}{\alpha} \right)}^{\beta} \right)`
 
-There is another parameterization of the loglogistic distribution using :math:`\mu` and :math:`\sigma` which is designed to look more like the logistic distribution and is related to the above parametrization by :math:`\mu = ln(\alpha)` and :math:`\sigma = \frac{1}{\beta}`.This parametrisation can be found `here <http://reliawiki.org/index.php/The_Loglogistic_Distribution>`_.
+There is another parameterization of the loglogistic distribution using :math:`\mu` and :math:`\sigma` which is designed to look more like the logistic distribution and is related to the above parametrization by :math:`\mu = ln(\alpha)` and :math:`\sigma = \frac{1}{\beta}`. This parametrisation can be found `here <http://reliawiki.org/index.php/The_Loglogistic_Distribution>`_.
 
 Location shifting the distributions
 ===================================
