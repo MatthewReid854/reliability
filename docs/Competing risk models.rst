@@ -2,7 +2,7 @@
 
 -------------------------------------
 
-Competing risk models
+Competing risks models
 '''''''''''''''''''''
 
 What are competing risks models?
