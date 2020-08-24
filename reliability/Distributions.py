@@ -3873,11 +3873,11 @@ class Competing_Risks_Model:
         self.__pdf_init = pdf  # used by random_samples
         self.mean = integrate.simps(pdf * X, x=X)
         self.standard_deviation = (integrate.simps(pdf * (X - self.mean) ** 2, x=X)) ** 0.5
+        self.variance = self.standard_deviation ** 2
         self.skewness = (integrate.simps(pdf * ((X - self.mean) / self.standard_deviation) ** 3, x=X))
         self.kurtosis = (integrate.simps(pdf * ((X - self.mean) / self.standard_deviation) ** 4, x=X))
         self.mode = X[np.argmax(pdf)]
         self.median = X[np.argmin(abs(sf - 0.5))]
-        self.variance = self.standard_deviation ** 2
         self.excess_kurtosis = self.kurtosis - 3
         self.b5 = X[np.argmin(abs((1 - sf) - 0.05))]
         self.b95 = X[np.argmin(abs((1 - sf) - 0.95))]
@@ -4359,11 +4359,11 @@ class Mixture_Model:
         self.__xvals_init = X  # used by random_samples
         self.mean = integrate.simps(pdf * X, x=X)
         self.standard_deviation = (integrate.simps(pdf * (X - self.mean) ** 2, x=X)) ** 0.5
+        self.variance = self.standard_deviation ** 2
         self.skewness = (integrate.simps(pdf * ((X - self.mean) / self.standard_deviation) ** 3, x=X))
         self.kurtosis = (integrate.simps(pdf * ((X - self.mean) / self.standard_deviation) ** 4, x=X))
         self.mode = X[np.argmax(pdf)]
         self.median = X[np.argmin(abs(sf - 0.5))]
-        self.variance = self.standard_deviation ** 2
         self.excess_kurtosis = self.kurtosis - 3
         self.b5 = X[np.argmin(abs((1 - sf) - 0.05))]
         self.b95 = X[np.argmin(abs((1 - sf) - 0.95))]
