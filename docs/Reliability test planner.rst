@@ -20,7 +20,7 @@ Where:
 - n = adjustment for one sided (n=1) or two sided (n=2) test
 - p = adjustment for time terminated (p=2) or failure terminated (p=0) test
 
-The above formula can be rearranged, or solved iteratively to determine any of these parameters when given the other 3. The user must specify any 3 out of the 4 variables (not including two_sided, print_results, or time_terminated) and the remaining variable will be calculated. Note the difference between the one-sided and two-sided confidence intervals which are specified using the input two_sided=True/False described below. A description of the difference between one-sided and two-sided confidence intervals is provided at the end of this page. The formula used defaults to a time_terminated test (where the test was stopped at a particular time which was not related to the number of failures). If the test was stopped after a particular number of failures (such as all items failing) then you must specify time_terminated=False to ensure the correct formula is used.
+The above formula can be rearranged, or solved iteratively to determine any of these parameters when given the other 3. The user must specify any 3 out of the 4 variables (not including one_sided, print_results, or time_terminated) and the remaining variable will be calculated. Note the difference between the one-sided and two-sided confidence intervals which are specified using the input one_sided=True/False described below. A description of the difference between one-sided and two-sided confidence intervals is provided at the end of this page. The formula used defaults to a time_terminated test (where the test was stopped at a particular time which was not related to the number of failures). If the test was stopped after a particular number of failures (such as all items failing) then you must specify time_terminated=False to ensure the correct formula is used.
 
 A similar calculator is available in the `reliability analytics toolkit <https://reliabilityanalyticstoolkit.appspot.com/confidence_limits_exponential_distribution>`_.
 
@@ -31,7 +31,7 @@ Inputs:
 -   test_duration - the amount of time on test required (or performed) to achieve the MTBF. May also be distance, rounds fires, cycles, etc. Units given in same units as MTBF.
 -   CI - the confidence interval at which the lower confidence bound on the MTBF is given. Must be between 0.5 and 1. For example, specify 0.95 for 95% confidence interval.
 -   print_results - True/False. Default is True.
--   two_sided - True/False. Default is True. If set to False, the 1 sided confidence interval will be returned.
+-   one_sided - True/False. Default is True. If set to False, the two sided confidence interval will be returned.
 -   time_terminated - True/False. Default is True. If set to False, the formula for the failure-terminated test will be used.
 
 Outputs:
@@ -45,7 +45,7 @@ In the example below, we have done a time-terminated reliability test for 19520 
 
     #example 1
     from reliability.Reliability_testing import reliability_test_planner
-    reliability_test_planner(test_duration=19520,CI=0.8,number_of_failures=7)
+    reliability_test_planner(test_duration=19520,CI=0.8,number_of_failures=7, one_sided=False)
         
     '''
     Reliability Test Planner results for time-terminated test
@@ -53,15 +53,16 @@ In the example below, we have done a time-terminated reliability test for 19520 
     Test duration: 19520
     MTBF (lower confidence bound): 1658.3248534993454
     Number of failures: 7
-    Confidence interval (2 sided):0.8
+    Confidence interval (2 sided): 0.8
     '''
     
     #example 2
-    output = reliability_test_planner(number_of_failures=6,test_duration=10000,CI=0.8, print_results=False)
+    from reliability.Reliability_testing import reliability_test_planner
+    output = reliability_test_planner(number_of_failures=6, test_duration=10000, CI=0.8, print_results=False)
     print(output.MTBF)
     
     '''
-    949.4807763260345
+    1101.8815940201118
     '''
 
 One-sided vs two-sided confidence interval
