@@ -30,7 +30,6 @@ In the example below the consumer requires a vehicle to achieve an MTBF of 2500k
 
 .. code:: python
 
-    #example 1
     from reliability.Reliability_testing import reliability_test_duration
     import matplotlib.pyplot as plt
     
