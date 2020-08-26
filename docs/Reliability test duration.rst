@@ -5,6 +5,8 @@
 Reliability test duration
 '''''''''''''''''''''''''
 
+.. note:: This function will be available in version 0.5.3 which is currently unreleased.
+
 This function is an extension of the reliability_test_planner which allows users to calculate the required duration for a reliability test to achieve the specified producers and consumers risks. This is done based on the specified MTBF (mean time between failure) required and MTBF design.
 
 This type of determination must be made when organisations looking to test an item are uncertain of how much testing is required, but they know the amount of risk they are willing to accept as well as the MTBF required and the MTBF to which the item has been designed.
@@ -62,3 +64,5 @@ Step 4) The answer is higher than the specified producer's risk, so we now repea
 Step 5) We now have a value for test_duration that will give our required outputs in both equations. We also happen to arrive at the number of failures, though this is not particularly relevant since it is just part of the solution process and the actual number of failures will be determined based on the conduct of the reliability test.
 
 The plot that is produced by Repairable_system.reliability_test_duration displays a scatter plot at each failure. Since the number of failures must be an integer, we get results for reliability test durations that go in steps. The result returned corresponds to the test_duration at the last failure before the producer's risk dropped below what was specified. Also note that if the consumer's risk is different from the producer's risk, the solution for test_duration will not occur near the point on the graph where producer's risk and consumer's risk are equal.
+
+.. note:: This function will be available in version 0.5.3 which is currently unreleased.
