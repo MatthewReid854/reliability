@@ -1731,7 +1731,7 @@ class Exponential_Distribution:
             self.Z = None
         for item in kwargs.keys():
             print('WARNING:', item, 'not recognised as an appropriate entry in kwargs. Appropriate entries are Lambda_SE and CI')
-        self._pdf0 = ss.expon.pdf(0, scale=1 / self.Lambda, loc=0)  # the pdf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
+        self._pdf0 = 0 # the pdf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array. It's not actually 0 for expon but it's also not an asymptote so the rules relating to 0 are better for scaling
         self._hf0 = self.Lambda  # the hf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
 
     def plot(self, xvals=None, xmin=None, xmax=None):
@@ -1749,49 +1749,46 @@ class Exponential_Distribution:
         Outputs:
         The plot will be shown. No need to use plt.show()
         '''
-        if xvals is not None:
-            X = xvals
-        elif xmin is not None and xmax is not None:
-            X = np.linspace(xmin, xmax, 1000)
-        else:
-            X = np.linspace(0, self.b95 * 1.5, 1000)  # if no limits are specified, they are assumed
-        if type(X) in [float, int, np.float64]:
-            if X < 0:
-                raise ValueError('the value given for xvals is less than 0')
-        elif type(X) is list:
-            X = np.array(X)
-        elif type(X) is np.ndarray:
-            pass
-        else:
-            raise ValueError('unexpected type in xvals. Must be int, float, list, or array')
-        if type(X) is np.ndarray and min(X) < 0:
-            raise ValueError('xvals was found to contain values below 0')
+
+        X = generate_X_array(dist=self, func='CDF', xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array for PDF, CDF, SF
+        Xhf = generate_X_array(dist=self, func='HF', xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array for HF
+        Xchf = generate_X_array(dist=self, func='CHF', xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array for CHF
 
         pdf = ss.expon.pdf(X, scale=1 / self.Lambda, loc=self.gamma)
         cdf = ss.expon.cdf(X, scale=1 / self.Lambda, loc=self.gamma)
         sf = ss.expon.sf(X, scale=1 / self.Lambda, loc=self.gamma)
-        hf = np.ones_like(X) * self.Lambda
-        hf = zeroise_below_gamma(X=X, Y=hf, gamma=self.gamma)
-        chf = (X - self.gamma) * self.Lambda
-        chf = zeroise_below_gamma(X=X, Y=chf, gamma=self.gamma)
+        hf = np.ones_like(Xhf) * self.Lambda
+        hf = zeroise_below_gamma(X=Xhf, Y=hf, gamma=self.gamma)
+        chf = (Xchf - self.gamma) * self.Lambda
+        chf = zeroise_below_gamma(X=Xchf, Y=chf, gamma=self.gamma)
 
         plt.figure(figsize=(9, 7))
         text_title = str('Exponential Distribution' + '\n' + self.param_title)
         plt.suptitle(text_title, fontsize=15)
+
         plt.subplot(231)
         plt.plot(X, pdf)
+        restore_axes_limits([(0, 1), (0, 1), False], dist=self, func='PDF', X=X, Y=pdf, xvals=xvals, xmin=xmin, xmax=xmax)
         plt.title('Probability Density\nFunction')
+
         plt.subplot(232)
         plt.plot(X, cdf)
+        restore_axes_limits([(0, 1), (0, 1), False], dist=self, func='CDF', X=X, Y=cdf, xvals=xvals, xmin=xmin, xmax=xmax)
         plt.title('Cumulative Distribution\nFunction')
+
         plt.subplot(233)
         plt.plot(X, sf)
+        restore_axes_limits([(0, 1), (0, 1), False], dist=self, func='SF', X=X, Y=sf, xvals=xvals, xmin=xmin, xmax=xmax)
         plt.title('Survival Function')
+
         plt.subplot(234)
-        plt.plot(X, hf)
+        plt.plot(Xhf, hf)
+        restore_axes_limits([(0, 1), (0, 1), False], dist=self, func='HF', X=Xhf, Y=hf, xvals=xvals, xmin=xmin, xmax=xmax)
         plt.title('Hazard Function')
+
         plt.subplot(235)
-        plt.plot(X, chf)
+        plt.plot(Xchf, chf)
+        restore_axes_limits([(0, 1), (0, 1), False], dist=self, func='CHF', X=Xchf, Y=chf, xvals=xvals, xmin=xmin, xmax=xmax)
         plt.title('Cumulative Hazard\nFunction')
 
         # descriptive statistics section
@@ -1838,35 +1835,23 @@ class Exponential_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        if xvals is not None:
-            X = xvals
-        elif xmin is not None and xmax is not None:
-            X = np.linspace(xmin, xmax, 1000)
-        else:
-            X = np.linspace(0, self.b95 * 1.5, 1000)  # if no limits are specified, they are assumed
-        if type(X) in [float, int, np.float64]:
-            if X < 0:
-                raise ValueError('the value given for xvals is less than 0')
-        elif type(X) is list:
-            X = np.array(X)
-        elif type(X) is np.ndarray:
-            pass
-        else:
-            raise ValueError('unexpected type in xvals. Must be int, float, list, or array')
-        if type(X) is np.ndarray and min(X) < 0:
-            raise ValueError('xvals was found to contain values below 0')
+        X = generate_X_array(dist=self, func='PDF', xvals=xvals, xmin=xmin, xmax=xmax)
 
         pdf = ss.expon.pdf(X, scale=1 / self.Lambda, loc=self.gamma)
 
         if show_plot == False:
             return pdf
         else:
+            limits = get_axes_limits()
+
             plt.plot(X, pdf, **kwargs)
             plt.xlabel('x values')
             plt.ylabel('Probability density')
             text_title = str('Exponential Distribution\n' + ' Probability Density Function ' + '\n' + self.param_title)
             plt.title(text_title)
             plt.subplots_adjust(top=0.87)
+
+            restore_axes_limits(limits, dist=self, func='PDF', X=X, Y=pdf, xvals=xvals, xmin=xmin, xmax=xmax)
 
             return pdf
 
@@ -1889,23 +1874,8 @@ class Exponential_Distribution:
         If the distribution object contains Lambda_lower and Lambda_upper, the CI bounds will be plotted. The bounds for the CI are the same as the Fitter was given (default is 0.95). To hide the CI bounds specify show_CI=False
 
         '''
-        if xvals is not None:
-            X = xvals
-        elif xmin is not None and xmax is not None:
-            X = np.linspace(xmin, xmax, 1000)
-        else:
-            X = np.linspace(0, self.b95 * 1.5, 1000)  # if no limits are specified, they are assumed
-        if type(X) in [float, int, np.float64]:
-            if X < 0:
-                raise ValueError('the value given for xvals is less than 0')
-        elif type(X) is list:
-            X = np.array(X)
-        elif type(X) is np.ndarray:
-            pass
-        else:
-            raise ValueError('unexpected type in xvals. Must be int, float, list, or array')
-        if type(X) is np.ndarray and min(X) < 0:
-            raise ValueError('xvals was found to contain values below 0')
+        # obtain the X array
+        X = generate_X_array(dist=self, func='CDF', xvals=xvals, xmin=xmin, xmax=xmax)
 
         ####this determines if the user has specified for the CI bounds to be shown or hidden. kwargs are show_CI or plot_CI
         kwargs_list = kwargs.keys()
@@ -1923,15 +1893,21 @@ class Exponential_Distribution:
             plot_CI = True
 
         cdf = ss.expon.cdf(X, scale=1 / self.Lambda, loc=self.gamma)
+
         if show_plot == False:
             return cdf
         else:
+
+            limits = get_axes_limits()
+
             p = plt.plot(X, cdf, **kwargs)  ####
             plt.xlabel('x values')
             plt.ylabel('Fraction failing')
             text_title = str('Exponential Distribution\n' + ' Cumulative Distribution Function ' + '\n' + self.param_title)
             plt.title(text_title)
             plt.subplots_adjust(top=0.87)
+
+            restore_axes_limits(limits, dist=self, func='CDF', X=X, Y=cdf, xvals=xvals, xmin=xmin, xmax=xmax)
 
             Exponential_Distribution.__expon_CI(self, func='CDF', plot_CI=plot_CI, text_title=text_title, color=p[0].get_color())
 
@@ -1955,23 +1931,8 @@ class Exponential_Distribution:
         The plot will be shown if show_plot is True (which it is by default).
         If the distribution object contains Lambda_lower and Lambda_upper, the CI bounds will be plotted. The bounds for the CI are the same as the Fitter was given (default is 0.95). To hide the CI bounds specify show_CI=False
         '''
-        if xvals is not None:
-            X = xvals
-        elif xmin is not None and xmax is not None:
-            X = np.linspace(xmin, xmax, 1000)
-        else:
-            X = np.linspace(0, self.b95 * 1.5, 1000)  # if no limits are specified, they are assumed
-        if type(X) in [float, int, np.float64]:
-            if X < 0:
-                raise ValueError('the value given for xvals is less than 0')
-        elif type(X) is list:
-            X = np.array(X)
-        elif type(X) is np.ndarray:
-            pass
-        else:
-            raise ValueError('unexpected type in xvals. Must be int, float, list, or array')
-        if type(X) is np.ndarray and min(X) < 0:
-            raise ValueError('xvals was found to contain values below 0')
+        # obtain the X array
+        X = generate_X_array(dist=self, func='SF', xvals=xvals, xmin=xmin, xmax=xmax)
 
         # this determines if the user has specified for the CI bounds to be shown or hidden. kwargs are show_CI or plot_CI
         kwargs_list = kwargs.keys()
@@ -1992,12 +1953,17 @@ class Exponential_Distribution:
         if show_plot == False:
             return sf
         else:
+
+            limits = get_axes_limits()
+
             p = plt.plot(X, sf, **kwargs)
             plt.xlabel('x values')
             plt.ylabel('Fraction surviving')
             text_title = str('Exponential Distribution\n' + ' Survival Function ' + '\n' + self.param_title)
             plt.title(text_title)
             plt.subplots_adjust(top=0.87)
+
+            restore_axes_limits(limits, dist=self, func='SF', X=X, Y=sf, xvals=xvals, xmin=xmin, xmax=xmax)
 
             Exponential_Distribution.__expon_CI(self, func='SF', plot_CI=plot_CI, text_title=text_title, color=p[0].get_color())
 
@@ -2020,23 +1986,8 @@ class Exponential_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        if xvals is not None:
-            X = xvals
-        elif xmin is not None and xmax is not None:
-            X = np.linspace(xmin, xmax, 1000)
-        else:
-            X = np.linspace(0, self.b95 * 1.5, 1000)  # if no limits are specified, they are assumed
-        if type(X) in [float, int, np.float64]:
-            if X < 0:
-                raise ValueError('the value given for xvals is less than 0')
-        elif type(X) is list:
-            X = np.array(X)
-        elif type(X) is np.ndarray:
-            pass
-        else:
-            raise ValueError('unexpected type in xvals. Must be int, float, list, or array')
-        if type(X) is np.ndarray and min(X) < 0:
-            raise ValueError('xvals was found to contain values below 0')
+        # obtain the X array
+        X = generate_X_array(dist=self, func='HF', xvals=xvals, xmin=xmin, xmax=xmax)
 
         # this determines if the user has specified for the CI bounds to be shown or hidden. kwargs are show_CI or plot_CI
         kwargs_list = kwargs.keys()
@@ -2059,12 +2010,17 @@ class Exponential_Distribution:
         if show_plot == False:
             return hf
         else:
+
+            limits = get_axes_limits()
+
             p = plt.plot(X, hf, **kwargs)
             plt.xlabel('x values')
             plt.ylabel('Hazard')
             text_title = str('Exponential Distribution\n' + ' Hazard Function ' + '\n' + self.param_title)
             plt.title(text_title)
             plt.subplots_adjust(top=0.87)
+
+            restore_axes_limits(limits, dist=self, func='HF', X=X, Y=hf, xvals=xvals, xmin=xmin, xmax=xmax)
 
             Exponential_Distribution.__expon_CI(self, func='HF', plot_CI=plot_CI, text_title=text_title, color=p[0].get_color())
 
@@ -2089,23 +2045,8 @@ class Exponential_Distribution:
         If the distribution object contains Lambda_lower and Lambda_upper, the CI bounds will be plotted. The bounds for the CI are the same as the Fitter was given (default is 0.95). To hide the CI bounds specify show_CI=False
         '''
 
-        if xvals is not None:
-            X = xvals
-        elif xmin is not None and xmax is not None:
-            X = np.linspace(xmin, xmax, 1000)
-        else:
-            X = np.linspace(0, self.b95 * 1.5, 1000)  # if no limits are specified, they are assumed
-        if type(X) in [float, int, np.float64]:
-            if X < 0:
-                raise ValueError('the value given for xvals is less than 0')
-        elif type(X) is list:
-            X = np.array(X)
-        elif type(X) is np.ndarray:
-            pass
-        else:
-            raise ValueError('unexpected type in xvals. Must be int, float, list, or array')
-        if type(X) is np.ndarray and min(X) < 0:
-            raise ValueError('xvals was found to contain values below 0')
+        # obtain the X array
+        X = generate_X_array(dist=self, func='HF', xvals=xvals, xmin=xmin, xmax=xmax)
 
         # this determines if the user has specified for the CI bounds to be shown or hidden. kwargs are show_CI or plot_CI
         kwargs_list = kwargs.keys()
@@ -2128,12 +2069,16 @@ class Exponential_Distribution:
         if show_plot == False:
             return chf
         else:
+            limits = get_axes_limits()
+
             p = plt.plot(X, chf, **kwargs)
             plt.xlabel('x values')
             plt.ylabel('Cumulative hazard')
             text_title = str('Exponential Distribution\n' + ' Cumulative Hazard Function ' + '\n' + self.param_title)
             plt.title(text_title)
             plt.subplots_adjust(top=0.87)
+
+            restore_axes_limits(limits, dist=self, func='CHF', X=X, Y=chf, xvals=xvals, xmin=xmin, xmax=xmax)
 
             Exponential_Distribution.__expon_CI(self, func='CHF', plot_CI=plot_CI, text_title=text_title, color=p[0].get_color())
 

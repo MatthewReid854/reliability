@@ -97,6 +97,7 @@ Contents:
   Sample size required for no failures
   Sequential sampling chart
   Reliability test planner
+  Reliability test duration
 
 .. toctree::
   :maxdepth: 1

@@ -8,12 +8,15 @@ two_proportion_test - Calculates whether the difference in test results between 
 sample_size_no_failures - used to determine the sample size required for a test in which no failures are expected, and the desired outcome is the lower bound on the reliability based on the sample size and desired confidence interval.
 sequential_sampling_chart - plots the accept/reject boundaries for a given set of quality and risk levels. If supplied, the test results are also plotted on the chart.
 reliability_test_planner - Finds the lower confidence bound on MTBF for a given test duration, number of failures, and specified confidence interval.
+reliability_test_duration - Finds the duration of a reliability test based on producers and consumers risk, and the MTBF design and MTBF required.
 '''
 
 import scipy.stats as ss
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import math
+import time
 
 
 def one_sample_proportion(trials=None, successes=None, CI=0.95):
@@ -229,7 +232,7 @@ class reliability_test_planner:
     The equation for time-terminated tests is: MTBF = (2*test_duration)/(chisquared_inverse(CI, 2*number_of_failures+2))
     The equation for failure-terminated tests is: MTBF = (2*test_duration)/(chisquared_inverse(CI, 2*number_of_failures))
     This equation can be rearranged to solve for any of the 4 variables. For example, you may want to know how many failures you are allowed to have in a given test duration to achieve a particular MTBF.
-    The user must specify any 3 out of the 4 variables (not including two_sided, print_results, or time_terminated) and the remaining variable will be calculated.
+    The user must specify any 3 out of the 4 variables (not including one_sided, print_results, or time_terminated) and the remaining variable will be calculated.
 
     Inputs:
     MTBF - mean time between failures. This is the lower confidence bound on the MTBF. Units given in same units as the test_duration.
@@ -237,7 +240,7 @@ class reliability_test_planner:
     test_duration - the amount of time on test required (or performed) to achieve the MTBF. May also be distance, rounds fires, cycles, etc. Units given in same units as MTBF.
     CI - the confidence interval at which the lower confidence bound on the MTBF is given. Must be between 0.5 and 1. For example, specify 0.95 for 95% confidence interval.
     print_results - True/False. Default is True.
-    two_sided - True/False. Default is True. If set to False, the 1 sided confidence interval will be returned.
+    one_sided - True/False. Default is True. If set to False, the two sided confidence interval will be returned.
     time_terminated - True/False. Default is True. If set to False, the formula for the failure-terminated test will be used.
 
     Outputs:
@@ -258,13 +261,13 @@ class reliability_test_planner:
         949.4807763260345
     '''
 
-    def __init__(self, MTBF=None, number_of_failures=None, CI=None, test_duration=None, two_sided=True, time_terminated=True, print_results=True):
+    def __init__(self, MTBF=None, number_of_failures=None, CI=None, test_duration=None, one_sided=True, time_terminated=True, print_results=True):
 
         print_CI_warn = False  # used later if the CI is calculated
         if CI is not None:
             if CI < 0.5 or CI >= 1:
                 raise ValueError('CI must be between 0.5 and 1. For example, specify CI=0.95 for 95% confidence interval')
-            if two_sided is False:
+            if one_sided is True:
                 CI_adj = CI
             else:
                 CI_adj = 1 - ((1 - CI) / 2)
@@ -276,12 +279,15 @@ class reliability_test_planner:
         else:
             raise ValueError('time_terminated must be True or False. Default is True for the time terminated test (a test stopped after a set time rather than after a set number of failures).')
 
-        if two_sided is False:
+        if one_sided is True:
             sides = 1
-        elif two_sided is True:
+        elif one_sided is False:
             sides = 2
         else:
-            raise ValueError('two_sided must be True or False. Default is True for the two sided confidence interval.')
+            raise ValueError('one_sided must be True or False. Default is True for the one sided confidence interval.')
+
+        if print_results not in [True, False]:
+            raise ValueError('print_results must be True or False. Default is True.')
 
         if number_of_failures is not None:
             if number_of_failures % 1 != 0 or number_of_failures < 0:
@@ -307,7 +313,7 @@ class reliability_test_planner:
         elif MTBF is not None and number_of_failures is not None and CI is None and test_duration is not None:
             soln_type = 'CI'
             CI_calc = ss.chi2.cdf(test_duration / (MTBF * 0.5), 2 * number_of_failures + p)
-            if two_sided is False:
+            if one_sided is True:
                 CI = CI_calc
             else:
                 CI = 1 - (2 * (1 - CI_calc))  # this can give negative numbers, but only when the inputs result in an impossible CI.
@@ -322,7 +328,7 @@ class reliability_test_planner:
             raise ValueError('All inputs were specified. Nothing to calculate.')
 
         else:
-            raise ValueError('More than one input was not specified. You must specify any 3 out of the 4 inputs (not including two_sided or print_results) and the remaining input will be calculated.')
+            raise ValueError('More than one input was not specified. You must specify any 3 out of the 4 inputs (not including one_sided or print_results) and the remaining input will be calculated.')
 
         self.test_duration = test_duration
         self.MTBF = MTBF
@@ -347,3 +353,91 @@ class reliability_test_planner:
             print(str('Confidence interval (' + str(sides) + ' sided):' + str(self.CI)))
             if print_CI_warn is True:
                 print('WARNING: The calculated CI is less than 0.5. This indicates that the desired MTBF is unachievable for the specified test_duration and number_of_failures.')
+
+
+def reliability_test_duration(MTBF_required, MTBF_design, consumer_risk, producer_risk, one_sided=True, time_terminated=True, show_plot=True, print_results=True):
+    '''
+    reliability_test_duration
+
+    Calculates the required duration for a reliability test to achieve the specified producers and consumers risks.
+    This is done based on the specified MTBF required and MTBF design.
+
+    Inputs:
+    MTBF_required - the required MTBF that the equipment must demonstrate during the test
+    MTBF_design - the design target for the MTBF that the producer aims to achieve
+    consumer_risk - the risk the consumer is accepting. This is the probability that a bad product will be accepted as a good product by the consumer.
+    producer_risk - the risk the producer is accepting. This is the probability that a good product will be rejected as a bad product by the consumer.
+    one_sided - default is True. The risk is analogous to the confidence interval, and the confidence interval can be one sided or two sided.
+    time_terminated - default is True. whether the test is time terminated or failure terminated. Typically it will be time terminated if the required test duration is sought.
+    show_plot - True/False. Default is True. This will create a plot of the risk vs test duration. Use plt.show() to show it.
+    print_results - True/False. Default is True. This will print the results to the console.
+
+    Returns:
+    test_duration
+    '''
+
+    if consumer_risk <= 0 or consumer_risk > 0.5:
+        raise ValueError('consumer_risk must be between 0 and 0.5')
+    if producer_risk <= 0 or producer_risk > 0.5:
+        raise ValueError('producer_risk must be between 0 and 0.5')
+    if MTBF_design <= MTBF_required:
+        raise ValueError('MTBF_design must exceed MTBF_required')
+    if one_sided not in [True, False]:
+        raise ValueError('one_sided must be True or False. Default is True')
+    if time_terminated not in [True, False]:
+        raise ValueError('time_terminated must be True or False. Default is True')
+    if show_plot not in [True, False]:
+        raise ValueError('show_plot must be True or False. Default is True')
+    if print_results not in [True, False]:
+        raise ValueError('print_results must be True or False. Default is True')
+
+    duration_array = []
+    producer_risk_array = []
+    failures = 0  # initial counter. Incremented each iteration
+    solution_index = False  # initial vlue to be updated later
+    max_failures = 1e10  # initial value to be updated later
+    event_check = False
+    time_start = time.time()
+    time_out = 10  # seconds until first warning about long runtime
+    while True:
+        result1 = reliability_test_planner(number_of_failures=failures, CI=1 - consumer_risk, MTBF=MTBF_required, one_sided=one_sided, time_terminated=time_terminated, print_results=False)  # finds the test duration based on MTBF required and consumer risk
+        result2 = reliability_test_planner(MTBF=MTBF_design, test_duration=result1.test_duration, number_of_failures=failures, one_sided=one_sided, time_terminated=time_terminated, print_results=False)  # finds the producer risk based on test duration and MTBR of design
+        duration_array.append(result1.test_duration)
+        producer_risk_array.append(result2.CI)
+        if producer_risk_array[-1] < producer_risk and event_check is False:  # check whether the number of failures resulted in the correct producer risk
+            solution_index = failures - 1  # we have exceeded the target so need to go back one to find the point it was below, and one more to find the point it was above
+            max_failures = solution_index * 1.5
+            event_check = True
+        if failures > max_failures:
+            break
+        failures += 1  # increment failures
+        if time.time() - time_start > time_out:
+            print('WARNING: The algorithm is taking a long time to find the solution. This is probably because MTBF_required is too close to MTBF_design so the item struggles to pass the test. --- Current runtime:', int(round(time.time() - time_start, 0)), 'seconds')
+            time_out += 10
+
+    duration_solution = duration_array[solution_index]
+    if print_results is True:
+        if time_terminated is True:
+            print('\nReliability Test Duration Solver for time-terminated test')
+        else:
+            print('\nReliability Test Duration Solver for failure-terminated test')
+        print('Required test duration:', duration_solution)
+        print("Specified consumer's risk:", consumer_risk)
+        print("Specified producer's risk:", producer_risk)
+        print('Specified MTBF required by the consumer:', MTBF_required)
+        print('Specified MTBF designed to by the producer:', MTBF_design)
+
+    if show_plot is True:
+        consumer_risk_array = np.ones_like(duration_array) * consumer_risk
+        plt.plot(duration_array, producer_risk_array, label="Producer's risk")
+        plt.plot(duration_array, consumer_risk_array, label="Consumer's risk")
+        plt.scatter(duration_array, producer_risk_array, color='k', marker='.', label='Failure events')
+
+        plt.xlabel('Test duration')
+        plt.ylabel('Risk')
+        plt.legend(loc='upper right')
+        plt.xlim(min(duration_array), max(duration_array))
+        plt.axvline(x=duration_solution, color='k', linestyle='--', linewidth=1)
+        plt.title("Test duration vs Producer's and Consumer's Risk")
+        plt.text(x=duration_solution, y=plt.ylim()[0], s=str(' Test duration\n ' + str(int(math.ceil(duration_solution)))), va='bottom')
+    return duration_solution

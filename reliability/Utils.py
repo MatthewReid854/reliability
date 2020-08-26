@@ -269,6 +269,14 @@ def restore_axes_limits(limits, dist, func, X, Y, xvals=None, xmin=None, xmax=No
         plt.xlim(xlim_LOWER, xlim_UPPER, auto=None)
 
     ################## YLIMS ########################
+
+
+    if len(Y)<3:
+        Y_start = Y[0]
+    else:
+        Y_start = Y[2]
+    Y_end = Y[-1]
+
     if func in ['pdf', 'PDF']:
         if dist._pdf0 == 0:  # an increasing pdf. Not asymptotic at x=0
             ylim_upper = max(Y) * 1.05
@@ -278,14 +286,14 @@ def restore_axes_limits(limits, dist, func, X, Y, xvals=None, xmin=None, xmax=No
     elif func in ['cdf', 'CDF', 'SF', 'sf']:
         ylim_upper = 1.05
     elif func in ['hf', 'HF']:
-        if Y[-1]!=Y[0]: #non-constant hazard
+        if Y_end != Y_start:  # non-constant hazard
             if dist._hf0 == 0:  # when the hazard function is increasing
                 idx = np.where(X >= xlim_upper)[0][0]  # index of the hf where it is equal to b95
             else:  # when the hazard function is decreasing
                 idx = np.where(X >= dist.quantile(0.01))[0][0]
             ylim_upper = Y[idx]
-        else: #constant hazard
-            ylim_upper = Y[0]*1.2 #this ensures the upper lim of a constant hazard does not place the hazard along the top edge of the plot
+        else:  # constant hazard
+            ylim_upper = Y_end * 1.2  # this ensures the upper lim of a constant hazard does not place the hazard along the top edge of the plot
     elif func in ['chf', 'CHF']:
         idx = np.where(X >= xlim_upper)[0][0]  # index of the chf where it is equal to b95
         ylim_upper = Y[idx]
@@ -312,13 +320,14 @@ def generate_X_array(dist, func, xvals=None, xmin=None, xmax=None):
     '''
     generates the array of X values for each of the PDf, CDF, SF, HF, CHF functions within reliability.Distributions
     This is done with a variety of cases in order to ensure that for regions of high gradient (particularly asymptotes to inf) the points are more concentrated.
-    This ensures that the line always looks as smooth as possible using only 100 data points
+    This ensures that the line always looks as smooth as possible using only 200 data points
     '''
 
     # obtain the xvals array
-    points = 100  # the number of points to use when generating the X array
+    points = 200  # the number of points to use when generating the X array
+    points_right = 25 #the number of points given to the area above QU. The total points is still equal to 'points' so the area below QU receives 'points - points_right'
     QL = dist.quantile(0.0001)  # quantile lower
-    QU = dist.quantile(0.999)  # quantile upper
+    QU = dist.quantile(0.99)  # quantile upper
     if xvals is not None:
         X = xvals
         if type(X) in [float, int, np.float64]:
@@ -337,7 +346,7 @@ def generate_X_array(dist, func, xvals=None, xmin=None, xmax=None):
         if xmin is None:
             xmin = 0
         if xmax is None:
-            xmax = QU + (QU - QL) * 0.1
+            xmax = dist.quantile(0.9999)
         if xmin > xmax:
             xmin, xmax = xmax, xmin  # switch them if they are given in the wrong order
         if (xmin < QL and xmax < QL) or (xmin >= QL and xmax <= QU) or (xmin > QU and xmax > QU):
@@ -378,10 +387,11 @@ def generate_X_array(dist, func, xvals=None, xmin=None, xmax=None):
         elif xmin > QL and xmin < QU and xmax > QU:
             if func in ['pdf', 'PDF', 'cdf', 'CDF', 'sf', 'SF']:
                 if dist._pdf0 == 0:
-                    X = np.hstack([np.linspace(xmin, QU, points - 1), xmax])
+                    X = np.hstack([np.linspace(xmin, QU, points - points_right), np.linspace(QU, xmax, points_right)])
                 else:  # pdf is asymptotic to inf at x=0
-                    detail = np.geomspace(xmin - dist.gamma, QU - dist.gamma, points - 1) + dist.gamma
-                    X = np.hstack([detail, xmax])
+                    detail = np.geomspace(xmin - dist.gamma, QU - dist.gamma, points - points_right) + dist.gamma
+                    right = np.geomspace(QU - dist.gamma, xmax - dist.gamma, points_right) + dist.gamma
+                    X = np.hstack([detail, right])
             elif func in ['hf', 'HF']:
                 if dist._hf0 == 0:
                     X = np.linspace(xmin, xmax, points)
@@ -395,11 +405,11 @@ def generate_X_array(dist, func, xvals=None, xmin=None, xmax=None):
             if dist.gamma == 0:
                 if func in ['pdf', 'PDF', 'cdf', 'CDF', 'sf', 'SF']:
                     if dist._pdf0 == 0:
-                        X = np.hstack([xmin, np.linspace(QL, QU, points - 2), xmax])
+                        X = np.hstack([xmin, np.linspace(QL, QU, points - (points_right+1)), np.linspace(QU, xmax, points_right)])
                     else:  # pdf is asymptotic to inf at x=0
-                        X = np.hstack([xmin, np.geomspace(QL, QU, points - 2), xmax])
+                        X = np.hstack([xmin, np.geomspace(QL, QU, points - (points_right+1)), np.geomspace(QU, xmax, points_right)])
                 elif func in ['hf', 'HF']:
-                    X = np.hstack([xmin, np.geomspace(QL, xmax, points - 1)]) #geomspace works better as it typically asymptotes
+                    X = np.hstack([xmin, np.geomspace(QL, xmax, points - 1)])  # geomspace works better as it typically asymptotes
                 elif func in ['chf', 'CHF']:
                     X = np.hstack([xmin, np.linspace(QL, xmax, points - 1)])
                 else:
@@ -407,12 +417,13 @@ def generate_X_array(dist, func, xvals=None, xmin=None, xmax=None):
             else:  # gamma > 0
                 if func in ['pdf', 'PDF', 'cdf', 'CDF', 'sf', 'SF']:
                     if dist._pdf0 == 0:
-                        X = np.hstack([xmin, dist.gamma - 1e-8, np.linspace(QL, QU, points - 3), xmax])
+                        X = np.hstack([xmin, dist.gamma - 1e-8, np.linspace(QL, QU, points - (points_right+2)), np.geomspace(QU-dist.gamma, xmax-dist.gamma, points_right)+dist.gamma])
                     else:  # pdf is asymptotic to inf at x=0
-                        detail = np.geomspace(QL - dist.gamma, QU - dist.gamma, points - 3) + dist.gamma
-                        X = np.hstack([xmin, dist.gamma - 1e-8, detail, xmax])
+                        detail = np.geomspace(QL - dist.gamma, QU - dist.gamma, points - (points_right+2)) + dist.gamma
+                        right = np.geomspace(QU - dist.gamma, xmax - dist.gamma, points_right) + dist.gamma
+                        X = np.hstack([xmin, dist.gamma - 1e-8, detail, right])
                 elif func in ['hf', 'HF']:
-                    detail = np.geomspace(QL - dist.gamma, xmax - dist.gamma, points - 2) + dist.gamma #geomspace works better as it typically asymptotes
+                    detail = np.geomspace(QL - dist.gamma, xmax - dist.gamma, points - 2) + dist.gamma  # geomspace works better as it typically asymptotes
                     X = np.hstack([xmin, dist.gamma - 1e-8, detail])
                 elif func in ['chf', 'CHF']:
                     X = np.hstack([xmin, dist.gamma - 1e-8, np.linspace(QL, xmax, points - 2)])
