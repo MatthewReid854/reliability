@@ -7,7 +7,7 @@ Reliability test duration
 
 .. note:: This function will be available in version 0.5.3 which is currently unreleased.
 
-This function is an extension of the reliability_test_planner which allows users to calculate the required duration for a reliability test to achieve the specified producers and consumers risks. This is done based on the specified MTBF (mean time between failure) required and MTBF design.
+This function is an extension of the `reliability_test_planner <https://reliability.readthedocs.io/en/latest/Reliability%20test%20planner.html>`_ which allows users to calculate the required duration for a reliability test to achieve the specified producers and consumers risks. This is done based on the specified MTBF (mean time between failure) required and MTBF design.
 
 This type of determination must be made when organisations looking to test an item are uncertain of how much testing is required, but they know the amount of risk they are willing to accept as well as the MTBF required and the MTBF to which the item has been designed.
 
@@ -28,7 +28,7 @@ Outputs:
 -   If print_results is True, all the variables will be printed to the console.
 -   If show_plot is True a plot of producer's and consumer's risk Vs test duration will be generated. Use plt.show() to display it.
 
-In the example below the consumer requires a vehicle to achieve an MTBF of 2500km and is willing to accept 20% risk that they accept a bad item when they should have rejected it). The producer has designed the vehicle to have an MTBF of 3000km and they are willing to accept 20% risk that the consumer rejects a good item when they should have accepted it. How many kilometres should the reliability test be?
+In the example below the consumer requires a vehicle to achieve an MTBF of 2500km and is willing to accept 20% risk that they accept a bad item when they should have rejected it). The producer has designed the vehicle to have an MTBF of 3000km and they are willing to accept 20% risk that the consumer rejects a good item when they should have accepted it. How many kilometres should the reliability test be? Using the function we find the test needs to be 231616 km.
 
 .. code:: python
 
@@ -55,7 +55,7 @@ The underlying method is as follows:
 
 Step 1) Begin with failures = 1. This will be iterated later.
 
-Step 2) Using the function `Repairable_systems.reliability_test_planner <https://reliability.readthedocs.io/en/latest/Reliability%20test%20planner.html>`_, we set CI = 1-consumer_risk, MTBF = MTBF_required to solve for the test_duration that is achieved by this test. This is the test duration required if there was 1 failure which would give the specified MTBF required and specified consumer's risk.
+Step 2) Using the function `Reliability_testing.reliability_test_planner <https://reliability.readthedocs.io/en/latest/Reliability%20test%20planner.html>`_, we set CI = 1-consumer_risk, MTBF = MTBF_required to solve for the test_duration that is achieved by this test. This is the test duration required if there was 1 failure which would give the specified MTBF required and specified consumer's risk.
 
 Step 3) We again use the function Repairable_systems.reliability_test_planner but this time we set MTBF = MTBF_design and use the test_duration as the output from step 2. Still keeping failures = 1 we are solving for the CI achieved. This is effectively the producer's risk for the given test_duration and number of failures.
 
