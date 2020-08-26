@@ -11,6 +11,7 @@ Changelog
 **New features**
 
 -    Implemented Loglogistic_Distribution
+-    Implemented Fit_Loglogistic_2P
 -    Added the function Reliability_testing.reliability_test_duration
 
 **API Changes**

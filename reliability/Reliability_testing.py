@@ -350,7 +350,7 @@ class reliability_test_planner:
             print('Test duration:', self.test_duration)
             print('MTBF (lower confidence bound):', self.MTBF)
             print('Number of failures:', self.number_of_failures)
-            print(str('Confidence interval (' + str(sides) + ' sided):' + str(self.CI)))
+            print(str('Confidence interval (' + str(sides) + ' sided): ' + str(self.CI)))
             if print_CI_warn is True:
                 print('WARNING: The calculated CI is less than 0.5. This indicates that the desired MTBF is unachievable for the specified test_duration and number_of_failures.')
 
