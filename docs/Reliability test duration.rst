@@ -54,7 +54,7 @@ The underlying method is as follows:
 
 Step 1) Begin with failures = 1. This will be iterated later.
 
-Step 2) Using the function Repairable_systems.`reliability_test_planner <https://reliability.readthedocs.io/en/latest/Reliability%20test%20planner.html>`_, we set CI = 1-consumer_risk, MTBF = MTBF_required to solve for the test_duration that is achieved by this test. This is the test duration required if there was 1 failure which would give the specified MTBF required and specified consumer's risk.
+Step 2) Using the function `Repairable_systems.reliability_test_planner <https://reliability.readthedocs.io/en/latest/Reliability%20test%20planner.html>`_, we set CI = 1-consumer_risk, MTBF = MTBF_required to solve for the test_duration that is achieved by this test. This is the test duration required if there was 1 failure which would give the specified MTBF required and specified consumer's risk.
 
 Step 3) We again use the function Repairable_systems.reliability_test_planner but this time we set MTBF = MTBF_design and use the test_duration as the output from step 2. Still keeping failures = 1 we are solving for the CI achieved. This is effectively the producer's risk for the given test_duration and number of failures.
 
