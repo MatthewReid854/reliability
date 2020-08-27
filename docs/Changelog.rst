@@ -13,6 +13,7 @@ Changelog
 -    Implemented Loglogistic_Distribution
 -    Implemented Fit_Loglogistic_2P
 -    Added the function Reliability_testing.reliability_test_duration
+-    Added Fit_Loglogistic_2P to Fitters.Fit_Everything
 
 **API Changes**
 
@@ -21,6 +22,7 @@ Changelog
 **Bug Fixes**
 
 -    Fixed autoscale for cases where the HF is constant so it no longer lies along the yaxis upper limit
+-    Fit_Everything had a bug in the default xvals for the Beta_Distribution's histogram which caused an error in some special cases. This is now resolved.
 
 **Other**
 
@@ -28,6 +30,7 @@ Changelog
 -    Changed the Gamma_Distribution and Weibull_Distribution mode to be self.gamma when beta < 1. Previously it was "No mode exists when beta < 1" which is true from a formula perspective but it is clear that the mode is equal to gamma as that's where the asymptote occurs. The only distribution with "no mode exists..." is the Beta distribution as it can have 2 modes for certain values of alpha and beta.
 -    Updated Utils.generate_X_array to use 200 points (rather than 100) and allocated more points to the right hand side of the plot (beyond b99). This was because plots were not displaying smoothly enough for distributions with high skewness.
 -    Changed default plotting upper limit to b9999. Previously it was slightly more and was not a round quantile. Done for simplicity and minimal change will be noticed.
+-    Changed the layout of the Probability plots and PP plots in Fit_Everything from a 5x2 grid to a 4x3 grid. This made more sense due to the addition of the Loglogistic Distribution which would have made the layout 6x2 which is too long.
 
 **Version: 0.5.2 --- Released: 14 August 2020**
 '''''''''''''''''''''''''''''''''''''''''''''
