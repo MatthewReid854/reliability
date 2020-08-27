@@ -2881,13 +2881,14 @@ class Beta_Distribution:
         if type(X) in [float, int, np.float64]:
             if X < 0 or X > 1:
                 raise ValueError('the value given for xvals is less than 0 or greater than 1')
+            X = np.array([X])
         elif type(X) is list:
             X = np.array(X)
         elif type(X) is np.ndarray:
             pass
         else:
             raise ValueError('unexpected type in xvals. Must be int, float, list, or array')
-        if type(X) is np.ndarray and (min(X) < 0 or max(X) > 1):
+        if min(X) < 0 or max(X) > 1:
             raise ValueError('xvals was found to contain values below 0 or greater than 1')
 
         pdf = ss.beta.pdf(X, self.alpha, self.beta, 0, 1)
@@ -2929,13 +2930,14 @@ class Beta_Distribution:
         if type(X) in [float, int, np.float64]:
             if X < 0 or X > 1:
                 raise ValueError('the value given for xvals is less than 0 or greater than 1')
+            X = np.array([X])
         elif type(X) is list:
             X = np.array(X)
         elif type(X) is np.ndarray:
             pass
         else:
             raise ValueError('unexpected type in xvals. Must be int, float, list, or array')
-        if type(X) is np.ndarray and (min(X) < 0 or max(X) > 1):
+        if min(X) < 0 or max(X) > 1:
             raise ValueError('xvals was found to contain values below 0 or greater than 1')
 
         cdf = ss.beta.cdf(X, self.alpha, self.beta, 0, 1)
@@ -2977,13 +2979,14 @@ class Beta_Distribution:
         if type(X) in [float, int, np.float64]:
             if X < 0 or X > 1:
                 raise ValueError('the value given for xvals is less than 0 or greater than 1')
+            X = np.array([X])
         elif type(X) is list:
             X = np.array(X)
         elif type(X) is np.ndarray:
             pass
         else:
             raise ValueError('unexpected type in xvals. Must be int, float, list, or array')
-        if type(X) is np.ndarray and (min(X) < 0 or max(X) > 1):
+        if min(X) < 0 or max(X) > 1:
             raise ValueError('xvals was found to contain values below 0 or greater than 1')
 
         sf = ss.beta.sf(X, self.alpha, self.beta, 0, 1)
@@ -3025,13 +3028,14 @@ class Beta_Distribution:
         if type(X) in [float, int, np.float64]:
             if X < 0 or X > 1:
                 raise ValueError('the value given for xvals is less than 0 or greater than 1')
+            X = np.array([X])
         elif type(X) is list:
             X = np.array(X)
         elif type(X) is np.ndarray:
             pass
         else:
             raise ValueError('unexpected type in xvals. Must be int, float, list, or array')
-        if type(X) is np.ndarray and (min(X) < 0 or max(X) > 1):
+        if min(X) < 0 or max(X) > 1:
             raise ValueError('xvals was found to contain values below 0 or greater than 1')
 
         hf = ss.beta.pdf(X, self.alpha, self.beta, 0, 1) / ss.beta.sf(X, self.alpha, self.beta, 0, 1)
@@ -3073,13 +3077,14 @@ class Beta_Distribution:
         if type(X) in [float, int, np.float64]:
             if X < 0 or X > 1:
                 raise ValueError('the value given for xvals is less than 0 or greater than 1')
+            X = np.array([X])
         elif type(X) is list:
             X = np.array(X)
         elif type(X) is np.ndarray:
             pass
         else:
             raise ValueError('unexpected type in xvals. Must be int, float, list, or array')
-        if type(X) is np.ndarray and (min(X) < 0 or max(X) > 1):
+        if min(X) < 0 or max(X) > 1:
             raise ValueError('xvals was found to contain values below 0 or greater than 1')
 
         chf = -np.log(ss.beta.sf(X, self.alpha, self.beta, 0, 1))

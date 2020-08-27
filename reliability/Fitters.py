@@ -1,25 +1,26 @@
 '''
 Fitters
 This module contains custom fitting functions for parametric distributions which support both complete and right censored data.
-The supported distributions are:
-Weibull_2P
-Weibull_3P
-Exponential_1P
-Exponential_2P
-Gamma_2P
-Gamma_3P
-Lognormal_2P
-Lognormal_3P
-Normal_2P
-Beta_2P
-Weibull_Mixture
+The included functions are:
+Fit_Weibull_2P
+Fit_Weibull_3P
+Fit_Exponential_1P
+Fit_Exponential_2P
+Fit_Gamma_2P
+Fit_Gamma_3P
+Fit_Lognormal_2P
+Fit_Lognormal_3P
+Fit_Normal_2P
+Fit_Beta_2P
+Fit_Weibull_Mixture
+Fit_Weibull_CR
 
 Note that the Beta distribution is only for data in the range 0-1.
-There is also a Fit_Everything function which will fit all distributions except the Weibull mixture model and will provide plots and a table of values.
+There is also a Fit_Everything function which will fit all distributions (except the Weibull_mixture and Weibull_CR models) and will provide plots and a table of values.
 All functions in this module work using autograd to find the derivative of the log-likelihood function. In this way, the code only needs to specify
 the log PDF and log SF in order to obtain the fitted parameters. Initial guesses of the parameters are essential for autograd and are obtained
-using scipy. If the distribution is an extremely bad fit or is heavily censored (>99%) then these guesses may be poor and the fit might not be successful.
-Generally the fit achieved by autograd is highly successful, and whenever it fails the fit from scipy will be used. Scipy is only correct when there is no censored data.
+using scipy or least squares. If the distribution is an extremely bad fit or is heavily censored (>99%) then these guesses may be poor and the fit might not be successful.
+Generally the fit achieved by autograd is highly successful, and whenever it fails the initial guess will be used and a warning will be displayed.
 '''
 
 import numpy as np
@@ -48,7 +49,7 @@ dec = 3  # number of decimals to use when rounding fitted parameters in labels
 class Fit_Everything:
     '''
     Fit_Everything
-    This function will fit all available distributions for the data you enter, which may include right censored data.
+    This function will fit all available distributions (excluding mixture and competing risks) for the data you enter, which may include right censored data.
 
     Inputs:
     failures - an array or list of the failure times (this does not need to be sorted).
@@ -77,13 +78,9 @@ class Fit_Everything:
         Weibull_3P_AICc
     All parametric models have the number of parameters in the name. For example, Weibull_2P used alpha and beta, whereas Weibull_3P
     uses alpha, beta, and gamma. This is applied even for Normal_2P for consistency in naming conventions.
-    If plot_results is True, the plot will show the PDF and CDF of all fitted distributions plotted with a histogram of the data.
     From the results, the distributions are sorted based on their goodness of fit test results, where the smaller the goodness of fit
     value, the better the fit of the distribution to the data.
-    Confidence intervals for each of the fitted parameters are not supported. This feature will be incorporated in
-    future releases in 2020. See the python library "lifelines" or JMP Pro software if this is required.
-    Whilst Minitab uses the Anderson-Darling statistic for the goodness of fit, it is generally recognised that AICc and BIC
-    are more accurate measures as they take into account the number of parameters in the distribution.
+    Confidence intervals for each of the fitted parameters are not supported for all distributions. This feature is being developed.
 
     Example Usage:
     X = [0.95892,1.43249,1.04221,0.67583,3.28411,1.03072,0.05826,1.81387,2.06383,0.59762,5.99005,1.92145,1.35179,0.50391]
@@ -132,24 +129,18 @@ class Fit_Everything:
 
         self.failures = failures
         self.right_censored = right_censored
-        # if right_censored is None:
-        #     RC = np.array([])
-        # else:
-        #     RC = right_censored
-
         self._all_data = np.hstack([failures, right_censored])
         if min(self._all_data) < 0:
             raise ValueError('All failure and censoring times must be greater than zero.')
 
-        # These are all used for scaling the histogram when there is censored data
-        self._frac_fail = len(failures) / len(self._all_data)
+        self._frac_fail = len(failures) / len(self._all_data)  # This is used for scaling the histogram when there is censored data
 
         # Kaplan-Meier estimate of quantiles. Used in P-P plot.
         d = sorted(self._all_data)  # sorting the failure data is necessary for plotting quantiles in order
         nonparametric = KaplanMeier(failures=failures, right_censored=right_censored, print_results=False, show_plot=False)
         self._nonparametric_CDF = 1 - np.array(nonparametric.KM)  # change SF into CDF
 
-        # parametric models
+        # Fit the parametric models and extract the fitted parameters
         self.__Weibull_3P_params = Fit_Weibull_3P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False)
         self.Weibull_3P_alpha = self.__Weibull_3P_params.alpha
         self.Weibull_3P_beta = self.__Weibull_3P_params.beta
@@ -215,6 +206,13 @@ class Fit_Everything:
         self.Expon_1P_AICc = self.__Expon_1P_params.AICc
         self._parametric_CDF_Exponential_1P = self.__Expon_1P_params.distribution.CDF(xvals=d, show_plot=False)
 
+        self.__Loglogistic_2P_params = Fit_Loglogistic_2P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False)
+        self.Loglogistic_2P_alpha = self.__Loglogistic_2P_params.alpha
+        self.Loglogistic_2P_beta = self.__Loglogistic_2P_params.beta
+        self.Loglogistic_2P_BIC = self.__Loglogistic_2P_params.BIC
+        self.Loglogistic_2P_AICc = self.__Loglogistic_2P_params.AICc
+        self._parametric_CDF_Loglogistic_2P = self.__Loglogistic_2P_params.distribution.CDF(xvals=d, show_plot=False)
+
         if max(failures) <= 1:
             self.__Beta_2P_params = Fit_Beta_2P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False)
             self.Beta_2P_alpha = self.__Beta_2P_params.alpha
@@ -229,15 +227,15 @@ class Fit_Everything:
             self.Beta_2P_AICc = 0
 
         # assemble the output dataframe
-        DATA = {'Distribution': ['Weibull_3P', 'Weibull_2P', 'Normal_2P', 'Exponential_1P', 'Exponential_2P', 'Lognormal_2P', 'Lognormal_3P', 'Gamma_2P', 'Gamma_3P', 'Beta_2P'],
-                'Alpha': [self.Weibull_3P_alpha, self.Weibull_2P_alpha, '', '', '', '', '', self.Gamma_2P_alpha, self.Gamma_3P_alpha, self.Beta_2P_alpha],
-                'Beta': [self.Weibull_3P_beta, self.Weibull_2P_beta, '', '', '', '', '', self.Gamma_2P_beta, self.Gamma_3P_beta, self.Beta_2P_beta],
-                'Gamma': [self.Weibull_3P_gamma, '', '', '', self.Expon_2P_gamma, '', self.Lognormal_3P_gamma, '', self.Gamma_3P_gamma, ''],
-                'Mu': ['', '', self.Normal_2P_mu, '', '', self.Lognormal_2P_mu, self.Lognormal_3P_mu, '', '', ''],
-                'Sigma': ['', '', self.Normal_2P_sigma, '', '', self.Lognormal_2P_sigma, self.Lognormal_3P_sigma, '', '', ''],
-                'Lambda': ['', '', '', self.Expon_1P_lambda, self.Expon_2P_lambda, '', '', '', '', ''],
-                'AICc': [self.Weibull_3P_AICc, self.Weibull_2P_AICc, self.Normal_2P_AICc, self.Expon_1P_AICc, self.Expon_2P_AICc, self.Lognormal_2P_AICc, self.Lognormal_3P_AICc, self.Gamma_2P_AICc, self.Gamma_3P_AICc, self.Beta_2P_AICc],
-                'BIC': [self.Weibull_3P_BIC, self.Weibull_2P_BIC, self.Normal_2P_BIC, self.Expon_1P_BIC, self.Expon_2P_BIC, self.Lognormal_2P_BIC, self.Lognormal_2P_BIC, self.Gamma_2P_BIC, self.Gamma_3P_BIC, self.Beta_2P_BIC]}
+        DATA = {'Distribution': ['Weibull_3P', 'Weibull_2P', 'Normal_2P', 'Exponential_1P', 'Exponential_2P', 'Lognormal_2P', 'Lognormal_3P', 'Gamma_2P', 'Gamma_3P', 'Beta_2P', 'Loglogistic_2P'],
+                'Alpha': [self.Weibull_3P_alpha, self.Weibull_2P_alpha, '', '', '', '', '', self.Gamma_2P_alpha, self.Gamma_3P_alpha, self.Beta_2P_alpha, self.Loglogistic_2P_alpha],
+                'Beta': [self.Weibull_3P_beta, self.Weibull_2P_beta, '', '', '', '', '', self.Gamma_2P_beta, self.Gamma_3P_beta, self.Beta_2P_beta, self.Loglogistic_2P_beta],
+                'Gamma': [self.Weibull_3P_gamma, '', '', '', self.Expon_2P_gamma, '', self.Lognormal_3P_gamma, '', self.Gamma_3P_gamma, '', ''],
+                'Mu': ['', '', self.Normal_2P_mu, '', '', self.Lognormal_2P_mu, self.Lognormal_3P_mu, '', '', '', ''],
+                'Sigma': ['', '', self.Normal_2P_sigma, '', '', self.Lognormal_2P_sigma, self.Lognormal_3P_sigma, '', '', '', ''],
+                'Lambda': ['', '', '', self.Expon_1P_lambda, self.Expon_2P_lambda, '', '', '', '', '', ''],
+                'AICc': [self.Weibull_3P_AICc, self.Weibull_2P_AICc, self.Normal_2P_AICc, self.Expon_1P_AICc, self.Expon_2P_AICc, self.Lognormal_2P_AICc, self.Lognormal_3P_AICc, self.Gamma_2P_AICc, self.Gamma_3P_AICc, self.Beta_2P_AICc, self.Loglogistic_2P_AICc],
+                'BIC': [self.Weibull_3P_BIC, self.Weibull_2P_BIC, self.Normal_2P_BIC, self.Expon_1P_BIC, self.Expon_2P_BIC, self.Lognormal_2P_BIC, self.Lognormal_2P_BIC, self.Gamma_2P_BIC, self.Gamma_3P_BIC, self.Beta_2P_BIC, self.Loglogistic_2P_BIC]}
 
         df = pd.DataFrame(DATA, columns=['Distribution', 'Alpha', 'Beta', 'Gamma', 'Mu', 'Sigma', 'Lambda', 'AICc', 'BIC'])
         # sort the dataframe by BIC or AICc and replace na and 0 values with spaces. Smallest AICc or BIC is better fit
@@ -275,6 +273,8 @@ class Fit_Everything:
             self.best_distribution = Normal_Distribution(mu=self.Normal_2P_mu, sigma=self.Normal_2P_sigma)
         elif best_dist == 'Beta_2P':
             self.best_distribution = Beta_Distribution(alpha=self.Beta_2P_alpha, beta=self.Beta_2P_beta)
+        elif best_dist == 'Loglogistic_2P':
+            self.best_distribution = Loglogistic_Distribution(alpha=self.Loglogistic_2P_alpha, beta=self.Loglogistic_2P_beta)
 
         # print the results
         if print_results is True:  # printing occurs by default
@@ -299,13 +299,16 @@ class Fit_Everything:
         # define plotting limits
         delta = max(X) - min(X)
         xmin = 0
-        xmax = max(X) + delta
+        if max(X)<=1:
+            xmax=1 #this is the case when beta is fitted
+        else:
+            xmax = max(X) + delta #this is when beta is not fitted so the upperlimit goes a bit more
         xvals = np.linspace(xmin, xmax, 1000)
 
         plt.figure(figsize=(14, 6))
         plt.subplot(121)  # PDF
 
-        # make this histogram. Can't use plt.hist due to need to scale the heights when there's censored data
+        # make the histogram. Can't use plt.hist due to need to scale the heights when there's censored data
         iqr = np.subtract(*np.percentile(X, [75, 25]))  # interquartile range
         bin_width = 2 * iqr * len(X) ** -(1 / 3)  # Freedman–Diaconis rule ==> https://en.wikipedia.org/wiki/Freedman%E2%80%93Diaconis_rule
         num_bins = int(np.ceil((max(X) - min(X)) / bin_width))
@@ -325,7 +328,8 @@ class Fit_Everything:
         Lognormal_Distribution(mu=self.Lognormal_2P_mu, sigma=self.Lognormal_2P_sigma).PDF(xvals=xvals, label=r'Lognormal ($\mu , \sigma$)')
         Lognormal_Distribution(mu=self.Lognormal_3P_mu, sigma=self.Lognormal_3P_sigma, gamma=self.Lognormal_3P_gamma).PDF(xvals=xvals, label=r'Lognormal ($\mu , \sigma , \gamma$)')
         Normal_Distribution(mu=self.Normal_2P_mu, sigma=self.Normal_2P_sigma).PDF(xvals=xvals, label=r'Normal ($\mu , \sigma$)')
-        if max(X) <= 1:  # condition for Beta Dist to be fitted
+        Loglogistic_Distribution(alpha=self.Loglogistic_2P_alpha, beta=self.Loglogistic_2P_beta).PDF(xvals=xvals, label=r'Loglogistic ($\alpha , \beta$)')
+        if max(X) <= 1:  # condition for Beta dist to be fitted
             Beta_Distribution(alpha=self.Beta_2P_alpha, beta=self.Beta_2P_beta).PDF(xvals=xvals, label=r'Beta ($\alpha , \beta$)')
         plt.legend()
         plt.xlim(xmin, xmax)
@@ -346,6 +350,7 @@ class Fit_Everything:
         Lognormal_Distribution(mu=self.Lognormal_2P_mu, sigma=self.Lognormal_2P_sigma).CDF(xvals=xvals, label=r'Lognormal ($\mu , \sigma$)')
         Lognormal_Distribution(mu=self.Lognormal_3P_mu, sigma=self.Lognormal_3P_sigma, gamma=self.Lognormal_3P_gamma).CDF(xvals=xvals, label=r'Lognormal ($\mu , \sigma , \gamma$)')
         Normal_Distribution(mu=self.Normal_2P_mu, sigma=self.Normal_2P_sigma).CDF(xvals=xvals, label=r'Normal ($\mu , \sigma$)')
+        Loglogistic_Distribution(alpha=self.Loglogistic_2P_alpha, beta=self.Loglogistic_2P_beta).CDF(xvals=xvals, label=r'Loglogistic ($\alpha , \beta$)')
         if max(X) <= 1:  # condition for Beta Dist to be fitted
             Beta_Distribution(alpha=self.Beta_2P_alpha, beta=self.Beta_2P_beta).CDF(xvals=xvals, label=r'Beta ($\alpha , \beta$)')
         plt.legend()
@@ -355,19 +360,15 @@ class Fit_Everything:
         plt.ylabel('Cumulative probability density')
         plt.suptitle('Histogram plot of each fitted distribution')
         plt.legend()
+        plt.subplots_adjust(left=0.07, bottom=0.10, right=0.97, top=0.88, wspace=0.15)
 
     def P_P_plot(self):  # probability-probability plot of parametric vs non-parametric
-        # plot each of the results
-        if max(self.failures) <= 1:
-            cols = 6  # this is for when the beta distribution was fitted
-            size = (11, 4.65)
-        else:
-            cols = 5
-            size = (10, 4.65)
-        plt.figure(figsize=size)
+        rows = 3
+        cols = 4
+        plt.figure(figsize=(10, 8))
         plt.suptitle('Semi-parametric Probability-Probability plots of each fitted distribution\nParametric (x-axis) vs Non-Parametric (y-axis)')
 
-        plt.subplot(2, cols, 1)
+        plt.subplot(rows, cols, 1)
         xlim = max(np.hstack([self._nonparametric_CDF, self._parametric_CDF_Exponential_1P]))
         plt.scatter(self._nonparametric_CDF, self._parametric_CDF_Exponential_1P, marker='.', color='k')
         plt.plot([0, xlim], [0, xlim], 'r', alpha=0.7)
@@ -376,43 +377,7 @@ class Fit_Everything:
         plt.yticks([])
         plt.xticks([])
 
-        plt.subplot(2, cols, 2)
-        xlim = max(np.hstack([self._nonparametric_CDF, self._parametric_CDF_Weibull_2P]))
-        plt.scatter(self._nonparametric_CDF, self._parametric_CDF_Weibull_2P, marker='.', color='k')
-        plt.plot([0, xlim], [0, xlim], 'r', alpha=0.7)
-        plt.axis('square')
-        plt.title('Weibull_2P')
-        plt.yticks([])
-        plt.xticks([])
-
-        plt.subplot(2, cols, 3)
-        xlim = max(np.hstack([self._nonparametric_CDF, self._parametric_CDF_Gamma_2P]))
-        plt.scatter(self._nonparametric_CDF, self._parametric_CDF_Gamma_2P, marker='.', color='k')
-        plt.plot([0, xlim], [0, xlim], 'r', alpha=0.7)
-        plt.axis('square')
-        plt.title('Gamma_2P')
-        plt.yticks([])
-        plt.xticks([])
-
-        plt.subplot(2, cols, 4)
-        xlim = max(np.hstack([self._nonparametric_CDF, self._parametric_CDF_Lognormal_2P]))
-        plt.scatter(self._nonparametric_CDF, self._parametric_CDF_Lognormal_2P, marker='.', color='k')
-        plt.plot([0, xlim], [0, xlim], 'r', alpha=0.7)
-        plt.axis('square')
-        plt.title('Lognormal_2P')
-        plt.yticks([])
-        plt.xticks([])
-
-        plt.subplot(2, cols, 5)
-        xlim = max(np.hstack([self._nonparametric_CDF, self._parametric_CDF_Normal_2P]))
-        plt.scatter(self._nonparametric_CDF, self._parametric_CDF_Normal_2P, marker='.', color='k')
-        plt.plot([0, xlim], [0, xlim], 'r', alpha=0.7)
-        plt.axis('square')
-        plt.title('Normal_2P')
-        plt.yticks([])
-        plt.xticks([])
-
-        plt.subplot(2, cols, cols + 1)
+        plt.subplot(rows, cols, 2)
         xlim = max(np.hstack([self._nonparametric_CDF, self._parametric_CDF_Exponential_2P]))
         plt.scatter(self._nonparametric_CDF, self._parametric_CDF_Exponential_2P, marker='.', color='k')
         plt.plot([0, xlim], [0, xlim], 'r', alpha=0.7)
@@ -421,25 +386,16 @@ class Fit_Everything:
         plt.yticks([])
         plt.xticks([])
 
-        plt.subplot(2, cols, cols + 2)
-        xlim = max(np.hstack([self._nonparametric_CDF, self._parametric_CDF_Weibull_3P]))
-        plt.scatter(self._nonparametric_CDF, self._parametric_CDF_Weibull_3P, marker='.', color='k')
+        plt.subplot(rows, cols, 3)
+        xlim = max(np.hstack([self._nonparametric_CDF, self._parametric_CDF_Lognormal_2P]))
+        plt.scatter(self._nonparametric_CDF, self._parametric_CDF_Lognormal_2P, marker='.', color='k')
         plt.plot([0, xlim], [0, xlim], 'r', alpha=0.7)
         plt.axis('square')
-        plt.title('Weibull_3P')
+        plt.title('Lognormal_2P')
         plt.yticks([])
         plt.xticks([])
 
-        plt.subplot(2, cols, cols + 3)
-        xlim = max(np.hstack([self._nonparametric_CDF, self._parametric_CDF_Gamma_3P]))
-        plt.scatter(self._nonparametric_CDF, self._parametric_CDF_Gamma_3P, marker='.', color='k')
-        plt.plot([0, xlim], [0, xlim], 'r', alpha=0.7)
-        plt.axis('square')
-        plt.title('Gamma_3P')
-        plt.yticks([])
-        plt.xticks([])
-
-        plt.subplot(2, cols, cols + 4)
+        plt.subplot(rows, cols, 4)
         xlim = max(np.hstack([self._nonparametric_CDF, self._parametric_CDF_Lognormal_3P]))
         plt.scatter(self._nonparametric_CDF, self._parametric_CDF_Lognormal_3P, marker='.', color='k')
         plt.plot([0, xlim], [0, xlim], 'r', alpha=0.7)
@@ -448,8 +404,72 @@ class Fit_Everything:
         plt.yticks([])
         plt.xticks([])
 
+        plt.subplot(rows, cols, 5)
+        xlim = max(np.hstack([self._nonparametric_CDF, self._parametric_CDF_Weibull_2P]))
+        plt.scatter(self._nonparametric_CDF, self._parametric_CDF_Weibull_2P, marker='.', color='k')
+        plt.plot([0, xlim], [0, xlim], 'r', alpha=0.7)
+        plt.axis('square')
+        plt.title('Weibull_2P')
+        plt.yticks([])
+        plt.xticks([])
+
+        plt.subplot(rows, cols, 6)
+        xlim = max(np.hstack([self._nonparametric_CDF, self._parametric_CDF_Weibull_3P]))
+        plt.scatter(self._nonparametric_CDF, self._parametric_CDF_Weibull_3P, marker='.', color='k')
+        plt.plot([0, xlim], [0, xlim], 'r', alpha=0.7)
+        plt.axis('square')
+        plt.title('Weibull_3P')
+        plt.yticks([])
+        plt.xticks([])
+
+        plt.subplot(rows, cols, 7)
+        xlim = max(np.hstack([self._nonparametric_CDF, self._parametric_CDF_Loglogistic_2P]))
+        plt.scatter(self._nonparametric_CDF, self._parametric_CDF_Loglogistic_2P, marker='.', color='k')
+        plt.plot([0, xlim], [0, xlim], 'r', alpha=0.7)
+        plt.axis('square')
+        plt.title('Loglogistic_2P')
+        plt.yticks([])
+        plt.xticks([])
+
+        plt.subplot(rows, cols, 8)
+        # xlim = max(np.hstack([self._nonparametric_CDF, self._parametric_CDF_Loglogistic_3P]))
+        # plt.scatter(self._nonparametric_CDF, self._parametric_CDF_Loglogistic_3P, marker='.', color='k')
+        # plt.plot([0, xlim], [0, xlim], 'r', alpha=0.7)
+        plt.axis('square')
+        plt.title('Loglogistic_3P')
+        plt.text(x=0, y=0.5, s='PLACEHOLDER')
+        plt.yticks([])
+        plt.xticks([])
+
+        plt.subplot(rows, cols, 9)
+        xlim = max(np.hstack([self._nonparametric_CDF, self._parametric_CDF_Gamma_2P]))
+        plt.scatter(self._nonparametric_CDF, self._parametric_CDF_Gamma_2P, marker='.', color='k')
+        plt.plot([0, xlim], [0, xlim], 'r', alpha=0.7)
+        plt.axis('square')
+        plt.title('Gamma_2P')
+        plt.yticks([])
+        plt.xticks([])
+
+        plt.subplot(rows, cols, 10)
+        xlim = max(np.hstack([self._nonparametric_CDF, self._parametric_CDF_Gamma_3P]))
+        plt.scatter(self._nonparametric_CDF, self._parametric_CDF_Gamma_3P, marker='.', color='k')
+        plt.plot([0, xlim], [0, xlim], 'r', alpha=0.7)
+        plt.axis('square')
+        plt.title('Gamma_3P')
+        plt.yticks([])
+        plt.xticks([])
+
+        plt.subplot(rows, cols, 11)
+        xlim = max(np.hstack([self._nonparametric_CDF, self._parametric_CDF_Normal_2P]))
+        plt.scatter(self._nonparametric_CDF, self._parametric_CDF_Normal_2P, marker='.', color='k')
+        plt.plot([0, xlim], [0, xlim], 'r', alpha=0.7)
+        plt.axis('square')
+        plt.title('Normal_2P')
+        plt.yticks([])
+        plt.xticks([])
+
         if max(self.failures) <= 1:
-            plt.subplot(2, 6, 6)
+            plt.subplot(rows, cols, 12)
             xlim = max(np.hstack([self._nonparametric_CDF, self._parametric_CDF_Beta_2P]))
             plt.scatter(self._nonparametric_CDF, self._parametric_CDF_Beta_2P, marker='.', color='k')
             plt.plot([0, xlim], [0, xlim], 'r', alpha=0.7)
@@ -460,123 +480,161 @@ class Fit_Everything:
         plt.subplots_adjust(left=0.04, bottom=0.07, right=0.96, top=0.87)
 
     def probability_plot(self):
-        from reliability.Probability_plotting import Weibull_probability_plot, Normal_probability_plot, Gamma_probability_plot, Exponential_probability_plot, Beta_probability_plot, Lognormal_probability_plot, Exponential_probability_plot_Weibull_Scale
-        rows = 2
-        if max(self.failures) <= 1:
-            cols = 6  # this is for when the beta distribution was fitted
-        else:
-            cols = 5
+        from reliability.Probability_plotting import Weibull_probability_plot, Normal_probability_plot, Gamma_probability_plot, Exponential_probability_plot, Beta_probability_plot, Lognormal_probability_plot, Exponential_probability_plot_Weibull_Scale  # , Loglogistic_probability_plot
+        rows = 3
+        cols = 4
 
         plt.figure()
         plt.subplot(rows, cols, 1)
         Exponential_probability_plot_Weibull_Scale(failures=self.failures, right_censored=self.right_censored, __fitted_dist_params=self.__Expon_1P_params)
         ax = plt.gca()
-        ax.set_yticklabels([])
-        ax.set_xticklabels([])
+        ax.set_yticklabels([], minor=False)
+        ax.set_xticklabels([], minor=False)
+        ax.set_yticklabels([], minor=True)
+        ax.set_xticklabels([], minor=True)
         ax.set_ylabel('')
         ax.set_xlabel('')
         ax.get_legend().remove()
         plt.title('Exponential_1P')
 
         plt.subplot(rows, cols, 2)
-        Weibull_probability_plot(failures=self.failures, right_censored=self.right_censored, __fitted_dist_params=self.__Weibull_2P_params)
-        ax = plt.gca()
-        ax.set_yticklabels([])
-        ax.set_xticklabels([])
-        ax.set_ylabel('')
-        ax.set_xlabel('')
-        ax.get_legend().remove()
-        plt.title('Weibull_2P')
-
-        plt.subplot(rows, cols, 3)
-        Gamma_probability_plot(failures=self.failures, right_censored=self.right_censored, __fitted_dist_params=self.__Gamma_2P_params)
-        ax = plt.gca()
-        ax.set_yticklabels([])
-        ax.set_xticklabels([])
-        ax.set_ylabel('')
-        ax.set_xlabel('')
-        ax.get_legend().remove()
-        plt.title('Gamma_2P')
-
-        plt.subplot(rows, cols, 4)
-        Lognormal_probability_plot(failures=self.failures, right_censored=self.right_censored, __fitted_dist_params=self.__Lognormal_2P_params)
-        ax = plt.gca()
-        ax.set_yticklabels([])
-        ax.set_xticklabels([])
-        ax.set_ylabel('')
-        ax.set_xlabel('')
-        ax.get_legend().remove()
-        plt.title('Lognormal_2P')
-
-        plt.subplot(rows, cols, 5)
-        Normal_probability_plot(failures=self.failures, right_censored=self.right_censored, __fitted_dist_params=self.__Normal_2P_params)
-        ax = plt.gca()
-        ax.set_yticklabels([])
-        ax.set_xticklabels([])
-        ax.set_ylabel('')
-        ax.set_xlabel('')
-        ax.get_legend().remove()
-        plt.title('Normal_2P')
-
-        plt.subplot(2, cols, cols + 1)
         Exponential_probability_plot_Weibull_Scale(failures=self.failures, right_censored=self.right_censored, __fitted_dist_params=self.__Expon_2P_params)
         ax = plt.gca()
-        ax.set_yticklabels([])
-        ax.set_xticklabels([])
+        ax.set_yticklabels([], minor=False)
+        ax.set_xticklabels([], minor=False)
+        ax.set_yticklabels([], minor=True)
+        ax.set_xticklabels([], minor=True)
         ax.set_ylabel('')
         ax.set_xlabel('')
         ax.get_legend().remove()
         plt.title('Exponential_2P')
 
-        plt.subplot(2, cols, cols + 2)
-        Weibull_probability_plot(failures=self.failures, right_censored=self.right_censored, __fitted_dist_params=self.__Weibull_3P_params)
+        plt.subplot(rows, cols, 3)
+        Lognormal_probability_plot(failures=self.failures, right_censored=self.right_censored, __fitted_dist_params=self.__Lognormal_2P_params)
         ax = plt.gca()
-        ax.set_yticklabels([])
-        ax.set_xticklabels([])
+        ax.set_yticklabels([], minor=False)
+        ax.set_xticklabels([], minor=False)
+        ax.set_yticklabels([], minor=True)
+        ax.set_xticklabels([], minor=True)
         ax.set_ylabel('')
         ax.set_xlabel('')
         ax.get_legend().remove()
-        plt.title('Weibull_3P')
+        plt.title('Lognormal_2P')
 
-        plt.subplot(2, cols, cols + 3)
-        Gamma_probability_plot(failures=self.failures, right_censored=self.right_censored, __fitted_dist_params=self.__Gamma_3P_params)
-        ax = plt.gca()
-        ax.set_yticklabels([])
-        ax.set_xticklabels([])
-        ax.set_ylabel('')
-        ax.set_xlabel('')
-        ax.get_legend().remove()
-        plt.title('Gamma_3P')
-
-        plt.subplot(2, cols, cols + 4)
+        plt.subplot(rows, cols, 4)
         Lognormal_probability_plot(failures=self.failures, right_censored=self.right_censored, __fitted_dist_params=self.__Lognormal_3P_params)
         ax = plt.gca()
-        ax.set_yticklabels([])
-        ax.set_xticklabels([])
+        ax.set_yticklabels([], minor=False)
+        ax.set_xticklabels([], minor=False)
+        ax.set_yticklabels([], minor=True)
+        ax.set_xticklabels([], minor=True)
         ax.set_ylabel('')
         ax.set_xlabel('')
         ax.get_legend().remove()
         plt.title('Lognormal_3P')
 
+        plt.subplot(rows, cols, 5)
+        Weibull_probability_plot(failures=self.failures, right_censored=self.right_censored, __fitted_dist_params=self.__Weibull_2P_params)
+        ax = plt.gca()
+        ax.set_yticklabels([], minor=False)
+        ax.set_xticklabels([], minor=False)
+        ax.set_yticklabels([], minor=True)
+        ax.set_xticklabels([], minor=True)
+        ax.set_ylabel('')
+        ax.set_xlabel('')
+        ax.get_legend().remove()
+        plt.title('Weibull_2P')
+
+        plt.subplot(rows, cols, 6)
+        Weibull_probability_plot(failures=self.failures, right_censored=self.right_censored, __fitted_dist_params=self.__Weibull_3P_params)
+        ax = plt.gca()
+        ax.set_yticklabels([], minor=False)
+        ax.set_xticklabels([], minor=False)
+        ax.set_yticklabels([], minor=True)
+        ax.set_xticklabels([], minor=True)
+        ax.set_ylabel('')
+        ax.set_xlabel('')
+        ax.get_legend().remove()
+        plt.title('Weibull_3P')
+
+        plt.subplot(rows, cols, 7)
+        plt.text(x=0.4, y=0.5, s='PLACEHOLDER')
+        # Loglogistic_probability_plot(failures=self.failures, right_censored=self.right_censored, __fitted_dist_params=self.__Loglogistic_2P_params)
+        ax = plt.gca()
+        ax.set_yticklabels([], minor=False)
+        ax.set_xticklabels([], minor=False)
+        ax.set_yticklabels([], minor=True)
+        ax.set_xticklabels([], minor=True)
+        ax.set_ylabel('')
+        ax.set_xlabel('')
+        # ax.get_legend().remove()
+        plt.title('Loglogistic_2P')
+
+        plt.subplot(rows, cols, 8)
+        plt.text(x=0.4, y=0.5, s='PLACEHOLDER')
+        # Loglogistic_probability_plot(failures=self.failures, right_censored=self.right_censored, __fitted_dist_params=self.__Loglogistic_3P_params)
+        ax = plt.gca()
+        ax.set_yticklabels([], minor=False)
+        ax.set_xticklabels([], minor=False)
+        ax.set_yticklabels([], minor=True)
+        ax.set_xticklabels([], minor=True)
+        ax.set_ylabel('')
+        ax.set_xlabel('')
+        # ax.get_legend().remove()
+        plt.title('Loglogistic_3P')
+
+        plt.subplot(rows, cols, 9)
+        Gamma_probability_plot(failures=self.failures, right_censored=self.right_censored, __fitted_dist_params=self.__Gamma_2P_params)
+        ax = plt.gca()
+        ax.set_yticklabels([], minor=False)
+        ax.set_xticklabels([], minor=False)
+        ax.set_yticklabels([], minor=True)
+        ax.set_xticklabels([], minor=True)
+        ax.set_ylabel('')
+        ax.set_xlabel('')
+        ax.get_legend().remove()
+        plt.title('Gamma_2P')
+
+        plt.subplot(rows, cols, 10)
+        Gamma_probability_plot(failures=self.failures, right_censored=self.right_censored, __fitted_dist_params=self.__Gamma_3P_params)
+        ax = plt.gca()
+        ax.set_yticklabels([], minor=False)
+        ax.set_xticklabels([], minor=False)
+        ax.set_yticklabels([], minor=True)
+        ax.set_xticklabels([], minor=True)
+        ax.set_ylabel('')
+        ax.set_xlabel('')
+        ax.get_legend().remove()
+        plt.title('Gamma_3P')
+
+        plt.subplot(rows, cols, 11)
+        Normal_probability_plot(failures=self.failures, right_censored=self.right_censored, __fitted_dist_params=self.__Normal_2P_params)
+        ax = plt.gca()
+        ax.set_yticklabels([], minor=False)
+        ax.set_xticklabels([], minor=False)
+        ax.set_yticklabels([], minor=True)
+        ax.set_xticklabels([], minor=True)
+        ax.set_ylabel('')
+        ax.set_xlabel('')
+        ax.get_legend().remove()
+        plt.title('Normal_2P')
+
         if max(self.failures) <= 1:
-            plt.subplot(rows, 6, 6)
+            plt.subplot(rows, cols, 12)
             Beta_probability_plot(failures=self.failures, right_censored=self.right_censored, __fitted_dist_params=self.__Beta_2P_params)
             ax = plt.gca()
-            ax.set_yticklabels([])
-            ax.set_xticklabels([])
+            ax.set_yticklabels([], minor=False)
+            ax.set_xticklabels([], minor=False)
+            ax.set_yticklabels([], minor=True)
+            ax.set_xticklabels([], minor=True)
             ax.set_ylabel('')
             ax.set_xlabel('')
             ax.get_legend().remove()
             plt.title('Beta_2P')
 
-        if max(self.failures) <= 1:
-            plt.gcf().set_size_inches(11, 5)  # this is for when the beta distribution was fitted
-        else:
-            plt.gcf().set_size_inches(10, 5)
-
+        plt.gcf().set_size_inches(15, 8)  # resize the figure since the probability plots adjusted it
         plt.suptitle('Probability plots of each fitted distribution\n')
-        plt.subplots_adjust(left=0.04, bottom=0.09, right=0.96, top=0.86, wspace=0.2, hspace=0.32)
-        plt.show()
+        plt.subplots_adjust(left=0.04, bottom=0.04, right=0.96, top=0.91, wspace=0.12, hspace=0.31)
 
 
 class Fit_Weibull_2P:
