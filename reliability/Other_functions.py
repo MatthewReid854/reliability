@@ -8,6 +8,7 @@ convert_dataframe_to_grouped_lists - groups values in a 2-column dataframe based
 make_right_censored_data - a simple tool to right censor a complete dataset based on a threshold. Primarily used for testing Fitters when some right censored data is needed.
 histogram - generates a histogram with optimal bin width and has an option to shade some bins white above a chosen threshold.
 crosshairs - adds x,y crosshairs to plots based on mouse position
+distribution_explorer - generates an interactive window to explore probability distributions using sliders for their parameters
 '''
 
 import matplotlib.pyplot as plt
@@ -15,8 +16,9 @@ import numpy as np
 from matplotlib.lines import Line2D
 from mplcursors import cursor
 import warnings
-from reliability.Distributions import Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution
+from reliability.Distributions import Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution, Loglogistic_Distribution
 from reliability.Fitters import Fit_Everything
+from matplotlib.widgets import Slider, RadioButtons
 
 
 class similar_distributions:
@@ -367,3 +369,247 @@ class crosshairs:
         annot = cursor(multiple=True, bindings={"toggle_visible": "h"})
         format_annotation_labeled = lambda _: crosshairs.__format_annotation(_, decimals, [xlabel, ylabel])  # adds the labels to the 'format_annotation' function before connecting it to cursor
         annot.connect("add", format_annotation_labeled)
+
+
+class distribution_explorer:
+    '''
+    distribution_explorer
+
+    Generates an interactive plot of PDF, CDF, SF, HF, CHF for the selected distribution
+    Parameters can be changed using slider widgets
+    Distributions can be changed using radio button widget
+    '''
+
+    def __init__(self):
+        # initialise the 5 plots
+        plt.figure('Distribution Explorer', figsize=(12, 7))
+        self.name = 'Weibull'  # starting value
+        dist = Weibull_Distribution(alpha=100, beta=2, gamma=0)
+        plt.suptitle(dist.param_title_long, fontsize=15)
+        self.ax_pdf = plt.subplot(231)
+        dist.PDF()
+        plt.title('PDF')
+        plt.xlabel('')
+        plt.ylabel('')
+        self.ax_cdf = plt.subplot(232)
+        dist.CDF()
+        plt.title('CDF')
+        plt.xlabel('')
+        plt.ylabel('')
+        self.ax_sf = plt.subplot(233)
+        dist.SF()
+        plt.title('SF')
+        plt.xlabel('')
+        plt.ylabel('')
+        self.ax_hf = plt.subplot(234)
+        dist.HF()
+        plt.title('HF')
+        plt.xlabel('')
+        plt.ylabel('')
+        self.ax_chf = plt.subplot(235)
+        dist.CHF()
+        plt.title('CHF')
+        plt.xlabel('')
+        plt.ylabel('')
+        plt.subplots_adjust(left=0.07, right=0.98, top=0.9, bottom=0.25, wspace=0.18, hspace=0.30)
+        # initialise the sliders
+        x0 = 0.1
+        width = 0.8
+        height = 0.03
+
+        self.active_color = 'steelblue'
+        self.background_color = 'whitesmoke'
+
+        self.ax0 = plt.axes([x0, 0.15, width, height], facecolor=self.background_color)
+        self.ax1 = plt.axes([x0, 0.1, width, height], facecolor=self.background_color)
+        self.ax2 = plt.axes([x0, 0.05, width, height], facecolor=self.background_color)
+        self.s0 = Slider(self.ax0, 'Alpha', valmin=0.1, valmax=500, valinit=dist.alpha, facecolor=self.active_color)
+        self.s1 = Slider(self.ax1, 'Beta', valmin=0.2, valmax=25, valinit=dist.beta, facecolor=self.active_color)
+        self.s2 = Slider(self.ax2, 'Gamma', valmin=0, valmax=500, valinit=dist.gamma, facecolor=self.active_color)
+        plt.subplots_adjust(left=0.07, right=0.98, top=0.9, bottom=0.25, wspace=0.18, hspace=0.30)
+
+        # initialise the radio button
+        radio_ax = plt.axes([0.708, 0.25, 0.27, 0.28], facecolor=self.background_color)
+        radio_ax.set_title('Distribution')
+        self.radio = RadioButtons(radio_ax, ('Weibull', 'Gamma', 'Normal', 'Lognormal', 'Beta', 'Exponential', 'Loglogistic'), active=0, activecolor=self.active_color)
+
+        # begin the interactive section
+        distribution_explorer.__interactive(self, initial_run=True)
+
+    @staticmethod
+    def __update_distribution(name, self):
+        self.name = name
+        if self.name == 'Weibull':
+            dist = Weibull_Distribution(alpha=100, beta=2, gamma=0)
+            param_names = ['Alpha', 'Beta', 'Gamma']
+            plt.sca(self.ax0)
+            plt.cla()
+            self.s0 = Slider(self.ax0, param_names[0], valmin=0.1, valmax=500, valinit=dist.alpha)
+            plt.sca(self.ax1)
+            plt.cla()
+            self.s1 = Slider(self.ax1, param_names[1], valmin=0.2, valmax=25, valinit=dist.beta)
+            try:  # clear the slider axis if it exists
+                plt.sca(self.ax2)
+                plt.cla()
+            except ValueError:  # if the slider axis does no exist (because it was destroyed by a 2P distribution) then recreate it
+                self.ax2 = plt.axes([0.1, 0.05, 0.8, 0.03], facecolor=self.background_color)
+            self.s2 = Slider(self.ax2, param_names[2], valmin=0, valmax=500, valinit=dist.gamma)
+        elif self.name == 'Gamma':
+            dist = Gamma_Distribution(alpha=100, beta=5, gamma=0)
+            param_names = ['Alpha', 'Beta', 'Gamma']
+            plt.sca(self.ax0)
+            plt.cla()
+            self.s0 = Slider(self.ax0, param_names[0], valmin=0.1, valmax=500, valinit=dist.alpha)
+            plt.sca(self.ax1)
+            plt.cla()
+            self.s1 = Slider(self.ax1, param_names[1], valmin=0.2, valmax=25, valinit=dist.beta)
+            try:  # clear the slider axis if it exists
+                plt.sca(self.ax2)
+                plt.cla()
+            except ValueError:  # if the slider axis does no exist (because it was destroyed by a 2P distribution) then recreate it
+                self.ax2 = plt.axes([0.1, 0.05, 0.8, 0.03], facecolor=self.background_color)
+            self.s2 = Slider(self.ax2, param_names[2], valmin=0, valmax=500, valinit=dist.gamma)
+        elif self.name == 'Loglogistic':
+            dist = Loglogistic_Distribution(alpha=100, beta=8, gamma=0)
+            param_names = ['Alpha', 'Beta', 'Gamma']
+            plt.sca(self.ax0)
+            plt.cla()
+            self.s0 = Slider(self.ax0, param_names[0], valmin=0.1, valmax=500, valinit=dist.alpha)
+            plt.sca(self.ax1)
+            plt.cla()
+            self.s1 = Slider(self.ax1, param_names[1], valmin=0.2, valmax=50, valinit=dist.beta)
+            try:  # clear the slider axis if it exists
+                plt.sca(self.ax2)
+                plt.cla()
+            except ValueError:  # if the slider axis does no exist (because it was destroyed by a 2P distribution) then recreate it
+                self.ax2 = plt.axes([0.1, 0.05, 0.8, 0.03], facecolor=self.background_color)
+            self.s2 = Slider(self.ax2, param_names[2], valmin=0, valmax=500, valinit=dist.gamma)
+        elif self.name == 'Lognormal':
+            dist = Lognormal_Distribution(mu=2.5, sigma=0.5, gamma=0)
+            param_names = ['Mu', 'Sigma', 'Gamma']
+            plt.sca(self.ax0)
+            plt.cla()
+            self.s0 = Slider(self.ax0, param_names[0], valmin=0, valmax=5, valinit=dist.mu)
+            plt.sca(self.ax1)
+            plt.cla()
+            self.s1 = Slider(self.ax1, param_names[1], valmin=0.01, valmax=2, valinit=dist.sigma)
+            try:  # clear the slider axis if it exists
+                plt.sca(self.ax2)
+                plt.cla()
+            except ValueError:  # if the slider axis does no exist (because it was destroyed by a 2P distribution) then recreate it
+                self.ax2 = plt.axes([0.1, 0.05, 0.8, 0.03], facecolor=self.background_color)
+            self.s2 = Slider(self.ax2, param_names[2], valmin=0, valmax=500, valinit=dist.gamma)
+        elif self.name == 'Normal':
+            dist = Normal_Distribution(mu=0, sigma=10)
+            param_names = ['Mu', 'Sigma', '']
+            plt.sca(self.ax0)
+            plt.cla()
+            self.s0 = Slider(self.ax0, param_names[0], valmin=-100, valmax=100, valinit=dist.mu)
+            plt.sca(self.ax1)
+            plt.cla()
+            self.s1 = Slider(self.ax1, param_names[1], valmin=0.01, valmax=20, valinit=dist.sigma)
+            try:  # clear the slider axis if it exists
+                self.ax2.remove()  # this will destroy the axes
+            except KeyError:
+                pass
+        elif self.name == 'Exponential':
+            dist = Exponential_Distribution(Lambda=1, gamma=0)
+            param_names = ['Lambda', 'Gamma', '']
+            plt.sca(self.ax0)
+            plt.cla()
+            self.s0 = Slider(self.ax0, param_names[0], valmin=0.001, valmax=5, valinit=dist.Lambda)
+            plt.sca(self.ax1)
+            plt.cla()
+            self.s1 = Slider(self.ax1, param_names[1], valmin=0, valmax=500, valinit=dist.gamma)
+            try:  # clear the slider axis if it exists
+                self.ax2.remove()  # this will destroy the axes
+            except KeyError:
+                pass
+        elif self.name == 'Beta':
+            dist = Beta_Distribution(alpha=2, beta=2)
+            param_names = ['Alpha', 'Beta', '']
+            plt.sca(self.ax0)
+            plt.cla()
+            self.s0 = Slider(self.ax0, param_names[0], valmin=0.01, valmax=5, valinit=dist.alpha)
+            plt.sca(self.ax1)
+            plt.cla()
+            self.s1 = Slider(self.ax1, param_names[1], valmin=0.01, valmax=5, valinit=dist.beta)
+            try:  # clear the slider axis if it exists
+                self.ax2.remove()  # this will destroy the axes
+            except KeyError:
+                pass
+        else:
+            raise ValueError(str(self.name + ' is an unknown distribution name'))
+        plt.suptitle(dist.param_title_long, fontsize=15)
+        distribution_explorer.__update_params(None, self)
+        distribution_explorer.__interactive(self)
+        plt.draw()
+
+    @staticmethod
+    def __update_params(_, self):
+        value1 = self.s0.val
+        value2 = self.s1.val
+        value3 = self.s2.val
+        if self.name == 'Weibull':
+            dist = Weibull_Distribution(alpha=value1, beta=value2, gamma=value3)
+        elif self.name == 'Loglogistic':
+            dist = Loglogistic_Distribution(alpha=value1, beta=value2, gamma=value3)
+        elif self.name == 'Gamma':
+            dist = Gamma_Distribution(alpha=value1, beta=value2, gamma=value3)
+        elif self.name == 'Loglogistic':
+            dist = Loglogistic_Distribution(alpha=value1, beta=value2, gamma=value3)
+        elif self.name == 'Lognormal':
+            dist = Lognormal_Distribution(mu=value1, sigma=value2, gamma=value3)
+        elif self.name == 'Beta':
+            dist = Beta_Distribution(alpha=value1, beta=value2)
+        elif self.name == 'Normal':
+            dist = Normal_Distribution(mu=value1, sigma=value2)
+        elif self.name == 'Exponential':
+            dist = Exponential_Distribution(Lambda=value1, gamma=value2)
+        else:
+            raise ValueError(str(self.name + ' is an unknown distribution name'))
+        plt.sca(self.ax_pdf)
+        plt.cla()
+        dist.PDF()
+        plt.title('PDF')
+        plt.xlabel('')
+        plt.ylabel('')
+        plt.sca(self.ax_cdf)
+        plt.cla()
+        dist.CDF()
+        plt.title('CDF')
+        plt.xlabel('')
+        plt.ylabel('')
+        plt.sca(self.ax_sf)
+        plt.cla()
+        dist.SF()
+        plt.title('SF')
+        plt.xlabel('')
+        plt.ylabel('')
+        plt.sca(self.ax_hf)
+        plt.cla()
+        dist.HF()
+        plt.title('HF')
+        plt.xlabel('')
+        plt.ylabel('')
+        plt.sca(self.ax_chf)
+        plt.cla()
+        dist.CHF()
+        plt.title('CHF')
+        plt.xlabel('')
+        plt.ylabel('')
+        plt.subplots_adjust(left=0.07, right=0.98, top=0.9, bottom=0.25, wspace=0.18, hspace=0.30)
+        plt.suptitle(dist.param_title_long, fontsize=15)
+        plt.draw()
+
+    def __interactive(self, initial_run=False):
+        update_params_wrapper = lambda _: distribution_explorer.__update_params(_, self)
+        update_distribution_wrapper = lambda name: distribution_explorer.__update_distribution(name, self)
+        self.s0.on_changed(update_params_wrapper)
+        self.s1.on_changed(update_params_wrapper)
+        self.s2.on_changed(update_params_wrapper)
+        if initial_run == True:
+            self.radio.on_clicked(update_distribution_wrapper)
+            plt.show()
+        else:
+            plt.draw()

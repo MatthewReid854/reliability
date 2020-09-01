@@ -814,8 +814,6 @@ class Fit_Weibull_2P:
                     self.beta = force_beta
 
         params = [self.alpha, self.beta]
-        k = len(params)  ### CHECK why are k and n obtained again. Shouldn't k remain 1 if force_beta is used?
-        n = len(all_data)
         LL2 = 2 * Fit_Weibull_2P.LL(params, failures, right_censored)
         self.loglik2 = LL2
         self.loglik = LL2 * -0.5
@@ -2314,9 +2312,11 @@ class Fit_Normal_2P:
         warnings.filterwarnings('ignore')  # necessary to supress the warning about the jacobian when using the nelder-mead optimizer
         if force_sigma is None:
             guess = [sp[0], sp[1]]
+            k = len(guess)
             result = minimize(value_and_grad(Fit_Normal_2P.LL), guess, args=(failures, right_censored), jac=True, method='nelder-mead', tol=1e-6)
         else:
             guess = [sp[0]]
+            k = len(guess)
             result = minimize(value_and_grad(Fit_Normal_2P.LL_fs), guess, args=(failures, right_censored, force_sigma), jac=True, method='nelder-mead', tol=1e-6)
 
         if result.success is True:
@@ -2335,7 +2335,6 @@ class Fit_Normal_2P:
             self.sigma = sp[1]
 
         params = [self.mu, self.sigma]
-        k = len(params)
         n = len(all_data)
         LL2 = 2 * Fit_Normal_2P.LL(params, failures, right_censored)
         self.loglik2 = LL2
@@ -2500,10 +2499,12 @@ class Fit_Lognormal_2P:
         if force_sigma is None:
             bnds = [(0.0001, None), (0.0001, None)]  # bounds of solution
             guess = [np.log(sp[2]), sp[0]]
+            k = len(guess)
             result = minimize(value_and_grad(Fit_Lognormal_2P.LL), guess, args=(failures, right_censored), jac=True, method='L-BFGS-B', bounds=bnds)
         else:
             bnds = [(0.0001, None)]  # bounds of solution
             guess = [np.log(sp[2])]
+            k = len(guess)
             result = minimize(value_and_grad(Fit_Lognormal_2P.LL_fs), guess, args=(failures, right_censored, force_sigma), jac=True, method='L-BFGS-B', bounds=bnds)
 
         if result.success is True:
@@ -2523,7 +2524,6 @@ class Fit_Lognormal_2P:
             self.sigma = sp[0]
 
         params = [self.mu, self.sigma]
-        k = len(params)
         n = len(all_data)
         LL2 = 2 * Fit_Lognormal_2P.LL(params, failures, right_censored)
         self.loglik2 = LL2

@@ -190,17 +190,15 @@ class Weibull_Distribution:
         The plot will be shown. No need to use plt.show()
         '''
 
-        X = generate_X_array(dist=self, func='CDF', xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array for PDF, CDF, SF
-        Xhf = generate_X_array(dist=self, func='HF', xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array for HF
-        Xchf = generate_X_array(dist=self, func='CHF', xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array for CHF
+        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
 
         pdf = ss.weibull_min.pdf(X, self.beta, scale=self.alpha, loc=self.gamma)
         cdf = ss.weibull_min.cdf(X, self.beta, scale=self.alpha, loc=self.gamma)
         sf = ss.weibull_min.sf(X, self.beta, scale=self.alpha, loc=self.gamma)
-        hf = (self.beta / self.alpha) * ((Xhf - self.gamma) / self.alpha) ** (self.beta - 1)
-        hf = zeroise_below_gamma(X=Xhf, Y=hf, gamma=self.gamma)
-        chf = ((Xchf - self.gamma) / self.alpha) ** self.beta
-        chf = zeroise_below_gamma(X=Xchf, Y=chf, gamma=self.gamma)
+        hf = (self.beta / self.alpha) * ((X - self.gamma) / self.alpha) ** (self.beta - 1)
+        hf = zeroise_below_gamma(X=X, Y=hf, gamma=self.gamma)
+        chf = ((X - self.gamma) / self.alpha) ** self.beta
+        chf = zeroise_below_gamma(X=X, Y=chf, gamma=self.gamma)
 
         plt.figure(figsize=(9, 7))
         text_title = str('Weibull Distribution' + '\n' + self.param_title)
@@ -222,13 +220,13 @@ class Weibull_Distribution:
         plt.title('Survival Function')
 
         plt.subplot(234)
-        plt.plot(Xhf, hf)
-        restore_axes_limits([(0, 1), (0, 1), False], dist=self, func='HF', X=Xhf, Y=hf, xvals=xvals, xmin=xmin, xmax=xmax)
+        plt.plot(X, hf)
+        restore_axes_limits([(0, 1), (0, 1), False], dist=self, func='HF', X=X, Y=hf, xvals=xvals, xmin=xmin, xmax=xmax)
         plt.title('Hazard Function')
 
         plt.subplot(235)
-        plt.plot(Xchf, chf)
-        restore_axes_limits([(0, 1), (0, 1), False], dist=self, func='CHF', X=Xchf, Y=chf, xvals=xvals, xmin=xmin, xmax=xmax)
+        plt.plot(X, chf)
+        restore_axes_limits([(0, 1), (0, 1), False], dist=self, func='CHF', X=X, Y=chf, xvals=xvals, xmin=xmin, xmax=xmax)
         plt.title('Cumulative Hazard\nFunction')
 
         # descriptive statistics section
@@ -277,7 +275,7 @@ class Weibull_Distribution:
         '''
 
         # obtain the X array
-        X = generate_X_array(dist=self, func='PDF', xvals=xvals, xmin=xmin, xmax=xmax)
+        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
 
         pdf = ss.weibull_min.pdf(X, self.beta, scale=self.alpha, loc=self.gamma)
 
@@ -316,7 +314,7 @@ class Weibull_Distribution:
         '''
 
         # obtain the X array
-        X = generate_X_array(dist=self, func='CDF', xvals=xvals, xmin=xmin, xmax=xmax)
+        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
 
         # this determines if the user has specified for the CI bounds to be shown or hidden.
         kwargs_list = kwargs.keys()
@@ -370,7 +368,7 @@ class Weibull_Distribution:
         '''
 
         # obtain the X array
-        X = generate_X_array(dist=self, func='SF', xvals=xvals, xmin=xmin, xmax=xmax)
+        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
 
         # this determines if the user has specified for the CI bounds to be shown or hidden. Applicable kwargs are show_CI or plot_CI
         kwargs_list = kwargs.keys()
@@ -423,7 +421,7 @@ class Weibull_Distribution:
         '''
 
         # obtain the X array
-        X = generate_X_array(dist=self, func='HF', xvals=xvals, xmin=xmin, xmax=xmax)
+        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
 
         # this determines if the user has specified for the CI bounds to be shown or hidden. Applicable kwargs are show_CI or plot_CI
         kwargs_list = kwargs.keys()
@@ -483,7 +481,7 @@ class Weibull_Distribution:
         '''
 
         # obtain the X array
-        X = generate_X_array(dist=self, func='CHF', xvals=xvals, xmin=xmin, xmax=xmax)
+        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
 
         # this determines if the user has specified for the CI bounds to be shown or hidden. Applicable kwargs are show_CI or plot_CI
         kwargs_list = kwargs.keys()
@@ -822,17 +820,7 @@ class Normal_Distribution:
         Outputs:
         The plot will be shown. No need to use plt.show()
         '''
-        if xvals is not None:
-            if type(xvals) is list:
-                X = np.array(xvals)
-            elif type(xvals) in [np.ndarray, float, int]:
-                X = xvals
-            else:
-                raise ValueError('Unexpected type given in xvals. xvals must be array, list, int, or float')
-        elif xmin is not None and xmax is not None:
-            X = np.linspace(xmin, xmax, 1000)
-        else:
-            X = np.linspace(self.mu - 3 * self.sigma, self.mu + 3 * self.sigma, 1000)  # if no limits are specified, they are assumed
+        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
 
         pdf = ss.norm.pdf(X, self.mu, self.sigma)
         cdf = ss.norm.cdf(X, self.mu, self.sigma)
@@ -843,20 +831,30 @@ class Normal_Distribution:
         plt.figure(figsize=(9, 7))
         text_title = str('Normal Distribution' + '\n' + self.param_title)
         plt.suptitle(text_title, fontsize=15)
+
         plt.subplot(231)
         plt.plot(X, pdf)
+        restore_axes_limits([(0, 1), (0, 1), False], dist=self, func='PDF', X=X, Y=pdf, xvals=xvals, xmin=xmin, xmax=xmax)
         plt.title('Probability Density\nFunction')
+
         plt.subplot(232)
         plt.plot(X, cdf)
+        restore_axes_limits([(0, 1), (0, 1), False], dist=self, func='CDF', X=X, Y=cdf, xvals=xvals, xmin=xmin, xmax=xmax)
         plt.title('Cumulative Distribution\nFunction')
+
         plt.subplot(233)
         plt.plot(X, sf)
+        restore_axes_limits([(0, 1), (0, 1), False], dist=self, func='SF', X=X, Y=sf, xvals=xvals, xmin=xmin, xmax=xmax)
         plt.title('Survival Function')
+
         plt.subplot(234)
         plt.plot(X, hf)
+        restore_axes_limits([(0, 1), (0, 1), False], dist=self, func='HF', X=X, Y=hf, xvals=xvals, xmin=xmin, xmax=xmax)
         plt.title('Hazard Function')
+
         plt.subplot(235)
         plt.plot(X, chf)
+        restore_axes_limits([(0, 1), (0, 1), False], dist=self, func='CHF', X=X, Y=chf, xvals=xvals, xmin=xmin, xmax=xmax)
         plt.title('Cumulative Hazard\nFunction')
 
         # descriptive statistics section
@@ -903,29 +901,24 @@ class Normal_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        if xvals is not None:
-            if type(xvals) is list:
-                X = np.array(xvals)
-            elif type(xvals) in [np.ndarray, float, int]:
-                X = xvals
-            else:
-                raise ValueError('Unexpected type given in xvals. xvals must be array, list, int, or float')
-        elif xmin is not None and xmax is not None:
-            X = np.linspace(xmin, xmax, 1000)
-        else:
-            X = np.linspace(self.mu - 3 * self.sigma, self.mu + 3 * self.sigma, 1000)  # if no limits are specified, they are assumed
+        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
 
         pdf = ss.norm.pdf(X, self.mu, self.sigma)
 
         if show_plot == False:
             return pdf
         else:
+            limits = get_axes_limits()  # get the previous axes limits
+
             plt.plot(X, pdf, **kwargs)
             plt.xlabel('x values')
             plt.ylabel('Probability density')
             text_title = str('Normal Distribution\n' + ' Probability Density Function ' + '\n' + self.param_title)
             plt.title(text_title)
             plt.subplots_adjust(top=0.87)
+
+            restore_axes_limits(limits, dist=self, func='PDF', X=X, Y=pdf, xvals=xvals, xmin=xmin, xmax=xmax)
+
             return pdf
 
     def CDF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
@@ -945,29 +938,24 @@ class Normal_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        if xvals is not None:
-            if type(xvals) is list:
-                X = np.array(xvals)
-            elif type(xvals) in [np.ndarray, float, int, np.float64]:
-                X = xvals
-            else:
-                raise ValueError('Unexpected type given in xvals. xvals must be array, list, int, or float')
-        elif xmin is not None and xmax is not None:
-            X = np.linspace(xmin, xmax, 1000)
-        else:
-            X = np.linspace(self.mu - 3 * self.sigma, self.mu + 3 * self.sigma, 1000)  # if no limits are specified, they are assumed
+        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
 
         cdf = ss.norm.cdf(X, self.mu, self.sigma)
 
         if show_plot == False:
             return cdf
         else:
+            limits = get_axes_limits()  # get the previous axes limits
+
             plt.plot(X, cdf, **kwargs)
             plt.xlabel('x values')
             plt.ylabel('Fraction failing')
             text_title = str('Normal Distribution\n' + ' Cumulative Distribution Function ' + '\n' + self.param_title)
             plt.title(text_title)
             plt.subplots_adjust(top=0.87)
+
+            restore_axes_limits(limits, dist=self, func='CDF', X=X, Y=cdf, xvals=xvals, xmin=xmin, xmax=xmax)
+
             return cdf
 
     def SF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
@@ -987,29 +975,24 @@ class Normal_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        if xvals is not None:
-            if type(xvals) is list:
-                X = np.array(xvals)
-            elif type(xvals) in [np.ndarray, float, int]:
-                X = xvals
-            else:
-                raise ValueError('Unexpected type given in xvals. xvals must be array, list, int, or float')
-        elif xmin is not None and xmax is not None:
-            X = np.linspace(xmin, xmax, 1000)
-        else:
-            X = np.linspace(self.mu - 3 * self.sigma, self.mu + 3 * self.sigma, 1000)  # if no limits are specified, they are assumed
+        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
 
         sf = ss.norm.sf(X, self.mu, self.sigma)
 
         if show_plot == False:
             return sf
         else:
+            limits = get_axes_limits()  # get the previous axes limits
+
             plt.plot(X, sf, **kwargs)
             plt.xlabel('x values')
             plt.ylabel('Fraction surviving')
             text_title = str('Normal Distribution\n' + ' Survival Function ' + '\n' + self.param_title)
             plt.title(text_title)
             plt.subplots_adjust(top=0.87)
+
+            restore_axes_limits(limits, dist=self, func='SF', X=X, Y=sf, xvals=xvals, xmin=xmin, xmax=xmax)
+
             return sf
 
     def HF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
@@ -1029,29 +1012,24 @@ class Normal_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        if xvals is not None:
-            if type(xvals) is list:
-                X = np.array(xvals)
-            elif type(xvals) in [np.ndarray, float, int]:
-                X = xvals
-            else:
-                raise ValueError('Unexpected type given in xvals. xvals must be array, list, int, or float')
-        elif xmin is not None and xmax is not None:
-            X = np.linspace(xmin, xmax, 1000)
-        else:
-            X = np.linspace(self.mu - 3 * self.sigma, self.mu + 3 * self.sigma, 1000)  # if no limits are specified, they are assumed
+        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
 
         hf = ss.norm.pdf(X, self.mu, self.sigma) / ss.norm.sf(X, self.mu, self.sigma)
 
         if show_plot == False:
             return hf
         else:
+            limits = get_axes_limits()  # get the previous axes limits
+
             plt.plot(X, hf, **kwargs)
             plt.xlabel('x values')
             plt.ylabel('Hazard')
             text_title = str('Normal Distribution\n' + ' Hazard Function ' + '\n' + self.param_title)
             plt.title(text_title)
             plt.subplots_adjust(top=0.87)
+
+            restore_axes_limits(limits, dist=self, func='HF', X=X, Y=hf, xvals=xvals, xmin=xmin, xmax=xmax)
+
             return hf
 
     def CHF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
@@ -1071,29 +1049,24 @@ class Normal_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        if xvals is not None:
-            if type(xvals) is list:
-                X = np.array(xvals)
-            elif type(xvals) in [np.ndarray, float, int]:
-                X = xvals
-            else:
-                raise ValueError('Unexpected type given in xvals. xvals must be array, list, int, or float')
-        elif xmin is not None and xmax is not None:
-            X = np.linspace(xmin, xmax, 1000)
-        else:
-            X = np.linspace(self.mu - 3 * self.sigma, self.mu + 3 * self.sigma, 1000)  # if no limits are specified, they are assumed
+        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
 
         chf = -np.log(ss.norm.sf(X, self.mu, self.sigma))
 
         if show_plot == False:
             return chf
         else:
+            limits = get_axes_limits()  # get the previous axes limits
+
             plt.plot(X, chf, **kwargs)
             plt.xlabel('x values')
             plt.ylabel('Cumulative hazard')
             text_title = str('Normal Distribution\n' + ' Cumulative Hazard Function ' + '\n' + self.param_title)
             plt.title(text_title)
             plt.subplots_adjust(top=0.87)
+
+            restore_axes_limits(limits, dist=self, func='CHF', X=X, Y=chf, xvals=xvals, xmin=xmin, xmax=xmax)
+
             return chf
 
     def quantile(self, q):
@@ -1243,8 +1216,8 @@ class Lognormal_Distribution:
             self.name2 = 'Lognormal_2P'
         self.b5 = ss.lognorm.ppf(0.05, self.sigma, self.gamma, np.exp(self.mu))  # note that scipy uses mu in a log way compared to most other software, so we must take the exp of the input
         self.b95 = ss.lognorm.ppf(0.95, self.sigma, self.gamma, np.exp(self.mu))
-        self._pdf0 = 0  # the pdf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
-        self._hf0 = 0  # the hf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
+        self._pdf0 = ss.lognorm.pdf(0, self.sigma, 0, np.exp(self.mu))  # the pdf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
+        self._hf0 = ss.lognorm.pdf(0, self.sigma, 0, np.exp(self.mu))/ss.lognorm.sf(0, self.sigma, 0, np.exp(self.mu))  # the hf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
 
     def plot(self, xvals=None, xmin=None, xmax=None):
         '''
@@ -1261,23 +1234,7 @@ class Lognormal_Distribution:
         Outputs:
         The plot will be shown. No need to use plt.show()
         '''
-        if xvals is not None:
-            X = xvals
-        elif xmin is not None and xmax is not None:
-            X = np.linspace(xmin, xmax, 1000)
-        else:
-            X = np.linspace(0, self.b95 * 1.5, 1000)  # if no limits are specified, they are assumed
-        if type(X) in [float, int, np.float64]:
-            if X < 0:
-                raise ValueError('the value given for xvals is less than 0')
-        elif type(X) is list:
-            X = np.array(X)
-        elif type(X) is np.ndarray:
-            pass
-        else:
-            raise ValueError('unexpected type in xvals. Must be int, float, list, or array')
-        if type(X) is np.ndarray and min(X) < 0:
-            raise ValueError('xvals was found to contain values below 0')
+        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
 
         pdf = ss.lognorm.pdf(X, self.sigma, self.gamma, np.exp(self.mu))
         cdf = ss.lognorm.cdf(X, self.sigma, self.gamma, np.exp(self.mu))
@@ -1288,21 +1245,31 @@ class Lognormal_Distribution:
         plt.figure(figsize=(9, 7))
         text_title = str('Lognormal Distribution' + '\n' + self.param_title)
         plt.suptitle(text_title, fontsize=15)
+
         plt.subplot(231)
         plt.plot(X, pdf)
         plt.title('Probability Density\nFunction')
+        restore_axes_limits([(0, 1), (0, 1), False], dist=self, func='PDF', X=X, Y=pdf, xvals=xvals, xmin=xmin, xmax=xmax)
+
         plt.subplot(232)
         plt.plot(X, cdf)
         plt.title('Cumulative Distribution\nFunction')
+        restore_axes_limits([(0, 1), (0, 1), False], dist=self, func='CDF', X=X, Y=cdf, xvals=xvals, xmin=xmin, xmax=xmax)
+
         plt.subplot(233)
         plt.plot(X, sf)
         plt.title('Survival Function')
+        restore_axes_limits([(0, 1), (0, 1), False], dist=self, func='SF', X=X, Y=sf, xvals=xvals, xmin=xmin, xmax=xmax)
+
         plt.subplot(234)
         plt.plot(X, hf)
         plt.title('Hazard Function')
+        restore_axes_limits([(0, 1), (0, 1), False], dist=self, func='HF', X=X, Y=hf, xvals=xvals, xmin=xmin, xmax=xmax)
+
         plt.subplot(235)
         plt.plot(X, chf)
         plt.title('Cumulative Hazard\nFunction')
+        restore_axes_limits([(0, 1), (0, 1), False], dist=self, func='CHF', X=X, Y=chf, xvals=xvals, xmin=xmin, xmax=xmax)
 
         # descriptive statistics section
         plt.subplot(236)
@@ -1348,35 +1315,24 @@ class Lognormal_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        if xvals is not None:
-            X = xvals
-        elif xmin is not None and xmax is not None:
-            X = np.linspace(xmin, xmax, 1000)
-        else:
-            X = np.linspace(0, self.b95 * 1.5, 1000)  # if no limits are specified, they are assumed
-        if type(X) in [float, int, np.float64]:
-            if X < 0:
-                raise ValueError('the value given for xvals is less than 0')
-        elif type(X) is list:
-            X = np.array(X)
-        elif type(X) is np.ndarray:
-            pass
-        else:
-            raise ValueError('unexpected type in xvals. Must be int, float, list, or array')
-        if type(X) is np.ndarray and min(X) < 0:
-            raise ValueError('xvals was found to contain values below 0')
+        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
 
         pdf = ss.lognorm.pdf(X, self.sigma, self.gamma, np.exp(self.mu))
 
         if show_plot == False:
             return pdf
         else:
+            limits = get_axes_limits()  # get the previous axes limits
+
             plt.plot(X, pdf, **kwargs)
             plt.xlabel('x values')
             plt.ylabel('Probability density')
             text_title = str('Lognormal Distribution\n' + ' Probability Density Function ' + '\n' + self.param_title)
             plt.title(text_title)
             plt.subplots_adjust(top=0.87)
+
+            restore_axes_limits(limits, dist=self, func='PDF', X=X, Y=pdf, xvals=xvals, xmin=xmin, xmax=xmax)
+
             return pdf
 
     def CDF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
@@ -1396,35 +1352,24 @@ class Lognormal_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        if xvals is not None:
-            X = xvals
-        elif xmin is not None and xmax is not None:
-            X = np.linspace(xmin, xmax, 1000)
-        else:
-            X = np.linspace(0, self.b95 * 1.5, 1000)  # if no limits are specified, they are assumed
-        if type(X) in [float, int, np.float64]:
-            if X < 0:
-                raise ValueError('the value given for xvals is less than 0')
-        elif type(X) is list:
-            X = np.array(X)
-        elif type(X) is np.ndarray:
-            pass
-        else:
-            raise ValueError('unexpected type in xvals. Must be int, float, list, or array')
-        if type(X) is np.ndarray and min(X) < 0:
-            raise ValueError('xvals was found to contain values below 0')
+        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
 
         cdf = ss.lognorm.cdf(X, self.sigma, self.gamma, np.exp(self.mu))
 
         if show_plot == False:
             return cdf
         else:
+            limits = get_axes_limits()  # get the previous axes limits
+
             plt.plot(X, cdf, **kwargs)
             plt.xlabel('x values')
             plt.ylabel('Fraction failing')
             text_title = str('Lognormal Distribution\n' + ' Cumulative Distribution Function ' + '\n' + self.param_title)
             plt.title(text_title)
             plt.subplots_adjust(top=0.87)
+
+            restore_axes_limits(limits, dist=self, func='CDF', X=X, Y=cdf, xvals=xvals, xmin=xmin, xmax=xmax)
+
             return cdf
 
     def SF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
@@ -1444,35 +1389,24 @@ class Lognormal_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        if xvals is not None:
-            X = xvals
-        elif xmin is not None and xmax is not None:
-            X = np.linspace(xmin, xmax, 1000)
-        else:
-            X = np.linspace(0, self.b95 * 1.5, 1000)  # if no limits are specified, they are assumed
-        if type(X) in [float, int, np.float64]:
-            if X < 0:
-                raise ValueError('the value given for xvals is less than 0')
-        elif type(X) is list:
-            X = np.array(X)
-        elif type(X) is np.ndarray:
-            pass
-        else:
-            raise ValueError('unexpected type in xvals. Must be int, float, list, or array')
-        if type(X) is np.ndarray and min(X) < 0:
-            raise ValueError('xvals was found to contain values below 0')
+        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
 
         sf = ss.lognorm.sf(X, self.sigma, self.gamma, np.exp(self.mu))
 
         if show_plot == False:
             return sf
         else:
+            limits = get_axes_limits()  # get the previous axes limits
+
             plt.plot(X, sf, **kwargs)
             plt.xlabel('x values')
             plt.ylabel('Fraction surviving')
             text_title = str('Lognormal Distribution\n' + ' Survival Function ' + '\n' + self.param_title)
             plt.title(text_title)
             plt.subplots_adjust(top=0.87)
+
+            restore_axes_limits(limits, dist=self, func='SF', X=X, Y=sf, xvals=xvals, xmin=xmin, xmax=xmax)
+
             return sf
 
     def HF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
@@ -1492,35 +1426,24 @@ class Lognormal_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        if xvals is not None:
-            X = xvals
-        elif xmin is not None and xmax is not None:
-            X = np.linspace(xmin, xmax, 1000)
-        else:
-            X = np.linspace(0, self.b95 * 1.5, 1000)  # if no limits are specified, they are assumed
-        if type(X) in [float, int, np.float64]:
-            if X < 0:
-                raise ValueError('the value given for xvals is less than 0')
-        elif type(X) is list:
-            X = np.array(X)
-        elif type(X) is np.ndarray:
-            pass
-        else:
-            raise ValueError('unexpected type in xvals. Must be int, float, list, or array')
-        if type(X) is np.ndarray and min(X) < 0:
-            raise ValueError('xvals was found to contain values below 0')
+        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
 
         hf = ss.lognorm.pdf(X, self.sigma, self.gamma, np.exp(self.mu)) / ss.lognorm.sf(X, self.sigma, self.gamma, np.exp(self.mu))
 
         if show_plot == False:
             return hf
         else:
+            limits = get_axes_limits()  # get the previous axes limits
+
             plt.plot(X, hf, **kwargs)
             plt.xlabel('x values')
             plt.ylabel('Hazard')
             text_title = str('Lognormal Distribution\n' + ' Hazard Function ' + '\n' + self.param_title)
             plt.title(text_title)
             plt.subplots_adjust(top=0.87)
+
+            restore_axes_limits(limits, dist=self, func='HF', X=X, Y=hf, xvals=xvals, xmin=xmin, xmax=xmax)
+
             return hf
 
     def CHF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
@@ -1540,35 +1463,24 @@ class Lognormal_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        if xvals is not None:
-            X = xvals
-        elif xmin is not None and xmax is not None:
-            X = np.linspace(xmin, xmax, 1000)
-        else:
-            X = np.linspace(0, self.b95 * 1.5, 1000)  # if no limits are specified, they are assumed
-        if type(X) in [float, int, np.float64]:
-            if X < 0:
-                raise ValueError('the value given for xvals is less than 0')
-        elif type(X) is list:
-            X = np.array(X)
-        elif type(X) is np.ndarray:
-            pass
-        else:
-            raise ValueError('unexpected type in xvals. Must be int, float, list, or array')
-        if type(X) is np.ndarray and min(X) < 0:
-            raise ValueError('xvals was found to contain values below 0')
+        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
 
         chf = -np.log(ss.lognorm.sf(X, self.sigma, self.gamma, np.exp(self.mu)))
 
         if show_plot == False:
             return chf
         else:
+            limits = get_axes_limits()  # get the previous axes limits
+
             plt.plot(X, chf, **kwargs)
             plt.xlabel('x values')
             plt.ylabel('Cumulative hazard')
             text_title = str('Lognormal Distribution\n' + ' Cumulative Hazard Function ' + '\n' + self.param_title)
             plt.title(text_title)
             plt.subplots_adjust(top=0.87)
+
+            restore_axes_limits(limits, dist=self, func='CHF', X=X, Y=chf, xvals=xvals, xmin=xmin, xmax=xmax)
+
             return chf
 
     def quantile(self, q):
@@ -1731,7 +1643,7 @@ class Exponential_Distribution:
             self.Z = None
         for item in kwargs.keys():
             print('WARNING:', item, 'not recognised as an appropriate entry in kwargs. Appropriate entries are Lambda_SE and CI')
-        self._pdf0 = 0 # the pdf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array. It's not actually 0 for expon but it's also not an asymptote so the rules relating to 0 are better for scaling
+        self._pdf0 = pdf = ss.expon.pdf(0, scale=1 / self.Lambda, loc=0)  # the pdf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array.
         self._hf0 = self.Lambda  # the hf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
 
     def plot(self, xvals=None, xmin=None, xmax=None):
@@ -1750,17 +1662,15 @@ class Exponential_Distribution:
         The plot will be shown. No need to use plt.show()
         '''
 
-        X = generate_X_array(dist=self, func='CDF', xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array for PDF, CDF, SF
-        Xhf = generate_X_array(dist=self, func='HF', xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array for HF
-        Xchf = generate_X_array(dist=self, func='CHF', xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array for CHF
+        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
 
         pdf = ss.expon.pdf(X, scale=1 / self.Lambda, loc=self.gamma)
         cdf = ss.expon.cdf(X, scale=1 / self.Lambda, loc=self.gamma)
         sf = ss.expon.sf(X, scale=1 / self.Lambda, loc=self.gamma)
-        hf = np.ones_like(Xhf) * self.Lambda
-        hf = zeroise_below_gamma(X=Xhf, Y=hf, gamma=self.gamma)
-        chf = (Xchf - self.gamma) * self.Lambda
-        chf = zeroise_below_gamma(X=Xchf, Y=chf, gamma=self.gamma)
+        hf = np.ones_like(X) * self.Lambda
+        hf = zeroise_below_gamma(X=X, Y=hf, gamma=self.gamma)
+        chf = (X - self.gamma) * self.Lambda
+        chf = zeroise_below_gamma(X=X, Y=chf, gamma=self.gamma)
 
         plt.figure(figsize=(9, 7))
         text_title = str('Exponential Distribution' + '\n' + self.param_title)
@@ -1782,13 +1692,13 @@ class Exponential_Distribution:
         plt.title('Survival Function')
 
         plt.subplot(234)
-        plt.plot(Xhf, hf)
-        restore_axes_limits([(0, 1), (0, 1), False], dist=self, func='HF', X=Xhf, Y=hf, xvals=xvals, xmin=xmin, xmax=xmax)
+        plt.plot(X, hf)
+        restore_axes_limits([(0, 1), (0, 1), False], dist=self, func='HF', X=X, Y=hf, xvals=xvals, xmin=xmin, xmax=xmax)
         plt.title('Hazard Function')
 
         plt.subplot(235)
-        plt.plot(Xchf, chf)
-        restore_axes_limits([(0, 1), (0, 1), False], dist=self, func='CHF', X=Xchf, Y=chf, xvals=xvals, xmin=xmin, xmax=xmax)
+        plt.plot(X, chf)
+        restore_axes_limits([(0, 1), (0, 1), False], dist=self, func='CHF', X=X, Y=chf, xvals=xvals, xmin=xmin, xmax=xmax)
         plt.title('Cumulative Hazard\nFunction')
 
         # descriptive statistics section
@@ -1835,7 +1745,7 @@ class Exponential_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        X = generate_X_array(dist=self, func='PDF', xvals=xvals, xmin=xmin, xmax=xmax)
+        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
 
         pdf = ss.expon.pdf(X, scale=1 / self.Lambda, loc=self.gamma)
 
@@ -1875,9 +1785,9 @@ class Exponential_Distribution:
 
         '''
         # obtain the X array
-        X = generate_X_array(dist=self, func='CDF', xvals=xvals, xmin=xmin, xmax=xmax)
+        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
 
-        ####this determines if the user has specified for the CI bounds to be shown or hidden. kwargs are show_CI or plot_CI
+        # this determines if the user has specified for the CI bounds to be shown or hidden. kwargs are show_CI or plot_CI
         kwargs_list = kwargs.keys()
         if 'plot_CI' in kwargs_list:
             plot_CI = kwargs.pop('plot_CI')
@@ -1900,7 +1810,7 @@ class Exponential_Distribution:
 
             limits = get_axes_limits()
 
-            p = plt.plot(X, cdf, **kwargs)  ####
+            p = plt.plot(X, cdf, **kwargs)
             plt.xlabel('x values')
             plt.ylabel('Fraction failing')
             text_title = str('Exponential Distribution\n' + ' Cumulative Distribution Function ' + '\n' + self.param_title)
@@ -1932,7 +1842,7 @@ class Exponential_Distribution:
         If the distribution object contains Lambda_lower and Lambda_upper, the CI bounds will be plotted. The bounds for the CI are the same as the Fitter was given (default is 0.95). To hide the CI bounds specify show_CI=False
         '''
         # obtain the X array
-        X = generate_X_array(dist=self, func='SF', xvals=xvals, xmin=xmin, xmax=xmax)
+        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
 
         # this determines if the user has specified for the CI bounds to be shown or hidden. kwargs are show_CI or plot_CI
         kwargs_list = kwargs.keys()
@@ -1987,7 +1897,7 @@ class Exponential_Distribution:
         The plot will be shown if show_plot is True (which it is by default).
         '''
         # obtain the X array
-        X = generate_X_array(dist=self, func='HF', xvals=xvals, xmin=xmin, xmax=xmax)
+        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
 
         # this determines if the user has specified for the CI bounds to be shown or hidden. kwargs are show_CI or plot_CI
         kwargs_list = kwargs.keys()
@@ -2046,7 +1956,7 @@ class Exponential_Distribution:
         '''
 
         # obtain the X array
-        X = generate_X_array(dist=self, func='HF', xvals=xvals, xmin=xmin, xmax=xmax)
+        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
 
         # this determines if the user has specified for the CI bounds to be shown or hidden. kwargs are show_CI or plot_CI
         kwargs_list = kwargs.keys()
@@ -2309,23 +2219,7 @@ class Gamma_Distribution:
         Outputs:
         The plot will be shown. No need to use plt.show()
         '''
-        if xvals is not None:
-            X = xvals
-        elif xmin is not None and xmax is not None:
-            X = np.linspace(xmin, xmax, 1000)
-        else:
-            X = np.linspace(0, self.b95 * 1.5, 1000)  # if no limits are specified, they are assumed
-        if type(X) in [float, int, np.float64]:
-            if X < 0:
-                raise ValueError('the value given for xvals is less than 0')
-        elif type(X) is list:
-            X = np.array(X)
-        elif type(X) is np.ndarray:
-            pass
-        else:
-            raise ValueError('unexpected type in xvals. Must be int, float, list, or array')
-        if type(X) is np.ndarray and min(X) < 0:
-            raise ValueError('xvals was found to contain values below 0')
+        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
 
         pdf = ss.gamma.pdf(X, self.beta, scale=self.alpha, loc=self.gamma)
         cdf = ss.gamma.cdf(X, self.beta, scale=self.alpha, loc=self.gamma)
@@ -2336,20 +2230,30 @@ class Gamma_Distribution:
         plt.figure(figsize=(9, 7))
         text_title = str('Gamma Distribution' + '\n' + self.param_title)
         plt.suptitle(text_title, fontsize=15)
+
         plt.subplot(231)
         plt.plot(X, pdf)
+        restore_axes_limits([(0, 1), (0, 1), False], dist=self, func='PDF', X=X, Y=pdf, xvals=xvals, xmin=xmin, xmax=xmax)
         plt.title('Probability Density\nFunction')
+
         plt.subplot(232)
         plt.plot(X, cdf)
+        restore_axes_limits([(0, 1), (0, 1), False], dist=self, func='CDF', X=X, Y=cdf, xvals=xvals, xmin=xmin, xmax=xmax)
         plt.title('Cumulative Distribution\nFunction')
+
         plt.subplot(233)
         plt.plot(X, sf)
+        restore_axes_limits([(0, 1), (0, 1), False], dist=self, func='SF', X=X, Y=sf, xvals=xvals, xmin=xmin, xmax=xmax)
         plt.title('Survival Function')
+
         plt.subplot(234)
         plt.plot(X, hf)
+        restore_axes_limits([(0, 1), (0, 1), False], dist=self, func='HF', X=X, Y=hf, xvals=xvals, xmin=xmin, xmax=xmax)
         plt.title('Hazard Function')
+
         plt.subplot(235)
         plt.plot(X, chf)
+        restore_axes_limits([(0, 1), (0, 1), False], dist=self, func='CHF', X=X, Y=chf, xvals=xvals, xmin=xmin, xmax=xmax)
         plt.title('Cumulative Hazard\nFunction')
 
         # descriptive statistics section
@@ -2396,35 +2300,24 @@ class Gamma_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        if xvals is not None:
-            X = xvals
-        elif xmin is not None and xmax is not None:
-            X = np.linspace(xmin, xmax, 1000)
-        else:
-            X = np.linspace(0, self.b95 * 1.5, 1000)  # if no limits are specified, they are assumed
-        if type(X) in [float, int, np.float64]:
-            if X < 0:
-                raise ValueError('the value given for xvals is less than 0')
-        elif type(X) is list:
-            X = np.array(X)
-        elif type(X) is np.ndarray:
-            pass
-        else:
-            raise ValueError('unexpected type in xvals. Must be int, float, list, or array')
-        if type(X) is np.ndarray and min(X) < 0:
-            raise ValueError('xvals was found to contain values below 0')
+        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
 
         pdf = ss.gamma.pdf(X, self.beta, scale=self.alpha, loc=self.gamma)
 
         if show_plot == False:
             return pdf
         else:
+            limits = get_axes_limits()
+
             plt.plot(X, pdf, **kwargs)
             plt.xlabel('x values')
             plt.ylabel('Probability density')
             text_title = str('Gamma Distribution\n' + ' Probability Density Function ' + '\n' + self.param_title)
             plt.title(text_title)
             plt.subplots_adjust(top=0.87)
+
+            restore_axes_limits(limits, dist=self, func='PDF', X=X, Y=pdf, xvals=xvals, xmin=xmin, xmax=xmax)
+
             return pdf
 
     def CDF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
@@ -2444,35 +2337,24 @@ class Gamma_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        if xvals is not None:
-            X = xvals
-        elif xmin is not None and xmax is not None:
-            X = np.linspace(xmin, xmax, 1000)
-        else:
-            X = np.linspace(0, self.b95 * 1.5, 1000)  # if no limits are specified, they are assumed
-        if type(X) in [float, int, np.float64]:
-            if X < 0:
-                raise ValueError('the value given for xvals is less than 0')
-        elif type(X) is list:
-            X = np.array(X)
-        elif type(X) is np.ndarray:
-            pass
-        else:
-            raise ValueError('unexpected type in xvals. Must be int, float, list, or array')
-        if type(X) is np.ndarray and min(X) < 0:
-            raise ValueError('xvals was found to contain values below 0')
+        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
 
         cdf = ss.gamma.cdf(X, self.beta, scale=self.alpha, loc=self.gamma)
 
         if show_plot == False:
             return cdf
         else:
+            limits = get_axes_limits()
+
             plt.plot(X, cdf, **kwargs)
             plt.xlabel('x values')
             plt.ylabel('Fraction failing')
             text_title = str('Gamma Distribution\n' + ' Cumulative Distribution Function ' + '\n' + self.param_title)
             plt.title(text_title)
             plt.subplots_adjust(top=0.87)
+
+            restore_axes_limits(limits, dist=self, func='CDF', X=X, Y=cdf, xvals=xvals, xmin=xmin, xmax=xmax)
+
             return cdf
 
     def SF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
@@ -2492,35 +2374,24 @@ class Gamma_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        if xvals is not None:
-            X = xvals
-        elif xmin is not None and xmax is not None:
-            X = np.linspace(xmin, xmax, 1000)
-        else:
-            X = np.linspace(0, self.b95 * 1.5, 1000)  # if no limits are specified, they are assumed
-        if type(X) in [float, int, np.float64]:
-            if X < 0:
-                raise ValueError('the value given for xvals is less than 0')
-        elif type(X) is list:
-            X = np.array(X)
-        elif type(X) is np.ndarray:
-            pass
-        else:
-            raise ValueError('unexpected type in xvals. Must be int, float, list, or array')
-        if type(X) is np.ndarray and min(X) < 0:
-            raise ValueError('xvals was found to contain values below 0')
+        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
 
         sf = ss.gamma.sf(X, self.beta, scale=self.alpha, loc=self.gamma)
 
         if show_plot == False:
             return sf
         else:
+            limits = get_axes_limits()
+
             plt.plot(X, sf, **kwargs)
             plt.xlabel('x values')
             plt.ylabel('Fraction surviving')
             text_title = str('Gamma Distribution\n' + ' Survival Function ' + '\n' + self.param_title)
             plt.title(text_title)
             plt.subplots_adjust(top=0.87)
+
+            restore_axes_limits(limits, dist=self, func='SF', X=X, Y=sf, xvals=xvals, xmin=xmin, xmax=xmax)
+
             return sf
 
     def HF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
@@ -2540,35 +2411,24 @@ class Gamma_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        if xvals is not None:
-            X = xvals
-        elif xmin is not None and xmax is not None:
-            X = np.linspace(xmin, xmax, 1000)
-        else:
-            X = np.linspace(0, self.b95 * 1.5, 1000)  # if no limits are specified, they are assumed
-        if type(X) in [float, int, np.float64]:
-            if X < 0:
-                raise ValueError('the value given for xvals is less than 0')
-        elif type(X) is list:
-            X = np.array(X)
-        elif type(X) is np.ndarray:
-            pass
-        else:
-            raise ValueError('unexpected type in xvals. Must be int, float, list, or array')
-        if type(X) is np.ndarray and min(X) < 0:
-            raise ValueError('xvals was found to contain values below 0')
+        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
 
         hf = ss.gamma.pdf(X, self.beta, scale=self.alpha, loc=self.gamma) / ss.gamma.sf(X, self.beta, scale=self.alpha, loc=self.gamma)
 
         if show_plot == False:
             return hf
         else:
+            limits = get_axes_limits()
+
             plt.plot(X, hf, **kwargs)
             plt.xlabel('x values')
             plt.ylabel('Hazard')
             text_title = str('Gamma Distribution\n' + ' Hazard Function ' + '\n' + self.param_title)
             plt.title(text_title)
             plt.subplots_adjust(top=0.87)
+
+            restore_axes_limits(limits, dist=self, func='HF', X=X, Y=hf, xvals=xvals, xmin=xmin, xmax=xmax)
+
             return hf
 
     def CHF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
@@ -2588,35 +2448,24 @@ class Gamma_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        if xvals is not None:
-            X = xvals
-        elif xmin is not None and xmax is not None:
-            X = np.linspace(xmin, xmax, 1000)
-        else:
-            X = np.linspace(0, self.b95 * 1.5, 1000)  # if no limits are specified, they are assumed
-        if type(X) in [float, int, np.float64]:
-            if X < 0:
-                raise ValueError('the value given for xvals is less than 0')
-        elif type(X) is list:
-            X = np.array(X)
-        elif type(X) is np.ndarray:
-            pass
-        else:
-            raise ValueError('unexpected type in xvals. Must be int, float, list, or array')
-        if type(X) is np.ndarray and min(X) < 0:
-            raise ValueError('xvals was found to contain values below 0')
+        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
 
         chf = -np.log(ss.gamma.sf(X, self.beta, scale=self.alpha, loc=self.gamma))
 
         if show_plot == False:
             return chf
         else:
+            limits = get_axes_limits()
+
             plt.plot(X, chf, **kwargs)
             plt.xlabel('x values')
             plt.ylabel('Cumulative hazard')
             text_title = str('Gamma Distribution\n' + ' Cumulative Hazard Function ' + '\n' + self.param_title)
             plt.title(text_title)
             plt.subplots_adjust(top=0.87)
+
+            restore_axes_limits(limits, dist=self, func='CHF', X=X, Y=chf, xvals=xvals, xmin=xmin, xmax=xmax)
+
             return chf
 
     def quantile(self, q):
@@ -2782,23 +2631,7 @@ class Beta_Distribution:
         Outputs:
         The plot will be shown. No need to use plt.show()
         '''
-        if xvals is not None:
-            X = xvals
-        elif xmin is not None and xmax is not None:
-            X = np.linspace(xmin, xmax, 1000)
-        else:
-            X = np.linspace(0, 1, 1000)  # if no limits are specified, they are assumed
-        if type(X) in [float, int, np.float64]:
-            if X < 0 or X > 1:
-                raise ValueError('the value given for xvals is less than 0 or greater than 1')
-        elif type(X) is list:
-            X = np.array(X)
-        elif type(X) is np.ndarray:
-            pass
-        else:
-            raise ValueError('unexpected type in xvals. Must be int, float, list, or array')
-        if type(X) is np.ndarray and (min(X) < 0 or max(X) > 1):
-            raise ValueError('xvals was found to contain values below 0 or greater than 1')
+        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
 
         pdf = ss.beta.pdf(X, self.alpha, self.beta, 0, 1)
         cdf = ss.beta.cdf(X, self.alpha, self.beta, 0, 1)
@@ -2809,20 +2642,30 @@ class Beta_Distribution:
         plt.figure(figsize=(9, 7))
         text_title = str('Beta Distribution' + '\n' + self.param_title)
         plt.suptitle(text_title, fontsize=15)
+
         plt.subplot(231)
         plt.plot(X, pdf)
+        restore_axes_limits([(0, 1), (0, 1), False], dist=self, func='PDF', X=X, Y=pdf, xvals=xvals, xmin=xmin, xmax=xmax)
         plt.title('Probability Density\nFunction')
+
         plt.subplot(232)
         plt.plot(X, cdf)
+        restore_axes_limits([(0, 1), (0, 1), False], dist=self, func='CDF', X=X, Y=cdf, xvals=xvals, xmin=xmin, xmax=xmax)
         plt.title('Cumulative Distribution\nFunction')
+
         plt.subplot(233)
         plt.plot(X, sf)
+        restore_axes_limits([(0, 1), (0, 1), False], dist=self, func='SF', X=X, Y=sf, xvals=xvals, xmin=xmin, xmax=xmax)
         plt.title('Survival Function')
+
         plt.subplot(234)
         plt.plot(X, hf)
+        restore_axes_limits([(0, 1), (0, 1), False], dist=self, func='HF', X=X, Y=hf, xvals=xvals, xmin=xmin, xmax=xmax)
         plt.title('Hazard Function')
+
         plt.subplot(235)
         plt.plot(X, chf)
+        restore_axes_limits([(0, 1), (0, 1), False], dist=self, func='CHF', X=X, Y=chf, xvals=xvals, xmin=xmin, xmax=xmax)
         plt.title('Cumulative Hazard\nFunction')
 
         # descriptive statistics section
@@ -2872,36 +2715,24 @@ class Beta_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        if xvals is not None:
-            X = xvals
-        elif xmin is not None and xmax is not None:
-            X = np.linspace(xmin, xmax, 1000)
-        else:
-            X = np.linspace(0, 1, 1000)  # if no limits are specified, they are assumed
-        if type(X) in [float, int, np.float64]:
-            if X < 0 or X > 1:
-                raise ValueError('the value given for xvals is less than 0 or greater than 1')
-            X = np.array([X])
-        elif type(X) is list:
-            X = np.array(X)
-        elif type(X) is np.ndarray:
-            pass
-        else:
-            raise ValueError('unexpected type in xvals. Must be int, float, list, or array')
-        if min(X) < 0 or max(X) > 1:
-            raise ValueError('xvals was found to contain values below 0 or greater than 1')
+        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
 
         pdf = ss.beta.pdf(X, self.alpha, self.beta, 0, 1)
 
         if show_plot == False:
             return pdf
         else:
+            limits = get_axes_limits()
+
             plt.plot(X, pdf, **kwargs)
             plt.xlabel('x values')
             plt.ylabel('Probability density')
             text_title = str('Beta Distribution\n' + ' Probability Density Function ' + '\n' + self.param_title)
             plt.title(text_title)
             plt.subplots_adjust(top=0.87)
+
+            restore_axes_limits(limits, dist=self, func='PDF', X=X, Y=pdf, xvals=xvals, xmin=xmin, xmax=xmax)
+
             return pdf
 
     def CDF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
@@ -2921,36 +2752,24 @@ class Beta_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        if xvals is not None:
-            X = xvals
-        elif xmin is not None and xmax is not None:
-            X = np.linspace(xmin, xmax, 1000)
-        else:
-            X = np.linspace(0, 1, 1000)  # if no limits are specified, they are assumed
-        if type(X) in [float, int, np.float64]:
-            if X < 0 or X > 1:
-                raise ValueError('the value given for xvals is less than 0 or greater than 1')
-            X = np.array([X])
-        elif type(X) is list:
-            X = np.array(X)
-        elif type(X) is np.ndarray:
-            pass
-        else:
-            raise ValueError('unexpected type in xvals. Must be int, float, list, or array')
-        if min(X) < 0 or max(X) > 1:
-            raise ValueError('xvals was found to contain values below 0 or greater than 1')
+        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
 
         cdf = ss.beta.cdf(X, self.alpha, self.beta, 0, 1)
 
         if show_plot == False:
             return cdf
         else:
+            limits = get_axes_limits()
+
             plt.plot(X, cdf, **kwargs)
             plt.xlabel('x values')
             plt.ylabel('Fraction failing')
             text_title = str('Beta Distribution\n' + ' Cumulative Distribution Function ' + '\n' + self.param_title)
             plt.title(text_title)
             plt.subplots_adjust(top=0.87)
+
+            restore_axes_limits(limits, dist=self, func='CDF', X=X, Y=cdf, xvals=xvals, xmin=xmin, xmax=xmax)
+
             return cdf
 
     def SF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
@@ -2970,36 +2789,24 @@ class Beta_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        if xvals is not None:
-            X = xvals
-        elif xmin is not None and xmax is not None:
-            X = np.linspace(xmin, xmax, 1000)
-        else:
-            X = np.linspace(0, 1, 1000)  # if no limits are specified, they are assumed
-        if type(X) in [float, int, np.float64]:
-            if X < 0 or X > 1:
-                raise ValueError('the value given for xvals is less than 0 or greater than 1')
-            X = np.array([X])
-        elif type(X) is list:
-            X = np.array(X)
-        elif type(X) is np.ndarray:
-            pass
-        else:
-            raise ValueError('unexpected type in xvals. Must be int, float, list, or array')
-        if min(X) < 0 or max(X) > 1:
-            raise ValueError('xvals was found to contain values below 0 or greater than 1')
+        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
 
         sf = ss.beta.sf(X, self.alpha, self.beta, 0, 1)
 
         if show_plot == False:
             return sf
         else:
+            limits = get_axes_limits()
+
             plt.plot(X, sf, **kwargs)
             plt.xlabel('x values')
             plt.ylabel('Fraction surviving')
             text_title = str('Beta Distribution\n' + ' Survival Function ' + '\n' + self.param_title)
             plt.title(text_title)
             plt.subplots_adjust(top=0.87)
+
+            restore_axes_limits(limits, dist=self, func='SF', X=X, Y=sf, xvals=xvals, xmin=xmin, xmax=xmax)
+
             return sf
 
     def HF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
@@ -3019,36 +2826,24 @@ class Beta_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        if xvals is not None:
-            X = xvals
-        elif xmin is not None and xmax is not None:
-            X = np.linspace(xmin, xmax, 1000)
-        else:
-            X = np.linspace(0, 1, 1000)  # if no limits are specified, they are assumed
-        if type(X) in [float, int, np.float64]:
-            if X < 0 or X > 1:
-                raise ValueError('the value given for xvals is less than 0 or greater than 1')
-            X = np.array([X])
-        elif type(X) is list:
-            X = np.array(X)
-        elif type(X) is np.ndarray:
-            pass
-        else:
-            raise ValueError('unexpected type in xvals. Must be int, float, list, or array')
-        if min(X) < 0 or max(X) > 1:
-            raise ValueError('xvals was found to contain values below 0 or greater than 1')
+        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
 
         hf = ss.beta.pdf(X, self.alpha, self.beta, 0, 1) / ss.beta.sf(X, self.alpha, self.beta, 0, 1)
 
         if show_plot == False:
             return hf
         else:
+            limits = get_axes_limits()
+
             plt.plot(X, hf, **kwargs)
             plt.xlabel('x values')
             plt.ylabel('Hazard')
             text_title = str('Beta Distribution\n' + ' Hazard Function ' + '\n' + self.param_title)
             plt.title(text_title)
             plt.subplots_adjust(top=0.87)
+
+            restore_axes_limits(limits, dist=self, func='HF', X=X, Y=hf, xvals=xvals, xmin=xmin, xmax=xmax)
+
             return hf
 
     def CHF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
@@ -3068,36 +2863,24 @@ class Beta_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        if xvals is not None:
-            X = xvals
-        elif xmin is not None and xmax is not None:
-            X = np.linspace(xmin, xmax, 1000)
-        else:
-            X = np.linspace(0, 1, 1000)  # if no limits are specified, they are assumed
-        if type(X) in [float, int, np.float64]:
-            if X < 0 or X > 1:
-                raise ValueError('the value given for xvals is less than 0 or greater than 1')
-            X = np.array([X])
-        elif type(X) is list:
-            X = np.array(X)
-        elif type(X) is np.ndarray:
-            pass
-        else:
-            raise ValueError('unexpected type in xvals. Must be int, float, list, or array')
-        if min(X) < 0 or max(X) > 1:
-            raise ValueError('xvals was found to contain values below 0 or greater than 1')
+        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
 
         chf = -np.log(ss.beta.sf(X, self.alpha, self.beta, 0, 1))
 
         if show_plot == False:
             return chf
         else:
+            limits = get_axes_limits()
+
             plt.plot(X, chf, **kwargs)
             plt.xlabel('x values')
             plt.ylabel('Cumulative hazard')
             text_title = str('Beta Distribution\n' + ' Cumulative Hazard Function ' + '\n' + self.param_title)
             plt.title(text_title)
             plt.subplots_adjust(top=0.87)
+
+            restore_axes_limits(limits, dist=self, func='CHF', X=X, Y=chf, xvals=xvals, xmin=xmin, xmax=xmax)
+
             return chf
 
     def quantile(self, q):
@@ -3291,10 +3074,7 @@ class Loglogistic_Distribution:
         for item in kwargs.keys():
             print('WARNING:', item, 'not recognised as an appropriate entry in kwargs. Appropriate entries are alpha_SE, beta_SE, Cov_alpha_beta, CI, and CI_type')
         self._pdf0 = ss.fisk.pdf(0, self.beta, scale=self.alpha, loc=0)  # the pdf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
-        if self.beta <= 1:
-            self._hf0 = np.inf  # the hf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
-        else:
-            self._hf0 = 0
+        self._hf0 = ss.fisk.pdf(0, self.beta, scale=self.alpha, loc=0)/ss.fisk.sf(0, self.beta, scale=self.alpha, loc=0)  # the hf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
 
     def plot(self, xvals=None, xmin=None, xmax=None):
         '''
@@ -3312,17 +3092,15 @@ class Loglogistic_Distribution:
         The plot will be shown. No need to use plt.show()
         '''
 
-        X = generate_X_array(dist=self, func='CDF', xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array for PDF, CDF, SF
-        Xhf = generate_X_array(dist=self, func='HF', xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array for HF
-        Xchf = generate_X_array(dist=self, func='CHF', xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array for CHF
+        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
 
         pdf = ss.fisk.pdf(X, self.beta, scale=self.alpha, loc=self.gamma)
         cdf = ss.fisk.cdf(X, self.beta, scale=self.alpha, loc=self.gamma)
         sf = ss.fisk.sf(X, self.beta, scale=self.alpha, loc=self.gamma)
-        hf = (self.beta / self.alpha) * ((Xhf - self.gamma) / self.alpha) ** (self.beta - 1)
-        hf = zeroise_below_gamma(X=Xhf, Y=hf, gamma=self.gamma)
+        hf = (self.beta / self.alpha) * ((X - self.gamma) / self.alpha) ** (self.beta - 1)
+        hf = zeroise_below_gamma(X=X, Y=hf, gamma=self.gamma)
         chf = np.log(1 + ((X - self.gamma) / self.alpha) ** self.beta)
-        chf = zeroise_below_gamma(X=Xchf, Y=chf, gamma=self.gamma)
+        chf = zeroise_below_gamma(X=X, Y=chf, gamma=self.gamma)
 
         plt.figure(figsize=(9, 7))
         text_title = str('Loglogistic Distribution' + '\n' + self.param_title)
@@ -3344,13 +3122,13 @@ class Loglogistic_Distribution:
         plt.title('Survival Function')
 
         plt.subplot(234)
-        plt.plot(Xhf, hf)
-        restore_axes_limits([(0, 1), (0, 1), False], dist=self, func='HF', X=Xhf, Y=hf, xvals=xvals, xmin=xmin, xmax=xmax)
+        plt.plot(X, hf)
+        restore_axes_limits([(0, 1), (0, 1), False], dist=self, func='HF', X=X, Y=hf, xvals=xvals, xmin=xmin, xmax=xmax)
         plt.title('Hazard Function')
 
         plt.subplot(235)
-        plt.plot(Xchf, chf)
-        restore_axes_limits([(0, 1), (0, 1), False], dist=self, func='CHF', X=Xchf, Y=chf, xvals=xvals, xmin=xmin, xmax=xmax)
+        plt.plot(X, chf)
+        restore_axes_limits([(0, 1), (0, 1), False], dist=self, func='CHF', X=X, Y=chf, xvals=xvals, xmin=xmin, xmax=xmax)
         plt.title('Cumulative Hazard\nFunction')
 
         # descriptive statistics section
@@ -3420,7 +3198,7 @@ class Loglogistic_Distribution:
         '''
 
         # obtain the X array
-        X = generate_X_array(dist=self, func='PDF', xvals=xvals, xmin=xmin, xmax=xmax)
+        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
 
         pdf = ss.fisk.pdf(X, self.beta, scale=self.alpha, loc=self.gamma)
 
@@ -3459,7 +3237,7 @@ class Loglogistic_Distribution:
         '''
 
         # obtain the X array
-        X = generate_X_array(dist=self, func='CDF', xvals=xvals, xmin=xmin, xmax=xmax)
+        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
 
         # this determines if the user has specified for the CI bounds to be shown or hidden.
         kwargs_list = kwargs.keys()
@@ -3513,7 +3291,7 @@ class Loglogistic_Distribution:
         '''
 
         # obtain the X array
-        X = generate_X_array(dist=self, func='SF', xvals=xvals, xmin=xmin, xmax=xmax)
+        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
 
         # this determines if the user has specified for the CI bounds to be shown or hidden. Applicable kwargs are show_CI or plot_CI
         kwargs_list = kwargs.keys()
@@ -3566,7 +3344,7 @@ class Loglogistic_Distribution:
         '''
 
         # obtain the X array
-        X = generate_X_array(dist=self, func='HF', xvals=xvals, xmin=xmin, xmax=xmax)
+        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
 
         # this determines if the user has specified for the CI bounds to be shown or hidden. Applicable kwargs are show_CI or plot_CI
         kwargs_list = kwargs.keys()
@@ -3626,7 +3404,7 @@ class Loglogistic_Distribution:
         '''
 
         # obtain the X array
-        X = generate_X_array(dist=self, func='CHF', xvals=xvals, xmin=xmin, xmax=xmax)
+        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
 
         # this determines if the user has specified for the CI bounds to be shown or hidden. Applicable kwargs are show_CI or plot_CI
         kwargs_list = kwargs.keys()
