@@ -1217,7 +1217,7 @@ class Lognormal_Distribution:
         self.b5 = ss.lognorm.ppf(0.05, self.sigma, self.gamma, np.exp(self.mu))  # note that scipy uses mu in a log way compared to most other software, so we must take the exp of the input
         self.b95 = ss.lognorm.ppf(0.95, self.sigma, self.gamma, np.exp(self.mu))
         self._pdf0 = ss.lognorm.pdf(0, self.sigma, 0, np.exp(self.mu))  # the pdf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
-        self._hf0 = ss.lognorm.pdf(0, self.sigma, 0, np.exp(self.mu))/ss.lognorm.sf(0, self.sigma, 0, np.exp(self.mu))  # the hf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
+        self._hf0 = ss.lognorm.pdf(0, self.sigma, 0, np.exp(self.mu)) / ss.lognorm.sf(0, self.sigma, 0, np.exp(self.mu))  # the hf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
 
     def plot(self, xvals=None, xmin=None, xmax=None):
         '''
@@ -3074,7 +3074,7 @@ class Loglogistic_Distribution:
         for item in kwargs.keys():
             print('WARNING:', item, 'not recognised as an appropriate entry in kwargs. Appropriate entries are alpha_SE, beta_SE, Cov_alpha_beta, CI, and CI_type')
         self._pdf0 = ss.fisk.pdf(0, self.beta, scale=self.alpha, loc=0)  # the pdf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
-        self._hf0 = ss.fisk.pdf(0, self.beta, scale=self.alpha, loc=0)/ss.fisk.sf(0, self.beta, scale=self.alpha, loc=0)  # the hf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
+        self._hf0 = ss.fisk.pdf(0, self.beta, scale=self.alpha, loc=0) / ss.fisk.sf(0, self.beta, scale=self.alpha, loc=0)  # the hf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
 
     def plot(self, xvals=None, xmin=None, xmax=None):
         '''

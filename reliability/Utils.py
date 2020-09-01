@@ -239,7 +239,7 @@ def restore_axes_limits(limits, dist, func, X, Y, xvals=None, xmin=None, xmax=No
     # obtain the xlims as if we did not consider prev limits
     if xvals is None:
         if xmin is None:
-            if dist.name in ['Weibull','Gamma','Loglogistic','Exponential','Lognormal']:
+            if dist.name in ['Weibull', 'Gamma', 'Loglogistic', 'Exponential', 'Lognormal']:
                 if dist.gamma == 0:
                     xlim_lower = 0
                 else:
@@ -281,38 +281,38 @@ def restore_axes_limits(limits, dist, func, X, Y, xvals=None, xmin=None, xmax=No
 
     ################## YLIMS ########################
 
-    top_spacing = 1.1 #the amount of space between the max value and the upper axis limit. 1.1 means the axis lies 10% above the max value
+    top_spacing = 1.1  # the amount of space between the max value and the upper axis limit. 1.1 means the axis lies 10% above the max value
     if func in ['pdf', 'PDF']:
-        if not np.isfinite(dist._pdf0) and not np.isfinite(Y[-1]): #asymptote on the left and right
-            ylim_upper = min(Y)*5
-        elif not np.isfinite(Y[-1]): #asymptote on the right
+        if not np.isfinite(dist._pdf0) and not np.isfinite(Y[-1]):  # asymptote on the left and right
+            ylim_upper = min(Y) * 5
+        elif not np.isfinite(Y[-1]):  # asymptote on the right
             ylim_upper = max(Y)
         elif dist._pdf0 == np.inf or dist._pdf0 > 10:  # asymptote on the left
             idx = np.where(X >= dist.quantile(0.1))[0][0]
             ylim_upper = Y[idx]
-        else: # an increasing pdf. Not asymptote
+        else:  # an increasing pdf. Not asymptote
             ylim_upper = max(Y) * top_spacing
     elif func in ['cdf', 'CDF', 'SF', 'sf']:
         ylim_upper = top_spacing
     elif func in ['hf', 'HF']:
-        if not np.isfinite(dist._hf0) and not np.isfinite(Y[-1]): #asymptote on the left and right
-            ylim_upper = min(Y)*5
-        elif not np.isfinite(Y[-1]): #asymptote of the right
+        if not np.isfinite(dist._hf0) and not np.isfinite(Y[-1]):  # asymptote on the left and right
+            ylim_upper = min(Y) * 5
+        elif not np.isfinite(Y[-1]):  # asymptote of the right
             ylim_upper = max(Y)
         elif dist._hf0 == np.inf or dist._hf0 > 10:  # asymptote on the left
             idx = np.where(X >= dist.quantile(0.1))[0][0]
             ylim_upper = Y[idx]
-        elif max(Y)>Y[-1]: #a peaked hf
-            ylim_upper = max(Y)*top_spacing
-        else: # an increasing hf. Not an asymptote
+        elif max(Y) > Y[-1]:  # a peaked hf
+            ylim_upper = max(Y) * top_spacing
+        else:  # an increasing hf. Not an asymptote
             idx = np.where(X >= plt.xlim()[1])[0][0]
-            ylim_upper = Y[idx]*top_spacing
+            ylim_upper = Y[idx] * top_spacing
     elif func in ['chf', 'CHF']:
         idx = np.where(X >= xlim_upper)[0][0]  # index of the chf where it is equal to b95
         if np.isfinite(Y[idx]):
-            ylim_upper = Y[idx]*top_spacing
+            ylim_upper = Y[idx] * top_spacing
         else:
-            ylim_upper = Y[idx-1]*top_spacing
+            ylim_upper = Y[idx - 1] * top_spacing
     else:
         raise ValueError('func is invalid')
     ylim_lower = 0
@@ -360,13 +360,13 @@ def generate_X_array(dist, xvals=None, xmin=None, xmax=None):
             raise ValueError('unexpected type in xvals. Must be int, float, list, or array')
         if type(X) is np.ndarray and min(X) < 0 and dist.name != 'Normal':
             raise ValueError('xvals was found to contain values below 0')
-        if type(X) is np.ndarray and max(X) > 0 and dist.name == 'Beta':
+        if type(X) is np.ndarray and max(X) > 1 and dist.name == 'Beta':
             raise ValueError('xvals was found to contain values above 1. The beta distribution is bounded between 0 and 1.')
     else:
-        if dist.name in ['Weibull','Lognormal','Loglogistic','Exponential','Gamma']:
+        if dist.name in ['Weibull', 'Lognormal', 'Loglogistic', 'Exponential', 'Gamma']:
             if xmin is None:
                 xmin = 0
-            if xmin <0:
+            if xmin < 0:
                 raise ValueError('xmin must be greater than or equal to 0 for all distributions except the Normal distribution')
             if xmax is None:
                 xmax = dist.quantile(0.9999)
@@ -393,7 +393,7 @@ def generate_X_array(dist, xvals=None, xmin=None, xmax=None):
                     try:
                         detail = np.geomspace(xmin - dist.gamma, QU - dist.gamma, points - points_right) + dist.gamma
                         right = np.geomspace(QU - dist.gamma, xmax - dist.gamma, points_right) + dist.gamma
-                    except ValueError: #occurs for very low shape params causing QL-gamma to be zero
+                    except ValueError:  # occurs for very low shape params causing QL-gamma to be zero
                         detail = np.linspace(xmin, QU, points - points_right)
                         right = np.linspace(QU, xmax, points_right)
                     X = np.hstack([detail, right])
@@ -404,7 +404,7 @@ def generate_X_array(dist, xvals=None, xmin=None, xmax=None):
                     else:  # pdf is asymptotic to inf at x=0
                         try:
                             X = np.hstack([xmin, np.geomspace(QL, QU, points - (points_right + 1)), np.geomspace(QU, xmax, points_right)])
-                        except ValueError: #occurs for very low shape params causing QL to be zero
+                        except ValueError:  # occurs for very low shape params causing QL to be zero
                             X = np.hstack([xmin, np.linspace(QL, QU, points - (points_right + 1)), np.geomspace(QU, xmax, points_right)])
                 else:  # gamma > 0
                     if dist._pdf0 == 0:
@@ -413,7 +413,7 @@ def generate_X_array(dist, xvals=None, xmin=None, xmax=None):
                         try:
                             detail = np.geomspace(QL - dist.gamma, QU - dist.gamma, points - (points_right + 2)) + dist.gamma
                             right = np.geomspace(QU - dist.gamma, xmax - dist.gamma, points_right) + dist.gamma
-                        except ValueError: #occurs for very low shape params causing QL-gamma to be zero
+                        except ValueError:  # occurs for very low shape params causing QL-gamma to be zero
                             detail = np.linspace(QL, QU, points - (points_right + 2))
                             right = np.linspace(QU, xmax, points_right)
                         X = np.hstack([xmin, dist.gamma - 1e-8, detail, right])
@@ -424,10 +424,10 @@ def generate_X_array(dist, xvals=None, xmin=None, xmax=None):
                 xmax = dist.quantile(0.9999)
             if xmin > xmax:
                 xmin, xmax = xmax, xmin  # switch them if they are given in the wrong order
-            if xmin<=0 or xmin > dist.quantile(0.0001):
+            if xmin <= 0 or xmin > dist.quantile(0.0001):
                 X = np.linspace(xmin, xmax, points)
             else:
-                X = np.hstack([0,np.linspace(xmin, xmax, points-1)]) #this ensures that the distribution is at least plotted from 0 if its xmin is above 0
+                X = np.hstack([0, np.linspace(xmin, xmax, points - 1)])  # this ensures that the distribution is at least plotted from 0 if its xmin is above 0
         elif dist.name == 'Beta':
             if xmin is None:
                 xmin = 0

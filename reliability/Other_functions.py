@@ -412,14 +412,13 @@ class distribution_explorer:
         plt.xlabel('')
         plt.ylabel('')
         plt.subplots_adjust(left=0.07, right=0.98, top=0.9, bottom=0.25, wspace=0.18, hspace=0.30)
+
         # initialise the sliders
         x0 = 0.1
         width = 0.8
         height = 0.03
-
         self.active_color = 'steelblue'
         self.background_color = 'whitesmoke'
-
         self.ax0 = plt.axes([x0, 0.15, width, height], facecolor=self.background_color)
         self.ax1 = plt.axes([x0, 0.1, width, height], facecolor=self.background_color)
         self.ax2 = plt.axes([x0, 0.05, width, height], facecolor=self.background_color)
