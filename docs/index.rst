@@ -4,18 +4,18 @@
 
 |pypi| |docs| |build| |code quality| |downloads| |license| |LOC| |DOI| |colab| |donate|
 
-.. |docs| image:: https://readthedocs.org/projects/reliability/badge/?version=latest
-    :alt: Documentation Status
-    :scale: 100%
-    :target: https://reliability.readthedocs.io/en/latest/
-
 .. |pypi| image:: https://badge.fury.io/py/reliability.svg
     :alt: PyPI package
     :scale: 100%
     :target: https://badge.fury.io/py/reliability
 
+.. |docs| image:: https://readthedocs.org/projects/reliability/badge/?version=latest
+    :alt: docs
+    :scale: 100%
+    :target: https://reliability.readthedocs.io/en/latest/
+
 .. |build| image:: https://travis-ci.com/MatthewReid854/reliability.svg?branch=master
-    :alt: PyPI package
+    :alt: build
     :scale: 100%
     :target: https://travis-ci.com/github/MatthewReid854/reliability
 
@@ -24,29 +24,35 @@
     :scale: 100%
     :target: https://lgtm.com/projects/g/MatthewReid854/reliability/context:python
 
+.. |downloads| image:: https://pepy.tech/badge/reliability
+    :alt: downloads
+    :scale: 100%
+    :target: https://pepy.tech/project/reliability
 
+.. |license| image:: https://img.shields.io/badge/License-LGPLv3-blue.svg
+    :alt: license
+    :scale: 100%
+    :target: https://www.gnu.org/licenses/lgpl-3.0.txt
 
-[![Downloads](https://pepy.tech/badge/reliability)](https://pepy.tech/project/reliability)
-[![LGPLv3 license](https://img.shields.io/badge/License-LGPLv3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0.txt)
-[![Lines Of Code](https://tokei.rs/b1/github/MatthewReid854/reliability?category=code)](https://github.com/MatthewReid854/reliability)
-[![DOI](https://zenodo.org/badge/198305660.svg)](https://zenodo.org/badge/latestdoi/198305660)
-[![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/MatthewReid854/reliability/blob/master/notebooks/Intro3.ipynb)
-[![Donate](https://img.shields.io/badge/donate-$%20€%20¥%20£-blueviolet.svg)](https://reliability.readthedocs.io/en/latest/How%20to%20donate%20to%20the%20project.html)
+.. |LOC| image:: https://tokei.rs/b1/github/MatthewReid854/reliability?category=code
+    :alt: lines of code
+    :scale: 100%
+    :target: https://github.com/MatthewReid854/reliability
 
+.. |DOI| image:: https://zenodo.org/badge/198305660.svg
+    :alt: DOI
+    :scale: 100%
+    :target: https://zenodo.org/badge/latestdoi/198305660
 
+.. |colab| image:: https://colab.research.google.com/assets/colab-badge.svg
+    :alt: Open in Colab
+    :scale: 100%
+    :target: https://colab.research.google.com/github/MatthewReid854/reliability/blob/master/notebooks/Intro3.ipynb
 
-
-
-
-
-
-
-
-
-
-
-
-
+.. |donate| image:: https://img.shields.io/badge/donate-$%20€%20¥%20£-blueviolet.svg
+    :alt: donate
+    :scale: 100%
+    :target: https://reliability.readthedocs.io/en/latest/How%20to%20donate%20to%20the%20project.html
 
 *reliability* is a Python library for reliability engineering and survival analysis. It significantly extends the functionality of scipy.stats and also includes many specialist tools that are otherwise only available in proprietary software.
 
