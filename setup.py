@@ -29,5 +29,5 @@ setuptools.setup(
                       "autograd-gamma>=0.4.1",
                       "mplcursors>=0.3"
     ],
-    packages=setuptools.find_packages(exclude=["*.tests", "*.tests.*"]),
+    packages=setuptools.find_packages(exclude=["*.tests", "*.tests.*","*.notebooks", "*.notebooks.*"]),
 )
