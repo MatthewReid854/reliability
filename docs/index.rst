@@ -3,7 +3,9 @@
 -------------------------------------
 
 |PyPI version|
+|Documentation Status|
 
+.. |Documentation Status| image:: https://readthedocs.org/projects/reliability/badge/?version=latest
 .. |PyPI version| image:: https://badge.fury.io/py/reliability.svg
 
 *reliability* is a Python library for reliability engineering and survival analysis. It significantly extends the functionality of scipy.stats and also includes many specialist tools that are otherwise only available in proprietary software.
