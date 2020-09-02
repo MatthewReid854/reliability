@@ -158,7 +158,7 @@ Contents:
 .. |colab| image:: https://colab.research.google.com/assets/colab-badge.svg
     :alt: Open in Colab
     :scale: 100%
-    :target: https://colab.research.google.com/github/MatthewReid854/reliability/blob/master/notebooks/Intro.ipynb
+    :target: https://colab.research.google.com/github/MatthewReid854/reliability/blob/master/notebooks/Intro2.ipynb
 
 .. |donate| image:: https://img.shields.io/badge/donate-$%20€%20¥%20£-blueviolet.svg
     :alt: donate
