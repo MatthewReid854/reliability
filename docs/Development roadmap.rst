@@ -9,11 +9,9 @@ The following development roadmap is the current task list and implementation pl
 
 **Next task (currently in development)**
 
--    Plotting enhancements to increase the detail in plots using less points (by generating more points where the plots curve and less where the plots are flat). Using 100 instead of 1000 points will make the plots much faster, particularly when multiple distributions are layered. Done for Weibull but need to implement for the rest.
--    Plotting enhancements to the x and y scale such that the limits are based on the quantiles. This will ensure more relevant detail is shown, particularly for location shifted distributions. Done for Weibull but need to implement for the rest.
 -    Writing more automated tests. This will speed up the code development processes and help prevent future changes having unidentified effects.
 -    Confidence intervals for Normal and Lognormal distributions (Gamma and Beta will come later). Currently the confidence intervals have only been completed for Weibull and Exponential distributions.
-- Fitters for Loglogistic_Distribution: Fit_Loglogistic_2P, Fit_Loglogistic_3P
+- Fitters for Loglogistic_Distribution Fit_Loglogistic_3P (Fit_Loglogistic_2P is done)
 - Probability plot for loglogistic distribution: Loglogistic_probability_plot
 
 **High priority (expected by the end of 2020)**
