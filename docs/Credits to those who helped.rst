@@ -5,7 +5,7 @@
 Credits to those who helped
 '''''''''''''''''''''''''''
 
-During the process of writing ``reliability`` there have been many problems that I was unable to solve alone. I would like to thank the following people who provided help and feedback on problems with the code and with the reliability concepts:
+During the process of writing *reliability* there have been many problems that I was unable to solve alone. I would like to thank the following people who provided help and feedback on problems with the code and with the reliability concepts:
 
 - `Cameron Davidson-Pilon <https://github.com/CamDavidsonPilon>`_ for help with getting autograd to work to fit censored data and for writing `autograd-gamma <https://github.com/CamDavidsonPilon/autograd-gamma>`_ which makes it possible to fit the gamma and beta distributions. Also for providing help with obtaining the Fisher Information Matrix so that the confidence intervals for parameters could be estimated.
 - `Dr. Vasiliy Krivtsov <http://www.krivtsov.net/>`_ for providing feedback on PP and QQ plots, for further explaining optimal replacement time equations, and for guidance in developing the Competing risk model. Dr. Krivtsov teaches "Collection and analysis of Reliability Data (ENRE640)" at the University of Maryland.
