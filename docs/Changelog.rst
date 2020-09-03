@@ -14,6 +14,7 @@ Changelog
 -    Implemented Fit_Loglogistic_2P
 -    Added the function Reliability_testing.reliability_test_duration
 -    Added Fit_Loglogistic_2P to Fitters.Fit_Everything
+-    Added distribution_explorer to Other_functions
 
 **API Changes**
 
@@ -31,6 +32,8 @@ Changelog
 -    Updated Utils.generate_X_array to use 200 points (rather than 100) and allocated more points to the right hand side of the plot (beyond b99). This was because plots were not displaying smoothly enough for distributions with high skewness.
 -    Changed default plotting upper limit to b9999. Previously it was slightly more and was not a round quantile. Done for simplicity and minimal change will be noticed.
 -    Changed the layout of the Probability plots and PP plots in Fit_Everything from a 5x2 grid to a 4x3 grid. This made more sense due to the addition of the Loglogistic Distribution which would have made the layout 6x2 which is too long.
+-    Plotting enhancements to increase the detail in plots using less points (by generating more points where the plots curve and less where the plots are flat). Using 200 instead of 1000 points will make the plots much faster, particularly when multiple distributions are layered. In version 0.5.2 this was just done for the done for Weibull Distribution but it has now been implemented for all 7 of the standard probability distributions.
+-    Plotting enhancements to the x and y scale such that the limits are based on the quantiles. This will ensure more relevant detail is shown, particularly for location shifted distributions. In version 0.5.2 this was just done for the done for Weibull Distribution but it has now been implemented for all 7 of the standard probability distributions.
 
 **Version: 0.5.2 --- Released: 14 August 2020**
 '''''''''''''''''''''''''''''''''''''''''''''
