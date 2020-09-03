@@ -87,6 +87,7 @@ Contents:
   Similar Distributions
   Convert dataframe to grouped lists
   Crosshairs
+  Distribution explorer
   Histogram
   Make right censored data
   Datasets
