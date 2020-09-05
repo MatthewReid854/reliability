@@ -2,7 +2,7 @@
 
 -------------------------------------
 
-|pypi| |docs| |build| |code quality| |downloads| |license| |LOC| |DOI| |colab| |donate|
+|pypi| |docs| |build| |LOC| |code quality| |downloads| |license| |colab| |DOI| |donate|
 
 *reliability* is a Python library for reliability engineering and survival analysis. It significantly extends the functionality of scipy.stats and also includes many specialist tools that are otherwise only available in proprietary software.
 
@@ -121,45 +121,45 @@ Contents:
     :scale: 100%
     :target: https://badge.fury.io/py/reliability
 
-.. |docs| image:: https://readthedocs.org/projects/reliability/badge/?version=latest
+.. |docs| image:: https://img.shields.io/readthedocs/reliability/latest.svg?logo=read%20the%20docs&logoColor=white&label=Docs&version=latest
     :alt: docs
     :scale: 100%
     :target: https://reliability.readthedocs.io/en/latest/
 
-.. |build| image:: https://travis-ci.com/MatthewReid854/reliability.svg?branch=master
+.. |build| image:: https://img.shields.io/travis/MatthewReid854/reliability/master?logo=travis%20ci&logoColor=white&label=Travis%20CI
     :alt: build
     :scale: 100%
     :target: https://travis-ci.com/github/MatthewReid854/reliability
+
+.. |LOC| image:: https://sloc.xyz/github/MatthewReid854/reliability/?category=code
+    :alt: lines of code
+    :scale: 100%
+    :target: https://github.com/MatthewReid854/reliability
 
 .. |code quality| image:: https://img.shields.io/lgtm/grade/python/g/MatthewReid854/reliability.svg?logo=lgtm&logoWidth=18
     :alt: code quality: python
     :scale: 100%
     :target: https://lgtm.com/projects/g/MatthewReid854/reliability/context:python
 
-.. |downloads| image:: https://pepy.tech/badge/reliability
+.. |downloads| image:: https://img.shields.io/pypi/dm/reliability?label=PyPI%20downloads
     :alt: downloads
     :scale: 100%
-    :target: https://pepy.tech/project/reliability
+    :target: https://pypistats.org/packages/reliability
 
 .. |license| image:: https://img.shields.io/badge/License-LGPLv3-blue.svg
     :alt: license
     :scale: 100%
     :target: https://www.gnu.org/licenses/lgpl-3.0.txt
 
-.. |LOC| image:: https://tokei.rs/b1/github/MatthewReid854/reliability?category=code
-    :alt: lines of code
+.. |colab| image:: https://colab.research.google.com/assets/colab-badge.svg
+    :alt: Open in Colab
     :scale: 100%
-    :target: https://github.com/MatthewReid854/reliability
+    :target: https://colab.research.google.com/github/MatthewReid854/reliability/blob/master/notebooks/Intro2.ipynb
 
 .. |DOI| image:: https://zenodo.org/badge/198305660.svg
     :alt: DOI
     :scale: 100%
     :target: https://zenodo.org/badge/latestdoi/198305660
-
-.. |colab| image:: https://colab.research.google.com/assets/colab-badge.svg
-    :alt: Open in Colab
-    :scale: 100%
-    :target: https://colab.research.google.com/github/MatthewReid854/reliability/blob/master/notebooks/Intro2.ipynb
 
 .. |donate| image:: https://img.shields.io/badge/donate-$%20€%20¥%20£-blueviolet.svg
     :alt: donate
