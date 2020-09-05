@@ -116,7 +116,7 @@ Contents:
   About the author
   Credits to those who helped
 
-.. |pypi| image:: https://img.shields.io/pypi/v/reliability?color=brightgreen&label=PyPI%20version
+.. |pypi| image:: https://img.shields.io/pypi/v/reliability?color=brightgreen&label=PyPI%20package
     :alt: PyPI package
     :scale: 100%
     :target: https://pypi.org/project/reliability/
