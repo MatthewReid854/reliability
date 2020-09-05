@@ -116,10 +116,10 @@ Contents:
   About the author
   Credits to those who helped
 
-.. |pypi| image:: https://badge.fury.io/py/reliability.svg
+.. |pypi| image:: https://img.shields.io/pypi/v/reliability?color=brightgreen&label=PyPI%20version
     :alt: PyPI package
     :scale: 100%
-    :target: https://badge.fury.io/py/reliability
+    :target: https://pypi.org/project/reliability/
 
 .. |docs| image:: https://img.shields.io/readthedocs/reliability/latest.svg?logo=read%20the%20docs&logoColor=white&label=Docs&version=latest
     :alt: docs
