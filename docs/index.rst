@@ -161,7 +161,7 @@ Contents:
     :scale: 100%
     :target: https://zenodo.org/badge/latestdoi/198305660
 
-.. |donate| image:: https://img.shields.io/badge/donate-$%20€%20¥%20£-blueviolet.svg
+.. |donate| image:: https://img.shields.io/badge/Donate-$%20€%20¥%20£-blueviolet.svg
     :alt: donate
     :scale: 100%
     :target: https://reliability.readthedocs.io/en/latest/How%20to%20donate%20to%20the%20project.html
