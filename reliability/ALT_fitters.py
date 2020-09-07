@@ -46,6 +46,7 @@ from reliability.Fitters import Fit_Weibull_2P, Fit_Lognormal_2P, Fit_Normal_2P,
 from reliability.ALT_probability_plotting import ALT_probability_plot_Weibull, ALT_probability_plot_Lognormal, ALT_probability_plot_Normal
 from reliability.Distributions import Weibull_Distribution, Lognormal_Distribution, Normal_Distribution, Exponential_Distribution
 from reliability.Probability_plotting import Weibull_probability_plot, Lognormal_probability_plot, Normal_probability_plot, Exponential_probability_plot_Weibull_Scale
+from reliability.Utils import probability_plot_xyticks, probability_plot_xylims
 
 anp.seterr('ignore')
 color_list = ['steelblue', 'darkorange', 'red', 'green', 'purple', 'blue', 'grey', 'deeppink', 'cyan', 'chocolate', 'blueviolet', 'indianred', 'yellow', 'olivedrab', 'crimson', 'black', 'lightseagreen', 'pink', 'indigo', 'darkgreen']
@@ -260,10 +261,13 @@ class Fit_Weibull_Exponential:
                 Weibull_probability_plot(failures=FAILURES, right_censored=RIGHT_CENSORED, __fitted_dist_params=fitted_dist_params, color=color_list[i], linestyle='--', label='')
             if use_level_stress is not None:
                 use_label_str = str(str(use_level_stress) + ' (use level)')
-                Weibull_Distribution(alpha=use_life, beta=self.beta).CDF(xvals=xvals, label=use_label_str, color=color_list[i + 1], linestyle='--')
+                Weibull_Distribution(alpha=use_life, beta=self.beta).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
             plt.xlim(10 ** xmin, 10 ** xmax)
             plt.legend(title='Stress')
             plt.title('Weibull-Exponential Model')
+            probability_plot_xyticks()
+            x_array = np.hstack([Weibull_Distribution(alpha=use_life, beta=self.beta).quantile(max(ALT_fit.y_array)),ALT_fit.x_array])
+            probability_plot_xylims(x=x_array,y=ALT_fit.y_array,dist='weibull',spacing=0.1)
 
     @staticmethod
     def logf(t, T, a, b, beta):  # Log PDF
@@ -491,10 +495,13 @@ class Fit_Weibull_Eyring:
                 Weibull_probability_plot(failures=FAILURES, right_censored=RIGHT_CENSORED, __fitted_dist_params=fitted_dist_params, color=color_list[i], linestyle='--', label='')
             if use_level_stress is not None:
                 use_label_str = str(str(use_level_stress) + ' (use level)')
-                Weibull_Distribution(alpha=use_life, beta=self.beta).CDF(xvals=xvals, label=use_label_str, color=color_list[i + 1], linestyle='--')
+                Weibull_Distribution(alpha=use_life, beta=self.beta).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
             plt.xlim(10 ** xmin, 10 ** xmax)
             plt.legend(title='Stress')
             plt.title('Weibull-Eyring Model')
+            probability_plot_xyticks()
+            x_array = np.hstack([Weibull_Distribution(alpha=use_life, beta=self.beta).quantile(max(ALT_fit.y_array)),ALT_fit.x_array])
+            probability_plot_xylims(x=x_array,y=ALT_fit.y_array,dist='weibull',spacing=0.1)
 
     @staticmethod
     def logf(t, T, a, c, beta):  # Log PDF
@@ -722,10 +729,13 @@ class Fit_Weibull_Power:
                 Weibull_probability_plot(failures=FAILURES, right_censored=RIGHT_CENSORED, __fitted_dist_params=fitted_dist_params, color=color_list[i], linestyle='--', label='')
             if use_level_stress is not None:
                 use_label_str = str(str(use_level_stress) + ' (use level)')
-                Weibull_Distribution(alpha=use_life, beta=self.beta).CDF(xvals=xvals, label=use_label_str, color=color_list[i + 1], linestyle='--')
+                Weibull_Distribution(alpha=use_life, beta=self.beta).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
             plt.xlim(10 ** xmin, 10 ** xmax)
             plt.legend(title='Stress')
             plt.title('Weibull-Power Model')
+            probability_plot_xyticks()
+            x_array = np.hstack([Weibull_Distribution(alpha=use_life, beta=self.beta).quantile(max(ALT_fit.y_array)),ALT_fit.x_array])
+            probability_plot_xylims(x=x_array,y=ALT_fit.y_array,dist='weibull',spacing=0.1)
 
     @staticmethod
     def logf(t, T, a, n, beta):  # Log PDF
@@ -989,11 +999,14 @@ class Fit_Weibull_Dual_Exponential:
                 Weibull_probability_plot(failures=FAILURES, right_censored=RIGHT_CENSORED, __fitted_dist_params=fitted_dist_params, color=color_list[i], linestyle='--', label='')
             if use_level_stress is not None:
                 use_label_str = str(str(float(use_level_stress[0])) + ' , ' + str(float(use_level_stress[1])) + ' (use level)')
-                Weibull_Distribution(alpha=use_life, beta=self.beta).CDF(xvals=xvals, label=use_label_str, color=color_list[i + 1], linestyle='--')
+                Weibull_Distribution(alpha=use_life, beta=self.beta).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
             plt.xlim(10 ** xmin, 10 ** xmax)
             leg = plt.legend(title='     Stress 1 , Stress 2')
             leg._legend_box.align = 'left'
             plt.title('Weibull-Dual-Exponential Model')
+            probability_plot_xyticks()
+            x_array = np.hstack([Weibull_Distribution(alpha=use_life, beta=self.beta).quantile(max(ALT_fit_1.y_array)),ALT_fit_1.x_array])
+            probability_plot_xylims(x=x_array,y=ALT_fit_1.y_array,dist='weibull',spacing=0.1)
 
     @staticmethod
     def logf(t, S1, S2, a, b, c, beta):  # Log PDF
@@ -1258,11 +1271,14 @@ class Fit_Weibull_Power_Exponential:
                 Weibull_probability_plot(failures=FAILURES, right_censored=RIGHT_CENSORED, __fitted_dist_params=fitted_dist_params, color=color_list[i], linestyle='--', label='')
             if use_level_stress is not None:
                 use_label_str = str(str(float(use_level_stress[0])) + ' , ' + str(float(use_level_stress[1])) + ' (use level)')
-                Weibull_Distribution(alpha=use_life, beta=self.beta).CDF(xvals=xvals, label=use_label_str, color=color_list[i + 1], linestyle='--')
+                Weibull_Distribution(alpha=use_life, beta=self.beta).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
             plt.xlim(10 ** xmin, 10 ** xmax)
             leg = plt.legend(title='Thermal stress , Non-thermal stress')
             leg._legend_box.align = 'left'
             plt.title('Weibull-Power-Exponential Model')
+            probability_plot_xyticks()
+            x_array = np.hstack([Weibull_Distribution(alpha=use_life, beta=self.beta).quantile(max(ALT_fit_1.y_array)),ALT_fit_1.x_array])
+            probability_plot_xylims(x=x_array,y=ALT_fit_1.y_array,dist='weibull',spacing=0.1)
 
     @staticmethod
     def logf(t, S1, S2, a, c, n, beta):  # Log PDF
@@ -1489,10 +1505,13 @@ class Fit_Lognormal_Exponential:
                 Lognormal_probability_plot(failures=FAILURES, right_censored=RIGHT_CENSORED, __fitted_dist_params=fitted_dist_params, color=color_list[i], linestyle='--', label='')
             if use_level_stress is not None:
                 use_label_str = str(str(use_level_stress) + ' (use level)')
-                Lognormal_Distribution(mu=np.log(use_life), sigma=self.sigma).CDF(xvals=xvals, label=use_label_str, color=color_list[i + 1], linestyle='--')
+                Lognormal_Distribution(mu=np.log(use_life), sigma=self.sigma).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
             plt.xlim(10 ** xmin, 10 ** xmax)
             plt.legend(title='Stress')
             plt.title('Lognormal-Exponential Model')
+            probability_plot_xyticks()
+            x_array = np.hstack([Lognormal_Distribution(mu=np.log(use_life), sigma=self.sigma).quantile(max(ALT_fit.y_array)),ALT_fit.x_array])
+            probability_plot_xylims(x=x_array,y=ALT_fit.y_array,dist='lognormal',spacing=0.1)
 
     @staticmethod
     def logf(t, T, a, b, sigma):  # Log PDF
@@ -1717,10 +1736,13 @@ class Fit_Lognormal_Eyring:
                 Lognormal_probability_plot(failures=FAILURES, right_censored=RIGHT_CENSORED, __fitted_dist_params=fitted_dist_params, color=color_list[i], linestyle='--', label='')
             if use_level_stress is not None:
                 use_label_str = str(str(use_level_stress) + ' (use level)')
-                Lognormal_Distribution(mu=np.log(use_life), sigma=self.sigma).CDF(xvals=xvals, label=use_label_str, color=color_list[i + 1], linestyle='--')
+                Lognormal_Distribution(mu=np.log(use_life), sigma=self.sigma).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
             plt.xlim(10 ** xmin, 10 ** xmax)
             plt.legend(title='Stress')
             plt.title('Lognormal-Eyring Model')
+            probability_plot_xyticks()
+            x_array = np.hstack([Lognormal_Distribution(mu=np.log(use_life), sigma=self.sigma).quantile(max(ALT_fit.y_array)),ALT_fit.x_array])
+            probability_plot_xylims(x=x_array,y=ALT_fit.y_array,dist='lognormal',spacing=0.1)
 
     @staticmethod
     def logf(t, T, a, c, sigma):  # Log PDF
@@ -1945,10 +1967,13 @@ class Fit_Lognormal_Power:
                 Lognormal_probability_plot(failures=FAILURES, right_censored=RIGHT_CENSORED, __fitted_dist_params=fitted_dist_params, color=color_list[i], linestyle='--', label='')
             if use_level_stress is not None:
                 use_label_str = str(str(use_level_stress) + ' (use level)')
-                Lognormal_Distribution(mu=np.log(use_life), sigma=self.sigma).CDF(xvals=xvals, label=use_label_str, color=color_list[i + 1], linestyle='--')
+                Lognormal_Distribution(mu=np.log(use_life), sigma=self.sigma).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
             plt.xlim(10 ** xmin, 10 ** xmax)
             plt.legend(title='Stress')
             plt.title('Lognormal-Power Model')
+            probability_plot_xyticks()
+            x_array = np.hstack([Lognormal_Distribution(mu=np.log(use_life), sigma=self.sigma).quantile(max(ALT_fit.y_array)),ALT_fit.x_array])
+            probability_plot_xylims(x=x_array,y=ALT_fit.y_array,dist='lognormal',spacing=0.1)
 
     @staticmethod
     def logf(t, T, a, n, sigma):  # Log PDF
@@ -2209,11 +2234,14 @@ class Fit_Lognormal_Dual_Exponential:
                 Lognormal_probability_plot(failures=FAILURES, right_censored=RIGHT_CENSORED, __fitted_dist_params=fitted_dist_params, color=color_list[i], linestyle='--', label='')
             if use_level_stress is not None:
                 use_label_str = str(str(float(use_level_stress[0])) + ' , ' + str(float(use_level_stress[1])) + ' (use level)')
-                Lognormal_Distribution(mu=np.log(use_life), sigma=self.sigma).CDF(xvals=xvals, label=use_label_str, color=color_list[i + 1], linestyle='--')
+                Lognormal_Distribution(mu=np.log(use_life), sigma=self.sigma).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
             plt.xlim(10 ** xmin, 10 ** xmax)
             leg = plt.legend(title='     Stress 1 , Stress 2')
             leg._legend_box.align = 'left'
             plt.title('Lognormal-Dual-Exponential Model')
+            probability_plot_xyticks()
+            x_array = np.hstack([Lognormal_Distribution(mu=np.log(use_life), sigma=self.sigma).quantile(max(ALT_fit_1.y_array)),ALT_fit_1.x_array])
+            probability_plot_xylims(x=x_array,y=ALT_fit_1.y_array,dist='lognormal',spacing=0.1)
 
     @staticmethod
     def logf(t, S1, S2, a, b, c, sigma):  # Log PDF
@@ -2475,11 +2503,14 @@ class Fit_Lognormal_Power_Exponential:
                 Lognormal_probability_plot(failures=FAILURES, right_censored=RIGHT_CENSORED, __fitted_dist_params=fitted_dist_params, color=color_list[i], linestyle='--', label='')
             if use_level_stress is not None:
                 use_label_str = str(str(float(use_level_stress[0])) + ' , ' + str(float(use_level_stress[1])) + ' (use level)')
-                Lognormal_Distribution(mu=np.log(use_life), sigma=self.sigma).CDF(xvals=xvals, label=use_label_str, color=color_list[i + 1], linestyle='--')
+                Lognormal_Distribution(mu=np.log(use_life), sigma=self.sigma).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
             plt.xlim(10 ** xmin, 10 ** xmax)
             leg = plt.legend(title='Thermal stress , Non-thermal stress')
             leg._legend_box.align = 'left'
             plt.title('Lognormal-Power-Exponential Model')
+            probability_plot_xyticks()
+            x_array = np.hstack([Lognormal_Distribution(mu=np.log(use_life), sigma=self.sigma).quantile(max(ALT_fit_1.y_array)),ALT_fit_1.x_array])
+            probability_plot_xylims(x=x_array,y=ALT_fit_1.y_array,dist='lognormal',spacing=0.1)
 
     @staticmethod
     def logf(t, S1, S2, a, c, n, sigma):  # Log PDF
@@ -2706,10 +2737,13 @@ class Fit_Normal_Exponential:
                 Normal_probability_plot(failures=FAILURES, right_censored=RIGHT_CENSORED, __fitted_dist_params=fitted_dist_params, color=color_list[i], linestyle='--', label='')
             if use_level_stress is not None:
                 use_label_str = str(str(use_level_stress) + ' (use level)')
-                Normal_Distribution(mu=use_life, sigma=self.sigma).CDF(xvals=xvals, label=use_label_str, color=color_list[i + 1], linestyle='--')
+                Normal_Distribution(mu=use_life, sigma=self.sigma).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
             plt.xlim(xmin, xmax)
             plt.legend(title='Stress')
             plt.title('Normal-Exponential Model')
+            probability_plot_xyticks()
+            x_array = np.hstack([Normal_Distribution(mu=use_life, sigma=self.sigma).quantile(max(ALT_fit.y_array)),ALT_fit.x_array])
+            probability_plot_xylims(x=x_array,y=ALT_fit.y_array,dist='normal',spacing=0.1)
 
     @staticmethod
     def logf(t, T, a, b, sigma):  # Log PDF
@@ -2934,10 +2968,13 @@ class Fit_Normal_Eyring:
                 Normal_probability_plot(failures=FAILURES, right_censored=RIGHT_CENSORED, __fitted_dist_params=fitted_dist_params, color=color_list[i], linestyle='--', label='')
             if use_level_stress is not None:
                 use_label_str = str(str(use_level_stress) + ' (use level)')
-                Normal_Distribution(mu=use_life, sigma=self.sigma).CDF(xvals=xvals, label=use_label_str, color=color_list[i + 1], linestyle='--')
+                Normal_Distribution(mu=use_life, sigma=self.sigma).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
             plt.xlim(xmin, xmax)
             plt.legend(title='Stress')
             plt.title('Normal-Eyring Model')
+            probability_plot_xyticks()
+            x_array = np.hstack([Normal_Distribution(mu=use_life, sigma=self.sigma).quantile(max(ALT_fit.y_array)),ALT_fit.x_array])
+            probability_plot_xylims(x=x_array,y=ALT_fit.y_array,dist='normal',spacing=0.1)
 
     @staticmethod
     def logf(t, T, a, c, sigma):  # Log PDF
@@ -3162,10 +3199,13 @@ class Fit_Normal_Power:
                 Normal_probability_plot(failures=FAILURES, right_censored=RIGHT_CENSORED, __fitted_dist_params=fitted_dist_params, color=color_list[i], linestyle='--', label='')
             if use_level_stress is not None:
                 use_label_str = str(str(use_level_stress) + ' (use level)')
-                Normal_Distribution(mu=use_life, sigma=self.sigma).CDF(xvals=xvals, label=use_label_str, color=color_list[i + 1], linestyle='--')
+                Normal_Distribution(mu=use_life, sigma=self.sigma).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
             plt.xlim(xmin, xmax)
             plt.legend(title='Stress')
             plt.title('Normal-Power Model')
+            probability_plot_xyticks()
+            x_array = np.hstack([Normal_Distribution(mu=use_life, sigma=self.sigma).quantile(max(ALT_fit.y_array)),ALT_fit.x_array])
+            probability_plot_xylims(x=x_array,y=ALT_fit.y_array,dist='normal',spacing=0.1)
 
     @staticmethod
     def logf(t, T, a, n, sigma):  # Log PDF
@@ -3426,11 +3466,14 @@ class Fit_Normal_Dual_Exponential:
                 Normal_probability_plot(failures=FAILURES, right_censored=RIGHT_CENSORED, __fitted_dist_params=fitted_dist_params, color=color_list[i], linestyle='--', label='')
             if use_level_stress is not None:
                 use_label_str = str(str(float(use_level_stress[0])) + ' , ' + str(float(use_level_stress[1])) + ' (use level)')
-                Normal_Distribution(mu=use_life, sigma=self.sigma).CDF(xvals=xvals, label=use_label_str, color=color_list[i + 1], linestyle='--')
+                Normal_Distribution(mu=use_life, sigma=self.sigma).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
             plt.xlim(xmin, xmax)
             leg = plt.legend(title='     Stress 1 , Stress 2')
             leg._legend_box.align = 'left'
             plt.title('Normal-Dual-Exponential Model')
+            probability_plot_xyticks()
+            x_array = np.hstack([Normal_Distribution(mu=use_life, sigma=self.sigma).quantile(max(ALT_fit_1.y_array)),ALT_fit_1.x_array])
+            probability_plot_xylims(x=x_array,y=ALT_fit_1.y_array,dist='normal',spacing=0.1)
 
     @staticmethod
     def logf(t, S1, S2, a, b, c, sigma):  # Log PDF
@@ -3692,11 +3735,14 @@ class Fit_Normal_Power_Exponential:
                 Normal_probability_plot(failures=FAILURES, right_censored=RIGHT_CENSORED, __fitted_dist_params=fitted_dist_params, color=color_list[i], linestyle='--', label='')
             if use_level_stress is not None:
                 use_label_str = str(str(float(use_level_stress[0])) + ' , ' + str(float(use_level_stress[1])) + ' (use level)')
-                Normal_Distribution(mu=use_life, sigma=self.sigma).CDF(xvals=xvals, label=use_label_str, color=color_list[i + 1], linestyle='--')
+                Normal_Distribution(mu=use_life, sigma=self.sigma).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
             plt.xlim(xmin, xmax)
             leg = plt.legend(title='Thermal stress , Non-thermal stress')
             leg._legend_box.align = 'left'
             plt.title('Normal-Power-Exponential Model')
+            probability_plot_xyticks()
+            x_array = np.hstack([Normal_Distribution(mu=use_life, sigma=self.sigma).quantile(max(ALT_fit_1.y_array)),ALT_fit_1.x_array])
+            probability_plot_xylims(x=x_array,y=ALT_fit_1.y_array,dist='normal',spacing=0.1)
 
     @staticmethod
     def logf(t, S1, S2, a, c, n, sigma):  # Log PDF
@@ -3911,10 +3957,13 @@ class Fit_Exponential_Exponential:
                 Exponential_probability_plot_Weibull_Scale(failures=FAILURES, right_censored=RIGHT_CENSORED, __fitted_dist_params=fitted_dist_params, color=color_list[i], linestyle='--', label='')
             if use_level_stress is not None:
                 use_label_str = str(str(use_level_stress) + ' (use level)')
-                Exponential_Distribution(Lambda=1 / use_life).CDF(xvals=xvals, label=use_label_str, color=color_list[i + 1], linestyle='--')
+                Exponential_Distribution(Lambda=1 / use_life).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
             plt.xlim(10 ** xmin, 10 ** xmax)
             plt.legend(title='Stress')
             plt.title('Exponential-Exponential Model')
+            probability_plot_xyticks()
+            x_array = np.hstack([Exponential_Distribution(Lambda=1 / use_life).quantile(max(ALT_fit.y_array)),ALT_fit.x_array])
+            probability_plot_xylims(x=x_array,y=ALT_fit.y_array,dist='weibull',spacing=0.1)
 
     @staticmethod
     def logf(t, T, a, b):  # Log PDF
@@ -4127,10 +4176,13 @@ class Fit_Exponential_Eyring:
                 Exponential_probability_plot_Weibull_Scale(failures=FAILURES, right_censored=RIGHT_CENSORED, __fitted_dist_params=fitted_dist_params, color=color_list[i], linestyle='--', label='')
             if use_level_stress is not None:
                 use_label_str = str(str(use_level_stress) + ' (use level)')
-                Exponential_Distribution(Lambda=1 / use_life).CDF(xvals=xvals, label=use_label_str, color=color_list[i + 1], linestyle='--')
+                Exponential_Distribution(Lambda=1 / use_life).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
             plt.xlim(10 ** xmin, 10 ** xmax)
             plt.legend(title='Stress')
             plt.title('Exponential-Eyring Model')
+            probability_plot_xyticks()
+            x_array = np.hstack([Exponential_Distribution(Lambda=1 / use_life).quantile(max(ALT_fit.y_array)),ALT_fit.x_array])
+            probability_plot_xylims(x=x_array,y=ALT_fit.y_array,dist='weibull',spacing=0.1)
 
     @staticmethod
     def logf(t, T, a, c):  # Log PDF
@@ -4343,10 +4395,13 @@ class Fit_Exponential_Power:
                 Exponential_probability_plot_Weibull_Scale(failures=FAILURES, right_censored=RIGHT_CENSORED, __fitted_dist_params=fitted_dist_params, color=color_list[i], linestyle='--', label='')
             if use_level_stress is not None:
                 use_label_str = str(str(use_level_stress) + ' (use level)')
-                Exponential_Distribution(Lambda=1 / use_life).CDF(xvals=xvals, label=use_label_str, color=color_list[i + 1], linestyle='--')
+                Exponential_Distribution(Lambda=1 / use_life).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
             plt.xlim(10 ** xmin, 10 ** xmax)
             plt.legend(title='Stress')
             plt.title('Exponential-Power Model')
+            probability_plot_xyticks()
+            x_array = np.hstack([Exponential_Distribution(Lambda=1 / use_life).quantile(max(ALT_fit.y_array)),ALT_fit.x_array])
+            probability_plot_xylims(x=x_array,y=ALT_fit.y_array,dist='weibull',spacing=0.1)
 
     @staticmethod
     def logf(t, T, a, n):  # Log PDF
@@ -4592,11 +4647,14 @@ class Fit_Exponential_Dual_Exponential:
                 Exponential_probability_plot_Weibull_Scale(failures=FAILURES, right_censored=RIGHT_CENSORED, __fitted_dist_params=fitted_dist_params, color=color_list[i], linestyle='--', label='')
             if use_level_stress is not None:
                 use_label_str = str(str(float(use_level_stress[0])) + ' , ' + str(float(use_level_stress[1])) + ' (use level)')
-                Exponential_Distribution(Lambda=1 / use_life).CDF(xvals=xvals, label=use_label_str, color=color_list[i + 1], linestyle='--')
+                Exponential_Distribution(Lambda=1 / use_life).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
             plt.xlim(10 ** xmin, 10 ** xmax)
             leg = plt.legend(title='     Stress 1 , Stress 2')
             leg._legend_box.align = 'left'
             plt.title('Exponential-Dual-Exponential Model')
+            probability_plot_xyticks()
+            x_array = np.hstack([Exponential_Distribution(Lambda=1 / use_life).quantile(max(ALT_fit_1.y_array)),ALT_fit_1.x_array])
+            probability_plot_xylims(x=x_array,y=ALT_fit_1.y_array,dist='weibull',spacing=0.1)
 
     @staticmethod
     def logf(t, S1, S2, a, b, c):  # Log PDF
@@ -4843,11 +4901,14 @@ class Fit_Exponential_Power_Exponential:
                 Exponential_probability_plot_Weibull_Scale(failures=FAILURES, right_censored=RIGHT_CENSORED, __fitted_dist_params=fitted_dist_params, color=color_list[i], linestyle='--', label='')
             if use_level_stress is not None:
                 use_label_str = str(str(float(use_level_stress[0])) + ' , ' + str(float(use_level_stress[1])) + ' (use level)')
-                Exponential_Distribution(Lambda=1 / use_life).CDF(xvals=xvals, label=use_label_str, color=color_list[i + 1], linestyle='--')
+                Exponential_Distribution(Lambda=1 / use_life).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
             plt.xlim(10 ** xmin, 10 ** xmax)
             leg = plt.legend(title='Thermal stress , Non-thermal stress')
             leg._legend_box.align = 'left'
             plt.title('Exponential-Power-Exponential Model')
+            probability_plot_xyticks()
+            x_array = np.hstack([Exponential_Distribution(Lambda=1 / use_life).quantile(max(ALT_fit_1.y_array)),ALT_fit_1.x_array])
+            probability_plot_xylims(x=x_array,y=ALT_fit_1.y_array,dist='weibull',spacing=0.1)
 
     @staticmethod
     def logf(t, S1, S2, a, c, n):  # Log PDF

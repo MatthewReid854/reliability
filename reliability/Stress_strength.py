@@ -7,7 +7,7 @@ Probability_of_failure_normdist - works only when both the stress and strength d
     Uses an exact method (formula) rather than calculating the integral. Use this function if you have two Normal Distributions.
 For two Normal distributions these two methods are accurate to around 9 decimal places.
 '''
-from reliability.Distributions import Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution
+from reliability.Distributions import Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution, Loglogistic_Distribution
 import scipy.stats as ss
 from scipy.integrate import quad
 import numpy as np
@@ -37,7 +37,7 @@ def Probability_of_failure(stress, strength, show_distribution_plot=True, print_
     Probability_of_failure(stress=stress, strength=strength)
     '''
 
-    if type(stress) not in [Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution] or type(strength) not in [Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution]:
+    if type(stress) not in [Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution, Loglogistic_Distribution] or type(strength) not in [Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution, Loglogistic_Distribution]:
         raise ValueError('Stress and Strength must both be probability distributions. First define the distribution using reliability.Distributions.___')
     if type(stress) == Normal_Distribution and type(strength) == Normal_Distribution and warn is True:  # supress the warning by setting warn=False
         print('If strength and stress are both Normal distributions, it is more accurate to use the exact formula. The exact formula is supported in the function Probability_of_failure_normdist')

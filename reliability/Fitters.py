@@ -213,6 +213,14 @@ class Fit_Everything:
         self.Loglogistic_2P_AICc = self.__Loglogistic_2P_params.AICc
         self._parametric_CDF_Loglogistic_2P = self.__Loglogistic_2P_params.distribution.CDF(xvals=d, show_plot=False)
 
+        self.__Loglogistic_3P_params = Fit_Loglogistic_3P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False)
+        self.Loglogistic_3P_alpha = self.__Loglogistic_3P_params.alpha
+        self.Loglogistic_3P_beta = self.__Loglogistic_3P_params.beta
+        self.Loglogistic_3P_gamma = self.__Loglogistic_3P_params.gamma
+        self.Loglogistic_3P_BIC = self.__Loglogistic_3P_params.BIC
+        self.Loglogistic_3P_AICc = self.__Loglogistic_3P_params.AICc
+        self._parametric_CDF_Loglogistic_3P = self.__Loglogistic_3P_params.distribution.CDF(xvals=d, show_plot=False)
+
         if max(failures) <= 1:
             self.__Beta_2P_params = Fit_Beta_2P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False)
             self.Beta_2P_alpha = self.__Beta_2P_params.alpha
@@ -227,15 +235,15 @@ class Fit_Everything:
             self.Beta_2P_AICc = 0
 
         # assemble the output dataframe
-        DATA = {'Distribution': ['Weibull_3P', 'Weibull_2P', 'Normal_2P', 'Exponential_1P', 'Exponential_2P', 'Lognormal_2P', 'Lognormal_3P', 'Gamma_2P', 'Gamma_3P', 'Beta_2P', 'Loglogistic_2P'],
-                'Alpha': [self.Weibull_3P_alpha, self.Weibull_2P_alpha, '', '', '', '', '', self.Gamma_2P_alpha, self.Gamma_3P_alpha, self.Beta_2P_alpha, self.Loglogistic_2P_alpha],
-                'Beta': [self.Weibull_3P_beta, self.Weibull_2P_beta, '', '', '', '', '', self.Gamma_2P_beta, self.Gamma_3P_beta, self.Beta_2P_beta, self.Loglogistic_2P_beta],
-                'Gamma': [self.Weibull_3P_gamma, '', '', '', self.Expon_2P_gamma, '', self.Lognormal_3P_gamma, '', self.Gamma_3P_gamma, '', ''],
-                'Mu': ['', '', self.Normal_2P_mu, '', '', self.Lognormal_2P_mu, self.Lognormal_3P_mu, '', '', '', ''],
-                'Sigma': ['', '', self.Normal_2P_sigma, '', '', self.Lognormal_2P_sigma, self.Lognormal_3P_sigma, '', '', '', ''],
-                'Lambda': ['', '', '', self.Expon_1P_lambda, self.Expon_2P_lambda, '', '', '', '', '', ''],
-                'AICc': [self.Weibull_3P_AICc, self.Weibull_2P_AICc, self.Normal_2P_AICc, self.Expon_1P_AICc, self.Expon_2P_AICc, self.Lognormal_2P_AICc, self.Lognormal_3P_AICc, self.Gamma_2P_AICc, self.Gamma_3P_AICc, self.Beta_2P_AICc, self.Loglogistic_2P_AICc],
-                'BIC': [self.Weibull_3P_BIC, self.Weibull_2P_BIC, self.Normal_2P_BIC, self.Expon_1P_BIC, self.Expon_2P_BIC, self.Lognormal_2P_BIC, self.Lognormal_2P_BIC, self.Gamma_2P_BIC, self.Gamma_3P_BIC, self.Beta_2P_BIC, self.Loglogistic_2P_BIC]}
+        DATA = {'Distribution': ['Weibull_3P', 'Weibull_2P', 'Normal_2P', 'Exponential_1P', 'Exponential_2P', 'Lognormal_2P', 'Lognormal_3P', 'Gamma_2P', 'Gamma_3P', 'Beta_2P', 'Loglogistic_2P', 'Loglogistic_3P'],
+                'Alpha': [self.Weibull_3P_alpha, self.Weibull_2P_alpha, '', '', '', '', '', self.Gamma_2P_alpha, self.Gamma_3P_alpha, self.Beta_2P_alpha, self.Loglogistic_2P_alpha, self.Loglogistic_3P_alpha],
+                'Beta': [self.Weibull_3P_beta, self.Weibull_2P_beta, '', '', '', '', '', self.Gamma_2P_beta, self.Gamma_3P_beta, self.Beta_2P_beta, self.Loglogistic_2P_beta, self.Loglogistic_3P_beta],
+                'Gamma': [self.Weibull_3P_gamma, '', '', '', self.Expon_2P_gamma, '', self.Lognormal_3P_gamma, '', self.Gamma_3P_gamma, '', '', self.Loglogistic_3P_gamma],
+                'Mu': ['', '', self.Normal_2P_mu, '', '', self.Lognormal_2P_mu, self.Lognormal_3P_mu, '', '', '', '', ''],
+                'Sigma': ['', '', self.Normal_2P_sigma, '', '', self.Lognormal_2P_sigma, self.Lognormal_3P_sigma, '', '', '', '', ''],
+                'Lambda': ['', '', '', self.Expon_1P_lambda, self.Expon_2P_lambda, '', '', '', '', '', '', ''],
+                'AICc': [self.Weibull_3P_AICc, self.Weibull_2P_AICc, self.Normal_2P_AICc, self.Expon_1P_AICc, self.Expon_2P_AICc, self.Lognormal_2P_AICc, self.Lognormal_3P_AICc, self.Gamma_2P_AICc, self.Gamma_3P_AICc, self.Beta_2P_AICc, self.Loglogistic_2P_AICc, self.Loglogistic_3P_AICc],
+                'BIC': [self.Weibull_3P_BIC, self.Weibull_2P_BIC, self.Normal_2P_BIC, self.Expon_1P_BIC, self.Expon_2P_BIC, self.Lognormal_2P_BIC, self.Lognormal_2P_BIC, self.Gamma_2P_BIC, self.Gamma_3P_BIC, self.Beta_2P_BIC, self.Loglogistic_2P_BIC, self.Loglogistic_3P_BIC]}
 
         df = pd.DataFrame(DATA, columns=['Distribution', 'Alpha', 'Beta', 'Gamma', 'Mu', 'Sigma', 'Lambda', 'AICc', 'BIC'])
         # sort the dataframe by BIC or AICc and replace na and 0 values with spaces. Smallest AICc or BIC is better fit
@@ -275,6 +283,8 @@ class Fit_Everything:
             self.best_distribution = Beta_Distribution(alpha=self.Beta_2P_alpha, beta=self.Beta_2P_beta)
         elif best_dist == 'Loglogistic_2P':
             self.best_distribution = Loglogistic_Distribution(alpha=self.Loglogistic_2P_alpha, beta=self.Loglogistic_2P_beta)
+        elif best_dist == 'Loglogistic_3P':
+            self.best_distribution = Loglogistic_Distribution(alpha=self.Loglogistic_3P_alpha, beta=self.Loglogistic_3P_beta, gamma=self.Loglogistic_3P_gamma)
 
         # print the results
         if print_results is True:  # printing occurs by default
@@ -299,10 +309,10 @@ class Fit_Everything:
         # define plotting limits
         delta = max(X) - min(X)
         xmin = 0
-        if max(X)<=1:
-            xmax=1 #this is the case when beta is fitted
+        if max(X) <= 1:
+            xmax = 1  # this is the case when beta is fitted
         else:
-            xmax = max(X) + delta #this is when beta is not fitted so the upperlimit goes a bit more
+            xmax = max(X) + delta  # this is when beta is not fitted so the upperlimit goes a bit more
         xvals = np.linspace(xmin, xmax, 1000)
 
         plt.figure(figsize=(14, 6))
@@ -329,6 +339,7 @@ class Fit_Everything:
         Lognormal_Distribution(mu=self.Lognormal_3P_mu, sigma=self.Lognormal_3P_sigma, gamma=self.Lognormal_3P_gamma).PDF(xvals=xvals, label=r'Lognormal ($\mu , \sigma , \gamma$)')
         Normal_Distribution(mu=self.Normal_2P_mu, sigma=self.Normal_2P_sigma).PDF(xvals=xvals, label=r'Normal ($\mu , \sigma$)')
         Loglogistic_Distribution(alpha=self.Loglogistic_2P_alpha, beta=self.Loglogistic_2P_beta).PDF(xvals=xvals, label=r'Loglogistic ($\alpha , \beta$)')
+        Loglogistic_Distribution(alpha=self.Loglogistic_3P_alpha, beta=self.Loglogistic_3P_beta, gamma=self.Loglogistic_3P_gamma).PDF(xvals=xvals, label=r'Loglogistic ($\alpha , \beta, \gamma$)')
         if max(X) <= 1:  # condition for Beta dist to be fitted
             Beta_Distribution(alpha=self.Beta_2P_alpha, beta=self.Beta_2P_beta).PDF(xvals=xvals, label=r'Beta ($\alpha , \beta$)')
         plt.legend()
@@ -351,6 +362,7 @@ class Fit_Everything:
         Lognormal_Distribution(mu=self.Lognormal_3P_mu, sigma=self.Lognormal_3P_sigma, gamma=self.Lognormal_3P_gamma).CDF(xvals=xvals, label=r'Lognormal ($\mu , \sigma , \gamma$)')
         Normal_Distribution(mu=self.Normal_2P_mu, sigma=self.Normal_2P_sigma).CDF(xvals=xvals, label=r'Normal ($\mu , \sigma$)')
         Loglogistic_Distribution(alpha=self.Loglogistic_2P_alpha, beta=self.Loglogistic_2P_beta).CDF(xvals=xvals, label=r'Loglogistic ($\alpha , \beta$)')
+        Loglogistic_Distribution(alpha=self.Loglogistic_3P_alpha, beta=self.Loglogistic_3P_beta, gamma=self.Loglogistic_3P_gamma).CDF(xvals=xvals, label=r'Loglogistic ($\alpha , \beta, \gamma$)')
         if max(X) <= 1:  # condition for Beta Dist to be fitted
             Beta_Distribution(alpha=self.Beta_2P_alpha, beta=self.Beta_2P_beta).CDF(xvals=xvals, label=r'Beta ($\alpha , \beta$)')
         plt.legend()
@@ -432,12 +444,11 @@ class Fit_Everything:
         plt.xticks([])
 
         plt.subplot(rows, cols, 8)
-        # xlim = max(np.hstack([self._nonparametric_CDF, self._parametric_CDF_Loglogistic_3P]))
-        # plt.scatter(self._nonparametric_CDF, self._parametric_CDF_Loglogistic_3P, marker='.', color='k')
-        # plt.plot([0, xlim], [0, xlim], 'r', alpha=0.7)
+        xlim = max(np.hstack([self._nonparametric_CDF, self._parametric_CDF_Loglogistic_3P]))
+        plt.scatter(self._nonparametric_CDF, self._parametric_CDF_Loglogistic_3P, marker='.', color='k')
+        plt.plot([0, xlim], [0, xlim], 'r', alpha=0.7)
         plt.axis('square')
         plt.title('Loglogistic_3P')
-        plt.text(x=0, y=0.5, s='PLACEHOLDER')
         plt.yticks([])
         plt.xticks([])
 
@@ -480,7 +491,7 @@ class Fit_Everything:
         plt.subplots_adjust(left=0.04, bottom=0.07, right=0.96, top=0.87)
 
     def probability_plot(self):
-        from reliability.Probability_plotting import Weibull_probability_plot, Normal_probability_plot, Gamma_probability_plot, Exponential_probability_plot, Beta_probability_plot, Lognormal_probability_plot, Exponential_probability_plot_Weibull_Scale  # , Loglogistic_probability_plot
+        from reliability.Probability_plotting import Weibull_probability_plot, Normal_probability_plot, Gamma_probability_plot, Exponential_probability_plot, Beta_probability_plot, Lognormal_probability_plot, Exponential_probability_plot_Weibull_Scale, Loglogistic_probability_plot
         rows = 3
         cols = 4
 
@@ -558,8 +569,7 @@ class Fit_Everything:
         plt.title('Weibull_3P')
 
         plt.subplot(rows, cols, 7)
-        plt.text(x=0.4, y=0.5, s='PLACEHOLDER')
-        # Loglogistic_probability_plot(failures=self.failures, right_censored=self.right_censored, __fitted_dist_params=self.__Loglogistic_2P_params)
+        Loglogistic_probability_plot(failures=self.failures, right_censored=self.right_censored, __fitted_dist_params=self.__Loglogistic_2P_params)
         ax = plt.gca()
         ax.set_yticklabels([], minor=False)
         ax.set_xticklabels([], minor=False)
@@ -567,12 +577,11 @@ class Fit_Everything:
         ax.set_xticklabels([], minor=True)
         ax.set_ylabel('')
         ax.set_xlabel('')
-        # ax.get_legend().remove()
+        ax.get_legend().remove()
         plt.title('Loglogistic_2P')
 
         plt.subplot(rows, cols, 8)
-        plt.text(x=0.4, y=0.5, s='PLACEHOLDER')
-        # Loglogistic_probability_plot(failures=self.failures, right_censored=self.right_censored, __fitted_dist_params=self.__Loglogistic_3P_params)
+        Loglogistic_probability_plot(failures=self.failures, right_censored=self.right_censored, __fitted_dist_params=self.__Loglogistic_3P_params)
         ax = plt.gca()
         ax.set_yticklabels([], minor=False)
         ax.set_xticklabels([], minor=False)
@@ -580,7 +589,7 @@ class Fit_Everything:
         ax.set_xticklabels([], minor=True)
         ax.set_ylabel('')
         ax.set_xlabel('')
-        # ax.get_legend().remove()
+        ax.get_legend().remove()
         plt.title('Loglogistic_3P')
 
         plt.subplot(rows, cols, 9)
@@ -3522,7 +3531,7 @@ class Fit_Loglogistic_2P:
 
     @staticmethod
     def logR(t, a, b):  # Log SF (2 parameter Loglogistic)
-        return -anp.log((1 + (t / a) ** (b)))
+        return -anp.log((1 + (t / a) ** b))
 
     @staticmethod
     def LL(params, T_f, T_rc):  # log likelihood function (2 parameter Loglogistic)
@@ -3530,4 +3539,262 @@ class Fit_Loglogistic_2P:
         LL_rc = 0
         LL_f += Fit_Loglogistic_2P.logf(T_f, params[0], params[1]).sum()  # failure times
         LL_rc += Fit_Loglogistic_2P.logR(T_rc, params[0], params[1]).sum()  # right censored times
+        return -(LL_f + LL_rc)
+
+
+class Fit_Loglogistic_3P:
+    '''
+    Fit_Loglogistic_3P
+    Fits a 3-parameter Loglogistic distribution (alpha,beta,gamma) to the data provided.
+    You may also enter right censored data.
+
+    Inputs:
+    failures - an array or list of failure data
+    right_censored - an array or list of right censored data
+    show_probability_plot - True/False. Defaults to True.
+    print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
+    CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
+    CI_type - 'time' or 'reliability'. Default is time. Used for the probability plot and the distribution object in the output.
+    initial_guess_method - 'scipy', 'least squares' or 'non-linear least squares'. Default is 'scipy'. All three do not take into account censored data but scipy uses MLE, and least squares is least squares regression of the plotting positions. Non-linear least squares uses least squares as an intial guess before using scipy.optimise.curve_fit for the CDF. Scipy proved more accurate during testing.
+    optimizer - 'L-BFGS-B' OR 'TNC'. These are both bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
+    kwargs are accepted for the probability plot (eg. linestyle, label, color)
+
+    Outputs:
+    success - Whether the solution was found by autograd (True/False)
+        if success is False a warning will be printed indicating that scipy's fit was used as autograd failed. This fit will not be accurate if
+        there is censored data as scipy does not have the ability to fit censored data. Failure of autograd to find the solution should be rare and
+        if it occurs, it is likely that the distribution is an extremely bad fit for the data. Try scaling your data, removing extreme values, or using
+        another distribution.
+    alpha - the fitted Loglogistic_3P alpha parameter
+    beta - the fitted Loglogistic_3P beta parameter
+    gamma - the fitted Loglogistic_3P gamma parameter
+    loglik - Log Likelihood (as used in Minitab and Reliasoft)
+    loglik2 - LogLikelihood*-2 (as used in JMP Pro)
+    AICc - Akaike Information Criterion
+    BIC - Bayesian Information Criterion
+    distribution - a Loglogistic_Distribution object with the parameters of the fitted distribution
+    alpha_SE - the standard error (sqrt(variance)) of the parameter
+    beta_SE - the standard error (sqrt(variance)) of the parameter
+    gamma_SE - the standard error (sqrt(variance)) of the parameter
+    Cov_alpha_beta - the covariance between the parameters alpha and beta
+    alpha_upper - the upper CI estimate of the parameter
+    alpha_lower - the lower CI estimate of the parameter
+    beta_upper - the upper CI estimate of the parameter
+    beta_lower - the lower CI estimate of the parameter
+    gamma_upper - the upper CI estimate of the parameter
+    gamma_lower - the lower CI estimate of the parameter
+    results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
+    '''
+
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, CI_type='time', optimizer='L-BFGS-B', initial_guess_method='scipy', **kwargs):
+        if failures is None or len(failures) < 3:
+            raise ValueError('Maximum likelihood estimates could not be calculated for these data. There must be at least three failures to calculate Weibull parameters.')
+        if right_censored is None:
+            right_censored = []  # fill with empty list if not specified
+        if CI <= 0 or CI >= 1:
+            raise ValueError('CI must be between 0 and 1. Default is 0.95 for 95% Confidence interval.')
+        # adjust inputs to be arrays
+        if type(failures) == list:
+            failures = np.array(failures)
+        if type(failures) != np.ndarray:
+            raise TypeError('failures must be a list or array of failure data')
+        if type(right_censored) == list:
+            right_censored = np.array(right_censored)
+        if type(right_censored) != np.ndarray:
+            raise TypeError('right_censored must be a list or array of right censored failure data')
+
+        if initial_guess_method in ['scipy', 'Scipy', 'SP', 'sp']:
+            initial_guess_method = 'scipy'
+        elif initial_guess_method in ['least_squares', 'least squares', 'Least_squares', 'Least squares', 'Least Squares', 'Least_Squares', 'ls', 'LS', 'lr', 'LR', 'linear regression', 'lin reg', 'linear_regression']:
+            initial_guess_method = 'least squares'
+        elif initial_guess_method in ['non_linear_least_squares', 'non-linear_least_squares', 'non-linear least squares', 'Non-Linear_Least_Squares', 'NLLS', 'non-linear', 'nlls', 'nlr', 'NLR', 'non-linear regression', 'non-linear_regression']:
+            initial_guess_method = 'non-linear least squares'
+        else:
+            raise ValueError('initial_guess_method must be either "scipy","least squares",or "non-linear least squares". Default is "scipy".')
+
+        if optimizer not in ['L-BFGS-B', 'TNC']:
+            raise ValueError('optimizer must be either "L-BFGS-B" OR "TNC". Default is "L-BFGS-B".')
+
+        # remove zeros. These are impossible since the pdf should be 0 at t=0. Leaving them in causes an error.
+        rc0 = right_censored
+        f0 = failures
+        right_censored = rc0[rc0 != 0]
+        failures = f0[f0 != 0]
+        if len(failures) != len(f0):
+            print('WARNING: failures contained zeros. These have been removed to enable fitting.')
+        if len(right_censored) != len(rc0):
+            print('WARNING: right_censored contained zeros. These have been removed to enable fitting.')
+
+        # Loglogistic_3P INITIAL GUESS SECTION
+        all_data = np.hstack([failures, right_censored])
+        if min(all_data) < 0:
+            raise ValueError('All failure and censoring times must be greater than zero.')
+        offset = 0.0001  # this is to ensure the lower bound for gamma is not equal to min(data) which would result in inf log-likelihood. This small offset fixes that issue
+        gamma_initial_guess = min(all_data) - offset  # get a quick guess for gamma by setting it as the minimum of the data
+        if initial_guess_method == 'scipy':  # default method
+            data_shifted = all_data - gamma_initial_guess
+            sp = ss.fisk.fit(data_shifted, floc=0, optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
+            guess = [sp[2], sp[0], gamma_initial_guess]
+            self.initial_guess = guess
+        elif initial_guess_method in ['least squares', 'non-linear least squares']:
+            gamma_initial_guess = min(failures) - offset
+            x, y = plotting_positions(failures=failures - gamma_initial_guess, right_censored=right_censored - gamma_initial_guess)
+            if len(failures) > 4:
+                x, y = x[1::], y[1::]  # this removes the first value which is almost always way left due to the gamma initial guess adjustment. It is only done if there is enough data (>4 failures)
+            x_linearised = np.log(x)
+            y_linearised = np.log((1 - np.array(y)) / np.array(y))
+            slope, intercept, _, _, _ = ss.linregress(x_linearised, y_linearised)
+            LS_beta = -slope
+            LS_alpha = np.exp(intercept / LS_beta)
+
+            if initial_guess_method == 'least squares':
+                self.initial_guess = [LS_alpha, LS_beta, gamma_initial_guess]
+                guess = self.initial_guess
+            elif initial_guess_method == 'non-linear least squares' and len(failures) < 4:
+                print('WARNING: initial_guess_method changed to least squares as a minimum of 4 failures are required for non-linear least squares.')
+                self.initial_guess = [LS_alpha, LS_beta, gamma_initial_guess]
+                guess = self.initial_guess
+            else:
+                def __F(t, alpha, beta, gamma):  # function to be fitted by curve_fit [F(t)]
+                    return 1 / (1 + (((t - gamma) / alpha) ** -beta))
+
+                x2, y2 = plotting_positions(failures=failures, right_censored=right_censored)
+                curve_fit_bounds = ([0, 0, offset], [LS_alpha * 100, LS_beta * 15, gamma_initial_guess])  # ([alpha_lower,beta_lower,gamma_lower],[alpha_upper,beta_upper,gamma_upper])
+                try:
+                    popt, _ = curve_fit(__F, x2, y2, p0=[LS_alpha, LS_beta, gamma_initial_guess], bounds=curve_fit_bounds)  # This is the non-linear least squares method
+                    self.initial_guess = [popt[0], popt[1], popt[2]]
+                except RuntimeError:  # Sometimes the curve_fit fails due to "RuntimeError: Optimal parameters not found: The maximum number of function evaluations is exceeded."
+                    self.initial_guess = [LS_alpha, LS_beta, gamma_initial_guess]
+                    print('WARNING: non-linear least squares failed to obtain the initial guess. Using least squares instead.')
+                guess = self.initial_guess
+
+        self.initial_guess_method = initial_guess_method
+        warnings.filterwarnings('ignore')  # it is necessary to supress the warning about the jacobian when using the nelder-mead optimizer
+        k = len(guess)
+        n = len(all_data)
+        delta_BIC = 1
+        BIC_array = [1000000]
+        runs = 0
+        bnds = [(0, None), (0, None), (0, min(all_data) - offset)]  # bounds on the solution. Helps a lot with stability
+        while delta_BIC > 0.001 and runs < 5:  # exits after BIC convergence or 5 iterations
+            runs += 1
+            result = minimize(value_and_grad(Fit_Loglogistic_3P.LL), guess, args=(failures, right_censored), jac=True, method=optimizer, bounds=bnds)
+            params = result.x
+            guess = [params[0], params[1], params[2]]
+            LL2 = 2 * Fit_Loglogistic_3P.LL(guess, failures, right_censored)
+            BIC_array.append(np.log(n) * k + LL2)
+            delta_BIC = abs(BIC_array[-1] - BIC_array[-2])
+
+        if result.success is True:
+            params = result.x
+            self.success = True
+            self.alpha = params[0]
+            self.beta = params[1]
+            self.gamma = params[2]
+        else:  # if the L-BFGS-B or TNC optimizer fails then we have a second attempt using the slower but slightly more reliable nelder-mead optimizer
+            result = minimize(value_and_grad(Fit_Loglogistic_3P.LL), self.initial_guess, args=(failures, right_censored), jac=True, method='nelder-mead')
+            if result.success is True:
+                params = result.x
+                self.success = True
+                self.alpha = params[0]
+                self.beta = params[1]
+                self.gamma = params[2]
+            else:
+                self.success = False
+                print('WARNING: Fitting using Autograd FAILED for Weibull_3P. The fit from Scipy was used instead so the results may not be accurate.')
+                sp = ss.fisk.fit(all_data, optimizer='powell')
+                self.alpha = sp[2]
+                self.beta = sp[0]
+                self.gamma = sp[1]
+
+        params = [self.alpha, self.beta, self.gamma]
+        self.loglik2 = LL2
+        self.loglik = LL2 * -0.5
+        if n - k - 1 > 0:
+            self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
+        else:
+            self.AICc = 'Insufficient data'
+        self.BIC = np.log(n) * k + LL2
+
+        if self.gamma < 0.01:  # If the solver finds that gamma is very near zero then we should have used a Loglogisticl_2P distribution. Can't proceed with Loglogistic_3P as the confidence interval calculations for gamma result in nan (Zero division error). Need to recalculate everything as the SE values will be incorrect for Loglogistic_3P
+            loglogistic_2P_results = Fit_Loglogistic_2P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False, CI=CI)
+            self.alpha = loglogistic_2P_results.alpha
+            self.beta = loglogistic_2P_results.beta
+            self.gamma = 0
+            self.alpha_SE = loglogistic_2P_results.alpha_SE
+            self.beta_SE = loglogistic_2P_results.beta_SE
+            self.gamma_SE = 0
+            self.Cov_alpha_beta = loglogistic_2P_results.Cov_alpha_beta
+            self.alpha_upper = loglogistic_2P_results.alpha_upper
+            self.alpha_lower = loglogistic_2P_results.alpha_lower
+            self.beta_upper = loglogistic_2P_results.beta_upper
+            self.beta_lower = loglogistic_2P_results.beta_lower
+            self.gamma_upper = 0
+            self.gamma_lower = 0
+        else:
+            # confidence interval estimates of parameters
+            Z = -ss.norm.ppf((1 - CI) / 2)
+            # here we need to get alpha_SE and beta_SE from the Loglogistic_2P by providing an adjusted dataset (adjusted for gamma)
+            hessian_matrix = hessian(Fit_Loglogistic_2P.LL)(np.array(tuple([self.alpha, self.beta])), np.array(tuple(failures - self.gamma)), np.array(tuple(right_censored - self.gamma)))
+            covariance_matrix = np.linalg.inv(hessian_matrix)
+            # this is to get the gamma_SE. Unfortunately this approach for alpha_SE and beta_SE give SE values that are very large resulting in incorrect CI plots. This is the same method used by Reliasoft
+            hessian_matrix_for_gamma = hessian(Fit_Loglogistic_3P.LL)(np.array(tuple(params)), np.array(tuple(failures)), np.array(tuple(right_censored)))
+            covariance_matrix_for_gamma = np.linalg.inv(hessian_matrix_for_gamma)
+            self.alpha_SE = abs(covariance_matrix[0][0]) ** 0.5
+            self.beta_SE = abs(covariance_matrix[1][1]) ** 0.5
+            self.gamma_SE = abs(covariance_matrix_for_gamma[2][2]) ** 0.5
+            self.Cov_alpha_beta = abs(covariance_matrix[0][1])
+            self.alpha_upper = self.alpha * (np.exp(Z * (self.alpha_SE / self.alpha)))
+            self.alpha_lower = self.alpha * (np.exp(-Z * (self.alpha_SE / self.alpha)))
+            self.beta_upper = self.beta * (np.exp(Z * (self.beta_SE / self.beta)))
+            self.beta_lower = self.beta * (np.exp(-Z * (self.beta_SE / self.beta)))
+            self.gamma_upper = self.gamma * (np.exp(Z * (self.gamma_SE / self.gamma)))  # here we assume gamma can only be positive as there are bounds placed on it in the optimizer. Minitab assumes positive or negative so bounds are different
+            self.gamma_lower = self.gamma * (np.exp(-Z * (self.gamma_SE / self.gamma)))
+
+        Data = {'Parameter': ['Alpha', 'Beta', 'Gamma'],
+                'Point Estimate': [self.alpha, self.beta, self.gamma],
+                'Standard Error': [self.alpha_SE, self.beta_SE, self.gamma_SE],
+                'Lower CI': [self.alpha_lower, self.beta_lower, self.gamma_lower],
+                'Upper CI': [self.alpha_upper, self.beta_upper, self.gamma_upper]}
+        df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
+        self.results = df.set_index('Parameter')
+        self.distribution = Loglogistic_Distribution(alpha=self.alpha, beta=self.beta, gamma=self.gamma, alpha_SE=self.alpha_SE, beta_SE=self.beta_SE, Cov_alpha_beta=self.Cov_alpha_beta, CI=CI, CI_type=CI_type)
+
+        if print_results is True:
+            pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
+            pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
+            if CI * 100 % 1 == 0:
+                CI_rounded = int(CI * 100)
+            else:
+                CI_rounded = CI * 100
+            print(str('Results from Fit_Loglogistic_3P (' + str(CI_rounded) + '% CI):'))
+            print(self.results)
+            print('Log-Likelihood:', self.loglik, '\n')
+
+        if show_probability_plot is True:
+            pass
+            from reliability.Probability_plotting import Loglogistic_probability_plot
+            if len(right_censored) == 0:
+                rc = None
+            else:
+                rc = right_censored
+            fig = Loglogistic_probability_plot(failures=failures, right_censored=rc, __fitted_dist_params=self, CI=CI, CI_type=CI_type, **kwargs)
+            if self.gamma < 0.01:
+                # manually change the legend to reflect that Loglogistic_3P was fitted. The default legend in the probability plot thinks Loglogistic_2P was fitted when gamma=0
+                fig.axes[0].legend_.get_texts()[0].set_text(str('Fitted Loglogistic_3P\n(α=' + str(round_to_decimals(self.alpha, dec)) + ', β=' + str(round_to_decimals(self.beta, dec)) + ', γ=' + str(round_to_decimals(self.gamma, dec)) + ')'))
+
+    @staticmethod
+    def logf(t, a, b, g):  # Log PDF (3 parameter Loglogistic)
+        return anp.log(b / a) - (b + 1) * anp.log((t - g) / a) - 2 * anp.log(1 + ((t - g) / a) ** -b)
+
+    @staticmethod
+    def logR(t, a, b, g):  # Log SF (3 parameter Loglogistic)
+        return -anp.log((1 + ((t - g) / a) ** b))
+
+    @staticmethod
+    def LL(params, T_f, T_rc):  # log likelihood function (3 parameter Loglogistic)
+        LL_f = 0
+        LL_rc = 0
+        LL_f += Fit_Loglogistic_3P.logf(T_f, params[0], params[1], params[2]).sum()  # failure times
+        LL_rc += Fit_Loglogistic_3P.logR(T_rc, params[0], params[1], params[2]).sum()  # right censored times
         return -(LL_f + LL_rc)

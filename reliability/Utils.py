@@ -1,20 +1,29 @@
 '''
-Other Functions
+Utils (utilities)
 
 This is a collection of utilities that are used throughout the python reliability library.
-Functions have been placed here as to declutter the dropdown lists of your IDE.
+Functions have been placed here as to declutter the dropdown lists of your IDE and to provide a common resource across multiple modules.
 It is not expected that users will be using any utils directly.
 
 Included functions are:
 round_to_decimals - applies different rounding rules to numbers above and below 1 so that small numbers do not get rounded to 0.
 transform_spaced - Creates linearly spaced array (in transform space) based on a specified transform. This is like np.logspace but it can make an array that is weibull spaced, normal spaced, etc.
 axes_transforms - Custom scale functions used in Probability_plotting
+fill_no_autoscale - creates a shaded region without adding it to the global list of objects to consider when autoscale is calculated
+line_no_autoscale - creates a line without adding it to the global list of objects to consider when autoscale is calculated
+get_axes_limits - gets the current axes limits
+restore_axes_limits - restores the axes limits based on values from get_axes_limits()
+generate_X_array - generates the X values for all distributions
+zeroise_below_gamma - sets all y values to zero when x < gamma. Used when the HF and CHF equations are specified
+probability_plot_xylims - sets the x and y limits on probability plots
+probability_plot_xyticks - sets the x and y ticks on probability plots
 '''
 
 import numpy as np
 import scipy.stats as ss
 import matplotlib.pyplot as plt
 from matplotlib.collections import PolyCollection, LineCollection
+from matplotlib import ticker
 
 
 def round_to_decimals(number, decimals=5, integer_floats_to_ints=True):
@@ -135,6 +144,14 @@ class axes_transforms:
     @staticmethod
     def weibull_inverse(R):
         return 1 - np.exp(-np.exp(R))
+
+    @staticmethod
+    def loglogistic_forward(F):
+        return np.log(1 / (1 - F) - 1)
+
+    @staticmethod
+    def loglogistic_inverse(R):
+        return 1 - 1 / (np.exp(R) + 1)
 
     @staticmethod
     def expon_forward(F):
@@ -454,3 +471,93 @@ def zeroise_below_gamma(X, Y, gamma):
         else:
             Y[0:(np.where(X > gamma)[0][0])] = 0  # zeroize below X=gamma
     return Y
+
+
+def probability_plot_xylims(x, y, dist, spacing=0.1, gamma_beta=None, beta_alpha=None, beta_beta=None):
+    '''
+    finds the x and y limits of probability plots.
+    This function is called by probability_plotting
+    '''
+    # x limits
+    if dist in ['weibull', 'lognormal', 'loglogistic']:
+        min_x_log = np.log10(min(x))
+        max_x_log = np.log10(max(x))
+        dx_log = max_x_log - min_x_log
+        xlim_lower = 10 ** (min_x_log - dx_log * spacing)
+        xlim_upper = 10 ** (max_x_log + dx_log * spacing)
+    elif dist in ['normal', 'gamma', 'exponential', 'beta']:
+        min_x = min(x)
+        max_x = max(x)
+        dx = max_x - min_x
+        xlim_lower = min_x - dx * spacing
+        xlim_upper = max_x + dx * spacing
+    else:
+        raise ValueError('dist is unrecognised')
+    if xlim_lower < 0 and dist != 'normal':
+        xlim_lower = 0
+    plt.xlim(xlim_lower, xlim_upper)
+
+    # y limits
+    if dist == 'weibull':
+        min_y_tfm = axes_transforms.weibull_forward(min(y))
+        max_y_tfm = axes_transforms.weibull_forward(max(y))
+        dy_tfm = max_y_tfm - min_y_tfm
+        ylim_lower = axes_transforms.weibull_inverse(min_y_tfm - dy_tfm * spacing)
+        ylim_upper = axes_transforms.weibull_inverse(max_y_tfm + dy_tfm * spacing)
+    if dist == 'exponential':
+        min_y_tfm = axes_transforms.expon_forward(min(y))
+        max_y_tfm = axes_transforms.expon_forward(max(y))
+        dy_tfm = max_y_tfm - min_y_tfm
+        ylim_lower = axes_transforms.expon_inverse(min_y_tfm - dy_tfm * spacing)
+        ylim_upper = axes_transforms.expon_inverse(max_y_tfm + dy_tfm * spacing)
+    elif dist == 'gamma':
+        min_y_tfm = axes_transforms.gamma_forward(min(y), gamma_beta)
+        max_y_tfm = axes_transforms.gamma_forward(max(y), gamma_beta)
+        dy_tfm = max_y_tfm - min_y_tfm
+        ylim_lower = axes_transforms.gamma_inverse(min_y_tfm - dy_tfm * spacing, gamma_beta)
+        ylim_upper = axes_transforms.gamma_inverse(max_y_tfm + dy_tfm * spacing, gamma_beta)
+    elif dist in ['normal', 'lognormal']:
+        min_y_tfm = axes_transforms.normal_forward(min(y))
+        max_y_tfm = axes_transforms.normal_forward(max(y))
+        dy_tfm = max_y_tfm - min_y_tfm
+        ylim_lower = axes_transforms.normal_inverse(min_y_tfm - dy_tfm * spacing)
+        ylim_upper = axes_transforms.normal_inverse(max_y_tfm + dy_tfm * spacing)
+    elif dist == 'beta':
+        min_y_tfm = axes_transforms.beta_forward(min(y), beta_alpha, beta_beta)
+        max_y_tfm = axes_transforms.beta_forward(max(y), beta_alpha, beta_beta)
+        dy_tfm = max_y_tfm - min_y_tfm
+        ylim_lower = axes_transforms.beta_inverse(min_y_tfm - dy_tfm * spacing, beta_alpha, beta_beta)
+        ylim_upper = axes_transforms.beta_inverse(max_y_tfm + dy_tfm * spacing, beta_alpha, beta_beta)
+    elif dist == 'loglogistic':
+        min_y_tfm = axes_transforms.loglogistic_forward(min(y))
+        max_y_tfm = axes_transforms.loglogistic_forward(max(y))
+        dy_tfm = max_y_tfm - min_y_tfm
+        ylim_lower = axes_transforms.loglogistic_inverse(min_y_tfm - dy_tfm * spacing)
+        ylim_upper = axes_transforms.loglogistic_inverse(max_y_tfm + dy_tfm * spacing)
+    plt.ylim(ylim_lower, ylim_upper)
+
+
+def probability_plot_xyticks():
+    '''
+    sets the x and y ticks for probability plots
+    '''
+    ax = plt.gca()
+    ################# xticks
+    xlower, xupper = plt.xlim()
+    xlower, xupper = abs(xlower), abs(xupper)
+    if xlower > xupper:
+        xlower, xupper = xupper, xlower
+
+    if xlower > 10 ** -3 and xupper < 10 ** 6 and np.log10(xupper) - np.log10(xlower) < 3:
+        loc_x = ticker.MaxNLocator(nbins=10, steps=[1, 2, 5, 10])
+        ax.xaxis.set_major_locator(loc_x)  # sets the tick spacing
+        ax.xaxis.set_major_formatter(ticker.ScalarFormatter(useOffset=False))  # changes logformatter to scalarformatter for xaxis. This is required for the next line to work.
+        ax.ticklabel_format(axis='x', style='plain')  # removes scientific notation for xaxis
+    else:
+        loc_x = ticker.LogLocator(numticks=5)
+        ax.xaxis.set_major_locator(loc_x)  # sets the tick spacing
+
+    ################# yticks
+    loc_y = ticker.MaxNLocator(nbins=20, steps=[1, 2, 5, 10])
+    ax.yaxis.set_major_locator(loc_y)  # sets the tick spacing
+    ax.yaxis.set_major_formatter(ticker.PercentFormatter(1))  # sets the format to percentage

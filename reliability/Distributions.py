@@ -668,7 +668,7 @@ class Weibull_Distribution:
         :param q: quantile to be calculated
         :return: the probability (area under the curve) that a random variable from the distribution is < q
         '''
-        if type(q) == int or type(q) == float:
+        if type(q) == int or type(q) == float or type(q) == np.float64:
             if q < 0 or q > 1:
                 raise ValueError('Quantile must be between 0 and 1')
         elif type(q) == np.ndarray or type(q) == list:
@@ -1076,7 +1076,7 @@ class Normal_Distribution:
         :param q: quantile to be calculated
         :return: the probability (area under the curve) that a random variable from the distribution is < q
         '''
-        if type(q) == int or type(q) == float:
+        if type(q) == int or type(q) == float or type(q) == np.float64:
             if q < 0 or q > 1:
                 raise ValueError('Quantile must be between 0 and 1')
         elif type(q) == np.ndarray or type(q) == list:
@@ -1490,7 +1490,7 @@ class Lognormal_Distribution:
         :param q: quantile to be calculated
         :return: the probability (area under the curve) that a random variable from the distribution is < q
         '''
-        if type(q) == int or type(q) == float:
+        if type(q) == int or type(q) == float or type(q) == np.float64:
             if q < 0 or q > 1:
                 raise ValueError('Quantile must be between 0 and 1')
         elif type(q) == np.ndarray or type(q) == list:
@@ -2055,7 +2055,7 @@ class Exponential_Distribution:
         :param q: quantile to be calculated
         :return: the probability (area under the curve) that a random variable from the distribution is < q
         '''
-        if type(q) == int or type(q) == float:
+        if type(q) == int or type(q) == float or type(q) == np.float64:
             if q < 0 or q > 1:
                 raise ValueError('Quantile must be between 0 and 1')
         elif type(q) == np.ndarray or type(q) == list:
@@ -2475,7 +2475,7 @@ class Gamma_Distribution:
         :param q: quantile to be calculated
         :return: the probability (area under the curve) that a random variable from the distribution is < q
         '''
-        if type(q) == int or type(q) == float:
+        if type(q) == int or type(q) == float or type(q) == np.float64:
             if q < 0 or q > 1:
                 raise ValueError('Quantile must be between 0 and 1')
         elif type(q) == np.ndarray or type(q) == list:
@@ -2890,7 +2890,7 @@ class Beta_Distribution:
         :param q: quantile to be calculated
         :return: the probability (area under the curve) that a random variable from the distribution is < q
         '''
-        if type(q) == int or type(q) == float:
+        if type(q) == int or type(q) == float or type(q) == np.float64:
             if q < 0 or q > 1:
                 raise ValueError('Quantile must be between 0 and 1')
         elif type(q) == np.ndarray or type(q) == list:
@@ -3448,7 +3448,7 @@ class Loglogistic_Distribution:
         :param q: quantile to be calculated
         :return: the probability (area under the curve) that a random variable from the distribution is < q
         '''
-        if type(q) == int or type(q) == float:
+        if type(q) == int or type(q) == float or type(q) == np.float64:
             if q < 0 or q > 1:
                 raise ValueError('Quantile must be between 0 and 1')
         elif type(q) == np.ndarray or type(q) == list:
@@ -3920,7 +3920,7 @@ class Competing_Risks_Model:
         :param q: quantile to be calculated
         :return: the probability (area under the curve) that a random variable from the distribution is < q
         '''
-        if type(q) == int or type(q) == float:
+        if type(q) == int or type(q) == float or type(q) == np.float64:
             if q < 0 or q > 1:
                 raise ValueError('Quantile must be between 0 and 1')
         elif type(q) == np.ndarray or type(q) == list:
@@ -4410,7 +4410,7 @@ class Mixture_Model:
         :param q: quantile to be calculated
         :return: the probability (area under the curve) that a random variable from the distribution is < q
         '''
-        if type(q) == int or type(q) == float:
+        if type(q) == int or type(q) == float or type(q) == np.float64:
             if q < 0 or q > 1:
                 raise ValueError('Quantile must be between 0 and 1')
         elif type(q) == np.ndarray or type(q) == list:

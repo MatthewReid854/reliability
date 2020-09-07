@@ -31,10 +31,10 @@ class similar_distributions:
 
     Inputs:
     distribution - a distribution object created using the reliability.Distributions module
-    include_location_shifted - True/False. Default is True. When set to True it will include Weibull_3P, Lognormal_3P, Gamma_3P, Expon_2P
+    include_location_shifted - True/False. Default is True. When set to True it will include Weibull_3P, Lognormal_3P, Gamma_3P, Expon_2P, Loglogistic_3P
     show_plot - True/False. Default is True
     print_results - True/False. Default is True
-    number_of_distributions_to_show - the number of similar distributions to show. Default is 3. If the number specified exceeds the number available (typically 8), then the number specified will automatically be reduced.
+    number_of_distributions_to_show - the number of similar distributions to show. Default is 3. If the number specified exceeds the number available (typically 10), then the number specified will automatically be reduced.
 
     Outputs:
     results - an array of distributions objects ranked in order of best fit.
@@ -49,7 +49,7 @@ class similar_distributions:
 
     def __init__(self, distribution, include_location_shifted=True, show_plot=True, print_results=True, number_of_distributions_to_show=3):
         # ensure the input is a distribution object
-        if type(distribution) not in [Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution]:
+        if type(distribution) not in [Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution, Loglogistic_Distribution]:
             raise ValueError('distribution must be a probability distribution object from the reliability.Distributions module. First define the distribution using Reliability.Distributions.___')
 
         # sample the CDF from 0.001 to 0.999. These samples will be used to fit all other distributions.
@@ -92,6 +92,9 @@ class similar_distributions:
             elif dist_name == 'Beta_2P':
                 ranked_distributions_objects.append(Beta_Distribution(alpha=fitted_results.Beta_2P_alpha, beta=fitted_results.Beta_2P_beta))
                 ranked_distributions_labels.append(str('Beta_2P (α=' + str(round(fitted_results.Beta_2P_alpha, sigfig)) + ',β=' + str(round(fitted_results.Beta_2P_beta, sigfig)) + ')'))
+            elif dist_name == 'Loglogistic_2P':
+                ranked_distributions_objects.append(Loglogistic_Distribution(alpha=fitted_results.Loglogistic_2P_alpha, beta=fitted_results.Loglogistic_2P_beta))
+                ranked_distributions_labels.append(str('Loglogistic_2P (α=' + str(round(fitted_results.Loglogistic_2P_alpha, sigfig)) + ',β=' + str(round(fitted_results.Loglogistic_2P_beta, sigfig)) + ')'))
 
             if include_location_shifted is True:
                 if dist_name == 'Weibull_3P':
@@ -106,6 +109,9 @@ class similar_distributions:
                 elif dist_name == 'Exponential_2P':
                     ranked_distributions_objects.append(Exponential_Distribution(Lambda=fitted_results.Expon_1P_lambda, gamma=fitted_results.Expon_2P_gamma))
                     ranked_distributions_labels.append(str('Exponential_1P (lambda=' + str(round(fitted_results.Expon_1P_lambda, sigfig)) + ',γ=' + str(round(fitted_results.Expon_2P_gamma, sigfig)) + ')'))
+                elif dist_name == 'Loglogistic_3P':
+                    ranked_distributions_objects.append(Loglogistic_Distribution(alpha=fitted_results.Loglogistic_3P_alpha, beta=fitted_results.Loglogistic_3P_beta, gamma=fitted_results.Loglogistic_3P_gamma))
+                    ranked_distributions_labels.append(str('Loglogistic_3P (α=' + str(round(fitted_results.Loglogistic_3P_alpha, sigfig)) + ',β=' + str(round(fitted_results.Loglogistic_3P_beta, sigfig)) + ',γ=' + str(round(fitted_results.Loglogistic_3P_gamma, sigfig)) + ')'))
 
         number_of_distributions_fitted = len(ranked_distributions_objects)
         self.results = ranked_distributions_objects
