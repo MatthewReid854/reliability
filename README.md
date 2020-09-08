@@ -10,7 +10,7 @@
 [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/MatthewReid854/reliability/blob/master/notebooks/Intro2.ipynb)
 [![DOI](https://zenodo.org/badge/198305660.svg)](https://zenodo.org/badge/latestdoi/198305660)
 [![Donate](https://img.shields.io/badge/Donate-$%20€%20¥%20£-blueviolet.svg?logo=PayPal&logoColor=white)](https://reliability.readthedocs.io/en/latest/How%20to%20donate%20to%20the%20project.html)
-[![Test](https://img.shields.io/badge/test-blueviolet.svg?logoSvg=https://en.wikipedia.org/wiki/GNU_Lesser_General_Public_License#/media/File:LGPLv3_Logo.svg&logoColor=white)](https://reliability.readthedocs.io/en/latest/How%20to%20donate%20to%20the%20project.html)
+[![Test](https://img.shields.io/badge/test-blueviolet.svg?logoSvg=https://en.wikipedia.org/wiki/GNU_Lesser_General_Public_License#/media/File:LGPLv3_Logo&logoColor=white)](https://reliability.readthedocs.io/en/latest/How%20to%20donate%20to%20the%20project.html)
 
 
 
