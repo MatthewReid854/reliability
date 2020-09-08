@@ -89,4 +89,4 @@ The following example shows how to import a dataset and use it. Note that we mus
     Log-Likelihood: -128.98350896528038
     '''
 
-If you have an interesting dataset, please email me (m.reid854@gmail.com) and I may include it in this database.
+If you have an interesting dataset, please email me (alpha.reliability@gmail.com) and I may include it in this database.
