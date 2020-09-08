@@ -126,7 +126,7 @@ Contents:
     :scale: 100%
     :target: https://reliability.readthedocs.io/en/latest/
 
-.. |build| image:: https://img.shields.io/travis/MatthewReid854/reliability/master?logo=travis%20ci&logoColor=white&label=Travis%20CI
+.. |build| image:: https://img.shields.io/travis/MatthewReid854/reliability/master?logo=travis&label=Travis%20CI
     :alt: build
     :scale: 100%
     :target: https://travis-ci.com/github/MatthewReid854/reliability
@@ -146,7 +146,7 @@ Contents:
     :scale: 100%
     :target: https://pypistats.org/packages/reliability
 
-.. |license| image:: https://img.shields.io/badge/License-LGPLv3-blue.svg
+.. |license| image:: https://img.shields.io/badge/License-LGPLv3-blue.svg?logo=GNU
     :alt: license
     :scale: 100%
     :target: https://www.gnu.org/licenses/lgpl-3.0.txt
@@ -161,7 +161,7 @@ Contents:
     :scale: 100%
     :target: https://zenodo.org/badge/latestdoi/198305660
 
-.. |donate| image:: https://img.shields.io/badge/Donate-$%20€%20¥%20£-blueviolet.svg?logo=PayPal&logoColor=white
+.. |donate| image:: https://img.shields.io/badge/Donate-$%20€%20¥%20£-blueviolet.svg?logo=paypal
     :alt: donate
     :scale: 100%
     :target: https://reliability.readthedocs.io/en/latest/How%20to%20donate%20to%20the%20project.html
