@@ -1643,7 +1643,7 @@ class Exponential_Distribution:
             self.Z = None
         for item in kwargs.keys():
             print('WARNING:', item, 'not recognised as an appropriate entry in kwargs. Appropriate entries are Lambda_SE and CI')
-        self._pdf0 = pdf = ss.expon.pdf(0, scale=1 / self.Lambda, loc=0)  # the pdf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array.
+        self._pdf0 = ss.expon.pdf(0, scale=1 / self.Lambda, loc=0)  # the pdf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array.
         self._hf0 = self.Lambda  # the hf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
 
     def plot(self, xvals=None, xmin=None, xmax=None):
