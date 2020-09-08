@@ -11,10 +11,14 @@ Changelog
 **New features**
 
 -    Implemented Loglogistic_Distribution
--    Implemented Fit_Loglogistic_2P
--    Added the function Reliability_testing.reliability_test_duration
+-    Implemented Fit_Loglogistic_2P and Fit_Loglogistic_3P
+-    Implemented Loglogistic_probability_plot
 -    Added Fit_Loglogistic_2P to Fitters.Fit_Everything
--    Added distribution_explorer to Other_functions
+-    Added Loglogistic distribution to Other_functions.similar_distributions
+-    Added Loglogistic distribution to Stress_strength.probability_of_failure
+-    Added the function Reliability_testing.reliability_test_duration
+-    Added the function Other_functions.distribution_explorer
+-    Added Utils.probability_plot_xylims and Utils.probability_plot_xyticks which provide better axes limits and tick labels. These are now incorporated into all probability plots, ALT probability plots and ALT Fitters.
 
 **API Changes**
 
@@ -24,6 +28,7 @@ Changelog
 
 -    Fixed autoscale for cases where the HF is constant so it no longer lies along the yaxis upper limit
 -    Fit_Everything had a bug in the default xvals for the Beta_Distribution's histogram which caused an error in some special cases. This is now resolved.
+-    All the quantile functions in each distribution didn't accept np.float64 and raised an error. They now accept this data type.
 
 **Other**
 
