@@ -23,7 +23,7 @@ If you would like to use another referencing style, the details you may need are
 
 Note that the version number is constantly changing so please check `PyPI <https://pypi.org/project/reliability/>`_ for the current version.
 
-If you have used ``reliability`` in any published academic work, I would love to hear about it (m.reid854@gmail.com). Depending on the usage, I may provide a link to your work below.
+If you have used ``reliability`` in any published academic work, I would love to hear about it (alpha.reliability@gmail.com). Depending on the usage, I may provide a link to your work below.
 
 **Links to articles and papers that have used the Python reliability library:**
 
