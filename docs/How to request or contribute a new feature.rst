@@ -5,7 +5,7 @@
 How to request or contribute a new feature
 ''''''''''''''''''''''''''''''''''''''''''
 
-If you would like to see something added or an existing feature changed to make it better, please send me an email (m.reid854@gmail.com) and from there we can put together a plan on how to proceed. I greatly appreciate all help, even if it is just pointing out an error in the code or documentation. There are a large number of features currently identified for inclusion into this library so if you would like to contribute something but don't know what to help with, please email me and we can discuss the functions that are currently planned for development.
+If you would like to see something added or an existing feature changed to make it better, please send me an email (alpha.reliability@gmail.com) and from there we can put together a plan on how to proceed. I greatly appreciate all help, even if it is just pointing out an error in the code or documentation. There are a large number of features currently identified for inclusion into this library so if you would like to contribute something but don't know what to help with, please email me and we can discuss the functions that are currently planned for development.
 
 If you are requesting something new, it is helpful to include as much detail as possible, such as:
 
