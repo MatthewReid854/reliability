@@ -39,4 +39,4 @@ pip install reliability
 ```
 ## Documentation
 Check out [readthedocs](https://reliability.readthedocs.io/en/latest/) for detailed documentation and examples.
-If you find any errors, have any suggestions, or would like to request that something be added, please email me: m.reid854@gmail.com.
+If you find any errors, have any suggestions, or would like to request that something be added, please email me: alpha.reliability@gmail.com.
