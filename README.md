@@ -33,10 +33,20 @@
 - Accelerated Life Testing Models (Exponential, Eyring, Power, Dual-Exponential, Power-Exponential).
 - Mean cumulative function for repairable systems
 
-## Installation
+## Installation and upgrading
+
+To install *reliability* for the first time, open your command prompt and type:
+
 ```
 pip install reliability
 ```
+
+To upgrade a previous installation of *reliability* to the most recent version, open your command prompt and type:
+
+```
+pip install --upgrade reliability
+```
+
 ## Documentation
 Check out [readthedocs](https://reliability.readthedocs.io/en/latest/) for detailed documentation and examples.
 If you find any errors, have any suggestions, or would like to request that something be added, please email me: alpha.reliability@gmail.com.
