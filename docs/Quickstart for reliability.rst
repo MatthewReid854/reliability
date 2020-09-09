@@ -8,14 +8,16 @@ Quickstart for reliability
 Installation and upgrading
 --------------------------
 
-You can install or upgrade *reliability* using ``pip``:
+To install *reliability* for the first time, open your command prompt and type:
 
 .. code-block:: console
 
-    :: To install for the first time, open your command prompt and type:
     pip install reliability
     
-    :: To upgrade a previous installation to the most recent version, open your command prompt and type:
+To upgrade a previous installation of *reliability* to the most recent version, open your command prompt and type:
+
+.. code-block:: console
+
     pip install --upgrade reliability
 
 A quick example
