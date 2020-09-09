@@ -14,3 +14,5 @@ from reliability import ALT_fitters
 from reliability import ALT_probability_plotting
 from reliability import PoF
 from reliability import Utils
+
+__version__ = '0.5.3' #Current version

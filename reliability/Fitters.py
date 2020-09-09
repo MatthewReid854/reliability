@@ -3517,13 +3517,12 @@ class Fit_Loglogistic_2P:
             print('Log-Likelihood:', self.loglik, '\n')
 
         if show_probability_plot is True:
-            pass
-            # from reliability.Probability_plotting import Loglogistic_probability_plot
-            # if len(right_censored) == 0:
-            #     rc = None
-            # else:
-            #     rc = right_censored
-            # Loglogistic_probability_plot(failures=failures, right_censored=rc, __fitted_dist_params=self, CI=CI, CI_type=CI_type, **kwargs)
+            from reliability.Probability_plotting import Loglogistic_probability_plot
+            if len(right_censored) == 0:
+                rc = None
+            else:
+                rc = right_censored
+            Loglogistic_probability_plot(failures=failures, right_censored=rc, __fitted_dist_params=self, CI=CI, CI_type=CI_type, **kwargs)
 
     @staticmethod
     def logf(t, a, b):  # Log PDF (2 parameter Loglogistic)
@@ -3772,7 +3771,6 @@ class Fit_Loglogistic_3P:
             print('Log-Likelihood:', self.loglik, '\n')
 
         if show_probability_plot is True:
-            pass
             from reliability.Probability_plotting import Loglogistic_probability_plot
             if len(right_censored) == 0:
                 rc = None

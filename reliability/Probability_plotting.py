@@ -25,7 +25,6 @@ plot_points - plots the failure points on a scatter plot. Useful to overlay the 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from matplotlib.ticker import FixedLocator
 from reliability.Distributions import Weibull_Distribution, Lognormal_Distribution, Normal_Distribution, Gamma_Distribution, Beta_Distribution, Exponential_Distribution, Loglogistic_Distribution
 from reliability.Nonparametric import KaplanMeier, NelsonAalen
 from reliability.Utils import axes_transforms, round_to_decimals, probability_plot_xylims, probability_plot_xyticks
@@ -221,7 +220,6 @@ def Weibull_probability_plot(failures=None, right_censored=None, fit_gamma=False
     probability_plot_xylims(x=x, y=y, dist='weibull', spacing=0.1)
     probability_plot_xyticks()
     return plt.gcf()
-
 
 
 def Loglogistic_probability_plot(failures=None, right_censored=None, fit_gamma=False, __fitted_dist_params=None, h1=None, h2=None, CI=0.95, CI_type='time', show_fitted_distribution=True, **kwargs):
