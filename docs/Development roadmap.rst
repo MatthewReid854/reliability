@@ -31,4 +31,4 @@ The following development roadmap is the current task list and implementation pl
 -    Cox Proportional Hazards Model - This is available in `Lifelines <https://lifelines.readthedocs.io/en/latest/Survival%20Regression.html#cox-s-proportional-hazard-model>`_.
 -    Add the rank adjustment method to Nonparametric. Rank adjustment is the method used in Probability plotting (eg. to obtain the Median Ranks) and is a common and useful nonparametric estimate of the CDF, SF, and CHF.
 -    Parameter Solver using GUI.
--    Speed improvements to fitters by using cython for key components.
+-    Speed improvements to fitters by using JAX to replace Autograd. This will be done once JAX can be `installed on windows <https://github.com/google/jax/issues/438>`_ machines.
