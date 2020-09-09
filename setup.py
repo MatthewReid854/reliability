@@ -2,8 +2,8 @@
 
 import setuptools
 
-with open("README.md", "r") as fh:
-    long_description = fh.read()
+with open("README.md", "r") as file:
+    long_description = file.read()
 
 setuptools.setup(
     name="reliability",
