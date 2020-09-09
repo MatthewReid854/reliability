@@ -5,14 +5,20 @@
 Quickstart for reliability
 ''''''''''''''''''''''''''
 
-Installation
-------------
+Installation and upgrading
+--------------------------
 
-Install via ``pip``:
+To install *reliability* for the first time, open your command prompt and type:
 
 .. code-block:: console
 
     pip install reliability
+    
+To upgrade a previous installation of *reliability* to the most recent version, open your command prompt and type:
+
+.. code-block:: console
+
+    pip install --upgrade reliability
 
 A quick example
 ---------------
