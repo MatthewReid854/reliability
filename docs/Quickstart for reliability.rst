@@ -12,10 +12,10 @@ You can install or upgrade *reliability* using ``pip``:
 
 .. code-block:: console
 
-    # To install for the first time, open your command prompt and type:
+    :: To install for the first time, open your command prompt and type:
     pip install reliability
     
-    # To upgrade a previous installation to the most recent version, open your command prompt and type:
+    :: To upgrade a previous installation to the most recent version, open your command prompt and type:
     pip install --upgrade reliability
 
 A quick example
