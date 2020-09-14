@@ -2,7 +2,7 @@
 
 -------------------------------------
 
-|pypi| |docs| |build| |LOC| |code quality| |downloads| |license| |colab| |DOI| |donate|
+|pypi| |docs| |build| |LOC| |downloads| |license| |colab| |DOI| |donate|
 
 *reliability* is a Python library for reliability engineering and survival analysis. It significantly extends the functionality of scipy.stats and also includes many specialist tools that are otherwise only available in proprietary software.
 
@@ -135,11 +135,6 @@ Contents:
     :alt: lines of code
     :scale: 100%
     :target: https://github.com/MatthewReid854/reliability
-
-.. |code quality| image:: https://img.shields.io/lgtm/grade/python/g/MatthewReid854/reliability.svg?logo=lgtm&logoWidth=18
-    :alt: code quality: python
-    :scale: 100%
-    :target: https://lgtm.com/projects/g/MatthewReid854/reliability/context:python
 
 .. |downloads| image:: https://img.shields.io/pypi/dm/reliability?logo=Docusign&logoColor=white&label=PyPI%20downloads
     :alt: downloads
