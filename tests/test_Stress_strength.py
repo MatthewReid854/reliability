@@ -1,8 +1,8 @@
 from reliability.Distributions import Weibull_Distribution, Lognormal_Distribution, Normal_Distribution
 from reliability.Stress_strength import Probability_of_failure, Probability_of_failure_normdist
 from numpy.testing import assert_allclose
-atol = 0
-rtol = 1e-10
+atol = 1e-8
+rtol = 1e-7
 
 def test_Probability_of_failure():
     stress = Weibull_Distribution(alpha=40, beta=4)

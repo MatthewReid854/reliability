@@ -1,8 +1,8 @@
 from reliability.Distributions import Normal_Distribution, Weibull_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution, Loglogistic_Distribution
 from numpy.testing import assert_allclose
 
-atol = 0
-rtol = 1e-10
+atol = 1e-8
+rtol = 1e-7
 
 
 def test_Weibull_Distribution():

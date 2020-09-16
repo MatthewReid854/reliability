@@ -2,8 +2,8 @@ from reliability.Fitters import Fit_Weibull_2P, Fit_Weibull_3P, Fit_Gamma_2P, Fi
 from reliability.Distributions import Weibull_Distribution, Gamma_Distribution, Lognormal_Distribution, Loglogistic_Distribution, Normal_Distribution, Exponential_Distribution, Beta_Distribution
 from reliability.Other_functions import make_right_censored_data
 from numpy.testing import assert_allclose
-atol = 0
-rtol = 1e-10
+atol = 1e-8
+rtol = 1e-7
 
 def test_Fit_Weibull_2P():
     dist = Weibull_Distribution(alpha=50, beta=2)
