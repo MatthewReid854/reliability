@@ -156,7 +156,7 @@ Contents:
     :scale: 100%
     :target: https://colab.research.google.com/github/MatthewReid854/reliability/blob/master/notebooks/Intro2.ipynb
 
-.. |DOI| image:: https://zenodo.org/badge/198305660.svg
+.. |DOI| image:: https://img.shields.io/badge/DOI-10.5281/zenodo.3938000-blue.svg?logo=Buffer&logoColor=white
     :alt: DOI
     :scale: 100%
     :target: https://zenodo.org/badge/latestdoi/198305660
