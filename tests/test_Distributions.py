@@ -1,8 +1,6 @@
 from reliability.Distributions import Normal_Distribution, Weibull_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution, Loglogistic_Distribution
 from numpy.testing import assert_allclose
-
 tolerance = 1e-10
-
 
 def test_Weibull_Distribution():
     dist = Weibull_Distribution(alpha=5, beta=2, gamma=10)

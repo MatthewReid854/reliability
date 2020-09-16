@@ -2551,9 +2551,9 @@ class Fit_Lognormal_2P:
             self.mu_SE = abs(covariance_matrix[0][0]) ** 0.5
             self.sigma_SE = abs(covariance_matrix[1][1]) ** 0.5
             self.Cov_mu_sigma = abs(covariance_matrix[0][1])
-            self.mu_upper = self.mu + (Z * self.mu_SE)  # these are unique to normal and lognormal mu params
+            self.mu_upper = self.mu + (Z * self.mu_SE)  # mu is positive or negative
             self.mu_lower = self.mu + (-Z * self.mu_SE)
-            self.sigma_upper = self.sigma * (np.exp(Z * (self.sigma_SE / self.sigma)))
+            self.sigma_upper = self.sigma * (np.exp(Z * (self.sigma_SE / self.sigma))) #sigma is strictly positive
             self.sigma_lower = self.sigma * (np.exp(-Z * (self.sigma_SE / self.sigma)))
         else:
             hessian_matrix = hessian(Fit_Lognormal_2P.LL_fs)(np.array(tuple([self.mu])), np.array(tuple(failures)), np.array(tuple(right_censored)), np.array(tuple([force_sigma])))
@@ -2561,7 +2561,7 @@ class Fit_Lognormal_2P:
             self.mu_SE = abs(covariance_matrix[0][0]) ** 0.5
             self.sigma_SE = ''
             self.Cov_mu_sigma = ''
-            self.mu_upper = self.mu + (Z * self.mu_SE)  # these are unique to normal and lognormal mu params
+            self.mu_upper = self.mu + (Z * self.mu_SE)  # mu is positive or negative
             self.mu_lower = self.mu + (-Z * self.mu_SE)
             self.sigma_upper = ''
             self.sigma_lower = ''
@@ -2757,19 +2757,41 @@ class Fit_Lognormal_3P:
             self.AICc = 'Insufficient data'
         self.BIC = np.log(n) * k + LL2
 
-        # confidence interval estimates of parameters
-        Z = -ss.norm.ppf((1 - CI) / 2)
-        hessian_matrix = hessian(Fit_Lognormal_3P.LL)(np.array(tuple(params)), np.array(tuple(failures)), np.array(tuple(right_censored)))
-        covariance_matrix = np.linalg.inv(hessian_matrix)
-        self.mu_SE = abs(covariance_matrix[0][0]) ** 0.5
-        self.sigma_SE = abs(covariance_matrix[1][1]) ** 0.5
-        self.gamma_SE = abs(covariance_matrix[2][2]) ** 0.5
-        self.mu_upper = self.mu + (Z * self.mu_SE)  # Mu can be positive or negative.
-        self.mu_lower = self.mu + (-Z * self.mu_SE)
-        self.sigma_upper = self.sigma * (np.exp(Z * (self.sigma_SE / self.sigma)))  # sigma is strictly positive
-        self.sigma_lower = self.sigma * (np.exp(-Z * (self.sigma_SE / self.sigma)))
-        self.gamma_upper = self.gamma * (np.exp(Z * (self.gamma_SE / self.gamma)))  # here we assume gamma can only be positive as there are bounds placed on it in the optimizer. Minitab assumes positive or negative so bounds are different
-        self.gamma_lower = self.gamma * (np.exp(-Z * (self.gamma_SE / self.gamma)))
+        if self.gamma < 0.01:  # If the solver finds that gamma is very near zero then we should have used a Lognormal_2P distribution. Can't proceed with Lognormal_3P as the confidence interval calculations for gamma result in nan (Zero division error). Need to recalculate everything as the SE values will be incorrect for Lognormal_3P
+            lognormal_2P_results = Fit_Lognormal_2P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False, CI=CI)
+            self.mu = lognormal_2P_results.mu
+            self.sigma = lognormal_2P_results.sigma
+            self.gamma = 0
+            self.mu_SE = lognormal_2P_results.mu_SE
+            self.sigma_SE = lognormal_2P_results.sigma_SE
+            self.gamma_SE = 0
+            self.Cov_mu_sigma = lognormal_2P_results.Cov_mu_sigma
+            self.mu_upper = lognormal_2P_results.mu_upper
+            self.mu_lower = lognormal_2P_results.mu_lower
+            self.sigma_upper = lognormal_2P_results.sigma_upper
+            self.sigma_lower = lognormal_2P_results.sigma_lower
+            self.gamma_upper = 0
+            self.gamma_lower = 0
+        else:
+            # confidence interval estimates of parameters
+            Z = -ss.norm.ppf((1 - CI) / 2)
+            # here we need to get mu_SE and sigma_SE from the Lognormal_2P by providing an adjusted dataset (adjusted for gamma)
+            hessian_matrix = hessian(Fit_Lognormal_2P.LL)(np.array(tuple([self.mu, self.sigma])), np.array(tuple(failures - self.gamma)), np.array(tuple(right_censored - self.gamma)))
+            covariance_matrix = np.linalg.inv(hessian_matrix)
+            # this is to get the gamma_SE. Unfortunately this approach for mu_SE and sigma_SE give SE values that are very large resulting in incorrect CI plots. This is the same method used by Reliasoft
+            hessian_matrix_for_gamma = hessian(Fit_Lognormal_3P.LL)(np.array(tuple(params)), np.array(tuple(failures)), np.array(tuple(right_censored)))
+            covariance_matrix_for_gamma = np.linalg.inv(hessian_matrix_for_gamma)
+            self.mu_SE = abs(covariance_matrix[0][0]) ** 0.5
+            self.sigma_SE = abs(covariance_matrix[1][1]) ** 0.5
+            self.gamma_SE = abs(covariance_matrix_for_gamma[2][2]) ** 0.5
+            self.Cov_mu_sigma = abs(covariance_matrix[0][1])
+            self.mu_upper = self.mu + (Z * self.mu_SE) # Mu can be positive or negative.
+            self.mu_lower = self.mu + (-Z * self.mu_SE)
+            self.sigma_upper = self.sigma * (np.exp(Z * (self.sigma_SE / self.sigma))) # sigma is strictly positive
+            self.sigma_lower = self.sigma * (np.exp(-Z * (self.sigma_SE / self.sigma)))
+            self.gamma_upper = self.gamma * (np.exp(Z * (self.gamma_SE / self.gamma)))  # here we assume gamma can only be positive as there are bounds placed on it in the optimizer. Minitab assumes positive or negative so bounds are different
+            self.gamma_lower = self.gamma * (np.exp(-Z * (self.gamma_SE / self.gamma)))
+
 
         Data = {'Parameter': ['Mu', 'Sigma', 'Gamma'],
                 'Point Estimate': [self.mu, self.sigma, self.gamma],
@@ -2964,6 +2986,7 @@ class Fit_Gamma_2P:
         self.alpha_lower = self.alpha * (np.exp(-Z * (self.alpha_SE / self.alpha)))
         self.beta_upper = self.beta * (np.exp(Z * (self.beta_SE / self.beta)))
         self.beta_lower = self.beta * (np.exp(-Z * (self.beta_SE / self.beta)))
+
         Data = {'Parameter': ['Alpha', 'Beta'],
                 'Point Estimate': [self.alpha, self.beta],
                 'Standard Error': [self.alpha_SE, self.beta_SE],
@@ -3130,19 +3153,40 @@ class Fit_Gamma_3P:
             self.AICc = 'Insufficient data'
         self.BIC = np.log(n) * k + LL2
 
-        # confidence interval estimates of parameters
-        Z = -ss.norm.ppf((1 - CI) / 2)
-        hessian_matrix = hessian(Fit_Gamma_3P.LL)(np.array(tuple(params)), np.array(tuple(failures)), np.array(tuple(right_censored)))
-        covariance_matrix = np.linalg.inv(hessian_matrix)
-        self.alpha_SE = abs(covariance_matrix[0][0]) ** 0.5
-        self.beta_SE = abs(covariance_matrix[1][1]) ** 0.5
-        self.gamma_SE = abs(covariance_matrix[2][2]) ** 0.5
-        self.alpha_upper = self.alpha * (np.exp(Z * (self.alpha_SE / self.alpha)))
-        self.alpha_lower = self.alpha * (np.exp(-Z * (self.alpha_SE / self.alpha)))
-        self.beta_upper = self.beta * (np.exp(Z * (self.beta_SE / self.beta)))
-        self.beta_lower = self.beta * (np.exp(-Z * (self.beta_SE / self.beta)))
-        self.gamma_upper = self.gamma * (np.exp(Z * (self.gamma_SE / self.gamma)))  # here we assume gamma can only be positive as there are bounds placed on it in the optimizer.
-        self.gamma_lower = self.gamma * (np.exp(-Z * (self.gamma_SE / self.gamma)))
+        if self.gamma < 0.01:  # If the solver finds that gamma is very near zero then we should have used a Gamma_2P distribution. Can't proceed with Gamma_3P as the confidence interval calculations for gamma result in nan (Zero division error). Need to recalculate everything as the SE values will be incorrect for Gamma_3P
+            gamma_2P_results = Fit_Gamma_2P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False, CI=CI)
+            self.alpha = gamma_2P_results.alpha
+            self.beta = gamma_2P_results.beta
+            self.gamma = 0
+            self.alpha_SE = gamma_2P_results.alpha_SE
+            self.beta_SE = gamma_2P_results.beta_SE
+            self.gamma_SE = 0
+            self.Cov_alpha_beta = gamma_2P_results.Cov_alpha_beta
+            self.alpha_upper = gamma_2P_results.alpha_upper
+            self.alpha_lower = gamma_2P_results.alpha_lower
+            self.beta_upper = gamma_2P_results.beta_upper
+            self.beta_lower = gamma_2P_results.beta_lower
+            self.gamma_upper = 0
+            self.gamma_lower = 0
+        else:
+            # confidence interval estimates of parameters
+            Z = -ss.norm.ppf((1 - CI) / 2)
+            # here we need to get alpha_SE and beta_SE from the Weibull_2P by providing an adjusted dataset (adjusted for gamma)
+            hessian_matrix = hessian(Fit_Gamma_2P.LL)(np.array(tuple([self.alpha, self.beta])), np.array(tuple(failures - self.gamma)), np.array(tuple(right_censored - self.gamma)))
+            covariance_matrix = np.linalg.inv(hessian_matrix)
+            # this is to get the gamma_SE. Unfortunately this approach for alpha_SE and beta_SE give SE values that are very large resulting in incorrect CI plots. This is the same method used by Reliasoft
+            hessian_matrix_for_gamma = hessian(Fit_Gamma_3P.LL)(np.array(tuple(params)), np.array(tuple(failures)), np.array(tuple(right_censored)))
+            covariance_matrix_for_gamma = np.linalg.inv(hessian_matrix_for_gamma)
+            self.alpha_SE = abs(covariance_matrix[0][0]) ** 0.5
+            self.beta_SE = abs(covariance_matrix[1][1]) ** 0.5
+            self.gamma_SE = abs(covariance_matrix_for_gamma[2][2]) ** 0.5
+            self.Cov_alpha_beta = abs(covariance_matrix[0][1])
+            self.alpha_upper = self.alpha * (np.exp(Z * (self.alpha_SE / self.alpha)))
+            self.alpha_lower = self.alpha * (np.exp(-Z * (self.alpha_SE / self.alpha)))
+            self.beta_upper = self.beta * (np.exp(Z * (self.beta_SE / self.beta)))
+            self.beta_lower = self.beta * (np.exp(-Z * (self.beta_SE / self.beta)))
+            self.gamma_upper = self.gamma * (np.exp(Z * (self.gamma_SE / self.gamma)))  # here we assume gamma can only be positive as there are bounds placed on it in the optimizer. Minitab assumes positive or negative so bounds are different
+            self.gamma_lower = self.gamma * (np.exp(-Z * (self.gamma_SE / self.gamma)))
 
         Data = {'Parameter': ['Alpha', 'Beta', 'Gamma'],
                 'Point Estimate': [self.alpha, self.beta, self.gamma],
@@ -3715,7 +3759,7 @@ class Fit_Loglogistic_3P:
             self.AICc = 'Insufficient data'
         self.BIC = np.log(n) * k + LL2
 
-        if self.gamma < 0.01:  # If the solver finds that gamma is very near zero then we should have used a Loglogisticl_2P distribution. Can't proceed with Loglogistic_3P as the confidence interval calculations for gamma result in nan (Zero division error). Need to recalculate everything as the SE values will be incorrect for Loglogistic_3P
+        if self.gamma < 0.01:  # If the solver finds that gamma is very near zero then we should have used a Loglogistic_2P distribution. Can't proceed with Loglogistic_3P as the confidence interval calculations for gamma result in nan (Zero division error). Need to recalculate everything as the SE values will be incorrect for Loglogistic_3P
             loglogistic_2P_results = Fit_Loglogistic_2P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False, CI=CI)
             self.alpha = loglogistic_2P_results.alpha
             self.beta = loglogistic_2P_results.beta
