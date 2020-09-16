@@ -11,6 +11,12 @@
 [![DOI](https://zenodo.org/badge/198305660.svg)](https://zenodo.org/badge/latestdoi/198305660)
 [![Donate](https://img.shields.io/badge/Donate-$%20€%20¥%20£-blueviolet.svg?logo=paypal)](https://reliability.readthedocs.io/en/latest/How%20to%20donate%20to%20the%20project.html)
 
+[![DOI2](https://img.shields.io/badge/DOI-10.5281/zenodo.3938000-orange.svg?logo=Lbry)](https://zenodo.org/badge/latestdoi/198305660)
+[![DOI3](https://img.shields.io/badge/DOI-10.5281/zenodo.3938000-orange.svg?logo=Maas)](https://zenodo.org/badge/latestdoi/198305660)
+[![DOI4](https://img.shields.io/badge/DOI-10.5281/zenodo.3938000-orange.svg?logo=Redis)](https://zenodo.org/badge/latestdoi/198305660)
+[![DOI5](https://img.shields.io/badge/DOI-10.5281/zenodo.3938000-orange.svg?logo=Buffer)](https://zenodo.org/badge/latestdoi/198305660)
+[![DOI6](https://img.shields.io/badge/DOI-10.5281/zenodo.3938000-orange.svg?logo=Hackhands)](https://zenodo.org/badge/latestdoi/198305660)
+
 *reliability* is a Python library for reliability engineering and survival analysis. It significantly extends the functionality of scipy.stats and also includes many specialist tools that are otherwise only available in proprietary software.
 
 ![](https://github.com/MatthewReid854/reliability/blob/master/docs/images/readme_image_V2.png)
