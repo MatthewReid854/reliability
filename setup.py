@@ -22,11 +22,11 @@ setuptools.setup(
         "Programming Language :: Python :: 3"
     ],
     install_requires=["autograd>=1.3",
-                      "scipy>=1.3.2",
-                      "numpy>=1.17.1",
-                      "matplotlib>=3.1.1",
-                      "pandas>=0.23.4",
-                      "autograd-gamma>=0.4.1",
+                      "scipy>=1.5.2",
+                      "numpy>=1.19.2",
+                      "matplotlib>=3.3.2",
+                      "pandas>=1.1.2",
+                      "autograd-gamma>=0.4.2",
                       "mplcursors>=0.3"
     ],
     packages=setuptools.find_packages(exclude=["*.tests", "*.tests.*","*.notebooks", "*.notebooks.*"]),
