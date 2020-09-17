@@ -1,7 +1,4 @@
-![](https://github.com/MatthewReid854/reliability/blob/master/docs/images/logo.png)
-
 ![](https://raw.githubusercontent.com/MatthewReid854/reliability/master/docs/images/logo.png)
-
 [![PyPI version](https://img.shields.io/pypi/v/reliability?color=brightgreen&logo=Python&logoColor=white&label=PyPI%20package)](https://pypi.org/project/reliability/)
 [![Documentation Status](https://img.shields.io/readthedocs/reliability/latest.svg?logo=read%20the%20docs&logoColor=white&label=Docs&version=latest)](http://reliability.readthedocs.io/?badge=latest)
 [![Build Status](https://img.shields.io/travis/MatthewReid854/reliability/master?logo=travis&label=Travis%20CI)](https://travis-ci.com/github/MatthewReid854/reliability)
