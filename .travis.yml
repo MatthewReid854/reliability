@@ -13,6 +13,9 @@ install:
 # command to run tests
 script:
   - pytest
-#don't want email results
+# don't want email results
 notifications:
   email: false
+# run codecov
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
