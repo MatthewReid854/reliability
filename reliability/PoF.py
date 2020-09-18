@@ -194,6 +194,7 @@ def SN_diagram(stress, cycles, stress_runout=None, cycles_runout=None, xscale='l
         plt.plot(xvals, y_lower_CI, color=color, linestyle='--', alpha=0.7)
         plt.plot(xvals, y_upper_CI, color=color, linestyle='--', alpha=0.7, label='Statistical bounds (95% CI)')
     plt.legend(loc='upper right')
+    plt.subplots_adjust(top=0.9, bottom=0.135, left=0.12, right=0.93, hspace=0.2, wspace=0.2)
 
 
 class stress_strain_life_parameters_from_data:
@@ -401,7 +402,7 @@ class stress_strain_diagram:
         stress_array1 = []
         sigma = 10  # initial guess for fsolve which get updated once the first value is found
         for epsilon_1 in strain_array1:
-            fun = lambda x: ramberg_osgood(epsilon=epsilon_1, sigma=x, E=E, K=self.K, n=self.n) # lgtm [py/loop-variable-capture]
+            fun = lambda x: ramberg_osgood(epsilon=epsilon_1, sigma=x, E=E, K=self.K, n=self.n)  # lgtm [py/loop-variable-capture]
             result = fsolve(fun, np.array(sigma))
             sigma = result[0]
             stress_array1.append(sigma)
@@ -416,7 +417,7 @@ class stress_strain_diagram:
         initial_stress = stress_array1[-1]
         delta_sigma = 10  # initial guess for fsolve which get updated once the first value is found
         for delta_epsilon_2 in strain_delta_array2:
-            fun_delta = lambda x: ramberg_osgood_delta(delta_epsilon=delta_epsilon_2, delta_sigma=x, E=E, K=self.K, n=self.n) # lgtm [py/loop-variable-capture]
+            fun_delta = lambda x: ramberg_osgood_delta(delta_epsilon=delta_epsilon_2, delta_sigma=x, E=E, K=self.K, n=self.n)  # lgtm [py/loop-variable-capture]
             result2 = fsolve(fun_delta, np.array(delta_sigma))
             delta_sigma = result2[0]
             if initial_load_direction == 'tension':
@@ -434,7 +435,7 @@ class stress_strain_diagram:
         stress_array3 = []
         initial_stress = stress_array2[-1]
         for delta_epsilon_3 in strain_delta_array3:
-            fun_delta = lambda x: ramberg_osgood_delta(delta_epsilon=delta_epsilon_3, delta_sigma=x, E=E, K=self.K, n=self.n) # lgtm [py/loop-variable-capture]
+            fun_delta = lambda x: ramberg_osgood_delta(delta_epsilon=delta_epsilon_3, delta_sigma=x, E=E, K=self.K, n=self.n)  # lgtm [py/loop-variable-capture]
             result3 = fsolve(fun_delta, np.array(delta_sigma))
             delta_sigma = result3[0]
             if initial_load_direction == 'tension':
