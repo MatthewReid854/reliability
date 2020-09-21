@@ -102,6 +102,8 @@ Contents:
   Sequential sampling chart
   Reliability test planner
   Reliability test duration
+  Chi-squared test
+  Kolomogorov-Smirnov test
 
 .. toctree::
   :maxdepth: 1
