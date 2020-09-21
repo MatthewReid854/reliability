@@ -2,7 +2,7 @@
 
 -------------------------------------
 
-Kolomogorov-Smirnov test
+Kolmogorov-Smirnov test
 ''''''''''''''''''''''''
 
 .. note:: This function will be available in version 0.5.3 which is currently unreleased.
