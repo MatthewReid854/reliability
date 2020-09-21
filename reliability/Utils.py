@@ -17,6 +17,7 @@ generate_X_array - generates the X values for all distributions
 zeroise_below_gamma - sets all y values to zero when x < gamma. Used when the HF and CHF equations are specified
 probability_plot_xylims - sets the x and y limits on probability plots
 probability_plot_xyticks - sets the x and y ticks on probability plots
+anderson_darling - calculates the Anderson-Darling goodness of fit statistic
 '''
 
 import numpy as np
@@ -617,7 +618,7 @@ def probability_plot_xyticks():
                 label = str((r'$%s%s^{%d}$') % (sign, 10, exponent))
             else:
                 label = str((r'$%s%g\times%s^{%d}$') % (sign, multiplier, 10, exponent))
-        else: # numbers between 0.0001 and 10000 are formatted without scientific notation
+        else:  # numbers between 0.0001 and 10000 are formatted without scientific notation
             label = str('{0:g}'.format(value))
         return label
 
@@ -647,6 +648,27 @@ def probability_plot_xyticks():
     ################# yticks
     loc_y = ticker.MaxNLocator(nbins=20, steps=[1, 2, 5, 10])
     ax.yaxis.set_major_locator(loc_y)  # sets the tick spacing
-    ax.yaxis.set_major_formatter(ticker.PercentFormatter(xmax=1,decimals=1))  # sets the format to percentage
+    ax.yaxis.set_major_formatter(ticker.PercentFormatter(xmax=1, decimals=1))  # sets the format to percentage
 
     ax.format_coord = lambda x, y: 'x={:g}, y={:.1%}'.format(x, y)  # sets the formatting of the axes coordinates in the bottom right of the figure. Without this the FuncFormatter raw strings make it into the axes coords and don't look good.
+
+
+def anderson_darling(fitted_cdf, empirical_cdf):
+    '''
+    Calculates the Anderson-Darling goodness of fit statistic
+    These formulas are based on the method used in MINITAB which gives an adjusted form of the original AD statistic described on Wikipedia
+    '''
+    Z = np.sort(np.asarray(fitted_cdf))
+    Zi = np.hstack([Z, 1 - 1e-12])
+    Zi_1 = (np.hstack([0, Zi]))[0:-1]  # Z_i-1
+    FnZi = np.sort(np.asarray(empirical_cdf))
+    FnZi_1 = np.hstack([0, FnZi])  # Fn(Z_i-1)
+    lnZi = np.log(Zi)
+    lnZi_1 = np.hstack([0, lnZi])[0:-1]
+
+    A = -Zi - np.log(1 - Zi) + Zi_1 + np.log(1 - Zi_1)
+    B = 2 * np.log(1 - Zi) * FnZi_1 - 2 * np.log(1 - Zi_1) * FnZi_1
+    C = lnZi * FnZi_1 ** 2 - np.log(1 - Zi) * FnZi_1 ** 2 - lnZi_1 * FnZi_1 ** 2 + np.log(1 - Zi_1) * FnZi_1 ** 2
+    n = len(fitted_cdf)
+    AD = n * ((A + B + C).sum())
+    return AD

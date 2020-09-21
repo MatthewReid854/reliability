@@ -9,6 +9,7 @@ sample_size_no_failures - used to determine the sample size required for a test 
 sequential_sampling_chart - plots the accept/reject boundaries for a given set of quality and risk levels. If supplied, the test results are also plotted on the chart.
 reliability_test_planner - Finds the lower confidence bound on MTBF for a given test duration, number of failures, and specified confidence interval.
 reliability_test_duration - Finds the duration of a reliability test based on producers and consumers risk, and the MTBF design and MTBF required.
+chi2test - performs the chi-squared goodness of fit test to determine if we can accept or reject the hypothesis that data is from a distribution.
 '''
 
 import scipy.stats as ss
@@ -17,6 +18,7 @@ import numpy as np
 import pandas as pd
 import math
 import time
+from reliability.Distributions import Normal_Distribution, Weibull_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution, Loglogistic_Distribution
 
 
 def one_sample_proportion(trials=None, successes=None, CI=0.95):
@@ -441,3 +443,187 @@ def reliability_test_duration(MTBF_required, MTBF_design, consumer_risk, produce
         plt.title("Test duration vs Producer's and Consumer's Risk")
         plt.text(x=duration_solution, y=plt.ylim()[0], s=str(' Test duration\n ' + str(int(math.ceil(duration_solution)))), va='bottom')
     return duration_solution
+
+
+class chi2test:
+    '''
+    chi2test
+
+    Performs the Chi-squared goodness of fit test to determine whether we can accept or reject the hypothesis that the data is from the specified distribution at the specified level of significance.
+    This method is not a means of comparing distributions (like AICc and BIC are), but instead allows us to accept or reject a hypothesis that data come from a distribution.
+    Note that the result is sensitive to the bins. For this reason, it is recommended to leave bins as the default value.
+
+    Inputs:
+    distribution - a distribution object created using the reliability.Distributions module
+    data - an array or list of data that are hypothesised to come from the distribution
+    significance - This is the complement of confidence. 0.05 significance is the same as 95% confidence. Must be between 0 and 0.5. Default is 0.05.
+    bins - an array or list of the bin edges from which to group the data OR a string for the bin edge method from numpy. String options are auto, fd, doane, scott, stone, rice, sturges, or sqrt. For more information see the numpy documentation on numpy.histogram_bin_edge. Default is auto.
+    print_results - if True the results will be printed. Default is True
+    show_plot - if True a plot of the distribution and histogram will be shown. Default is True.
+
+    Outputs:
+    chisquared_statistic - the chi-squared statistic
+    chisquared_critical_value - the chi-squared critical value
+    hypothesis - 'ACCEPT' or 'REJECT'. If chisquared_statistic < chisquared_critical_value then we can accept the hypothesis that the data is from the specified distribution
+    bin_edges - the bin edges used. If bins is a list or array then bin_edges = bins. If bins is a string then you can find the bin_edges that were calculated using this output.
+    '''
+
+    def __init__(self, distribution, data, significance=0.05, bins=None, print_results=True, show_plot=True):
+
+        # ensure the input is a distribution object
+        if type(distribution) not in [Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution, Loglogistic_Distribution]:
+            raise ValueError('distribution must be a probability distribution object from the reliability.Distributions module. First define the distribution using Reliability.Distributions.___')
+
+        # ensure data is a list or array
+        if type(data) not in [list, np.ndarray]:
+            raise ValueError('data must be a list or array')
+        if min(data) < 0 and type(distribution) != Normal_Distribution:
+            raise ValueError('data contains values below 0 which is not appropriate when the distribution is not a Normal Distribution')
+
+        if significance <= 0 or significance > 0.5:
+            raise ValueError('significance should be between 0 and 0.5. Default is 0.05 which gives 95% confidence')
+
+        if bins == None:
+            bins = 'auto'
+        if type(bins) not in [str, list, np.ndarray]:
+            raise ValueError('bins must be a list or array of the bin edges OR a string for the bin edge method from numpy. String options are auto, fd, doane, scott, stone, rice, sturges, or sqrt. For more information see the numpy documentation on numpy.histogram_bin_edges')
+
+        observed, bin_edges = np.histogram(data, bins=bins, normed=False)  # get a histogram of the data to find the observed values
+
+        if sum(observed) != len(data):
+            print('Warning: the bins do not encompass all of the data')
+            print('data range:', min(data), 'to', max(data))
+            print('bins range:', min(bin_edges), 'to', max(bin_edges))
+            observed, bin_edges = np.histogram(data, bins='auto', normed=False)
+            print('bins has been reset to "auto".')
+            print('The new bins are:', bin_edges, '\n')
+
+        if min(bin_edges < 0) and type(distribution) != Normal_Distribution:
+            observed, bin_edges = np.histogram(data, bins='auto', normed=False)  # error will result if bins contains values below 0 for anything but the Normal Distribution
+            print('Warning: The specified bins contained values below 0. This is not appropriate when the distribution is not a Normal Distribution. bins has been reset to "auto".')
+            print('The new bins are:', bin_edges)
+
+        cdf = distribution.CDF(xvals=bin_edges, show_plot=False)
+        cdf_diff = np.diff(cdf) / sum(np.diff(cdf))  # this ensures the sum is 1
+        expected = len(data) * cdf_diff
+
+        n = len(observed)
+        parameters = distribution.parameters
+        if parameters[-1] == 0:  # if the gamma parameter is 0 then adjust the number of parameters to ignore gamma
+            k = len(parameters) - 1
+        else:
+            k = len(parameters)
+        if n - k - 1 <= 0:
+            raise ValueError(str('The length of bins is insufficient. Using a ' + str(distribution.name2) + ' distribution, the minimum acceptable length of bins is ' + str(k + 2)))
+
+        self.bin_edges = bin_edges
+        self.chisquared_statistic, _ = ss.chisquare(f_obs=observed, f_exp=expected, ddof=k)
+        self.chisquared_critical_value = ss.chi2.ppf(1 - significance, df=n - k - 1)
+        if self.chisquared_statistic < self.chisquared_critical_value:
+            self.hypothesis = 'ACCEPT'
+        else:
+            self.hypothesis = 'REJECT'
+
+        if print_results is True:
+            print('Chi-squared statistic:', self.chisquared_statistic)
+            print('Chi-squared critical value:', self.chisquared_critical_value)
+            print('At the', significance, 'significance level, we can', self.hypothesis, 'the hypothesis that the data comes from a', distribution.param_title_long)
+
+        if show_plot is True:
+            plt.figure('Chi-squared test')
+            bin_edges_to_plot = np.nan_to_num(x=bin_edges, posinf=max(data) * 1000, neginf=min(data))
+            plt.hist(x=data, bins=bin_edges_to_plot, density=True, cumulative=True, color='lightgrey', edgecolor='k', linewidth=0.5, label='Cumulative Histogram')
+            distribution.CDF(label=distribution.param_title_long)
+            plt.title('Chi-squared test\nHypothesised distribution CDF vs cumulative histogram of data')
+            xmax = max(distribution.quantile(0.9999), max(data))
+            xmin = min(distribution.quantile(0.0001), min(data))
+            if xmin > 0 and xmin / (xmax - xmin) < 0.05:  # if xmin is near zero then set it to zero
+                xmin = 0
+            plt.xlim(xmin, xmax)
+            plt.ylim(0, 1.1)
+            plt.legend()
+            plt.show()
+
+
+class KStest:
+    '''
+    KStest
+
+    Performs the Kolmogorov-Smirnov test for goodness of fit
+
+    Performs the Kolmogorov-Smirnov goodness of fit test to determine whether we can accept or reject the hypothesis that the data is from the specified distribution at the specified level of significance.
+    This method is not a means of comparing distributions (like AICc and BIC are), but instead allows us to accept or reject a hypothesis that data come from a distribution.
+
+    Inputs:
+    distribution - a distribution object created using the reliability.Distributions module
+    data - an array or list of data that are hypothesised to come from the distribution
+    significance - This is the complement of confidence. 0.05 significance is the same as 95% confidence. Must be between 0 and 0.5. Default is 0.05.
+    print_results - if True the results will be printed. Default is True
+    show_plot - if True a plot of the distribution CDF and empirical CDF will be shown. Default is True.
+
+    Outputs:
+    KS_statistic - the Kolmogorov-Smirnov statistic
+    KS_critical_value - the Kolmogorov-Smirnov critical value
+    hypothesis - 'ACCEPT' or 'REJECT'. If KS_statistic < KS_critical_value then we can accept the hypothesis that the data is from the specified distribution
+    '''
+
+    def __init__(self, distribution, data, significance=0.05, print_results=True, show_plot=True):
+
+        # ensure the input is a distribution object
+        if type(distribution) not in [Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution, Loglogistic_Distribution]:
+            raise ValueError('distribution must be a probability distribution object from the reliability.Distributions module. First define the distribution using Reliability.Distributions.___')
+
+        if min(data) < 0 and type(distribution) != Normal_Distribution:
+            raise ValueError('data contains values below 0 which is not appropriate when the distribution is not a Normal Distribution')
+
+        if significance <= 0 or significance > 0.5:
+            raise ValueError('significance should be between 0 and 0.5. Default is 0.05 which gives 95% confidence')
+
+        # need to sort data to ensure it is ascending
+        if type(data) is list:
+            data = np.sort(np.array(data))
+        elif type(data) is np.ndarray:
+            data = np.sort(data)
+        else:
+            raise ValueError('data must be an array or list')
+
+        n = len(data)
+        fitted_cdf = distribution.CDF(xvals=data, show_plot=False)
+
+        i_array = np.arange(1, n + 1)  # array of 1 to n
+        Sn = i_array / n  # empirical cdf 1
+        Sn_1 = (i_array - 1) / n  # empirical cdf 2
+        self.KS_statistic = max(np.hstack([abs(fitted_cdf - Sn), abs(fitted_cdf - Sn_1)]))  # Kolmogorov-Smirnov test statistic
+        self.KS_critical_value = ss.kstwo.ppf(q=1 - significance, n=n)
+
+        if self.KS_statistic < self.KS_critical_value:
+            self.hypothesis = 'ACCEPT'
+        else:
+            self.hypothesis = 'REJECT'
+
+        if print_results is True:
+            print('Kolmogorov-Smirnov statistic:', self.KS_statistic)
+            print('Kolmogorov-Smirnov critical value:', self.KS_critical_value)
+            print('At the', significance, 'significance level, we can', self.hypothesis, 'the hypothesis that the data comes from a', distribution.param_title_long)
+
+        if show_plot is True:
+            plt.figure('Kolmogorov-Smirnov test')
+            Sn_all = np.hstack([Sn_1, 1])
+            SN_plot_x = [0]
+            SN_plot_y = [0]
+            for idx in np.arange(n):  # build the step plot
+                SN_plot_x.extend((data[idx], data[idx]))
+                SN_plot_y.extend((Sn_all[idx], Sn_all[idx + 1]))
+            SN_plot_x.append(max(data) * 1000)
+            SN_plot_y.append(1)
+            distribution.CDF(label=distribution.param_title_long)
+            plt.plot(SN_plot_x, SN_plot_y, label='Empirical CDF')
+            xmax = max(distribution.quantile(0.9999), max(data))
+            xmin = min(distribution.quantile(0.0001), min(data))
+            if xmin > 0 and xmin / (xmax - xmin) < 0.05:  # if xmin is near zero then set it to zero
+                xmin = 0
+            plt.xlim(xmin, xmax)
+            plt.ylim(0, 1.1)
+            plt.title('Kolmogorov-Smirnov test\nHypothesised distribution CDF vs empirical CDF of data')
+            plt.legend()
+            plt.show()

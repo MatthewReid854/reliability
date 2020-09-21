@@ -289,7 +289,7 @@ class Weibull_Distribution:
             plt.ylabel('Probability density')
             text_title = str('Weibull Distribution\n' + ' Probability Density Function ' + '\n' + self.param_title)
             plt.title(text_title)
-            plt.subplots_adjust(top=0.87)
+            plt.subplots_adjust(top=0.86)
 
             restore_axes_limits(limits, dist=self, func='PDF', X=X, Y=pdf, xvals=xvals, xmin=xmin, xmax=xmax)
 
@@ -341,7 +341,7 @@ class Weibull_Distribution:
             plt.ylabel('Fraction failing')
             text_title = str('Weibull Distribution\n' + ' Cumulative Distribution Function ' + '\n' + self.param_title)
             plt.title(text_title)
-            plt.subplots_adjust(top=0.87)
+            plt.subplots_adjust(top=0.86)
 
             restore_axes_limits(limits, dist=self, func='CDF', X=X, Y=cdf, xvals=xvals, xmin=xmin, xmax=xmax)
 
@@ -394,7 +394,7 @@ class Weibull_Distribution:
             plt.ylabel('Fraction surviving')
             text_title = str('Weibull Distribution\n' + ' Survival Function ' + '\n' + self.param_title)
             plt.title(text_title)
-            plt.subplots_adjust(top=0.87)
+            plt.subplots_adjust(top=0.86)
 
             restore_axes_limits(limits, dist=self, func='SF', X=X, Y=sf, xvals=xvals, xmin=xmin, xmax=xmax)
 
@@ -454,7 +454,7 @@ class Weibull_Distribution:
             plt.ylabel('Hazard')
             text_title = str('Weibull Distribution\n' + ' Hazard Function ' + '\n' + self.param_title)
             plt.title(text_title)
-            plt.subplots_adjust(top=0.87)
+            plt.subplots_adjust(top=0.86)
 
             restore_axes_limits(limits, dist=self, func='HF', X=X, Y=hf, xvals=xvals, xmin=xmin, xmax=xmax)
 
@@ -510,7 +510,7 @@ class Weibull_Distribution:
             plt.ylabel('Cumulative hazard')
             text_title = str('Weibull Distribution\n' + ' Cumulative Hazard Function ' + '\n' + self.param_title)
             plt.title(text_title)
-            plt.subplots_adjust(top=0.87)
+            plt.subplots_adjust(top=0.86)
 
             restore_axes_limits(limits, dist=self, func='CHF', X=X, Y=chf, xvals=xvals, xmin=xmin, xmax=xmax)
 
@@ -915,7 +915,7 @@ class Normal_Distribution:
             plt.ylabel('Probability density')
             text_title = str('Normal Distribution\n' + ' Probability Density Function ' + '\n' + self.param_title)
             plt.title(text_title)
-            plt.subplots_adjust(top=0.87)
+            plt.subplots_adjust(top=0.86)
 
             restore_axes_limits(limits, dist=self, func='PDF', X=X, Y=pdf, xvals=xvals, xmin=xmin, xmax=xmax)
 
@@ -952,7 +952,7 @@ class Normal_Distribution:
             plt.ylabel('Fraction failing')
             text_title = str('Normal Distribution\n' + ' Cumulative Distribution Function ' + '\n' + self.param_title)
             plt.title(text_title)
-            plt.subplots_adjust(top=0.87)
+            plt.subplots_adjust(top=0.86)
 
             restore_axes_limits(limits, dist=self, func='CDF', X=X, Y=cdf, xvals=xvals, xmin=xmin, xmax=xmax)
 
@@ -989,7 +989,7 @@ class Normal_Distribution:
             plt.ylabel('Fraction surviving')
             text_title = str('Normal Distribution\n' + ' Survival Function ' + '\n' + self.param_title)
             plt.title(text_title)
-            plt.subplots_adjust(top=0.87)
+            plt.subplots_adjust(top=0.86)
 
             restore_axes_limits(limits, dist=self, func='SF', X=X, Y=sf, xvals=xvals, xmin=xmin, xmax=xmax)
 
@@ -1026,7 +1026,7 @@ class Normal_Distribution:
             plt.ylabel('Hazard')
             text_title = str('Normal Distribution\n' + ' Hazard Function ' + '\n' + self.param_title)
             plt.title(text_title)
-            plt.subplots_adjust(top=0.87)
+            plt.subplots_adjust(top=0.86)
 
             restore_axes_limits(limits, dist=self, func='HF', X=X, Y=hf, xvals=xvals, xmin=xmin, xmax=xmax)
 
@@ -1063,7 +1063,7 @@ class Normal_Distribution:
             plt.ylabel('Cumulative hazard')
             text_title = str('Normal Distribution\n' + ' Cumulative Hazard Function ' + '\n' + self.param_title)
             plt.title(text_title)
-            plt.subplots_adjust(top=0.87)
+            plt.subplots_adjust(top=0.86)
 
             restore_axes_limits(limits, dist=self, func='CHF', X=X, Y=chf, xvals=xvals, xmin=xmin, xmax=xmax)
 
@@ -1329,7 +1329,7 @@ class Lognormal_Distribution:
             plt.ylabel('Probability density')
             text_title = str('Lognormal Distribution\n' + ' Probability Density Function ' + '\n' + self.param_title)
             plt.title(text_title)
-            plt.subplots_adjust(top=0.87)
+            plt.subplots_adjust(top=0.86)
 
             restore_axes_limits(limits, dist=self, func='PDF', X=X, Y=pdf, xvals=xvals, xmin=xmin, xmax=xmax)
 
@@ -1366,7 +1366,7 @@ class Lognormal_Distribution:
             plt.ylabel('Fraction failing')
             text_title = str('Lognormal Distribution\n' + ' Cumulative Distribution Function ' + '\n' + self.param_title)
             plt.title(text_title)
-            plt.subplots_adjust(top=0.87)
+            plt.subplots_adjust(top=0.86)
 
             restore_axes_limits(limits, dist=self, func='CDF', X=X, Y=cdf, xvals=xvals, xmin=xmin, xmax=xmax)
 
@@ -1403,7 +1403,7 @@ class Lognormal_Distribution:
             plt.ylabel('Fraction surviving')
             text_title = str('Lognormal Distribution\n' + ' Survival Function ' + '\n' + self.param_title)
             plt.title(text_title)
-            plt.subplots_adjust(top=0.87)
+            plt.subplots_adjust(top=0.86)
 
             restore_axes_limits(limits, dist=self, func='SF', X=X, Y=sf, xvals=xvals, xmin=xmin, xmax=xmax)
 
@@ -1440,7 +1440,7 @@ class Lognormal_Distribution:
             plt.ylabel('Hazard')
             text_title = str('Lognormal Distribution\n' + ' Hazard Function ' + '\n' + self.param_title)
             plt.title(text_title)
-            plt.subplots_adjust(top=0.87)
+            plt.subplots_adjust(top=0.86)
 
             restore_axes_limits(limits, dist=self, func='HF', X=X, Y=hf, xvals=xvals, xmin=xmin, xmax=xmax)
 
@@ -1477,7 +1477,7 @@ class Lognormal_Distribution:
             plt.ylabel('Cumulative hazard')
             text_title = str('Lognormal Distribution\n' + ' Cumulative Hazard Function ' + '\n' + self.param_title)
             plt.title(text_title)
-            plt.subplots_adjust(top=0.87)
+            plt.subplots_adjust(top=0.86)
 
             restore_axes_limits(limits, dist=self, func='CHF', X=X, Y=chf, xvals=xvals, xmin=xmin, xmax=xmax)
 
@@ -1759,7 +1759,7 @@ class Exponential_Distribution:
             plt.ylabel('Probability density')
             text_title = str('Exponential Distribution\n' + ' Probability Density Function ' + '\n' + self.param_title)
             plt.title(text_title)
-            plt.subplots_adjust(top=0.87)
+            plt.subplots_adjust(top=0.86)
 
             restore_axes_limits(limits, dist=self, func='PDF', X=X, Y=pdf, xvals=xvals, xmin=xmin, xmax=xmax)
 
@@ -1815,7 +1815,7 @@ class Exponential_Distribution:
             plt.ylabel('Fraction failing')
             text_title = str('Exponential Distribution\n' + ' Cumulative Distribution Function ' + '\n' + self.param_title)
             plt.title(text_title)
-            plt.subplots_adjust(top=0.87)
+            plt.subplots_adjust(top=0.86)
 
             restore_axes_limits(limits, dist=self, func='CDF', X=X, Y=cdf, xvals=xvals, xmin=xmin, xmax=xmax)
 
@@ -1871,7 +1871,7 @@ class Exponential_Distribution:
             plt.ylabel('Fraction surviving')
             text_title = str('Exponential Distribution\n' + ' Survival Function ' + '\n' + self.param_title)
             plt.title(text_title)
-            plt.subplots_adjust(top=0.87)
+            plt.subplots_adjust(top=0.86)
 
             restore_axes_limits(limits, dist=self, func='SF', X=X, Y=sf, xvals=xvals, xmin=xmin, xmax=xmax)
 
@@ -1928,7 +1928,7 @@ class Exponential_Distribution:
             plt.ylabel('Hazard')
             text_title = str('Exponential Distribution\n' + ' Hazard Function ' + '\n' + self.param_title)
             plt.title(text_title)
-            plt.subplots_adjust(top=0.87)
+            plt.subplots_adjust(top=0.86)
 
             restore_axes_limits(limits, dist=self, func='HF', X=X, Y=hf, xvals=xvals, xmin=xmin, xmax=xmax)
 
@@ -1986,7 +1986,7 @@ class Exponential_Distribution:
             plt.ylabel('Cumulative hazard')
             text_title = str('Exponential Distribution\n' + ' Cumulative Hazard Function ' + '\n' + self.param_title)
             plt.title(text_title)
-            plt.subplots_adjust(top=0.87)
+            plt.subplots_adjust(top=0.86)
 
             restore_axes_limits(limits, dist=self, func='CHF', X=X, Y=chf, xvals=xvals, xmin=xmin, xmax=xmax)
 
@@ -2314,7 +2314,7 @@ class Gamma_Distribution:
             plt.ylabel('Probability density')
             text_title = str('Gamma Distribution\n' + ' Probability Density Function ' + '\n' + self.param_title)
             plt.title(text_title)
-            plt.subplots_adjust(top=0.87)
+            plt.subplots_adjust(top=0.86)
 
             restore_axes_limits(limits, dist=self, func='PDF', X=X, Y=pdf, xvals=xvals, xmin=xmin, xmax=xmax)
 
@@ -2351,7 +2351,7 @@ class Gamma_Distribution:
             plt.ylabel('Fraction failing')
             text_title = str('Gamma Distribution\n' + ' Cumulative Distribution Function ' + '\n' + self.param_title)
             plt.title(text_title)
-            plt.subplots_adjust(top=0.87)
+            plt.subplots_adjust(top=0.86)
 
             restore_axes_limits(limits, dist=self, func='CDF', X=X, Y=cdf, xvals=xvals, xmin=xmin, xmax=xmax)
 
@@ -2388,7 +2388,7 @@ class Gamma_Distribution:
             plt.ylabel('Fraction surviving')
             text_title = str('Gamma Distribution\n' + ' Survival Function ' + '\n' + self.param_title)
             plt.title(text_title)
-            plt.subplots_adjust(top=0.87)
+            plt.subplots_adjust(top=0.86)
 
             restore_axes_limits(limits, dist=self, func='SF', X=X, Y=sf, xvals=xvals, xmin=xmin, xmax=xmax)
 
@@ -2425,7 +2425,7 @@ class Gamma_Distribution:
             plt.ylabel('Hazard')
             text_title = str('Gamma Distribution\n' + ' Hazard Function ' + '\n' + self.param_title)
             plt.title(text_title)
-            plt.subplots_adjust(top=0.87)
+            plt.subplots_adjust(top=0.86)
 
             restore_axes_limits(limits, dist=self, func='HF', X=X, Y=hf, xvals=xvals, xmin=xmin, xmax=xmax)
 
@@ -2462,7 +2462,7 @@ class Gamma_Distribution:
             plt.ylabel('Cumulative hazard')
             text_title = str('Gamma Distribution\n' + ' Cumulative Hazard Function ' + '\n' + self.param_title)
             plt.title(text_title)
-            plt.subplots_adjust(top=0.87)
+            plt.subplots_adjust(top=0.86)
 
             restore_axes_limits(limits, dist=self, func='CHF', X=X, Y=chf, xvals=xvals, xmin=xmin, xmax=xmax)
 
@@ -2729,7 +2729,7 @@ class Beta_Distribution:
             plt.ylabel('Probability density')
             text_title = str('Beta Distribution\n' + ' Probability Density Function ' + '\n' + self.param_title)
             plt.title(text_title)
-            plt.subplots_adjust(top=0.87)
+            plt.subplots_adjust(top=0.86)
 
             restore_axes_limits(limits, dist=self, func='PDF', X=X, Y=pdf, xvals=xvals, xmin=xmin, xmax=xmax)
 
@@ -2766,7 +2766,7 @@ class Beta_Distribution:
             plt.ylabel('Fraction failing')
             text_title = str('Beta Distribution\n' + ' Cumulative Distribution Function ' + '\n' + self.param_title)
             plt.title(text_title)
-            plt.subplots_adjust(top=0.87)
+            plt.subplots_adjust(top=0.86)
 
             restore_axes_limits(limits, dist=self, func='CDF', X=X, Y=cdf, xvals=xvals, xmin=xmin, xmax=xmax)
 
@@ -2803,7 +2803,7 @@ class Beta_Distribution:
             plt.ylabel('Fraction surviving')
             text_title = str('Beta Distribution\n' + ' Survival Function ' + '\n' + self.param_title)
             plt.title(text_title)
-            plt.subplots_adjust(top=0.87)
+            plt.subplots_adjust(top=0.86)
 
             restore_axes_limits(limits, dist=self, func='SF', X=X, Y=sf, xvals=xvals, xmin=xmin, xmax=xmax)
 
@@ -2840,7 +2840,7 @@ class Beta_Distribution:
             plt.ylabel('Hazard')
             text_title = str('Beta Distribution\n' + ' Hazard Function ' + '\n' + self.param_title)
             plt.title(text_title)
-            plt.subplots_adjust(top=0.87)
+            plt.subplots_adjust(top=0.86)
 
             restore_axes_limits(limits, dist=self, func='HF', X=X, Y=hf, xvals=xvals, xmin=xmin, xmax=xmax)
 
@@ -2877,7 +2877,7 @@ class Beta_Distribution:
             plt.ylabel('Cumulative hazard')
             text_title = str('Beta Distribution\n' + ' Cumulative Hazard Function ' + '\n' + self.param_title)
             plt.title(text_title)
-            plt.subplots_adjust(top=0.87)
+            plt.subplots_adjust(top=0.86)
 
             restore_axes_limits(limits, dist=self, func='CHF', X=X, Y=chf, xvals=xvals, xmin=xmin, xmax=xmax)
 
@@ -3212,7 +3212,7 @@ class Loglogistic_Distribution:
             plt.ylabel('Probability density')
             text_title = str('Loglogistic Distribution\n' + ' Probability Density Function ' + '\n' + self.param_title)
             plt.title(text_title)
-            plt.subplots_adjust(top=0.87)
+            plt.subplots_adjust(top=0.86)
 
             restore_axes_limits(limits, dist=self, func='PDF', X=X, Y=pdf, xvals=xvals, xmin=xmin, xmax=xmax)
 
@@ -3264,7 +3264,7 @@ class Loglogistic_Distribution:
             plt.ylabel('Fraction failing')
             text_title = str('Loglogistic Distribution\n' + ' Cumulative Distribution Function ' + '\n' + self.param_title)
             plt.title(text_title)
-            plt.subplots_adjust(top=0.87)
+            plt.subplots_adjust(top=0.86)
 
             restore_axes_limits(limits, dist=self, func='CDF', X=X, Y=cdf, xvals=xvals, xmin=xmin, xmax=xmax)
 
@@ -3317,7 +3317,7 @@ class Loglogistic_Distribution:
             plt.ylabel('Fraction surviving')
             text_title = str('Loglogistic Distribution\n' + ' Survival Function ' + '\n' + self.param_title)
             plt.title(text_title)
-            plt.subplots_adjust(top=0.87)
+            plt.subplots_adjust(top=0.86)
 
             restore_axes_limits(limits, dist=self, func='SF', X=X, Y=sf, xvals=xvals, xmin=xmin, xmax=xmax)
 
@@ -3377,7 +3377,7 @@ class Loglogistic_Distribution:
             plt.ylabel('Hazard')
             text_title = str('Loglogistic Distribution\n' + ' Hazard Function ' + '\n' + self.param_title)
             plt.title(text_title)
-            plt.subplots_adjust(top=0.87)
+            plt.subplots_adjust(top=0.86)
 
             restore_axes_limits(limits, dist=self, func='HF', X=X, Y=hf, xvals=xvals, xmin=xmin, xmax=xmax)
 
@@ -3433,7 +3433,7 @@ class Loglogistic_Distribution:
             plt.ylabel('Cumulative hazard')
             text_title = str('Loglogistic Distribution\n' + ' Cumulative Hazard Function ' + '\n' + self.param_title)
             plt.title(text_title)
-            plt.subplots_adjust(top=0.87)
+            plt.subplots_adjust(top=0.86)
 
             restore_axes_limits(limits, dist=self, func='CHF', X=X, Y=chf, xvals=xvals, xmin=xmin, xmax=xmax)
 
@@ -3761,7 +3761,7 @@ class Competing_Risks_Model:
             plt.ylabel('Probability density')
             text_title = str('Competing Risks Model\n' + ' Probability Density Function')
             plt.title(text_title)
-            plt.subplots_adjust(top=0.87)
+            plt.subplots_adjust(top=0.86)
             return self.__pdf
 
     def CDF(self, xvals=None, xmin=None, xmax=None, show_plot=True, plot_components=False, **kwargs):
@@ -3798,7 +3798,7 @@ class Competing_Risks_Model:
             plt.ylabel('Fraction failing')
             text_title = str('Competing Risks Model\n' + ' Cumulative Distribution Function')
             plt.title(text_title)
-            plt.subplots_adjust(top=0.87)
+            plt.subplots_adjust(top=0.86)
             return self.__cdf
 
     def SF(self, xvals=None, xmin=None, xmax=None, show_plot=True, plot_components=False, **kwargs):
@@ -3835,7 +3835,7 @@ class Competing_Risks_Model:
             plt.ylabel('Fraction surviving')
             text_title = str('Competing Risks Model\n' + ' Survival Function')
             plt.title(text_title)
-            plt.subplots_adjust(top=0.87)
+            plt.subplots_adjust(top=0.86)
             return self.__sf
 
     def HF(self, xvals=None, xmin=None, xmax=None, show_plot=True, plot_components=False, **kwargs):
@@ -3874,7 +3874,7 @@ class Competing_Risks_Model:
             plt.ylabel('Hazard')
             text_title = str('Competing Risks Model\n' + ' Hazard Function')
             plt.title(text_title)
-            plt.subplots_adjust(top=0.87)
+            plt.subplots_adjust(top=0.86)
             return self.__hf
 
     def CHF(self, xvals=None, xmin=None, xmax=None, show_plot=True, plot_components=False, **kwargs):
@@ -3911,7 +3911,7 @@ class Competing_Risks_Model:
             plt.ylabel('Cumulative Hazard')
             text_title = str('Competing Risks Model\n' + ' Cumulative Hazard Function')
             plt.title(text_title)
-            plt.subplots_adjust(top=0.87)
+            plt.subplots_adjust(top=0.86)
             return self.__chf
 
     def quantile(self, q):
@@ -4253,7 +4253,7 @@ class Mixture_Model:
             plt.ylabel('Probability density')
             text_title = str('Mixture Model\n' + ' Probability Density Function')
             plt.title(text_title)
-            plt.subplots_adjust(top=0.87)
+            plt.subplots_adjust(top=0.86)
             return self.__pdf
 
     def CDF(self, xvals=None, xmin=None, xmax=None, show_plot=True, plot_components=False, **kwargs):
@@ -4290,7 +4290,7 @@ class Mixture_Model:
             plt.ylabel('Fraction failing')
             text_title = str('Mixture Model\n' + ' Cumulative Distribution Function')
             plt.title(text_title)
-            plt.subplots_adjust(top=0.87)
+            plt.subplots_adjust(top=0.86)
             return self.__cdf
 
     def SF(self, xvals=None, xmin=None, xmax=None, show_plot=True, plot_components=False, **kwargs):
@@ -4327,7 +4327,7 @@ class Mixture_Model:
             plt.ylabel('Fraction surviving')
             text_title = str('Mixture Model\n' + ' Survival Function')
             plt.title(text_title)
-            plt.subplots_adjust(top=0.87)
+            plt.subplots_adjust(top=0.86)
             return self.__sf
 
     def HF(self, xvals=None, xmin=None, xmax=None, show_plot=True, plot_components=False, **kwargs):
@@ -4364,7 +4364,7 @@ class Mixture_Model:
             plt.ylabel('Hazard')
             text_title = str('Mixture Model\n' + ' Hazard Function')
             plt.title(text_title)
-            plt.subplots_adjust(top=0.87)
+            plt.subplots_adjust(top=0.86)
             return self.__hf
 
     def CHF(self, xvals=None, xmin=None, xmax=None, show_plot=True, plot_components=False, **kwargs):
@@ -4401,7 +4401,7 @@ class Mixture_Model:
             plt.ylabel('Cumulative Hazard')
             text_title = str('Mixture Model\n' + ' Cumulative Hazard Function')
             plt.title(text_title)
-            plt.subplots_adjust(top=0.87)
+            plt.subplots_adjust(top=0.86)
             return self.__chf
 
     def quantile(self, q):

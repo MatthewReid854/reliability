@@ -37,6 +37,28 @@ class automotive:
         self.info = df
 
 
+class mileage:
+    '''
+    This dataset is simple to fit. It contains 100 values with no right censoring. The data appears to be from a Normal Distribution.
+    Sourced from Example 2.31 (page 63) of Reliability Engineering and Risk analysis 3rd Edition by M. Modarres, M. Kaminskiy, and V.V. Krivtsov
+    '''
+
+    def __init__(self):
+        self.failures = [32797,47119,33532,55627,11538,34107,26704,9979,10014,22159,37603,26830,25210,16946,30368,24571,43665,55269,29760,17438,16768,43154,22418,14525,52448,
+                        28968,32628,31388,26252,31565,15261,20269,14318,19938,32231,44404,32176,42911,18318,37623,38071,35589,44264,20588,25746,28109,29807,16735,28688,22532,
+                        39485,25056,28127,29015,10539,41821,49436,37752,43939,27322,26713,35390,40902,22456,35138,27837,28219,21293,31084,27037,45283,16651,27300,36837,21075,
+                        27836,47590,21248,21757,17861,25754,32677,29180,28185,22374,41267,33703,36258,30935,49432,41064,27812,28433,36531,45554,8734,32914,28172,26208,24993]
+        self.right_censored = []
+        rc = len(self.right_censored)
+        f = len(self.failures)
+        tot = f + rc
+        data = {'Stat': ['Name', 'Total Values', 'Failures', 'Right Censored'], 'Value': ['mileage', tot, str(str(f) + ' (' + str(round(f / tot * 100, 2)) + '%)'), str(str(rc) + ' (' + str(round(rc / tot * 100, 2)) + '%)')]}
+        df = pd.DataFrame(data, columns=['Stat', 'Value'])
+        blankIndex = [''] * len(df)
+        df.index = blankIndex
+        self.info = df
+
+
 class defective_sample:
     '''
     This dataset is heavily right censored with intermixed censoring (not all censored values are greater than the largest failure)
@@ -194,6 +216,16 @@ class defective_sample:
         blankIndex = [''] * len(df)
         df.index = blankIndex
         self.info = df
+
+
+
+
+
+
+
+
+
+
 
 
 class electronics:

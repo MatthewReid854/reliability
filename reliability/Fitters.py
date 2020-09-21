@@ -32,7 +32,7 @@ import warnings
 from reliability.Distributions import Weibull_Distribution, Gamma_Distribution, Beta_Distribution, Exponential_Distribution, Normal_Distribution, Lognormal_Distribution, Loglogistic_Distribution, Mixture_Model, Competing_Risks_Model
 from reliability.Nonparametric import KaplanMeier
 from reliability.Probability_plotting import plotting_positions
-from reliability.Utils import round_to_decimals
+from reliability.Utils import round_to_decimals, anderson_darling
 import autograd.numpy as anp
 from autograd import value_and_grad
 from autograd.scipy.special import gamma as agamma
@@ -92,8 +92,6 @@ class Fit_Everything:
     def __init__(self, failures=None, right_censored=None, sort_by='BIC', print_results=True, show_histogram_plot=True, show_PP_plot=True, show_probability_plot=True):
         if failures is None or len(failures) < 3:
             raise ValueError('Maximum likelihood estimates could not be calculated for these data. There must be at least three failures to calculate 3 parameter models.')
-        if sort_by not in ['AICc', 'BIC']:
-            raise ValueError('sort_by must be either AICc or BIC. Defaults to BIC')
         if show_histogram_plot not in [True, False]:
             raise ValueError('show_histogram_plot must be either True or False. Defaults to True.')
         if print_results not in [True, False]:
@@ -147,6 +145,7 @@ class Fit_Everything:
         self.Weibull_3P_gamma = self.__Weibull_3P_params.gamma
         self.Weibull_3P_BIC = self.__Weibull_3P_params.BIC
         self.Weibull_3P_AICc = self.__Weibull_3P_params.AICc
+        self.Weibull_3P_AD = self.__Weibull_3P_params.AD
         self._parametric_CDF_Weibull_3P = self.__Weibull_3P_params.distribution.CDF(xvals=d, show_plot=False)
 
         self.__Gamma_3P_params = Fit_Gamma_3P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False)
@@ -155,6 +154,7 @@ class Fit_Everything:
         self.Gamma_3P_gamma = self.__Gamma_3P_params.gamma
         self.Gamma_3P_BIC = self.__Gamma_3P_params.BIC
         self.Gamma_3P_AICc = self.__Gamma_3P_params.AICc
+        self.Gamma_3P_AD = self.__Gamma_3P_params.AD
         self._parametric_CDF_Gamma_3P = self.__Gamma_3P_params.distribution.CDF(xvals=d, show_plot=False)
 
         self.__Expon_2P_params = Fit_Expon_2P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False)
@@ -162,6 +162,7 @@ class Fit_Everything:
         self.Expon_2P_gamma = self.__Expon_2P_params.gamma
         self.Expon_2P_BIC = self.__Expon_2P_params.BIC
         self.Expon_2P_AICc = self.__Expon_2P_params.AICc
+        self.Expon_2P_AD = self.__Expon_2P_params.AD
         self._parametric_CDF_Exponential_2P = self.__Expon_2P_params.distribution.CDF(xvals=d, show_plot=False)
 
         self.__Lognormal_3P_params = Fit_Lognormal_3P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False)
@@ -170,6 +171,7 @@ class Fit_Everything:
         self.Lognormal_3P_gamma = self.__Lognormal_3P_params.gamma
         self.Lognormal_3P_BIC = self.__Lognormal_3P_params.BIC
         self.Lognormal_3P_AICc = self.__Lognormal_3P_params.AICc
+        self.Lognormal_3P_AD = self.__Lognormal_3P_params.AD
         self._parametric_CDF_Lognormal_3P = self.__Lognormal_3P_params.distribution.CDF(xvals=d, show_plot=False)
 
         self.__Normal_2P_params = Fit_Normal_2P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False)
@@ -177,6 +179,7 @@ class Fit_Everything:
         self.Normal_2P_sigma = self.__Normal_2P_params.sigma
         self.Normal_2P_BIC = self.__Normal_2P_params.BIC
         self.Normal_2P_AICc = self.__Normal_2P_params.AICc
+        self.Normal_2P_AD = self.__Normal_2P_params.AD
         self._parametric_CDF_Normal_2P = self.__Normal_2P_params.distribution.CDF(xvals=d, show_plot=False)
 
         self.__Lognormal_2P_params = Fit_Lognormal_2P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False)
@@ -184,6 +187,7 @@ class Fit_Everything:
         self.Lognormal_2P_sigma = self.__Lognormal_2P_params.sigma
         self.Lognormal_2P_BIC = self.__Lognormal_2P_params.BIC
         self.Lognormal_2P_AICc = self.__Lognormal_2P_params.AICc
+        self.Lognormal_2P_AD = self.__Lognormal_2P_params.AD
         self._parametric_CDF_Lognormal_2P = self.__Lognormal_2P_params.distribution.CDF(xvals=d, show_plot=False)
 
         self.__Weibull_2P_params = Fit_Weibull_2P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False)
@@ -191,6 +195,7 @@ class Fit_Everything:
         self.Weibull_2P_beta = self.__Weibull_2P_params.beta
         self.Weibull_2P_BIC = self.__Weibull_2P_params.BIC
         self.Weibull_2P_AICc = self.__Weibull_2P_params.AICc
+        self.Weibull_2P_AD = self.__Weibull_2P_params.AD
         self._parametric_CDF_Weibull_2P = self.__Weibull_2P_params.distribution.CDF(xvals=d, show_plot=False)
 
         self.__Gamma_2P_params = Fit_Gamma_2P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False)
@@ -198,12 +203,14 @@ class Fit_Everything:
         self.Gamma_2P_beta = self.__Gamma_2P_params.beta
         self.Gamma_2P_BIC = self.__Gamma_2P_params.BIC
         self.Gamma_2P_AICc = self.__Gamma_2P_params.AICc
+        self.Gamma_2P_AD = self.__Gamma_2P_params.AD
         self._parametric_CDF_Gamma_2P = self.__Gamma_2P_params.distribution.CDF(xvals=d, show_plot=False)
 
         self.__Expon_1P_params = Fit_Expon_1P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False)
         self.Expon_1P_lambda = self.__Expon_1P_params.Lambda
         self.Expon_1P_BIC = self.__Expon_1P_params.BIC
         self.Expon_1P_AICc = self.__Expon_1P_params.AICc
+        self.Expon_1P_AD = self.__Expon_1P_params.AD
         self._parametric_CDF_Exponential_1P = self.__Expon_1P_params.distribution.CDF(xvals=d, show_plot=False)
 
         self.__Loglogistic_2P_params = Fit_Loglogistic_2P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False)
@@ -211,6 +218,7 @@ class Fit_Everything:
         self.Loglogistic_2P_beta = self.__Loglogistic_2P_params.beta
         self.Loglogistic_2P_BIC = self.__Loglogistic_2P_params.BIC
         self.Loglogistic_2P_AICc = self.__Loglogistic_2P_params.AICc
+        self.Loglogistic_2P_AD = self.__Loglogistic_2P_params.AD
         self._parametric_CDF_Loglogistic_2P = self.__Loglogistic_2P_params.distribution.CDF(xvals=d, show_plot=False)
 
         self.__Loglogistic_3P_params = Fit_Loglogistic_3P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False)
@@ -219,6 +227,7 @@ class Fit_Everything:
         self.Loglogistic_3P_gamma = self.__Loglogistic_3P_params.gamma
         self.Loglogistic_3P_BIC = self.__Loglogistic_3P_params.BIC
         self.Loglogistic_3P_AICc = self.__Loglogistic_3P_params.AICc
+        self.Loglogistic_3P_AD = self.__Loglogistic_3P_params.AD
         self._parametric_CDF_Loglogistic_3P = self.__Loglogistic_3P_params.distribution.CDF(xvals=d, show_plot=False)
 
         if max(failures) <= 1:
@@ -227,12 +236,14 @@ class Fit_Everything:
             self.Beta_2P_beta = self.__Beta_2P_params.beta
             self.Beta_2P_BIC = self.__Beta_2P_params.BIC
             self.Beta_2P_AICc = self.__Beta_2P_params.AICc
+            self.Beta_2P_AD = self.__Beta_2P_params.AD
             self._parametric_CDF_Beta_2P = self.__Beta_2P_params.distribution.CDF(xvals=d, show_plot=False)
         else:
             self.Beta_2P_alpha = 0
             self.Beta_2P_beta = 0
             self.Beta_2P_BIC = 0
             self.Beta_2P_AICc = 0
+            self.Beta_2P_AD = 0
 
         # assemble the output dataframe
         DATA = {'Distribution': ['Weibull_3P', 'Weibull_2P', 'Normal_2P', 'Exponential_1P', 'Exponential_2P', 'Lognormal_2P', 'Lognormal_3P', 'Gamma_2P', 'Gamma_3P', 'Beta_2P', 'Loglogistic_2P', 'Loglogistic_3P'],
@@ -243,16 +254,19 @@ class Fit_Everything:
                 'Sigma': ['', '', self.Normal_2P_sigma, '', '', self.Lognormal_2P_sigma, self.Lognormal_3P_sigma, '', '', '', '', ''],
                 'Lambda': ['', '', '', self.Expon_1P_lambda, self.Expon_2P_lambda, '', '', '', '', '', '', ''],
                 'AICc': [self.Weibull_3P_AICc, self.Weibull_2P_AICc, self.Normal_2P_AICc, self.Expon_1P_AICc, self.Expon_2P_AICc, self.Lognormal_2P_AICc, self.Lognormal_3P_AICc, self.Gamma_2P_AICc, self.Gamma_3P_AICc, self.Beta_2P_AICc, self.Loglogistic_2P_AICc, self.Loglogistic_3P_AICc],
-                'BIC': [self.Weibull_3P_BIC, self.Weibull_2P_BIC, self.Normal_2P_BIC, self.Expon_1P_BIC, self.Expon_2P_BIC, self.Lognormal_2P_BIC, self.Lognormal_2P_BIC, self.Gamma_2P_BIC, self.Gamma_3P_BIC, self.Beta_2P_BIC, self.Loglogistic_2P_BIC, self.Loglogistic_3P_BIC]}
+                'BIC': [self.Weibull_3P_BIC, self.Weibull_2P_BIC, self.Normal_2P_BIC, self.Expon_1P_BIC, self.Expon_2P_BIC, self.Lognormal_2P_BIC, self.Lognormal_2P_BIC, self.Gamma_2P_BIC, self.Gamma_3P_BIC, self.Beta_2P_BIC, self.Loglogistic_2P_BIC, self.Loglogistic_3P_BIC],
+                'AD': [self.Weibull_3P_AD, self.Weibull_2P_AD, self.Normal_2P_AD, self.Expon_1P_AD, self.Expon_2P_AD, self.Lognormal_2P_AD, self.Lognormal_2P_AD, self.Gamma_2P_AD, self.Gamma_3P_AD, self.Beta_2P_AD, self.Loglogistic_2P_AD, self.Loglogistic_3P_AD]}
 
-        df = pd.DataFrame(DATA, columns=['Distribution', 'Alpha', 'Beta', 'Gamma', 'Mu', 'Sigma', 'Lambda', 'AICc', 'BIC'])
-        # sort the dataframe by BIC or AICc and replace na and 0 values with spaces. Smallest AICc or BIC is better fit
+        df = pd.DataFrame(DATA, columns=['Distribution', 'Alpha', 'Beta', 'Gamma', 'Mu', 'Sigma', 'Lambda', 'AICc', 'BIC', 'AD'])
+        # sort the dataframe by BIC, AICc, or AD and replace na and 0 values with spaces. Smallest AICc,BIC,AD is better fit
         if sort_by in ['BIC', 'bic']:
             df2 = df.reindex(df.BIC.sort_values().index)
         elif sort_by in ['AICc', 'AIC', 'aic', 'aicc']:
             df2 = df.reindex(df.AICc.sort_values().index)
+        elif sort_by in ['ad','AD']:
+            df2 = df.reindex(df.AD.sort_values().index)
         else:
-            raise ValueError('Invalid input to sort_by. Options are BIC or AICc. Default is BIC')
+            raise ValueError('Invalid input to sort_by. Options are BIC, AICc, or AD. Default is BIC')
         df3 = df2.set_index('Distribution').fillna('')
         if self.Beta_2P_BIC == 0:  # remove beta if it was not fitted (due to data being outside of 0 to 1 range)
             df3 = df3.drop('Beta_2P', axis=0)
@@ -735,10 +749,9 @@ class Fit_Weibull_2P:
             raise ValueError('All failure and censoring times must be greater than zero.')
         self.gamma = 0
         # Obtain initial guess using either Least squares or Scipy
+        x, y = plotting_positions(failures=failures, right_censored=right_censored)
         if initial_guess_method == 'least squares':
             # obtain least squares estimate based on the plotting positions
-            from reliability.Probability_plotting import plotting_positions
-            x, y = plotting_positions(failures=failures, right_censored=right_censored)
             x_linearised = np.log(x)
             y_linearised = np.log(-np.log(1 - np.array(y)))
             slope, intercept, _, _, _ = ss.linregress(x_linearised, y_linearised)
@@ -863,6 +876,7 @@ class Fit_Weibull_2P:
         df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
         self.results = df.set_index('Parameter')
         self.distribution = Weibull_Distribution(alpha=self.alpha, beta=self.beta, alpha_SE=self.alpha_SE, beta_SE=self.beta_SE, Cov_alpha_beta=self.Cov_alpha_beta, CI=CI, CI_type=CI_type)
+        self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=failures,show_plot=False),empirical_cdf=y)
 
         if print_results is True:
             pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
@@ -1030,10 +1044,9 @@ class Fit_Weibull_2P_grouped:
 
         self.gamma = 0
         # Obtain initial guess using either Least squares or Scipy
+        x, y = plotting_positions(failures=failures, right_censored=right_censored)
         if initial_guess_method == 'least squares':
             # obtain least squares estimate based on the plotting positions
-            from reliability.Probability_plotting import plotting_positions
-            x, y = plotting_positions(failures=failures, right_censored=right_censored)
             x_linearised = np.log(x)
             y_linearised = np.log(-np.log(1 - np.array(y)))
             slope, intercept, _, _, _ = ss.linregress(x_linearised, y_linearised)
@@ -1162,7 +1175,7 @@ class Fit_Weibull_2P_grouped:
         self.results = df.set_index('Parameter')
 
         self.distribution = Weibull_Distribution(alpha=self.alpha, beta=self.beta, alpha_SE=self.alpha_SE, beta_SE=self.beta_SE, Cov_alpha_beta=self.Cov_alpha_beta, CI=CI, CI_type=CI_type)
-        # self.distribution = Weibull_Distribution(alpha=self.alpha, beta=self.beta)
+        self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=failures,show_plot=False),empirical_cdf=y)
 
         if print_results is True:
             pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
@@ -1294,14 +1307,13 @@ class Fit_Weibull_3P:
             raise ValueError('All failure and censoring times must be greater than zero.')
         offset = 0.0001  # this is to ensure the upper bound for gamma is not equal to min(data) which would result in inf log-likelihood. This small offset fixes that issue
         gamma_initial_guess = min(all_data) - offset  # get a quick guess for gamma by setting it as the minimum of the data
+        x, y = plotting_positions(failures=failures - gamma_initial_guess, right_censored=right_censored - gamma_initial_guess)
         if initial_guess_method == 'scipy':  # default method
             data_shifted = all_data - gamma_initial_guess
             sp = ss.weibull_min.fit(data_shifted, floc=0, optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
             guess = [sp[2], sp[0], gamma_initial_guess]
             self.initial_guess = guess
         elif initial_guess_method in ['least squares', 'non-linear least squares']:
-            gamma_initial_guess = min(failures) - offset
-            x, y = plotting_positions(failures=failures - gamma_initial_guess, right_censored=right_censored - gamma_initial_guess)
             if len(failures) > 5:
                 x, y = x[1::], y[1::]  # this removes the first value which is almost always way left due to the gamma initial guess adjustment. It is only done if there is enough data (>5 failures)
             x_linearised = np.log(x)
@@ -1422,6 +1434,7 @@ class Fit_Weibull_3P:
         df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
         self.results = df.set_index('Parameter')
         self.distribution = Weibull_Distribution(alpha=self.alpha, beta=self.beta, gamma=self.gamma, alpha_SE=self.alpha_SE, beta_SE=self.beta_SE, Cov_alpha_beta=self.Cov_alpha_beta, CI=CI, CI_type=CI_type)
+        self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=failures, show_plot=False), empirical_cdf=y)
 
         if print_results is True:
             pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
@@ -1551,6 +1564,7 @@ class Fit_Weibull_Mixture:
         all_data = np.hstack([failures, right_censored])
         if min(all_data) < 0:
             raise ValueError('All failure and censoring times must be greater than zero.')
+        x, y = plotting_positions(failures=failures, right_censored=right_censored)
         # find the division line. This is to assign data to each group
         h = np.histogram(failures, bins=50, density=True)
         hist_counts = h[0]
@@ -1613,6 +1627,7 @@ class Fit_Weibull_Mixture:
         dist_1 = Weibull_Distribution(alpha=self.alpha_1, beta=self.beta_1)
         dist_2 = Weibull_Distribution(alpha=self.alpha_2, beta=self.beta_2)
         self.distribution = Mixture_Model(distributions=[dist_1, dist_2], proportions=[self.proportion_1, self.proportion_2])
+        self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=failures, show_plot=False), empirical_cdf=y)
 
         params = [self.alpha_1, self.beta_1, self.alpha_2, self.beta_2, self.proportion_1]
         k = len(params)
@@ -1769,6 +1784,7 @@ class Fit_Weibull_CR:
         all_data = np.hstack([failures, right_censored])
         if min(all_data) < 0:
             raise ValueError('All failure and censoring times must be greater than zero.')
+        x, y = plotting_positions(failures=failures, right_censored=right_censored)
         # find the division line. This is to assign data to each group
         h = np.histogram(failures, bins=50, density=True)
         hist_counts = h[0]
@@ -1828,6 +1844,7 @@ class Fit_Weibull_CR:
         dist_1 = Weibull_Distribution(alpha=self.alpha_1, beta=self.beta_1)
         dist_2 = Weibull_Distribution(alpha=self.alpha_2, beta=self.beta_2)
         self.distribution = Competing_Risks_Model(distributions=[dist_1, dist_2])
+        self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=failures, show_plot=False), empirical_cdf=y)
 
         params = [self.alpha_1, self.beta_1, self.alpha_2, self.beta_2]
         k = len(params)
@@ -1966,6 +1983,7 @@ class Fit_Expon_1P:
         if min(all_data) < 0:
             raise ValueError('All failure and censoring times must be greater than zero.')
         # solve it
+        x, y = plotting_positions(failures=failures, right_censored=right_censored)
         self.gamma = 0
         sp = ss.expon.fit(all_data, floc=0, optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
         guess = [1 / sp[1]]
@@ -2009,6 +2027,7 @@ class Fit_Expon_1P:
         df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
         self.results = df.set_index('Parameter')
         self.distribution = Exponential_Distribution(Lambda=self.Lambda, Lambda_SE=self.Lambda_SE, CI=CI)  ####
+        self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=failures, show_plot=False), empirical_cdf=y)
 
         if print_results is True:
             pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
@@ -2127,6 +2146,7 @@ class Fit_Expon_2P:
         offset = 0.001  # this is to ensure the upper bound for gamma is not equal to min(data) which would result in inf log-likelihood. This small offset fixes that issue
         self.gamma = min(all_data) - offset
 
+        x, y = plotting_positions(failures=failures - self.gamma, right_censored=right_censored - self.gamma)
         # get an initial guess for Lambda
         data_shifted = all_data - self.gamma
         sp = ss.expon.fit(data_shifted, floc=0, optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
@@ -2208,6 +2228,7 @@ class Fit_Expon_2P:
         df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
         self.results = df.set_index('Parameter')
         self.distribution = Exponential_Distribution(Lambda=self.Lambda, gamma=self.gamma, Lambda_SE=self.Lambda_SE, CI=CI)
+        self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=failures, show_plot=False), empirical_cdf=y)
 
         if print_results is True:
             pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
@@ -2315,7 +2336,7 @@ class Fit_Normal_2P:
             raise TypeError('right_censored must be a list or array of right censored failure data')
 
         all_data = np.hstack([failures, right_censored])
-
+        x, y = plotting_positions(failures=failures, right_censored=right_censored)
         # solve it
         sp = ss.norm.fit(all_data, optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
         warnings.filterwarnings('ignore')  # necessary to supress the warning about the jacobian when using the nelder-mead optimizer
@@ -2385,6 +2406,7 @@ class Fit_Normal_2P:
         df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
         self.results = df.set_index('Parameter')
         self.distribution = Normal_Distribution(mu=self.mu, sigma=self.sigma)
+        self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=failures, show_plot=False), empirical_cdf=y)
 
         if print_results is True:
             pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
@@ -2502,7 +2524,7 @@ class Fit_Lognormal_2P:
         all_data = np.hstack([failures, right_censored])
         if min(all_data) < 0:
             raise ValueError('All failure and censoring times must be greater than zero.')
-
+        x, y = plotting_positions(failures=failures, right_censored=right_censored)
         # solve it
         sp = ss.lognorm.fit(all_data, floc=0, optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
         if force_sigma is None:
@@ -2574,6 +2596,7 @@ class Fit_Lognormal_2P:
         df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
         self.results = df.set_index('Parameter')
         self.distribution = Lognormal_Distribution(mu=self.mu, sigma=self.sigma)
+        self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=failures, show_plot=False), empirical_cdf=y)
 
         if print_results is True:
             pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
@@ -2710,6 +2733,7 @@ class Fit_Lognormal_3P:
                 gamma_res = minimize(Fit_Lognormal_3P.gamma_optimizer, gamma_initial_guess, args=(failures, right_censored), method='L-BFGS-B', bounds=bnds1)
                 self.gamma = gamma_res.x[0]
 
+            x, y = plotting_positions(failures=failures - self.gamma, right_censored=right_censored - self.gamma)
             # obtain the initial guess for mu and sigma
             data_shifted = all_data - self.gamma
             sp = ss.lognorm.fit(data_shifted, floc=0, optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
@@ -2801,6 +2825,7 @@ class Fit_Lognormal_3P:
         df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
         self.results = df.set_index('Parameter')
         self.distribution = Lognormal_Distribution(mu=self.mu, sigma=self.sigma, gamma=self.gamma)
+        self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=failures, show_plot=False), empirical_cdf=y)
 
         if print_results is True:
             pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
@@ -2930,6 +2955,7 @@ class Fit_Gamma_2P:
             raise ValueError('All failure and censoring times must be greater than zero.')
 
         # solve it
+        x, y = plotting_positions(failures=failures, right_censored=right_censored)
         self.gamma = 0
         sp = ss.gamma.fit(failures, floc=0, optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
         guess = [sp[2], sp[0]]
@@ -2995,6 +3021,7 @@ class Fit_Gamma_2P:
         df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
         self.results = df.set_index('Parameter')
         self.distribution = Gamma_Distribution(alpha=self.alpha, beta=self.beta)
+        self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=failures, show_plot=False), empirical_cdf=y)
 
         if print_results is True:
             pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
@@ -3111,6 +3138,7 @@ class Fit_Gamma_3P:
             data_shifted = all_data - self.gamma
         else:
             data_shifted = failures - self.gamma
+        x, y = plotting_positions(failures=failures - self.gamma, right_censored=right_censored - self.gamma)
         sp = ss.gamma.fit(data_shifted, floc=0, optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
         guess = [sp[2], sp[0], self.gamma]
         self.initial_guess = guess
@@ -3196,6 +3224,7 @@ class Fit_Gamma_3P:
         df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
         self.results = df.set_index('Parameter')
         self.distribution = Gamma_Distribution(alpha=self.alpha, beta=self.beta, gamma=self.gamma)
+        self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=failures, show_plot=False), empirical_cdf=y)
 
         if print_results is True:
             pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
@@ -3295,6 +3324,7 @@ class Fit_Beta_2P:
 
         # solve it
         self.gamma = 0
+        x, y = plotting_positions(failures=failures, right_censored=right_censored)
         sp = ss.beta.fit(all_data, floc=0, fscale=1, optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
         guess = [sp[0], sp[1]]
         result = minimize(value_and_grad(Fit_Beta_2P.LL), guess, args=(failures, right_censored), jac=True, method='L-BFGS-B', bounds=bnds)
@@ -3341,6 +3371,7 @@ class Fit_Beta_2P:
         df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
         self.results = df.set_index('Parameter')
         self.distribution = Beta_Distribution(alpha=self.alpha, beta=self.beta)
+        self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=failures, show_plot=False), empirical_cdf=y)
 
         if print_results is True:
             pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
@@ -3463,11 +3494,10 @@ class Fit_Loglogistic_2P:
         if min(all_data) < 0:
             raise ValueError('All failure and censoring times must be greater than zero.')
         self.gamma = 0
+        x, y = plotting_positions(failures=failures, right_censored=right_censored)
         # Obtain initial guess using either Least squares or Scipy
         if initial_guess_method == 'least squares':
             # obtain least squares estimate based on the plotting positions
-            from reliability.Probability_plotting import plotting_positions
-            x, y = plotting_positions(failures=failures, right_censored=right_censored)
             x_linearised = np.log(x)
             y_linearised = np.log(1 / np.array(y) - 1)
             slope, intercept, _, _, _ = ss.linregress(x_linearised, y_linearised)
@@ -3548,6 +3578,7 @@ class Fit_Loglogistic_2P:
         df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
         self.results = df.set_index('Parameter')
         self.distribution = Loglogistic_Distribution(alpha=self.alpha, beta=self.beta, alpha_SE=self.alpha_SE, beta_SE=self.beta_SE, Cov_alpha_beta=self.Cov_alpha_beta, CI=CI, CI_type=CI_type)
+        self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=failures, show_plot=False), empirical_cdf=y)
 
         if print_results is True:
             pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
@@ -3674,14 +3705,13 @@ class Fit_Loglogistic_3P:
             raise ValueError('All failure and censoring times must be greater than zero.')
         offset = 0.0001  # this is to ensure the lower bound for gamma is not equal to min(data) which would result in inf log-likelihood. This small offset fixes that issue
         gamma_initial_guess = min(all_data) - offset  # get a quick guess for gamma by setting it as the minimum of the data
+        x, y = plotting_positions(failures=failures - gamma_initial_guess, right_censored=right_censored - gamma_initial_guess)
         if initial_guess_method == 'scipy':  # default method
             data_shifted = all_data - gamma_initial_guess
             sp = ss.fisk.fit(data_shifted, floc=0, optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
             guess = [sp[2], sp[0], gamma_initial_guess]
             self.initial_guess = guess
         elif initial_guess_method in ['least squares', 'non-linear least squares']:
-            gamma_initial_guess = min(failures) - offset
-            x, y = plotting_positions(failures=failures - gamma_initial_guess, right_censored=right_censored - gamma_initial_guess)
             if len(failures) > 4:
                 x, y = x[1::], y[1::]  # this removes the first value which is almost always way left due to the gamma initial guess adjustment. It is only done if there is enough data (>4 failures)
             x_linearised = np.log(x)
@@ -3802,6 +3832,7 @@ class Fit_Loglogistic_3P:
         df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
         self.results = df.set_index('Parameter')
         self.distribution = Loglogistic_Distribution(alpha=self.alpha, beta=self.beta, gamma=self.gamma, alpha_SE=self.alpha_SE, beta_SE=self.beta_SE, Cov_alpha_beta=self.Cov_alpha_beta, CI=CI, CI_type=CI_type)
+        self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=failures, show_plot=False), empirical_cdf=y)
 
         if print_results is True:
             pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters

@@ -161,14 +161,13 @@ def histogram(data, white_above=None, bins=None, density=True, cumulative=False,
     histogram
 
     plots a histogram using the data specified
-    This is similar to plt.hist except that it calculates the optimal number of bins to use based on the Freedman–Diaconis rule ==> https://en.wikipedia.org/wiki/Freedman%E2%80%93Diaconis_rule
-    If you would like to specify the number of bins rather than having the optimal number calculated, then the bins argument allows this.
-    This function also shades the bins white above a specified value (white_above). This is useful for representing complete data as right censored data in a histogram.
+    This is similar to plt.hist except that it sets better defaults and also shades the bins white above a specified value (white_above).
+    This is useful for representing complete data as right censored data in a histogram.
 
     Inputs:
     data - the data to plot. Array or list.
     white_above - bins above this value will be shaded white
-    bins - the number of bins to use. Must be int. Leave empty to have the optimal number calculated automatically
+    bins - array of bin edges or string in ['auto','fd','doane','scott','stone','rice','sturges','sqrt']. Default is 'auto'. See https://numpy.org/doc/stable/reference/generated/numpy.histogram_bin_edges.html
     density - True/False. Default is True. Always use True if plotting with a probability distribution.
     cumulative - True/False. Default is False. Use False for PDF and True for CDF.
     kwargs - plotting kwargs for the histogram (color, alpha, etc.)
@@ -183,13 +182,8 @@ def histogram(data, white_above=None, bins=None, density=True, cumulative=False,
         if white_above < min(data):
             raise ValueError('white_above must be greater than min(data)')
 
-    if bins is not None:
-        if type(bins) is not int:
-            raise ValueError('bins is the number of bins to use. It must be type int. Leave empty to calculate the optimal number')
-    else:
-        iqr = np.subtract(*np.percentile(data, [75, 25]))  # interquartile range
-        bin_width = 2 * iqr * len(data) ** -(1 / 3)  # Freedman–Diaconis rule ==> https://en.wikipedia.org/wiki/Freedman%E2%80%93Diaconis_rule
-        bins = int(np.ceil((max(data) - min(data)) / bin_width))
+    if bins is None:
+        bins='auto' #uses numpy to calculate bin edges: https://numpy.org/doc/stable/reference/generated/numpy.histogram_bin_edges.html#numpy.histogram_bin_edges
 
     if 'color' in kwargs:
         color = kwargs.pop('color')
