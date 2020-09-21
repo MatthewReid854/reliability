@@ -10,6 +10,7 @@ sequential_sampling_chart - plots the accept/reject boundaries for a given set o
 reliability_test_planner - Finds the lower confidence bound on MTBF for a given test duration, number of failures, and specified confidence interval.
 reliability_test_duration - Finds the duration of a reliability test based on producers and consumers risk, and the MTBF design and MTBF required.
 chi2test - performs the chi-squared goodness of fit test to determine if we can accept or reject the hypothesis that data is from a distribution.
+KStest - performs the Kolmogorov-Smirnov goodness of fit test to determine if we can accept or reject the hypothesis that data is from a distribution.
 '''
 
 import scipy.stats as ss
@@ -449,8 +450,8 @@ class chi2test:
     '''
     chi2test
 
-    Performs the Chi-squared goodness of fit test to determine whether we can accept or reject the hypothesis that the data is from the specified distribution at the specified level of significance.
-    This method is not a means of comparing distributions (like AICc and BIC are), but instead allows us to accept or reject a hypothesis that data come from a distribution.
+    Performs the Chi-squared test for goodness of fit to determine whether we can accept or reject the hypothesis that the data is from the specified distribution at the specified level of significance.
+    This method is not a means of comparing distributions (which can be done with AICc, BIC, and AD), but instead allows us to accept or reject a hypothesis that data come from a distribution.
     Note that the result is sensitive to the bins. For this reason, it is recommended to leave bins as the default value.
 
     Inputs:
@@ -549,10 +550,8 @@ class KStest:
     '''
     KStest
 
-    Performs the Kolmogorov-Smirnov test for goodness of fit
-
     Performs the Kolmogorov-Smirnov goodness of fit test to determine whether we can accept or reject the hypothesis that the data is from the specified distribution at the specified level of significance.
-    This method is not a means of comparing distributions (like AICc and BIC are), but instead allows us to accept or reject a hypothesis that data come from a distribution.
+    This method is not a means of comparing distributions (which can be done with AICc, BIC, and AD), but instead allows us to accept or reject a hypothesis that data come from a distribution.
 
     Inputs:
     distribution - a distribution object created using the reliability.Distributions module
