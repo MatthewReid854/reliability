@@ -27,7 +27,7 @@ Inputs:
 - failures - the array or list of failure times
 - right_censored - the array or list of right censored failure times
 - fit_gamma - this is only included for Weibull, Gamma, Lognormal, and Exponential probability plots. Specify fit_gamma=True to fit the location shifted distribution.
-- h1 and h2 - these are the heuristic constants for plotting positions of the form (k-h1)/(n+h2). Default is h1=0.3,h2=0.4 which is the median rank method (same as in Minitab). You can specify any heuristic that follows this form. For more heuristics, see `wikipedia <https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics>`_.
+- a - this is the heuristic for plotting positions of the form (k-a)/(n+1-2a). Default is a=0.3 which is the median rank method (same as in Minitab). You can specify any heuristic that follows this form. For more heuristics, see `wikipedia <https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics>`_.
 - show_fitted_distribution - True/False. If True, the fitted distribution will be plotted on the probability plot. Defaults to True. If you want a probability plot with just the data points and no line for the distribution then set this to False.
 - plotting keywords are also accepted where relevant and they are mostly applied to the fitted distribution line. The exception to this is for color which defaults to red line and black points but if specified the chosen color will be applied to both line and points. This is useful when overlaying multiple datasets on a single probability plot.
 - keyword arguments for the plot are accepted (eg. color, linestyle, marker)
