@@ -77,12 +77,12 @@ class Weibull_Distribution:
 
     Creates a Distribution object.
 
-    inputs:
+    Inputs:
     alpha - scale parameter
     beta - shape parameter
     gamma - threshold (offset) parameter. Default = 0
 
-    methods:
+    Methods:
     name - 'Weibull'
     name2 = 'Weibull_2P' or 'Weibull_3P' depending on the value of the gamma parameter
     param_title_long - Useful in plot titles, legends and in printing strings. eg. 'Weibull Distribution (α=5,β=2)'
