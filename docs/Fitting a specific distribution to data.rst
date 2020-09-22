@@ -93,8 +93,8 @@ For the function plot_points the inputs are:
 -   failures - an array or list of failure data
 -   right_censored - an array or list of right censored data. Optional input
 -   func - the function to be plotted. Must be 'CDF', 'SF', or 'CHF'. Default is 'CDF'
--   h1 and h2 - these are the plotting heuristics. See `probability plotting <https://reliability.readthedocs.io/en/latest/Probability%20plots.html>`_ for more details.
--   keywords for the scatterplot are also accepted.
+-   a - this is the plotting heuristic. Default is 0.3. See `probability plotting <https://reliability.readthedocs.io/en/latest/Probability%20plots.html>`_ and `Wikipedia <https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics>`_ for more details.
+-   keywords for the scatter plot are also accepted.
 
 .. code:: python
 
