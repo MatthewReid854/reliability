@@ -458,7 +458,7 @@ class chi2test:
     distribution - a distribution object created using the reliability.Distributions module
     data - an array or list of data that are hypothesised to come from the distribution
     significance - This is the complement of confidence. 0.05 significance is the same as 95% confidence. Must be between 0 and 0.5. Default is 0.05.
-    bins - an array or list of the bin edges from which to group the data OR a string for the bin edge method from numpy. String options are auto, fd, doane, scott, stone, rice, sturges, or sqrt. For more information see the numpy documentation on numpy.histogram_bin_edge. Default is auto.
+    bins - an array or list of the bin edges from which to group the data OR a string for the bin edge method from numpy. String options are auto, fd, doane, scott, stone, rice, sturges, or sqrt. For more information see the numpy documentation on numpy.histogram_bin_edges. Default is auto.
     print_results - if True the results will be printed. Default is True
     show_plot - if True a plot of the distribution and histogram will be shown. Default is True.
 

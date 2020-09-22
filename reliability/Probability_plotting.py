@@ -220,6 +220,7 @@ def Weibull_probability_plot(failures=None, right_censored=None, fit_gamma=False
     plt.xlabel(xlabel)  # needs to be set after plotting the CDF to override the default 'xvals'
     probability_plot_xylims(x=x, y=y, dist='weibull', spacing=0.1)
     probability_plot_xyticks()
+    plt.subplots_adjust(top=0.92,bottom=0.09,left=0.12,right=0.94)
     return plt.gcf()
 
 
@@ -340,6 +341,7 @@ def Loglogistic_probability_plot(failures=None, right_censored=None, fit_gamma=F
     plt.xlabel(xlabel)  # needs to be set after plotting the CDF to override the default 'xvals'
     probability_plot_xylims(x=x, y=y, dist='loglogistic', spacing=0.1)
     probability_plot_xyticks()
+    plt.subplots_adjust(top=0.92, bottom=0.09, left=0.12, right=0.94)
     return plt.gcf()
 
 
@@ -446,6 +448,7 @@ def Exponential_probability_plot_Weibull_Scale(failures=None, right_censored=Non
     plt.xlabel(xlabel)  #### needs to be set after plotting the CDF to override the default 'xvals'
     probability_plot_xylims(x=x, y=y, dist='weibull', spacing=0.1)
     probability_plot_xyticks()
+    plt.subplots_adjust(top=0.92, bottom=0.09, left=0.12, right=0.94)
     return plt.gcf()
 
 
@@ -500,6 +503,7 @@ def Normal_probability_plot(failures=None, right_censored=None, __fitted_dist_pa
     plt.ylabel('Fraction failing')
     probability_plot_xylims(x=x, y=y, dist='normal', spacing=0.1)
     probability_plot_xyticks()
+    plt.subplots_adjust(top=0.92, bottom=0.09, left=0.12, right=0.94)
     return plt.gcf()
 
 
@@ -606,6 +610,7 @@ def Lognormal_probability_plot(failures=None, right_censored=None, fit_gamma=Fal
     plt.xlabel(xlabel)
     probability_plot_xylims(x=x, y=y, dist='lognormal', spacing=0.1)
     probability_plot_xyticks()
+    plt.subplots_adjust(top=0.92, bottom=0.09, left=0.12, right=0.94)
     return plt.gcf()
 
 
@@ -662,6 +667,7 @@ def Beta_probability_plot(failures=None, right_censored=None, __fitted_dist_para
     plt.gcf().set_size_inches(9, 9)  # adjust the figsize. This is done outside of figure creation so that layering of multiple plots is possible
     probability_plot_xylims(x=x, y=y, dist='beta', spacing=0.1, beta_alpha=alpha, beta_beta=beta)
     probability_plot_xyticks()
+    plt.subplots_adjust(top=0.92, bottom=0.09, left=0.12, right=0.94)
     return plt.gcf()
 
 
@@ -767,6 +773,7 @@ def Gamma_probability_plot(failures=None, right_censored=None, fit_gamma=False, 
     plt.xlabel(xlabel)
     probability_plot_xylims(x=x, y=y, dist='gamma', spacing=0.1, gamma_beta=beta)
     probability_plot_xyticks()
+    plt.subplots_adjust(top=0.92, bottom=0.09, left=0.12, right=0.94)
     return plt.gcf()
 
 
@@ -856,6 +863,7 @@ def Exponential_probability_plot(failures=None, right_censored=None, fit_gamma=F
     plt.xlabel(xlabel)  #### needs to be set after plotting the CDF to override the default 'xvals'
     probability_plot_xylims(x=x, y=y, dist='exponential', spacing=0.1)
     probability_plot_xyticks()
+    plt.subplots_adjust(top=0.92, bottom=0.09, left=0.12, right=0.94)
     return plt.gcf()
 
 
