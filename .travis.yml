@@ -6,16 +6,21 @@ python:
   - "3.6"
   - "3.7"
   - "3.8"
+
+# ensure pip is upgraded
+before_install:
+  - pip install pip --upgrade;
 # command to install dependencies
 install:
   - pip install -r requirements.txt
   - pip install .
+  - pip install codecov
 # command to run tests
 script:
   - pytest
 # don't want email results
 notifications:
   email: false
-# run codecov
+# upload the codecov report
 after_success:
   - bash <(curl -s https://codecov.io/bash)
