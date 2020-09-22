@@ -8,7 +8,9 @@ Quickstart for reliability
 Installation and upgrading
 --------------------------
 
-To install *reliability* for the first time, open your command prompt and type:
+If you are new to using Python, you will first need to install a `Python 3 <https://www.python.org/downloads/>`_ interpreter and also install an IDE so that you can interact with the code. There are many `good IDEs <https://www.guru99.com/python-ide-code-editor.html>`_ available including `Pycharm <https://www.jetbrains.com/pycharm/>`_, `Spyder <https://www.spyder-ide.org/>`_ and `Jupyter <https://jupyter.org/install.html>`_.
+
+Once you have Python installed, to install *reliability* for the first time, open your command prompt and type:
 
 .. code-block:: console
 
@@ -43,7 +45,7 @@ In this example, we will create a Weibull Distribution, and from that distributi
     plt.legend()
     plt.show()
 
-.. image:: images/quickstart.png
+.. image:: images/quickstart1.png
 
 A key feature of ``reliability`` is that probability distributions are created as objects, and these objects have many properties (such as the mean) that are set once the parameters of the distribution are defined. Using the dot operator allows us to access these properties as well as a large number of methods (such as drawing random samples as seen in the example above).
 
