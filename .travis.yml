@@ -14,10 +14,11 @@ before_install:
 install:
   - pip install -r requirements.txt
   - pip install .
-  - pip install codecov
+  - pip install coverage
 # command to run tests
 script:
-  - pytest
+  #- pytest
+  - coverage run -m pytest
 # don't want email results
 notifications:
   email: false
