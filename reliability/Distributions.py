@@ -4142,7 +4142,7 @@ class Mixture_Model:
             sf += distributions[i].SF(X, show_plot=False) * proportions[i]
 
         pdf = np.diff(np.hstack([[0], 1 - sf])) / np.diff(np.hstack([[0], X]))  # this formula is equivalent to dy/dx of the CDF
-        pdf[0] = 0  # fixes a nan artifact of np.diff for the first value
+        pdf[0] = 0  # fixes a nan artifact of np.diff for the first value.
         hf = np.diff(np.hstack([[0], -np.log(sf)])) / np.diff(np.hstack([[0], X]))  # this formula is equivalent to dy/dx of the CHF
         hf[0] = hf[1] + (X[0] - X[1]) * (hf[2] - hf[1]) / (X[2] - X[1])  # linear interpolation for hf[0] to correct for nan artifact from np.diff. Can't just set it equal to 0 as it's not like the pdf.
         if hf[0] < 0:
