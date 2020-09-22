@@ -51,8 +51,9 @@ Outputs (the following example outputs are for the Fit_Weibull_2P distribution b
 -   beta - the fitted Weibull_2P beta parameter
 -   loglik - Log-Likelihood (as used in Minitab and Reliasoft)
 -   loglik2 - Log-Likelihood*-2 (as used in JMP Pro)
--   AICc - Akaike Information Criterion
--   BIC - Bayesian Information Criterion
+-   AICc - Akaike Information Criterion (goodness of fit statistic)
+-   BIC - Bayesian Information Criterion (goodness of fit statistic)
+-   AD - the Anderson-Darling goodness of fit statistic (uses the same formula as Minitab)
 -   distribution - a Distribution object with the parameters of the fitted distribution
 -   alpha_SE - the standard error (sqrt(variance)) of the parameter
 -   beta_SE - the standard error (sqrt(variance)) of the parameter. This will be '' if the shape parameter has been forced to a set value.
@@ -70,7 +71,7 @@ To learn how we can fit a distribution, we will start by using a simple example 
 
     from reliability.Fitters import Fit_Weibull_2P
     import matplotlib.pyplot as plt
-    data = [42.1605147, 51.0479599, 41.424553, 35.0159047, 87.3087644, 30.7435371, 52.2003467, 35.9354271, 71.8373629, 59.171129]
+    data = [58,75,36,52,63,65,22,17,28,64,23,40,73,45,52,36,52,60,13,55,82,55,34,57,23,42,66,35,34,25] # made using Weibull Distribution(alpha=50,beta=3)
     wb = Fit_Weibull_2P(failures=data)
     plt.show()
 
@@ -78,12 +79,12 @@ To learn how we can fit a distribution, we will start by using a simple example 
     Results from Fit_Weibull_2P (95% CI):
                Point Estimate  Standard Error   Lower CI   Upper CI
     Parameter                                                      
-    Alpha           56.682213        6.062570  45.962610  69.901889
-    Beta             3.141680        0.733552   1.987993   4.964886
-    Log-Likelihood: -42.4263105092607
+    Alpha           51.857992        3.556283  45.335934  59.318317
+    Beta             2.800861        0.414110   2.096238   3.742333
+    Log-Likelihood: -129.0626756550746 
     '''
 
-.. image:: images/Fit_Weibull_2P_V2.png
+.. image:: images/Fit_Weibull_2P_V3.png
 
 The above probability plot is the typical way to visualise how the CDF (the blue line) models the failure data (the black points). If you would like to view the failure points alongside the CDF, SF, or CHF without the axis being scaled then you can generate the scatter plot using the function plot_points which is available within reliability.Probability_plotting. In the example below we create some data, then fit a Weibull distribution to the data (ensuring we turn off the probability plot). From the fitted distribution object we plot the Survival Function (SF). We then use plot_points to generate a scatter plot of the plotting positions for the survival function.
 
@@ -101,6 +102,7 @@ For the function plot_points the inputs are:
     from reliability.Fitters import Fit_Weibull_2P
     from reliability.Probability_plotting import plot_points
     import matplotlib.pyplot as plt
+    
     data = Weibull_Distribution(alpha=25,beta=4).random_samples(30)
     weibull_fit = Fit_Weibull_2P(failures=data,show_probability_plot=False,print_results=False)
     weibull_fit.distribution.SF(label='Fitted Distribution',color='steelblue')
@@ -108,7 +110,7 @@ For the function plot_points the inputs are:
     plt.legend()
     plt.show()
 
-.. image:: images/plot_points_V2.png
+.. image:: images/plot_points_V3.png
 
 It is beneficial to see the effectiveness of the fitted distribution in comparison to the original distribution. In this second example, we are creating 500 samples from a Weibull distribution and then we will right censor all of the data above our chosen threshold. Then we are fitting a Weibull_3P distribution to the data. Note that we need to specify "show_probability_plot=False, print_results=False" in the Fit_Weibull_3P to prevent the normal outputs of the fitting function from being displayed.
 
@@ -144,7 +146,7 @@ It is beneficial to see the effectiveness of the fitted distribution in comparis
     Gamma 20.383900235710296
     '''
 
-.. image:: images/Fit_Weibull_3P_right_cens_V4.png
+.. image:: images/Fit_Weibull_3P_right_cens_V5.png
 
 As a final example, we will fit a Gamma_2P distribution to some partially right censored data. To provide a comparison of the fitting accuracy as the number of samples increases, we will do the same experiment with varying sample sizes. The results highlight that the accuracy of the fit is proportional to the amount of samples, so you should always try to obtain more data if possible.
 
