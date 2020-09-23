@@ -7,7 +7,7 @@ Fitting a specific distribution to data
 
 The module ``reliability.Fitters`` provides many probability distribution fitting functions. These functions can be thought of in two categories; non-location shifted distributions [eg. Weibull (α,β)], and location shifted distributions [eg. Weibull (α,β,γ)]. All of the distributions can be fitted to both complete and imcomplete (right censored) data. All distributions in the Fitters module are named with their number of parameters (eg. Fit_Weibull_2P uses α,β, whereas Fit_Weibull_3P uses α,β,γ). This is intended to remove ambiguity about what distribution you are fitting.
 
-Distributions are fitted simply by using the desired function and specifying the data as failures or right_censored data. You must have at least as many failures as there are distribution parameters or the fit would be under-constrained. It is generally advisable to have at least 4 data points as the accuracy of the fit is proportional to the amount of data. Once fitted, the results are assigned to an object and the fitted parameters can be accessed by name, as shown in the examples below. The goodness of fit criterions are also available as AICc (Akaike Information Criterion corrected) and BIC (Bayesian Information Criterion), though these are more useful when comparing the fit of multiple distributions such as in the `Fit_Everything <https://reliability.readthedocs.io/en/latest/Fitting%20all%20available%20distributions%20to%20data.html>`_ function. As a matter of convenience, each of the modules in Fitters also generates a distribution object that has the parameters of the fitted distribution.
+Distributions are fitted simply by using the desired function and specifying the data as failures or right_censored data. You must have at least as many failures as there are distribution parameters or the fit would be under-constrained. It is generally advisable to have at least 4 data points as the accuracy of the fit is proportional to the amount of data. Once fitted, the results are assigned to an object and the fitted parameters can be accessed by name, as shown in the examples below. The goodness of fit criterions are also available as AICc (Akaike Information Criterion corrected), BIC (Bayesian Information Criterion), and AD (Anderson-Darling), though these are more useful when comparing the fit of multiple distributions such as in the `Fit_Everything <https://reliability.readthedocs.io/en/latest/Fitting%20all%20available%20distributions%20to%20data.html>`_ function. As a matter of convenience, each of the modules in Fitters also generates a distribution object that has the parameters of the fitted distribution.
 
 The supported distributions are:
 
@@ -19,6 +19,8 @@ The supported distributions are:
 -   Gamma_3P
 -   Lognormal_2P
 -   Lognormal_3P
+-   Loglogistic_2P
+-   Loglogistic_3P
 -   Normal_2P
 -   Beta_2P
 -   Weibull_Mixture (see the `section <https://reliability.readthedocs.io/en/latest/Weibull%20mixture%20models.html>`_ on this)
@@ -29,11 +31,11 @@ The supported distributions are:
 
 .. note:: Heavily censored data (>99.9% censoring) may result in a failure of the optimizer to find a solution. If you have heavily censored data, you may have a limited failure population problem. It is recommended that you do not try fitting one of these standard distributions to such a dataset as your results (while they may have achieved a successful fit) will be a poor description of your overall population statistic and you risk drawing the wrong conclusions when the wrong model is fitted. The limited failure population model is planned for a future release of reliability, though development on this model is yet to commence. In the meantime, see JMP Pro's model for `Defective Subpopulations. <https://www.jmp.com/en_my/events/ondemand/statistical-methods-in-reliability/defective-subpopulation-distributions.html>`_
 
-.. note:: The confidence intervals shown on the plots below are only available for the Exponential (1P and 2P) and Weibull (2P and 3P) fitters. This library is in active development and over the next few months the confidence intervals will be added to the Normal and Lognormal Fitters followed by the Gamma and Beta Fitters.
+.. note:: The confidence intervals shown on the plots below are only available for the Exponential (1P and 2P) and Weibull (2P and 3P) fitters. This library is being actively developed and over the next few months the confidence intervals will be added for the rest of the Fitters.
 
-If you do not know which distribution you want to fit, then please see the `section <https://reliability.readthedocs.io/en/latest/Fitting%20all%20available%20distributions%20to%20data.html>`_ on using the Fit_Everything function which will find the best distribution to describe your data. It is highly recommended that you always try to fit everything and accept the best fit rather than choosing a particular distribution for other reasons.
+If you do not know which distribution you want to fit, then please see the `section <https://reliability.readthedocs.io/en/latest/Fitting%20all%20available%20distributions%20to%20data.html>`_ on using the Fit_Everything function which will find the best distribution to describe your data. It is highly recommended that you always try to fit everything and accept the best fit rather than choosing a particular distribution for subjective reasons.
 
-Each of the fitters listed above (except Fit_Weibull_Mixture and Fit_Weibull_2P_grouped) has the following inputs and outputs:
+Each of the fitters listed above (except Fit_Weibull_Mixture, Fit_Weibull_CR, and Fit_Weibull_2P_grouped) has the following inputs and outputs:
 
 Inputs:
 
@@ -42,7 +44,7 @@ Inputs:
 -   show_probability_plot - True/False. Defaults to True. Produces a probability plot of the failure data and fitted distribution.
 -   print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
 -   CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
--   force_beta (in Fit_Weibull_2P) or force_sigma (in Fit_Normal_2P and Fit_Lognormal_2P). This allows the user to force the shape parameter to be a set value. Useful for ALT probability plotting. Optional input. Not available for Fit_Beta_2P (due to there being 2 shape parameters), Fit_Expon_1P (due to there being only 1 parameter), Fit_Gamma_2P (due to Gamma_2P not being suitable for ALT probability plotting) or any of the location shifted distributions (due to these not typically being used for ALT probability plotting).
+-   force_beta (in Fit_Weibull_2P) or force_sigma (in Fit_Normal_2P and Fit_Lognormal_2P). This allows the user to force the shape parameter to be a set value. Useful for ALT probability plotting. Optional input and only available for Fit_Weibull_2P, Fit_Normal_2P and Fit_Lognormal_2P as these are the distributions typically used in ALT probability plotting.
 -   keyword argumets are also accepted for the probability plot (eg. color, linestyle, marker)
 
 Outputs (the following example outputs are for the Fit_Weibull_2P distribution but for other distributions the parameter names may be different from alpha and beta):
@@ -63,9 +65,9 @@ Outputs (the following example outputs are for the Fit_Weibull_2P distribution b
 -   beta_upper - the upper CI estimate of the parameter. This will be '' if the shape parameter has been forced to a set value.
 -   beta_lower - the lower CI estimate of the parameter. This will be '' if the shape parameter has been forced to a set value.
 -   results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
--   success - True/False. Indicated whether the solution was found by autograd. If success is False a warning will be printed indicating that scipy's fit was used as autograd failed. This fit will not be accurate if there is censored data as scipy does not have the ability to fit censored data. Failure of autograd to find the solution should be rare and if it occurs, it is likely that the distribution is an extremely bad fit for the data. Try scaling your data, removing extreme values, or using another distribution.
+-   success - True/False. Indicated whether the solution was found by autograd. If success is False a warning will be printed indicating that the initial guess was used as autograd failed. This fit will not be accurate if there is censored data. Failure of autograd to find the solution should be rare and if it occurs, it is likely that the distribution is an extremely bad fit for the data. Try scaling your data, removing extreme values, or using another distribution.
 
-To learn how we can fit a distribution, we will start by using a simple example with 10 failure times. These times were generated from a Weibull distribution with α=50, β=2. Note that the output also provides the confidence intervals and standard error of the parameter estimates. The probability plot is generated be default (you will need to specify plt.show() to show it). See the section on `probability plotting <https://reliability.readthedocs.io/en/latest/Probability%20plots.html#what-does-a-probability-plot-show-me>`_ to learn how to interpret this plot.
+To learn how we can fit a distribution, we will start by using a simple example with 30 failure times. These times were generated from a Weibull distribution with α=50, β=3. Note that the output also provides the confidence intervals and standard error of the parameter estimates. The probability plot is generated be default (you will need to specify plt.show() to show it). See the section on `probability plotting <https://reliability.readthedocs.io/en/latest/Probability%20plots.html#what-does-a-probability-plot-show-me>`_ to learn how to interpret this plot.
 
 .. code:: python
 
@@ -92,7 +94,7 @@ For the function plot_points the inputs are:
 
 -   failures - an array or list of failure data
 -   right_censored - an array or list of right censored data. Optional input
--   func - the function to be plotted. Must be 'CDF', 'SF', or 'CHF'. Default is 'CDF'
+-   func - the function to be plotted. Must be 'PDF','CDF', 'SF', 'HF', or 'CHF'. Default is 'CDF'. Note that the options for 'PDF' and 'HF' will look much more scattered as they are found using the integral of a non-continuous function.
 -   a - this is the plotting heuristic. Default is 0.3. See `probability plotting <https://reliability.readthedocs.io/en/latest/Probability%20plots.html>`_ and `Wikipedia <https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics>`_ for more details.
 -   keywords for the scatter plot are also accepted.
 
@@ -207,7 +209,7 @@ Using Fit_Weibull_2P_grouped for large data sets
 The function Fit_Weibull_2P_grouped is effectively the same as Fit_Weibull_2P, except for a few small differences that make it more efficient at handling grouped data sets. Grouped data sets are typically found in very large data that may be heavily censored. The function includes a choice between two optimizers and a choice between two initial guess methods for the initial guess that is given to the optimizer. These help in cases where the data is very heavily censored (>99.9%). The defaults for these options are usually the best but you may want to try different options to see which one gives you the lowest log-likelihood. The inputs and outputs are the same as for Fit_Weibull_2P except for the following:
 
 - initial_guess_method - 'scipy' OR 'least squares'. Default is 'least squares'. Both do not take into account censored data but scipy uses MLE, and least squares is least squares regression of the plotting positions. Least squares proved more accurate during testing.
-- optimizer - 'L-BFGS-B' or 'TNC'. These are both bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see the `scipy documentation <https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize>`_.
+- optimizer - 'L-BFGS-B' or 'TNC'. These are both bound-constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see the `scipy documentation <https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize>`_.
 - dataframe - a pandas dataframe of the appropriate format. The requirements of the input dataframe are: The column titles MUST be 'category', 'time', 'quantity'. The category values MUST be 'F' for failure or 'C' for censored (right censored). The time values are the failure or right censored times. The quantity is the number of items at that time. The quantity must be specified for all values even if the quantity is 1.
 
 The following example shows how we can use Fit_Weibull_2P_grouped to fit a Weibull_2P distribution to grouped data from a spreadsheet (shown below) on the Windows desktop. We change the optimiser from the default (L-BFGS-B) to TNC as it is more successful for this dataset. In almost all cases the L-BFGS-B optimizer is better than TNC but it is worth trying both if the first does not look good. You may also want to try changing the initial_guess_method as the results from the optimizers can be sensitive to their initial guess for problems in which there are local minima or insufficient gradients to find the global minima. If you would like to access this data, it is available in reliability.Datasets.electronics and includes both the failures and right_censored format as well as the dataframe format. An example of this is provided in the code below (option 2).
