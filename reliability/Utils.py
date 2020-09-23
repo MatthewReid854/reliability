@@ -265,7 +265,7 @@ def restore_axes_limits(limits, dist, func, X, Y, xvals=None, xmin=None, xmax=No
                     xlim_lower = max(0, dist.quantile(0.001) - diff * 0.1)
             elif dist.name == 'Normal':
                 xlim_lower = dist.quantile(0.001)
-            elif dist.name == 'Beta':
+            elif dist.name in ['Beta', 'Mixture', 'Competing risks']:
                 xlim_lower = 0
             else:
                 raise ValueError('Unrecognised distribution name')
@@ -644,6 +644,16 @@ def probability_plot_xyticks():
             ax.xaxis.set_major_locator(loc_x)  # reapply the locator
 
     ax.xaxis.set_major_formatter(ticker.FuncFormatter(customFormatter))  # the custom formatter is always applied to the major ticks
+
+    num_major_x_ticks_shown = len(get_xtick_locations('major'))
+    num_minor_x_xticks_shown = len(get_xtick_locations('minor'))
+    if max(abs(xlower), abs(xupper)) < 1000 and min(abs(xlower), abs(xupper)) > 0.001:
+        max_minor_ticks = 15
+    else:
+        max_minor_ticks = 10
+
+    if num_major_x_ticks_shown < 2 and num_minor_x_xticks_shown <= max_minor_ticks:
+        ax.xaxis.set_minor_formatter(ticker.FuncFormatter(customFormatter))  # if there are less than 2 major ticks within the plotting limits then the minor ticks should be labeled. Only do this if there aren't too many minor ticks
 
     ################# yticks
     loc_y = ticker.MaxNLocator(nbins=20, steps=[1, 2, 5, 10])

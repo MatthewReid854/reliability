@@ -77,12 +77,12 @@ class Weibull_Distribution:
 
     Creates a Distribution object.
 
-    Inputs:
+    inputs:
     alpha - scale parameter
     beta - shape parameter
     gamma - threshold (offset) parameter. Default = 0
 
-    Methods:
+    methods:
     name - 'Weibull'
     name2 = 'Weibull_2P' or 'Weibull_3P' depending on the value of the gamma parameter
     param_title_long - Useful in plot titles, legends and in printing strings. eg. 'Weibull Distribution (α=5,β=2)'
@@ -3620,23 +3620,28 @@ class Competing_Risks_Model:
         distributions = self.distributions
 
         # obtain the X values
+        xmin0 = 10 ** 30  # these are just initial values which get changed during the xmin0 xmax0 update as each distribution is examined
+        xmax0 = 0
+        for dist in distributions:
+            xmin0 = min(xmin0, dist.quantile(0.01))
+            xmax0 = max(xmax0, dist.quantile(0.99))
+        delta = xmax0 - xmin0
+        if xmin0 < 0:
+            xmin0 = 0  # nothing below 0 is allowed
+        else:
+            if xmin0 - 0.3 * delta <= 0:
+                xmin0 = 1e-5
+
         if xvals is not None:
             X = xvals
-        elif xmin is not None and xmax is not None:
-            X = np.linspace(xmin, xmax, 1000)
         else:
-            xmin0 = 10 ** 30  # these are just initial values which get changed during the xmin0 xmax0 update as each distribution is examined
-            xmax0 = 0
-            for dist in distributions:
-                xmin0 = min(xmin0, dist.quantile(0.01))
-                xmax0 = max(xmax0, dist.quantile(0.99))
-            delta = xmax0 - xmin0
-            if xmin0 < 0:
-                xmin0 = 0
-            else:
-                if xmin0 - 0.3 * delta <= 0:
-                    xmin0 = 1e-5
-            X = np.linspace(xmin0, xmax0 * 2, 1000)  # this is a big array because everything is numerical rather than empirical. Small array sizes will lead to blocky (inaccurate) results.
+            if xmin is None:
+                xmin = xmin0
+            if xmax is None:
+                xmax = xmax0
+            if xmin > xmax:
+                xmin, xmax = xmax, xmin
+            X = np.linspace(xmin, xmax, 1000)  # this is a big array because everything is numerical rather than empirical. Small array sizes will lead to blocky (inaccurate) results.
 
         # convert to numpy array if given list. raise error for other types. check for values below 0.
         if type(X) is list:
@@ -3655,7 +3660,7 @@ class Competing_Risks_Model:
             sf *= distributions[i].SF(X, show_plot=False)
             hf += distributions[i].HF(X, show_plot=False)
         pdf = sf * hf
-        np.nan_to_num(pdf, copy=False, nan=0.0, posinf=None, neginf=None)  # because the hf is nan (which is expected due to being pdf/sf=0/0)
+        np.nan_to_num(pdf, copy=False, nan=0.0, posinf=None, neginf=None)  # because the hf contains nan (which is expected due to being pdf/sf=0/0)
 
         # these are all hidden to the user but can be accessed by the other functions in this module
         self.__xvals = X
@@ -3664,6 +3669,8 @@ class Competing_Risks_Model:
         self.__sf = sf
         self.__hf = hf
         self.__chf = -np.log(sf)
+        self._pdf0 = pdf[0]
+        self._hf0 = hf[0]
 
     def plot(self, xvals=None, xmin=None, xmax=None):
         '''
@@ -3684,20 +3691,30 @@ class Competing_Risks_Model:
         plt.figure(figsize=(9, 7))
         text_title = str('Competing Risks Model')
         plt.suptitle(text_title, fontsize=15)
+
         plt.subplot(231)
         plt.plot(self.__xvals, self.__pdf)
+        restore_axes_limits([(0, 1), (0, 1), False], dist=self, func='PDF', X=self.__xvals, Y=self.__pdf, xvals=xvals, xmin=xmin, xmax=xmax)
         plt.title('Probability Density\nFunction')
+
         plt.subplot(232)
         plt.plot(self.__xvals, self.__cdf)
+        restore_axes_limits([(0, 1), (0, 1), False], dist=self, func='CDF', X=self.__xvals, Y=self.__cdf, xvals=xvals, xmin=xmin, xmax=xmax)
         plt.title('Cumulative Distribution\nFunction')
+
         plt.subplot(233)
         plt.plot(self.__xvals, self.__sf)
+        restore_axes_limits([(0, 1), (0, 1), False], dist=self, func='SF', X=self.__xvals, Y=self.__sf, xvals=xvals, xmin=xmin, xmax=xmax)
         plt.title('Survival Function')
+
         plt.subplot(234)
         plt.plot(self.__xvals, self.__hf)
+        restore_axes_limits([(0, 1), (0, 1), False], dist=self, func='HF', X=self.__xvals, Y=self.__hf, xvals=xvals, xmin=xmin, xmax=xmax)
         plt.title('Hazard Function')
+
         plt.subplot(235)
         plt.plot(self.__xvals, self.__chf)
+        restore_axes_limits([(0, 1), (0, 1), False], dist=self, func='CHF', X=self.__xvals, Y=self.__chf, xvals=xvals, xmin=xmin, xmax=xmax)
         plt.title('Cumulative Hazard\nFunction')
 
         # descriptive statistics section
@@ -3756,12 +3773,16 @@ class Competing_Risks_Model:
                 textlabel = kwargs.pop('label')
             else:
                 textlabel = 'Competing risks model'
+            limits = get_axes_limits()
             plt.plot(self.__xvals, self.__pdf, label=textlabel, **kwargs)
             plt.xlabel('x values')
             plt.ylabel('Probability density')
             text_title = str('Competing Risks Model\n' + ' Probability Density Function')
             plt.title(text_title)
-            plt.subplots_adjust(top=0.81)
+            plt.subplots_adjust(top=0.87)
+
+            restore_axes_limits(limits, dist=self, func='PDF', X=self.__xvals, Y=self.__pdf, xvals=xvals, xmin=xmin, xmax=xmax)
+
             return self.__pdf
 
     def CDF(self, xvals=None, xmin=None, xmax=None, show_plot=True, plot_components=False, **kwargs):
@@ -3793,12 +3814,16 @@ class Competing_Risks_Model:
                 textlabel = kwargs.pop('label')
             else:
                 textlabel = 'Competing risks model'
+            limits = get_axes_limits()
             plt.plot(self.__xvals, self.__cdf, label=textlabel, **kwargs)
             plt.xlabel('x values')
             plt.ylabel('Fraction failing')
             text_title = str('Competing Risks Model\n' + ' Cumulative Distribution Function')
             plt.title(text_title)
-            plt.subplots_adjust(top=0.81)
+            plt.subplots_adjust(top=0.87)
+
+            restore_axes_limits(limits, dist=self, func='CDF', X=self.__xvals, Y=self.__cdf, xvals=xvals, xmin=xmin, xmax=xmax)
+
             return self.__cdf
 
     def SF(self, xvals=None, xmin=None, xmax=None, show_plot=True, plot_components=False, **kwargs):
@@ -3830,12 +3855,16 @@ class Competing_Risks_Model:
                 textlabel = kwargs.pop('label')
             else:
                 textlabel = 'Competing risks model'
+            limits = get_axes_limits()
             plt.plot(self.__xvals, self.__sf, label=textlabel, **kwargs)
             plt.xlabel('x values')
             plt.ylabel('Fraction surviving')
             text_title = str('Competing Risks Model\n' + ' Survival Function')
             plt.title(text_title)
-            plt.subplots_adjust(top=0.81)
+            plt.subplots_adjust(top=0.87)
+
+            restore_axes_limits(limits, dist=self, func='SF', X=self.__xvals, Y=self.__sf, xvals=xvals, xmin=xmin, xmax=xmax)
+
             return self.__sf
 
     def HF(self, xvals=None, xmin=None, xmax=None, show_plot=True, plot_components=False, **kwargs):
@@ -3860,21 +3889,23 @@ class Competing_Risks_Model:
         if show_plot == False:
             return self.__hf
         else:
+            if plot_components is True:  # this will plot the distributions that make up the components of the model
+                for dist in self.distributions:
+                    dist.HF(xvals=self.__xvals, label=dist.param_title_long)
             if 'label' in kwargs:
                 textlabel = kwargs.pop('label')
             else:
                 textlabel = 'Competing risks model'
+            limits = get_axes_limits()
             plt.plot(self.__xvals, self.__hf, label=textlabel, **kwargs)
-            ylims = plt.ylim()
-            if plot_components is True:  # this will plot the distributions that make up the components of the model
-                for dist in self.distributions:
-                    dist.HF(xvals=self.__xvals, label=dist.param_title_long)
-            plt.ylim(0, ylims[1])
             plt.xlabel('x values')
             plt.ylabel('Hazard')
             text_title = str('Competing Risks Model\n' + ' Hazard Function')
             plt.title(text_title)
-            plt.subplots_adjust(top=0.81)
+            plt.subplots_adjust(top=0.87)
+
+            restore_axes_limits(limits, dist=self, func='HF', X=self.__xvals, Y=self.__hf, xvals=xvals, xmin=xmin, xmax=xmax)
+
             return self.__hf
 
     def CHF(self, xvals=None, xmin=None, xmax=None, show_plot=True, plot_components=False, **kwargs):
@@ -3906,12 +3937,16 @@ class Competing_Risks_Model:
                 textlabel = kwargs.pop('label')
             else:
                 textlabel = 'Competing risks model'
+            limits = get_axes_limits()
             plt.plot(self.__xvals, self.__chf, label=textlabel, **kwargs)
             plt.xlabel('x values')
             plt.ylabel('Cumulative Hazard')
             text_title = str('Competing Risks Model\n' + ' Cumulative Hazard Function')
             plt.title(text_title)
-            plt.subplots_adjust(top=0.81)
+            plt.subplots_adjust(top=0.87)
+
+            restore_axes_limits(limits, dist=self, func='CHF', X=self.__xvals, Y=self.__chf, xvals=xvals, xmin=xmin, xmax=xmax)
+
             return self.__chf
 
     def quantile(self, q):
@@ -4106,25 +4141,29 @@ class Mixture_Model:
         distributions = self.distributions
         proportions = self.proportions
 
-        n = 1000
         # obtain the X values
+        xmin0 = 10 ** 30  # these are just initial values which get changed during the xmin0 xmax0 update as each distribution is examined
+        xmax0 = 0
+        for dist in distributions:
+            xmin0 = min(xmin0, dist.quantile(0.001))
+            xmax0 = max(xmax0, dist.quantile(0.999))
+        delta = xmax0 - xmin0
+        if xmin0 < 0:
+            xmin0 = 0
+        else:
+            if xmin0 - 0.3 * delta <= 0:
+                xmin0 = 1e-5
+
         if xvals is not None:
             X = xvals
-        elif xmin is not None and xmax is not None:
-            X = np.linspace(xmin, xmax, n)
         else:
-            xmin0 = 10 ** 30  # these are just initial values which get changed during the xmin0 xmax0 update as each distribution is examined
-            xmax0 = 0
-            for dist in distributions:
-                xmin0 = min(xmin0, dist.quantile(0.01))
-                xmax0 = max(xmax0, dist.quantile(0.99))
-            delta = xmax0 - xmin0
-            if xmin0 < 0:
-                xmin0 = 0
-            else:
-                if xmin0 - 0.3 * delta <= 0:
-                    xmin0 = 1e-5
-            X = np.linspace(xmin0, xmax0 * 2, n)  # this is a big array because everything is numerical rather than empirical. Small array sizes will lead to blocky (inaccurate) results.
+            if xmin is None:
+                xmin = xmin0
+            if xmax is None:
+                xmax = xmax0
+            if xmin > xmax:
+                xmin, xmax = xmax, xmin
+            X = np.linspace(xmin, xmax, 1000)  # this is a big array because everything is numerical rather than empirical. Small array sizes will lead to blocky (inaccurate) results.
 
         # convert to numpy array if given list. raise error for other types. check for values below 0.
         if type(X) is list:
@@ -4154,6 +4193,8 @@ class Mixture_Model:
         self.__sf = sf
         self.__hf = hf
         self.__chf = -np.log(sf)
+        self._pdf0 = pdf[0]
+        self._hf0 = hf[0]
 
     def plot(self, xvals=None, xmin=None, xmax=None):
         '''
@@ -4176,20 +4217,30 @@ class Mixture_Model:
         plt.figure(figsize=(9, 7))
         text_title = str('Mixture Model')
         plt.suptitle(text_title, fontsize=15)
+
         plt.subplot(231)
         plt.plot(self.__xvals, self.__pdf)
+        restore_axes_limits([(0, 1), (0, 1), False], dist=self, func='PDF', X=self.__xvals, Y=self.__pdf, xvals=xvals, xmin=xmin, xmax=xmax)
         plt.title('Probability Density\nFunction')
+
         plt.subplot(232)
         plt.plot(self.__xvals, self.__cdf)
+        restore_axes_limits([(0, 1), (0, 1), False], dist=self, func='CDF', X=self.__xvals, Y=self.__cdf, xvals=xvals, xmin=xmin, xmax=xmax)
         plt.title('Cumulative Distribution\nFunction')
+
         plt.subplot(233)
         plt.plot(self.__xvals, self.__sf)
+        restore_axes_limits([(0, 1), (0, 1), False], dist=self, func='SF', X=self.__xvals, Y=self.__sf, xvals=xvals, xmin=xmin, xmax=xmax)
         plt.title('Survival Function')
+
         plt.subplot(234)
         plt.plot(self.__xvals, self.__hf)
+        restore_axes_limits([(0, 1), (0, 1), False], dist=self, func='HF', X=self.__xvals, Y=self.__hf, xvals=xvals, xmin=xmin, xmax=xmax)
         plt.title('Hazard Function')
+
         plt.subplot(235)
         plt.plot(self.__xvals, self.__chf)
+        restore_axes_limits([(0, 1), (0, 1), False], dist=self, func='CHF', X=self.__xvals, Y=self.__chf, xvals=xvals, xmin=xmin, xmax=xmax)
         plt.title('Cumulative Hazard\nFunction')
 
         # descriptive statistics section
@@ -4248,12 +4299,17 @@ class Mixture_Model:
                 textlabel = kwargs.pop('label')
             else:
                 textlabel = 'Mixture model'
+
+            limits = get_axes_limits()
             plt.plot(self.__xvals, self.__pdf, label=textlabel, **kwargs)
             plt.xlabel('x values')
             plt.ylabel('Probability density')
             text_title = str('Mixture Model\n' + ' Probability Density Function')
             plt.title(text_title)
-            plt.subplots_adjust(top=0.81)
+            plt.subplots_adjust(top=0.87)
+
+            restore_axes_limits(limits, dist=self, func='PDF', X=self.__xvals, Y=self.__pdf, xvals=xvals, xmin=xmin, xmax=xmax)
+
             return self.__pdf
 
     def CDF(self, xvals=None, xmin=None, xmax=None, show_plot=True, plot_components=False, **kwargs):
@@ -4285,12 +4341,16 @@ class Mixture_Model:
                 textlabel = kwargs.pop('label')
             else:
                 textlabel = 'Mixture model'
+            limits = get_axes_limits()
             plt.plot(self.__xvals, self.__cdf, label=textlabel, **kwargs)
             plt.xlabel('x values')
             plt.ylabel('Fraction failing')
             text_title = str('Mixture Model\n' + ' Cumulative Distribution Function')
             plt.title(text_title)
-            plt.subplots_adjust(top=0.81)
+            plt.subplots_adjust(top=0.87)
+
+            restore_axes_limits(limits, dist=self, func='CDF', X=self.__xvals, Y=self.__cdf, xvals=xvals, xmin=xmin, xmax=xmax)
+
             return self.__cdf
 
     def SF(self, xvals=None, xmin=None, xmax=None, show_plot=True, plot_components=False, **kwargs):
@@ -4322,12 +4382,16 @@ class Mixture_Model:
                 textlabel = kwargs.pop('label')
             else:
                 textlabel = 'Mixture model'
+            limits = get_axes_limits()
             plt.plot(self.__xvals, self.__sf, label=textlabel, **kwargs)
             plt.xlabel('x values')
             plt.ylabel('Fraction surviving')
             text_title = str('Mixture Model\n' + ' Survival Function')
             plt.title(text_title)
-            plt.subplots_adjust(top=0.81)
+            plt.subplots_adjust(top=0.87)
+
+            restore_axes_limits(limits, dist=self, func='SF', X=self.__xvals, Y=self.__sf, xvals=xvals, xmin=xmin, xmax=xmax)
+
             return self.__sf
 
     def HF(self, xvals=None, xmin=None, xmax=None, show_plot=True, plot_components=False, **kwargs):
@@ -4352,6 +4416,7 @@ class Mixture_Model:
         if show_plot == False:
             return self.__hf
         else:
+            limits = get_axes_limits()
             if plot_components is True:  # this will plot the distributions that make up the components of the model
                 for dist in self.distributions:
                     dist.HF(xvals=self.__xvals, label=dist.param_title_long)
@@ -4364,7 +4429,10 @@ class Mixture_Model:
             plt.ylabel('Hazard')
             text_title = str('Mixture Model\n' + ' Hazard Function')
             plt.title(text_title)
-            plt.subplots_adjust(top=0.81)
+            plt.subplots_adjust(top=0.87)
+
+            restore_axes_limits(limits, dist=self, func='HF', X=self.__xvals, Y=self.__hf, xvals=xvals, xmin=xmin, xmax=xmax)
+
             return self.__hf
 
     def CHF(self, xvals=None, xmin=None, xmax=None, show_plot=True, plot_components=False, **kwargs):
@@ -4389,6 +4457,7 @@ class Mixture_Model:
         if show_plot == False:
             return self.__chf
         else:
+            limits = get_axes_limits()
             if plot_components is True:  # this will plot the distributions that make up the components of the model
                 for dist in self.distributions:
                     dist.CHF(xvals=self.__xvals, label=dist.param_title_long)
@@ -4401,7 +4470,10 @@ class Mixture_Model:
             plt.ylabel('Cumulative Hazard')
             text_title = str('Mixture Model\n' + ' Cumulative Hazard Function')
             plt.title(text_title)
-            plt.subplots_adjust(top=0.81)
+            plt.subplots_adjust(top=0.87)
+
+            restore_axes_limits(limits, dist=self, func='CHF', X=self.__xvals, Y=self.__chf, xvals=xvals, xmin=xmin, xmax=xmax)
+
             return self.__chf
 
     def quantile(self, q):
