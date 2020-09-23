@@ -26,13 +26,13 @@ Another option to obtain the PDF, is to find the derivative of the CDF. This is 
 
 The image below illustrates the difference between the competing risks model and the mixture model, each of which is made up of the same two component distributions. Note that the PDF of the competing risks model is always equal to or to the left of the component distributions, and the CDF is equal to or higher than the component distributions. This shows how a failure mode that occurs earlier in time can end the lives of units under observation before the second failure mode has the chance to. This behaviour is characteristic of real systems which experience multiple failure modes, each of which could cause system failure.
 
-.. image:: images/CRvsMM.png
+.. image:: images/CRvsMM1.png
 
 Competing risks models are useful when there is more than one failure mode that is generating the failure data. This can be recognised by the shape of the PDF and CDF being outside of what any single distribution can accurately model. On a probability plot, a combination of failure modes can be identified by bends in the data that you might otherwise expect to be linear. An example of this is shown in the image below. You should not use a competing risks model just because it fits your data better than a single distribution, but you should use a competing risks model if you suspect that there are multiple failure modes contributing to the failure data you are observing. To judge whether a competing risks model is justified, look at the goodness of fit criterion (AICc or BIC) which penalises the score based on the number of parameters in the model. The closer the goodness of fit criterion is to zero, the better the fit.
 
 See also `mixture models <https://reliability.readthedocs.io/en/latest/Mixture%20models.html>`_ for another method of combining distributions using the sum of the CDF rather than the product of the SF.
 
-.. image:: images/CRprobplot.png
+.. image:: images/CRprobplot1.png
 
 Creating a competing risks model
 ================================
@@ -87,16 +87,15 @@ The following example shows how the Competing_Risks_Model object can be created,
     CR_model = Competing_Risks_Model(distributions=[d1, d2, d3])
 
     # plot the 5 functions using the plot() function
-    CR_model.plot(xmin=0,xmax=100)
+    CR_model.plot()
 
     # plot the PDF and CDF
     plot_components = True # this plots the component distributions. Default is False
     plt.figure(figsize=(9, 5))
     plt.subplot(121)
-    CR_model.PDF(plot_components=plot_components, color='red', linestyle='--',xmin=0,xmax=130)
+    CR_model.PDF(plot_components=plot_components, color='red', linestyle='--')
     plt.subplot(122)
-    CR_model.CDF(plot_components=plot_components, color='red', linestyle='--',xmin=0,xmax=130)
-    plt.subplots_adjust(left=0.1, right=0.95)
+    CR_model.CDF(plot_components=plot_components, color='red', linestyle='--')
     plt.show()
 
     # extract the mean of the distribution
@@ -106,9 +105,9 @@ The following example shows how the Competing_Risks_Model object can be created,
     The mean of the distribution is: 27.04449126275214
     '''
 
-.. image:: images/CR_model_plot.png
+.. image:: images/CR_model_plot1.png
 
-.. image:: images/CR_model_PDF_CDF.png
+.. image:: images/CR_model_PDF_CDF1.png
 
 Fitting a competing risks model
 ===============================
@@ -147,6 +146,7 @@ Outputs:
 -   loglik2 - LogLikelihood*-2 (as used in JMP Pro)
 -   AICc - Akaike Information Criterion
 -   BIC - Bayesian Information Criterion
+-   AD - Anderson-Darling goodness of fit statistic
 -   results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
 
 In this first example, we will create some data using a competing risks model from two Weibull distributions. We will then fit the Weibull mixture model to the data and will print the results and show the plot.
@@ -190,11 +190,11 @@ In this first example, we will create some data using a competing risks model fr
     Log-Likelihood: -352.47978488894165 
     '''
 
-.. image:: images/CR_fit_probplot.png
+.. image:: images/CR_fit_probplot1.png
 
-.. image:: images/CR_fit_hist.png
+.. image:: images/CR_fit_hist1.png
 
-In this second example, we will compare the mixture model to the competing risks model. The data is generated from a competing risks model so we expect the Weibull competing risks model to be more appropriate than the Mixture model. Through comparison of the AICc or BIC we can see which model is more appropriate. Since the AICc and BIC penalise the goodness of fit criterion based on the number of parameters and the mixture model has 5 parameters compared to the competing risk model's 4 parameters, we expect the competing risks model to have a lower (closer to zero) goodness of fit than the Mixture model, and this is what we observe in the results. Notice how the log-likelihood of the mixture model indicates a better fit (because the value is closer to zero), but this does not take into account the number of parameters in the model.
+In this second example, we will compare the mixture model to the competing risks model. The data is generated from a competing risks model so we expect the Weibull competing risks model to be more appropriate than the Mixture model. Through comparison of the AICc, BIC, or AD we can see which model is more appropriate. Since the AICc and BIC penalise the goodness of fit criterion based on the number of parameters and the mixture model has 5 parameters compared to the competing risk model's 4 parameters, we expect the competing risks model to have a lower (closer to zero) goodness of fit than the Mixture model, and this is what we observe in the results. Notice how the log-likelihood of the mixture model indicates a better fit (because the value is closer to zero), but this does not take into account the number of parameters in the model.
 
 .. code:: python
 
@@ -215,8 +215,8 @@ In this second example, we will compare the mixture model to the competing risks
     plt.show()
 
     # create a dataframe to display the goodness of fit criterion as a table
-    goodness_of_fit = {'Model': ['Competing Risks', 'Mixture'], 'AICc': [CR_fit.AICc, MM_fit.AICc], 'BIC': [CR_fit.BIC, MM_fit.BIC]}
-    df = pd.DataFrame(goodness_of_fit, columns=['Model', 'AICc', 'BIC'])
+    goodness_of_fit = {'Model': ['Competing Risks', 'Mixture'], 'AICc': [CR_fit.AICc, MM_fit.AICc], 'BIC': [CR_fit.BIC, MM_fit.BIC], 'AD': [CR_fit.AD, MM_fit.AD]}
+    df = pd.DataFrame(goodness_of_fit, columns=['Model', 'AICc', 'BIC', 'AD'])
     print(df)
 
     '''
@@ -239,9 +239,11 @@ In this second example, we will compare the mixture model to the competing risks
     Proportion 1        0.226028        0.084489    0.101793    0.429403
     Log-Likelihood: -254.50393768335337 
 
-                 Model        AICc         BIC
-    0  Competing Risks  519.776512  526.535715
-    1          Mixture  520.371512  528.567990
+    # Nnotice how AICc and BIC show the Competing risks model is better (as they have lower scores), but the AD shows the Mixture is better.
+    # This is because the AD does not penalise the score based on the number of parameters. So while the mixture is a better fit it may be overfitting.
+                 Model        AICc         BIC        AD
+    0  Competing Risks  519.776512  526.535715  0.582775
+    1          Mixture  520.371512  528.567990  0.536801
     '''
 
-.. image:: images/CRvsMM_fit.png
+.. image:: images/CRvsMM_fit1.png
