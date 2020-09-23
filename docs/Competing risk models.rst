@@ -194,7 +194,7 @@ In this first example, we will create some data using a competing risks model fr
 
 .. image:: images/CR_fit_hist1.png
 
-In this second example, we will compare the mixture model to the competing risks model. The data is generated from a competing risks model so we expect the Weibull competing risks model to be more appropriate than the Mixture model. Through comparison of the AICc, BIC, or AD we can see which model is more appropriate. Since the AICc and BIC penalise the goodness of fit criterion based on the number of parameters and the mixture model has 5 parameters compared to the competing risk model's 4 parameters, we expect the competing risks model to have a lower (closer to zero) goodness of fit than the Mixture model, and this is what we observe in the results. Notice how the log-likelihood of the mixture model indicates a better fit (because the value is closer to zero), but this does not take into account the number of parameters in the model.
+In this second example, we will compare the mixture model to the competing risks model. The data is generated from a competing risks model so we expect the Weibull competing risks model to be more appropriate than the Mixture model. Through comparison of the AICc, BIC, or AD we can see which model is more appropriate. Since the AICc and BIC penalise the goodness of fit criterion based on the number of parameters and the mixture model has 5 parameters compared to the competing risk model's 4 parameters, we expect the competing risks model to have a lower (closer to zero) goodness of fit than the Mixture model, and this is what we observe in the results. Notice how the log-likelihood and AD statistics of the mixture model indicates a better fit (because the value is closer to zero), but this does not take into account the number of parameters in the model.
 
 .. code:: python
 
@@ -239,8 +239,6 @@ In this second example, we will compare the mixture model to the competing risks
     Proportion 1        0.226028        0.084489    0.101793    0.429403
     Log-Likelihood: -254.50393768335337 
 
-    # Nnotice how AICc and BIC show the Competing risks model is better (as they have lower scores), but the AD shows the Mixture is better.
-    # This is because the AD does not penalise the score based on the number of parameters. So while the mixture is a better fit it may be overfitting.
                  Model        AICc         BIC        AD
     0  Competing Risks  519.776512  526.535715  0.582775
     1          Mixture  520.371512  528.567990  0.536801
