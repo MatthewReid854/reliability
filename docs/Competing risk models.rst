@@ -172,10 +172,10 @@ In this first example, we will create some data using a competing risks model fr
     plt.figure(figsize=(9, 5))
     plt.subplot(121)
     histogram(data)
-    results.distribution.PDF(xmin=0, xmax=60)
+    results.distribution.PDF()
     plt.subplot(122)
     histogram(data, cumulative=True)
-    results.distribution.CDF(xmin=0, xmax=60)
+    results.distribution.CDF()
 
     plt.show()
 
