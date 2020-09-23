@@ -203,7 +203,7 @@ In this second example, we will compare the mixture model to the competing risks
     import matplotlib.pyplot as plt
     import pandas as pd
 
-    # create some data that requires a competing risks models
+    # create some data from a competing risks model
     d1 = Weibull_Distribution(alpha=250, beta=2)
     d2 = Weibull_Distribution(alpha=210, beta=10)
     CR_model = Competing_Risks_Model(distributions=[d1, d2])
