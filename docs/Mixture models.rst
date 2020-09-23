@@ -102,9 +102,9 @@ The following example shows how the Mixture_Model object can be created, visuali
     The mean of the distribution is: 74.91674657035722
     '''
 
-.. image:: images/Weibull_Mixture_dist1.png
+.. image:: images/Weibull_Mixture_dist1a.png
 
-.. image:: images/Weibull_Mixture_dist2.png
+.. image:: images/Weibull_Mixture_dist2a.png
 
 Fitting a mixture model
 =======================
@@ -148,6 +148,7 @@ Outputs:
 -   loglik2 - LogLikelihood*-2 (as used in JMP Pro)
 -   AICc - Akaike Information Criterion
 -   BIC - Bayesian Information Criterion
+-   AD - Anderson-Darling goodness of fit statistic
 -   results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
 
 In this first example, we will create some data using two Weibull distributions and then combine the data using np.hstack. We will then fit the Weibull mixture model to the combined data and will print the results and show the plot. As the input data is made up of 40% from the first group, we expect the proportion to be around 0.4.
@@ -171,10 +172,10 @@ In this first example, we will create some data using two Weibull distributions 
     plt.figure(figsize=(9, 5))
     plt.subplot(121)
     histogram(all_data)
-    results.distribution.PDF(xmin=0, xmax=60)
+    results.distribution.PDF()
     plt.subplot(122)
     histogram(all_data, cumulative=True)
-    results.distribution.CDF(xmin=0, xmax=60)
+    results.distribution.CDF()
 
     plt.show()
 
@@ -190,9 +191,9 @@ In this first example, we will create some data using two Weibull distributions 
     Log-Likelihood: -375.9906311550037
     '''
 
-.. image:: images/Weibull_Mixture_V3.png
+.. image:: images/Weibull_Mixture_V4.png
 
-.. image:: images/Weibull_Mixture_hist.png
+.. image:: images/Weibull_Mixture_histV2.png
 
 In this second example, we will compare how well the Weibull Mixture performs vs a single Weibull_2P. Firstly, we generate some data from two Weibull distributions, combine the data, and right censor it above our chosen threshold. Next, we will fit the Mixture and Weibull_2P distributions. Then we will visualise the histogram and PDF of the fitted mixture model and Weibull_2P distributions. The goodness of fit measure is used to check whether the mixture model is really a much better fit than a single Weibull_2P distribution (which it is due to the lower BIC).
 
@@ -217,9 +218,8 @@ In this second example, we will compare how well the Weibull Mixture performs vs
 
     # plot the Mixture and Weibull_2P
     histogram(all_data, white_above=30)
-    xvals = np.linspace(0, 60, 1000)
-    mixture.distribution.PDF(label='Weibull Mixture',xvals=xvals)
-    single.distribution.PDF(label='Weibull_2P',xvals=xvals)
+    mixture.distribution.PDF(label='Weibull Mixture')
+    single.distribution.PDF(label='Weibull_2P')
     plt.title('Comparison of Weibull_2P with Weibull Mixture')
     plt.legend()
     plt.show()
@@ -229,4 +229,4 @@ In this second example, we will compare how well the Weibull Mixture performs vs
     Weibull_2P BIC: 6511.51175959736
     '''
 
-.. image:: images/Weibull_mixture_vs_Weibull_2P_V3.png
+.. image:: images/Weibull_mixture_vs_Weibull_2P_V4.png
