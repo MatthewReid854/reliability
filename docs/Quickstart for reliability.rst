@@ -45,7 +45,7 @@ In this example, we will create a Weibull Distribution, and from that distributi
     plt.legend()
     plt.show()
 
-.. image:: images/quickstart1.png
+.. image:: images/quickstart2.png
 
 A key feature of ``reliability`` is that probability distributions are created as objects, and these objects have many properties (such as the mean) that are set once the parameters of the distribution are defined. Using the dot operator allows us to access these properties as well as a large number of methods (such as drawing random samples as seen in the example above).
 
