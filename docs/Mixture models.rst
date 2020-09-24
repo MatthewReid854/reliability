@@ -191,7 +191,7 @@ In this first example, we will create some data using two Weibull distributions 
     Log-Likelihood: -375.9906311550037
     '''
 
-.. image:: images/Weibull_Mixture_V4.png
+.. image:: images/Weibull_Mixture_V5.png
 
 .. image:: images/Weibull_Mixture_histV2.png
 
