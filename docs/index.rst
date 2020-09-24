@@ -143,7 +143,7 @@ Contents:
     :scale: 100%
     :target: https://github.com/MatthewReid854/reliability
 
-.. |downloads| image:: https://img.shields.io/pypi/dm/reliability?logo=Docusign&logoColor=white&label=PyPI%20downloads
+.. |downloads| image:: https://img.shields.io/pypi/dm/reliability?color=brightgreen&logo=Docusign&logoColor=white&label=PyPI%20downloads
     :alt: downloads
     :scale: 100%
     :target: https://pypistats.org/packages/reliability
