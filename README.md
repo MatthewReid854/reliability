@@ -5,7 +5,7 @@
 [![Build Status](https://img.shields.io/travis/MatthewReid854/reliability/master?logo=travis&label=Travis%20CI)](https://travis-ci.com/github/MatthewReid854/reliability)
 [![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/MatthewReid854/reliability.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/MatthewReid854/reliability/context:python)
 [![Scc Count Badge](https://sloc.xyz/github/MatthewReid854/reliability/?category=code)](https://github.com/MatthewReid854/reliability/)
-[![Downloads](https://img.shields.io/pypi/dm/reliability?color=brightgreenlogo=Docusign&logoColor=white&label=PyPI%20downloads)](https://pypistats.org/packages/reliability)
+[![Downloads](https://img.shields.io/pypi/dm/reliability?color=brightgreen&logo=Docusign&logoColor=white&label=PyPI%20downloads)](https://pypistats.org/packages/reliability)
 [![LGPLv3 license](https://img.shields.io/badge/License-LGPLv3-blue.svg?logo=GNU&logoColor=white)](https://www.gnu.org/licenses/lgpl-3.0.txt)
 [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/MatthewReid854/reliability/blob/master/notebooks/Intro2.ipynb)
 [![DOI](https://img.shields.io/badge/DOI-10.5281/zenodo.3938000-blue.svg?logo=Buffer&logoColor=white)](https://zenodo.org/badge/latestdoi/198305660)
