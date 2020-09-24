@@ -86,7 +86,7 @@ To learn how we can fit a distribution, we will start by using a simple example 
     Log-Likelihood: -129.0626756550746 
     '''
 
-.. image:: images/Fit_Weibull_2P_V3.png
+.. image:: images/Fit_Weibull_2P_V4.png
 
 The above probability plot is the typical way to visualise how the CDF (the blue line) models the failure data (the black points). If you would like to view the failure points alongside the CDF, SF, or CHF without the axis being scaled then you can generate the scatter plot using the function plot_points which is available within reliability.Probability_plotting. In the example below we create some data, then fit a Weibull distribution to the data (ensuring we turn off the probability plot). From the fitted distribution object we plot the Survival Function (SF). We then use plot_points to generate a scatter plot of the plotting positions for the survival function.
 
