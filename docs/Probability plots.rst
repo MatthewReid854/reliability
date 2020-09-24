@@ -43,13 +43,14 @@ In the example below we generate some samples from a Normal Distribution and pro
     from reliability.Distributions import Normal_Distribution
     from reliability.Probability_plotting import Normal_probability_plot
     import matplotlib.pyplot as plt
+    
     dist = Normal_Distribution(mu=50,sigma=10)
     dist.CDF(linestyle='--',label='True CDF') #this is the actual distribution provided for comparison
-    failures = dist.random_samples(100)
+    failures = dist.random_samples(100, seed=5)
     Normal_probability_plot(failures=failures) #generates the probability plot
     plt.show()
     
-.. image:: images/Normal_probability_plot.png
+.. image:: images/Normal_probability_plot1.png
 
 In this second example, we will fit an Exponential distribution to some right censored data. To create this data, we will draw it from an Exponential distribution that has a location shift of 12. Once again, the true CDF has also been plotted to provide the comparison. Note that the x-axis is time-gamma as it is necessary to subtract gamma from the x-plotting positions if we want the plot to appear linear.
 
@@ -67,9 +68,9 @@ In this second example, we will fit an Exponential distribution to some right ce
     Exponential_probability_plot(failures=data.failures, right_censored=data.right_censored, fit_gamma=True)  # do the probability plot. Note that we have specified to fit gamma
     plt.show()
 
-.. image:: images/Exponential_probability_plot_V2.png
+.. image:: images/Exponential_probability_plot_V3.png
 
-.. note:: The confidence intervals appear on the Exponential plot above but not in the Normal probability plot in the first example. This is because the confidence intervals are only available for the Exponential (1P and 2P) and Weibull (2P and 3P) fitters. This library is in active development and over the next few months the confidence intervals will be added to the Normal and Lognormal Fitters followed by the Gamma and Beta Fitters.
+.. note:: The confidence intervals appear on the Exponential plot above but not in the Normal probability plot in the first example. This is because the confidence intervals are only available for the Exponential (1P and 2P) and Weibull (2P and 3P) fitters. This library is being actively developed and over the next few months the confidence intervals will be added to all the Fitters.
 
 In this third example, we will see how probability plotting can be used to highlight the importance of getting as much data as possible. This code performs a loop in which increasing numbers of samples are used for fitting a Weibull distribution and the accuracy of the results (shown both in the legend and by comparison with the True CDF) increases with the number of samples.
 
@@ -78,19 +79,19 @@ In this third example, we will see how probability plotting can be used to highl
     from reliability.Distributions import Weibull_Distribution
     from reliability.Probability_plotting import Weibull_probability_plot
     import matplotlib.pyplot as plt
-
+    
     dist = Weibull_Distribution(alpha=250, beta=3)
-    for i, x in enumerate([10, 100, 1000]):
+    for i, x in enumerate([10,100,1000]):
         plt.subplot(131 + i)
         dist.CDF(linestyle='--', label='True CDF')
         failures = dist.random_samples(x, seed=42)  # take 10, 100, 1000 samples
         Weibull_probability_plot(failures=failures)  # this is the probability plot
         plt.title(str(str(x) + ' samples'))
-    plt.gcf().set_size_inches(15, 7)  # adjust the figuresize after creation. Necessary to do it after as it it automatically ajdusted within probability_plot
-    plt.subplots_adjust(left=0.08, right=0.98, top=0.92, wspace=0.35)  # formatting for the figure layout
+    plt.gcf().set_size_inches(15, 7)  # adjust the figure size after creation. Necessary to do it after as it it automatically adjusted within probability_plot
+    plt.tight_layout()
     plt.show()
-
-.. image:: images/Weibull_probability_plot_multi_V2.png
+ 
+.. image:: images/Weibull_probability_plot_multi_V3.png
 
 In this fourth example, we will take a look at the special case of the Exponential probability plot using the Weibull Scale. This plot is essentially a Weibull probability plot, but the fitting and plotting functions are Exponential. The reason for plotting an Exponential distribution on Weibull probability paper is to achieve parallel lines for different Lambda parameters rather than having the lines radiating from the origin as we see in the Exponential probability plot on Exponential probability paper. This has applications in ALT probability plotting. An example of the differences between the plots are shown below. Remember that the alpha parameter from the Weibull distribution is equivalent to 1/Lambda from the Exponential distribution and a Weibull distribution with Beta = 1 is the same as an exponential distribution.
 
