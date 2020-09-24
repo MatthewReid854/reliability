@@ -190,7 +190,7 @@ In this first example, we will create some data using a competing risks model fr
     Log-Likelihood: -352.47978488894165 
     '''
 
-.. image:: images/CR_fit_probplot1.png
+.. image:: images/CR_fit_probplot2.png
 
 .. image:: images/CR_fit_hist1.png
 
@@ -244,4 +244,4 @@ In this second example, we will compare the mixture model to the competing risks
     1          Mixture  520.371512  528.567990  0.536801
     '''
 
-.. image:: images/CRvsMM_fit1.png
+.. image:: images/CRvsMM_fit2.png
