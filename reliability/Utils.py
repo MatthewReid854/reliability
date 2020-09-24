@@ -474,34 +474,49 @@ def zeroise_below_gamma(X, Y, gamma):
     return Y
 
 
-def x_transform(value, direction='forward'):
+def xy_transform(value, direction='forward', axis='x'):
     '''
-    Converts between data values and axes coordinates (based on xlim()).
+    Converts between data values and axes coordinates (based on xlim() or ylim()).
     If direction is forward the returned value will always be between 0 and 1 provided value is on the plot.
-    If direction is reverse the input should be between 0 and 1 and the returned value will be the data value based on the current xlim
-    This function works for the x axis only.
+    If direction is reverse the input should be between 0 and 1 and the returned value will be the data value based on the current plot lims
+    axis must be x or y
     '''
+    if direction not in ['reverse', 'inverse', 'inv', 'rev', 'forward', 'fwd']:
+        raise ValueError('direction must be "forward" or "reverse"')
+    if axis not in ['X', 'x', 'Y', 'y']:
+        raise ValueError('axis must be x or y. Default is x')
+
     ax = plt.gca()
     if direction in ['reverse', 'inverse', 'inv', 'rev']:
         if type(value) in [int, float, np.float64]:
-            transformed_values = ax.transData.inverted().transform((ax.transAxes.transform((value, 0.5))[0], 0.5))[0]
+            if axis == 'x':
+                transformed_values = ax.transData.inverted().transform((ax.transAxes.transform((value, 0.5))[0], 0.5))[0]  # x transform
+            else:
+                transformed_values = ax.transData.inverted().transform((1, ax.transAxes.transform((1, value))[1]))[1]  # y transform
         elif type(value) in [list, np.ndarray]:
             transformed_values = []
             for item in value:
-                transformed_values.append(ax.transData.inverted().transform((ax.transAxes.transform((item, 0.5))[0], 0.5))[0])
+                if axis == 'x':
+                    transformed_values.append(ax.transData.inverted().transform((ax.transAxes.transform((item, 0.5))[0], 0.5))[0])  # x transform
+                else:
+                    transformed_values.append(ax.transData.inverted().transform((1, ax.transAxes.transform((1, item))[1]))[1])  # y transform
         else:
             raise ValueError('type of value is not recognized')
-    elif direction in ['forward', 'fwd']:
+    else:  # direction is forward
         if type(value) in [int, float, np.float64]:
-            transformed_values = ax.transAxes.inverted().transform(ax.transData.transform((value, 0.5)))[0]
+            if axis == 'x':
+                transformed_values = ax.transAxes.inverted().transform(ax.transData.transform((value, 0.5)))[0]  # x transform
+            else:
+                transformed_values = ax.transAxes.inverted().transform(ax.transData.transform((1, value)))[1]  # y transform
         elif type(value) in [list, np.ndarray]:
             transformed_values = []
             for item in value:
-                transformed_values.append(ax.transAxes.inverted().transform(ax.transData.transform((item, 0.5)))[0])
+                if axis == 'x':
+                    transformed_values.append(ax.transAxes.inverted().transform(ax.transData.transform((item, 0.5)))[0])  # x transform
+                else:
+                    transformed_values.append(ax.transAxes.inverted().transform(ax.transData.transform((1, value)))[1])  # y transform
         else:
             raise ValueError('type of value is not recognized')
-    else:
-        raise ValueError('direction must be "forward" or "reverse"')
     return transformed_values
 
 
@@ -569,30 +584,43 @@ def probability_plot_xylims(x, y, dist, spacing=0.1, gamma_beta=None, beta_alpha
     plt.ylim(ylim_lower, ylim_upper)
 
 
-def probability_plot_xyticks():
+def probability_plot_xyticks(yticks=None):
     '''
     Sets the x and y ticks for probability plots
-    Selects either MaxNLocator or LogLocator for the tick locations.
-    A custom tick formatter is applied using FuncFormatter to all the x ticks
-    Y ticks are formatted using the PercentFormatter
+    X ticks are selected using either MaxNLocator or LogLocator.
+    X ticks are formatted using a custom formatter.
+    Y ticks are specified with FixedLocator due to their irregular spacing. Minor y ticks use MaxNLocator
+    Y ticks are formatted using a custom Percent Formatter that handles decimals better
     This function is called by probability_plotting
     '''
 
-    def get_xtick_locations(major_or_minor, in_lims=True):
+    def get_tick_locations(major_or_minor, in_lims=True, axis='x'):
         '''
         returns the major or minor tick locations for the current axis
-        if in_lims=True then it will only return the ticks that are within the current xlim(). Default is True
+        if in_lims=True then it will only return the ticks that are within the current xlim() or ylim(). Default is True
+        axis must be x or y. Default is x
         '''
+        if axis == 'x':
+            AXIS = ax.xaxis
+            L = xlower
+            U = xupper
+        elif axis == 'y':
+            AXIS = ax.yaxis
+            L = ylower
+            U = yupper
+        else:
+            raise ValueError('axis must be x or y. Default is x')
+
         if major_or_minor == 'major':
-            all_locations = ax.xaxis.get_major_locator().tick_values(xlower, xupper)
+            all_locations = AXIS.get_major_locator().tick_values(L, U)
         elif major_or_minor == 'minor':
-            all_locations = ax.xaxis.get_minor_locator().tick_values(xlower, xupper)
+            all_locations = AXIS.get_minor_locator().tick_values(L, U)
         else:
             raise ValueError('major_or_minor must be "major" or "minor"')
         if in_lims is True:
             locations = []
             for item in all_locations:
-                if item >= xlower and item <= xupper:
+                if item >= L and item <= U:
                     locations.append(item)
         else:
             locations = all_locations
@@ -622,6 +650,20 @@ def probability_plot_xyticks():
             label = str('{0:g}'.format(value))
         return label
 
+    def customPercentFormatter(value, _):
+        '''
+        Provides custom percent string formatting that is used for the yticks
+        Slightly different than PercentFormatter as it does not force a particular number of decimals. ie. 99.00 becomes 99 while 99.99 still displays as such.
+        '''
+        value100 = value * 100
+        value100dec = round(value100 % 1, 8) #this breaks down after 8 decimal places due to python's auto rounding. Not likely to be an issue as we're rarely dealing with this many decimals
+        if value100dec == 0:
+            value100dec = int(value100dec)
+        value100whole = int(value100 - value100dec)
+        combined = value100dec + value100whole
+        label = str(str(combined) + str('%'))
+        return label
+
     ################# xticks
     ax = plt.gca()
     xlower, xupper = plt.xlim()
@@ -634,32 +676,37 @@ def probability_plot_xyticks():
     else:  # it is really big (>1000) and spread out
         loc_x = ticker.LogLocator()
     ax.xaxis.set_major_locator(loc_x)  # apply the tick locator
+    #do not apply a minor locator. It is never as good as the default
 
     if type(loc_x) == ticker.MaxNLocator:  # check if there are any massive tick gaps on the left or right. If so it is likely that MaxNLocator was selected when it should have been LogLocator
-        xtick_locations = get_xtick_locations('major')
-        left_tick_distance = x_transform(xtick_locations[0]) - x_transform(xlower)
-        right_tick_distance = x_transform(xupper) - x_transform(xtick_locations[-1])
+        xtick_locations = get_tick_locations('major', axis='x')
+        left_tick_distance = xy_transform(xtick_locations[0], direction='forward', axis='x') - xy_transform(xlower, direction='forward', axis='x')
+        right_tick_distance = xy_transform(xupper, direction='forward', axis='x') - xy_transform(xtick_locations[-1], direction='forward', axis='x')
         if max(left_tick_distance, right_tick_distance) > 0.4:  # 0.4 means 40% of the axis is without ticks. Above this is considered unacceptable
             loc_x = ticker.LogLocator()
             ax.xaxis.set_major_locator(loc_x)  # reapply the locator
-
     ax.xaxis.set_major_formatter(ticker.FuncFormatter(customFormatter))  # the custom formatter is always applied to the major ticks
 
-    num_major_x_ticks_shown = len(get_xtick_locations('major'))
-    num_minor_x_xticks_shown = len(get_xtick_locations('minor'))
+    num_major_x_ticks_shown = len(get_tick_locations('major', axis='x'))
+    num_minor_x_xticks_shown = len(get_tick_locations('minor', axis='x'))
     if max(abs(xlower), abs(xupper)) < 1000 and min(abs(xlower), abs(xupper)) > 0.001:
         max_minor_ticks = 15
     else:
         max_minor_ticks = 10
 
-    if num_major_x_ticks_shown < 2 and num_minor_x_xticks_shown <= max_minor_ticks:
+    if num_major_x_ticks_shown <= 2 and num_minor_x_xticks_shown <= max_minor_ticks:
         ax.xaxis.set_minor_formatter(ticker.FuncFormatter(customFormatter))  # if there are less than 2 major ticks within the plotting limits then the minor ticks should be labeled. Only do this if there aren't too many minor ticks
 
-    ################# yticks
-    loc_y = ticker.MaxNLocator(nbins=20, steps=[1, 2, 5, 10])
-    ax.yaxis.set_major_locator(loc_y)  # sets the tick spacing
-    ax.yaxis.set_major_formatter(ticker.PercentFormatter(xmax=1, decimals=1))  # sets the format to percentage
 
+    ################# yticks
+    if yticks is None:
+        yticks = [0.0001,0.001,0.002,0.005,0.01,0.02,0.03,0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,0.95,0.99,0.999,0.9999,0.999999]
+    loc_y = ticker.FixedLocator(yticks)
+    loc_y_minor = ticker.MaxNLocator(nbins=10, steps=[1, 2, 5, 10])
+    ax.yaxis.set_major_locator(loc_y)  # sets the tick spacing
+    ax.yaxis.set_minor_locator(loc_y_minor)  # sets the tick spacing
+    ax.yaxis.set_major_formatter(ticker.FuncFormatter(customPercentFormatter))
+    ax.yaxis.set_minor_formatter(ticker.FuncFormatter(customPercentFormatter))
     ax.format_coord = lambda x, y: 'x={:g}, y={:.1%}'.format(x, y)  # sets the formatting of the axes coordinates in the bottom right of the figure. Without this the FuncFormatter raw strings make it into the axes coords and don't look good.
 
 
