@@ -159,10 +159,10 @@ Contents:
     :scale: 100%
     :target: https://colab.research.google.com/github/MatthewReid854/reliability/blob/master/notebooks/Intro2.ipynb
 
-.. |DOI| image:: https://img.shields.io/badge/DOI-10.5281/zenodo.3938000-blue.svg?logo=Buffer&logoColor=white
+.. |DOI| image:: https://img.shields.io/badge/DOI-10.5281/zenodo.3937999-blue.svg?logo=Buffer&logoColor=white
     :alt: DOI
     :scale: 100%
-    :target: https://zenodo.org/badge/latestdoi/198305660
+    :target: https://doi.org/10.5281/zenodo.3937999
 
 .. |donate| image:: https://img.shields.io/badge/Donate-$$$-blueviolet.svg?logo=paypal
     :alt: donate
