@@ -22,7 +22,7 @@ Inputs:
 -   CI - confidence interval between 0 and 1. Default is 0.95 for 95% CI.
 -   a - the heuristic constant for plotting positions of the form (k-a)/(n+1-2a). Default is a=0.3 which is the median rank method (same as the default in Minitab). Must be in the range 0 to 1. For more heuristics, see `Wikipedia <https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics>`_.
 
-    Outputs:
+Outputs:
 
 -   results - dataframe of results for the SF
 -   RA - list of rank-adjustment column from results dataframe. This column is the non parametric estimate of the Survival Function (reliability function).
