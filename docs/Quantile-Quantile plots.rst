@@ -42,14 +42,14 @@ Semiparametric Quantile-Quantile plot
 -------------------------------------
 
 This plot is still a Quantile-Quantile plot (plotting failure units vs failure units for shared quantiles), but instead of using two parametric distributions, we use the failure data directly as one set of quantiles. We then estimate what the quantiles of the parametric distribution would be and plot the parametric (theoretical) failure units against the actual failure units.
-To generate this plot we begin with the failure units (these may be units of time, strength, cycles, landings, etc.). We then obtain an emprical CDF using either Kaplan-Meier or Nelson-Aalen. The empirical CDF gives us the quantiles we will use to equate the actual and theoretical failure times. Once we have the empirical CDF, we use the inverse survival function of the specified distribution to obtain the theoretical failure units and then plot the actual and theoretical failure units together. The primary purpose of this plot is as a graphical goodness of fit test. If the specified distribution is a good fit to the data then the QQ plot should be a reasonably straight line along the diagonal.
+To generate this plot we begin with the failure units (these may be units of time, strength, cycles, landings, etc.). We then obtain an emprical CDF using either Kaplan-Meier, Nelson-Aalen, or Rank Adjustment. The empirical CDF gives us the quantiles we will use to equate the actual and theoretical failure times. Once we have the empirical CDF, we use the inverse survival function of the specified distribution to obtain the theoretical failure units and then plot the actual and theoretical failure units together. The primary purpose of this plot is as a graphical goodness of fit test. If the specified distribution is a good fit to the data then the QQ plot should be a reasonably straight line along the diagonal.
 
 Inputs:
 
 -   X_data_failures - the failure times in an array or list. These will be plotted along the X-axis.
 -   X_data_right_censored - the right censored failure times in an array or list. Optional input.
 -   Y_dist - a probability distribution. The quantiles of this distribution will be plotted along the Y-axis.
--   method - 'KM' or 'NA' for Kaplan-Meier or Nelson-Aalen. Default is 'KM'
+-   method - 'KM', 'NA', or 'RA' for Kaplan-Meier, Nelson-Aalen, or Rank Adjustment. Default is 'KM'
 -   show_fitted_lines - True/False. Default is True. These are the Y=mX and Y=mX+c lines of best fit.
 -   show_diagonal_line - True/False. Default is False. If True the diagonal line will be shown on the plot.
 
