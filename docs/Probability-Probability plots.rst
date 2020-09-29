@@ -41,14 +41,14 @@ In the example below, we generate two parametric distributions and compare them 
 Semiparametric Probability-Probability plot
 -------------------------------------------
 
-A semiparametric PP plot is still a probability-probability plot, but since we only have one parametric distribution to give us the CDF, we must use the failure data to obtain the non-parametric estimate of the empirical CDF. To create a semiparametric PP plot, we must provide the failure data and the non-parametric method ('KM' or 'NA' for Kaplan-Meier or Nelson-Aalen) to estimate the empirical CDF, and we must also provide the parametric distribution for the parametric CDF. The failure units (times, cycles, rounds fired, strength units, etc.) are the limiting values here so the parametric CDF is only calculated at the failure units since that is the result we get from the empirical CDF. Note that the empirical CDF also accepts X_data_right_censored just as Kaplan-Meier and Nelson-Aalen will also accept right censored data. If the fitted distribution is a good fit the PP plot will follow the 45 degree diagonal line. Assessing goodness of fit in a graphical way is the main purpose of this type of plot. The `Fit_everything <https://reliability.readthedocs.io/en/latest/Fitting%20all%20available%20distributions%20to%20data.html>`_ function also uses a semiparametric PP plot to show the goodness of fit in a graphical way.
+A semiparametric PP plot is still a probability-probability plot, but since we only have one parametric distribution to give us the CDF, we must use the failure data to obtain the non-parametric estimate of the empirical CDF. To create a semiparametric PP plot, we must provide the failure data and the non-parametric method ('KM','NA','RA' for Kaplan-Meier, Nelson-Aalen, and Rank Adjustment respectively) to estimate the empirical CDF, and we must also provide the parametric distribution for the parametric CDF. The failure units (times, cycles, rounds fired, strength units, etc.) are the limiting values here so the parametric CDF is only calculated at the failure units since that is the result we get from the empirical CDF. Note that the empirical CDF also accepts X_data_right_censored just as KaplanMeier, NelsonAalen and RankAdjustment will also accept right censored data. If the fitted distribution is a good fit the PP plot will follow the 45 degree diagonal line. Assessing goodness of fit in a graphical way is the main purpose of this type of plot. The `Fit_everything <https://reliability.readthedocs.io/en/latest/Fitting%20all%20available%20distributions%20to%20data.html>`_ function also uses a semiparametric PP plot to show the goodness of fit in a graphical way.
 
 Inputs:
 
 -   X_data_failures - the failure times in an array or list. The empirical CDF of this data will be plotted along the X-axis.
 -   X_data_right_censored - the right censored failure times in an array or list. This is an optional input.
 -   Y_dist - a probability distribution. The CDF of this distribution will be plotted along the Y-axis.
--   method - 'KM' or 'NA' for Kaplan-Meier or Nelson-Aalen. Default is 'KM'
+-   method - 'KM', 'NA', or 'RA' for Kaplan-Meier, Nelson-Aalen, or Rank Adjustment. Default is 'KM'
 -   show_diagonal_line - True/False. Default is True. If True the diagonal line will be shown on the plot.
 
 Outputs:
