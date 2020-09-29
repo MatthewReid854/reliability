@@ -484,7 +484,7 @@ class chi2test:
         if significance <= 0 or significance > 0.5:
             raise ValueError('significance should be between 0 and 0.5. Default is 0.05 which gives 95% confidence')
 
-        if bins == None:
+        if bins is None:
             bins = 'auto'
         if type(bins) not in [str, list, np.ndarray]:
             raise ValueError('bins must be a list or array of the bin edges OR a string for the bin edge method from numpy. String options are auto, fd, doane, scott, stone, rice, sturges, or sqrt. For more information see the numpy documentation on numpy.histogram_bin_edges')

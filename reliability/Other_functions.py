@@ -19,6 +19,7 @@ import warnings
 from reliability.Distributions import Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution, Loglogistic_Distribution
 from reliability.Fitters import Fit_Everything
 from matplotlib.widgets import Slider, RadioButtons
+import random
 
 
 class similar_distributions:
@@ -183,7 +184,7 @@ def histogram(data, white_above=None, bins=None, density=True, cumulative=False,
             raise ValueError('white_above must be greater than min(data)')
 
     if bins is None:
-        bins='auto' #uses numpy to calculate bin edges: https://numpy.org/doc/stable/reference/generated/numpy.histogram_bin_edges.html#numpy.histogram_bin_edges
+        bins = 'auto'  # uses numpy to calculate bin edges: https://numpy.org/doc/stable/reference/generated/numpy.histogram_bin_edges.html#numpy.histogram_bin_edges
 
     if 'color' in kwargs:
         color = kwargs.pop('color')
@@ -246,21 +247,56 @@ def convert_dataframe_to_grouped_lists(input_dataframe):
 class make_right_censored_data:
     '''
     make_right_censored_data
-    Right censors data based on specified threshold
+    Right censors data based on specified threshold or fraction to censor
+
     Inputs:
     data - list or array of data
-    threshold - point to right censor (right censoring is done if value is > threshold)
+    threshold - number or None. Default is None. If number this is the point to right censor (right censoring is done if data > threshold). This is known as "singly censored data" as everything is censored at a single point.
+    fraction_censored - number between 0 and 1. Deafult is 0.5. Censoring is done randomly. This is known as "multiply censored data" as there are multiple times at which censoring occurs.
+        If both threshold and fraction_censored are None, fraction_censored will default to 0.5 to produce multiply censored data.
+        If both threshold and fraction_censored are specified, an error will be raised since these methods conflict.
+    seed - sets the random seed. This is used for multiply censored data (i.e. when threshold is None). The data is shuffled to remove censoring bias that may be caused by any pre-sorting. Specifying the seed ensures a repeatable random shuffle.
 
     Outputs:
-    failures - array of failures (data <= threshold)
-    right_censored - array of right_censored values (data > threshold). These will be set to the value of the threshold.
+    failures - array of failure data
+    right_censored - array of right_censored data
     '''
 
-    def __init__(self, data, threshold):
-        if type(data) is list:
-            data = np.array(data)
-        self.failures = data[data <= threshold]
-        self.right_censored = np.ones_like(data[data > threshold]) * threshold
+    def __init__(self, data, threshold=None, fraction_censored=None, seed=None):
+        if type(data) not in [list, np.ndarray]:
+            raise ValueError('data must be a list or array')
+        data = np.asarray(data)
+
+        if threshold is not None and fraction_censored is not None:
+            raise ValueError('threshold is used to control censoring above a set limit. fraction_censored is used to control the fraction of the values that will be censored. These cannot both be specified as they are conflicting methods of censoring')
+        if threshold is None and fraction_censored is None:
+            fraction_censored = 0.5  # default to 50% multiply censored
+
+        # multiply censored
+        if threshold is None:
+            if seed is not None:
+                random.seed(seed)
+            data = list(data)
+            random.shuffle(data)  # randomize the order of the data in case it was ordered
+            # place a limit on the amount of the data that can be censored
+            if fraction_censored <= 0 or fraction_censored >= 1:
+                raise ValueError('fraction_censored must be between 0 and 1. The default is 0.5 which will right censor half the data')
+            number_of_items_to_censor = np.floor(len(data) * fraction_censored)
+            right_censored = []
+            while len(right_censored) < number_of_items_to_censor:
+                item = data.pop(0)  # draw an item from the start of the list
+                th = np.random.rand() * max(data)  # randomly choose a censoring time between 0 and the max of the data
+                if item > th:  # check if the item exceeds the threshold for censoring
+                    right_censored.append(th)  # if it does, censor at the threshold
+                else:
+                    data.append(item)  # if it doesn't, then return it to the end of the list in case it is needed for another draw
+            self.failures = np.array(data)  # what's leftover
+            self.right_censored = np.array(right_censored)
+
+        # singly censored
+        else:
+            self.failures = data[data <= threshold]
+            self.right_censored = np.ones_like(data[data > threshold]) * threshold
 
 
 class crosshairs:

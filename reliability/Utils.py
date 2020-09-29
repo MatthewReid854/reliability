@@ -656,7 +656,7 @@ def probability_plot_xyticks(yticks=None):
         Slightly different than PercentFormatter as it does not force a particular number of decimals. ie. 99.00 becomes 99 while 99.99 still displays as such.
         '''
         value100 = value * 100
-        value100dec = round(value100 % 1, 8) #this breaks down after 8 decimal places due to python's auto rounding. Not likely to be an issue as we're rarely dealing with this many decimals
+        value100dec = round(value100 % 1, 8)  # this breaks down after 8 decimal places due to python's auto rounding. Not likely to be an issue as we're rarely dealing with this many decimals
         if value100dec == 0:
             value100dec = int(value100dec)
         value100whole = int(value100 - value100dec)
@@ -676,7 +676,7 @@ def probability_plot_xyticks(yticks=None):
     else:  # it is really big (>1000) and spread out
         loc_x = ticker.LogLocator()
     ax.xaxis.set_major_locator(loc_x)  # apply the tick locator
-    #do not apply a minor locator. It is never as good as the default
+    # do not apply a minor locator. It is never as good as the default
 
     if type(loc_x) == ticker.MaxNLocator:  # check if there are any massive tick gaps on the left or right. If so it is likely that MaxNLocator was selected when it should have been LogLocator
         xtick_locations = get_tick_locations('major', axis='x')
@@ -694,13 +694,12 @@ def probability_plot_xyticks(yticks=None):
     else:
         max_minor_ticks = 10
 
-    if num_major_x_ticks_shown <= 2 and num_minor_x_xticks_shown <= max_minor_ticks:
+    if num_major_x_ticks_shown < 2 and num_minor_x_xticks_shown <= max_minor_ticks:
         ax.xaxis.set_minor_formatter(ticker.FuncFormatter(customFormatter))  # if there are less than 2 major ticks within the plotting limits then the minor ticks should be labeled. Only do this if there aren't too many minor ticks
-
 
     ################# yticks
     if yticks is None:
-        yticks = [0.0001,0.001,0.002,0.005,0.01,0.02,0.03,0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,0.95,0.99,0.999,0.9999,0.999999]
+        yticks = [0.0001, 0.001, 0.002, 0.005, 0.01, 0.02, 0.03, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99, 0.999, 0.9999, 0.999999]
     loc_y = ticker.FixedLocator(yticks)
     loc_y_minor = ticker.MaxNLocator(nbins=10, steps=[1, 2, 5, 10])
     ax.yaxis.set_major_locator(loc_y)  # sets the tick spacing

@@ -42,8 +42,9 @@ Contents:
   :maxdepth: 1
   :caption: Non-parametric models
 
-  Kaplan-Meier estimate of reliability
-  Nelson-Aalen estimate of reliability
+  Kaplan-Meier
+  Nelson-Aalen
+  Rank Adjustment
 
 .. toctree::
   :maxdepth: 1

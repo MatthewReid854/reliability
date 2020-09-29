@@ -26,7 +26,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from reliability.Distributions import Weibull_Distribution, Lognormal_Distribution, Normal_Distribution, Gamma_Distribution, Beta_Distribution, Exponential_Distribution, Loglogistic_Distribution
-from reliability.Nonparametric import KaplanMeier, NelsonAalen
+from reliability.Nonparametric import KaplanMeier, NelsonAalen, RankAdjustment
 from reliability.Utils import axes_transforms, round_to_decimals, probability_plot_xylims, probability_plot_xyticks
 
 np.seterr('ignore')
@@ -42,14 +42,14 @@ def plotting_positions(failures=None, right_censored=None, a=None):
     failures - the array or list of failure times
     right_censored - the array or list of right censored failure times
     a - the heuristic constant for plotting positions of the form (k-a)/(n+1-2a). Default is a=0.3 which is the median rank method (same as the default in Minitab).
-        For more heuristics, see: https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics
+        Must be in the range 0 to 1. For more heuristics, see: https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics
 
     Outputs:
     x,y - the x and y plotting positions as lists
     '''
     if a is None:
         a = 0.3
-    elif a<0 or a>1:
+    elif a < 0 or a > 1:
         raise ValueError('a must be in the range 0 to 1. Default is 0.3 which gives the median rank. For more information see https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics')
 
     if failures is None:
@@ -101,7 +101,7 @@ def plotting_positions(failures=None, right_censored=None, a=None):
                 adjusted_rank.append(adjusted_rank[-1] + rank_increment[-1])
     F = []
     for i in adjusted_rank:
-        F.append((i - a) / (n + 1 - 2*a))
+        F.append((i - a) / (n + 1 - 2 * a))
     x = list(f)
     y = F
     return x, y
@@ -220,7 +220,7 @@ def Weibull_probability_plot(failures=None, right_censored=None, fit_gamma=False
     plt.xlabel(xlabel)  # needs to be set after plotting the CDF to override the default 'xvals'
     probability_plot_xylims(x=x, y=y, dist='weibull', spacing=0.1)
     probability_plot_xyticks()
-    plt.subplots_adjust(top=0.92,bottom=0.09,left=0.12,right=0.94)
+    plt.subplots_adjust(top=0.92, bottom=0.09, left=0.12, right=0.94)
     return plt.gcf()
 
 
@@ -334,7 +334,7 @@ def Loglogistic_probability_plot(failures=None, right_censored=None, fit_gamma=F
     plt.grid(b=True, which='minor', color='k', alpha=0.08, linestyle='-')
     plt.gcf().set_size_inches(9, 9)  # adjust the figsize. This is done outside of figure creation so that layering of multiple plots is possible
     if show_fitted_distribution is True:
-        llf.CDF(color=color,label=label, **kwargs)
+        llf.CDF(color=color, label=label, **kwargs)
         plt.legend(loc='upper left')
     plt.title('Probability plot\nLoglogistic CDF')
     plt.ylabel('Fraction failing')
@@ -666,7 +666,7 @@ def Beta_probability_plot(failures=None, right_censored=None, __fitted_dist_para
     plt.legend(loc='upper left')
     plt.gcf().set_size_inches(9, 9)  # adjust the figsize. This is done outside of figure creation so that layering of multiple plots is possible
     probability_plot_xylims(x=x, y=y, dist='beta', spacing=0.1, beta_alpha=alpha, beta_beta=beta)
-    probability_plot_xyticks(yticks=[0.1,0.3,0.5,0.6,0.7,0.8,0.9,0.95,0.99,0.999,0.9999,0.99999])
+    probability_plot_xyticks(yticks=[0.1, 0.3, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99, 0.999, 0.9999, 0.99999])
     plt.subplots_adjust(top=0.92, bottom=0.09, left=0.12, right=0.94)
     return plt.gcf()
 
@@ -772,7 +772,7 @@ def Gamma_probability_plot(failures=None, right_censored=None, fit_gamma=False, 
     plt.ylabel('Fraction failing')
     plt.xlabel(xlabel)
     probability_plot_xylims(x=x, y=y, dist='gamma', spacing=0.1, gamma_beta=beta)
-    probability_plot_xyticks(yticks=[0.1,0.3,0.5,0.6,0.7,0.8,0.9,0.95,0.99,0.999,0.9999,0.99999])
+    probability_plot_xyticks(yticks=[0.1, 0.3, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99, 0.999, 0.9999, 0.99999])
     plt.subplots_adjust(top=0.92, bottom=0.09, left=0.12, right=0.94)
     return plt.gcf()
 
@@ -862,7 +862,7 @@ def Exponential_probability_plot(failures=None, right_censored=None, fit_gamma=F
     plt.ylabel('Fraction failing')
     plt.xlabel(xlabel)  #### needs to be set after plotting the CDF to override the default 'xvals'
     probability_plot_xylims(x=x, y=y, dist='exponential', spacing=0.1)
-    probability_plot_xyticks(yticks=[0.1,0.3,0.5,0.6,0.7,0.8,0.9,0.95,0.99,0.999,0.9999,0.99999])
+    probability_plot_xyticks(yticks=[0.1, 0.3, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99, 0.999, 0.9999, 0.99999])
     plt.subplots_adjust(top=0.92, bottom=0.09, left=0.12, right=0.94)
     return plt.gcf()
 
@@ -1056,8 +1056,6 @@ def QQ_plot_parametric(X_dist=None, Y_dist=None, show_fitted_lines=True, show_di
     plt.xlabel(X_label_str)
     plt.ylabel(Y_label_str)
     plt.title('Quantile-Quantile plot\nParametric')
-    # plt.xlim([0,xmax])
-    # plt.ylim([0,ymax])
     plt.axis('square')
     plt.xlim([0, overall_max])
     plt.ylim([0, overall_max])
@@ -1069,15 +1067,15 @@ def PP_plot_semiparametric(X_data_failures=None, X_data_right_censored=None, Y_d
     A PP_Plot is a probability-probability plot that consists of plotting the CDF of one distribution against the CDF of another distribution. If we have both distributions we can use PP_plot_parametric.
     This function is for when we want to compare a fitted distribution to an empirical distribution for a given set of data.
     If the fitted distribution is a good fit the PP_Plot will lie on the diagonal line. Assessing goodness of fit in a graphical way is the main purpose of this type of plot.
-    To create a semi-parametric PP_plot, we must provide the failure data and the method ('KM' or 'NA' for Kaplan-Meier or Nelson-Aalen) to estimate the empirical CDF, and we must also provide the parametric distribution for the parametric CDF.
+    To create a semi-parametric PP_plot, we must provide the failure data and the method ('KM' for Kaplan-Meier, 'NA' for Nelson-Aalen, 'RA' for Rank Adjustment) to estimate the empirical CDF, and we must also provide the parametric distribution for the parametric CDF.
     The failure times are the limiting values here so the parametric CDF is only calculated at the failure times since that is the result from the empirical CDF.
-    Note that the empirical CDF also accepts X_data_right_censored just as Kaplan-Meier and Nelson-Aalen will also accept right censored data.
+    Note that the empirical CDF also accepts X_data_right_censored just as Kaplan-Meier, Nelson-Aalen, and Rank Adjustment will also accept right censored data.
 
     Inputs:
     X_data_failures - the failure times in an array or list
     X_data_right_censored - the right censored failure times in an array or list. Optional input.
     Y_dist - a probability distribution. The CDF of this distribution will be plotted along the Y-axis.
-    method - 'KM' or 'NA' for Kaplan-Meier and Nelson-Aalen. Default is 'KM'
+    method - must be 'KM','NA',or 'RA' for Kaplan-Meier, Nelson-Aalen, and Rank Adjustment respectively. Default is 'KM'
     show_diagonal_line - True/False. Default is True. If True the diagonal line will be shown on the plot.
 
     Outputs:
@@ -1103,6 +1101,10 @@ def PP_plot_semiparametric(X_data_failures=None, X_data_right_censored=None, Y_d
     else:
         raise ValueError('X_data_right_censored must be an array or list')
     # extract certain keyword arguments or specify them if they are not set
+    if 'a' in kwargs:  # rank adjustment heuristic
+        a = kwargs.pop('a')
+    else:
+        a = None
     if 'color' in kwargs:
         color = kwargs.pop('color')
     else:
@@ -1123,8 +1125,14 @@ def PP_plot_semiparametric(X_data_failures=None, X_data_right_censored=None, Y_d
         failure_rows = df.loc[df['Censoring code (censored=0)'] == 1.0]
         ecdf = 1 - np.array(failure_rows['Nelson-Aalen Estimate'].values)
         xlabel = 'Empirical CDF (Nelson-Aalen estimate)'
+    elif method == 'RA':
+        RA = RankAdjustment(failures=X_data_failures, right_censored=X_data_right_censored, show_plot=False, print_results=False, a=a)
+        df = RA.results
+        failure_rows = df.loc[df['Censoring code (censored=0)'] == 1.0]
+        ecdf = 1 - np.array(failure_rows['Rank Adjustment Estimate'].values)
+        xlabel = 'Empirical CDF (Rank Adjustment estimate)'
     else:
-        raise ValueError('method must be "KM" for Kaplan-meier or "NA" for Nelson-Aalen. Default is KM')
+        raise ValueError('method must be "KM" for Kaplan-meier, "NA" for Nelson-Aalen, or "RA" for Rank Adjustment. Default is KM')
     CDF = Y_dist.CDF(X_data_failures, show_plot=False)
     plt.scatter(ecdf, CDF, color=color, marker=marker, **kwargs)
 
@@ -1157,7 +1165,7 @@ def QQ_plot_semiparametric(X_data_failures=None, X_data_right_censored=None, Y_d
     '''
     A QQ plot is a quantile-quantile plot which consists of plotting failure units vs failure units for shared quantiles. A quantile is simply the fraction failing (ranging from 0 to 1).
     When we have two parametric distributions we can plot the failure times for common quanitles against one another using QQ_plot_parametric. QQ_plot_semiparametric is a semiparametric form of a QQ_plot in which we obtain theoretical quantiles using a non-parametric estimate and a specified distribution.
-    To generate this plot we begin with the failure units (these may be units of time, strength, cycles, landings, etc.). We then obtain an emprical CDF using either Kaplan-Meier or Nelson-Aalen. The empirical CDF gives us the quantiles we will use to equate the actual and theoretical failure times.
+    To generate this plot we begin with the failure units (these may be units of time, strength, cycles, landings, etc.). We then obtain an emprical CDF using either Kaplan-Meier, Nelson-Aalen, or Rank Adjustment. The empirical CDF gives us the quantiles we will use to equate the actual and theoretical failure times.
     Once we have the empirical CDF, we use the inverse survival function of the specified distribution to obtain the theoretical failure times and then plot the actual and theoretical failure times together.
     If the specified distribution is a good fit, then the QQ_plot should be a reasonably straight line along the diagonal.
     The primary purpose of this plot is as a graphical goodness of fit test.
@@ -1166,7 +1174,7 @@ def QQ_plot_semiparametric(X_data_failures=None, X_data_right_censored=None, Y_d
     X_data_failures - the failure times in an array or list. These will be plotted along the X-axis.
     X_data_right_censored - the right censored failure times in an array or list. Optional input.
     Y_dist - a probability distribution. The quantiles of this distribution will be plotted along the Y-axis.
-    method - 'KM' or 'NA' for Kaplan-Meier and Nelson-Aalen. Default is 'KM'
+    method - 'KM', 'NA', or 'RA' for Kaplan-Meier, Nelson-Aalen, and Rank-Adjustment respectively. Default is 'KM'
     show_fitted_lines - True/False. Default is True. These are the Y=mX and Y=mX+c lines of best fit.
     show_diagonal_line - True/False. Default is False. If True the diagonal line will be shown on the plot.
 
@@ -1193,6 +1201,10 @@ def QQ_plot_semiparametric(X_data_failures=None, X_data_right_censored=None, Y_d
         pass
     else:
         raise ValueError('X_data_right_censored must be an array or list')
+    if 'a' in kwargs:  # rank adjustment heuristic
+        a = kwargs.pop('a')
+    else:
+        a = None
     # extract certain keyword arguments or specify them if they are not set
     if 'color' in kwargs:
         color = kwargs.pop('color')
@@ -1208,15 +1220,20 @@ def QQ_plot_semiparametric(X_data_failures=None, X_data_right_censored=None, Y_d
         failure_rows = df.loc[df['Censoring code (censored=0)'] == 1.0]
         ecdf = 1 - np.array(failure_rows['Kaplan-Meier Estimate'].values)
         method_str = 'Kaplan-Meier'
-
     elif method == 'NA':
         NA = NelsonAalen(failures=X_data_failures, right_censored=X_data_right_censored, show_plot=False, print_results=False)
         df = NA.results
         failure_rows = df.loc[df['Censoring code (censored=0)'] == 1.0]
         ecdf = 1 - np.array(failure_rows['Nelson-Aalen Estimate'].values)
         method_str = 'Nelson-Aalen'
+    elif method == 'RA':
+        RA = RankAdjustment(failures=X_data_failures, right_censored=X_data_right_censored, show_plot=False, print_results=False, a=a)
+        df = RA.results
+        failure_rows = df.loc[df['Censoring code (censored=0)'] == 1.0]
+        ecdf = 1 - np.array(failure_rows['Rank Adjustment Estimate'].values)
+        method_str = 'Rank Adjustment'
     else:
-        raise ValueError('method must be "KM" for Kaplan-meier or "NA" for Nelson-Aalen. Default is KM')
+        raise ValueError('method must be "KM" for Kaplan-meier, "NA" for Nelson-Aalen, or "RA" for Rank Adjustment. Default is KM')
 
     # calculate the failure times at the given quantiles
     dist_Y_ISF = []

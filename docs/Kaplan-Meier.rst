@@ -2,8 +2,8 @@
 
 -------------------------------------
 
-Kaplan-Meier estimate of reliability
-''''''''''''''''''''''''''''''''''''
+Kaplan-Meier
+''''''''''''
 
 The Kaplan-Meier estimator provides a method by which to estimate the survival function (reliability function) of a population without assuming that the data comes from a particular distribution. Due to the lack of parameters required in this model, it is a non-parametric method of obtaining the survival function. With a few simple transformations, the survival function (SF) can be used to obtain the cumulative hazard function (CHF) and the cumulative distribution function (CDF). It is not possible to obtain a useful version of the probability density function (PDF) or hazard function (HF) as this would require the differentiation of the CDF and CHF respectively, which results in a very spikey plot due to the non-continuous nature of these plots.
 
@@ -23,8 +23,8 @@ Inputs:
 
 Outputs:
 
--   results - dataframe of results
--   KM - list of Kaplan-Meier column from results dataframe. This column is the non parametric estimate of the Survival Function (reliability function).
+-    results - dataframe of results
+-    KM - list of Kaplan-Meier column from results dataframe. This column is the non parametric estimate of the Survival Function (reliability function).
 -    xvals - the x-values to plot the stepwise plot as seen when show_plot=True
 -    SF - survival function stepwise values (these differ from the KM values as there are extra values added in to make the plot into a step plot)
 -    CDF - cumulative distribution function stepwise values

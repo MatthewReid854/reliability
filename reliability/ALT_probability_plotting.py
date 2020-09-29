@@ -18,6 +18,7 @@ from reliability.Utils import probability_plot_xylims, probability_plot_xyticks
 import pandas as pd
 from scipy.optimize import minimize
 
+
 class ALT_probability_plot_Weibull:
     '''
     ALT_probability_plot_Weibull
@@ -135,7 +136,7 @@ class ALT_probability_plot_Weibull:
             weibull_fit_beta_array.append(weibull_fit.beta)
         common_shape_guess = np.average(weibull_fit_beta_array)
 
-        def __BIC_minimizer(common_shape_X): #lgtm [py/similar-function]
+        def __BIC_minimizer(common_shape_X):  # lgtm [py/similar-function]
             '''
             __BIC_minimizer is used by the minimize function to get the shape which gives the lowest overall BIC
             '''
@@ -171,7 +172,7 @@ class ALT_probability_plot_Weibull:
         BIC_total = 0
         x_array = np.array([])
         y_array = np.array([])
-        AICc = True #default flag that gets changed if AICc is a string
+        AICc = True  # default flag that gets changed if AICc is a string
         for i, stress in enumerate(unique_stresses_f):
             failure_current_stress_df = f_df[f_df['stress'] == stress]
             FAILURES = failure_current_stress_df['times'].values
@@ -191,21 +192,11 @@ class ALT_probability_plot_Weibull:
                 AICc_total += weibull_fit_common_shape.AICc
             BIC_total += weibull_fit_common_shape.BIC
             if show_plot is True:
-                weibull_fit_common_shape.distribution.CDF(linestyle='--', color=color_list[i], xvals=xvals, plot_CI=False) # plotting of the confidence intervals has been turned off
-                Probability_plotting.Weibull_probability_plot(failures=FAILURES, right_censored=RIGHT_CENSORED,plot_CI=False, color=color_list[i], label=str(stress))
-            x,y = Probability_plotting.plotting_positions(failures=FAILURES, right_censored=RIGHT_CENSORED)
-            x_array = np.append(x_array,np.array(x))
-            y_array = np.append(y_array,np.array(y))
-        if show_plot is True:
-            plt.legend(title='Stress')
-            if common_shape_method == 'BIC':
-                plt.title(str('ALT Weibull Probability Plot\nOptimal BIC ' + r'$\beta$ = ' + str(round(common_shape, 4))))
-            elif common_shape_method == 'weighted_average':
-                plt.title(str('ALT Weibull Probability Plot\nWeighted average ' + r'$\beta$ = ' + str(round(common_shape, 4))))
-            elif common_shape_method == 'average':
-                plt.title(str('ALT Weibull Probability Plot\nAverage ' + r'$\beta$ = ' + str(round(common_shape, 4))))
-            probability_plot_xylims(x=x_array, y=y_array, dist='weibull', spacing=0.05)
-            probability_plot_xyticks()
+                weibull_fit_common_shape.distribution.CDF(linestyle='--', color=color_list[i], xvals=xvals, plot_CI=False)  # plotting of the confidence intervals has been turned off
+                Probability_plotting.Weibull_probability_plot(failures=FAILURES, right_censored=RIGHT_CENSORED, plot_CI=False, color=color_list[i], label=str(stress))
+            x, y = Probability_plotting.plotting_positions(failures=FAILURES, right_censored=RIGHT_CENSORED)
+            x_array = np.append(x_array, np.array(x))
+            y_array = np.append(y_array, np.array(y))
 
         self.BIC_sum = np.sum(BIC_total)
         if AICc is True:
@@ -226,6 +217,7 @@ class ALT_probability_plot_Weibull:
         self.results = results_df
         self.x_array = x_array
         self.y_array = y_array
+
         if print_results is True:
             pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
             pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
@@ -233,6 +225,17 @@ class ALT_probability_plot_Weibull:
             print(self.results)
             print('Total AICc:', self.AICc_sum)
             print('Total BIC:', self.BIC_sum)
+
+        if show_plot is True:
+            plt.legend(title='Stress')
+            if common_shape_method == 'BIC':
+                plt.title(str('ALT Weibull Probability Plot\nOptimal BIC ' + r'$\beta$ = ' + str(round(common_shape, 4))))
+            elif common_shape_method == 'weighted_average':
+                plt.title(str('ALT Weibull Probability Plot\nWeighted average ' + r'$\beta$ = ' + str(round(common_shape, 4))))
+            elif common_shape_method == 'average':
+                plt.title(str('ALT Weibull Probability Plot\nAverage ' + r'$\beta$ = ' + str(round(common_shape, 4))))
+            probability_plot_xylims(x=x_array, y=y_array, dist='weibull', spacing=0.05)
+            probability_plot_xyticks()
 
 
 class ALT_probability_plot_Exponential:
@@ -384,11 +387,6 @@ class ALT_probability_plot_Exponential:
             x, y = Probability_plotting.plotting_positions(failures=FAILURES, right_censored=RIGHT_CENSORED)
             x_array = np.append(x_array, np.array(x))
             y_array = np.append(y_array, np.array(y))
-        if show_plot is True:
-            plt.legend(title='Stress')
-            plt.title('ALT Exponential Probability Plot')
-            probability_plot_xylims(x=x_array, y=y_array, dist='weibull', spacing=0.05)
-            probability_plot_xyticks()
 
         self.BIC_sum = np.sum(BIC_total)
         self.BIC_sum_weibull = np.sum(BIC_total_weib)
@@ -414,6 +412,7 @@ class ALT_probability_plot_Exponential:
         self.results = results_df
         self.x_array = x_array
         self.y_array = y_array
+
         if print_results is True:
             pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
             pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
@@ -425,6 +424,12 @@ class ALT_probability_plot_Exponential:
             print('Total BIC (weibull):', self.BIC_sum_weibull)
         if self.BIC_sum > self.BIC_sum_weibull:
             print('WARNING: The Weibull distribution would be a more appropriate fit for this data set as it has a lower BIC (using the average method to obtain BIC) than the Exponential distribution.')
+
+        if show_plot is True:
+            plt.legend(title='Stress')
+            plt.title('ALT Exponential Probability Plot')
+            probability_plot_xylims(x=x_array, y=y_array, dist='weibull', spacing=0.05)
+            probability_plot_xyticks()
 
 
 class ALT_probability_plot_Lognormal:
@@ -544,7 +549,7 @@ class ALT_probability_plot_Lognormal:
             lognormal_fit_sigma_array.append(lognormal_fit.sigma)
         common_shape_guess = np.average(lognormal_fit_sigma_array)
 
-        def __BIC_minimizer(common_shape_X): #lgtm [py/similar-function]
+        def __BIC_minimizer(common_shape_X):  # lgtm [py/similar-function]
             '''
             __BIC_minimizer is used by the minimize function to get the sigma which gives the lowest overall BIC
             '''
@@ -605,16 +610,6 @@ class ALT_probability_plot_Lognormal:
             x, y = Probability_plotting.plotting_positions(failures=FAILURES, right_censored=RIGHT_CENSORED)
             x_array = np.append(x_array, np.array(x))
             y_array = np.append(y_array, np.array(y))
-        if show_plot is True:
-            plt.legend(title='Stress')
-            if common_shape_method == 'BIC':
-                plt.title(str('ALT Lognormal Probability Plot\nOptimal BIC ' + r'$\sigma$ = ' + str(round(common_shape, 4))))
-            elif common_shape_method == 'weighted_average':
-                plt.title(str('ALT Lognormal Probability Plot\nWeighted average ' + r'$\sigma$ = ' + str(round(common_shape, 4))))
-            elif common_shape_method == 'average':
-                plt.title(str('ALT Lognormal Probability Plot\nAverage ' + r'$\sigma$ = ' + str(round(common_shape, 4))))
-            probability_plot_xylims(x=x_array, y=y_array, dist='lognormal', spacing=0.05)
-            probability_plot_xyticks()
 
         self.BIC_sum = np.sum(BIC_total)
         if AICc is True:
@@ -635,6 +630,7 @@ class ALT_probability_plot_Lognormal:
         self.results = results_df
         self.x_array = x_array
         self.y_array = y_array
+
         if print_results is True:
             pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
             pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
@@ -642,6 +638,17 @@ class ALT_probability_plot_Lognormal:
             print(self.results)
             print('Total AICc:', self.AICc_sum)
             print('Total BIC:', self.BIC_sum)
+
+        if show_plot is True:
+            plt.legend(title='Stress')
+            if common_shape_method == 'BIC':
+                plt.title(str('ALT Lognormal Probability Plot\nOptimal BIC ' + r'$\sigma$ = ' + str(round(common_shape, 4))))
+            elif common_shape_method == 'weighted_average':
+                plt.title(str('ALT Lognormal Probability Plot\nWeighted average ' + r'$\sigma$ = ' + str(round(common_shape, 4))))
+            elif common_shape_method == 'average':
+                plt.title(str('ALT Lognormal Probability Plot\nAverage ' + r'$\sigma$ = ' + str(round(common_shape, 4))))
+            probability_plot_xylims(x=x_array, y=y_array, dist='lognormal', spacing=0.05)
+            probability_plot_xyticks()
 
 
 class ALT_probability_plot_Normal:
@@ -762,7 +769,7 @@ class ALT_probability_plot_Normal:
             normal_fit_sigma_array.append(normal_fit.sigma)
         common_shape_guess = np.average(normal_fit_sigma_array)
 
-        def __BIC_minimizer(common_shape_X): #lgtm [py/similar-function]
+        def __BIC_minimizer(common_shape_X):  # lgtm [py/similar-function]
             '''
             __BIC_minimizer is used by the minimize function to get the sigma which gives the lowest overall BIC
             '''
@@ -823,16 +830,6 @@ class ALT_probability_plot_Normal:
             x, y = Probability_plotting.plotting_positions(failures=FAILURES, right_censored=RIGHT_CENSORED)
             x_array = np.append(x_array, np.array(x))
             y_array = np.append(y_array, np.array(y))
-        if show_plot is True:
-            plt.legend(title='Stress')
-            if common_shape_method == 'BIC':
-                plt.title(str('ALT Normal Probability Plot\nOptimal BIC ' + r'$\sigma$ = ' + str(round(common_shape, 4))))
-            elif common_shape_method == 'weighted_average':
-                plt.title(str('ALT Normal Probability Plot\nWeighted average ' + r'$\sigma$ = ' + str(round(common_shape, 4))))
-            elif common_shape_method == 'average':
-                plt.title(str('ALT Normal Probability Plot\nAverage ' + r'$\sigma$ = ' + str(round(common_shape, 4))))
-            probability_plot_xylims(x=x_array, y=y_array, dist='normal', spacing=0.05)
-            probability_plot_xyticks()
 
         self.BIC_sum = np.sum(BIC_total)
         if AICc is True:
@@ -853,6 +850,7 @@ class ALT_probability_plot_Normal:
         self.results = results_df
         self.x_array = x_array
         self.y_array = y_array
+
         if print_results is True:
             pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
             pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
@@ -860,3 +858,14 @@ class ALT_probability_plot_Normal:
             print(self.results)
             print('Total AICc:', self.AICc_sum)
             print('Total BIC:', self.BIC_sum)
+
+        if show_plot is True:
+            plt.legend(title='Stress')
+            if common_shape_method == 'BIC':
+                plt.title(str('ALT Normal Probability Plot\nOptimal BIC ' + r'$\sigma$ = ' + str(round(common_shape, 4))))
+            elif common_shape_method == 'weighted_average':
+                plt.title(str('ALT Normal Probability Plot\nWeighted average ' + r'$\sigma$ = ' + str(round(common_shape, 4))))
+            elif common_shape_method == 'average':
+                plt.title(str('ALT Normal Probability Plot\nAverage ' + r'$\sigma$ = ' + str(round(common_shape, 4))))
+            probability_plot_xylims(x=x_array, y=y_array, dist='normal', spacing=0.05)
+            probability_plot_xyticks()
