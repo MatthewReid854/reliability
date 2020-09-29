@@ -236,6 +236,7 @@ class ALT_probability_plot_Weibull:
                 plt.title(str('ALT Weibull Probability Plot\nAverage ' + r'$\beta$ = ' + str(round(common_shape, 4))))
             probability_plot_xylims(x=x_array, y=y_array, dist='weibull', spacing=0.05)
             probability_plot_xyticks()
+            plt.tight_layout()
 
 
 class ALT_probability_plot_Exponential:
@@ -430,6 +431,7 @@ class ALT_probability_plot_Exponential:
             plt.title('ALT Exponential Probability Plot')
             probability_plot_xylims(x=x_array, y=y_array, dist='weibull', spacing=0.05)
             probability_plot_xyticks()
+            plt.tight_layout()
 
 
 class ALT_probability_plot_Lognormal:
@@ -649,6 +651,7 @@ class ALT_probability_plot_Lognormal:
                 plt.title(str('ALT Lognormal Probability Plot\nAverage ' + r'$\sigma$ = ' + str(round(common_shape, 4))))
             probability_plot_xylims(x=x_array, y=y_array, dist='lognormal', spacing=0.05)
             probability_plot_xyticks()
+            plt.tight_layout()
 
 
 class ALT_probability_plot_Normal:
@@ -869,3 +872,4 @@ class ALT_probability_plot_Normal:
                 plt.title(str('ALT Normal Probability Plot\nAverage ' + r'$\sigma$ = ' + str(round(common_shape, 4))))
             probability_plot_xylims(x=x_array, y=y_array, dist='normal', spacing=0.05)
             probability_plot_xyticks()
+            plt.tight_layout()

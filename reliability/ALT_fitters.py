@@ -75,7 +75,8 @@ class Fit_Weibull_Exponential:
     a - fitted parameter from the Exponential model
     b - fitted parameter from the Exponential model
     beta - the fitted Weibull_2P beta
-    loglik2 - LogLikelihood*-2
+    loglik2 - Log Likelihood*-2 (as used in JMP Pro)
+    loglik - Log Likelihood (as used in Minitab and Reliasoft)
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
     a_SE - the standard error (sqrt(variance)) of the parameter
@@ -172,6 +173,7 @@ class Fit_Weibull_Exponential:
         self.b = params[1]
         self.beta = params[2]
         self.loglik2 = LL2
+        self.loglik = LL2 * -0.5
         if n - k - 1 > 0:
             self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
         else:
@@ -266,8 +268,9 @@ class Fit_Weibull_Exponential:
             plt.legend(title='Stress')
             plt.title('Weibull-Exponential Model')
             probability_plot_xyticks()
-            x_array = np.hstack([Weibull_Distribution(alpha=use_life, beta=self.beta).quantile(max(ALT_fit.y_array)),ALT_fit.x_array])
-            probability_plot_xylims(x=x_array,y=ALT_fit.y_array,dist='weibull',spacing=0.1)
+            x_array = np.hstack([Weibull_Distribution(alpha=use_life, beta=self.beta).quantile(max(ALT_fit.y_array)), ALT_fit.x_array])
+            probability_plot_xylims(x=x_array, y=ALT_fit.y_array, dist='weibull', spacing=0.1)
+            plt.tight_layout()
 
     @staticmethod
     def logf(t, T, a, b, beta):  # Log PDF
@@ -310,7 +313,8 @@ class Fit_Weibull_Eyring:
     a - fitted parameter from the Eyring model
     c - fitted parameter from the Eyring model
     beta - the fitted Weibull_2P beta
-    loglik2 - LogLikelihood*-2
+    loglik2 - Log Likelihood*-2 (as used in JMP Pro)
+    loglik - Log Likelihood (as used in Minitab and Reliasoft)
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
     a_SE - the standard error (sqrt(variance)) of the parameter
@@ -407,6 +411,7 @@ class Fit_Weibull_Eyring:
         self.c = params[1]
         self.beta = params[2]
         self.loglik2 = LL2
+        self.loglik = LL2 * -0.5
         if n - k - 1 > 0:
             self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
         else:
@@ -500,8 +505,9 @@ class Fit_Weibull_Eyring:
             plt.legend(title='Stress')
             plt.title('Weibull-Eyring Model')
             probability_plot_xyticks()
-            x_array = np.hstack([Weibull_Distribution(alpha=use_life, beta=self.beta).quantile(max(ALT_fit.y_array)),ALT_fit.x_array])
-            probability_plot_xylims(x=x_array,y=ALT_fit.y_array,dist='weibull',spacing=0.1)
+            x_array = np.hstack([Weibull_Distribution(alpha=use_life, beta=self.beta).quantile(max(ALT_fit.y_array)), ALT_fit.x_array])
+            probability_plot_xylims(x=x_array, y=ALT_fit.y_array, dist='weibull', spacing=0.1)
+            plt.tight_layout()
 
     @staticmethod
     def logf(t, T, a, c, beta):  # Log PDF
@@ -544,7 +550,8 @@ class Fit_Weibull_Power:
     a - fitted parameter from the Power model
     n - fitted parameter from the Power model
     beta - the fitted Weibull_2P beta
-    loglik2 - LogLikelihood*-2
+    loglik2 - Log Likelihood*-2 (as used in JMP Pro)
+    loglik - Log Likelihood (as used in Minitab and Reliasoft)
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
     a_SE - the standard error (sqrt(variance)) of the parameter
@@ -641,6 +648,7 @@ class Fit_Weibull_Power:
         self.n = params[1]
         self.beta = params[2]
         self.loglik2 = LL2
+        self.loglik = LL2 * -0.5
         if n - k - 1 > 0:
             self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
         else:
@@ -725,7 +733,7 @@ class Fit_Weibull_Power:
                 life = self.a * stress ** self.n
                 fitted_dist_params = __make_fitted_dist_params_weibull(alpha=life, beta=self.beta)
                 original_fit = Fit_Weibull_2P(failures=FAILURES, right_censored=RIGHT_CENSORED, show_probability_plot=False, print_results=False)
-                original_fit.distribution.CDF(color=color_list[i], label=str(stress),plot_CI=False, xvals=xvals)
+                original_fit.distribution.CDF(color=color_list[i], label=str(stress), plot_CI=False, xvals=xvals)
                 Weibull_probability_plot(failures=FAILURES, right_censored=RIGHT_CENSORED, __fitted_dist_params=fitted_dist_params, color=color_list[i], linestyle='--', label='')
             if use_level_stress is not None:
                 use_label_str = str(str(use_level_stress) + ' (use level)')
@@ -734,8 +742,9 @@ class Fit_Weibull_Power:
             plt.legend(title='Stress')
             plt.title('Weibull-Power Model')
             probability_plot_xyticks()
-            x_array = np.hstack([Weibull_Distribution(alpha=use_life, beta=self.beta).quantile(max(ALT_fit.y_array)),ALT_fit.x_array])
-            probability_plot_xylims(x=x_array,y=ALT_fit.y_array,dist='weibull',spacing=0.1)
+            x_array = np.hstack([Weibull_Distribution(alpha=use_life, beta=self.beta).quantile(max(ALT_fit.y_array)), ALT_fit.x_array])
+            probability_plot_xylims(x=x_array, y=ALT_fit.y_array, dist='weibull', spacing=0.1)
+            plt.tight_layout()
 
     @staticmethod
     def logf(t, T, a, n, beta):  # Log PDF
@@ -781,7 +790,8 @@ class Fit_Weibull_Dual_Exponential:
     b - fitted parameter from the Dual-Exponential model
     c - fitted parameter from the Dual-Exponential model
     beta - the fitted Weibull_2P beta
-    loglik2 - LogLikelihood*-2
+    loglik2 - Log Likelihood*-2 (as used in JMP Pro)
+    loglik - Log Likelihood (as used in Minitab and Reliasoft)
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
     a_SE - the standard error (sqrt(variance)) of the parameter
@@ -903,6 +913,7 @@ class Fit_Weibull_Dual_Exponential:
         self.c = params[2]
         self.beta = params[3]
         self.loglik2 = LL2
+        self.loglik = LL2 * -0.5
         if n - k - 1 > 0:
             self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
         else:
@@ -1005,8 +1016,9 @@ class Fit_Weibull_Dual_Exponential:
             leg._legend_box.align = 'left'
             plt.title('Weibull-Dual-Exponential Model')
             probability_plot_xyticks()
-            x_array = np.hstack([Weibull_Distribution(alpha=use_life, beta=self.beta).quantile(max(ALT_fit_1.y_array)),ALT_fit_1.x_array])
-            probability_plot_xylims(x=x_array,y=ALT_fit_1.y_array,dist='weibull',spacing=0.1)
+            x_array = np.hstack([Weibull_Distribution(alpha=use_life, beta=self.beta).quantile(max(ALT_fit_1.y_array)), ALT_fit_1.x_array])
+            probability_plot_xylims(x=x_array, y=ALT_fit_1.y_array, dist='weibull', spacing=0.1)
+            plt.tight_layout()
 
     @staticmethod
     def logf(t, S1, S2, a, b, c, beta):  # Log PDF
@@ -1053,7 +1065,8 @@ class Fit_Weibull_Power_Exponential:
     c - fitted parameter from the Power-Exponential model
     n - fitted parameter from the Power-Exponential model
     beta - the fitted Weibull_2P beta
-    loglik2 - LogLikelihood*-2
+    loglik2 - Log Likelihood*-2 (as used in JMP Pro)
+    loglik - Log Likelihood (as used in Minitab and Reliasoft)
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
     a_SE - the standard error (sqrt(variance)) of the parameter
@@ -1175,6 +1188,7 @@ class Fit_Weibull_Power_Exponential:
         self.n = params[2]
         self.beta = params[3]
         self.loglik2 = LL2
+        self.loglik = LL2 * -0.5
         if n - k - 1 > 0:
             self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
         else:
@@ -1277,8 +1291,9 @@ class Fit_Weibull_Power_Exponential:
             leg._legend_box.align = 'left'
             plt.title('Weibull-Power-Exponential Model')
             probability_plot_xyticks()
-            x_array = np.hstack([Weibull_Distribution(alpha=use_life, beta=self.beta).quantile(max(ALT_fit_1.y_array)),ALT_fit_1.x_array])
-            probability_plot_xylims(x=x_array,y=ALT_fit_1.y_array,dist='weibull',spacing=0.1)
+            x_array = np.hstack([Weibull_Distribution(alpha=use_life, beta=self.beta).quantile(max(ALT_fit_1.y_array)), ALT_fit_1.x_array])
+            probability_plot_xylims(x=x_array, y=ALT_fit_1.y_array, dist='weibull', spacing=0.1)
+            plt.tight_layout()
 
     @staticmethod
     def logf(t, S1, S2, a, c, n, beta):  # Log PDF
@@ -1322,7 +1337,8 @@ class Fit_Lognormal_Exponential:
     a - fitted parameter from the Exponential model
     b - fitted parameter from the Exponential model
     sigma - the fitted Lognormal_2P sigma
-    loglik2 - LogLikelihood*-2
+    loglik2 - Log Likelihood*-2 (as used in JMP Pro)
+    loglik - Log Likelihood (as used in Minitab and Reliasoft)
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
     a_SE - the standard error (sqrt(variance)) of the parameter
@@ -1419,6 +1435,7 @@ class Fit_Lognormal_Exponential:
         self.b = params[1]
         self.sigma = params[2]
         self.loglik2 = LL2
+        self.loglik = LL2 * -0.5
         if n - k - 1 > 0:
             self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
         else:
@@ -1510,8 +1527,9 @@ class Fit_Lognormal_Exponential:
             plt.legend(title='Stress')
             plt.title('Lognormal-Exponential Model')
             probability_plot_xyticks()
-            x_array = np.hstack([Lognormal_Distribution(mu=np.log(use_life), sigma=self.sigma).quantile(max(ALT_fit.y_array)),ALT_fit.x_array])
-            probability_plot_xylims(x=x_array,y=ALT_fit.y_array,dist='lognormal',spacing=0.1)
+            x_array = np.hstack([Lognormal_Distribution(mu=np.log(use_life), sigma=self.sigma).quantile(max(ALT_fit.y_array)), ALT_fit.x_array])
+            probability_plot_xylims(x=x_array, y=ALT_fit.y_array, dist='lognormal', spacing=0.1)
+            plt.tight_layout()
 
     @staticmethod
     def logf(t, T, a, b, sigma):  # Log PDF
@@ -1554,7 +1572,8 @@ class Fit_Lognormal_Eyring:
     a - fitted parameter from the Eyring model
     c - fitted parameter from the Eyring model
     sigma - the fitted Lognormal_2P sigma
-    loglik2 - LogLikelihood*-2
+    loglik2 - Log Likelihood*-2 (as used in JMP Pro)
+    loglik - Log Likelihood (as used in Minitab and Reliasoft)
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
     a_SE - the standard error (sqrt(variance)) of the parameter
@@ -1651,6 +1670,7 @@ class Fit_Lognormal_Eyring:
         self.c = params[1]
         self.sigma = params[2]
         self.loglik2 = LL2
+        self.loglik = LL2 * -0.5
         if n - k - 1 > 0:
             self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
         else:
@@ -1741,8 +1761,9 @@ class Fit_Lognormal_Eyring:
             plt.legend(title='Stress')
             plt.title('Lognormal-Eyring Model')
             probability_plot_xyticks()
-            x_array = np.hstack([Lognormal_Distribution(mu=np.log(use_life), sigma=self.sigma).quantile(max(ALT_fit.y_array)),ALT_fit.x_array])
-            probability_plot_xylims(x=x_array,y=ALT_fit.y_array,dist='lognormal',spacing=0.1)
+            x_array = np.hstack([Lognormal_Distribution(mu=np.log(use_life), sigma=self.sigma).quantile(max(ALT_fit.y_array)), ALT_fit.x_array])
+            probability_plot_xylims(x=x_array, y=ALT_fit.y_array, dist='lognormal', spacing=0.1)
+            plt.tight_layout()
 
     @staticmethod
     def logf(t, T, a, c, sigma):  # Log PDF
@@ -1785,7 +1806,8 @@ class Fit_Lognormal_Power:
     a - fitted parameter from the Power model
     n - fitted parameter from the Power model
     sigma - the fitted Lognormal_2P sigma
-    loglik2 - LogLikelihood*-2
+    loglik2 - Log Likelihood*-2 (as used in JMP Pro)
+    loglik - Log Likelihood (as used in Minitab and Reliasoft)
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
     a_SE - the standard error (sqrt(variance)) of the parameter
@@ -1882,6 +1904,7 @@ class Fit_Lognormal_Power:
         self.n = params[1]
         self.sigma = params[2]
         self.loglik2 = LL2
+        self.loglik = LL2 * -0.5
         if n - k - 1 > 0:
             self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
         else:
@@ -1972,8 +1995,9 @@ class Fit_Lognormal_Power:
             plt.legend(title='Stress')
             plt.title('Lognormal-Power Model')
             probability_plot_xyticks()
-            x_array = np.hstack([Lognormal_Distribution(mu=np.log(use_life), sigma=self.sigma).quantile(max(ALT_fit.y_array)),ALT_fit.x_array])
-            probability_plot_xylims(x=x_array,y=ALT_fit.y_array,dist='lognormal',spacing=0.1)
+            x_array = np.hstack([Lognormal_Distribution(mu=np.log(use_life), sigma=self.sigma).quantile(max(ALT_fit.y_array)), ALT_fit.x_array])
+            probability_plot_xylims(x=x_array, y=ALT_fit.y_array, dist='lognormal', spacing=0.1)
+            plt.tight_layout()
 
     @staticmethod
     def logf(t, T, a, n, sigma):  # Log PDF
@@ -2019,7 +2043,8 @@ class Fit_Lognormal_Dual_Exponential:
     b - fitted parameter from the Dual-Exponential model
     c - fitted parameter from the Dual-Exponential model
     sigma - the fitted Lognormal_2P sigma
-    loglik2 - LogLikelihood*-2
+    loglik2 - Log Likelihood*-2 (as used in JMP Pro)
+    loglik - Log Likelihood (as used in Minitab and Reliasoft)
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
     a_SE - the standard error (sqrt(variance)) of the parameter
@@ -2141,6 +2166,7 @@ class Fit_Lognormal_Dual_Exponential:
         self.c = params[2]
         self.sigma = params[3]
         self.loglik2 = LL2
+        self.loglik = LL2 * -0.5
         if n - k - 1 > 0:
             self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
         else:
@@ -2240,8 +2266,9 @@ class Fit_Lognormal_Dual_Exponential:
             leg._legend_box.align = 'left'
             plt.title('Lognormal-Dual-Exponential Model')
             probability_plot_xyticks()
-            x_array = np.hstack([Lognormal_Distribution(mu=np.log(use_life), sigma=self.sigma).quantile(max(ALT_fit_1.y_array)),ALT_fit_1.x_array])
-            probability_plot_xylims(x=x_array,y=ALT_fit_1.y_array,dist='lognormal',spacing=0.1)
+            x_array = np.hstack([Lognormal_Distribution(mu=np.log(use_life), sigma=self.sigma).quantile(max(ALT_fit_1.y_array)), ALT_fit_1.x_array])
+            probability_plot_xylims(x=x_array, y=ALT_fit_1.y_array, dist='lognormal', spacing=0.1)
+            plt.tight_layout()
 
     @staticmethod
     def logf(t, S1, S2, a, b, c, sigma):  # Log PDF
@@ -2288,7 +2315,8 @@ class Fit_Lognormal_Power_Exponential:
     c - fitted parameter from the Power-Exponential model
     n - fitted parameter from the Power-Exponential model
     sigma - the fitted Lognormal_2P sigma
-    loglik2 - LogLikelihood*-2
+    loglik2 - Log Likelihood*-2 (as used in JMP Pro)
+    loglik - Log Likelihood (as used in Minitab and Reliasoft)
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
     a_SE - the standard error (sqrt(variance)) of the parameter
@@ -2410,6 +2438,7 @@ class Fit_Lognormal_Power_Exponential:
         self.n = params[2]
         self.sigma = params[3]
         self.loglik2 = LL2
+        self.loglik = LL2 * -0.5
         if n - k - 1 > 0:
             self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
         else:
@@ -2509,8 +2538,9 @@ class Fit_Lognormal_Power_Exponential:
             leg._legend_box.align = 'left'
             plt.title('Lognormal-Power-Exponential Model')
             probability_plot_xyticks()
-            x_array = np.hstack([Lognormal_Distribution(mu=np.log(use_life), sigma=self.sigma).quantile(max(ALT_fit_1.y_array)),ALT_fit_1.x_array])
-            probability_plot_xylims(x=x_array,y=ALT_fit_1.y_array,dist='lognormal',spacing=0.1)
+            x_array = np.hstack([Lognormal_Distribution(mu=np.log(use_life), sigma=self.sigma).quantile(max(ALT_fit_1.y_array)), ALT_fit_1.x_array])
+            probability_plot_xylims(x=x_array, y=ALT_fit_1.y_array, dist='lognormal', spacing=0.1)
+            plt.tight_layout()
 
     @staticmethod
     def logf(t, S1, S2, a, c, n, sigma):  # Log PDF
@@ -2554,7 +2584,8 @@ class Fit_Normal_Exponential:
     a - fitted parameter from the Exponential model
     b - fitted parameter from the Exponential model
     sigma - the fitted Normal_2P sigma
-    loglik2 - LogLikelihood*-2
+    loglik2 - Log Likelihood*-2 (as used in JMP Pro)
+    loglik - Log Likelihood (as used in Minitab and Reliasoft)
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
     a_SE - the standard error (sqrt(variance)) of the parameter
@@ -2652,6 +2683,7 @@ class Fit_Normal_Exponential:
         self.b = params[1]
         self.sigma = params[2]
         self.loglik2 = LL2
+        self.loglik = LL2 * -0.5
         if n - k - 1 > 0:
             self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
         else:
@@ -2742,8 +2774,9 @@ class Fit_Normal_Exponential:
             plt.legend(title='Stress')
             plt.title('Normal-Exponential Model')
             probability_plot_xyticks()
-            x_array = np.hstack([Normal_Distribution(mu=use_life, sigma=self.sigma).quantile(max(ALT_fit.y_array)),ALT_fit.x_array])
-            probability_plot_xylims(x=x_array,y=ALT_fit.y_array,dist='normal',spacing=0.1)
+            x_array = np.hstack([Normal_Distribution(mu=use_life, sigma=self.sigma).quantile(max(ALT_fit.y_array)), ALT_fit.x_array])
+            probability_plot_xylims(x=x_array, y=ALT_fit.y_array, dist='normal', spacing=0.1)
+            plt.tight_layout()
 
     @staticmethod
     def logf(t, T, a, b, sigma):  # Log PDF
@@ -2786,7 +2819,8 @@ class Fit_Normal_Eyring:
     a - fitted parameter from the Eyring model
     c - fitted parameter from the Eyring model
     sigma - the fitted Normal_2P sigma
-    loglik2 - LogLikelihood*-2
+    loglik2 - Log Likelihood*-2 (as used in JMP Pro)
+    loglik - Log Likelihood (as used in Minitab and Reliasoft)
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
     a_SE - the standard error (sqrt(variance)) of the parameter
@@ -2884,6 +2918,7 @@ class Fit_Normal_Eyring:
         self.c = params[1]
         self.sigma = params[2]
         self.loglik2 = LL2
+        self.loglik = LL2 * -0.5
         if n - k - 1 > 0:
             self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
         else:
@@ -2973,8 +3008,9 @@ class Fit_Normal_Eyring:
             plt.legend(title='Stress')
             plt.title('Normal-Eyring Model')
             probability_plot_xyticks()
-            x_array = np.hstack([Normal_Distribution(mu=use_life, sigma=self.sigma).quantile(max(ALT_fit.y_array)),ALT_fit.x_array])
-            probability_plot_xylims(x=x_array,y=ALT_fit.y_array,dist='normal',spacing=0.1)
+            x_array = np.hstack([Normal_Distribution(mu=use_life, sigma=self.sigma).quantile(max(ALT_fit.y_array)), ALT_fit.x_array])
+            probability_plot_xylims(x=x_array, y=ALT_fit.y_array, dist='normal', spacing=0.1)
+            plt.tight_layout()
 
     @staticmethod
     def logf(t, T, a, c, sigma):  # Log PDF
@@ -3017,7 +3053,8 @@ class Fit_Normal_Power:
     a - fitted parameter from the Power model
     n - fitted parameter from the Power model
     sigma - the fitted Normal_2P sigma
-    loglik2 - LogLikelihood*-2
+    loglik2 - Log Likelihood*-2 (as used in JMP Pro)
+    loglik - Log Likelihood (as used in Minitab and Reliasoft)
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
     a_SE - the standard error (sqrt(variance)) of the parameter
@@ -3115,6 +3152,7 @@ class Fit_Normal_Power:
         self.n = params[1]
         self.sigma = params[2]
         self.loglik2 = LL2
+        self.loglik = LL2 * -0.5
         if n - k - 1 > 0:
             self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
         else:
@@ -3204,8 +3242,9 @@ class Fit_Normal_Power:
             plt.legend(title='Stress')
             plt.title('Normal-Power Model')
             probability_plot_xyticks()
-            x_array = np.hstack([Normal_Distribution(mu=use_life, sigma=self.sigma).quantile(max(ALT_fit.y_array)),ALT_fit.x_array])
-            probability_plot_xylims(x=x_array,y=ALT_fit.y_array,dist='normal',spacing=0.1)
+            x_array = np.hstack([Normal_Distribution(mu=use_life, sigma=self.sigma).quantile(max(ALT_fit.y_array)), ALT_fit.x_array])
+            probability_plot_xylims(x=x_array, y=ALT_fit.y_array, dist='normal', spacing=0.1)
+            plt.tight_layout()
 
     @staticmethod
     def logf(t, T, a, n, sigma):  # Log PDF
@@ -3251,7 +3290,8 @@ class Fit_Normal_Dual_Exponential:
     b - fitted parameter from the Dual-Exponential model
     c - fitted parameter from the Dual-Exponential model
     sigma - the fitted Normal_2P sigma
-    loglik2 - LogLikelihood*-2
+    loglik2 - Log Likelihood*-2 (as used in JMP Pro)
+    loglik - Log Likelihood (as used in Minitab and Reliasoft)
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
     a_SE - the standard error (sqrt(variance)) of the parameter
@@ -3374,6 +3414,7 @@ class Fit_Normal_Dual_Exponential:
         self.c = params[2]
         self.sigma = params[3]
         self.loglik2 = LL2
+        self.loglik = LL2 * -0.5
         if n - k - 1 > 0:
             self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
         else:
@@ -3472,8 +3513,9 @@ class Fit_Normal_Dual_Exponential:
             leg._legend_box.align = 'left'
             plt.title('Normal-Dual-Exponential Model')
             probability_plot_xyticks()
-            x_array = np.hstack([Normal_Distribution(mu=use_life, sigma=self.sigma).quantile(max(ALT_fit_1.y_array)),ALT_fit_1.x_array])
-            probability_plot_xylims(x=x_array,y=ALT_fit_1.y_array,dist='normal',spacing=0.1)
+            x_array = np.hstack([Normal_Distribution(mu=use_life, sigma=self.sigma).quantile(max(ALT_fit_1.y_array)), ALT_fit_1.x_array])
+            probability_plot_xylims(x=x_array, y=ALT_fit_1.y_array, dist='normal', spacing=0.1)
+            plt.tight_layout()
 
     @staticmethod
     def logf(t, S1, S2, a, b, c, sigma):  # Log PDF
@@ -3520,7 +3562,8 @@ class Fit_Normal_Power_Exponential:
     c - fitted parameter from the Power-Exponential model
     n - fitted parameter from the Power-Exponential model
     sigma - the fitted Normal_2P sigma
-    loglik2 - LogLikelihood*-2
+    loglik2 - Log Likelihood*-2 (as used in JMP Pro)
+    loglik - Log Likelihood (as used in Minitab and Reliasoft)
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
     a_SE - the standard error (sqrt(variance)) of the parameter
@@ -3643,6 +3686,7 @@ class Fit_Normal_Power_Exponential:
         self.n = params[2]
         self.sigma = params[3]
         self.loglik2 = LL2
+        self.loglik = LL2 * -0.5
         if n - k - 1 > 0:
             self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
         else:
@@ -3741,8 +3785,9 @@ class Fit_Normal_Power_Exponential:
             leg._legend_box.align = 'left'
             plt.title('Normal-Power-Exponential Model')
             probability_plot_xyticks()
-            x_array = np.hstack([Normal_Distribution(mu=use_life, sigma=self.sigma).quantile(max(ALT_fit_1.y_array)),ALT_fit_1.x_array])
-            probability_plot_xylims(x=x_array,y=ALT_fit_1.y_array,dist='normal',spacing=0.1)
+            x_array = np.hstack([Normal_Distribution(mu=use_life, sigma=self.sigma).quantile(max(ALT_fit_1.y_array)), ALT_fit_1.x_array])
+            probability_plot_xylims(x=x_array, y=ALT_fit_1.y_array, dist='normal', spacing=0.1)
+            plt.tight_layout()
 
     @staticmethod
     def logf(t, S1, S2, a, c, n, sigma):  # Log PDF
@@ -3785,7 +3830,8 @@ class Fit_Exponential_Exponential:
     Outputs:
     a - fitted parameter from the Exponential model
     b - fitted parameter from the Exponential model
-    loglik2 - LogLikelihood*-2
+    loglik2 - Log Likelihood*-2 (as used in JMP Pro)
+    loglik - Log Likelihood (as used in Minitab and Reliasoft)
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
     a_SE - the standard error (sqrt(variance)) of the parameter
@@ -3874,6 +3920,7 @@ class Fit_Exponential_Exponential:
         self.a = params[0]
         self.b = params[1]
         self.loglik2 = LL2
+        self.loglik = LL2 * -0.5
         if n - k - 1 > 0:
             self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
         else:
@@ -3953,7 +4000,7 @@ class Fit_Exponential_Exponential:
                 life = self.b * np.exp(self.a / stress)
                 fitted_dist_params = __make_fitted_dist_params_expon(Lambda=1 / life)
                 original_fit = Fit_Expon_1P(failures=FAILURES, right_censored=RIGHT_CENSORED, show_probability_plot=False, print_results=False)
-                original_fit.distribution.CDF(color=color_list[i], label=str(stress),plot_CI=False, xvals=xvals)
+                original_fit.distribution.CDF(color=color_list[i], label=str(stress), plot_CI=False, xvals=xvals)
                 Exponential_probability_plot_Weibull_Scale(failures=FAILURES, right_censored=RIGHT_CENSORED, __fitted_dist_params=fitted_dist_params, color=color_list[i], linestyle='--', label='')
             if use_level_stress is not None:
                 use_label_str = str(str(use_level_stress) + ' (use level)')
@@ -3962,8 +4009,9 @@ class Fit_Exponential_Exponential:
             plt.legend(title='Stress')
             plt.title('Exponential-Exponential Model')
             probability_plot_xyticks()
-            x_array = np.hstack([Exponential_Distribution(Lambda=1 / use_life).quantile(max(ALT_fit.y_array)),ALT_fit.x_array])
-            probability_plot_xylims(x=x_array,y=ALT_fit.y_array,dist='weibull',spacing=0.1)
+            x_array = np.hstack([Exponential_Distribution(Lambda=1 / use_life).quantile(max(ALT_fit.y_array)), ALT_fit.x_array])
+            probability_plot_xylims(x=x_array, y=ALT_fit.y_array, dist='weibull', spacing=0.1)
+            plt.tight_layout()
 
     @staticmethod
     def logf(t, T, a, b):  # Log PDF
@@ -4005,7 +4053,8 @@ class Fit_Exponential_Eyring:
     Outputs:
     a - fitted parameter from the Eyring model
     c - fitted parameter from the Eyring model
-    loglik2 - LogLikelihood*-2
+    loglik2 - Log Likelihood*-2 (as used in JMP Pro)
+    loglik - Log Likelihood (as used in Minitab and Reliasoft)
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
     a_SE - the standard error (sqrt(variance)) of the parameter
@@ -4094,6 +4143,7 @@ class Fit_Exponential_Eyring:
         self.a = params[0]
         self.c = params[1]
         self.loglik2 = LL2
+        self.loglik = LL2 * -0.5
         if n - k - 1 > 0:
             self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
         else:
@@ -4172,7 +4222,7 @@ class Fit_Exponential_Eyring:
                 life = 1 / stress * np.exp(-(self.c - self.a / stress))
                 fitted_dist_params = __make_fitted_dist_params_expon(Lambda=1 / life)
                 original_fit = Fit_Expon_1P(failures=FAILURES, right_censored=RIGHT_CENSORED, show_probability_plot=False, print_results=False)
-                original_fit.distribution.CDF(color=color_list[i], label=str(stress),plot_CI=False, xvals=xvals)
+                original_fit.distribution.CDF(color=color_list[i], label=str(stress), plot_CI=False, xvals=xvals)
                 Exponential_probability_plot_Weibull_Scale(failures=FAILURES, right_censored=RIGHT_CENSORED, __fitted_dist_params=fitted_dist_params, color=color_list[i], linestyle='--', label='')
             if use_level_stress is not None:
                 use_label_str = str(str(use_level_stress) + ' (use level)')
@@ -4181,8 +4231,9 @@ class Fit_Exponential_Eyring:
             plt.legend(title='Stress')
             plt.title('Exponential-Eyring Model')
             probability_plot_xyticks()
-            x_array = np.hstack([Exponential_Distribution(Lambda=1 / use_life).quantile(max(ALT_fit.y_array)),ALT_fit.x_array])
-            probability_plot_xylims(x=x_array,y=ALT_fit.y_array,dist='weibull',spacing=0.1)
+            x_array = np.hstack([Exponential_Distribution(Lambda=1 / use_life).quantile(max(ALT_fit.y_array)), ALT_fit.x_array])
+            probability_plot_xylims(x=x_array, y=ALT_fit.y_array, dist='weibull', spacing=0.1)
+            plt.tight_layout()
 
     @staticmethod
     def logf(t, T, a, c):  # Log PDF
@@ -4224,7 +4275,8 @@ class Fit_Exponential_Power:
     Outputs:
     a - fitted parameter from the Power model
     n - fitted parameter from the Power model
-    loglik2 - LogLikelihood*-2
+    loglik2 - Log Likelihood*-2 (as used in JMP Pro)
+    loglik - Log Likelihood (as used in Minitab and Reliasoft)
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
     a_SE - the standard error (sqrt(variance)) of the parameter
@@ -4313,6 +4365,7 @@ class Fit_Exponential_Power:
         self.a = params[0]
         self.n = params[1]
         self.loglik2 = LL2
+        self.loglik = LL2 * -0.5
         if n - k - 1 > 0:
             self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
         else:
@@ -4391,7 +4444,7 @@ class Fit_Exponential_Power:
                 life = self.a * stress ** self.n
                 fitted_dist_params = __make_fitted_dist_params_expon(Lambda=1 / life)
                 original_fit = Fit_Expon_1P(failures=FAILURES, right_censored=RIGHT_CENSORED, show_probability_plot=False, print_results=False)
-                original_fit.distribution.CDF(color=color_list[i], label=str(stress),plot_CI=False, xvals=xvals)
+                original_fit.distribution.CDF(color=color_list[i], label=str(stress), plot_CI=False, xvals=xvals)
                 Exponential_probability_plot_Weibull_Scale(failures=FAILURES, right_censored=RIGHT_CENSORED, __fitted_dist_params=fitted_dist_params, color=color_list[i], linestyle='--', label='')
             if use_level_stress is not None:
                 use_label_str = str(str(use_level_stress) + ' (use level)')
@@ -4400,8 +4453,9 @@ class Fit_Exponential_Power:
             plt.legend(title='Stress')
             plt.title('Exponential-Power Model')
             probability_plot_xyticks()
-            x_array = np.hstack([Exponential_Distribution(Lambda=1 / use_life).quantile(max(ALT_fit.y_array)),ALT_fit.x_array])
-            probability_plot_xylims(x=x_array,y=ALT_fit.y_array,dist='weibull',spacing=0.1)
+            x_array = np.hstack([Exponential_Distribution(Lambda=1 / use_life).quantile(max(ALT_fit.y_array)), ALT_fit.x_array])
+            probability_plot_xylims(x=x_array, y=ALT_fit.y_array, dist='weibull', spacing=0.1)
+            plt.tight_layout()
 
     @staticmethod
     def logf(t, T, a, n):  # Log PDF
@@ -4446,7 +4500,8 @@ class Fit_Exponential_Dual_Exponential:
     a - fitted parameter from the Dual-Exponential model
     b - fitted parameter from the Dual-Exponential model
     c - fitted parameter from the Dual-Exponential model
-    loglik2 - LogLikelihood*-2
+    loglik2 - Log Likelihood*-2 (as used in JMP Pro)
+    loglik - Log Likelihood (as used in Minitab and Reliasoft)
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
     a_SE - the standard error (sqrt(variance)) of the parameter
@@ -4557,6 +4612,7 @@ class Fit_Exponential_Dual_Exponential:
         self.b = params[1]
         self.c = params[2]
         self.loglik2 = LL2
+        self.loglik = LL2 * -0.5
         if n - k - 1 > 0:
             self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
         else:
@@ -4643,7 +4699,7 @@ class Fit_Exponential_Dual_Exponential:
                 life = self.c * np.exp(self.a / stress_1 + self.b / stress_2)
                 fitted_dist_params = __make_fitted_dist_params_expon(Lambda=1 / life)
                 original_fit = Fit_Expon_1P(failures=FAILURES, right_censored=RIGHT_CENSORED, show_probability_plot=False, print_results=False)
-                original_fit.distribution.CDF(color=color_list[i], label=str(stress_pair),plot_CI=False, xvals=xvals)
+                original_fit.distribution.CDF(color=color_list[i], label=str(stress_pair), plot_CI=False, xvals=xvals)
                 Exponential_probability_plot_Weibull_Scale(failures=FAILURES, right_censored=RIGHT_CENSORED, __fitted_dist_params=fitted_dist_params, color=color_list[i], linestyle='--', label='')
             if use_level_stress is not None:
                 use_label_str = str(str(float(use_level_stress[0])) + ' , ' + str(float(use_level_stress[1])) + ' (use level)')
@@ -4653,8 +4709,9 @@ class Fit_Exponential_Dual_Exponential:
             leg._legend_box.align = 'left'
             plt.title('Exponential-Dual-Exponential Model')
             probability_plot_xyticks()
-            x_array = np.hstack([Exponential_Distribution(Lambda=1 / use_life).quantile(max(ALT_fit_1.y_array)),ALT_fit_1.x_array])
-            probability_plot_xylims(x=x_array,y=ALT_fit_1.y_array,dist='weibull',spacing=0.1)
+            x_array = np.hstack([Exponential_Distribution(Lambda=1 / use_life).quantile(max(ALT_fit_1.y_array)), ALT_fit_1.x_array])
+            probability_plot_xylims(x=x_array, y=ALT_fit_1.y_array, dist='weibull', spacing=0.1)
+            plt.tight_layout()
 
     @staticmethod
     def logf(t, S1, S2, a, b, c):  # Log PDF
@@ -4700,7 +4757,8 @@ class Fit_Exponential_Power_Exponential:
     a - fitted parameter from the Power-Exponential model
     c - fitted parameter from the Power-Exponential model
     n - fitted parameter from the Power-Exponential model
-    loglik2 - LogLikelihood*-2
+    loglik2 - Log Likelihood*-2 (as used in JMP Pro)
+    loglik - Log Likelihood (as used in Minitab and Reliasoft)
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
     a_SE - the standard error (sqrt(variance)) of the parameter
@@ -4811,6 +4869,7 @@ class Fit_Exponential_Power_Exponential:
         self.c = params[1]
         self.n = params[2]
         self.loglik2 = LL2
+        self.loglik = LL2 * -0.5
         if n - k - 1 > 0:
             self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
         else:
@@ -4897,7 +4956,7 @@ class Fit_Exponential_Power_Exponential:
                 life = self.c * stress_2 ** self.n * np.exp(self.a / stress_1)
                 fitted_dist_params = __make_fitted_dist_params_expon(Lambda=1 / life)
                 original_fit = Fit_Expon_1P(failures=FAILURES, right_censored=RIGHT_CENSORED, show_probability_plot=False, print_results=False)
-                original_fit.distribution.CDF(color=color_list[i], label=str(stress_pair),plot_CI=False, xvals=xvals)
+                original_fit.distribution.CDF(color=color_list[i], label=str(stress_pair), plot_CI=False, xvals=xvals)
                 Exponential_probability_plot_Weibull_Scale(failures=FAILURES, right_censored=RIGHT_CENSORED, __fitted_dist_params=fitted_dist_params, color=color_list[i], linestyle='--', label='')
             if use_level_stress is not None:
                 use_label_str = str(str(float(use_level_stress[0])) + ' , ' + str(float(use_level_stress[1])) + ' (use level)')
@@ -4907,8 +4966,9 @@ class Fit_Exponential_Power_Exponential:
             leg._legend_box.align = 'left'
             plt.title('Exponential-Power-Exponential Model')
             probability_plot_xyticks()
-            x_array = np.hstack([Exponential_Distribution(Lambda=1 / use_life).quantile(max(ALT_fit_1.y_array)),ALT_fit_1.x_array])
-            probability_plot_xylims(x=x_array,y=ALT_fit_1.y_array,dist='weibull',spacing=0.1)
+            x_array = np.hstack([Exponential_Distribution(Lambda=1 / use_life).quantile(max(ALT_fit_1.y_array)), ALT_fit_1.x_array])
+            probability_plot_xylims(x=x_array, y=ALT_fit_1.y_array, dist='weibull', spacing=0.1)
+            plt.tight_layout()
 
     @staticmethod
     def logf(t, S1, S2, a, c, n):  # Log PDF

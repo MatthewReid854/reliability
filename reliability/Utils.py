@@ -669,7 +669,8 @@ def probability_plot_xyticks(yticks=None):
         xtick_locations = get_tick_locations('major', axis='x')
         left_tick_distance = xy_transform(xtick_locations[0], direction='forward', axis='x') - xy_transform(xlower, direction='forward', axis='x')
         right_tick_distance = xy_transform(xupper, direction='forward', axis='x') - xy_transform(xtick_locations[-1], direction='forward', axis='x')
-        return left_tick_distance + right_tick_distance
+        ed = left_tick_distance + right_tick_distance
+        return ed
 
     ################# xticks
     MaxNLocator = ticker.MaxNLocator(nbins=10, min_n_ticks=2, steps=[1, 2, 5, 10])
@@ -686,8 +687,8 @@ def probability_plot_xyticks(yticks=None):
         loc_x = ticker.LogLocator()
     ax.xaxis.set_major_locator(loc_x)  # apply the tick locator
     # do not apply a minor locator. It is never as good as the default
-
-    if get_edge_distances() > 0.5:  # 0.5 means 50% of the axis is without ticks on either side. Above this is considered unacceptable
+    ged = get_edge_distances()
+    if get_edge_distances() > 0.5:  # 0.5 means 50% of the axis is without ticks on either side. Above this is considered unacceptable. This has a weakness where there's only 1 tick it will return 0. Changing 0 to 1 can make things too crowded
         # find which locator is better
         ax.xaxis.set_major_locator(MaxNLocator)
         edges_maxNLocator = get_edge_distances()

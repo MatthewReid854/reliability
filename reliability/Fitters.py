@@ -263,7 +263,7 @@ class Fit_Everything:
             df2 = df.reindex(df.BIC.sort_values().index)
         elif sort_by in ['AICc', 'AIC', 'aic', 'aicc']:
             df2 = df.reindex(df.AICc.sort_values().index)
-        elif sort_by in ['ad','AD']:
+        elif sort_by in ['ad', 'AD']:
             df2 = df.reindex(df.AD.sort_values().index)
         else:
             raise ValueError('Invalid input to sort_by. Options are BIC, AICc, or AD. Default is BIC')
@@ -876,7 +876,7 @@ class Fit_Weibull_2P:
         df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
         self.results = df.set_index('Parameter')
         self.distribution = Weibull_Distribution(alpha=self.alpha, beta=self.beta, alpha_SE=self.alpha_SE, beta_SE=self.beta_SE, Cov_alpha_beta=self.Cov_alpha_beta, CI=CI, CI_type=CI_type)
-        self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=failures,show_plot=False),empirical_cdf=y)
+        self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=failures, show_plot=False), empirical_cdf=y)
 
         if print_results is True:
             pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
@@ -1175,7 +1175,7 @@ class Fit_Weibull_2P_grouped:
         self.results = df.set_index('Parameter')
 
         self.distribution = Weibull_Distribution(alpha=self.alpha, beta=self.beta, alpha_SE=self.alpha_SE, beta_SE=self.beta_SE, Cov_alpha_beta=self.Cov_alpha_beta, CI=CI, CI_type=CI_type)
-        self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=failures,show_plot=False),empirical_cdf=y)
+        self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=failures, show_plot=False), empirical_cdf=y)
 
         if print_results is True:
             pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
@@ -2575,7 +2575,7 @@ class Fit_Lognormal_2P:
             self.Cov_mu_sigma = abs(covariance_matrix[0][1])
             self.mu_upper = self.mu + (Z * self.mu_SE)  # mu is positive or negative
             self.mu_lower = self.mu + (-Z * self.mu_SE)
-            self.sigma_upper = self.sigma * (np.exp(Z * (self.sigma_SE / self.sigma))) #sigma is strictly positive
+            self.sigma_upper = self.sigma * (np.exp(Z * (self.sigma_SE / self.sigma)))  # sigma is strictly positive
             self.sigma_lower = self.sigma * (np.exp(-Z * (self.sigma_SE / self.sigma)))
         else:
             hessian_matrix = hessian(Fit_Lognormal_2P.LL_fs)(np.array(tuple([self.mu])), np.array(tuple(failures)), np.array(tuple(right_censored)), np.array(tuple([force_sigma])))
@@ -2809,13 +2809,12 @@ class Fit_Lognormal_3P:
             self.sigma_SE = abs(covariance_matrix[1][1]) ** 0.5
             self.gamma_SE = abs(covariance_matrix_for_gamma[2][2]) ** 0.5
             self.Cov_mu_sigma = abs(covariance_matrix[0][1])
-            self.mu_upper = self.mu + (Z * self.mu_SE) # Mu can be positive or negative.
+            self.mu_upper = self.mu + (Z * self.mu_SE)  # Mu can be positive or negative.
             self.mu_lower = self.mu + (-Z * self.mu_SE)
-            self.sigma_upper = self.sigma * (np.exp(Z * (self.sigma_SE / self.sigma))) # sigma is strictly positive
+            self.sigma_upper = self.sigma * (np.exp(Z * (self.sigma_SE / self.sigma)))  # sigma is strictly positive
             self.sigma_lower = self.sigma * (np.exp(-Z * (self.sigma_SE / self.sigma)))
             self.gamma_upper = self.gamma * (np.exp(Z * (self.gamma_SE / self.gamma)))  # here we assume gamma can only be positive as there are bounds placed on it in the optimizer. Minitab assumes positive or negative so bounds are different
             self.gamma_lower = self.gamma * (np.exp(-Z * (self.gamma_SE / self.gamma)))
-
 
         Data = {'Parameter': ['Mu', 'Sigma', 'Gamma'],
                 'Point Estimate': [self.mu, self.sigma, self.gamma],
