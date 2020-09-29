@@ -5,8 +5,19 @@
 Changelog
 ---------
 
-**Version: 0.5.3 --- Currently Unreleased --- Scheduled for release around the end of September**
-'''''''''''''''''''''''''''''''''''''''''''''
+**Version: 0.5.4 --- Currently unreleased --- due for release around mid-November**
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+**New features**
+
+**API Changes**
+
+**Bug Fixes**
+
+**Other**
+
+**Version: 0.5.3 --- Released: 29 September 2020**
+''''''''''''''''''''''''''''''''''''''''''''''''''
 
 **New features**
 
@@ -54,11 +65,12 @@ Changelog
 -    Within Stress_strength the legend text for both plots no longer formats the probability of failure as a percentage and the format is changed to use scientific notation which is much more appropriate for very small failure probabilities.
 -    Within Stress_strength both functions will issue a warning if stress.mean > strength.mean to indicate that the user may have assigned the distributions in the wrong order.
 -    The version requirements for all dependancies have been updated to their most recent versions. This is most important for scipy which recently had an update that affects the covariance matrix results.
+-    Added __version__ to __init__.py file so that the version number is recorded in the same way as other packages record it.
 -    Other_functions.histogram has an argument for bins. Previously this accepted the exact bins to be used and if left blank calculated them using the `Freedman-Diaconis rule <https://en.wikipedia.org/wiki/Freedman%E2%80%93Diaconis_rule>`_. In addition to accepting the exact bins to use, the bins argument now accepts strings just like matplotlib and numpy, and the default is now 'auto'. See `numpy <https://numpy.org/doc/stable/reference/generated/numpy.histogram_bin_edges.html>`_ for more detail on the strings available.
 -    KaplanMeier and NelsonAalen now consider previous xlim when plotting. This prevents plot limits from being overridden by the most recent plot.
 
 **Version: 0.5.2 --- Released: 14 August 2020**
-'''''''''''''''''''''''''''''''''''''''''''''
+'''''''''''''''''''''''''''''''''''''''''''''''
 
 **New features**
 
