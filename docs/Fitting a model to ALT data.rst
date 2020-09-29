@@ -97,13 +97,13 @@ In the following example, we will fit the Weibull-Power model to an ALT dataset 
     Results from Fit_Weibull_Power (95% CI):
                Point Estimate  Standard Error       Lower CI      Upper CI
     Parameter                                                             
-    a           398816.280655   519397.785342 -619184.672265  1.416817e+06
+    a           398816.331485   519397.960450 -619184.964641  1.416818e+06
     n               -1.417306        0.243944      -1.895428 -9.391834e-01
     beta             3.017297        0.716426       1.894563  4.805374e+00
-    At the use level stress of 60 , the mean life is 1075.32841
+    At the use level stress of 60 , the mean life is 1075.32845
     '''
     
-.. image:: images/Weibull_power.png
+.. image:: images/Weibull_powerV2.png
 
 In this second example, we will fit a dual stress model to a dual stress data set. The data set contains temperature and voltage data so it is most appropriate to model this dataset using a Power-Exponential model. A few differences to note with the dual stress models is that each stress requires a separate input, so if you also have censored data then this will require 6 inputs. If using the Power Exponential model it is essential that the thermal and non-thermal stresses go in their named inputs or the model will likely fail to fit the data. In this example we want to know the life at a use level stress of 325K and 0.5V which the output tells us is 4673 hours.
 
@@ -120,14 +120,14 @@ In this second example, we will fit a dual stress model to a dual stress data se
     Results from Fit_Weibull_Power_Exponential (95% CI):
                Point Estimate  Standard Error     Lower CI     Upper CI
     Parameter                                                          
-    a             3404.486044      627.680074  2174.255705  4634.716383
-    c                0.087610        0.141218    -0.189172     0.364393
-    n               -0.713424        0.277561    -1.257434    -0.169413
-    beta             4.997527        1.173998     3.153512     7.919829
-    At the use level stresses of 325 and 0.5 , the mean life is 4673.15246
+    a             3404.485691      627.674716  2174.265854  4634.705528
+    c                0.087610        0.141217    -0.189170     0.364391
+    n               -0.713424        0.277561    -1.257434    -0.169414
+    beta             4.997527        1.173998     3.153512     7.919828
+    At the use level stresses of 325 and 0.5 , the mean life is 4673.15347
     '''
 
-.. image:: images/power_expon_plot.png
+.. image:: images/power_expon_plotV2.png
 
 **References:**
 
