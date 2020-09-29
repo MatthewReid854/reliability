@@ -5,8 +5,6 @@
 Kolmogorov-Smirnov test
 ''''''''''''''''''''''''
 
-.. note:: This function will be available in version 0.5.3 which is currently unreleased.
-
 The Kolmogorov-Smirnov test is a statistical test for goodness of fit to determine whether we can accept or reject the hypothesis that the data is from the specified distribution at the specified level of significance. This method is not a means of comparing distributions (which can be done with AICc, BIC, and AD), but instead allows us to accept or reject a hypothesis that data come from a distribution. Unlike the `chi-squared test <https://reliability.readthedocs.io/en/latest/Chi-squared%20test.html>`_, the Kolmogorov-Smirnov test does not depend on the bins of a histogram, therefore making it a more consistent goodness of fit.
 
 The procedure for the test involves comparing the fitted CDF (from a hypothesised distribution) against the empirical CDF (calculated using a rank order of the data of the form i/n). The difference between the fitted CDF and the empirical CDF is used to find the Kolmogorov-Smirnov statistic. The specified level of significance (analogous to confidence level) and the number of data points is used to obtain the Kolmogorov-Smirnov critical value from the Kolmogorov-Smirnov distribution. By comparing the Kolmogorov-Smirnov statistic with the Kolmogorov-Smirnov critical value, we can determine whether the hypothesis (that the data are from the specified distribution) should be rejected or accepted. The acceptance criteria is when the the Kolmogorov-Smirnov statistic is below the critical value.
@@ -44,5 +42,3 @@ In the example below we import a dataset called mileage which contains 100 value
     '''
 
 .. image:: images/KStest.png
-
-.. note:: This function will be available in version 0.5.3 which is currently unreleased.
