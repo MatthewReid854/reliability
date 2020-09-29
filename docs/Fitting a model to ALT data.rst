@@ -67,7 +67,8 @@ Outputs:
 -   a - fitted parameter from the Power model
 -   n - fitted parameter from the Power model
 -   beta - the fitted Weibull_2P beta
--   loglik2 - LogLikelihood*-2
+-   loglik2 - LogLikelihood*-2 (as used on JMP Pro)
+-   loglik - Log Likelihood (as used in Minitab and Reliasoft)
 -   AICc - Akaike Information Criterion
 -   BIC - Bayesian Information Criterion
 -   a_SE - the standard error (sqrt(variance)) of the parameter
@@ -103,7 +104,7 @@ In the following example, we will fit the Weibull-Power model to an ALT dataset 
     At the use level stress of 60 , the mean life is 1075.32845
     '''
     
-.. image:: images/Weibull_powerV2.png
+.. image:: images/Weibull_powerV3.png
 
 In this second example, we will fit a dual stress model to a dual stress data set. The data set contains temperature and voltage data so it is most appropriate to model this dataset using a Power-Exponential model. A few differences to note with the dual stress models is that each stress requires a separate input, so if you also have censored data then this will require 6 inputs. If using the Power Exponential model it is essential that the thermal and non-thermal stresses go in their named inputs or the model will likely fail to fit the data. In this example we want to know the life at a use level stress of 325K and 0.5V which the output tells us is 4673 hours.
 
@@ -127,7 +128,7 @@ In this second example, we will fit a dual stress model to a dual stress data se
     At the use level stresses of 325 and 0.5 , the mean life is 4673.15347
     '''
 
-.. image:: images/power_expon_plotV2.png
+.. image:: images/power_expon_plotV3.png
 
 **References:**
 
