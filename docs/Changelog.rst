@@ -14,6 +14,8 @@ Changelog
 
 **Bug Fixes**
 
+-    Other_functions.distribution_explorer has a bug caused by a recent update to matplotlib. When a non-existent axis was deleted, the error matplotlib generated was a ValueError and that is now changed to AttributeError which was not being appropriately handled by distribution explorer. This is now resolved.
+
 **Other**
 
 **Version: 0.5.3 --- Released: 29 September 2020**
