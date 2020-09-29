@@ -46,15 +46,48 @@ In this first example, we will provide Kaplan-Meier with a list of failure times
     import matplotlib.pyplot as plt
     f = [5248, 7454, 16890, 17200, 38700, 45000, 49390, 69040, 72280, 131900]
     rc = [3961, 4007, 4734, 6054, 7298, 10190, 23060, 27160, 28690, 37100, 40060, 45670, 53000, 67000, 69630, 77350, 78470, 91680, 105700, 106300, 150400]
-    KaplanMeier(failures=f, right_censored=rc, label='Failures + right censored',print_results=False)
-    KaplanMeier(failures=f, label='Failures only') #this will print results to console
+    KaplanMeier(failures=f, right_censored=rc, label='Failures + right censored')
+    KaplanMeier(failures=f, label='Failures only')
     plt.title('Kaplan-Meier estimates showing the\nimportance of including censored data')
     plt.xlabel('Miles to failure')
     plt.legend()
     plt.show()
     
     '''
-                   Censoring code (censored=0)  Items remaining  Kaplan Meier Estimate  Lower CI bound  Upper CI bound
+                   Censoring code (censored=0)  Items remaining  Kaplan-Meier Estimate  Lower CI bound  Upper CI bound
+    Failure times                                                                                                     
+    3961                                     0               31               1.000000        1.000000        1.000000
+    4007                                     0               30               1.000000        1.000000        1.000000
+    4734                                     0               29               1.000000        1.000000        1.000000
+    5248                                     1               28               0.964286        0.895548        1.000000
+    6054                                     0               27               0.964286        0.895548        1.000000
+    7298                                     0               26               0.964286        0.895548        1.000000
+    7454                                     1               25               0.925714        0.826513        1.000000
+    10190                                    0               24               0.925714        0.826513        1.000000
+    16890                                    1               23               0.885466        0.763170        1.000000
+    17200                                    1               22               0.845217        0.705334        0.985101
+    23060                                    0               21               0.845217        0.705334        0.985101
+    27160                                    0               20               0.845217        0.705334        0.985101
+    28690                                    0               19               0.845217        0.705334        0.985101
+    37100                                    0               18               0.845217        0.705334        0.985101
+    38700                                    1               17               0.795499        0.633417        0.957580
+    40060                                    0               16               0.795499        0.633417        0.957580
+    45000                                    1               15               0.742465        0.560893        0.924037
+    45670                                    0               14               0.742465        0.560893        0.924037
+    49390                                    1               13               0.685353        0.486210        0.884496
+    53000                                    0               12               0.685353        0.486210        0.884496
+    67000                                    0               11               0.685353        0.486210        0.884496
+    69040                                    1               10               0.616817        0.396904        0.836731
+    69630                                    0                9               0.616817        0.396904        0.836731
+    72280                                    1                8               0.539715        0.300949        0.778481
+    77350                                    0                7               0.539715        0.300949        0.778481
+    78470                                    0                6               0.539715        0.300949        0.778481
+    91680                                    0                5               0.539715        0.300949        0.778481
+    105700                                   0                4               0.539715        0.300949        0.778481
+    106300                                   0                3               0.539715        0.300949        0.778481
+    131900                                   1                2               0.269858        0.000000        0.662446
+    150400                                   0                1               0.269858        0.000000        0.662446
+                   Censoring code (censored=0)  Items remaining  Kaplan-Meier Estimate  Lower CI bound  Upper CI bound
     Failure times                                                                                                     
     5248.0                                 1.0               10                    0.9        0.714061        1.000000
     7454.0                                 1.0                9                    0.8        0.552082        1.000000
