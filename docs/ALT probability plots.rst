@@ -52,7 +52,6 @@ In the following example we will use a dataset from ``reliability.Datasets`` whi
     plt.subplot(122)
     ALT_probability_plot_Lognormal(failures=ALT_temperature().failures,failure_stress=ALT_temperature().failure_stresses,right_censored=ALT_temperature().right_censored,right_censored_stress=ALT_temperature().right_censored_stresses)
     plt.gcf().set_size_inches(15,7)
-    plt.tight_layout()
     plt.show()
     
     '''
@@ -96,7 +95,6 @@ In this second example, we examine the difference between ALT_probability_plot_W
     plt.subplot(122)
     ALT_probability_plot_Weibull(failures=f, failure_stress=f_stress, common_shape_method='average')
     plt.gcf().set_size_inches((11,7))
-    plt.tight_layout()
     plt.show()
 
     '''
