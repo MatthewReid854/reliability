@@ -11,6 +11,7 @@ The following development roadmap is the current task list and implementation pl
 
 -    Writing more automated tests. This will speed up the code development processes and help prevent future changes having unidentified effects.
 -    Confidence intervals for Normal and Lognormal distributions (Gamma, Beta and Loglogistic will come later). Currently the confidence intervals have only been completed for Weibull and Exponential distributions.
+-    Addition of Gumbel Distribution (includes: Gumbel_Distribution, Fit_Gumbel_2P, Gumbel_probability_plot)
 
 **High priority (expected by the end of 2020)**
 
