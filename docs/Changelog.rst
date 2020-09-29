@@ -32,12 +32,14 @@ Changelog
 -    All probability plots had h1 and h2 options for the plotting heuristics. These have been replaced by the argument "a" which is the same as what h1 was. h2 can be calculated from h1 and the length of the dataset so it was redundant. "a" was chosen to align with `wikipedia <https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics>`_.
 -    Thanks to the addition of the Nonparametric.RankAdjustment, the functions Probability_plotting.QQ_plot_semiparametric and Probability_plotting.PP_plot_semiparametric now allow for 'RA' as the option in their method. Previously the methods were limited to 'KM', and 'NA' for Kaplan-Meier and Nelson-Aalen.
 -    Other_functions.make_right_censored_data now has an additional argument of fraction_censored which controls the amount of data to right censor when producing multiply-censored data. There is also a random seed argument added for repeatability.
+-    All the ALT_fitters were missing loglik as an output. They had loglik2 which is the same as loglik*-2 but this is added for completeness and to match the outputs from Fitters.
 
 **Bug Fixes**
 
 -    Fixed autoscale for cases where the HF is constant so it no longer lies along the yaxis upper limit
 -    Fit_Everything had a bug in the default xvals for the Beta_Distribution's histogram which caused an error in some special cases. This is now resolved.
 -    All the quantile functions in each distribution didn't accept np.float64 and raised an error. They now accept this data type.
+-    The AICc and BIC in all the ALT_fitters was slightly wrong due to a small coding error. This is now fixed.
 
 **Other**
 
