@@ -7,7 +7,7 @@ Rank Adjustment
 
 The Rank Adjustment estimator provides a method by which to estimate the survival function (reliability function) of a population without assuming that the data comes from a particular distribution. Due to the lack of parameters required in this model, it is a non-parametric method of obtaining the survival function. With a few simple transformations, the survival function (SF) can be used to obtain the cumulative hazard function (CHF) and the cumulative distribution function (CDF). It is not possible to obtain a useful version of the probability density function (PDF) or hazard function (HF) as this would require the differentiation of the CDF and CHF respectively, which results in a very spikey plot due to the non-continuous nature of these plots.
 
-The Rank Adjustment estimator is very similar in result (but quite different in method) to the `Kaplan-Meier estimator <https://reliability.readthedocs.io/en/latest/Kaplan-Meier.html>`_ and `Nelson-Aalen estimator <https://reliability.readthedocs.io/en/latest/Nelson-Aalen.html>`_. While none of the three has been proven to be more accurate than the other, the Kaplan-Meier estimator is generally more popular as a non-parametric means of estimating the SF. Confidence intervals are provided using the Greenwood method with Normal approximation.
+The Rank Adjustment estimator is very similar in result (but quite different in method) to the `Kaplan-Meier estimator <https://reliability.readthedocs.io/en/latest/Kaplan-Meier.html>`_ and `Nelson-Aalen estimator <https://reliability.readthedocs.io/en/latest/Nelson-Aalen.html>`_. While none of the three has been proven to be more accurate than the others, the Kaplan-Meier estimator is generally more popular as a non-parametric means of estimating the SF. Confidence intervals are provided using the Greenwood method with Normal approximation.
 
 The Rank Adjustment estimator can be used with both complete and right censored data. This function can be accessed from ``reliability.Nonparametric.RankAdjustment``. The Rank-adjustment algorithm is the same as is used in Probability_plotting.plotting_positions to obtain y-values for the scatter plot. As with plotting_positions, the heuristic constant "a" is accepted, with the default being 0.3 for median ranks.
 
@@ -56,9 +56,9 @@ In this first example, we will see how Rank Adjustment compares with Kaplan-Meie
         raw_data = dist.random_samples(number_of_samples=s, seed=42)
         data = make_right_censored_data(data=raw_data, fraction_censored=0.5, seed=42)  # this will multiply-censor 50% of the data
         plt.subplot(131 + i)
-        KM = KaplanMeier(failures=data.failures, right_censored=data.right_censored, print_results=False, show_plot=True, label='Kaplan-Meier')
-        NA = NelsonAalen(failures=data.failures, right_censored=data.right_censored, print_results=False, show_plot=True, label='Nelson-Aalen')
-        RA = RankAdjustment(failures=data.failures, right_censored=data.right_censored, print_results=False, show_plot=True, label='Rank Adjustment')
+        KaplanMeier(failures=data.failures, right_censored=data.right_censored, print_results=False, show_plot=True, label='Kaplan-Meier')
+        NelsonAalen(failures=data.failures, right_censored=data.right_censored, print_results=False, show_plot=True, label='Nelson-Aalen')
+        RankAdjustment(failures=data.failures, right_censored=data.right_censored, print_results=False, show_plot=True, label='Rank Adjustment')
         dist.SF(label='Weibull Distribution', color='red')
         plt.title(str(str(s) + ' samples'))
         plt.legend()
