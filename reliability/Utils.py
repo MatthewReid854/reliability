@@ -664,27 +664,39 @@ def probability_plot_xyticks(yticks=None):
         label = str(str(combined) + str('%'))
         return label
 
+    def get_edge_distances():
+        'finds the sum of the distance (in axes coords (0 to 1)) of the distances from the edge ticks to the edges'
+        xtick_locations = get_tick_locations('major', axis='x')
+        left_tick_distance = xy_transform(xtick_locations[0], direction='forward', axis='x') - xy_transform(xlower, direction='forward', axis='x')
+        right_tick_distance = xy_transform(xupper, direction='forward', axis='x') - xy_transform(xtick_locations[-1], direction='forward', axis='x')
+        return left_tick_distance + right_tick_distance
+
     ################# xticks
+    MaxNLocator = ticker.MaxNLocator(nbins=10, min_n_ticks=2, steps=[1, 2, 5, 10])
+    LogLocator = ticker.LogLocator()
     ax = plt.gca()
     xlower, xupper = plt.xlim()
     if xlower <= 0:  # can't use log scale if 0 (gamma) or negative numbers (normal and gumbel)
-        loc_x = ticker.MaxNLocator(nbins=10, min_n_ticks=2, steps=[1, 2, 5, 10])
+        loc_x = MaxNLocator
     elif xupper < 0.1:  # very small positive values
         loc_x = ticker.LogLocator()
     elif xupper < 1000 or np.log10(xupper) - np.log10(xlower) < 1.5:  # not too big and not too small OR it may be big but not too spread out
-        loc_x = ticker.MaxNLocator(nbins=10, min_n_ticks=2, steps=[1, 2, 5, 10])
+        loc_x = MaxNLocator
     else:  # it is really big (>1000) and spread out
         loc_x = ticker.LogLocator()
     ax.xaxis.set_major_locator(loc_x)  # apply the tick locator
     # do not apply a minor locator. It is never as good as the default
 
-    if type(loc_x) == ticker.MaxNLocator:  # check if there are any massive tick gaps on the left or right. If so it is likely that MaxNLocator was selected when it should have been LogLocator
-        xtick_locations = get_tick_locations('major', axis='x')
-        left_tick_distance = xy_transform(xtick_locations[0], direction='forward', axis='x') - xy_transform(xlower, direction='forward', axis='x')
-        right_tick_distance = xy_transform(xupper, direction='forward', axis='x') - xy_transform(xtick_locations[-1], direction='forward', axis='x')
-        if max(left_tick_distance, right_tick_distance) > 0.4:  # 0.4 means 40% of the axis is without ticks. Above this is considered unacceptable
-            loc_x = ticker.LogLocator()
-            ax.xaxis.set_major_locator(loc_x)  # reapply the locator
+    if get_edge_distances() > 0.5:  # 0.5 means 50% of the axis is without ticks on either side. Above this is considered unacceptable
+        # find which locator is better
+        ax.xaxis.set_major_locator(MaxNLocator)
+        edges_maxNLocator = get_edge_distances()
+        ax.xaxis.set_major_locator(LogLocator)
+        edges_LogLocator = get_edge_distances()
+        if edges_LogLocator < edges_maxNLocator:
+            ax.xaxis.set_major_locator(LogLocator)  # apply a new locator
+        else:
+            ax.xaxis.set_major_locator(MaxNLocator)  # apply a new locator
     ax.xaxis.set_major_formatter(ticker.FuncFormatter(customFormatter))  # the custom formatter is always applied to the major ticks
 
     num_major_x_ticks_shown = len(get_tick_locations('major', axis='x'))
@@ -693,7 +705,6 @@ def probability_plot_xyticks(yticks=None):
         max_minor_ticks = 15
     else:
         max_minor_ticks = 10
-
     if num_major_x_ticks_shown < 2 and num_minor_x_xticks_shown <= max_minor_ticks:
         ax.xaxis.set_minor_formatter(ticker.FuncFormatter(customFormatter))  # if there are less than 2 major ticks within the plotting limits then the minor ticks should be labeled. Only do this if there aren't too many minor ticks
 
