@@ -20,14 +20,18 @@ The following development roadmap is the current task list and implementation pl
      - `Zero_Inflated_Distribution <https://www.jmp.com/support/help/14-2/distributions-2.shtml>`_. This is for when the CDF starts above 0 due to a lot of 'dead on arrival' products in the dataset.
 
 -    Add least squares as a method to obtain the initial guess for all Fitters. Currently this has only been implemented in Weibull and Loglogistic fitters but all the other Fitters use scipy which is slower but more accurate for small datasets.
--    Merge Fit_Weibull_2P_grouped functionality into Fit_Weibull_2P. Input format will be failures=[], right_censored=[], n_failures=[], n_right_censored=[]. Once this is done for Weibull it will be replicated for all Fitters so they are faster for large datasets with repeated values.
 -    Improvement to the online documentation for how some of these methods work, including the addition of more formulas, algorithms, and better referencing.
+-    Merge Fit_Weibull_2P_grouped functionality into Fit_Weibull_2P. Input format will be failures=[], right_censored=[], n_failures=[], n_right_censored=[]. Once this is done for Weibull it will be replicated for all Fitters so they are faster for large datasets with repeated values.
+-    Add converters between 3 data formats:
+     
+     - FR = failures, right_censored
+     - FRNN = failures, right_censored, n_failures, n_right_censored
+     - XCN = unit, censoring_code, number_of_events (where unit is time, km, cycles, etc.)
 
 **Low priority (more of a wish list at this point)**
 
 -    Warranty Module. This will be a new module of many tools for warranty calculation.
 -    New reliability growth models. Currently there is only the Duane model. It is planned to include the Crow Extended and AMSAA PM2 models.
 -    Cox Proportional Hazards Model - This is available in `Lifelines <https://lifelines.readthedocs.io/en/latest/Survival%20Regression.html#cox-s-proportional-hazard-model>`_.
--    Add the rank adjustment method to Nonparametric. Rank adjustment is the method used in Probability plotting (eg. to obtain the Median Ranks) and is a common and useful nonparametric estimate of the CDF, SF, and CHF.
 -    Parameter Solver using GUI.
--    Speed improvements to fitters by using `JAX <https://github.com/google/jax>`_ to replace `Autograd <https://github.com/HIPS/autograd>`_. This will be done once the `issue <https://github.com/google/jax/issues/438>`_ preventing JAX from being installed on Windows machines is resolved.
+-    Speed improvements to fitters by using `JAX <https://github.com/google/jax>`_ to replace `Autograd <https://github.com/HIPS/autograd>`_. This will be done once the `issue <https://github.com/google/jax/issues/438>`_ preventing JAX from being installed on Windows machines is resolved. It is also reliant on approriate functions for Beta and Gamma being written, which is why autograd-gamma is a dependancy in addition to autograd.
