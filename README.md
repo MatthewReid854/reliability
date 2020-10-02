@@ -7,7 +7,6 @@
 [![Scc Count Badge](https://sloc.xyz/github/MatthewReid854/reliability/?category=code)](https://github.com/MatthewReid854/reliability/)
 [![Downloads](https://img.shields.io/pypi/dm/reliability?color=brightgreen&logo=Docusign&logoColor=white&label=PyPI%20downloads)](https://pypistats.org/packages/reliability)
 [![LGPLv3 license](https://img.shields.io/badge/License-LGPLv3-blue.svg?logo=GNU&logoColor=white)](https://www.gnu.org/licenses/lgpl-3.0.txt)
-[![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/MatthewReid854/reliability/blob/master/notebooks/Intro2.ipynb)
 [![DOI](https://img.shields.io/badge/DOI-10.5281/zenodo.3937999-blue.svg?logo=Buffer&logoColor=white)](https://doi.org/10.5281/zenodo.3937999)
 [![Donate](https://img.shields.io/badge/Donate-$$$-blueviolet.svg?logo=paypal)](https://reliability.readthedocs.io/en/latest/How%20to%20donate%20to%20the%20project.html)
 
