@@ -2,7 +2,7 @@
 
 -------------------------------------
 
-|pypi| |docs| |build| |code quality| |LOC| |downloads| |license| |colab| |DOI| |donate|
+|pypi| |docs| |build| |code quality| |LOC| |downloads| |license| |DOI| |donate|
 
 *reliability* is a Python library for reliability engineering and survival analysis. It significantly extends the functionality of scipy.stats and also includes many specialist tools that are otherwise only available in proprietary software.
 
@@ -153,11 +153,6 @@ Contents:
     :alt: license
     :scale: 100%
     :target: https://www.gnu.org/licenses/lgpl-3.0.txt
-
-.. |colab| image:: https://colab.research.google.com/assets/colab-badge.svg
-    :alt: Open in Colab
-    :scale: 100%
-    :target: https://colab.research.google.com/github/MatthewReid854/reliability/blob/master/notebooks/Intro2.ipynb
 
 .. |DOI| image:: https://img.shields.io/badge/DOI-10.5281/zenodo.3937999-blue.svg?logo=Buffer&logoColor=white
     :alt: DOI
