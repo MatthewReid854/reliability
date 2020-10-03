@@ -19,6 +19,8 @@ Changelog
 
 **Other**
 
+-    Removed margins in the stress_strength plots so that the xaxis coincides with the plot window.
+
 **Version: 0.5.3 --- Released: 29 September 2020**
 ''''''''''''''''''''''''''''''''''''''''''''''''''
 
