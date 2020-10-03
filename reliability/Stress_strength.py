@@ -48,6 +48,7 @@ def Probability_of_failure(stress, strength, show_distribution_plot=True, print_
     prob_of_failure = np.trapz(stress.PDF(x, show_plot=False) * strength.CDF(x, show_plot=False), x)
 
     if show_distribution_plot is True:
+        xlims = plt.xlim(auto=None)
         xmin = stress.b5
         xmax = strength.b95
         if xmin < (xmax - xmin)/4:
@@ -59,7 +60,6 @@ def Probability_of_failure(stress, strength, show_distribution_plot=True, print_
         xvals = np.linspace(xmin, xmax, 10000)
         stress_PDF = stress.PDF(xvals=xvals, show_plot=False)
         strength_PDF = strength.PDF(xvals=xvals, show_plot=False)
-
         Y = [(min(strength_PDF[i],stress_PDF[i])) for i in range(len(xvals))] #finds the lower of the two lines which is used as the upper boundary for fill_between
         plt.plot(xvals, stress_PDF, label='Stress')
         plt.plot(xvals, strength_PDF, label='Strength')
@@ -73,6 +73,11 @@ def Probability_of_failure(stress, strength, show_distribution_plot=True, print_
         plt.ylabel('Probability Density')
         plt.xlabel('Stress and Strength Units')
         plt.subplots_adjust(left=0.16)
+        if xlims != (0,1):
+            plt.xlim(min(xvals,xlims[0]),max(xvals,xlims[1]),auto=None)
+        else:
+            plt.xlim(min(xvals), max(xvals),auto=None)
+        plt.ylim(bottom=0,auto=None)
 
     if print_results is True:
         print('Probability of failure:', prob_of_failure)
@@ -111,6 +116,7 @@ def Probability_of_failure_normdist(stress=None, strength=None, show_distributio
         print('Probability of failure:', prob_of_failure)
 
     if show_distribution_plot is True:
+        xlims = plt.xlim(auto=None)
         xmin = stress.b5
         xmax = strength.b95
         xvals = np.linspace(xmin, xmax, 1000)
@@ -129,5 +135,10 @@ def Probability_of_failure_normdist(stress=None, strength=None, show_distributio
         plt.ylabel('Probability Density')
         plt.xlabel('Stress and Strength Units')
         plt.subplots_adjust(left=0.15, right=0.93)
+        if xlims != (0,1):
+            plt.xlim(min(xvals,xlims[0]),max(xvals,xlims[1]),auto=None)
+        else:
+            plt.xlim(min(xvals), max(xvals),auto=None)
+        plt.ylim(bottom=0,auto=None)
 
     return prob_of_failure

@@ -274,8 +274,17 @@ class Weibull_Distribution:
         The plot will be shown if show_plot is True (which it is by default).
         '''
 
+        # # obtain the X array
+        # X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
+        #
+        # pdf = ss.weibull_min.pdf(X, self.beta, scale=self.alpha, loc=self.gamma)
+
         # obtain the X array
-        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
+        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+            X = xvals
+            show_plot = False
+        else:
+            X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
 
         pdf = ss.weibull_min.pdf(X, self.beta, scale=self.alpha, loc=self.gamma)
 
@@ -314,7 +323,11 @@ class Weibull_Distribution:
         '''
 
         # obtain the X array
-        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
+        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+            X = xvals
+            show_plot = False
+        else:
+            X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
 
         # this determines if the user has specified for the CI bounds to be shown or hidden.
         kwargs_list = kwargs.keys()
@@ -368,7 +381,11 @@ class Weibull_Distribution:
         '''
 
         # obtain the X array
-        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
+        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+            X = xvals
+            show_plot = False
+        else:
+            X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
 
         # this determines if the user has specified for the CI bounds to be shown or hidden. Applicable kwargs are show_CI or plot_CI
         kwargs_list = kwargs.keys()
@@ -421,7 +438,11 @@ class Weibull_Distribution:
         '''
 
         # obtain the X array
-        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
+        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+            X = xvals
+            show_plot = False
+        else:
+            X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
 
         # this determines if the user has specified for the CI bounds to be shown or hidden. Applicable kwargs are show_CI or plot_CI
         kwargs_list = kwargs.keys()
@@ -481,7 +502,11 @@ class Weibull_Distribution:
         '''
 
         # obtain the X array
-        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
+        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+            X = xvals
+            show_plot = False
+        else:
+            X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
 
         # this determines if the user has specified for the CI bounds to be shown or hidden. Applicable kwargs are show_CI or plot_CI
         kwargs_list = kwargs.keys()
@@ -901,7 +926,11 @@ class Normal_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
+        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+            X = xvals
+            show_plot = False
+        else:
+            X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
 
         pdf = ss.norm.pdf(X, self.mu, self.sigma)
 
@@ -938,7 +967,11 @@ class Normal_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
+        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+            X = xvals
+            show_plot = False
+        else:
+            X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
 
         cdf = ss.norm.cdf(X, self.mu, self.sigma)
 
@@ -975,7 +1008,11 @@ class Normal_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
+        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+            X = xvals
+            show_plot = False
+        else:
+            X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
 
         sf = ss.norm.sf(X, self.mu, self.sigma)
 
@@ -1012,7 +1049,11 @@ class Normal_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
+        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+            X = xvals
+            show_plot = False
+        else:
+            X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
 
         hf = ss.norm.pdf(X, self.mu, self.sigma) / ss.norm.sf(X, self.mu, self.sigma)
 
@@ -1049,7 +1090,11 @@ class Normal_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
+        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+            X = xvals
+            show_plot = False
+        else:
+            X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
 
         chf = -np.log(ss.norm.sf(X, self.mu, self.sigma))
 
@@ -1315,7 +1360,11 @@ class Lognormal_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
+        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+            X = xvals
+            show_plot = False
+        else:
+            X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
 
         pdf = ss.lognorm.pdf(X, self.sigma, self.gamma, np.exp(self.mu))
 
@@ -1352,7 +1401,11 @@ class Lognormal_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
+        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+            X = xvals
+            show_plot = False
+        else:
+            X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
 
         cdf = ss.lognorm.cdf(X, self.sigma, self.gamma, np.exp(self.mu))
 
@@ -1389,7 +1442,11 @@ class Lognormal_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
+        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+            X = xvals
+            show_plot = False
+        else:
+            X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
 
         sf = ss.lognorm.sf(X, self.sigma, self.gamma, np.exp(self.mu))
 
@@ -1426,7 +1483,11 @@ class Lognormal_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
+        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+            X = xvals
+            show_plot = False
+        else:
+            X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
 
         hf = ss.lognorm.pdf(X, self.sigma, self.gamma, np.exp(self.mu)) / ss.lognorm.sf(X, self.sigma, self.gamma, np.exp(self.mu))
 
@@ -1463,7 +1524,11 @@ class Lognormal_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
+        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+            X = xvals
+            show_plot = False
+        else:
+            X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
 
         chf = -np.log(ss.lognorm.sf(X, self.sigma, self.gamma, np.exp(self.mu)))
 
@@ -1745,7 +1810,11 @@ class Exponential_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
+        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+            X = xvals
+            show_plot = False
+        else:
+            X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
 
         pdf = ss.expon.pdf(X, scale=1 / self.Lambda, loc=self.gamma)
 
@@ -1785,7 +1854,11 @@ class Exponential_Distribution:
 
         '''
         # obtain the X array
-        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
+        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+            X = xvals
+            show_plot = False
+        else:
+            X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
 
         # this determines if the user has specified for the CI bounds to be shown or hidden. kwargs are show_CI or plot_CI
         kwargs_list = kwargs.keys()
@@ -1842,7 +1915,11 @@ class Exponential_Distribution:
         If the distribution object contains Lambda_lower and Lambda_upper, the CI bounds will be plotted. The bounds for the CI are the same as the Fitter was given (default is 0.95). To hide the CI bounds specify show_CI=False
         '''
         # obtain the X array
-        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
+        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+            X = xvals
+            show_plot = False
+        else:
+            X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
 
         # this determines if the user has specified for the CI bounds to be shown or hidden. kwargs are show_CI or plot_CI
         kwargs_list = kwargs.keys()
@@ -1897,7 +1974,11 @@ class Exponential_Distribution:
         The plot will be shown if show_plot is True (which it is by default).
         '''
         # obtain the X array
-        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
+        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+            X = xvals
+            show_plot = False
+        else:
+            X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
 
         # this determines if the user has specified for the CI bounds to be shown or hidden. kwargs are show_CI or plot_CI
         kwargs_list = kwargs.keys()
@@ -1956,7 +2037,11 @@ class Exponential_Distribution:
         '''
 
         # obtain the X array
-        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
+        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+            X = xvals
+            show_plot = False
+        else:
+            X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
 
         # this determines if the user has specified for the CI bounds to be shown or hidden. kwargs are show_CI or plot_CI
         kwargs_list = kwargs.keys()
@@ -2300,7 +2385,11 @@ class Gamma_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
+        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+            X = xvals
+            show_plot = False
+        else:
+            X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
 
         pdf = ss.gamma.pdf(X, self.beta, scale=self.alpha, loc=self.gamma)
 
@@ -2337,7 +2426,11 @@ class Gamma_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
+        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+            X = xvals
+            show_plot = False
+        else:
+            X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
 
         cdf = ss.gamma.cdf(X, self.beta, scale=self.alpha, loc=self.gamma)
 
@@ -2374,7 +2467,11 @@ class Gamma_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
+        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+            X = xvals
+            show_plot = False
+        else:
+            X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
 
         sf = ss.gamma.sf(X, self.beta, scale=self.alpha, loc=self.gamma)
 
@@ -2411,7 +2508,11 @@ class Gamma_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
+        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+            X = xvals
+            show_plot = False
+        else:
+            X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
 
         hf = ss.gamma.pdf(X, self.beta, scale=self.alpha, loc=self.gamma) / ss.gamma.sf(X, self.beta, scale=self.alpha, loc=self.gamma)
 
@@ -2448,7 +2549,11 @@ class Gamma_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
+        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+            X = xvals
+            show_plot = False
+        else:
+            X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
 
         chf = -np.log(ss.gamma.sf(X, self.beta, scale=self.alpha, loc=self.gamma))
 
@@ -2715,7 +2820,11 @@ class Beta_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
+        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+            X = xvals
+            show_plot = False
+        else:
+            X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
 
         pdf = ss.beta.pdf(X, self.alpha, self.beta, 0, 1)
 
@@ -2752,7 +2861,11 @@ class Beta_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
+        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+            X = xvals
+            show_plot = False
+        else:
+            X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
 
         cdf = ss.beta.cdf(X, self.alpha, self.beta, 0, 1)
 
@@ -2789,7 +2902,11 @@ class Beta_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
+        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+            X = xvals
+            show_plot = False
+        else:
+            X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
 
         sf = ss.beta.sf(X, self.alpha, self.beta, 0, 1)
 
@@ -2826,7 +2943,11 @@ class Beta_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
+        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+            X = xvals
+            show_plot = False
+        else:
+            X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
 
         hf = ss.beta.pdf(X, self.alpha, self.beta, 0, 1) / ss.beta.sf(X, self.alpha, self.beta, 0, 1)
 
@@ -2863,7 +2984,11 @@ class Beta_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
+        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+            X = xvals
+            show_plot = False
+        else:
+            X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
 
         chf = -np.log(ss.beta.sf(X, self.alpha, self.beta, 0, 1))
 
@@ -3198,7 +3323,11 @@ class Loglogistic_Distribution:
         '''
 
         # obtain the X array
-        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
+        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+            X = xvals
+            show_plot = False
+        else:
+            X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
 
         pdf = ss.fisk.pdf(X, self.beta, scale=self.alpha, loc=self.gamma)
 
@@ -3237,7 +3366,11 @@ class Loglogistic_Distribution:
         '''
 
         # obtain the X array
-        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
+        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+            X = xvals
+            show_plot = False
+        else:
+            X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
 
         # this determines if the user has specified for the CI bounds to be shown or hidden.
         kwargs_list = kwargs.keys()
@@ -3291,7 +3424,11 @@ class Loglogistic_Distribution:
         '''
 
         # obtain the X array
-        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
+        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+            X = xvals
+            show_plot = False
+        else:
+            X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
 
         # this determines if the user has specified for the CI bounds to be shown or hidden. Applicable kwargs are show_CI or plot_CI
         kwargs_list = kwargs.keys()
@@ -3344,7 +3481,11 @@ class Loglogistic_Distribution:
         '''
 
         # obtain the X array
-        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
+        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+            X = xvals
+            show_plot = False
+        else:
+            X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
 
         # this determines if the user has specified for the CI bounds to be shown or hidden. Applicable kwargs are show_CI or plot_CI
         kwargs_list = kwargs.keys()
@@ -3404,7 +3545,11 @@ class Loglogistic_Distribution:
         '''
 
         # obtain the X array
-        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
+        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+            X = xvals
+            show_plot = False
+        else:
+            X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
 
         # this determines if the user has specified for the CI bounds to be shown or hidden. Applicable kwargs are show_CI or plot_CI
         kwargs_list = kwargs.keys()

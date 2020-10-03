@@ -486,7 +486,7 @@ class distribution_explorer:
             try:  # clear the slider axis if it exists
                 plt.sca(self.ax2)
                 plt.cla()
-            except ValueError:  # if the slider axis does no exist (because it was destroyed by a 2P distribution) then recreate it
+            except AttributeError:  # if the slider axis does no exist (because it was destroyed by a 2P distribution) then recreate it
                 self.ax2 = plt.axes([0.1, 0.05, 0.8, 0.03], facecolor=self.background_color)
             self.s2 = Slider(self.ax2, param_names[2], valmin=0, valmax=500, valinit=dist.gamma)
         elif self.name == 'Gamma':
@@ -501,7 +501,7 @@ class distribution_explorer:
             try:  # clear the slider axis if it exists
                 plt.sca(self.ax2)
                 plt.cla()
-            except ValueError:  # if the slider axis does no exist (because it was destroyed by a 2P distribution) then recreate it
+            except AttributeError:  # if the slider axis does no exist (because it was destroyed by a 2P distribution) then recreate it
                 self.ax2 = plt.axes([0.1, 0.05, 0.8, 0.03], facecolor=self.background_color)
             self.s2 = Slider(self.ax2, param_names[2], valmin=0, valmax=500, valinit=dist.gamma)
         elif self.name == 'Loglogistic':
@@ -516,7 +516,7 @@ class distribution_explorer:
             try:  # clear the slider axis if it exists
                 plt.sca(self.ax2)
                 plt.cla()
-            except ValueError:  # if the slider axis does no exist (because it was destroyed by a 2P distribution) then recreate it
+            except AttributeError:  # if the slider axis does no exist (because it was destroyed by a 2P distribution) then recreate it
                 self.ax2 = plt.axes([0.1, 0.05, 0.8, 0.03], facecolor=self.background_color)
             self.s2 = Slider(self.ax2, param_names[2], valmin=0, valmax=500, valinit=dist.gamma)
         elif self.name == 'Lognormal':
@@ -531,7 +531,7 @@ class distribution_explorer:
             try:  # clear the slider axis if it exists
                 plt.sca(self.ax2)
                 plt.cla()
-            except ValueError:  # if the slider axis does no exist (because it was destroyed by a 2P distribution) then recreate it
+            except AttributeError:  # if the slider axis does no exist (because it was destroyed by a 2P distribution) then recreate it
                 self.ax2 = plt.axes([0.1, 0.05, 0.8, 0.03], facecolor=self.background_color)
             self.s2 = Slider(self.ax2, param_names[2], valmin=0, valmax=500, valinit=dist.gamma)
         elif self.name == 'Normal':
