@@ -33,14 +33,14 @@ In this example, we will create a stress and strength distribution, and leaving 
 
     stress = Distributions.Weibull_Distribution(alpha=2, beta=3, gamma=1)
     strength = Distributions.Gamma_Distribution(alpha=2, beta=3, gamma=3)
-    result = Probability_of_failure(stress=stress, strength=strength)
+    Probability_of_failure(stress=stress, strength=strength)
     plt.show()
     
     '''
-    Probability of failure: 0.0017078240697779028
+    Probability of failure: 0.0017078235941570912
     '''
 
-.. image:: images/stress_strength_V2.png
+.. image:: images/stress_strength_V3.png
 
 .. note:: In Version 0.5.0 the calculation method was changed from monte-carlo to integration. This resulted in an API change. See the `Changelog <https://reliability.readthedocs.io/en/latest/Changelog.html>`_ for details.
 
