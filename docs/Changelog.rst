@@ -15,6 +15,7 @@ Changelog
 **Bug Fixes**
 
 -    Other_functions.distribution_explorer has a bug caused by a recent update to matplotlib. When a non-existent axis was deleted, the error matplotlib generated was a ValueError and that is now changed to AttributeError which was not being appropriately handled by distribution explorer. This is now resolved.
+-    All 7 of the standard distributions expected a list or array for their 5 functions (PDF, CDF, SF, HF, CHF). A command like this "dist.SF(1)" would cause an error and should have been entered as dist.SF([1]). This is now fixed such that if the input is not in a list or array then it will no longer produce an error and the output type will be np.float64.
 
 **Other**
 
@@ -26,7 +27,7 @@ Changelog
 -    Implemented Loglogistic_Distribution
 -    Implemented Fit_Loglogistic_2P and Fit_Loglogistic_3P
 -    Implemented Loglogistic_probability_plot
--    Added Fit_Loglogistic_2P to Fitters.Fit_Everything
+-    Added Fit_Loglogistic_2P and Fit_Loglogistic_3P to Fitters.Fit_Everything
 -    Added Loglogistic distribution to Other_functions.similar_distributions
 -    Added Loglogistic distribution to Stress_strength.probability_of_failure
 -    Added the function Reliability_testing.reliability_test_duration
