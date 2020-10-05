@@ -89,7 +89,7 @@ Each of the 5 functions (PDF, CDF, SF, HF, CHF) will always return the y-values 
     print('The value of the SF at 20 is', round(sf * 100, 2), '%') # we are converting the decimal answer (0.8521...) to a percentage
     
     '''
-    The value of the SF at 20 is: 85.21 %
+    The value of the SF at 20 is 85.21 %
     '''
 
 As a final example, we will create a bathtub curve by creating and layering several distributions. The bathtub curve is only for the Hazard function as it shows how a variety of failure modes throughout the life of a population can shape the hazard into a bathtub shape. The three distinct regions are infant mortality, random failures, and wear out. In this example, the returned y-values are added together to produce the 'combined' array which is then plotted using matplotlib against the xvals. By specifying xvals in each HF we can ensure that the xvals used will all align. Leaving xvals unspecified would not be appropriate in this example as the default xvals will depend on the shape of the plot.
