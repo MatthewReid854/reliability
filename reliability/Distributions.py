@@ -9,6 +9,7 @@ Standard distributions are:
     Gamma_Distribution
     Beta_Distribution
     Loglogistic_Distribution
+    Gumbel_Distribution
 
 Mixture distributions are:
     Mixture_Model - this must be created using 2 or more of the above standard distributions
