@@ -26,19 +26,19 @@ Understanding how to create and plot distributions is easiest with an example. I
     import matplotlib.pyplot as plt
 
     dist = Weibull_Distribution(alpha=50, beta=2)  # this created the distribution object
-    dist.PDF()  # this displays the plot of the PDF
+    dist.PDF()  # this creates the plot of the PDF
     plt.show()
 
 .. image:: images/weibull_plot1.png
 
-Just as easily as we plotted the PDF in the above example, we can plot any of the 5 characteristic functions (PDF, CDF, SF, HF, CHF). If you would like to view all of these functions together, you can use the plot() method. In this second example, we will create a Lognormal Distribution with parameters mu=2 and sigma=0.5. From this distribution, we will use the plot() method to visualise the five functions and also provides a summary of the descriptive statistics.
+Just as easily as we plotted the PDF in the above example, we can plot any of the 5 characteristic functions (PDF, CDF, SF, HF, CHF). If you would like to view all of these functions together, you can use the plot() method. In this second example, we will create a Lognormal Distribution with parameters mu=2 and sigma=0.5. From this distribution, we will use the plot() method to visualise the five functions and also provide a summary of the descriptive statistics.
 
 .. code:: python
 
     from reliability.Distributions import Lognormal_Distribution
     
     dist = Lognormal_Distribution(mu=2,sigma=0.5)
-    dist.plot() # plot does not need to be called by plt.show()
+    dist.plot()
 
 .. image:: images/Lognormal_plot2.png
 
