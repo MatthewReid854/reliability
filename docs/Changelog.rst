@@ -10,6 +10,9 @@ Changelog
 
 **New features**
 
+-    Added Gumbel_Distribution
+-    Added Gumbel_Distribution to Other_functions.distribution_explorer
+
 **API Changes**
 
 **Bug Fixes**
