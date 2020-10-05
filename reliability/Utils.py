@@ -263,7 +263,7 @@ def restore_axes_limits(limits, dist, func, X, Y, xvals=None, xmin=None, xmax=No
                 else:
                     diff = dist.quantile(0.999) - dist.quantile(0.001)
                     xlim_lower = max(0, dist.quantile(0.001) - diff * 0.1)
-            elif dist.name == 'Normal':
+            elif dist.name in ['Normal', 'Gumbel']:
                 xlim_lower = dist.quantile(0.001)
             elif dist.name in ['Beta', 'Mixture', 'Competing risks']:
                 xlim_lower = 0
@@ -365,7 +365,7 @@ def generate_X_array(dist, xvals=None, xmin=None, xmax=None):
     if xvals is not None:
         X = xvals
         if type(X) in [float, int, np.float64]:
-            if X < 0 and dist.name not in ['Normal','Gumbel']:
+            if X < 0 and dist.name not in ['Normal', 'Gumbel']:
                 raise ValueError('the value given for xvals is less than 0')
             if X > 1 and dist.name == 'Beta':
                 raise ValueError('the value given for xvals is greater than 1. The beta distribution is bounded between 0 and 1.')
@@ -376,7 +376,7 @@ def generate_X_array(dist, xvals=None, xmin=None, xmax=None):
             pass
         else:
             raise ValueError('unexpected type in xvals. Must be int, float, list, or array')
-        if type(X) is np.ndarray and min(X) < 0 and dist.name not in ['Normal','Gumbel']:
+        if type(X) is np.ndarray and min(X) < 0 and dist.name not in ['Normal', 'Gumbel']:
             raise ValueError('xvals was found to contain values below 0')
         if type(X) is np.ndarray and max(X) > 1 and dist.name == 'Beta':
             raise ValueError('xvals was found to contain values above 1. The beta distribution is bounded between 0 and 1.')
@@ -435,7 +435,7 @@ def generate_X_array(dist, xvals=None, xmin=None, xmax=None):
                             detail = np.linspace(QL, QU, points - (points_right + 2))
                             right = np.linspace(QU, xmax, points_right)
                         X = np.hstack([xmin, dist.gamma - 1e-8, detail, right])
-        elif dist.name in ['Normal','Gumbel']:
+        elif dist.name in ['Normal', 'Gumbel']:
             if xmin is None:
                 xmin = dist.quantile(0.0001)
             if xmax is None:

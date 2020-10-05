@@ -543,6 +543,7 @@ class chi2test:
             plt.xlim(xmin, xmax)
             plt.ylim(0, 1.1)
             plt.legend()
+            plt.subplots_adjust(top=0.9)
             plt.show()
 
 
@@ -625,4 +626,5 @@ class KStest:
             plt.ylim(0, 1.1)
             plt.title('Kolmogorov-Smirnov test\nHypothesised distribution CDF vs empirical CDF of data')
             plt.legend()
+            plt.subplots_adjust(top=0.9)
             plt.show()

@@ -16,7 +16,7 @@ import numpy as np
 from matplotlib.lines import Line2D
 from mplcursors import cursor
 import warnings
-from reliability.Distributions import Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution, Loglogistic_Distribution
+from reliability.Distributions import Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution, Loglogistic_Distribution, Gumbel_Distribution
 from reliability.Fitters import Fit_Everything
 from matplotlib.widgets import Slider, RadioButtons
 import random
@@ -466,7 +466,7 @@ class distribution_explorer:
         # initialise the radio button
         radio_ax = plt.axes([0.708, 0.25, 0.27, 0.28], facecolor=self.background_color)
         radio_ax.set_title('Distribution')
-        self.radio = RadioButtons(radio_ax, ('Weibull', 'Gamma', 'Normal', 'Lognormal', 'Beta', 'Exponential', 'Loglogistic'), active=0, activecolor=self.active_color)
+        self.radio = RadioButtons(radio_ax, ('Weibull', 'Gamma', 'Normal', 'Lognormal', 'Beta', 'Exponential', 'Loglogistic', 'Gumbel'), active=0, activecolor=self.active_color)
 
         # begin the interactive section
         distribution_explorer.__interactive(self, initial_run=True)
@@ -547,6 +547,19 @@ class distribution_explorer:
                 self.ax2.remove()  # this will destroy the axes
             except KeyError:
                 pass
+        elif self.name == 'Gumbel':
+            dist = Gumbel_Distribution(mu=0, sigma=10)
+            param_names = ['Mu', 'Sigma', '']
+            plt.sca(self.ax0)
+            plt.cla()
+            self.s0 = Slider(self.ax0, param_names[0], valmin=-100, valmax=100, valinit=dist.mu)
+            plt.sca(self.ax1)
+            plt.cla()
+            self.s1 = Slider(self.ax1, param_names[1], valmin=0.01, valmax=20, valinit=dist.sigma)
+            try:  # clear the slider axis if it exists
+                self.ax2.remove()  # this will destroy the axes
+            except KeyError:
+                pass
         elif self.name == 'Exponential':
             dist = Exponential_Distribution(Lambda=1, gamma=0)
             param_names = ['Lambda', 'Gamma', '']
@@ -599,6 +612,8 @@ class distribution_explorer:
             dist = Beta_Distribution(alpha=value1, beta=value2)
         elif self.name == 'Normal':
             dist = Normal_Distribution(mu=value1, sigma=value2)
+        elif self.name == 'Gumbel':
+            dist = Gumbel_Distribution(mu=value1, sigma=value2)
         elif self.name == 'Exponential':
             dist = Exponential_Distribution(Lambda=value1, gamma=value2)
         else:

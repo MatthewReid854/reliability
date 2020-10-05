@@ -239,7 +239,7 @@ class Weibull_Distribution:
         text_mode = str('Mode = ' + str(round_to_decimals(self.mode, dec)))
         text_b5 = str('$5^{th}$ quantile = ' + str(round_to_decimals(self.b5, dec)))
         text_b95 = str('$95^{th}$ quantile = ' + str(round_to_decimals(self.b95, dec)))
-        text_std = str('Standard deviation = ' + str(round_to_decimals(self.variance ** 0.5, dec)))
+        text_std = str('Standard deviation = ' + str(round_to_decimals(self.standard_deviation)))
         text_var = str('Variance = ' + str(round_to_decimals(float(self.variance), dec)))
         text_skew = str('Skewness = ' + str(round_to_decimals(float(self.skewness), dec)))
         text_ex_kurt = str('Excess kurtosis = ' + str(round_to_decimals(float(self.excess_kurtosis), dec)))
@@ -273,14 +273,8 @@ class Weibull_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-
-        # # obtain the X array
-        # X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
-        #
-        # pdf = ss.weibull_min.pdf(X, self.beta, scale=self.alpha, loc=self.gamma)
-
         # obtain the X array
-        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+        if xmin is None and xmax is None and type(xvals) not in [list, np.ndarray, type(None)]:
             X = xvals
             show_plot = False
         else:
@@ -323,7 +317,7 @@ class Weibull_Distribution:
         '''
 
         # obtain the X array
-        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+        if xmin is None and xmax is None and type(xvals) not in [list, np.ndarray, type(None)]:
             X = xvals
             show_plot = False
         else:
@@ -381,7 +375,7 @@ class Weibull_Distribution:
         '''
 
         # obtain the X array
-        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+        if xmin is None and xmax is None and type(xvals) not in [list, np.ndarray, type(None)]:
             X = xvals
             show_plot = False
         else:
@@ -438,7 +432,7 @@ class Weibull_Distribution:
         '''
 
         # obtain the X array
-        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+        if xmin is None and xmax is None and type(xvals) not in [list, np.ndarray, type(None)]:
             X = xvals
             show_plot = False
         else:
@@ -502,7 +496,7 @@ class Weibull_Distribution:
         '''
 
         # obtain the X array
-        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+        if xmin is None and xmax is None and type(xvals) not in [list, np.ndarray, type(None)]:
             X = xvals
             show_plot = False
         else:
@@ -693,10 +687,10 @@ class Weibull_Distribution:
         :param q: quantile to be calculated
         :return: the probability (area under the curve) that a random variable from the distribution is < q
         '''
-        if type(q) == int or type(q) == float or type(q) == np.float64:
+        if type(q) in [int, float, np.float64]:
             if q < 0 or q > 1:
                 raise ValueError('Quantile must be between 0 and 1')
-        elif type(q) == np.ndarray or type(q) == list:
+        elif type(q) in [list, np.ndarray]:
             if min(q) < 0 or max(q) > 1:
                 raise ValueError('Quantile must be between 0 and 1')
         else:
@@ -710,10 +704,10 @@ class Weibull_Distribution:
         :param q: quantile to be calculated
         :return: the inverse of the survival function at q
         '''
-        if type(q) == int or type(q) == float:
+        if type(q) in [int, float, np.float64]:
             if q < 0 or q > 1:
                 raise ValueError('Quantile must be between 0 and 1')
-        elif type(q) == np.ndarray or type(q) == list:
+        elif type(q) in [list, np.ndarray]:
             if min(q) < 0 or max(q) > 1:
                 raise ValueError('Quantile must be between 0 and 1')
         else:
@@ -892,7 +886,7 @@ class Normal_Distribution:
         text_mode = str('Mode = ' + str(round_to_decimals(self.mode, dec)))
         text_b5 = str('$5^{th}$ quantile = ' + str(round_to_decimals(self.b5, dec)))
         text_b95 = str('$95^{th}$ quantile = ' + str(round_to_decimals(self.b95, dec)))
-        text_std = str('Standard deviation = ' + str(round_to_decimals(self.variance ** 0.5, dec)))
+        text_std = str('Standard deviation = ' + str(round_to_decimals(self.standard_deviation)))
         text_var = str('Variance = ' + str(round_to_decimals(float(self.variance), dec)))
         text_skew = str('Skewness = ' + str(round_to_decimals(float(self.skewness), dec)))
         text_ex_kurt = str('Excess kurtosis = ' + str(round_to_decimals(float(self.excess_kurtosis), dec)))
@@ -926,7 +920,7 @@ class Normal_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+        if xmin is None and xmax is None and type(xvals) not in [list, np.ndarray, type(None)]:
             X = xvals
             show_plot = False
         else:
@@ -967,7 +961,7 @@ class Normal_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+        if xmin is None and xmax is None and type(xvals) not in [list, np.ndarray, type(None)]:
             X = xvals
             show_plot = False
         else:
@@ -1008,7 +1002,7 @@ class Normal_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+        if xmin is None and xmax is None and type(xvals) not in [list, np.ndarray, type(None)]:
             X = xvals
             show_plot = False
         else:
@@ -1049,7 +1043,7 @@ class Normal_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+        if xmin is None and xmax is None and type(xvals) not in [list, np.ndarray, type(None)]:
             X = xvals
             show_plot = False
         else:
@@ -1090,7 +1084,7 @@ class Normal_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+        if xmin is None and xmax is None and type(xvals) not in [list, np.ndarray, type(None)]:
             X = xvals
             show_plot = False
         else:
@@ -1121,10 +1115,10 @@ class Normal_Distribution:
         :param q: quantile to be calculated
         :return: the probability (area under the curve) that a random variable from the distribution is < q
         '''
-        if type(q) == int or type(q) == float or type(q) == np.float64:
+        if type(q) in [int, float, np.float64]:
             if q < 0 or q > 1:
                 raise ValueError('Quantile must be between 0 and 1')
-        elif type(q) == np.ndarray or type(q) == list:
+        elif type(q) in [list, np.ndarray]:
             if min(q) < 0 or max(q) > 1:
                 raise ValueError('Quantile must be between 0 and 1')
         else:
@@ -1138,10 +1132,10 @@ class Normal_Distribution:
         :param q: quantile to be calculated
         :return: the inverse of the survival function at q
         '''
-        if type(q) == int or type(q) == float:
+        if type(q) in [int, float, np.float64]:
             if q < 0 or q > 1:
                 raise ValueError('Quantile must be between 0 and 1')
-        elif type(q) == np.ndarray or type(q) == list:
+        elif type(q) in [list, np.ndarray]:
             if min(q) < 0 or max(q) > 1:
                 raise ValueError('Quantile must be between 0 and 1')
         else:
@@ -1326,7 +1320,7 @@ class Lognormal_Distribution:
         text_mode = str('Mode = ' + str(round_to_decimals(self.mode, dec)))
         text_b5 = str('$5^{th}$ quantile = ' + str(round_to_decimals(self.b5, dec)))
         text_b95 = str('$95^{th}$ quantile = ' + str(round_to_decimals(self.b95, dec)))
-        text_std = str('Standard deviation = ' + str(round_to_decimals(self.variance ** 0.5, dec)))
+        text_std = str('Standard deviation = ' + str(round_to_decimals(self.standard_deviation)))
         text_var = str('Variance = ' + str(round_to_decimals(float(self.variance), dec)))
         text_skew = str('Skewness = ' + str(round_to_decimals(float(self.skewness), dec)))
         text_ex_kurt = str('Excess kurtosis = ' + str(round_to_decimals(float(self.excess_kurtosis), dec)))
@@ -1360,7 +1354,7 @@ class Lognormal_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+        if xmin is None and xmax is None and type(xvals) not in [list, np.ndarray, type(None)]:
             X = xvals
             show_plot = False
         else:
@@ -1401,7 +1395,7 @@ class Lognormal_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+        if xmin is None and xmax is None and type(xvals) not in [list, np.ndarray, type(None)]:
             X = xvals
             show_plot = False
         else:
@@ -1442,7 +1436,7 @@ class Lognormal_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+        if xmin is None and xmax is None and type(xvals) not in [list, np.ndarray, type(None)]:
             X = xvals
             show_plot = False
         else:
@@ -1483,7 +1477,7 @@ class Lognormal_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+        if xmin is None and xmax is None and type(xvals) not in [list, np.ndarray, type(None)]:
             X = xvals
             show_plot = False
         else:
@@ -1524,7 +1518,7 @@ class Lognormal_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+        if xmin is None and xmax is None and type(xvals) not in [list, np.ndarray, type(None)]:
             X = xvals
             show_plot = False
         else:
@@ -1555,10 +1549,10 @@ class Lognormal_Distribution:
         :param q: quantile to be calculated
         :return: the probability (area under the curve) that a random variable from the distribution is < q
         '''
-        if type(q) == int or type(q) == float or type(q) == np.float64:
+        if type(q) in [int, float, np.float64]:
             if q < 0 or q > 1:
                 raise ValueError('Quantile must be between 0 and 1')
-        elif type(q) == np.ndarray or type(q) == list:
+        elif type(q) in [list, np.ndarray]:
             if min(q) < 0 or max(q) > 1:
                 raise ValueError('Quantile must be between 0 and 1')
         else:
@@ -1572,10 +1566,10 @@ class Lognormal_Distribution:
         :param q: quantile to be calculated
         :return: the inverse of the survival function at q
         '''
-        if type(q) == int or type(q) == float:
+        if type(q) in [int, float, np.float64]:
             if q < 0 or q > 1:
                 raise ValueError('Quantile must be between 0 and 1')
-        elif type(q) == np.ndarray or type(q) == list:
+        elif type(q) in [list, np.ndarray]:
             if min(q) < 0 or max(q) > 1:
                 raise ValueError('Quantile must be between 0 and 1')
         else:
@@ -1776,7 +1770,7 @@ class Exponential_Distribution:
         text_mode = str('Mode = ' + str(round_to_decimals(self.mode, dec)))
         text_b5 = str('$5^{th}$ quantile = ' + str(round_to_decimals(self.b5, dec)))
         text_b95 = str('$95^{th}$ quantile = ' + str(round_to_decimals(self.b95, dec)))
-        text_std = str('Standard deviation = ' + str(round_to_decimals(self.variance ** 0.5, dec)))
+        text_std = str('Standard deviation = ' + str(round_to_decimals(self.standard_deviation)))
         text_var = str('Variance = ' + str(round_to_decimals(float(self.variance), dec)))
         text_skew = str('Skewness = ' + str(round_to_decimals(float(self.skewness), dec)))
         text_ex_kurt = str('Excess kurtosis = ' + str(round_to_decimals(float(self.excess_kurtosis), dec)))
@@ -1810,7 +1804,7 @@ class Exponential_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+        if xmin is None and xmax is None and type(xvals) not in [list, np.ndarray, type(None)]:
             X = xvals
             show_plot = False
         else:
@@ -1854,7 +1848,7 @@ class Exponential_Distribution:
 
         '''
         # obtain the X array
-        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+        if xmin is None and xmax is None and type(xvals) not in [list, np.ndarray, type(None)]:
             X = xvals
             show_plot = False
         else:
@@ -1915,7 +1909,7 @@ class Exponential_Distribution:
         If the distribution object contains Lambda_lower and Lambda_upper, the CI bounds will be plotted. The bounds for the CI are the same as the Fitter was given (default is 0.95). To hide the CI bounds specify show_CI=False
         '''
         # obtain the X array
-        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+        if xmin is None and xmax is None and type(xvals) not in [list, np.ndarray, type(None)]:
             X = xvals
             show_plot = False
         else:
@@ -1974,7 +1968,7 @@ class Exponential_Distribution:
         The plot will be shown if show_plot is True (which it is by default).
         '''
         # obtain the X array
-        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+        if xmin is None and xmax is None and type(xvals) not in [list, np.ndarray, type(None)]:
             X = xvals
             show_plot = False
         else:
@@ -2037,7 +2031,7 @@ class Exponential_Distribution:
         '''
 
         # obtain the X array
-        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+        if xmin is None and xmax is None and type(xvals) not in [list, np.ndarray, type(None)]:
             X = xvals
             show_plot = False
         else:
@@ -2140,10 +2134,10 @@ class Exponential_Distribution:
         :param q: quantile to be calculated
         :return: the probability (area under the curve) that a random variable from the distribution is < q
         '''
-        if type(q) == int or type(q) == float or type(q) == np.float64:
+        if type(q) in [int, float, np.float64]:
             if q < 0 or q > 1:
                 raise ValueError('Quantile must be between 0 and 1')
-        elif type(q) == np.ndarray or type(q) == list:
+        elif type(q) in [list, np.ndarray]:
             if min(q) < 0 or max(q) > 1:
                 raise ValueError('Quantile must be between 0 and 1')
         else:
@@ -2157,10 +2151,10 @@ class Exponential_Distribution:
         :param q: quantile to be calculated
         :return: the inverse of the survival function at q
         '''
-        if type(q) == int or type(q) == float:
+        if type(q) in [int, float, np.float64]:
             if q < 0 or q > 1:
                 raise ValueError('Quantile must be between 0 and 1')
-        elif type(q) == np.ndarray or type(q) == list:
+        elif type(q) in [list, np.ndarray]:
             if min(q) < 0 or max(q) > 1:
                 raise ValueError('Quantile must be between 0 and 1')
         else:
@@ -2351,7 +2345,7 @@ class Gamma_Distribution:
         text_mode = str('Mode = ' + str(round_to_decimals(self.mode, dec)))
         text_b5 = str('$5^{th}$ quantile = ' + str(round_to_decimals(self.b5, dec)))
         text_b95 = str('$95^{th}$ quantile = ' + str(round_to_decimals(self.b95, dec)))
-        text_std = str('Standard deviation = ' + str(round_to_decimals(self.variance ** 0.5, dec)))
+        text_std = str('Standard deviation = ' + str(round_to_decimals(self.standard_deviation)))
         text_var = str('Variance = ' + str(round_to_decimals(float(self.variance), dec)))
         text_skew = str('Skewness = ' + str(round_to_decimals(float(self.skewness), dec)))
         text_ex_kurt = str('Excess kurtosis = ' + str(round_to_decimals(float(self.excess_kurtosis), dec)))
@@ -2385,7 +2379,7 @@ class Gamma_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+        if xmin is None and xmax is None and type(xvals) not in [list, np.ndarray, type(None)]:
             X = xvals
             show_plot = False
         else:
@@ -2426,7 +2420,7 @@ class Gamma_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+        if xmin is None and xmax is None and type(xvals) not in [list, np.ndarray, type(None)]:
             X = xvals
             show_plot = False
         else:
@@ -2467,7 +2461,7 @@ class Gamma_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+        if xmin is None and xmax is None and type(xvals) not in [list, np.ndarray, type(None)]:
             X = xvals
             show_plot = False
         else:
@@ -2508,7 +2502,7 @@ class Gamma_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+        if xmin is None and xmax is None and type(xvals) not in [list, np.ndarray, type(None)]:
             X = xvals
             show_plot = False
         else:
@@ -2549,7 +2543,7 @@ class Gamma_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+        if xmin is None and xmax is None and type(xvals) not in [list, np.ndarray, type(None)]:
             X = xvals
             show_plot = False
         else:
@@ -2580,10 +2574,10 @@ class Gamma_Distribution:
         :param q: quantile to be calculated
         :return: the probability (area under the curve) that a random variable from the distribution is < q
         '''
-        if type(q) == int or type(q) == float or type(q) == np.float64:
+        if type(q) in [int, float, np.float64]:
             if q < 0 or q > 1:
                 raise ValueError('Quantile must be between 0 and 1')
-        elif type(q) == np.ndarray or type(q) == list:
+        elif type(q) in [list, np.ndarray]:
             if min(q) < 0 or max(q) > 1:
                 raise ValueError('Quantile must be between 0 and 1')
         else:
@@ -2597,10 +2591,10 @@ class Gamma_Distribution:
         :param q: quantile to be calculated
         :return: the inverse of the survival function at q
         '''
-        if type(q) == int or type(q) == float:
+        if type(q) in [int, float, np.float64]:
             if q < 0 or q > 1:
                 raise ValueError('Quantile must be between 0 and 1')
-        elif type(q) == np.ndarray or type(q) == list:
+        elif type(q) in [list, np.ndarray]:
             if min(q) < 0 or max(q) > 1:
                 raise ValueError('Quantile must be between 0 and 1')
         else:
@@ -2786,7 +2780,7 @@ class Beta_Distribution:
             text_mode = str('Mode = ' + str(round_to_decimals(self.mode, dec)))
         text_b5 = str('$5^{th}$ quantile = ' + str(round_to_decimals(self.b5, dec)))
         text_b95 = str('$95^{th}$ quantile = ' + str(round_to_decimals(self.b95, dec)))
-        text_std = str('Standard deviation = ' + str(round_to_decimals(self.variance ** 0.5, dec)))
+        text_std = str('Standard deviation = ' + str(round_to_decimals(self.standard_deviation)))
         text_var = str('Variance = ' + str(round_to_decimals(float(self.variance), dec)))
         text_skew = str('Skewness = ' + str(round_to_decimals(float(self.skewness), dec)))
         text_ex_kurt = str('Excess kurtosis = ' + str(round_to_decimals(float(self.excess_kurtosis), dec)))
@@ -2820,7 +2814,7 @@ class Beta_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+        if xmin is None and xmax is None and type(xvals) not in [list, np.ndarray, type(None)]:
             X = xvals
             show_plot = False
         else:
@@ -2861,7 +2855,7 @@ class Beta_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+        if xmin is None and xmax is None and type(xvals) not in [list, np.ndarray, type(None)]:
             X = xvals
             show_plot = False
         else:
@@ -2902,7 +2896,7 @@ class Beta_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+        if xmin is None and xmax is None and type(xvals) not in [list, np.ndarray, type(None)]:
             X = xvals
             show_plot = False
         else:
@@ -2943,7 +2937,7 @@ class Beta_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+        if xmin is None and xmax is None and type(xvals) not in [list, np.ndarray, type(None)]:
             X = xvals
             show_plot = False
         else:
@@ -2984,7 +2978,7 @@ class Beta_Distribution:
         yvals - this is the y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
         '''
-        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+        if xmin is None and xmax is None and type(xvals) not in [list, np.ndarray, type(None)]:
             X = xvals
             show_plot = False
         else:
@@ -3015,10 +3009,10 @@ class Beta_Distribution:
         :param q: quantile to be calculated
         :return: the probability (area under the curve) that a random variable from the distribution is < q
         '''
-        if type(q) == int or type(q) == float or type(q) == np.float64:
+        if type(q) in [int, float, np.float64]:
             if q < 0 or q > 1:
                 raise ValueError('Quantile must be between 0 and 1')
-        elif type(q) == np.ndarray or type(q) == list:
+        elif type(q) in [list, np.ndarray]:
             if min(q) < 0 or max(q) > 1:
                 raise ValueError('Quantile must be between 0 and 1')
         else:
@@ -3032,10 +3026,10 @@ class Beta_Distribution:
         :param q: quantile to be calculated
         :return: the inverse of the survival function at q
         '''
-        if type(q) == int or type(q) == float:
+        if type(q) in [int, float, np.float64]:
             if q < 0 or q > 1:
                 raise ValueError('Quantile must be between 0 and 1')
-        elif type(q) == np.ndarray or type(q) == list:
+        elif type(q) in [list, np.ndarray]:
             if min(q) < 0 or max(q) > 1:
                 raise ValueError('Quantile must be between 0 and 1')
         else:
@@ -3323,7 +3317,7 @@ class Loglogistic_Distribution:
         '''
 
         # obtain the X array
-        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+        if xmin is None and xmax is None and type(xvals) not in [list, np.ndarray, type(None)]:
             X = xvals
             show_plot = False
         else:
@@ -3366,7 +3360,7 @@ class Loglogistic_Distribution:
         '''
 
         # obtain the X array
-        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+        if xmin is None and xmax is None and type(xvals) not in [list, np.ndarray, type(None)]:
             X = xvals
             show_plot = False
         else:
@@ -3424,7 +3418,7 @@ class Loglogistic_Distribution:
         '''
 
         # obtain the X array
-        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+        if xmin is None and xmax is None and type(xvals) not in [list, np.ndarray, type(None)]:
             X = xvals
             show_plot = False
         else:
@@ -3481,7 +3475,7 @@ class Loglogistic_Distribution:
         '''
 
         # obtain the X array
-        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+        if xmin is None and xmax is None and type(xvals) not in [list, np.ndarray, type(None)]:
             X = xvals
             show_plot = False
         else:
@@ -3545,7 +3539,7 @@ class Loglogistic_Distribution:
         '''
 
         # obtain the X array
-        if xmin is None and xmax is None and type(xvals) not in [list,np.ndarray]:
+        if xmin is None and xmax is None and type(xvals) not in [list, np.ndarray, type(None)]:
             X = xvals
             show_plot = False
         else:
@@ -3593,10 +3587,10 @@ class Loglogistic_Distribution:
         :param q: quantile to be calculated
         :return: the probability (area under the curve) that a random variable from the distribution is < q
         '''
-        if type(q) == int or type(q) == float or type(q) == np.float64:
+        if type(q) in [int, float, np.float64]:
             if q < 0 or q > 1:
                 raise ValueError('Quantile must be between 0 and 1')
-        elif type(q) == np.ndarray or type(q) == list:
+        elif type(q) in [list, np.ndarray]:
             if min(q) < 0 or max(q) > 1:
                 raise ValueError('Quantile must be between 0 and 1')
         else:
@@ -3610,10 +3604,10 @@ class Loglogistic_Distribution:
         :param q: quantile to be calculated
         :return: the inverse of the survival function at q
         '''
-        if type(q) == int or type(q) == float:
+        if type(q) in [int, float, np.float64]:
             if q < 0 or q > 1:
                 raise ValueError('Quantile must be between 0 and 1')
-        elif type(q) == np.ndarray or type(q) == list:
+        elif type(q) in [list, np.ndarray]:
             if min(q) < 0 or max(q) > 1:
                 raise ValueError('Quantile must be between 0 and 1')
         else:
@@ -3661,6 +3655,432 @@ class Loglogistic_Distribution:
         if seed is not None:
             np.random.seed(seed)
         RVS = ss.fisk.rvs(self.beta, scale=self.alpha, loc=self.gamma, size=number_of_samples)
+        return RVS
+
+
+class Gumbel_Distribution:
+    '''
+    Gumbel probability distribution
+
+    Creates a Distribution object.
+
+    Inputs:
+    mu - location parameter
+    sigma - scale parameter
+
+    Methods:
+    name - 'Gumbel'
+    name2 = 'Gumbel_2P'
+    param_title_long - Useful in plot titles, legends and in printing strings. eg. 'Gumbel Distribution (μ=5,σ=2)'
+    param_title - Useful in plot titles, legends and in printing strings. eg. 'μ=5,σ=2'
+    parameters - [mu,sigma]
+    mu
+    sigma
+    mean
+    variance
+    standard_deviation
+    skewness
+    kurtosis
+    excess_kurtosis
+    median
+    mode
+    b5
+    b95
+    plot() - plots all functions (PDF,CDF,SF,HF,CHF)
+    PDF() - plots the probability density function
+    CDF() - plots the cumulative distribution function
+    SF() - plots the survival function (also known as reliability function)
+    HF() - plots the hazard function
+    CHF() - plots the cumulative hazard function
+    quantile() - Calculates the quantile (time until a fraction has failed) for a given fraction failing.
+                 Also known as b life where b5 is the time at which 5% have failed.
+    inverse_SF() - the inverse of the Survival Function. This is useful when producing QQ plots.
+    mean_residual_life() - Average residual lifetime of an item given that the item has survived up to a given time.
+                           Effectively the mean of the remaining amount (right side) of a distribution at a given time.
+    stats() - prints all the descriptive statistics. Same as the statistics shown using .plot() but printed to console.
+    random_samples() - draws random samples from the distribution to which it is applied. Same as rvs in scipy.stats.
+    '''
+
+    def __init__(self, mu=None, sigma=None):
+        self.name = 'Gumbel'
+        self.name2 = 'Gumbel_2P'
+        self.mu = mu
+        self.sigma = sigma
+        if self.mu is None or self.sigma is None:
+            raise ValueError('Parameters mu and sigma must be specified. Eg. Gumbel_Distribution(mu=5,sigma=2)')
+        self.parameters = np.array([self.mu, self.sigma])
+        mean, var, skew, kurt = ss.gumbel_l.stats(self.mu, self.sigma, moments='mvsk')
+        self.mean = float(mean)
+        self.standard_deviation = float(var ** 0.5)
+        self.variance = float(var)
+        self.skewness = float(skew)
+        self.kurtosis = float(kurt + 3)
+        self.excess_kurtosis = float(kurt)
+        self.median = mu + sigma * np.log(np.log(2))
+        self.mode = mu
+        self.param_title = str('μ=' + str(round_to_decimals(self.mu, dec)) + ',σ=' + str(round_to_decimals(self.sigma, dec)))
+        self.param_title_long = str('Gumbel Distribution (μ=' + str(round_to_decimals(self.mu, dec)) + ',σ=' + str(round_to_decimals(self.sigma, dec)) + ')')
+        self.b5 = ss.gumbel_l.ppf(0.05, loc=self.mu, scale=self.sigma)
+        self.b95 = ss.gumbel_l.ppf(0.95, loc=self.mu, scale=self.sigma)
+        self._pdf0 = 0  # the pdf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
+        self._hf0 = 0  # the hf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
+
+    def plot(self, xvals=None, xmin=None, xmax=None):
+        '''
+        Plots all functions (PDF, CDF, SF, HF, CHF) and descriptive statistics in a single figure
+
+        Inputs:
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 200 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *no plotting keywords are accepted
+
+        Outputs:
+        The plot will be shown. No need to use plt.show()
+        '''
+        X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
+
+        pdf = ss.gumbel_l.pdf(X, self.mu, self.sigma)
+        cdf = ss.gumbel_l.cdf(X, self.mu, self.sigma)
+        sf = ss.gumbel_l.sf(X, self.mu, self.sigma)
+        hf = np.exp((X - self.mu) / self.sigma) / self.sigma
+        chf = np.exp((X - self.mu) / self.sigma)
+
+        plt.figure(figsize=(9, 7))
+        text_title = str('Gumbel Distribution' + '\n' + self.param_title)
+        plt.suptitle(text_title, fontsize=15)
+
+        plt.subplot(231)
+        plt.plot(X, pdf)
+        restore_axes_limits([(0, 1), (0, 1), False], dist=self, func='PDF', X=X, Y=pdf, xvals=xvals, xmin=xmin, xmax=xmax)
+        plt.title('Probability Density\nFunction')
+
+        plt.subplot(232)
+        plt.plot(X, cdf)
+        restore_axes_limits([(0, 1), (0, 1), False], dist=self, func='CDF', X=X, Y=cdf, xvals=xvals, xmin=xmin, xmax=xmax)
+        plt.title('Cumulative Distribution\nFunction')
+
+        plt.subplot(233)
+        plt.plot(X, sf)
+        restore_axes_limits([(0, 1), (0, 1), False], dist=self, func='SF', X=X, Y=sf, xvals=xvals, xmin=xmin, xmax=xmax)
+        plt.title('Survival Function')
+
+        plt.subplot(234)
+        plt.plot(X, hf)
+        restore_axes_limits([(0, 1), (0, 1), False], dist=self, func='HF', X=X, Y=hf, xvals=xvals, xmin=xmin, xmax=xmax)
+        plt.title('Hazard Function')
+
+        plt.subplot(235)
+        plt.plot(X, chf)
+        restore_axes_limits([(0, 1), (0, 1), False], dist=self, func='CHF', X=X, Y=chf, xvals=xvals, xmin=xmin, xmax=xmax)
+        plt.title('Cumulative Hazard\nFunction')
+
+        # descriptive statistics section
+        plt.subplot(236)
+        plt.axis('off')
+        plt.ylim([0, 10])
+        plt.xlim([0, 10])
+        text_mean = str('Mean = ' + str(round_to_decimals(float(self.mean), dec)))
+        text_median = str('Median = ' + str(round_to_decimals(self.median, dec)))
+        text_mode = str('Mode = ' + str(round_to_decimals(self.mode, dec)))
+        text_b5 = str('$5^{th}$ quantile = ' + str(round_to_decimals(self.b5, dec)))
+        text_b95 = str('$95^{th}$ quantile = ' + str(round_to_decimals(self.b95, dec)))
+        text_std = str('Standard deviation = ' + str(round_to_decimals(self.standard_deviation, dec)))
+        text_var = str('Variance = ' + str(round_to_decimals(float(self.variance), dec)))
+        text_skew = str('Skewness = ' + str(round_to_decimals(float(self.skewness), dec)))
+        text_ex_kurt = str('Excess kurtosis = ' + str(round_to_decimals(float(self.excess_kurtosis), dec)))
+        plt.text(0, 9, text_mean)
+        plt.text(0, 8, text_median)
+        plt.text(0, 7, text_mode)
+        plt.text(0, 6, text_b5)
+        plt.text(0, 5, text_b95)
+        plt.text(0, 4, text_std)
+        plt.text(0, 3, text_var)
+        plt.text(0, 2, text_skew)
+        plt.text(0, 1, text_ex_kurt)
+        plt.tight_layout()
+        plt.subplots_adjust(hspace=0.3, top=0.84)
+        plt.show()
+
+    def PDF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
+        '''
+        Plots the PDF (probability density function)
+
+        Inputs:
+        show_plot - True/False. Default is True
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 200 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *plotting keywords are also accepted (eg. color, linestyle)
+
+        Outputs:
+        yvals - this is the y-values of the plot
+        The plot will be shown if show_plot is True (which it is by default).
+        '''
+        if xmin is None and xmax is None and type(xvals) not in [list, np.ndarray, type(None)]:
+            X = xvals
+            show_plot = False
+        else:
+            X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
+
+        pdf = ss.gumbel_l.pdf(X, self.mu, self.sigma)
+
+        if show_plot == False:
+            return pdf
+        else:
+            limits = get_axes_limits()  # get the previous axes limits
+
+            plt.plot(X, pdf, **kwargs)
+            plt.xlabel('x values')
+            plt.ylabel('Probability density')
+            text_title = str('Gumbel Distribution\n' + ' Probability Density Function ' + '\n' + self.param_title)
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.85)
+
+            restore_axes_limits(limits, dist=self, func='PDF', X=X, Y=pdf, xvals=xvals, xmin=xmin, xmax=xmax)
+
+            return pdf
+
+    def CDF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
+        '''
+        Plots the CDF (cumulative distribution function)
+
+        Inputs:
+        show_plot - True/False. Default is True
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 200 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *plotting keywords are also accepted (eg. color, linestyle)
+
+        Outputs:
+        yvals - this is the y-values of the plot
+        The plot will be shown if show_plot is True (which it is by default).
+        '''
+        if xmin is None and xmax is None and type(xvals) not in [list, np.ndarray, type(None)]:
+            X = xvals
+            show_plot = False
+        else:
+            X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
+
+        cdf = ss.gumbel_l.cdf(X, self.mu, self.sigma)
+
+        if show_plot == False:
+            return cdf
+        else:
+            limits = get_axes_limits()  # get the previous axes limits
+
+            plt.plot(X, cdf, **kwargs)
+            plt.xlabel('x values')
+            plt.ylabel('Fraction failing')
+            text_title = str('Gumbel Distribution\n' + ' Cumulative Distribution Function ' + '\n' + self.param_title)
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.85)
+
+            restore_axes_limits(limits, dist=self, func='CDF', X=X, Y=cdf, xvals=xvals, xmin=xmin, xmax=xmax)
+
+            return cdf
+
+    def SF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
+        '''
+        Plots the SF (survival function)
+
+        Inputs:
+        show_plot - True/False. Default is True
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 200 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *plotting keywords are also accepted (eg. color, linestyle)
+
+        Outputs:
+        yvals - this is the y-values of the plot
+        The plot will be shown if show_plot is True (which it is by default).
+        '''
+        if xmin is None and xmax is None and type(xvals) not in [list, np.ndarray, type(None)]:
+            X = xvals
+            show_plot = False
+        else:
+            X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
+
+        sf = ss.gumbel_l.sf(X, self.mu, self.sigma)
+
+        if show_plot == False:
+            return sf
+        else:
+            limits = get_axes_limits()  # get the previous axes limits
+
+            plt.plot(X, sf, **kwargs)
+            plt.xlabel('x values')
+            plt.ylabel('Fraction surviving')
+            text_title = str('Gumbel Distribution\n' + ' Survival Function ' + '\n' + self.param_title)
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.85)
+
+            restore_axes_limits(limits, dist=self, func='SF', X=X, Y=sf, xvals=xvals, xmin=xmin, xmax=xmax)
+
+            return sf
+
+    def HF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
+        '''
+        Plots the HF (hazard function)
+
+        Inputs:
+        show_plot - True/False. Default is True
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 200 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *plotting keywords are also accepted (eg. color, linestyle)
+
+        Outputs:
+        yvals - this is the y-values of the plot
+        The plot will be shown if show_plot is True (which it is by default).
+        '''
+        if xmin is None and xmax is None and type(xvals) not in [list, np.ndarray, type(None)]:
+            X = xvals
+            show_plot = False
+        else:
+            X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
+
+        hf = np.exp((X - self.mu) / self.sigma) / self.sigma
+
+        if show_plot == False:
+            return hf
+        else:
+            limits = get_axes_limits()  # get the previous axes limits
+
+            plt.plot(X, hf, **kwargs)
+            plt.xlabel('x values')
+            plt.ylabel('Hazard')
+            text_title = str('Gumbel Distribution\n' + ' Hazard Function ' + '\n' + self.param_title)
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.85)
+
+            restore_axes_limits(limits, dist=self, func='HF', X=X, Y=hf, xvals=xvals, xmin=xmin, xmax=xmax)
+
+            return hf
+
+    def CHF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
+        '''
+        Plots the CHF (cumulative hazard function)
+
+        Inputs:
+        show_plot - True/False. Default is True
+        xvals - x-values for plotting
+        xmin - minimum x-value for plotting
+        xmax - maximum x-value for plotting
+        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 200 elements
+        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+        *plotting keywords are also accepted (eg. color, linestyle)
+
+        Outputs:
+        yvals - this is the y-values of the plot
+        The plot will be shown if show_plot is True (which it is by default).
+        '''
+        if xmin is None and xmax is None and type(xvals) not in [list, np.ndarray, type(None)]:
+            X = xvals
+            show_plot = False
+        else:
+            X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
+
+        chf = np.exp((X - self.mu) / self.sigma)
+
+        if show_plot == False:
+            return chf
+        else:
+            limits = get_axes_limits()  # get the previous axes limits
+
+            plt.plot(X, chf, **kwargs)
+            plt.xlabel('x values')
+            plt.ylabel('Cumulative hazard')
+            text_title = str('Gumbel Distribution\n' + ' Cumulative Hazard Function ' + '\n' + self.param_title)
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.85)
+
+            restore_axes_limits(limits, dist=self, func='CHF', X=X, Y=chf, xvals=xvals, xmin=xmin, xmax=xmax)
+
+            return chf
+
+    def quantile(self, q):
+        '''
+        Quantile calculator
+
+        :param q: quantile to be calculated
+        :return: the probability (area under the curve) that a random variable from the distribution is < q
+        '''
+        if type(q) in [int, float, np.float64]:
+            if q < 0 or q > 1:
+                raise ValueError('Quantile must be between 0 and 1')
+        elif type(q) in [list, np.ndarray]:
+            if min(q) < 0 or max(q) > 1:
+                raise ValueError('Quantile must be between 0 and 1')
+        else:
+            raise ValueError('Quantile must be of type int, float, list, array')
+        return ss.gumbel_l.ppf(q, loc=self.mu, scale=self.sigma)
+
+    def inverse_SF(self, q):
+        '''
+        Inverse Survival function calculator
+
+        :param q: quantile to be calculated
+        :return: the inverse of the survival function at q
+        '''
+        if type(q) in [int, float, np.float64]:
+            if q < 0 or q > 1:
+                raise ValueError('Quantile must be between 0 and 1')
+        elif type(q) in [list, np.ndarray]:
+            if min(q) < 0 or max(q) > 1:
+                raise ValueError('Quantile must be between 0 and 1')
+        else:
+            raise ValueError('Quantile must be of type int, float, list, array')
+        return ss.gumbel_l.isf(q, loc=self.mu, scale=self.sigma)
+
+    def mean_residual_life(self, t):
+        '''
+        Mean Residual Life calculator
+
+        :param t: time at which MRL is to be evaluated
+        :return: MRL
+        '''
+        R = lambda x: ss.gumbel_l.sf(x, loc=self.mu, scale=self.sigma)
+        integral_R, error = integrate.quad(R, t, np.inf)
+        MRL = integral_R / R(t)
+        return MRL
+
+    def stats(self):
+        print('Descriptive statistics for Gumbel distribution with mu =', self.mu, 'and sigma =', self.sigma)
+        print('Mean = ', self.mean)
+        print('Median =', self.median)
+        print('Mode =', self.mode)
+        print('5th quantile =', self.b5)
+        print('95th quantile =', self.b95)
+        print('Standard deviation =', self.standard_deviation)
+        print('Variance =', self.variance)
+        print('Skewness =', self.skewness)
+        print('Excess kurtosis =', self.excess_kurtosis)
+
+    def random_samples(self, number_of_samples, seed=None):
+        '''
+        random_samples
+        Draws random samples from the probability distribution
+
+        :param number_of_samples: the number of samples to be drawn
+        :param seed: the random seed. Default is None
+        :return: the random samples
+        '''
+        if type(number_of_samples) != int or number_of_samples < 1:
+            raise ValueError('number_of_samples must be an integer greater than 1')
+        if seed is not None:
+            np.random.seed(seed)
+        RVS = ss.gumbel_l.rvs(loc=self.mu, scale=self.sigma, size=number_of_samples)
         return RVS
 
 
@@ -3872,7 +4292,7 @@ class Competing_Risks_Model:
         text_mode = str('Mode = ' + str(round_to_decimals(self.mode, dec)))
         text_b5 = str('$5^{th}$ quantile = ' + str(round_to_decimals(self.b5, dec)))
         text_b95 = str('$95^{th}$ quantile = ' + str(round_to_decimals(self.b95, dec)))
-        text_std = str('Standard deviation = ' + str(round_to_decimals(self.variance ** 0.5, dec)))
+        text_std = str('Standard deviation = ' + str(round_to_decimals(self.standard_deviation)))
         text_var = str('Variance = ' + str(round_to_decimals(float(self.variance), dec)))
         text_skew = str('Skewness = ' + str(round_to_decimals(float(self.skewness), dec)))
         text_ex_kurt = str('Excess kurtosis = ' + str(round_to_decimals(float(self.excess_kurtosis), dec)))
@@ -4100,10 +4520,10 @@ class Competing_Risks_Model:
         :param q: quantile to be calculated
         :return: the probability (area under the curve) that a random variable from the distribution is < q
         '''
-        if type(q) == int or type(q) == float or type(q) == np.float64:
+        if type(q) in [int, float, np.float64]:
             if q < 0 or q > 1:
                 raise ValueError('Quantile must be between 0 and 1')
-        elif type(q) == np.ndarray or type(q) == list:
+        elif type(q) in [list, np.ndarray]:
             if min(q) < 0 or max(q) > 1:
                 raise ValueError('Quantile must be between 0 and 1')
         else:
@@ -4116,10 +4536,10 @@ class Competing_Risks_Model:
         :param q: quantile to be calculated
         :return: :return: the inverse of the survival function at q
         '''
-        if type(q) == int or type(q) == float:
+        if type(q) in [int, float, np.float64]:
             if q < 0 or q > 1:
                 raise ValueError('Quantile must be between 0 and 1')
-        elif type(q) == np.ndarray or type(q) == list:
+        elif type(q) in [list, np.ndarray]:
             if min(q) < 0 or max(q) > 1:
                 raise ValueError('Quantile must be between 0 and 1')
         else:
@@ -4398,7 +4818,7 @@ class Mixture_Model:
         text_mode = str('Mode = ' + str(round_to_decimals(self.mode, dec)))
         text_b5 = str('$5^{th}$ quantile = ' + str(round_to_decimals(self.b5, dec)))
         text_b95 = str('$95^{th}$ quantile = ' + str(round_to_decimals(self.b95, dec)))
-        text_std = str('Standard deviation = ' + str(round_to_decimals(self.variance ** 0.5, dec)))
+        text_std = str('Standard deviation = ' + str(round_to_decimals(self.standard_deviation)))
         text_var = str('Variance = ' + str(round_to_decimals(float(self.variance), dec)))
         text_skew = str('Skewness = ' + str(round_to_decimals(float(self.skewness), dec)))
         text_ex_kurt = str('Excess kurtosis = ' + str(round_to_decimals(float(self.excess_kurtosis), dec)))
@@ -4627,10 +5047,10 @@ class Mixture_Model:
         :param q: quantile to be calculated
         :return: the probability (area under the curve) that a random variable from the distribution is < q
         '''
-        if type(q) == int or type(q) == float or type(q) == np.float64:
+        if type(q) in [int, float, np.float64]:
             if q < 0 or q > 1:
                 raise ValueError('Quantile must be between 0 and 1')
-        elif type(q) == np.ndarray or type(q) == list:
+        elif type(q) in [list, np.ndarray]:
             if min(q) < 0 or max(q) > 1:
                 raise ValueError('Quantile must be between 0 and 1')
         else:
@@ -4643,10 +5063,10 @@ class Mixture_Model:
         :param q: quantile to be calculated
         :return: :return: the inverse of the survival function at q
         '''
-        if type(q) == int or type(q) == float:
+        if type(q) in [int, float, np.float64]:
             if q < 0 or q > 1:
                 raise ValueError('Quantile must be between 0 and 1')
-        elif type(q) == np.ndarray or type(q) == list:
+        elif type(q) in [list, np.ndarray]:
             if min(q) < 0 or max(q) > 1:
                 raise ValueError('Quantile must be between 0 and 1')
         else:
