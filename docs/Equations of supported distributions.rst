@@ -197,13 +197,15 @@ There is another parameterization of the loglogistic distribution using :math:`\
 Gumbel Distribution
 ====================
 
+.. note:: The Gumbel Distribution will be available in version 0.5.4 which is currently unreleased.
+
 :math:`\mu` = location parameter :math:`( -\infty < \mu < \infty )`
 
 :math:`\sigma` = scale parameter :math:`( \sigma > 0 )`
 
 Limits :math:`( -\infty < t < \infty )`
 
-:math:`\text{PDF:} \hspace{11mm} f(t) = \frac{{\rm e}^{z-{\rm e}^{z}}}{\sigma}`
+:math:`\text{PDF:} \hspace{11mm} f(t) = \frac{1}{\sigma}{\rm e}^{z-{\rm e}^{z}}`
 
 where :math:`z = \frac{t-\mu}{\sigma}`
 
@@ -215,7 +217,7 @@ where :math:`z = \frac{t-\mu}{\sigma}`
 
 :math:`\text{CHF:} \hspace{9mm} H(t) = {\rm e}^{z}`
 
-The Gumbel Distribution is similar to the Normal Distribution in the sense that it has a consistent shape, with the location controlled by the location parameter and the spread (or scale) controlled by the scale parameter. The location parameter may be positive or negative, making the Gumbel and Normal Distributions the only distributions within the Python reliability library that can be defined below t=0. There is no threshold (gamma) parameter since the location parameter achieves this.
+The parametrization of the Gumbel Distribution shown above is also known as the Smallest Extreme Value (SEV) distribution. There are several types of extreme value distributions, and the article on `Wikipedia <https://en.wikipedia.org/wiki/Gumbel_distribution>`_ is for the Largest Extreme Value (LEV) distribution. There is only a slight difference in the parametrisation between SEV and LEV distributions, but this change effectively flips the PDF about :math:`\mu` to give the LEV positive skewness (a longer tail to the right), while the SEV has negative skewness (a longer tail to the left), hence the name "smallest extreme value".
 
 Location shifting the distributions
 ===================================
