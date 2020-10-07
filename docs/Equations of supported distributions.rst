@@ -194,6 +194,29 @@ Limits :math:`( t \geq 0 )`
 
 There is another parameterization of the loglogistic distribution using :math:`\mu` and :math:`\sigma` which is designed to look more like the parametrization of the `logistic distribution <https://en.wikipedia.org/wiki/Logistic_distribution>`_ and is related to the above parametrization by :math:`\mu = ln(\alpha)` and :math:`\sigma = \frac{1}{\beta}`. This parametrisation can be found `here <http://reliawiki.org/index.php/The_Loglogistic_Distribution>`_.
 
+Gumbel Distribution
+====================
+
+:math:`\mu` = location parameter :math:`( -\infty < \mu < \infty )`
+
+:math:`\sigma` = scale parameter :math:`( \sigma > 0 )`
+
+Limits :math:`( -\infty < t < \infty )`
+
+:math:`\text{PDF:} \hspace{11mm} f(t) = \frac{{\rm e}^{z-{\rm e}^{z}}}{\sigma}`
+
+where :math:`z = \frac{t-\mu}{\sigma}`
+
+:math:`\text{CDF:} \hspace{10mm} F(t) = 1-{\rm e}^{-{\rm e}^{z}}`
+
+:math:`\text{SF:} \hspace{14mm} R(t) = {\rm e}^{-{\rm e}^{z}}`
+
+:math:`\text{HF:} \hspace{14mm} h(t) = \frac{{\rm e}^{z}}{\sigma}`
+
+:math:`\text{CHF:} \hspace{9mm} H(t) = {\rm e}^{z}`
+
+The Gumbel Distribution is similar to the Normal Distribution in the sense that it has a consistent shape, with the location controlled by the location parameter and the spread (or scale) controlled by the scale parameter. The location parameter may be positive or negative, making the Gumbel and Normal Distributions the only distributions within the Python reliability library that can be defined below t=0. There is no threshold (gamma) parameter since the location parameter achieves this.
+
 Location shifting the distributions
 ===================================
 
