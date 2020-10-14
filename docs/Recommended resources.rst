@@ -73,4 +73,4 @@ The listing of a software package here does not imply my endorsement, and is onl
 **Getting free access to academic papers**
 
 -    `arXiv <https://arXiv.org>`_ - a database run by Cornell university that provides open access to over 1.5 million academic papers that have been submitted. If you can't find it here then check on Sci-Hub.
--    `Sci-Hub <https://sci-hub.tw/>`_ - paste in a DOI to get a copy of the academic paper. Accessing academic knowledge should be free and this site makes it possible.
+-    `Sci-Hub <https://sci-hub.st/>`_ - paste in a DOI to get a copy of the academic paper. Accessing academic knowledge should be free and this site makes it possible.
