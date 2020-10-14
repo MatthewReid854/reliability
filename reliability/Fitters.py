@@ -11,6 +11,7 @@ Fit_Gamma_3P
 Fit_Lognormal_2P
 Fit_Lognormal_3P
 Fit_Normal_2P
+Fit_Gumbel_2P
 Fit_Beta_2P
 Fit_Weibull_Mixture
 Fit_Weibull_CR
@@ -29,10 +30,10 @@ import pandas as pd
 from scipy.optimize import minimize, curve_fit
 import scipy.stats as ss
 import warnings
-from reliability.Distributions import Weibull_Distribution, Gamma_Distribution, Beta_Distribution, Exponential_Distribution, Normal_Distribution, Lognormal_Distribution, Loglogistic_Distribution, Mixture_Model, Competing_Risks_Model
+from reliability.Distributions import Weibull_Distribution, Gamma_Distribution, Beta_Distribution, Exponential_Distribution, Normal_Distribution, Lognormal_Distribution, Loglogistic_Distribution, Gumbel_Distribution, Mixture_Model, Competing_Risks_Model
 from reliability.Nonparametric import KaplanMeier
 from reliability.Probability_plotting import plotting_positions
-from reliability.Utils import round_to_decimals, anderson_darling
+from reliability.Utils import round_to_decimals, anderson_darling, distribution_confidence_intervals
 import autograd.numpy as anp
 from autograd import value_and_grad
 from autograd.scipy.special import gamma as agamma
@@ -44,6 +45,7 @@ from autograd_gamma import gammaincc
 
 anp.seterr('ignore')
 dec = 3  # number of decimals to use when rounding fitted parameters in labels
+default_percentiles = [1, 5, 10, 20, 25, 50, 75, 80, 90, 95, 99]  # percentiles to be used as the defaults in the table of percentiles
 
 
 class Fit_Everything:
@@ -190,6 +192,14 @@ class Fit_Everything:
         self.Lognormal_2P_AD = self.__Lognormal_2P_params.AD
         self._parametric_CDF_Lognormal_2P = self.__Lognormal_2P_params.distribution.CDF(xvals=d, show_plot=False)
 
+        self.__Gumbel_2P_params = Fit_Gumbel_2P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False)
+        self.Gumbel_2P_mu = self.__Gumbel_2P_params.mu
+        self.Gumbel_2P_sigma = self.__Gumbel_2P_params.sigma
+        self.Gumbel_2P_BIC = self.__Gumbel_2P_params.BIC
+        self.Gumbel_2P_AICc = self.__Gumbel_2P_params.AICc
+        self.Gumbel_2P_AD = self.__Gumbel_2P_params.AD
+        self._parametric_CDF_Gumbel_2P = self.__Gumbel_2P_params.distribution.CDF(xvals=d, show_plot=False)
+
         self.__Weibull_2P_params = Fit_Weibull_2P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False)
         self.Weibull_2P_alpha = self.__Weibull_2P_params.alpha
         self.Weibull_2P_beta = self.__Weibull_2P_params.beta
@@ -246,16 +256,16 @@ class Fit_Everything:
             self.Beta_2P_AD = 0
 
         # assemble the output dataframe
-        DATA = {'Distribution': ['Weibull_3P', 'Weibull_2P', 'Normal_2P', 'Exponential_1P', 'Exponential_2P', 'Lognormal_2P', 'Lognormal_3P', 'Gamma_2P', 'Gamma_3P', 'Beta_2P', 'Loglogistic_2P', 'Loglogistic_3P'],
-                'Alpha': [self.Weibull_3P_alpha, self.Weibull_2P_alpha, '', '', '', '', '', self.Gamma_2P_alpha, self.Gamma_3P_alpha, self.Beta_2P_alpha, self.Loglogistic_2P_alpha, self.Loglogistic_3P_alpha],
-                'Beta': [self.Weibull_3P_beta, self.Weibull_2P_beta, '', '', '', '', '', self.Gamma_2P_beta, self.Gamma_3P_beta, self.Beta_2P_beta, self.Loglogistic_2P_beta, self.Loglogistic_3P_beta],
-                'Gamma': [self.Weibull_3P_gamma, '', '', '', self.Expon_2P_gamma, '', self.Lognormal_3P_gamma, '', self.Gamma_3P_gamma, '', '', self.Loglogistic_3P_gamma],
-                'Mu': ['', '', self.Normal_2P_mu, '', '', self.Lognormal_2P_mu, self.Lognormal_3P_mu, '', '', '', '', ''],
-                'Sigma': ['', '', self.Normal_2P_sigma, '', '', self.Lognormal_2P_sigma, self.Lognormal_3P_sigma, '', '', '', '', ''],
-                'Lambda': ['', '', '', self.Expon_1P_lambda, self.Expon_2P_lambda, '', '', '', '', '', '', ''],
-                'AICc': [self.Weibull_3P_AICc, self.Weibull_2P_AICc, self.Normal_2P_AICc, self.Expon_1P_AICc, self.Expon_2P_AICc, self.Lognormal_2P_AICc, self.Lognormal_3P_AICc, self.Gamma_2P_AICc, self.Gamma_3P_AICc, self.Beta_2P_AICc, self.Loglogistic_2P_AICc, self.Loglogistic_3P_AICc],
-                'BIC': [self.Weibull_3P_BIC, self.Weibull_2P_BIC, self.Normal_2P_BIC, self.Expon_1P_BIC, self.Expon_2P_BIC, self.Lognormal_2P_BIC, self.Lognormal_2P_BIC, self.Gamma_2P_BIC, self.Gamma_3P_BIC, self.Beta_2P_BIC, self.Loglogistic_2P_BIC, self.Loglogistic_3P_BIC],
-                'AD': [self.Weibull_3P_AD, self.Weibull_2P_AD, self.Normal_2P_AD, self.Expon_1P_AD, self.Expon_2P_AD, self.Lognormal_2P_AD, self.Lognormal_2P_AD, self.Gamma_2P_AD, self.Gamma_3P_AD, self.Beta_2P_AD, self.Loglogistic_2P_AD, self.Loglogistic_3P_AD]}
+        DATA = {'Distribution': ['Weibull_3P', 'Weibull_2P', 'Normal_2P', 'Exponential_1P', 'Exponential_2P', 'Lognormal_2P', 'Lognormal_3P', 'Gamma_2P', 'Gamma_3P', 'Beta_2P', 'Loglogistic_2P', 'Loglogistic_3P', 'Gumbel_2P'],
+                'Alpha': [self.Weibull_3P_alpha, self.Weibull_2P_alpha, '', '', '', '', '', self.Gamma_2P_alpha, self.Gamma_3P_alpha, self.Beta_2P_alpha, self.Loglogistic_2P_alpha, self.Loglogistic_3P_alpha, ''],
+                'Beta': [self.Weibull_3P_beta, self.Weibull_2P_beta, '', '', '', '', '', self.Gamma_2P_beta, self.Gamma_3P_beta, self.Beta_2P_beta, self.Loglogistic_2P_beta, self.Loglogistic_3P_beta, ''],
+                'Gamma': [self.Weibull_3P_gamma, '', '', '', self.Expon_2P_gamma, '', self.Lognormal_3P_gamma, '', self.Gamma_3P_gamma, '', '', self.Loglogistic_3P_gamma, ''],
+                'Mu': ['', '', self.Normal_2P_mu, '', '', self.Lognormal_2P_mu, self.Lognormal_3P_mu, '', '', '', '', '', self.Gumbel_2P_mu],
+                'Sigma': ['', '', self.Normal_2P_sigma, '', '', self.Lognormal_2P_sigma, self.Lognormal_3P_sigma, '', '', '', '', '', self.Gumbel_2P_sigma],
+                'Lambda': ['', '', '', self.Expon_1P_lambda, self.Expon_2P_lambda, '', '', '', '', '', '', '', ''],
+                'AICc': [self.Weibull_3P_AICc, self.Weibull_2P_AICc, self.Normal_2P_AICc, self.Expon_1P_AICc, self.Expon_2P_AICc, self.Lognormal_2P_AICc, self.Lognormal_3P_AICc, self.Gamma_2P_AICc, self.Gamma_3P_AICc, self.Beta_2P_AICc, self.Loglogistic_2P_AICc, self.Loglogistic_3P_AICc, self.Gumbel_2P_AICc],
+                'BIC': [self.Weibull_3P_BIC, self.Weibull_2P_BIC, self.Normal_2P_BIC, self.Expon_1P_BIC, self.Expon_2P_BIC, self.Lognormal_2P_BIC, self.Lognormal_2P_BIC, self.Gamma_2P_BIC, self.Gamma_3P_BIC, self.Beta_2P_BIC, self.Loglogistic_2P_BIC, self.Loglogistic_3P_BIC, self.Gumbel_2P_BIC],
+                'AD': [self.Weibull_3P_AD, self.Weibull_2P_AD, self.Normal_2P_AD, self.Expon_1P_AD, self.Expon_2P_AD, self.Lognormal_2P_AD, self.Lognormal_2P_AD, self.Gamma_2P_AD, self.Gamma_3P_AD, self.Beta_2P_AD, self.Loglogistic_2P_AD, self.Loglogistic_3P_AD, self.Gumbel_2P_AD]}
 
         df = pd.DataFrame(DATA, columns=['Distribution', 'Alpha', 'Beta', 'Gamma', 'Mu', 'Sigma', 'Lambda', 'AICc', 'BIC', 'AD'])
         # sort the dataframe by BIC, AICc, or AD and replace na and 0 values with spaces. Smallest AICc,BIC,AD is better fit
@@ -299,6 +309,8 @@ class Fit_Everything:
             self.best_distribution = Loglogistic_Distribution(alpha=self.Loglogistic_2P_alpha, beta=self.Loglogistic_2P_beta)
         elif best_dist == 'Loglogistic_3P':
             self.best_distribution = Loglogistic_Distribution(alpha=self.Loglogistic_3P_alpha, beta=self.Loglogistic_3P_beta, gamma=self.Loglogistic_3P_gamma)
+        elif best_dist == 'Gumbel_2P':
+            self.best_distribution = Gumbel_Distribution(mu=self.Gumbel_2P_mu, sigma=self.Gumbel_2P_sigma)
 
         # print the results
         if print_results is True:  # printing occurs by default
@@ -326,325 +338,202 @@ class Fit_Everything:
         if max(X) <= 1:
             xmax = 1  # this is the case when beta is fitted
         else:
-            xmax = max(X) + delta  # this is when beta is not fitted so the upperlimit goes a bit more
-        xvals = np.linspace(xmin, xmax, 1000)
+            xmax = max(X) + delta  # this is when beta is not fitted so the upper xlim goes a bit more
 
         plt.figure(figsize=(14, 6))
-        plt.subplot(121)  # PDF
-
-        # make the histogram. Can't use plt.hist due to need to scale the heights when there's censored data
+        # we need to make the histogram manually (can't use plt.hist) due to need to scale the heights when there's censored data
+        plotting_order = self.results.index.values  # this is the order to plot things so that the legend matches the results dataframe
         iqr = np.subtract(*np.percentile(X, [75, 25]))  # interquartile range
         bin_width = 2 * iqr * len(X) ** -(1 / 3)  # Freedman–Diaconis rule ==> https://en.wikipedia.org/wiki/Freedman%E2%80%93Diaconis_rule
         num_bins = int(np.ceil((max(X) - min(X)) / bin_width))
         hist, bins = np.histogram(X, bins=num_bins, density=True)
-        upper_lim = max(hist) * 1.5
         hist_cumulative = np.cumsum(hist) / sum(hist)
         width = np.diff(bins)
         center = (bins[:-1] + bins[1:]) / 2
-        plt.bar(center, hist * self._frac_fail, align='center', width=width, color='lightgrey', edgecolor='k', linewidth=0.5)
 
-        Weibull_Distribution(alpha=self.Weibull_2P_alpha, beta=self.Weibull_2P_beta).PDF(xvals=xvals, label=r'Weibull ($\alpha , \beta$)')
-        Weibull_Distribution(alpha=self.Weibull_3P_alpha, beta=self.Weibull_3P_beta, gamma=self.Weibull_3P_gamma).PDF(xvals=xvals, label=r'Weibull ($\alpha , \beta , \gamma$)')
-        Gamma_Distribution(alpha=self.Gamma_2P_alpha, beta=self.Gamma_2P_beta).PDF(xvals=xvals, label=r'Gamma ($\alpha , \beta$)')
-        Gamma_Distribution(alpha=self.Gamma_3P_alpha, beta=self.Gamma_3P_beta, gamma=self.Gamma_3P_gamma).PDF(xvals=xvals, label=r'Gamma ($\alpha , \beta , \gamma$)')
-        Exponential_Distribution(Lambda=self.Expon_1P_lambda).PDF(xvals=xvals, label=r'Exponential ($\lambda$)')
-        Exponential_Distribution(Lambda=self.Expon_2P_lambda, gamma=self.Expon_2P_gamma).PDF(xvals=xvals, label=r'Exponential ($\lambda , \gamma$)')
-        Lognormal_Distribution(mu=self.Lognormal_2P_mu, sigma=self.Lognormal_2P_sigma).PDF(xvals=xvals, label=r'Lognormal ($\mu , \sigma$)')
-        Lognormal_Distribution(mu=self.Lognormal_3P_mu, sigma=self.Lognormal_3P_sigma, gamma=self.Lognormal_3P_gamma).PDF(xvals=xvals, label=r'Lognormal ($\mu , \sigma , \gamma$)')
-        Normal_Distribution(mu=self.Normal_2P_mu, sigma=self.Normal_2P_sigma).PDF(xvals=xvals, label=r'Normal ($\mu , \sigma$)')
-        Loglogistic_Distribution(alpha=self.Loglogistic_2P_alpha, beta=self.Loglogistic_2P_beta).PDF(xvals=xvals, label=r'Loglogistic ($\alpha , \beta$)')
-        Loglogistic_Distribution(alpha=self.Loglogistic_3P_alpha, beta=self.Loglogistic_3P_beta, gamma=self.Loglogistic_3P_gamma).PDF(xvals=xvals, label=r'Loglogistic ($\alpha , \beta, \gamma$)')
-        if max(X) <= 1:  # condition for Beta dist to be fitted
-            Beta_Distribution(alpha=self.Beta_2P_alpha, beta=self.Beta_2P_beta).PDF(xvals=xvals, label=r'Beta ($\alpha , \beta$)')
-        plt.legend()
+        # Probability Density Functions
+        plt.subplot(121)
+        plt.bar(center, hist * self._frac_fail, align='center', width=width, color='lightgrey', edgecolor='k', linewidth=0.5)
+        for item in plotting_order:
+            if item == 'Weibull_2P':
+                Weibull_Distribution(alpha=self.Weibull_2P_alpha, beta=self.Weibull_2P_beta).PDF(label=r'Weibull ($\alpha , \beta$)')
+            elif item == 'Weibull_3P':
+                Weibull_Distribution(alpha=self.Weibull_3P_alpha, beta=self.Weibull_3P_beta, gamma=self.Weibull_3P_gamma).PDF(label=r'Weibull ($\alpha , \beta , \gamma$)')
+            elif item == 'Gamma_2P':
+                Gamma_Distribution(alpha=self.Gamma_2P_alpha, beta=self.Gamma_2P_beta).PDF(label=r'Gamma ($\alpha , \beta$)')
+            elif item == 'Gamma_3P':
+                Gamma_Distribution(alpha=self.Gamma_3P_alpha, beta=self.Gamma_3P_beta, gamma=self.Gamma_3P_gamma).PDF(label=r'Gamma ($\alpha , \beta , \gamma$)')
+            elif item == 'Exponential_1P':
+                Exponential_Distribution(Lambda=self.Expon_1P_lambda).PDF(label=r'Exponential ($\lambda$)')
+            elif item == 'Exponential_2P':
+                Exponential_Distribution(Lambda=self.Expon_2P_lambda, gamma=self.Expon_2P_gamma).PDF(label=r'Exponential ($\lambda , \gamma$)')
+            elif item == 'Lognormal_2P':
+                Lognormal_Distribution(mu=self.Lognormal_2P_mu, sigma=self.Lognormal_2P_sigma).PDF(label=r'Lognormal ($\mu , \sigma$)')
+            elif item == 'Lognormal_3P':
+                Lognormal_Distribution(mu=self.Lognormal_3P_mu, sigma=self.Lognormal_3P_sigma, gamma=self.Lognormal_3P_gamma).PDF(label=r'Lognormal ($\mu , \sigma , \gamma$)')
+            elif item == 'Normal_2P':
+                Normal_Distribution(mu=self.Normal_2P_mu, sigma=self.Normal_2P_sigma).PDF(label=r'Normal ($\mu , \sigma$)')
+            elif item == 'Gumbel_2P':
+                Gumbel_Distribution(mu=self.Gumbel_2P_mu, sigma=self.Gumbel_2P_sigma).PDF(label=r'Gumbel ($\mu , \sigma$)')
+            elif item == 'Loglogistic_2P':
+                Loglogistic_Distribution(alpha=self.Loglogistic_2P_alpha, beta=self.Loglogistic_2P_beta).PDF(label=r'Loglogistic ($\alpha , \beta$)')
+            elif item == 'Loglogistic_3P':
+                Loglogistic_Distribution(alpha=self.Loglogistic_3P_alpha, beta=self.Loglogistic_3P_beta, gamma=self.Loglogistic_3P_gamma).PDF(label=r'Loglogistic ($\alpha , \beta, \gamma$)')
+            elif item == 'Beta_2P':
+                Beta_Distribution(alpha=self.Beta_2P_alpha, beta=self.Beta_2P_beta).PDF(label=r'Beta ($\alpha , \beta$)')
         plt.xlim(xmin, xmax)
-        plt.ylim(0, upper_lim)
+        plt.ylim(0, max(hist) * 1.5)
         plt.title('Probability Density Function')
         plt.xlabel('Data')
         plt.ylabel('Probability density')
         plt.legend()
 
-        plt.subplot(122)  # CDF
+        # Cumulative Distribution Functions
+        plt.subplot(122)
         plt.bar(center, hist_cumulative * self._frac_fail, align='center', width=width, color='lightgrey', edgecolor='k', linewidth=0.5)
-        Weibull_Distribution(alpha=self.Weibull_2P_alpha, beta=self.Weibull_2P_beta).CDF(xvals=xvals, label=r'Weibull ($\alpha , \beta$)')
-        Weibull_Distribution(alpha=self.Weibull_3P_alpha, beta=self.Weibull_3P_beta, gamma=self.Weibull_3P_gamma).CDF(xvals=xvals, label=r'Weibull ($\alpha , \beta , \gamma$)')
-        Gamma_Distribution(alpha=self.Gamma_2P_alpha, beta=self.Gamma_2P_beta).CDF(xvals=xvals, label=r'Gamma ($\alpha , \beta$)')
-        Gamma_Distribution(alpha=self.Gamma_3P_alpha, beta=self.Gamma_3P_beta, gamma=self.Gamma_3P_gamma).CDF(xvals=xvals, label=r'Gamma ($\alpha , \beta , \gamma$)')
-        Exponential_Distribution(Lambda=self.Expon_1P_lambda).CDF(xvals=xvals, label=r'Exponential ($\lambda$)')
-        Exponential_Distribution(Lambda=self.Expon_2P_lambda, gamma=self.Expon_2P_gamma).CDF(xvals=xvals, label=r'Exponential ($\lambda , \gamma$)')
-        Lognormal_Distribution(mu=self.Lognormal_2P_mu, sigma=self.Lognormal_2P_sigma).CDF(xvals=xvals, label=r'Lognormal ($\mu , \sigma$)')
-        Lognormal_Distribution(mu=self.Lognormal_3P_mu, sigma=self.Lognormal_3P_sigma, gamma=self.Lognormal_3P_gamma).CDF(xvals=xvals, label=r'Lognormal ($\mu , \sigma , \gamma$)')
-        Normal_Distribution(mu=self.Normal_2P_mu, sigma=self.Normal_2P_sigma).CDF(xvals=xvals, label=r'Normal ($\mu , \sigma$)')
-        Loglogistic_Distribution(alpha=self.Loglogistic_2P_alpha, beta=self.Loglogistic_2P_beta).CDF(xvals=xvals, label=r'Loglogistic ($\alpha , \beta$)')
-        Loglogistic_Distribution(alpha=self.Loglogistic_3P_alpha, beta=self.Loglogistic_3P_beta, gamma=self.Loglogistic_3P_gamma).CDF(xvals=xvals, label=r'Loglogistic ($\alpha , \beta, \gamma$)')
-        if max(X) <= 1:  # condition for Beta Dist to be fitted
-            Beta_Distribution(alpha=self.Beta_2P_alpha, beta=self.Beta_2P_beta).CDF(xvals=xvals, label=r'Beta ($\alpha , \beta$)')
-        plt.legend()
+        for item in plotting_order:
+            if item == 'Weibull_2P':
+                Weibull_Distribution(alpha=self.Weibull_2P_alpha, beta=self.Weibull_2P_beta).CDF(label=r'Weibull ($\alpha , \beta$)')
+            elif item == 'Weibull_3P':
+                Weibull_Distribution(alpha=self.Weibull_3P_alpha, beta=self.Weibull_3P_beta, gamma=self.Weibull_3P_gamma).CDF(label=r'Weibull ($\alpha , \beta , \gamma$)')
+            elif item == 'Gamma_2P':
+                Gamma_Distribution(alpha=self.Gamma_2P_alpha, beta=self.Gamma_2P_beta).CDF(label=r'Gamma ($\alpha , \beta$)')
+            elif item == 'Gamma_3P':
+                Gamma_Distribution(alpha=self.Gamma_3P_alpha, beta=self.Gamma_3P_beta, gamma=self.Gamma_3P_gamma).CDF(label=r'Gamma ($\alpha , \beta , \gamma$)')
+            elif item == 'Exponential_1P':
+                Exponential_Distribution(Lambda=self.Expon_1P_lambda).CDF(label=r'Exponential ($\lambda$)')
+            elif item == 'Exponential_2P':
+                Exponential_Distribution(Lambda=self.Expon_2P_lambda, gamma=self.Expon_2P_gamma).CDF(label=r'Exponential ($\lambda , \gamma$)')
+            elif item == 'Lognormal_2P':
+                Lognormal_Distribution(mu=self.Lognormal_2P_mu, sigma=self.Lognormal_2P_sigma).CDF(label=r'Lognormal ($\mu , \sigma$)')
+            elif item == 'Lognormal_3P':
+                Lognormal_Distribution(mu=self.Lognormal_3P_mu, sigma=self.Lognormal_3P_sigma, gamma=self.Lognormal_3P_gamma).CDF(label=r'Lognormal ($\mu , \sigma , \gamma$)')
+            elif item == 'Normal_2P':
+                Normal_Distribution(mu=self.Normal_2P_mu, sigma=self.Normal_2P_sigma).CDF(label=r'Normal ($\mu , \sigma$)')
+            elif item == 'Gumbel_2P':
+                Gumbel_Distribution(mu=self.Gumbel_2P_mu, sigma=self.Gumbel_2P_sigma).CDF(label=r'Gumbel ($\mu , \sigma$)')
+            elif item == 'Loglogistic_2P':
+                Loglogistic_Distribution(alpha=self.Loglogistic_2P_alpha, beta=self.Loglogistic_2P_beta).CDF(label=r'Loglogistic ($\alpha , \beta$)')
+            elif item == 'Loglogistic_3P':
+                Loglogistic_Distribution(alpha=self.Loglogistic_3P_alpha, beta=self.Loglogistic_3P_beta, gamma=self.Loglogistic_3P_gamma).CDF(label=r'Loglogistic ($\alpha , \beta, \gamma$)')
+            elif item == 'Beta_2P':
+                Beta_Distribution(alpha=self.Beta_2P_alpha, beta=self.Beta_2P_beta).CDF(label=r'Beta ($\alpha , \beta$)')
         plt.xlim([xmin, xmax])
         plt.title('Cumulative Distribution Function')
         plt.xlabel('Data')
         plt.ylabel('Cumulative probability density')
-        plt.suptitle('Histogram plot of each fitted distribution')
         plt.legend()
+        plt.suptitle('Histogram plot of each fitted distribution')
         plt.subplots_adjust(left=0.07, bottom=0.10, right=0.97, top=0.88, wspace=0.15)
 
     def P_P_plot(self):  # probability-probability plot of parametric vs non-parametric
+
+        def format_PP_axis(xlim):  # these commands are repeated in each plot so it was economical to put them in a function
+            plt.plot([-xlim, 2 * xlim], [-xlim, 2 * xlim], 'r', alpha=0.7)
+            plt.axis('square')
+            plt.yticks([])
+            plt.xticks([])
+            plt.xlim(-xlim * 0.05, xlim * 1.05)
+            plt.ylim(-xlim * 0.05, xlim * 1.05)
+
         rows = 3
-        cols = 4
-        plt.figure(figsize=(10, 8))
+        if self.Beta_2P_alpha != 0:  # different layout depending on whether Beta distribution is fitted. With beta it is a 5x3. Without it is as 4x3
+            cols = 5
+            row1add = 1
+            row2add = 2
+            plt.figure(figsize=(10, 7))
+        else:
+            cols = 4
+            row1add = 0
+            row2add = 0
+            plt.figure(figsize=(8, 7))
         plt.suptitle('Semi-parametric Probability-Probability plots of each fitted distribution\nParametric (x-axis) vs Non-Parametric (y-axis)')
 
         plt.subplot(rows, cols, 1)
         xlim = max(np.hstack([self._nonparametric_CDF, self._parametric_CDF_Exponential_1P]))
         plt.scatter(self._nonparametric_CDF, self._parametric_CDF_Exponential_1P, marker='.', color='k')
-        plt.plot([0, xlim], [0, xlim], 'r', alpha=0.7)
-        plt.axis('square')
         plt.title('Exponential_1P')
-        plt.yticks([])
-        plt.xticks([])
+        format_PP_axis(xlim)
 
         plt.subplot(rows, cols, 2)
         xlim = max(np.hstack([self._nonparametric_CDF, self._parametric_CDF_Exponential_2P]))
         plt.scatter(self._nonparametric_CDF, self._parametric_CDF_Exponential_2P, marker='.', color='k')
-        plt.plot([0, xlim], [0, xlim], 'r', alpha=0.7)
-        plt.axis('square')
         plt.title('Exponential_2P')
-        plt.yticks([])
-        plt.xticks([])
+        format_PP_axis(xlim)
 
         plt.subplot(rows, cols, 3)
         xlim = max(np.hstack([self._nonparametric_CDF, self._parametric_CDF_Lognormal_2P]))
         plt.scatter(self._nonparametric_CDF, self._parametric_CDF_Lognormal_2P, marker='.', color='k')
-        plt.plot([0, xlim], [0, xlim], 'r', alpha=0.7)
-        plt.axis('square')
         plt.title('Lognormal_2P')
-        plt.yticks([])
-        plt.xticks([])
+        format_PP_axis(xlim)
 
         plt.subplot(rows, cols, 4)
         xlim = max(np.hstack([self._nonparametric_CDF, self._parametric_CDF_Lognormal_3P]))
         plt.scatter(self._nonparametric_CDF, self._parametric_CDF_Lognormal_3P, marker='.', color='k')
-        plt.plot([0, xlim], [0, xlim], 'r', alpha=0.7)
-        plt.axis('square')
         plt.title('Lognormal_3P')
-        plt.yticks([])
-        plt.xticks([])
+        format_PP_axis(xlim)
 
-        plt.subplot(rows, cols, 5)
+        plt.subplot(rows, cols, 5 + row1add)
         xlim = max(np.hstack([self._nonparametric_CDF, self._parametric_CDF_Weibull_2P]))
         plt.scatter(self._nonparametric_CDF, self._parametric_CDF_Weibull_2P, marker='.', color='k')
-        plt.plot([0, xlim], [0, xlim], 'r', alpha=0.7)
-        plt.axis('square')
         plt.title('Weibull_2P')
-        plt.yticks([])
-        plt.xticks([])
+        format_PP_axis(xlim)
 
-        plt.subplot(rows, cols, 6)
+        plt.subplot(rows, cols, 6 + row1add)
         xlim = max(np.hstack([self._nonparametric_CDF, self._parametric_CDF_Weibull_3P]))
         plt.scatter(self._nonparametric_CDF, self._parametric_CDF_Weibull_3P, marker='.', color='k')
-        plt.plot([0, xlim], [0, xlim], 'r', alpha=0.7)
-        plt.axis('square')
         plt.title('Weibull_3P')
-        plt.yticks([])
-        plt.xticks([])
+        format_PP_axis(xlim)
 
-        plt.subplot(rows, cols, 7)
+        plt.subplot(rows, cols, 7 + row1add)
         xlim = max(np.hstack([self._nonparametric_CDF, self._parametric_CDF_Loglogistic_2P]))
         plt.scatter(self._nonparametric_CDF, self._parametric_CDF_Loglogistic_2P, marker='.', color='k')
-        plt.plot([0, xlim], [0, xlim], 'r', alpha=0.7)
-        plt.axis('square')
         plt.title('Loglogistic_2P')
-        plt.yticks([])
-        plt.xticks([])
+        format_PP_axis(xlim)
 
-        plt.subplot(rows, cols, 8)
+        plt.subplot(rows, cols, 8 + row1add)
         xlim = max(np.hstack([self._nonparametric_CDF, self._parametric_CDF_Loglogistic_3P]))
         plt.scatter(self._nonparametric_CDF, self._parametric_CDF_Loglogistic_3P, marker='.', color='k')
-        plt.plot([0, xlim], [0, xlim], 'r', alpha=0.7)
-        plt.axis('square')
         plt.title('Loglogistic_3P')
-        plt.yticks([])
-        plt.xticks([])
+        format_PP_axis(xlim)
 
-        plt.subplot(rows, cols, 9)
+        plt.subplot(rows, cols, 9 + row2add)
         xlim = max(np.hstack([self._nonparametric_CDF, self._parametric_CDF_Gamma_2P]))
         plt.scatter(self._nonparametric_CDF, self._parametric_CDF_Gamma_2P, marker='.', color='k')
-        plt.plot([0, xlim], [0, xlim], 'r', alpha=0.7)
-        plt.axis('square')
         plt.title('Gamma_2P')
-        plt.yticks([])
-        plt.xticks([])
+        format_PP_axis(xlim)
 
-        plt.subplot(rows, cols, 10)
+        plt.subplot(rows, cols, 10 + row2add)
         xlim = max(np.hstack([self._nonparametric_CDF, self._parametric_CDF_Gamma_3P]))
         plt.scatter(self._nonparametric_CDF, self._parametric_CDF_Gamma_3P, marker='.', color='k')
-        plt.plot([0, xlim], [0, xlim], 'r', alpha=0.7)
-        plt.axis('square')
         plt.title('Gamma_3P')
-        plt.yticks([])
-        plt.xticks([])
+        format_PP_axis(xlim)
 
-        plt.subplot(rows, cols, 11)
+        plt.subplot(rows, cols, 11 + row2add)
         xlim = max(np.hstack([self._nonparametric_CDF, self._parametric_CDF_Normal_2P]))
         plt.scatter(self._nonparametric_CDF, self._parametric_CDF_Normal_2P, marker='.', color='k')
-        plt.plot([0, xlim], [0, xlim], 'r', alpha=0.7)
-        plt.axis('square')
         plt.title('Normal_2P')
-        plt.yticks([])
-        plt.xticks([])
+        format_PP_axis(xlim)
 
-        if max(self.failures) <= 1:
-            plt.subplot(rows, cols, 12)
+        plt.subplot(rows, cols, 12 + row2add)
+        xlim = max(np.hstack([self._nonparametric_CDF, self._parametric_CDF_Gumbel_2P]))
+        plt.scatter(self._nonparametric_CDF, self._parametric_CDF_Gumbel_2P, marker='.', color='k')
+        plt.title('Gumbel_2P')
+        format_PP_axis(xlim)
+
+        if self.Beta_2P_alpha != 0:
+            plt.subplot(rows, cols, 5)
             xlim = max(np.hstack([self._nonparametric_CDF, self._parametric_CDF_Beta_2P]))
             plt.scatter(self._nonparametric_CDF, self._parametric_CDF_Beta_2P, marker='.', color='k')
-            plt.plot([0, xlim], [0, xlim], 'r', alpha=0.7)
-            plt.axis('square')
             plt.title('Beta_2P')
-            plt.yticks([])
-            plt.xticks([])
-        plt.subplots_adjust(left=0.04, bottom=0.07, right=0.96, top=0.87)
+            format_PP_axis(xlim)
+        plt.subplots_adjust(left=0.03, bottom=0.04, right=0.97, top=0.87)
 
     def probability_plot(self):
-        from reliability.Probability_plotting import Weibull_probability_plot, Normal_probability_plot, Gamma_probability_plot, Exponential_probability_plot, Beta_probability_plot, Lognormal_probability_plot, Exponential_probability_plot_Weibull_Scale, Loglogistic_probability_plot
-        rows = 3
-        cols = 4
+        from reliability.Probability_plotting import Weibull_probability_plot, Normal_probability_plot, Gamma_probability_plot, Exponential_probability_plot,\
+            Beta_probability_plot, Lognormal_probability_plot, Exponential_probability_plot_Weibull_Scale, Loglogistic_probability_plot, Gumbel_probability_plot
 
-        plt.figure()
-        plt.subplot(rows, cols, 1)
-        Exponential_probability_plot_Weibull_Scale(failures=self.failures, right_censored=self.right_censored, __fitted_dist_params=self.__Expon_1P_params)
-        ax = plt.gca()
-        ax.set_yticklabels([], minor=False)
-        ax.set_xticklabels([], minor=False)
-        ax.set_yticklabels([], minor=True)
-        ax.set_xticklabels([], minor=True)
-        ax.set_ylabel('')
-        ax.set_xlabel('')
-        ax.get_legend().remove()
-        plt.title('Exponential_1P')
-
-        plt.subplot(rows, cols, 2)
-        Exponential_probability_plot_Weibull_Scale(failures=self.failures, right_censored=self.right_censored, __fitted_dist_params=self.__Expon_2P_params)
-        ax = plt.gca()
-        ax.set_yticklabels([], minor=False)
-        ax.set_xticklabels([], minor=False)
-        ax.set_yticklabels([], minor=True)
-        ax.set_xticklabels([], minor=True)
-        ax.set_ylabel('')
-        ax.set_xlabel('')
-        ax.get_legend().remove()
-        plt.title('Exponential_2P')
-
-        plt.subplot(rows, cols, 3)
-        Lognormal_probability_plot(failures=self.failures, right_censored=self.right_censored, __fitted_dist_params=self.__Lognormal_2P_params)
-        ax = plt.gca()
-        ax.set_yticklabels([], minor=False)
-        ax.set_xticklabels([], minor=False)
-        ax.set_yticklabels([], minor=True)
-        ax.set_xticklabels([], minor=True)
-        ax.set_ylabel('')
-        ax.set_xlabel('')
-        ax.get_legend().remove()
-        plt.title('Lognormal_2P')
-
-        plt.subplot(rows, cols, 4)
-        Lognormal_probability_plot(failures=self.failures, right_censored=self.right_censored, __fitted_dist_params=self.__Lognormal_3P_params)
-        ax = plt.gca()
-        ax.set_yticklabels([], minor=False)
-        ax.set_xticklabels([], minor=False)
-        ax.set_yticklabels([], minor=True)
-        ax.set_xticklabels([], minor=True)
-        ax.set_ylabel('')
-        ax.set_xlabel('')
-        ax.get_legend().remove()
-        plt.title('Lognormal_3P')
-
-        plt.subplot(rows, cols, 5)
-        Weibull_probability_plot(failures=self.failures, right_censored=self.right_censored, __fitted_dist_params=self.__Weibull_2P_params)
-        ax = plt.gca()
-        ax.set_yticklabels([], minor=False)
-        ax.set_xticklabels([], minor=False)
-        ax.set_yticklabels([], minor=True)
-        ax.set_xticklabels([], minor=True)
-        ax.set_ylabel('')
-        ax.set_xlabel('')
-        ax.get_legend().remove()
-        plt.title('Weibull_2P')
-
-        plt.subplot(rows, cols, 6)
-        Weibull_probability_plot(failures=self.failures, right_censored=self.right_censored, __fitted_dist_params=self.__Weibull_3P_params)
-        ax = plt.gca()
-        ax.set_yticklabels([], minor=False)
-        ax.set_xticklabels([], minor=False)
-        ax.set_yticklabels([], minor=True)
-        ax.set_xticklabels([], minor=True)
-        ax.set_ylabel('')
-        ax.set_xlabel('')
-        ax.get_legend().remove()
-        plt.title('Weibull_3P')
-
-        plt.subplot(rows, cols, 7)
-        Loglogistic_probability_plot(failures=self.failures, right_censored=self.right_censored, __fitted_dist_params=self.__Loglogistic_2P_params)
-        ax = plt.gca()
-        ax.set_yticklabels([], minor=False)
-        ax.set_xticklabels([], minor=False)
-        ax.set_yticklabels([], minor=True)
-        ax.set_xticklabels([], minor=True)
-        ax.set_ylabel('')
-        ax.set_xlabel('')
-        ax.get_legend().remove()
-        plt.title('Loglogistic_2P')
-
-        plt.subplot(rows, cols, 8)
-        Loglogistic_probability_plot(failures=self.failures, right_censored=self.right_censored, __fitted_dist_params=self.__Loglogistic_3P_params)
-        ax = plt.gca()
-        ax.set_yticklabels([], minor=False)
-        ax.set_xticklabels([], minor=False)
-        ax.set_yticklabels([], minor=True)
-        ax.set_xticklabels([], minor=True)
-        ax.set_ylabel('')
-        ax.set_xlabel('')
-        ax.get_legend().remove()
-        plt.title('Loglogistic_3P')
-
-        plt.subplot(rows, cols, 9)
-        Gamma_probability_plot(failures=self.failures, right_censored=self.right_censored, __fitted_dist_params=self.__Gamma_2P_params)
-        ax = plt.gca()
-        ax.set_yticklabels([], minor=False)
-        ax.set_xticklabels([], minor=False)
-        ax.set_yticklabels([], minor=True)
-        ax.set_xticklabels([], minor=True)
-        ax.set_ylabel('')
-        ax.set_xlabel('')
-        ax.get_legend().remove()
-        plt.title('Gamma_2P')
-
-        plt.subplot(rows, cols, 10)
-        Gamma_probability_plot(failures=self.failures, right_censored=self.right_censored, __fitted_dist_params=self.__Gamma_3P_params)
-        ax = plt.gca()
-        ax.set_yticklabels([], minor=False)
-        ax.set_xticklabels([], minor=False)
-        ax.set_yticklabels([], minor=True)
-        ax.set_xticklabels([], minor=True)
-        ax.set_ylabel('')
-        ax.set_xlabel('')
-        ax.get_legend().remove()
-        plt.title('Gamma_3P')
-
-        plt.subplot(rows, cols, 11)
-        Normal_probability_plot(failures=self.failures, right_censored=self.right_censored, __fitted_dist_params=self.__Normal_2P_params)
-        ax = plt.gca()
-        ax.set_yticklabels([], minor=False)
-        ax.set_xticklabels([], minor=False)
-        ax.set_yticklabels([], minor=True)
-        ax.set_xticklabels([], minor=True)
-        ax.set_ylabel('')
-        ax.set_xlabel('')
-        ax.get_legend().remove()
-        plt.title('Normal_2P')
-
-        if max(self.failures) <= 1:
-            plt.subplot(rows, cols, 12)
-            Beta_probability_plot(failures=self.failures, right_censored=self.right_censored, __fitted_dist_params=self.__Beta_2P_params)
+        def format_probplot():  # these commands are repeated in each plot so it was economical to put them in a function
             ax = plt.gca()
             ax.set_yticklabels([], minor=False)
             ax.set_xticklabels([], minor=False)
@@ -653,11 +542,88 @@ class Fit_Everything:
             ax.set_ylabel('')
             ax.set_xlabel('')
             ax.get_legend().remove()
-            plt.title('Beta_2P')
 
-        plt.gcf().set_size_inches(15, 8)  # resize the figure since the probability plots adjusted it
+        rows = 3
+        if self.Beta_2P_alpha != 0:  # different layout depending on whether Beta distribution is fitted. With beta it is a 5x3. Without it is as 4x3
+            cols = 5
+            row1add = 1
+            row2add = 2
+        else:
+            cols = 4
+            row1add = 0
+            row2add = 0
+
+        plt.figure()
+        plt.subplot(rows, cols, 1)
+        Exponential_probability_plot_Weibull_Scale(failures=self.failures, right_censored=self.right_censored, __fitted_dist_params=self.__Expon_1P_params)
+        format_probplot()
+        plt.title('Exponential_1P')
+
+        plt.subplot(rows, cols, 2)
+        Exponential_probability_plot_Weibull_Scale(failures=self.failures, right_censored=self.right_censored, __fitted_dist_params=self.__Expon_2P_params)
+        format_probplot()
+        plt.title('Exponential_2P')
+
+        plt.subplot(rows, cols, 3)
+        Lognormal_probability_plot(failures=self.failures, right_censored=self.right_censored, __fitted_dist_params=self.__Lognormal_2P_params)
+        format_probplot()
+        plt.title('Lognormal_2P')
+
+        plt.subplot(rows, cols, 4)
+        Lognormal_probability_plot(failures=self.failures, right_censored=self.right_censored, __fitted_dist_params=self.__Lognormal_3P_params)
+        format_probplot()
+        plt.title('Lognormal_3P')
+
+        plt.subplot(rows, cols, 5 + row1add)
+        Weibull_probability_plot(failures=self.failures, right_censored=self.right_censored, __fitted_dist_params=self.__Weibull_2P_params)
+        format_probplot()
+        plt.title('Weibull_2P')
+
+        plt.subplot(rows, cols, 6 + row1add)
+        Weibull_probability_plot(failures=self.failures, right_censored=self.right_censored, __fitted_dist_params=self.__Weibull_3P_params)
+        format_probplot()
+        plt.title('Weibull_3P')
+
+        plt.subplot(rows, cols, 7 + row1add)
+        Loglogistic_probability_plot(failures=self.failures, right_censored=self.right_censored, __fitted_dist_params=self.__Loglogistic_2P_params)
+        format_probplot()
+        plt.title('Loglogistic_2P')
+
+        plt.subplot(rows, cols, 8 + row1add)
+        Loglogistic_probability_plot(failures=self.failures, right_censored=self.right_censored, __fitted_dist_params=self.__Loglogistic_3P_params)
+        format_probplot()
+        plt.title('Loglogistic_3P')
+
+        plt.subplot(rows, cols, 9 + row2add)
+        Gamma_probability_plot(failures=self.failures, right_censored=self.right_censored, __fitted_dist_params=self.__Gamma_2P_params)
+        format_probplot()
+        plt.title('Gamma_2P')
+
+        plt.subplot(rows, cols, 10 + row2add)
+        Gamma_probability_plot(failures=self.failures, right_censored=self.right_censored, __fitted_dist_params=self.__Gamma_3P_params)
+        format_probplot()
+        plt.title('Gamma_3P')
+
+        plt.subplot(rows, cols, 11 + row2add)
+        Normal_probability_plot(failures=self.failures, right_censored=self.right_censored, __fitted_dist_params=self.__Normal_2P_params)
+        format_probplot()
+        plt.title('Normal_2P')
+
+        plt.subplot(rows, cols, 12 + row2add)
+        Gumbel_probability_plot(failures=self.failures, right_censored=self.right_censored, __fitted_dist_params=self.__Gumbel_2P_params)
+        format_probplot()
+        plt.title('Gumbel_2P')
+
+        if self.Beta_2P_alpha != 0:
+            plt.subplot(rows, cols, 5)
+            Beta_probability_plot(failures=self.failures, right_censored=self.right_censored, __fitted_dist_params=self.__Beta_2P_params)
+            format_probplot()
+            plt.title('Beta_2P')
+            plt.gcf().set_size_inches(17.5, 8)  # with the Beta distribution the width of the plot is increased
+        else:
+            plt.gcf().set_size_inches(15, 8)
         plt.suptitle('Probability plots of each fitted distribution\n')
-        plt.subplots_adjust(left=0.04, bottom=0.04, right=0.96, top=0.91, wspace=0.12, hspace=0.31)
+        plt.tight_layout()
 
 
 class Fit_Weibull_2P:
@@ -676,6 +642,7 @@ class Fit_Weibull_2P:
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
     CI_type - time, reliability, None. Default is time. This is the confidence bounds on time or on reliability. Use None to turn off the confidence intervals.
     force_beta - Use this to specify the beta value if you need to force beta to be a certain value. Used in ALT probability plotting. Optional input.
+    percentiles - percentiles to produce a table of percentiles failed with lower, point, and upper estimates. Default is None which results in no output. True or 'auto' will use default array [1, 5, 10,..., 95, 99]. If an array or list is specified then it will be used instead of the default array.
     kwargs are accepted for the probability plot (eg. linestyle, label, color)
 
     outputs:
@@ -690,6 +657,7 @@ class Fit_Weibull_2P:
     loglik2 - LogLikelihood*-2 (as used in JMP Pro)
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
+    AD - the Anderson Darling (corrected) statistic (as reported by Minitab)
     distribution - a Weibull_Distribution object with the parameters of the fitted distribution
     alpha_SE - the standard error (sqrt(variance)) of the parameter
     beta_SE - the standard error (sqrt(variance)) of the parameter
@@ -699,9 +667,10 @@ class Fit_Weibull_2P:
     beta_upper - the upper CI estimate of the parameter
     beta_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
+    percentiles - a dataframe of the percentiles with bounds on time. This is only produced if percentiles is 'auto' or a list or array. Since percentiles defaults to None, this output is not normally produced.
     '''
 
-    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, CI_type='time', initial_guess_method='least squares', optimizer='L-BFGS-B', force_beta=None, **kwargs):
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, percentiles=None, CI_type='time', initial_guess_method='least squares', optimizer='L-BFGS-B', force_beta=None, **kwargs):
         if force_beta is not None and (failures is None or len(failures) < 1):
             raise ValueError('Maximum likelihood estimates could not be calculated for these data. There must be at least 1 failures to calculate Weibull parameters when force_beta is specified.')
         elif force_beta is None and (failures is None or len(failures) < 2):
@@ -719,6 +688,16 @@ class Fit_Weibull_2P:
 
         if optimizer not in ['L-BFGS-B', 'TNC']:
             raise ValueError('optimizer must be either "L-BFGS-B" OR "TNC". Default is "L-BFGS-B".')
+
+        if type(percentiles) in [str, bool]:
+            if percentiles in ['auto', True, 'default', 'on']:
+                percentiles = np.array(default_percentiles)
+        elif type(percentiles) is not type(None):
+            if type(percentiles) not in [list, np.ndarray]:
+                raise ValueError('percentiles must be a list or array')
+            percentiles = np.asarray(percentiles)
+            if max(percentiles) >= 100 or min(percentiles) <= 0:
+                raise ValueError('percentiles must be between 0 and 100')
 
         # fill with empty lists if not specified
         if right_censored is None:
@@ -878,6 +857,16 @@ class Fit_Weibull_2P:
         self.distribution = Weibull_Distribution(alpha=self.alpha, beta=self.beta, alpha_SE=self.alpha_SE, beta_SE=self.beta_SE, Cov_alpha_beta=self.Cov_alpha_beta, CI=CI, CI_type=CI_type)
         self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=failures, show_plot=False), empirical_cdf=y)
 
+        if percentiles is not None:
+            point_estimate = self.distribution.quantile(q=percentiles / 100)
+            lower_estimate, upper_estimate = distribution_confidence_intervals.weibull_CI(self=self.distribution, func='CDF', CI_type='time', CI=CI, q=1 - (percentiles / 100))
+            Percentile_Data = {'Percentile': percentiles,
+                               'Lower Estimate': lower_estimate,
+                               'Point Estimate': point_estimate,
+                               'Upper Estimate': upper_estimate}
+            percentiles = pd.DataFrame(Percentile_Data, columns=['Percentile', 'Lower Estimate', 'Point Estimate', 'Upper Estimate'])
+            self.percentiles = percentiles.set_index('Percentile')
+
         if print_results is True:
             pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
             pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
@@ -888,6 +877,10 @@ class Fit_Weibull_2P:
             print(str('Results from Fit_Weibull_2P (' + str(CI_rounded) + '% CI):'))
             print(self.results)
             print('Log-Likelihood:', self.loglik, '\n')
+
+            if percentiles is not None:
+                print(str('Table of percentiles (' + str(CI_rounded) + '% CI bounds on time):'))
+                print(self.percentiles)
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Weibull_probability_plot
@@ -939,6 +932,7 @@ class Fit_Weibull_2P_grouped:
     force_beta - Use this to specify the beta value if you need to force beta to be a certain value. Used in ALT probability plotting. Optional input.
     initial_guess_method - 'scipy' OR 'least squares'. Default is 'least squares'. Both do not take into account censored data but scipy uses MLE, and least squares is least squares regression of the plotting positions. Least squares proved more accurate during testing.
     optimizer - 'L-BFGS-B' OR 'TNC'. These are both bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
+    percentiles - percentiles to produce a table of percentiles failed with lower, point, and upper estimates. Default is None which results in no output. True or 'auto' will use default array [1, 5, 10,..., 95, 99]. If an array or list is specified then it will be used instead of the default array.
     kwargs are accepted for the probability plot (eg. linestyle, label, color)
 
     Outputs:
@@ -953,6 +947,7 @@ class Fit_Weibull_2P_grouped:
     loglik2 - LogLikelihood*-2 (as used in JMP Pro)
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
+    AD - the Anderson Darling (corrected) statistic (as reported by Minitab)
     distribution - a Weibull_Distribution object with the parameters of the fitted distribution
     alpha_SE - the standard error (sqrt(variance)) of the parameter
     beta_SE - the standard error (sqrt(variance)) of the parameter
@@ -962,6 +957,7 @@ class Fit_Weibull_2P_grouped:
     beta_upper - the upper CI estimate of the parameter
     beta_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
+    percentiles - a dataframe of the percentiles with bounds on time. This is only produced if percentiles is 'auto' or a list or array. Since percentiles defaults to None, this output is not normally produced.
 
     Requirements of the input dataframe:
     The column titles MUST be 'category', 'time', 'quantity'
@@ -990,7 +986,7 @@ class Fit_Weibull_2P_grouped:
     Fit_Weibull_2P_grouped(dataframe=df)
     '''
 
-    def __init__(self, dataframe=None, show_probability_plot=True, print_results=True, CI=0.95, force_beta=None, initial_guess_method='least squares', optimizer='L-BFGS-B', CI_type='time', **kwargs):
+    def __init__(self, dataframe=None, show_probability_plot=True, print_results=True, CI=0.95, force_beta=None, percentiles=None, initial_guess_method='least squares', optimizer='L-BFGS-B', CI_type='time', **kwargs):
         if dataframe is None or type(dataframe) is not pd.core.frame.DataFrame:
             raise ValueError('dataframe must be a pandas dataframe with the columns "category" (F for failure or C for censored), "time" (the failure times), and "quantity" (the number of events at each time)')
         for item in dataframe.columns.values:
@@ -1009,6 +1005,16 @@ class Fit_Weibull_2P_grouped:
 
         if optimizer not in ['L-BFGS-B', 'TNC']:
             raise ValueError('optimizer must be either "L-BFGS-B" OR "TNC". Default is "L-BFGS-B".')
+
+        if type(percentiles) in [str, bool]:
+            if percentiles in ['auto', True, 'default', 'on']:
+                percentiles = np.array(default_percentiles)
+        elif type(percentiles) is not type(None):
+            if type(percentiles) not in [list, np.ndarray]:
+                raise ValueError('percentiles must be a list or array')
+            percentiles = np.asarray(percentiles)
+            if max(percentiles) >= 100 or min(percentiles) <= 0:
+                raise ValueError('percentiles must be between 0 and 100')
 
         if min(dataframe.time.values) < 0:
             raise ValueError('All failure and censoring times must be greater than zero.')  # raise an error is there are values below 0
@@ -1177,6 +1183,16 @@ class Fit_Weibull_2P_grouped:
         self.distribution = Weibull_Distribution(alpha=self.alpha, beta=self.beta, alpha_SE=self.alpha_SE, beta_SE=self.beta_SE, Cov_alpha_beta=self.Cov_alpha_beta, CI=CI, CI_type=CI_type)
         self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=failures, show_plot=False), empirical_cdf=y)
 
+        if percentiles is not None:
+            point_estimate = self.distribution.quantile(q=percentiles / 100)
+            lower_estimate, upper_estimate = distribution_confidence_intervals.weibull_CI(self=self.distribution, func='CDF', CI_type='time', CI=CI, q=1 - (percentiles / 100))
+            Percentile_Data = {'Percentile': percentiles,
+                               'Lower Estimate': lower_estimate,
+                               'Point Estimate': point_estimate,
+                               'Upper Estimate': upper_estimate}
+            percentiles = pd.DataFrame(Percentile_Data, columns=['Percentile', 'Lower Estimate', 'Point Estimate', 'Upper Estimate'])
+            self.percentiles = percentiles.set_index('Percentile')
+
         if print_results is True:
             pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
             pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
@@ -1188,6 +1204,10 @@ class Fit_Weibull_2P_grouped:
             print(self.results)
             print('Log-Likelihood:', self.loglik)
             print('Number of failures:', sum(failure_qty), '\nNumber of right censored:', sum(right_censored_qty), '\nFraction censored:', round(sum(right_censored_qty) / (sum(right_censored_qty) + sum(failure_qty)) * 100, 5), '%\n')
+
+            if percentiles is not None:
+                print(str('Table of percentiles (' + str(CI_rounded) + '% CI bounds on time):'))
+                print(self.percentiles)
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Weibull_probability_plot
@@ -1233,6 +1253,7 @@ class Fit_Weibull_3P:
     CI_type - 'time' or 'reliability'. Default is time. Used for the probability plot and the distribution object in the output.
     initial_guess_method - 'scipy', 'least squares' or 'non-linear least squares. Default is 'scipy'. All three do not take into account censored data but scipy uses MLE, and least squares is least squares regression of the plotting positions. Non-linear least squares uses least squares as an intial guess before using scipy.optimise.curve_fit for the CDF. Scipy proved more accurate during testing.
     optimizer - 'L-BFGS-B' OR 'TNC'. These are both bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
+    percentiles - percentiles to produce a table of percentiles failed with lower, point, and upper estimates. Default is None which results in no output. True or 'auto' will use default array [1, 5, 10,..., 95, 99]. If an array or list is specified then it will be used instead of the default array.
     kwargs are accepted for the probability plot (eg. linestyle, label, color)
 
     Outputs:
@@ -1248,6 +1269,7 @@ class Fit_Weibull_3P:
     loglik2 - LogLikelihood*-2 (as used in JMP Pro)
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
+    AD - the Anderson Darling (corrected) statistic (as reported by Minitab)
     distribution - a Weibull_Distribution object with the parameters of the fitted distribution
     alpha_SE - the standard error (sqrt(variance)) of the parameter
     beta_SE - the standard error (sqrt(variance)) of the parameter
@@ -1260,9 +1282,10 @@ class Fit_Weibull_3P:
     gamma_upper - the upper CI estimate of the parameter
     gamma_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
+    percentiles - a dataframe of the percentiles with bounds on time. This is only produced if percentiles is 'auto' or a list or array. Since percentiles defaults to None, this output is not normally produced.
     '''
 
-    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, CI_type='time', optimizer='L-BFGS-B', initial_guess_method='scipy', **kwargs):
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, percentiles=None, CI_type='time', optimizer='L-BFGS-B', initial_guess_method='scipy', **kwargs):
         if failures is None or len(failures) < 3:
             raise ValueError('Maximum likelihood estimates could not be calculated for these data. There must be at least three failures to calculate Weibull parameters.')
         if right_censored is None:
@@ -1290,6 +1313,16 @@ class Fit_Weibull_3P:
 
         if optimizer not in ['L-BFGS-B', 'TNC']:
             raise ValueError('optimizer must be either "L-BFGS-B" OR "TNC". Default is "L-BFGS-B".')
+
+        if type(percentiles) in [str, bool]:
+            if percentiles in ['auto', True, 'default', 'on']:
+                percentiles = np.array(default_percentiles)
+        elif type(percentiles) is not type(None):
+            if type(percentiles) not in [list, np.ndarray]:
+                raise ValueError('percentiles must be a list or array')
+            percentiles = np.asarray(percentiles)
+            if max(percentiles) >= 100 or min(percentiles) <= 0:
+                raise ValueError('percentiles must be between 0 and 100')
 
         # remove zeros. These are impossible since the pdf should be 0 at t=0. Leaving them in causes an error.
         rc0 = right_censored
@@ -1436,6 +1469,16 @@ class Fit_Weibull_3P:
         self.distribution = Weibull_Distribution(alpha=self.alpha, beta=self.beta, gamma=self.gamma, alpha_SE=self.alpha_SE, beta_SE=self.beta_SE, Cov_alpha_beta=self.Cov_alpha_beta, CI=CI, CI_type=CI_type)
         self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=failures, show_plot=False), empirical_cdf=y)
 
+        if percentiles is not None:
+            point_estimate = self.distribution.quantile(q=percentiles / 100)
+            lower_estimate, upper_estimate = distribution_confidence_intervals.weibull_CI(self=self.distribution, func='CDF', CI_type='time', CI=CI, q=1 - (percentiles / 100))
+            Percentile_Data = {'Percentile': percentiles,
+                               'Lower Estimate': lower_estimate,
+                               'Point Estimate': point_estimate,
+                               'Upper Estimate': upper_estimate}
+            percentiles = pd.DataFrame(Percentile_Data, columns=['Percentile', 'Lower Estimate', 'Point Estimate', 'Upper Estimate'])
+            self.percentiles = percentiles.set_index('Percentile')
+
         if print_results is True:
             pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
             pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
@@ -1446,6 +1489,10 @@ class Fit_Weibull_3P:
             print(str('Results from Fit_Weibull_3P (' + str(CI_rounded) + '% CI):'))
             print(self.results)
             print('Log-Likelihood:', self.loglik, '\n')
+
+            if percentiles is not None:
+                print(str('Table of percentiles (' + str(CI_rounded) + '% CI bounds on time):'))
+                print(self.percentiles)
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Weibull_probability_plot
@@ -1529,6 +1576,7 @@ class Fit_Weibull_Mixture:
     loglik2 - LogLikelihood*-2 (as used in JMP Pro)
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
+    AD - the Anderson Darling (corrected) statistic (as reported by Minitab)
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     '''
 
@@ -1749,6 +1797,7 @@ class Fit_Weibull_CR:
     loglik2 - LogLikelihood*-2 (as used in JMP Pro)
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
+    AD - the Anderson Darling (corrected) statistic (as reported by Minitab)
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     '''
 
@@ -1930,6 +1979,7 @@ class Fit_Expon_1P:
     show_probability_plot - True/False. Defaults to True.
     print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
+    percentiles - percentiles to produce a table of percentiles failed with lower, point, and upper estimates. Default is None which results in no output. True or 'auto' will use default array [1, 5, 10,..., 95, 99]. If an array or list is specified then it will be used instead of the default array.
     kwargs are accepted for the probability plot (eg. linestyle, label, color)
 
     Outputs:
@@ -1943,18 +1993,33 @@ class Fit_Expon_1P:
     loglik2 - LogLikelihood*-2 (as used in JMP Pro)
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
+    AD - the Anderson Darling (corrected) statistic (as reported by Minitab)
     distribution - an Exponential_Distribution object with the parameters of the fitted distribution
     Lambda_SE - the standard error (sqrt(variance)) of the parameter
     Lambda_upper - the upper CI estimate of the parameter
     Lambda_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for the parameter)
+    percentiles - a dataframe of the percentiles with bounds on time. This is only produced if percentiles is 'auto' or a list or array. Since percentiles defaults to None, this output is not normally produced.
+
+    *Note that this is a 1 parameter distribution but Lambda_inv is also provided as some programs (such as minitab and scipy.stats) use this instead of Lambda
     '''
 
-    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, **kwargs):
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, percentiles=None, **kwargs):
         if failures is None or len(failures) < 1:
             raise ValueError('Maximum likelihood estimates could not be calculated for these data. There must be at least one failure to calculate Exponential parameters.')
         if CI <= 0 or CI >= 1:
             raise ValueError('CI must be between 0 and 1. Default is 0.95 for 95% Confidence interval.')
+
+        if type(percentiles) in [str, bool]:
+            if percentiles in ['auto', True, 'default', 'on']:
+                percentiles = np.array(default_percentiles)
+        elif type(percentiles) is not type(None):
+            if type(percentiles) not in [list, np.ndarray]:
+                raise ValueError('percentiles must be a list or array')
+            percentiles = np.asarray(percentiles)
+            if max(percentiles) >= 100 or min(percentiles) <= 0:
+                raise ValueError('percentiles must be between 0 and 100')
+
         # fill with empty list if not specified
         if right_censored is None:
             right_censored = []
@@ -2029,6 +2094,16 @@ class Fit_Expon_1P:
         self.distribution = Exponential_Distribution(Lambda=self.Lambda, Lambda_SE=self.Lambda_SE, CI=CI)  ####
         self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=failures, show_plot=False), empirical_cdf=y)
 
+        if percentiles is not None:
+            point_estimate = self.distribution.quantile(q=percentiles / 100)
+            lower_estimate, upper_estimate = distribution_confidence_intervals.expon_CI(self=self.distribution, func='CDF', CI=CI, q=1 - (percentiles / 100))
+            Percentile_Data = {'Percentile': percentiles,
+                               'Lower Estimate': lower_estimate,
+                               'Point Estimate': point_estimate,
+                               'Upper Estimate': upper_estimate}
+            percentiles = pd.DataFrame(Percentile_Data, columns=['Percentile', 'Lower Estimate', 'Point Estimate', 'Upper Estimate'])
+            self.percentiles = percentiles.set_index('Percentile')
+
         if print_results is True:
             pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
             pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
@@ -2039,6 +2114,10 @@ class Fit_Expon_1P:
             print(str('Results from Fit_Expon_1P (' + str(CI_rounded) + '% CI):'))
             print(self.results)
             print('Log-Likelihood:', self.loglik, '\n')
+
+            if percentiles is not None:
+                print(str('Table of percentiles (' + str(CI_rounded) + '% CI bounds):'))
+                print(self.percentiles)
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Exponential_probability_plot_Weibull_Scale
@@ -2077,6 +2156,7 @@ class Fit_Expon_2P:
     show_probability_plot - True/False. Defaults to True.
     print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
+    percentiles - percentiles to produce a table of percentiles failed with lower, point, and upper estimates. Default is None which results in no output. True or 'auto' will use default array [1, 5, 10,..., 95, 99]. If an array or list is specified then it will be used instead of the default array.
     kwargs are accepted for the probability plot (eg. linestyle, label, color)
 
     Outputs:
@@ -2092,6 +2172,7 @@ class Fit_Expon_2P:
     loglik2 - LogLikelihood*-2 (as used in JMP Pro)
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
+    AD - the Anderson Darling (corrected) statistic (as reported by Minitab)
     distribution - an Exponential_Distribution object with the parameters of the fitted distribution
     Lambda_SE - the standard error (sqrt(variance)) of the parameter
     Lambda_SE_inv - the standard error of the Lambda_inv parameter
@@ -2103,11 +2184,12 @@ class Fit_Expon_2P:
     gamma_upper - the upper CI estimate of the parameter
     gamma_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for the parameter)
+    percentiles - a dataframe of the percentiles with bounds on time. This is only produced if percentiles is 'auto' or a list or array. Since percentiles defaults to None, this output is not normally produced.
 
     *Note that this is a 2 parameter distribution but Lambda_inv is also provided as some programs (such as minitab and scipy.stats) use this instead of Lambda
     '''
 
-    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, **kwargs):
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, percentiles=None, **kwargs):
         # Regarding the confidence intervals of the parameters, the gamma parameter is estimated by optimizing the log-likelihood function but
         # it is assumed as fixed because the variance-covariance matrix of the estimated parameters cannot be determined numerically. By assuming
         # the standard error in gamma is zero, we can use Expon_1P to obtain the confidence intervals for Lambda. This is the same procedure
@@ -2117,6 +2199,17 @@ class Fit_Expon_2P:
             raise ValueError('Maximum likelihood estimates could not be calculated for these data. There must be at least two failure to calculate Exponential parameters.')
         if right_censored is None:
             right_censored = []  # fill with empty lists if not specified
+
+        if type(percentiles) in [str, bool]:
+            if percentiles in ['auto', True, 'default', 'on']:
+                percentiles = np.array(default_percentiles)
+        elif type(percentiles) is not type(None):
+            if type(percentiles) not in [list, np.ndarray]:
+                raise ValueError('percentiles must be a list or array')
+            percentiles = np.asarray(percentiles)
+            if max(percentiles) >= 100 or min(percentiles) <= 0:
+                raise ValueError('percentiles must be between 0 and 100')
+
         if CI <= 0 or CI >= 1:
             raise ValueError('CI must be between 0 and 1. Default is 0.95 for 95% Confidence interval.')
         # adjust inputs to be arrays
@@ -2230,6 +2323,16 @@ class Fit_Expon_2P:
         self.distribution = Exponential_Distribution(Lambda=self.Lambda, gamma=self.gamma, Lambda_SE=self.Lambda_SE, CI=CI)
         self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=failures, show_plot=False), empirical_cdf=y)
 
+        if percentiles is not None:
+            point_estimate = self.distribution.quantile(q=percentiles / 100)
+            lower_estimate, upper_estimate = distribution_confidence_intervals.expon_CI(self=self.distribution, func='CDF', CI=CI, q=1 - (percentiles / 100))
+            Percentile_Data = {'Percentile': percentiles,
+                               'Lower Estimate': lower_estimate,
+                               'Point Estimate': point_estimate,
+                               'Upper Estimate': upper_estimate}
+            percentiles = pd.DataFrame(Percentile_Data, columns=['Percentile', 'Lower Estimate', 'Point Estimate', 'Upper Estimate'])
+            self.percentiles = percentiles.set_index('Percentile')
+
         if print_results is True:
             pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
             pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
@@ -2240,6 +2343,10 @@ class Fit_Expon_2P:
             print(str('Results from Fit_Expon_2P (' + str(CI_rounded) + '% CI):'))
             print(self.results)
             print('Log-Likelihood:', self.loglik, '\n')
+
+            if percentiles is not None:
+                print(str('Table of percentiles (' + str(CI_rounded) + '% CI bounds):'))
+                print(self.percentiles)
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Exponential_probability_plot_Weibull_Scale
@@ -2303,6 +2410,7 @@ class Fit_Normal_2P:
     loglik2 - LogLikelihood*-2 (as used in JMP Pro)
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
+    AD - the Anderson Darling (corrected) statistic (as reported by Minitab)
     distribution - a Normal_Distribution object with the parameters of the fitted distribution
     mu_SE - the standard error (sqrt(variance)) of the parameter
     sigma_SE - the standard error (sqrt(variance)) of the parameter
@@ -2314,13 +2422,24 @@ class Fit_Normal_2P:
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     '''
 
-    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, force_sigma=None, **kwargs):
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, percentiles=None, CI_type='time', force_sigma=None, **kwargs):
         if force_sigma is not None and (failures is None or len(failures) < 1):
             raise ValueError('Maximum likelihood estimates could not be calculated for these data. There must be at least 1 failures to calculate Normal parameters when force_sigma is specified.')
         elif force_sigma is None and (failures is None or len(failures) < 2):
             raise ValueError('Maximum likelihood estimates could not be calculated for these data. There must be at least two failures to calculate Normal parameters.')
         if CI <= 0 or CI >= 1:
             raise ValueError('CI must be between 0 and 1. Default is 0.95 for 95% Confidence interval.')
+
+        if type(percentiles) in [str, bool]:
+            if percentiles in ['auto', True, 'default', 'on']:
+                percentiles = np.array(default_percentiles)
+        elif type(percentiles) is not type(None):
+            if type(percentiles) not in [list, np.ndarray]:
+                raise ValueError('percentiles must be a list or array')
+            percentiles = np.asarray(percentiles)
+            if max(percentiles) >= 100 or min(percentiles) <= 0:
+                raise ValueError('percentiles must be between 0 and 100')
+
         # fill with empty lists if not specified
         if right_censored is None:
             right_censored = []
@@ -2405,8 +2524,18 @@ class Fit_Normal_2P:
                 'Upper CI': [self.mu_upper, self.sigma_upper]}
         df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
         self.results = df.set_index('Parameter')
-        self.distribution = Normal_Distribution(mu=self.mu, sigma=self.sigma)
+        self.distribution = Normal_Distribution(mu=self.mu, sigma=self.sigma, mu_SE=self.mu_SE, sigma_SE=self.sigma_SE, Cov_mu_sigma=self.Cov_mu_sigma, CI=CI, CI_type=CI_type)
         self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=failures, show_plot=False), empirical_cdf=y)
+
+        if percentiles is not None:
+            point_estimate = self.distribution.quantile(q=percentiles / 100)
+            lower_estimate, upper_estimate = distribution_confidence_intervals.normal_CI(self=self.distribution, func='CDF', CI_type='time', CI=CI, q=1 - (percentiles / 100))
+            Percentile_Data = {'Percentile': percentiles,
+                               'Lower Estimate': lower_estimate,
+                               'Point Estimate': point_estimate,
+                               'Upper Estimate': upper_estimate}
+            percentiles = pd.DataFrame(Percentile_Data, columns=['Percentile', 'Lower Estimate', 'Point Estimate', 'Upper Estimate'])
+            self.percentiles = percentiles.set_index('Percentile')
 
         if print_results is True:
             pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
@@ -2419,13 +2548,17 @@ class Fit_Normal_2P:
             print(self.results)
             print('Log-Likelihood:', self.loglik, '\n')
 
+            if percentiles is not None:
+                print(str('Table of percentiles (' + str(CI_rounded) + '% CI bounds on time):'))
+                print(self.percentiles)
+
         if show_probability_plot is True:
             from reliability.Probability_plotting import Normal_probability_plot
             if len(right_censored) == 0:
                 rc = None
             else:
                 rc = right_censored
-            Normal_probability_plot(failures=failures, right_censored=rc, __fitted_dist_params=self, **kwargs)
+            Normal_probability_plot(failures=failures, right_censored=rc, __fitted_dist_params=self, CI=CI, CI_type=CI_type, **kwargs)
 
     @staticmethod
     def logf(t, mu, sigma):  # Log PDF (Normal)
@@ -2449,6 +2582,178 @@ class Fit_Normal_2P:
         LL_rc = 0
         LL_f += Fit_Normal_2P.logf(T_f, params[0], force_sigma).sum()  # failure times
         LL_rc += Fit_Normal_2P.logR(T_rc, params[0], force_sigma).sum()  # right censored times
+        return -(LL_f + LL_rc)
+
+
+class Fit_Gumbel_2P:
+    '''
+    Fit_Gumbel_2P
+    Fits a 2-parameter Gumbel distribution (mu,sigma) to the data provided.
+    Note that it will return a fit that may be partially in the negative domain (x<0).
+    The Gumbel Distribution is similar to the Normal Distribution, with mu controlling the peak of the distribution between -inf < mu < inf
+
+    Inputs:
+    failures - an array or list of failure data
+    right_censored - an array or list of right censored data
+    show_probability_plot - True/False. Defaults to True.
+    print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
+    CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
+    kwargs are accepted for the probability plot (eg. linestyle, label, color)
+
+    Outputs:
+    success - Whether the solution was found by autograd (True/False)
+        if success is False a warning will be printed indicating that scipy's fit was used as autograd failed. This fit will not be accurate if
+        there is censored data as scipy does not have the ability to fit censored data. Failure of autograd to find the solution should be rare and
+        if it occurs, it is likely that the distribution is an extremely bad fit for the data. Try scaling your data, removing extreme values, or using
+        another distribution.
+    mu - the fitted Gumbel_2P mu parameter
+    sigma - the fitted Gumbel_2P sigma parameter
+    loglik - Log Likelihood (as used in Minitab and Reliasoft)
+    loglik2 - LogLikelihood*-2 (as used in JMP Pro)
+    AICc - Akaike Information Criterion
+    BIC - Bayesian Information Criterion
+    AD - the Anderson Darling (corrected) statistic (as reported by Minitab)
+    distribution - a Gumbel_Distribution object with the parameters of the fitted distribution
+    mu_SE - the standard error (sqrt(variance)) of the parameter
+    sigma_SE - the standard error (sqrt(variance)) of the parameter
+    Cov_mu_sigma - the covariance between the parameters
+    mu_upper - the upper CI estimate of the parameter
+    mu_lower - the lower CI estimate of the parameter
+    sigma_upper - the upper CI estimate of the parameter
+    sigma_lower - the lower CI estimate of the parameter
+    results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
+    '''
+
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, percentiles=None, CI_type='time', **kwargs):
+        if failures is None or len(failures) < 2:
+            raise ValueError('Maximum likelihood estimates could not be calculated for these data. There must be at least two failures to calculate Gumbel parameters.')
+        if CI <= 0 or CI >= 1:
+            raise ValueError('CI must be between 0 and 1. Default is 0.95 for 95% Confidence interval.')
+
+        if type(percentiles) in [str, bool]:
+            if percentiles in ['auto', True, 'default', 'on']:
+                percentiles = np.array(default_percentiles)
+        elif type(percentiles) is not type(None):
+            if type(percentiles) not in [list, np.ndarray]:
+                raise ValueError('percentiles must be a list or array')
+            percentiles = np.asarray(percentiles)
+            if max(percentiles) >= 100 or min(percentiles) <= 0:
+                raise ValueError('percentiles must be between 0 and 100')
+
+        # fill with empty lists if not specified
+        if right_censored is None:
+            right_censored = []
+
+        # adjust inputs to be arrays
+        if type(failures) == list:
+            failures = np.array(failures)
+        if type(failures) != np.ndarray:
+            raise TypeError('failures must be a list or array of failure data')
+        if type(right_censored) == list:
+            right_censored = np.array(right_censored)
+        if type(right_censored) != np.ndarray:
+            raise TypeError('right_censored must be a list or array of right censored failure data')
+
+        all_data = np.hstack([failures, right_censored])
+        x, y = plotting_positions(failures=failures, right_censored=right_censored)
+        # solve it
+        sp = ss.gumbel_l.fit(all_data, optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
+        warnings.filterwarnings('ignore')  # necessary to supress the warning about the jacobian when using the nelder-mead optimizer
+        guess = [sp[0], sp[1]]
+        k = len(guess)
+        result = minimize(value_and_grad(Fit_Gumbel_2P.LL), guess, args=(failures, right_censored), jac=True, method='nelder-mead', tol=1e-6)
+
+        if result.success is True:
+            params = result.x
+            self.success = True
+            self.mu = params[0]
+            self.sigma = params[1]
+        else:
+            self.success = False
+            print('WARNING: Fitting using Autograd FAILED for Gumbel_2P. The fit from Scipy was used instead so results may not be accurate.')
+            self.mu = sp[0]
+            self.sigma = sp[1]
+
+        params = [self.mu, self.sigma]
+        n = len(all_data)
+        LL2 = 2 * Fit_Gumbel_2P.LL(params, failures, right_censored)
+        self.loglik2 = LL2
+        self.loglik = LL2 * -0.5
+        if n - k - 1 > 0:
+            self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
+        else:
+            self.AICc = 'Insufficient data'
+        self.BIC = np.log(n) * k + LL2
+
+        # confidence interval estimates of parameters
+        Z = -ss.norm.ppf((1 - CI) / 2)
+        hessian_matrix = hessian(Fit_Gumbel_2P.LL)(np.array(tuple(params)), np.array(tuple(failures)), np.array(tuple(right_censored)))
+        covariance_matrix = np.linalg.inv(hessian_matrix)
+        self.mu_SE = abs(covariance_matrix[0][0]) ** 0.5
+        self.sigma_SE = abs(covariance_matrix[1][1]) ** 0.5
+        self.Cov_mu_sigma = abs(covariance_matrix[0][1])
+        self.mu_upper = self.mu + (Z * self.mu_SE)  # these are unique to gumbel, normal and lognormal mu params
+        self.mu_lower = self.mu + (-Z * self.mu_SE)
+        self.sigma_upper = self.sigma * (np.exp(Z * (self.sigma_SE / self.sigma)))
+        self.sigma_lower = self.sigma * (np.exp(-Z * (self.sigma_SE / self.sigma)))
+
+        Data = {'Parameter': ['Mu', 'Sigma'],
+                'Point Estimate': [self.mu, self.sigma],
+                'Standard Error': [self.mu_SE, self.sigma_SE],
+                'Lower CI': [self.mu_lower, self.sigma_lower],
+                'Upper CI': [self.mu_upper, self.sigma_upper]}
+        df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
+        self.results = df.set_index('Parameter')
+        self.distribution = Gumbel_Distribution(mu=self.mu, sigma=self.sigma, mu_SE=self.mu_SE, sigma_SE=self.sigma_SE, Cov_mu_sigma=self.Cov_mu_sigma, CI=CI, CI_type=CI_type)
+        self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=failures, show_plot=False), empirical_cdf=y)
+
+        if percentiles is not None:
+            point_estimate = self.distribution.quantile(q=percentiles / 100)
+            lower_estimate, upper_estimate = distribution_confidence_intervals.gumbel_CI(self=self.distribution, func='CDF', CI_type='time', CI=CI, q=1 - (percentiles / 100))
+            Percentile_Data = {'Percentile': percentiles,
+                               'Lower Estimate': lower_estimate,
+                               'Point Estimate': point_estimate,
+                               'Upper Estimate': upper_estimate}
+            percentiles = pd.DataFrame(Percentile_Data, columns=['Percentile', 'Lower Estimate', 'Point Estimate', 'Upper Estimate'])
+            self.percentiles = percentiles.set_index('Percentile')
+
+        if print_results is True:
+            pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
+            pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
+            if CI * 100 % 1 == 0:
+                CI_rounded = int(CI * 100)
+            else:
+                CI_rounded = CI * 100
+            print(str('Results from Fit_Gumbel_2P (' + str(CI_rounded) + '% CI):'))
+            print(self.results)
+            print('Log-Likelihood:', self.loglik, '\n')
+
+            if percentiles is not None:
+                print(str('Table of percentiles (' + str(CI_rounded) + '% CI bounds on time):'))
+                print(self.percentiles)
+
+        if show_probability_plot is True:
+            from reliability.Probability_plotting import Gumbel_probability_plot
+            if len(right_censored) == 0:
+                rc = None
+            else:
+                rc = right_censored
+            Gumbel_probability_plot(failures=failures, right_censored=rc, __fitted_dist_params=self, **kwargs)
+
+    @staticmethod
+    def logf(t, mu, sigma):  # Log PDF (Gumbel)
+        return - anp.log(sigma) + (t - mu) / sigma - anp.exp((t - mu) / sigma)
+
+    @staticmethod
+    def logR(t, mu, sigma):  # Log SF (Gumbel)
+        return -anp.exp((t - mu) / sigma)
+
+    @staticmethod
+    def LL(params, T_f, T_rc):  # log likelihood function (2 parameter Gumbel)
+        LL_f = 0
+        LL_rc = 0
+        LL_f += Fit_Gumbel_2P.logf(T_f, params[0], params[1]).sum()  # failure times
+        LL_rc += Fit_Gumbel_2P.logR(T_rc, params[0], params[1]).sum()  # right censored times
         return -(LL_f + LL_rc)
 
 
@@ -2478,6 +2783,7 @@ class Fit_Lognormal_2P:
     loglik2 - LogLikelihood*-2 (as used in JMP Pro)
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
+    AD - the Anderson Darling (corrected) statistic (as reported by Minitab)
     distribution - a Lognormal_Distribution object with the parameters of the fitted distribution
     mu_SE - the standard error (sqrt(variance)) of the parameter
     sigma_SE - the standard error (sqrt(variance)) of the parameter
@@ -2489,13 +2795,24 @@ class Fit_Lognormal_2P:
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     '''
 
-    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, force_sigma=None, **kwargs):
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, percentiles=None, CI_type='time', force_sigma=None, **kwargs):
         if force_sigma is not None and (failures is None or len(failures) < 1):
             raise ValueError('Maximum likelihood estimates could not be calculated for these data. There must be at least 1 failures to calculate Lognormal parameters when force_sigma is specified.')
         elif force_sigma is None and (failures is None or len(failures) < 2):
             raise ValueError('Maximum likelihood estimates could not be calculated for these data. There must be at least two failures to calculate Lognormal parameters.')
         if CI <= 0 or CI >= 1:
             raise ValueError('CI must be between 0 and 1. Default is 0.95 for 95% Confidence interval.')
+
+        if type(percentiles) in [str, bool]:
+            if percentiles in ['auto', True, 'default', 'on']:
+                percentiles = np.array(default_percentiles)
+        elif type(percentiles) is not type(None):
+            if type(percentiles) not in [list, np.ndarray]:
+                raise ValueError('percentiles must be a list or array')
+            percentiles = np.asarray(percentiles)
+            if max(percentiles) >= 100 or min(percentiles) <= 0:
+                raise ValueError('percentiles must be between 0 and 100')
+
         # fill with empty lists if not specified
         if right_censored is None:
             right_censored = []
@@ -2595,8 +2912,18 @@ class Fit_Lognormal_2P:
                 'Upper CI': [self.mu_upper, self.sigma_upper]}
         df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
         self.results = df.set_index('Parameter')
-        self.distribution = Lognormal_Distribution(mu=self.mu, sigma=self.sigma)
+        self.distribution = Lognormal_Distribution(mu=self.mu, sigma=self.sigma, mu_SE=self.mu_SE, sigma_SE=self.sigma_SE, Cov_mu_sigma=self.Cov_mu_sigma, CI=CI, CI_type=CI_type)
         self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=failures, show_plot=False), empirical_cdf=y)
+
+        if percentiles is not None:
+            point_estimate = self.distribution.quantile(q=percentiles / 100)
+            lower_estimate, upper_estimate = distribution_confidence_intervals.lognormal_CI(self=self.distribution, func='CDF', CI_type='time', CI=CI, q=1 - (percentiles / 100))
+            Percentile_Data = {'Percentile': percentiles,
+                               'Lower Estimate': lower_estimate,
+                               'Point Estimate': point_estimate,
+                               'Upper Estimate': upper_estimate}
+            percentiles = pd.DataFrame(Percentile_Data, columns=['Percentile', 'Lower Estimate', 'Point Estimate', 'Upper Estimate'])
+            self.percentiles = percentiles.set_index('Percentile')
 
         if print_results is True:
             pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
@@ -2609,13 +2936,17 @@ class Fit_Lognormal_2P:
             print(self.results)
             print('Log-Likelihood:', self.loglik, '\n')
 
+            if percentiles is not None:
+                print(str('Table of percentiles (' + str(CI_rounded) + '% CI bounds on time):'))
+                print(self.percentiles)
+
         if show_probability_plot is True:
             from reliability.Probability_plotting import Lognormal_probability_plot
             if len(right_censored) == 0:
                 rc = None
             else:
                 rc = right_censored
-            Lognormal_probability_plot(failures=failures, right_censored=rc, __fitted_dist_params=self, **kwargs)
+            Lognormal_probability_plot(failures=failures, right_censored=rc, __fitted_dist_params=self, CI=CI, CI_type=CI_type, **kwargs)
 
     @staticmethod
     def logf(t, mu, sigma):  # Log PDF (Lognormal)
@@ -2669,6 +3000,7 @@ class Fit_Lognormal_3P:
     loglik2 - LogLikelihood*-2 (as used in JMP Pro)
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
+    AD - the Anderson Darling (corrected) statistic (as reported by Minitab)
     distribution - a Lognormal_Distribution object with the parameters of the fitted distribution
     mu_SE - the standard error (sqrt(variance)) of the parameter
     sigma_SE - the standard error (sqrt(variance)) of the parameter
@@ -2682,9 +3014,20 @@ class Fit_Lognormal_3P:
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     '''
 
-    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, **kwargs):
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, percentiles=None, CI_type='time', **kwargs):
         if failures is None or len(failures) < 3:
             raise ValueError('Maximum likelihood estimates could not be calculated for these data. There must be at least three failures to calculate Lognormal parameters.')
+
+        if type(percentiles) in [str, bool]:
+            if percentiles in ['auto', True, 'default', 'on']:
+                percentiles = np.array(default_percentiles)
+        elif type(percentiles) is not type(None):
+            if type(percentiles) not in [list, np.ndarray]:
+                raise ValueError('percentiles must be a list or array')
+            percentiles = np.asarray(percentiles)
+            if max(percentiles) >= 100 or min(percentiles) <= 0:
+                raise ValueError('percentiles must be between 0 and 100')
+
         if right_censored is None:
             right_censored = []  # fill with empty list if not specified
         if CI <= 0 or CI >= 1:
@@ -2823,8 +3166,18 @@ class Fit_Lognormal_3P:
                 'Upper CI': [self.mu_upper, self.sigma_upper, self.gamma_upper]}
         df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
         self.results = df.set_index('Parameter')
-        self.distribution = Lognormal_Distribution(mu=self.mu, sigma=self.sigma, gamma=self.gamma)
+        self.distribution = Lognormal_Distribution(mu=self.mu, sigma=self.sigma, gamma=self.gamma, mu_SE=self.mu_SE, sigma_SE=self.sigma_SE, Cov_mu_sigma=self.Cov_mu_sigma, CI=CI, CI_type=CI_type)
         self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=failures, show_plot=False), empirical_cdf=y)
+
+        if percentiles is not None:
+            point_estimate = self.distribution.quantile(q=percentiles / 100)
+            lower_estimate, upper_estimate = distribution_confidence_intervals.lognormal_CI(self=self.distribution, func='CDF', CI_type='time', CI=CI, q=1 - (percentiles / 100))
+            Percentile_Data = {'Percentile': percentiles,
+                               'Lower Estimate': lower_estimate,
+                               'Point Estimate': point_estimate,
+                               'Upper Estimate': upper_estimate}
+            percentiles = pd.DataFrame(Percentile_Data, columns=['Percentile', 'Lower Estimate', 'Point Estimate', 'Upper Estimate'])
+            self.percentiles = percentiles.set_index('Percentile')
 
         if print_results is True:
             pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
@@ -2837,13 +3190,17 @@ class Fit_Lognormal_3P:
             print(self.results)
             print('Log-Likelihood:', self.loglik, '\n')
 
+            if percentiles is not None:
+                print(str('Table of percentiles (' + str(CI_rounded) + '% CI bounds on time):'))
+                print(self.percentiles)
+
         if show_probability_plot is True:
             from reliability.Probability_plotting import Lognormal_probability_plot
             if len(right_censored) == 0:
                 rc = None
             else:
                 rc = right_censored
-            Lognormal_probability_plot(failures=failures, right_censored=rc, __fitted_dist_params=self, **kwargs)
+            Lognormal_probability_plot(failures=failures, right_censored=rc, __fitted_dist_params=self, CI=CI, CI_type=CI_type, **kwargs)
 
     @staticmethod
     def gamma_optimizer(gamma_guess, failures, right_censored):
@@ -2909,6 +3266,7 @@ class Fit_Gamma_2P:
     loglik2 - LogLikelihood*-2 (as used in JMP Pro)
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
+    AD - the Anderson Darling (corrected) statistic (as reported by Minitab)
     distribution - a Gamma_Distribution object with the parameters of the fitted distribution
     alpha_SE - the standard error (sqrt(variance)) of the parameter
     beta_SE - the standard error (sqrt(variance)) of the parameter
@@ -3085,6 +3443,7 @@ class Fit_Gamma_3P:
     loglik2 - LogLikelihood*-2 (as used in JMP Pro)
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
+    AD - the Anderson Darling (corrected) statistic (as reported by Minitab)
     distribution - a Gamma_Distribution object with the parameters of the fitted distribution
     alpha_SE - the standard error (sqrt(variance)) of the parameter
     beta_SE - the standard error (sqrt(variance)) of the parameter
@@ -3287,6 +3646,7 @@ class Fit_Beta_2P:
     loglik2 - LogLikelihood*-2 (as used in JMP Pro)
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
+    AD - the Anderson Darling (corrected) statistic (as reported by Minitab)
     distribution - a Beta_Distribution object with the parameters of the fitted distribution
     alpha_SE - the standard error (sqrt(variance)) of the parameter
     beta_SE - the standard error (sqrt(variance)) of the parameter
@@ -3437,6 +3797,7 @@ class Fit_Loglogistic_2P:
     loglik2 - Log Likelihood * -2 (as used in JMP Pro)
     AICc - Akaike Information Criterion corrected
     BIC - Bayesian Information Criterion
+    AD - the Anderson Darling (corrected) statistic (as reported by Minitab)
     distribution - a Loglogistic_Distribution object with the parameters of the fitted distribution
     alpha_SE - the standard error (sqrt(variance)) of the parameter
     beta_SE - the standard error (sqrt(variance)) of the parameter
@@ -3448,7 +3809,7 @@ class Fit_Loglogistic_2P:
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     '''
 
-    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, CI_type='time', initial_guess_method='least squares', optimizer='L-BFGS-B', **kwargs):
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, percentiles=None, CI_type='time', initial_guess_method='least squares', optimizer='L-BFGS-B', **kwargs):
         if failures is None or len(failures) < 2:
             raise ValueError('Maximum likelihood estimates could not be calculated for these data. There must be at least two failures to calculate Loglogistic parameters.')
 
@@ -3464,6 +3825,16 @@ class Fit_Loglogistic_2P:
 
         if optimizer not in ['L-BFGS-B', 'TNC']:
             raise ValueError('optimizer must be either "L-BFGS-B" OR "TNC". Default is "L-BFGS-B".')
+
+        if type(percentiles) in [str, bool]:
+            if percentiles in ['auto', True, 'default', 'on']:
+                percentiles = np.array(default_percentiles)
+        elif type(percentiles) is not type(None):
+            if type(percentiles) not in [list, np.ndarray]:
+                raise ValueError('percentiles must be a list or array')
+            percentiles = np.asarray(percentiles)
+            if max(percentiles) >= 100 or min(percentiles) <= 0:
+                raise ValueError('percentiles must be between 0 and 100')
 
         # fill with empty lists if not specified
         if right_censored is None:
@@ -3579,6 +3950,16 @@ class Fit_Loglogistic_2P:
         self.distribution = Loglogistic_Distribution(alpha=self.alpha, beta=self.beta, alpha_SE=self.alpha_SE, beta_SE=self.beta_SE, Cov_alpha_beta=self.Cov_alpha_beta, CI=CI, CI_type=CI_type)
         self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=failures, show_plot=False), empirical_cdf=y)
 
+        if percentiles is not None:
+            point_estimate = self.distribution.quantile(q=percentiles / 100)
+            lower_estimate, upper_estimate = distribution_confidence_intervals.loglogistic_CI(self=self.distribution, func='CDF', CI_type='time', CI=CI, q=1 - (percentiles / 100))
+            Percentile_Data = {'Percentile': percentiles,
+                               'Lower Estimate': lower_estimate,
+                               'Point Estimate': point_estimate,
+                               'Upper Estimate': upper_estimate}
+            percentiles = pd.DataFrame(Percentile_Data, columns=['Percentile', 'Lower Estimate', 'Point Estimate', 'Upper Estimate'])
+            self.percentiles = percentiles.set_index('Percentile')
+
         if print_results is True:
             pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
             pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
@@ -3589,6 +3970,10 @@ class Fit_Loglogistic_2P:
             print(str('Results from Fit_Loglogistic_2P (' + str(CI_rounded) + '% CI):'))
             print(self.results)
             print('Log-Likelihood:', self.loglik, '\n')
+
+            if percentiles is not None:
+                print(str('Table of percentiles (' + str(CI_rounded) + '% CI bounds on time):'))
+                print(self.percentiles)
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Loglogistic_probability_plot
@@ -3645,6 +4030,7 @@ class Fit_Loglogistic_3P:
     loglik2 - LogLikelihood*-2 (as used in JMP Pro)
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
+    AD - the Anderson Darling (corrected) statistic (as reported by Minitab)
     distribution - a Loglogistic_Distribution object with the parameters of the fitted distribution
     alpha_SE - the standard error (sqrt(variance)) of the parameter
     beta_SE - the standard error (sqrt(variance)) of the parameter

@@ -25,6 +25,8 @@ import scipy.stats as ss
 import matplotlib.pyplot as plt
 from matplotlib.collections import PolyCollection, LineCollection
 from matplotlib import ticker
+from autograd import jacobian as jac
+import autograd.numpy as anp
 
 
 def round_to_decimals(number, decimals=5, integer_floats_to_ints=True):
@@ -78,7 +80,7 @@ def round_to_decimals(number, decimals=5, integer_floats_to_ints=True):
 def transform_spaced(transform, y_lower=1e-8, y_upper=1 - 1e-8, num=1000, alpha=None, beta=None):
     '''
     Creates linearly spaced array based on a specified transform
-    This is similar to np.linspace or np.logspace but is designed for weibull space, exponential space, normal space, gamma space, and beta space.
+    This is similar to np.linspace or np.logspace but is designed for weibull space, exponential space, normal space, gamma space, loglogistic space, and beta space.
     It is useful if the points generated are going to be plotted on axes that are scaled using the same transform and need to look equally spaced in the transform space
     Note that lognormal is the same as normal, since the x-axis is what is transformed, not the y-axis.
 
@@ -100,9 +102,15 @@ def transform_spaced(transform, y_lower=1e-8, y_upper=1 - 1e-8, num=1000, alpha=
     if transform in ['normal', 'Normal', 'norm', 'Norm']:
         fwd = lambda x: ss.norm.ppf(x)
         inv = lambda x: ss.norm.cdf(x)
+    elif transform in ['gumbel', 'Gumbel', 'gbl', 'gum', 'Gum', 'Gbl']:
+        fwd = lambda x: ss.gumbel_l.ppf(x)
+        inv = lambda x: ss.gumbel_l.cdf(x)
     elif transform in ['weibull', 'Weibull', 'weib', 'Weib', 'wbl']:
         fwd = lambda x: np.log(-np.log(1 - x))
         inv = lambda x: 1 - np.exp(-np.exp(x))
+    elif transform in ['loglogistic', 'Loglogistic', 'LL', 'll', 'loglog']:
+        fwd = lambda x: np.log(1 / x - 1)
+        inv = lambda x: 1 / (np.exp(x) + 1)
     elif transform in ['exponential', 'Exponential', 'expon', 'Expon', 'exp', 'Exp']:
         fwd = lambda x: ss.expon.ppf(x)
         inv = lambda x: ss.expon.cdf(x)
@@ -119,9 +127,9 @@ def transform_spaced(transform, y_lower=1e-8, y_upper=1 - 1e-8, num=1000, alpha=
             fwd = lambda x: ss.beta.ppf(x, a=alpha, b=beta)
             inv = lambda x: ss.beta.cdf(x, a=alpha, b=beta)
     elif transform in ['lognormal', 'Lognormal', 'LN', 'ln', 'lognorm', 'Lognorm']:  # the transform is the same, it's just the xscale that is ln for lognormal
-        return ValueError('the Lognormal transform is the same as the normal transform. Specify normal and try again')
+        raise ValueError('the Lognormal transform is the same as the normal transform. Specify normal and try again')
     else:
-        raise ValueError('transform must be either exponential, normal, weibull, gamma, or beta')
+        raise ValueError('transform must be either exponential, normal, weibull, loglogistic, gamma, or beta')
 
     # find the value of the bounds in tranform space
     upper = fwd(y_upper)
@@ -171,6 +179,14 @@ class axes_transforms:
         return ss.norm.cdf(R)
 
     @staticmethod
+    def gumbel_forward(F):
+        return ss.gumbel_l.ppf(F)
+
+    @staticmethod
+    def gumbel_inverse(R):
+        return ss.gumbel_l.cdf(R)
+
+    @staticmethod
     def gamma_forward(F, beta):
         return ss.gamma.ppf(F, a=beta)
 
@@ -185,40 +201,6 @@ class axes_transforms:
     @staticmethod
     def beta_inverse(R, alpha, beta):
         return ss.beta.cdf(R, a=alpha, b=beta)
-
-
-def fill_no_autoscale(xlower, xupper, ylower, yupper, **kwargs):
-    '''
-    creates a filled region (polygon) without adding it to the global list of autoscale objects.
-    Use this when you want to plot something but not have it considered when autoscale sets the range
-    '''
-    # this trims the x and y arrays based on the y arrays containing nan and inf. Required by CHF due to -np.log(SF)=inf when SF=0
-    if any(np.logical_not(np.isfinite(ylower))):
-        idx_ylower = np.where(np.isfinite(ylower) == False)[0][0]
-        ylower = ylower[0:idx_ylower]
-        xlower = xlower[0:idx_ylower]
-    if any(np.logical_not(np.isfinite(yupper))):
-        idx_yupper = np.where(np.isfinite(yupper) == False)[0][0]
-        yupper = yupper[0:idx_yupper]
-        xupper = xupper[0:idx_yupper]
-    polygon = np.column_stack([np.hstack([xlower, xupper[::-1]]), np.hstack([ylower, yupper[::-1]])])  # this is equivalent to fill as it makes a polygon
-    col = PolyCollection([polygon], **kwargs)
-    plt.gca().add_collection(col, autolim=False)
-
-
-def line_no_autoscale(x, y, **kwargs):
-    '''
-    creates a line without adding it to the global list of autoscale objects.
-    Use this when you want to plot something but not have it considered when autoscale sets the range
-    '''
-    # this trims the x and y arrays based on the y arrays containing nan and inf. Required by CHF due to -np.log(SF)=inf when SF=0
-    if any(np.logical_not(np.isfinite(y))):
-        idx_y = np.where(np.isfinite(y) == False)[0][0]
-        y = y[0:idx_y]
-        x = x[0:idx_y]
-    line = np.column_stack([x, y])  # this is equivalent to plot as it makes a line
-    col = LineCollection([line], **kwargs)
-    plt.gca().add_collection(col, autolim=False)
 
 
 def get_axes_limits():
@@ -532,7 +514,7 @@ def probability_plot_xylims(x, y, dist, spacing=0.1, gamma_beta=None, beta_alpha
         dx_log = max_x_log - min_x_log
         xlim_lower = 10 ** (min_x_log - dx_log * spacing)
         xlim_upper = 10 ** (max_x_log + dx_log * spacing)
-    elif dist in ['normal', 'gamma', 'exponential', 'beta']:
+    elif dist in ['normal', 'gamma', 'exponential', 'beta', 'gumbel']:
         min_x = min(x)
         max_x = max(x)
         dx = max_x - min_x
@@ -540,7 +522,7 @@ def probability_plot_xylims(x, y, dist, spacing=0.1, gamma_beta=None, beta_alpha
         xlim_upper = max_x + dx * spacing
     else:
         raise ValueError('dist is unrecognised')
-    if xlim_lower < 0 and dist != 'normal':
+    if xlim_lower < 0 and dist not in ['normal', 'gumbel']:
         xlim_lower = 0
     plt.xlim(xlim_lower, xlim_upper)
 
@@ -569,6 +551,12 @@ def probability_plot_xylims(x, y, dist, spacing=0.1, gamma_beta=None, beta_alpha
         dy_tfm = max_y_tfm - min_y_tfm
         ylim_lower = axes_transforms.normal_inverse(min_y_tfm - dy_tfm * spacing)
         ylim_upper = axes_transforms.normal_inverse(max_y_tfm + dy_tfm * spacing)
+    elif dist == 'gumbel':
+        min_y_tfm = axes_transforms.gumbel_forward(min(y))
+        max_y_tfm = axes_transforms.gumbel_forward(max(y))
+        dy_tfm = max_y_tfm - min_y_tfm
+        ylim_lower = axes_transforms.gumbel_inverse(min_y_tfm - dy_tfm * spacing)
+        ylim_upper = axes_transforms.gumbel_inverse(max_y_tfm + dy_tfm * spacing)
     elif dist == 'beta':
         min_y_tfm = axes_transforms.beta_forward(min(y), beta_alpha, beta_beta)
         max_y_tfm = axes_transforms.beta_forward(max(y), beta_alpha, beta_beta)
@@ -739,3 +727,688 @@ def anderson_darling(fitted_cdf, empirical_cdf):
     n = len(fitted_cdf)
     AD = n * ((A + B + C).sum())
     return AD
+
+
+def fill_no_autoscale(xlower, xupper, ylower, yupper, **kwargs):
+    '''
+    creates a filled region (polygon) without adding it to the global list of autoscale objects.
+    Use this when you want to plot something but not have it considered when autoscale sets the range
+    '''
+    # this trims the x and y arrays based on the y arrays containing nan and inf. Required by CHF due to -np.log(SF)=inf when SF=0
+    if any(np.logical_not(np.isfinite(ylower))):
+        idx_ylower = np.where(np.isfinite(ylower) == False)[0][0]
+        ylower = ylower[0:idx_ylower]
+        xlower = xlower[0:idx_ylower]
+    if any(np.logical_not(np.isfinite(yupper))):
+        idx_yupper = np.where(np.isfinite(yupper) == False)[0][0]
+        yupper = yupper[0:idx_yupper]
+        xupper = xupper[0:idx_yupper]
+    if any(np.logical_not(np.isfinite(xlower))):
+        idx_xlower = np.where(np.isfinite(xlower) == False)[0][0]
+        ylower = ylower[0:idx_xlower]
+        xlower = xlower[0:idx_xlower]
+    if any(np.logical_not(np.isfinite(xupper))):
+        idx_xupper = np.where(np.isfinite(xupper) == False)[0][0]
+        yupper = yupper[0:idx_xupper]
+        xupper = xupper[0:idx_xupper]
+    polygon = np.column_stack([np.hstack([xlower, xupper[::-1]]), np.hstack([ylower, yupper[::-1]])])  # this is equivalent to fill as it makes a polygon
+    col = PolyCollection([polygon], **kwargs)
+    plt.gca().add_collection(col, autolim=False)
+
+
+def line_no_autoscale(x, y, **kwargs):
+    '''
+    creates a line without adding it to the global list of autoscale objects.
+    Use this when you want to plot something but not have it considered when autoscale sets the range
+    '''
+    # this trims the x and y arrays based on the y arrays containing nan and inf. Required by CHF due to -np.log(SF)=inf when SF=0
+    if any(np.logical_not(np.isfinite(y))):
+        idx_y = np.where(np.isfinite(y) == False)[0][0]
+        y = y[0:idx_y]
+        x = x[0:idx_y]
+    line = np.column_stack([x, y])  # this is equivalent to plot as it makes a line
+    col = LineCollection([line], **kwargs)
+    plt.gca().add_collection(col, autolim=False)
+
+
+class distribution_confidence_intervals:
+    '''
+    Contains functions that provide all the confidence intervals for CDF, SF, CHF for each distribution for which it is implemented
+    '''
+
+    @staticmethod
+    def CI_kwarg_handler(self, kwargs):
+        '''
+        Processes specific arguments from kwargs and self to ensure the CI_type and plot_CI are extracted appropriately and passed to the confidence interval methods, without being passed to the plot method.
+        This function is used within each CDF, SF, CHF before the plt.plot method is used.
+        '''
+        kwargs_list = kwargs.keys()
+        if 'plot_CI' in kwargs_list:
+            plot_CI = kwargs.pop('plot_CI')
+        elif 'show_CI' in kwargs_list:
+            plot_CI = kwargs.pop('show_CI')
+        else:
+            plot_CI = True  # default
+        if plot_CI not in [True, False]:
+            print('WARNING: unexpected value in plot_CI. To show/hide the CI you can specify either show_CI=True/False or plot_CI=True/False')
+            plot_CI = True
+
+        if 'CI' in kwargs_list:
+            CI = kwargs.pop('CI')  # this allows CI in the CDF,SF,CHF to override CI from above (in the fitter)
+        elif self.Z is not None:
+            CI = 1 - ss.norm.cdf(-self.Z) * 2  # converts Z to CI
+        else:
+            CI = 0.95
+
+        if self.name == 'Exponential':
+            if 'CI_type' in kwargs_list:
+                print('WARNING: CI_type is not required for the Exponential distribution since the confidence intervals of time and reliability are identical')
+                CI_type = kwargs.pop('CI_type')  # need to remove it so it won't be passed to plt.plot
+            return plot_CI, CI
+        else:
+            if 'CI_type' in kwargs_list:
+                CI_type = kwargs.pop('CI_type')  # this allows CI_type in the CDF,SF,CHF to override CI_type from above (either the default of time if unspecified or whatever came from the probability plot)
+            elif self.CI_type is not None:
+                CI_type = self.CI_type
+            else:
+                CI_type = 'time'
+            return CI_type, plot_CI, CI
+
+    @staticmethod
+    def expon_CI(self, func, plot_CI=None, CI=None, text_title='', color=None, q=None):
+        '''
+        Generates the confidence intervals for CDF, SF, and CHF
+        This is a utility function intended only for use by the Exponential CDF, SF, and CHF functions.
+        '''
+        points = 200
+
+        if func not in ['CDF', 'SF', 'CHF']:
+            raise ValueError('func must be either CDF, SF, or CHF')
+        if type(q) not in [list, np.ndarray, type(None)]:
+            raise ValueError('q must be a list or array of quantiles. Default is None')
+        if q is not None:
+            q = np.asarray(q)
+
+        # this section plots the confidence interval
+        if self.Lambda_SE is not None and self.Z is not None and (plot_CI is True or q is not None):
+
+            CI_100 = round(CI * 100, 4)  # formats the confidence interval value ==> 0.95 becomes 95
+            Z = -ss.norm.ppf((1 - CI) / 2)  # converts CI to Z
+            if CI_100 % 1 == 0:
+                CI_100 = int(CI_100)  # removes decimals if the only decimal is 0
+            text_title = str(text_title + '\n' + str(CI_100) + '% confidence bounds')  # Adds the CI and CI_type to the title
+            plt.title(text_title)  # add a line to the plot title to include the confidence bounds information
+            plt.subplots_adjust(top=0.81)
+
+            Lambda_upper = self.Lambda * (np.exp(Z * (self.Lambda_SE / self.Lambda)))
+            Lambda_lower = self.Lambda * (np.exp(-Z * (self.Lambda_SE / self.Lambda)))
+
+            t = np.geomspace(self.quantile(0.00001) - self.gamma, self.quantile(0.99999) - self.gamma, points)
+
+            if func == 'CDF':
+                yy_upper = 1 - np.exp(-Lambda_upper * t)
+                yy_lower = 1 - np.exp(-Lambda_lower * t)
+            elif func == 'SF':
+                yy_upper = np.exp(-Lambda_upper * t)
+                yy_lower = np.exp(-Lambda_lower * t)
+            elif func == 'CHF':
+                yy_upper = -np.log(np.exp(-Lambda_upper * t))  # same as -np.log(SF)
+                yy_lower = -np.log(np.exp(-Lambda_lower * t))
+
+            if q is not None:  # calculates the values for the table of percentiles in the fitter
+                t_lower = -np.log(q) / Lambda_upper + self.gamma
+                t_upper = -np.log(q) / Lambda_lower + self.gamma
+
+            if plot_CI is True:
+                fill_no_autoscale(xlower=t + self.gamma, xupper=t + self.gamma, ylower=yy_lower, yupper=yy_upper, color=color, alpha=0.3, linewidth=0)
+                line_no_autoscale(x=t + self.gamma, y=yy_lower, color=color, linewidth=0)  # these are invisible but need to be added to the plot for crosshairs() to find them
+                line_no_autoscale(x=t + self.gamma, y=yy_upper, color=color, linewidth=0)  # still need to specify color otherwise the invisible CI lines will consume default colors
+            elif plot_CI is None and q is not None:
+                return t_lower, t_upper
+
+    @staticmethod
+    def weibull_CI(self, func, plot_CI=None, CI_type=None, CI=None, text_title='', color=None, q=None):
+        '''
+        Generates the confidence intervals for CDF, SF, and CHF
+        This is a utility function intended only for use by the Weibull CDF, SF, and CHF functions.
+        '''
+        points = 200  # the number of data points in each confidence interval (upper and lower) line
+
+        # this determines if the user has specified for the CI bounds to be shown or hidden.
+        if self.alpha_SE is not None and self.beta_SE is not None and self.Cov_alpha_beta is not None and self.Z is not None and (plot_CI is True or q is not None):
+            if CI_type in ['time', 't', 'T', 'TIME', 'Time']:
+                CI_type = 'time'
+            elif CI_type in ['reliability', 'r', 'R', 'RELIABILITY', 'rel', 'REL', 'Reliability']:
+                CI_type = 'reliability'
+            if func not in ['CDF', 'SF', 'CHF']:
+                raise ValueError('func must be either CDF, SF, or CHF')
+            if type(q) not in [list, np.ndarray, type(None)]:
+                raise ValueError('q must be a list or array of quantiles. Default is None')
+            if q is not None:
+                q = np.asarray(q)
+
+            CI_100 = round(CI * 100, 4)  # formats the confidence interval value ==> 0.95 becomes 95
+            Z = -ss.norm.ppf((1 - CI) / 2)  # converts CI to Z
+            if CI_100 % 1 == 0:
+                CI_100 = int(CI_100)  # removes decimals if the only decimal is 0
+            text_title = str(text_title + '\n' + str(CI_100) + '% confidence bounds on ' + CI_type)  # Adds the CI and CI_type to the title
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.81)
+
+            def u(t, alpha, beta):  # u = ln(-ln(R))
+                return beta * (anp.log(t) - anp.log(alpha))  # weibull SF linearized
+
+            def v(R, alpha, beta):  # v = ln(t)
+                return (1 / beta) * anp.log(-anp.log(R)) + anp.log(alpha)  # weibull SF rearranged for t
+
+            du_da = jac(u, 1)  # derivative wrt alpha (bounds on reliability)
+            du_db = jac(u, 2)  # derivative wrt beta (bounds on reliability)
+            dv_da = jac(v, 1)  # derivative wrt alpha (bounds on time)
+            dv_db = jac(v, 2)  # derivative wrt beta (bounds on time)
+
+            def var_u(self, v):  # v is time
+                return du_da(v, self.alpha, self.beta) ** 2 * self.alpha_SE ** 2 \
+                       + du_db(v, self.alpha, self.beta) ** 2 * self.beta_SE ** 2 \
+                       + 2 * du_da(v, self.alpha, self.beta) * du_db(v, self.alpha, self.beta) * self.Cov_alpha_beta
+
+            def var_v(self, u):  # u is reliability
+                return dv_da(u, self.alpha, self.beta) ** 2 * self.alpha_SE ** 2 \
+                       + dv_db(u, self.alpha, self.beta) ** 2 * self.beta_SE ** 2 \
+                       + 2 * dv_da(u, self.alpha, self.beta) * dv_db(u, self.alpha, self.beta) * self.Cov_alpha_beta
+
+            if CI_type == 'time':  # Confidence bounds on time (in terms of reliability)
+                # Y is reliability (R)
+                if func == 'CHF':
+                    chf_array = np.geomspace(1e-8, self._chf[-1] * 1.5, points)
+                    Y = np.exp(-chf_array)
+                else:  # CDF and SF
+                    if q is not None:
+                        Y = q
+                    else:
+                        Y = transform_spaced('weibull', y_lower=1e-8, y_upper=1 - 1e-8, num=points)
+
+                # v is ln(t)
+                v_lower = v(Y, self.alpha, self.beta) - Z * (var_v(self, Y) ** 0.5)
+                v_upper = v(Y, self.alpha, self.beta) + Z * (var_v(self, Y) ** 0.5)
+
+                t_lower = np.exp(v_lower) + self.gamma  # transform back from ln(t)
+                t_upper = np.exp(v_upper) + self.gamma
+
+                if func == 'CDF':
+                    yy = 1 - Y
+                elif func == 'SF':
+                    yy = Y
+                elif func == 'CHF':
+                    yy = -np.log(Y)
+
+                if plot_CI is True:
+                    fill_no_autoscale(xlower=t_lower, xupper=t_upper, ylower=yy, yupper=yy, color=color, alpha=0.3, linewidth=0)
+                    line_no_autoscale(x=t_lower, y=yy, color=color, linewidth=0)  # these are invisible but need to be added to the plot for crosshairs() to find them
+                    line_no_autoscale(x=t_upper, y=yy, color=color, linewidth=0)  # still need to specify color otherwise the invisible CI lines will consume default colors
+                    # plt.scatter(t_lower, yy, linewidth=1, color='blue')
+                    # plt.scatter(t_upper, yy, linewidth=1, color='red')
+                elif plot_CI is None and q is not None:
+                    return t_lower, t_upper
+
+            elif CI_type == 'reliability':  # Confidence bounds on Reliability (in terms of time)
+                t = np.geomspace(self.quantile(0.00001) - self.gamma, self.quantile(0.99999) - self.gamma, points)
+
+                # u is reliability ln(-ln(R))
+                u_lower = u(t, self.alpha, self.beta) + Z * var_u(self, t) ** 0.5  # note that gamma is incorporated into u but not in var_u. This is the same as just shifting a Weibull_2P across
+                u_upper = u(t, self.alpha, self.beta) - Z * var_u(self, t) ** 0.5
+
+                Y_lower = np.exp(-np.exp(u_lower))  # transform back from ln(-ln(R))
+                Y_upper = np.exp(-np.exp(u_upper))
+
+                if func == 'CDF':
+                    yy_lower = 1 - Y_lower
+                    yy_upper = 1 - Y_upper
+                elif func == 'SF':
+                    yy_lower = Y_lower
+                    yy_upper = Y_upper
+                else:  # CHF
+                    yy_lower = -np.log(Y_lower)
+                    yy_upper = -np.log(Y_upper)
+
+                fill_no_autoscale(xlower=t + self.gamma, xupper=t + self.gamma, ylower=yy_lower, yupper=yy_upper, color=color, alpha=0.3, linewidth=0)
+                line_no_autoscale(x=t + self.gamma, y=yy_lower, color=color, linewidth=0)  # these are invisible but need to be added to the plot for crosshairs() to find them
+                line_no_autoscale(x=t + self.gamma, y=yy_upper, color=color, linewidth=0)  # still need to specify color otherwise the invisible CI lines will consume default colors
+                # plt.scatter(t + self.gamma, yy_upper, color='red')
+                # plt.scatter(t + self.gamma, yy_lower, color='blue')
+
+    @staticmethod
+    def normal_CI(self, func, plot_CI=None, CI_type=None, CI=None, text_title='', color=None, q=None):
+        '''
+        Generates the confidence intervals for CDF, SF, and CHF
+        This is a utility function intended only for use by the Normal CDF, SF, and CHF functions.
+        '''
+        points = 200  # the number of data points in each confidence interval (upper and lower) line
+
+        # this determines if the user has specified for the CI bounds to be shown or hidden.
+        if self.mu_SE is not None and self.sigma_SE is not None and self.Cov_mu_sigma is not None and self.Z is not None and (plot_CI is True or q is not None):
+            if CI_type in ['time', 't', 'T', 'TIME', 'Time']:
+                CI_type = 'time'
+            elif CI_type in ['reliability', 'r', 'R', 'RELIABILITY', 'rel', 'REL', 'Reliability']:
+                CI_type = 'reliability'
+            if func not in ['CDF', 'SF', 'CHF']:
+                raise ValueError('func must be either CDF, SF, or CHF')
+            if type(q) not in [list, np.ndarray, type(None)]:
+                raise ValueError('q must be a list or array of quantiles. Default is None')
+            if q is not None:
+                q = np.asarray(q)
+
+            CI_100 = round(CI * 100, 4)  # formats the confidence interval value ==> 0.95 becomes 95
+            Z = -ss.norm.ppf((1 - CI) / 2)  # converts CI to Z
+            if CI_100 % 1 == 0:
+                CI_100 = int(CI_100)  # removes decimals if the only decimal is 0
+            text_title = str(text_title + '\n' + str(CI_100) + '% confidence bounds on ' + CI_type)  # Adds the CI and CI_type to the title
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.81)
+
+            def u(t, mu, sigma):  # u = phiinv(R)
+                return (mu - t) / sigma  # normal SF linearlized
+
+            def v(R, mu, sigma):  # v = t
+                return mu - sigma * ss.norm.ppf(R)
+
+            # for consistency with other distributions, the derivatives are da for d_sigma and db for d_mu. Just think of a is first parameter and b is second parameter.
+            du_da = jac(u, 1)  # derivative wrt mu (bounds on reliability)
+            du_db = jac(u, 2)  # derivative wrt sigma (bounds on reliability)
+            dv_da = jac(v, 1)  # derivative wrt mu (bounds on time)
+            dv_db = jac(v, 2)  # derivative wrt sigma (bounds on time)
+
+            def var_u(self, v):  # v is time
+                return du_da(v, self.mu, self.sigma) ** 2 * self.mu_SE ** 2 \
+                       + du_db(v, self.mu, self.sigma) ** 2 * self.sigma_SE ** 2 \
+                       + 2 * du_da(v, self.mu, self.sigma) * du_db(v, self.mu, self.sigma) * self.Cov_mu_sigma
+
+            def var_v(self, u):  # u is reliability
+                return dv_da(u, self.mu, self.sigma) ** 2 * self.mu_SE ** 2 \
+                       + dv_db(u, self.mu, self.sigma) ** 2 * self.sigma_SE ** 2 \
+                       + 2 * dv_da(u, self.mu, self.sigma) * dv_db(u, self.mu, self.sigma) * self.Cov_mu_sigma
+
+            if CI_type == 'time':  # Confidence bounds on time (in terms of reliability)
+                # Y is reliability (R)
+                if func == 'CHF':
+                    chf_array = np.geomspace(1e-8, self._chf[-1] * 1.5, points)
+                    Y = np.exp(-chf_array)
+                else:  # CDF and SF
+                    if q is not None:
+                        Y = q
+                    else:
+                        Y = transform_spaced('normal', y_lower=1e-8, y_upper=1 - 1e-8, num=points)
+
+                # v is t
+                t_lower = v(Y, self.mu, self.sigma) - Z * (var_v(self, Y) ** 0.5)
+                t_upper = v(Y, self.mu, self.sigma) + Z * (var_v(self, Y) ** 0.5)
+
+                if func == 'CDF':
+                    yy = 1 - Y
+                elif func == 'SF':
+                    yy = Y
+                elif func == 'CHF':
+                    yy = -np.log(Y)
+
+                if plot_CI is True:
+                    fill_no_autoscale(xlower=t_lower, xupper=t_upper, ylower=yy, yupper=yy, color=color, alpha=0.3, linewidth=0)
+                    line_no_autoscale(x=t_lower, y=yy, color=color, linewidth=0)  # these are invisible but need to be added to the plot for crosshairs() to find them
+                    line_no_autoscale(x=t_upper, y=yy, color=color, linewidth=0)  # still need to specify color otherwise the invisible CI lines will consume default colors
+                    # plt.scatter(t_lower, yy, linewidth=1, color='blue')
+                    # plt.scatter(t_upper, yy, linewidth=1, color='red')
+                elif plot_CI is None and q is not None:
+                    return t_lower, t_upper
+
+            elif CI_type == 'reliability':  # Confidence bounds on Reliability (in terms of time)
+                t = np.linspace(self.quantile(0.00001), self.quantile(0.99999), points)
+
+                # u is reliability u = phiinv(R)
+                u_lower = u(t, self.mu, self.sigma) + Z * var_u(self, t) ** 0.5
+                u_upper = u(t, self.mu, self.sigma) - Z * var_u(self, t) ** 0.5
+
+                Y_lower = ss.norm.cdf(u_lower)  # transform back from u = phiinv(R)
+                Y_upper = ss.norm.cdf(u_upper)
+
+                if func == 'CDF':
+                    yy_lower = 1 - Y_lower
+                    yy_upper = 1 - Y_upper
+                elif func == 'SF':
+                    yy_lower = Y_lower
+                    yy_upper = Y_upper
+                else:  # CHF
+                    yy_lower = -np.log(Y_lower)
+                    yy_upper = -np.log(Y_upper)
+
+                fill_no_autoscale(xlower=t, xupper=t, ylower=yy_lower, yupper=yy_upper, color=color, alpha=0.3, linewidth=0)
+                line_no_autoscale(x=t, y=yy_lower, color=color, linewidth=0)  # these are invisible but need to be added to the plot for crosshairs() to find them
+                line_no_autoscale(x=t, y=yy_upper, color=color, linewidth=0)  # still need to specify color otherwise the invisible CI lines will consume default colors
+                # plt.scatter(t, yy_upper, color='red')
+                # plt.scatter(t, yy_lower, color='blue')
+
+    @staticmethod
+    def lognormal_CI(self, func, plot_CI=None, CI_type=None, CI=None, text_title='', color=None, q=None):
+        '''
+        Generates the confidence intervals for CDF, SF, and CHF
+        This is a utility function intended only for use by the Lognormal CDF, SF, and CHF functions.
+        '''
+        points = 200  # the number of data points in each confidence interval (upper and lower) line
+
+        # this determines if the user has specified for the CI bounds to be shown or hidden.
+        if self.mu_SE is not None and self.sigma_SE is not None and self.Cov_mu_sigma is not None and self.Z is not None and (plot_CI is True or q is not None):
+            if CI_type in ['time', 't', 'T', 'TIME', 'Time']:
+                CI_type = 'time'
+            elif CI_type in ['reliability', 'r', 'R', 'RELIABILITY', 'rel', 'REL', 'Reliability']:
+                CI_type = 'reliability'
+            if func not in ['CDF', 'SF', 'CHF']:
+                raise ValueError('func must be either CDF, SF, or CHF')
+            if type(q) not in [list, np.ndarray, type(None)]:
+                raise ValueError('q must be a list or array of quantiles. Default is None')
+            if q is not None:
+                q = np.asarray(q)
+
+            CI_100 = round(CI * 100, 4)  # formats the confidence interval value ==> 0.95 becomes 95
+            Z = -ss.norm.ppf((1 - CI) / 2)  # converts CI to Z
+            if CI_100 % 1 == 0:
+                CI_100 = int(CI_100)  # removes decimals if the only decimal is 0
+            text_title = str(text_title + '\n' + str(CI_100) + '% confidence bounds on ' + CI_type)  # Adds the CI and CI_type to the title
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.81)
+
+            def u(t, mu, sigma):  # u = phiinv(R)
+                return (mu - np.log(t)) / sigma  # lognormal SF linearlized
+
+            def v(R, mu, sigma):  # v = ln(t)
+                return mu - sigma * ss.norm.ppf(R)
+
+            # for consistency with other distributions, the derivatives are da for d_sigma and db for d_mu. Just think of a is first parameter and b is second parameter.
+            du_da = jac(u, 1)  # derivative wrt mu (bounds on reliability)
+            du_db = jac(u, 2)  # derivative wrt sigma (bounds on reliability)
+            dv_da = jac(v, 1)  # derivative wrt mu (bounds on time)
+            dv_db = jac(v, 2)  # derivative wrt sigma (bounds on time)
+
+            def var_u(self, v):  # v is time
+                return du_da(v, self.mu, self.sigma) ** 2 * self.mu_SE ** 2 \
+                       + du_db(v, self.mu, self.sigma) ** 2 * self.sigma_SE ** 2 \
+                       + 2 * du_da(v, self.mu, self.sigma) * du_db(v, self.mu, self.sigma) * self.Cov_mu_sigma
+
+            def var_v(self, u):  # u is reliability
+                return dv_da(u, self.mu, self.sigma) ** 2 * self.mu_SE ** 2 \
+                       + dv_db(u, self.mu, self.sigma) ** 2 * self.sigma_SE ** 2 \
+                       + 2 * dv_da(u, self.mu, self.sigma) * dv_db(u, self.mu, self.sigma) * self.Cov_mu_sigma
+
+            if CI_type == 'time':  # Confidence bounds on time (in terms of reliability)
+                # Y is reliability (R)
+                if func == 'CHF':
+                    chf_array = np.geomspace(1e-8, self._chf[-1] * 1.5, points)
+                    Y = np.exp(-chf_array)
+                else:  # CDF and SF
+                    if q is not None:
+                        Y = q
+                    else:
+                        Y = transform_spaced('normal', y_lower=1e-8, y_upper=1 - 1e-8, num=points)
+
+                # v is ln(t)
+                v_lower = v(Y, self.mu, self.sigma) - Z * (var_v(self, Y) ** 0.5)
+                v_upper = v(Y, self.mu, self.sigma) + Z * (var_v(self, Y) ** 0.5)
+
+                t_lower = np.exp(v_lower) + self.gamma
+                t_upper = np.exp(v_upper) + self.gamma
+
+                if func == 'CDF':
+                    yy = 1 - Y
+                elif func == 'SF':
+                    yy = Y
+                elif func == 'CHF':
+                    yy = -np.log(Y)
+
+                if plot_CI is True:
+                    fill_no_autoscale(xlower=t_lower, xupper=t_upper, ylower=yy, yupper=yy, color=color, alpha=0.3, linewidth=0)
+                    line_no_autoscale(x=t_lower, y=yy, color=color, linewidth=0)  # these are invisible but need to be added to the plot for crosshairs() to find them
+                    line_no_autoscale(x=t_upper, y=yy, color=color, linewidth=0)  # still need to specify color otherwise the invisible CI lines will consume default colors
+                    # plt.scatter(t_lower, yy, linewidth=1, color='blue')
+                    # plt.scatter(t_upper, yy, linewidth=1, color='red')
+                elif plot_CI is None and q is not None:
+                    return t_lower, t_upper
+
+            elif CI_type == 'reliability':  # Confidence bounds on Reliability (in terms of time)
+                t = np.geomspace(self.quantile(0.00001) - self.gamma, self.quantile(0.99999) - self.gamma, points)
+
+                # u is reliability u = phiinv(R)
+                u_lower = u(t, self.mu, self.sigma) + Z * var_u(self, t) ** 0.5
+                u_upper = u(t, self.mu, self.sigma) - Z * var_u(self, t) ** 0.5
+
+                Y_lower = ss.norm.cdf(u_lower)  # transform back from u = phiinv(R)
+                Y_upper = ss.norm.cdf(u_upper)
+
+                if func == 'CDF':
+                    yy_lower = 1 - Y_lower
+                    yy_upper = 1 - Y_upper
+                elif func == 'SF':
+                    yy_lower = Y_lower
+                    yy_upper = Y_upper
+                else:  # CHF
+                    yy_lower = -np.log(Y_lower)
+                    yy_upper = -np.log(Y_upper)
+
+                fill_no_autoscale(xlower=t + self.gamma, xupper=t + self.gamma, ylower=yy_lower, yupper=yy_upper, color=color, alpha=0.3, linewidth=0)
+                line_no_autoscale(x=t + self.gamma, y=yy_lower, color=color, linewidth=0)  # these are invisible but need to be added to the plot for crosshairs() to find them
+                line_no_autoscale(x=t + self.gamma, y=yy_upper, color=color, linewidth=0)  # still need to specify color otherwise the invisible CI lines will consume default colors
+                # plt.scatter(t+ self.gamma, yy_upper, color='red')
+                # plt.scatter(t+ self.gamma, yy_lower, color='blue')
+
+    @staticmethod
+    def loglogistic_CI(self, func, plot_CI=None, CI_type=None, CI=None, text_title='', color=None, q=None):
+        '''
+        Generates the confidence intervals for CDF, SF, and CHF
+        This is a utility function intended only for use by the Loglogistic CDF, SF, and CHF functions.
+        '''
+        points = 200  # the number of data points in each confidence interval (upper and lower) line
+
+        # this determines if the user has specified for the CI bounds to be shown or hidden.
+        if self.alpha_SE is not None and self.beta_SE is not None and self.Cov_alpha_beta is not None and self.Z is not None and (plot_CI is True or q is not None):
+            if CI_type in ['time', 't', 'T', 'TIME', 'Time']:
+                CI_type = 'time'
+            elif CI_type in ['reliability', 'r', 'R', 'RELIABILITY', 'rel', 'REL', 'Reliability']:
+                CI_type = 'reliability'
+            if func not in ['CDF', 'SF', 'CHF']:
+                raise ValueError('func must be either CDF, SF, or CHF')
+            if type(q) not in [list, np.ndarray, type(None)]:
+                raise ValueError('q must be a list or array of quantiles. Default is None')
+            if q is not None:
+                q = np.asarray(q)
+
+            CI_100 = round(CI * 100, 4)  # formats the confidence interval value ==> 0.95 becomes 95
+            Z = -ss.norm.ppf((1 - CI) / 2)  # converts CI to Z
+            if CI_100 % 1 == 0:
+                CI_100 = int(CI_100)  # removes decimals if the only decimal is 0
+            text_title = str(text_title + '\n' + str(CI_100) + '% confidence bounds on ' + CI_type)  # Adds the CI and CI_type to the title
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.81)
+
+            def u(t, alpha, beta):  # u = ln(1/R - 1)
+                return beta * (anp.log(t) - anp.log(alpha))  # loglogistic SF linearized
+
+            def v(R, alpha, beta):  # v = ln(t)
+                return (1 / beta) * anp.log(1 / R - 1) + anp.log(alpha)  # loglogistic SF rearranged for t
+
+            du_da = jac(u, 1)  # derivative wrt alpha (bounds on reliability)
+            du_db = jac(u, 2)  # derivative wrt beta (bounds on reliability)
+            dv_da = jac(v, 1)  # derivative wrt alpha (bounds on time)
+            dv_db = jac(v, 2)  # derivative wrt beta (bounds on time)
+
+            def var_u(self, v):  # v is time
+                return du_da(v, self.alpha, self.beta) ** 2 * self.alpha_SE ** 2 \
+                       + du_db(v, self.alpha, self.beta) ** 2 * self.beta_SE ** 2 \
+                       + 2 * du_da(v, self.alpha, self.beta) * du_db(v, self.alpha, self.beta) * self.Cov_alpha_beta
+
+            def var_v(self, u):  # u is reliability
+                return dv_da(u, self.alpha, self.beta) ** 2 * self.alpha_SE ** 2 \
+                       + dv_db(u, self.alpha, self.beta) ** 2 * self.beta_SE ** 2 \
+                       + 2 * dv_da(u, self.alpha, self.beta) * dv_db(u, self.alpha, self.beta) * self.Cov_alpha_beta
+
+            if CI_type == 'time':  # Confidence bounds on time (in terms of reliability)
+                # Y is reliability (R)
+                if func == 'CHF':
+                    chf_array = np.geomspace(1e-8, self._chf[-1] * 1.5, points)
+                    Y = np.exp(-chf_array)
+                else:  # CDF and SF
+                    if q is not None:
+                        Y = q
+                    else:
+                        Y = transform_spaced('loglogistic', y_lower=1e-8, y_upper=1 - 1e-8, num=points)
+
+                # v is ln(t)
+                v_lower = v(Y, self.alpha, self.beta) - Z * (var_v(self, Y) ** 0.5)
+                v_upper = v(Y, self.alpha, self.beta) + Z * (var_v(self, Y) ** 0.5)
+
+                t_lower = np.exp(v_lower) + self.gamma  # transform back from ln(t)
+                t_upper = np.exp(v_upper) + self.gamma
+
+                if func == 'CDF':
+                    yy = 1 - Y
+                elif func == 'SF':
+                    yy = Y
+                elif func == 'CHF':
+                    yy = -np.log(Y)
+
+                if plot_CI is True:
+                    fill_no_autoscale(xlower=t_lower, xupper=t_upper, ylower=yy, yupper=yy, color=color, alpha=0.3, linewidth=0)
+                    line_no_autoscale(x=t_lower, y=yy, color=color, linewidth=0)  # these are invisible but need to be added to the plot for crosshairs() to find them
+                    line_no_autoscale(x=t_upper, y=yy, color=color, linewidth=0)  # still need to specify color otherwise the invisible CI lines will consume default colors
+                    # plt.scatter(t_lower, yy, linewidth=1, color='blue')
+                    # plt.scatter(t_upper, yy, linewidth=1, color='red')
+                elif plot_CI is None and q is not None:
+                    return t_lower, t_upper
+
+            elif CI_type == 'reliability':  # Confidence bounds on Reliability (in terms of time)
+                t = np.geomspace(self.quantile(0.00001) - self.gamma, self.quantile(0.99999) - self.gamma, points)
+
+                # u is reliability ln(1/R - 1)
+                u_lower = u(t, self.alpha, self.beta) + Z * var_u(self, t) ** 0.5  # note that gamma is incorporated into u but not in var_u. This is the same as just shifting a Weibull_2P across
+                u_upper = u(t, self.alpha, self.beta) - Z * var_u(self, t) ** 0.5
+
+                Y_lower = 1 / (np.exp(u_lower) + 1)  # transform back from ln(1/R - 1)
+                Y_upper = 1 / (np.exp(u_upper) + 1)
+
+                if func == 'CDF':
+                    yy_lower = 1 - Y_lower
+                    yy_upper = 1 - Y_upper
+                elif func == 'SF':
+                    yy_lower = Y_lower
+                    yy_upper = Y_upper
+                else:  # CHF
+                    yy_lower = -np.log(Y_lower)
+                    yy_upper = -np.log(Y_upper)
+
+                fill_no_autoscale(xlower=t + self.gamma, xupper=t + self.gamma, ylower=yy_lower, yupper=yy_upper, color=color, alpha=0.3, linewidth=0)
+                line_no_autoscale(x=t + self.gamma, y=yy_lower, color=color, linewidth=0)  # these are invisible but need to be added to the plot for crosshairs() to find them
+                line_no_autoscale(x=t + self.gamma, y=yy_upper, color=color, linewidth=0)  # still need to specify color otherwise the invisible CI lines will consume default colors
+                # plt.scatter(t + self.gamma, yy_upper, color='red')
+                # plt.scatter(t + self.gamma, yy_lower, color='blue')
+
+    @staticmethod
+    def gumbel_CI(self, func, plot_CI=None, CI_type=None, CI=None, text_title='', color=None, q=None):
+        '''
+        Generates the confidence intervals for CDF, SF, and CHF
+        This is a utility function intended only for use by the Gumbel CDF, SF, and CHF functions.
+        '''
+        points = 200  # the number of data points in each confidence interval (upper and lower) line
+
+        # this determines if the user has specified for the CI bounds to be shown or hidden.
+        if self.mu_SE is not None and self.sigma_SE is not None and self.Cov_mu_sigma is not None and self.Z is not None and (plot_CI is True or q is not None):
+            if CI_type in ['time', 't', 'T', 'TIME', 'Time']:
+                CI_type = 'time'
+            elif CI_type in ['reliability', 'r', 'R', 'RELIABILITY', 'rel', 'REL', 'Reliability']:
+                CI_type = 'reliability'
+            if func not in ['CDF', 'SF', 'CHF']:
+                raise ValueError('func must be either CDF, SF, or CHF')
+            if type(q) not in [list, np.ndarray, type(None)]:
+                raise ValueError('q must be a list or array of quantiles. Default is None')
+            if q is not None:
+                q = np.asarray(q)
+
+            CI_100 = round(CI * 100, 4)  # formats the confidence interval value ==> 0.95 becomes 95
+            Z = -ss.norm.ppf((1 - CI) / 2)  # converts CI to Z
+            if CI_100 % 1 == 0:
+                CI_100 = int(CI_100)  # removes decimals if the only decimal is 0
+            text_title = str(text_title + '\n' + str(CI_100) + '% confidence bounds on ' + CI_type)  # Adds the CI and CI_type to the title
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.81)
+
+            def u(t, mu, sigma):  # u = ln(-ln(R))
+                return (t - mu) / sigma  # gumbel SF linearlized
+
+            def v(R, mu, sigma):  # v = t
+                return mu + sigma * anp.log(-anp.log(R))  # Gumbel SF rearranged for t
+
+            # for consistency with other distributions, the derivatives are da for d_sigma and db for d_mu. Just think of a is first parameter and b is second parameter.
+            du_da = jac(u, 1)  # derivative wrt mu (bounds on reliability)
+            du_db = jac(u, 2)  # derivative wrt sigma (bounds on reliability)
+            dv_da = jac(v, 1)  # derivative wrt mu (bounds on time)
+            dv_db = jac(v, 2)  # derivative wrt sigma (bounds on time)
+
+            def var_u(self, v):  # v is time
+                return du_da(v, self.mu, self.sigma) ** 2 * self.mu_SE ** 2 \
+                       + du_db(v, self.mu, self.sigma) ** 2 * self.sigma_SE ** 2 \
+                       + 2 * du_da(v, self.mu, self.sigma) * du_db(v, self.mu, self.sigma) * self.Cov_mu_sigma
+
+            def var_v(self, u):  # u is reliability
+                return dv_da(u, self.mu, self.sigma) ** 2 * self.mu_SE ** 2 \
+                       + dv_db(u, self.mu, self.sigma) ** 2 * self.sigma_SE ** 2 \
+                       + 2 * dv_da(u, self.mu, self.sigma) * dv_db(u, self.mu, self.sigma) * self.Cov_mu_sigma
+
+            if CI_type == 'time':  # Confidence bounds on time (in terms of reliability)
+                # Y is reliability (R)
+                if func == 'CHF':
+                    chf_array = np.geomspace(1e-8, self._chf[-1] * 1.5, points)
+                    Y = np.exp(-chf_array)
+                else:  # CDF and SF
+                    if q is not None:
+                        Y = q
+                    else:
+                        Y = transform_spaced('gumbel', y_lower=1e-8, y_upper=1 - 1e-8, num=points)
+
+                # v is t
+                t_lower = v(Y, self.mu, self.sigma) - Z * (var_v(self, Y) ** 0.5)
+                t_upper = v(Y, self.mu, self.sigma) + Z * (var_v(self, Y) ** 0.5)
+
+                if func == 'CDF':
+                    yy = 1 - Y
+                elif func == 'SF':
+                    yy = Y
+                elif func == 'CHF':
+                    yy = -np.log(Y)
+
+                if plot_CI is True:
+                    fill_no_autoscale(xlower=t_lower, xupper=t_upper, ylower=yy, yupper=yy, color=color, alpha=0.3, linewidth=0)
+                    line_no_autoscale(x=t_lower, y=yy, color=color, linewidth=0)  # these are invisible but need to be added to the plot for crosshairs() to find them
+                    line_no_autoscale(x=t_upper, y=yy, color=color, linewidth=0)  # still need to specify color otherwise the invisible CI lines will consume default colors
+                    # plt.scatter(t_lower, yy, linewidth=1, color='blue')
+                    # plt.scatter(t_upper, yy, linewidth=1, color='red')
+                elif plot_CI is None and q is not None:
+                    return t_lower, t_upper
+
+            elif CI_type == 'reliability':  # Confidence bounds on Reliability (in terms of time)
+                t = np.linspace(self.quantile(0.00001), self.quantile(0.99999), points)
+
+                # u is reliability u = ln(-ln(R))
+                u_lower = u(t, self.mu, self.sigma) + Z * var_u(self, t) ** 0.5
+                u_upper = u(t, self.mu, self.sigma) - Z * var_u(self, t) ** 0.5
+
+                Y_lower = np.exp(-np.exp(u_lower))  # transform back from ln(-ln(R))
+                Y_upper = np.exp(-np.exp(u_upper))
+
+                if func == 'CDF':
+                    yy_lower = 1 - Y_lower
+                    yy_upper = 1 - Y_upper
+                elif func == 'SF':
+                    yy_lower = Y_lower
+                    yy_upper = Y_upper
+                else:  # CHF
+                    yy_lower = -np.log(Y_lower)
+                    yy_upper = -np.log(Y_upper)
+
+                fill_no_autoscale(xlower=t, xupper=t, ylower=yy_lower, yupper=yy_upper, color=color, alpha=0.3, linewidth=0)
+                line_no_autoscale(x=t, y=yy_lower, color=color, linewidth=0)  # these are invisible but need to be added to the plot for crosshairs() to find them
+                line_no_autoscale(x=t, y=yy_upper, color=color, linewidth=0)  # still need to specify color otherwise the invisible CI lines will consume default colors
+                # plt.scatter(t, yy_upper, color='red')
+                # plt.scatter(t, yy_lower, color='blue')

@@ -64,9 +64,7 @@ import scipy.stats as ss
 import numpy as np
 from scipy import integrate
 import matplotlib.pyplot as plt
-from reliability.Utils import round_to_decimals, transform_spaced, line_no_autoscale, fill_no_autoscale, get_axes_limits, restore_axes_limits, generate_X_array, zeroise_below_gamma
-from autograd import jacobian as jac
-import autograd.numpy as anp
+from reliability.Utils import round_to_decimals, get_axes_limits, restore_axes_limits, generate_X_array, zeroise_below_gamma, distribution_confidence_intervals
 
 dec = 4  # number of decimals to use when rounding descriptive statistics and parameter titles
 np.seterr(divide='ignore', invalid='ignore')  # ignore the divide by zero warnings
@@ -324,23 +322,12 @@ class Weibull_Distribution:
         else:
             X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
 
-        # this determines if the user has specified for the CI bounds to be shown or hidden.
-        kwargs_list = kwargs.keys()
-        if 'plot_CI' in kwargs_list:
-            plot_CI = kwargs.pop('plot_CI')
-        elif 'show_CI' in kwargs_list:
-            plot_CI = kwargs.pop('show_CI')
-        else:
-            plot_CI = True  # default
-        if plot_CI not in [True, False]:
-            print('WARNING: unexpected value in kwargs. To show/hide the CI you can specify either show_CI=True/False or plot_CI=True/False')
-            plot_CI = True
-
         cdf = ss.weibull_min.cdf(X, self.beta, scale=self.alpha, loc=self.gamma)
 
         if show_plot == False:
             return cdf
         else:
+            CI_type, plot_CI, CI = distribution_confidence_intervals.CI_kwarg_handler(self, kwargs)
 
             limits = get_axes_limits()  # get the previous axes limits
 
@@ -353,7 +340,7 @@ class Weibull_Distribution:
 
             restore_axes_limits(limits, dist=self, func='CDF', X=X, Y=cdf, xvals=xvals, xmin=xmin, xmax=xmax)
 
-            Weibull_Distribution.__weibull_CI(self, func='CDF', plot_CI=plot_CI, text_title=text_title, color=p[0].get_color())
+            distribution_confidence_intervals.weibull_CI(self, func='CDF', CI_type=CI_type, plot_CI=plot_CI, CI=CI, text_title=text_title, color=p[0].get_color())
 
             return cdf
 
@@ -382,23 +369,13 @@ class Weibull_Distribution:
         else:
             X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
 
-        # this determines if the user has specified for the CI bounds to be shown or hidden. Applicable kwargs are show_CI or plot_CI
-        kwargs_list = kwargs.keys()
-        if 'plot_CI' in kwargs_list:
-            plot_CI = kwargs.pop('plot_CI')
-        elif 'show_CI' in kwargs_list:
-            plot_CI = kwargs.pop('show_CI')
-        else:
-            plot_CI = True  # default
-        if plot_CI not in [True, False]:
-            print('WARNING: unexpected value in kwargs. To show/hide the CI you can specify either show_CI=True/False or plot_CI=True/False')
-            plot_CI = True
-
         sf = ss.weibull_min.sf(X, self.beta, scale=self.alpha, loc=self.gamma)
 
         if show_plot == False:
             return sf
         else:
+            CI_type, plot_CI, CI = distribution_confidence_intervals.CI_kwarg_handler(self, kwargs)
+
             limits = get_axes_limits()  # get the previous axes limits
 
             p = plt.plot(X, sf, **kwargs)
@@ -410,7 +387,7 @@ class Weibull_Distribution:
 
             restore_axes_limits(limits, dist=self, func='SF', X=X, Y=sf, xvals=xvals, xmin=xmin, xmax=xmax)
 
-            Weibull_Distribution.__weibull_CI(self, func='SF', plot_CI=plot_CI, text_title=text_title, color=p[0].get_color())
+            distribution_confidence_intervals.weibull_CI(self, func='SF', CI_type=CI_type, plot_CI=plot_CI, CI=CI, text_title=text_title, color=p[0].get_color())
 
             return sf
 
@@ -439,25 +416,9 @@ class Weibull_Distribution:
         else:
             X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
 
-        # this determines if the user has specified for the CI bounds to be shown or hidden. Applicable kwargs are show_CI or plot_CI
-        kwargs_list = kwargs.keys()
-        if 'plot_CI' in kwargs_list:
-            plot_CI = kwargs.pop('plot_CI')
-        elif 'show_CI' in kwargs_list:
-            plot_CI = kwargs.pop('show_CI')
-        else:
-            plot_CI = True  # default
-        if plot_CI not in [True, False]:
-            print('WARNING: unexpected value in kwargs. To show/hide the CI you can specify either show_CI=True/False or plot_CI=True/False')
-            plot_CI = True
-
         hf = (self.beta / self.alpha) * ((X - self.gamma) / self.alpha) ** (self.beta - 1)
         hf = zeroise_below_gamma(X=X, Y=hf, gamma=self.gamma)
         self._hf = hf  # required by the CI plotting part
-
-        chf = ((X - self.gamma) / self.alpha) ** self.beta
-        chf = zeroise_below_gamma(X=X, Y=chf, gamma=self.gamma)
-        self._chf = chf  # required by the CI plotting part
         self._X = X
 
         if show_plot == False:
@@ -473,8 +434,6 @@ class Weibull_Distribution:
             plt.subplots_adjust(top=0.85)
 
             restore_axes_limits(limits, dist=self, func='HF', X=X, Y=hf, xvals=xvals, xmin=xmin, xmax=xmax)
-
-            Weibull_Distribution.__weibull_CI(self, func='HF', plot_CI=plot_CI, text_title=text_title, color=p[0].get_color())
 
             return hf
 
@@ -503,18 +462,6 @@ class Weibull_Distribution:
         else:
             X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
 
-        # this determines if the user has specified for the CI bounds to be shown or hidden. Applicable kwargs are show_CI or plot_CI
-        kwargs_list = kwargs.keys()
-        if 'plot_CI' in kwargs_list:
-            plot_CI = kwargs.pop('plot_CI')
-        elif 'show_CI' in kwargs_list:
-            plot_CI = kwargs.pop('show_CI')
-        else:
-            plot_CI = True  # default
-        if plot_CI not in [True, False]:
-            print('WARNING: unexpected value in kwargs. To show/hide the CI you can specify either show_CI=True/False or plot_CI=True/False')
-            plot_CI = True
-
         chf = ((X - self.gamma) / self.alpha) ** self.beta
         chf = zeroise_below_gamma(X=X, Y=chf, gamma=self.gamma)
         self._chf = chf  # required by the CI plotting part
@@ -523,6 +470,8 @@ class Weibull_Distribution:
         if show_plot == False:
             return chf
         else:
+            CI_type, plot_CI, CI = distribution_confidence_intervals.CI_kwarg_handler(self, kwargs)
+
             limits = get_axes_limits()  # get the previous axes limits
 
             p = plt.plot(X, chf, **kwargs)
@@ -534,152 +483,9 @@ class Weibull_Distribution:
 
             restore_axes_limits(limits, dist=self, func='CHF', X=X, Y=chf, xvals=xvals, xmin=xmin, xmax=xmax)
 
-            Weibull_Distribution.__weibull_CI(self, func='CHF', plot_CI=plot_CI, text_title=text_title, color=p[0].get_color())
+            distribution_confidence_intervals.weibull_CI(self, func='CHF', CI_type=CI_type, plot_CI=plot_CI, CI=CI, text_title=text_title, color=p[0].get_color())
 
             return chf
-
-    def __weibull_CI(self, func, plot_CI, text_title, color):
-        '''
-        Generates the confidence intervals for CDF, SF, HF, CHF
-        This is a hidden function intended only for use by the Weibull CDF, SF, HF, CHF functions.
-        '''
-        if self.alpha_SE is not None and self.beta_SE is not None and self.Cov_alpha_beta is not None and self.Z is not None and plot_CI is True:
-            if self.CI_type in ['time', 't', 'T', 'TIME', 'Time']:
-                self.CI_type = 'time'
-            elif self.CI_type in ['reliability', 'r', 'R', 'RELIABILITY', 'rel', 'REL', 'Reliability']:
-                self.CI_type = 'reliability'
-            if func not in ['CDF', 'SF', 'HF', 'CHF']:
-                raise ValueError('func must be either CDF, SF, HF, or CHF')
-            CI_100 = round((1 - ss.norm.cdf(-self.Z) * 2) * 100, 4)  # Converts Z to CI and formats the confidence interval value ==> 0.95 becomes 95
-            if CI_100 % 1 == 0:
-                CI_100 = int(CI_100)  # removes decimals if the only decimal is 0
-            text_title = str(text_title + '\n' + str(CI_100) + '% confidence bounds on ' + self.CI_type)  # Adds the CI and CI_type to the title
-            plt.title(text_title)
-            plt.subplots_adjust(top=0.81)
-
-            # functions for upper and lower confidence bounds on time and reliability
-            def uR(t, alpha, beta):  # u = ln(-ln(R))
-                return beta * (anp.log(t) - anp.log(alpha))
-
-            du_da_R = jac(uR, 1)  # derivative wrt alpha (for bounds on reliability)
-            du_db_R = jac(uR, 2)  # derivative wrt beta (for bounds on reliability)
-
-            def uT(R, alpha, beta):  # u = ln(t)
-                return (1 / beta) * anp.log(-anp.log(R)) + anp.log(alpha)
-
-            du_da_T = jac(uT, 1)  # derivative wrt alpha (for bounds on time)
-            du_db_T = jac(uT, 2)  # derivative wrt beta (for bounds on time)
-
-            def var_uR(self, t):
-                return du_da_R(t, self.alpha, self.beta) ** 2 * self.alpha_SE ** 2 \
-                       + du_db_R(t, self.alpha, self.beta) ** 2 * self.beta_SE ** 2 \
-                       + 2 * du_da_R(t, self.alpha, self.beta) * du_db_R(t, self.alpha, self.beta) * self.Cov_alpha_beta
-
-            def var_uT(self, R):
-                return du_da_T(R, self.alpha, self.beta) ** 2 * self.alpha_SE ** 2 \
-                       + du_db_T(R, self.alpha, self.beta) ** 2 * self.beta_SE ** 2 \
-                       + 2 * du_da_T(R, self.alpha, self.beta) * du_db_T(R, self.alpha, self.beta) * self.Cov_alpha_beta
-
-            if self.CI_type == 'time':  # Confidence bounds on time (in terms of reliability)
-                if func == 'CHF':  # CHF and CDF probability plot
-                    chf_array = np.logspace(-8, np.log10(self._chf[-1] * 1.5), 100)
-                    R = np.exp(-chf_array)
-                elif func == 'HF':
-                    chf_array = np.logspace(-8, np.log10(self._chf[-1] * 5), 1000)  # higher detail required for numerical derivative to obtain HF
-                    R = np.exp(-chf_array)
-                else:
-                    R = transform_spaced('weibull', y_lower=1e-8, y_upper=1 - 1e-8, num=100)
-
-                u_T_lower = uT(R, self.alpha, self.beta) - self.Z * (var_uT(self, R) ** 0.5)
-                T_lower0 = np.exp(u_T_lower) + self.gamma
-                u_T_upper = uT(R, self.alpha, self.beta) + self.Z * (var_uT(self, R) ** 0.5)
-                T_upper0 = np.exp(u_T_upper) + self.gamma
-
-                min_time, max_time = 1e-12, 1e12  # these are the plotting limits for the CIs
-                T_lower = np.where(T_lower0 < min_time, min_time, T_lower0)  # this applies a limit along time (x-axis) so that fill_betweenx is not plotting to infinity
-                T_upper = np.where(T_upper0 > max_time, max_time, T_upper0)
-
-                if func == 'CDF':
-                    yy = 1 - R
-                elif func == 'SF':
-                    yy = R
-                elif func == 'HF':
-                    yy0 = -np.log(R)  # CHF
-                    yy_lower = np.diff(np.hstack([[0], yy0])) / np.diff(np.hstack([[0], T_lower]))  # this formula is equivalent to dy/dx of the CHF
-                    yy_upper = np.diff(np.hstack([[0], yy0])) / np.diff(np.hstack([[0], T_upper]))  # this formula is equivalent to dy/dx of the CHF
-                    if self.gamma > 0:
-                        idx_X = np.where(self._X >= self.gamma)[0][0]
-                        yy_lower[0:idx_X] = 0  # this correction is required for the lower bound which will be inf due to dy/dx for X<gamma
-                        yy_upper[0:idx_X] = 0
-                elif func == 'CHF':
-                    yy = -np.log(R)
-
-                if func in ['CDF', 'SF', 'CHF']:
-                    fill_no_autoscale(xlower=T_lower, xupper=T_upper, ylower=yy, yupper=yy, color=color, alpha=0.3, linewidth=0)
-                    line_no_autoscale(x=T_lower, y=yy, color=color, linewidth=0)  # these are invisible but need to be added to the plot for crosshairs() to find them
-                    line_no_autoscale(x=T_upper, y=yy, color=color, linewidth=0)  # still need to specify color otherwise the invisible CI lines will consume default colors
-                    # plt.scatter(T_lower, yy, linewidth=1, color='blue')
-                    # plt.scatter(T_upper, yy, linewidth=1, color='red')
-                else:  # HF
-                    fill_no_autoscale(xlower=T_lower, xupper=T_upper, ylower=yy_lower, yupper=yy_upper, color=color, alpha=0.3, linewidth=0)
-                    line_no_autoscale(x=T_lower, y=yy_lower, color=color, linewidth=0)  # these are invisible but need to be added to the plot for crosshairs() to find them
-                    line_no_autoscale(x=T_upper, y=yy_upper, color=color, linewidth=0)  # still need to specify color otherwise the invisible CI lines will consume default colors
-                    # plt.scatter(T_lower, yy_lower, linewidth=1, color='blue')
-                    # plt.scatter(T_upper, yy_upper, linewidth=1, color='red')
-
-            elif self.CI_type == 'reliability':  # Confidence bounds on Reliability (in terms of time)
-                if plt.gca().get_xscale() != 'linear':  # just for probability plot
-                    t_max = ss.weibull_min.ppf(0.99999, self.beta, scale=self.alpha) * 1e4
-                    t = np.geomspace(1e-5, t_max, 100)
-                else:
-                    if func in ['SF', 'CDF']:
-                        if self.beta <= 1:
-                            t_max = (self.b95 - self.gamma) * 5
-                        else:  # beta > 1
-                            t_max = (self.b95 - self.gamma) * 2
-                        t = np.linspace(1e-5, t_max, 100)
-                    elif func == 'HF':
-                        t_max = self._X[-1]
-                        if self.beta <= 1:
-                            t = np.logspace(-5, np.log10(t_max), 1000)  # higher detail required because of numerical derivative
-                        else:  # beta > 1
-                            t = np.linspace(1e-5, t_max, 1000)  # higher detail required because of numerical derivative
-                    else:  # CHF
-                        t_max = self._X[-1]
-                        t = np.linspace(1e-5, t_max, 300)  # higher resolution as much is lost due to nan and inf from -ln(SF) when SF=0
-
-                u_R_lower = uR(t, self.alpha, self.beta) + self.Z * var_uR(self, t) ** 0.5  # note that gamma is incorporated into uR but not in var_uR. This is the same as just shifting a Weibull_2P across
-                R_lower0 = np.exp(-np.exp(u_R_lower))
-                u_R_upper = uR(t, self.alpha, self.beta) - self.Z * var_uR(self, t) ** 0.5
-                R_upper0 = np.exp(-np.exp(u_R_upper))
-
-                if func in ['HF', 'CHF']:
-                    min_R, max_R = np.exp(-self._chf[-1] * 10), np.exp(-self._chf[0])
-                else:  # CDF, SF
-                    min_R, max_R = 1e-12, 1 - 1e-12
-                R_lower = np.where(R_lower0 < min_R, min_R, R_lower0)  # this applies a limit along Reliability (y-axis) so that we are not plotting to infinity for the confidence intervals
-                R_upper = np.where(R_upper0 > max_R, max_R, np.where(R_upper0 < min_R, min_R, R_upper0))
-
-                if func == 'CDF':
-                    yy_lower = 1 - R_lower
-                    yy_upper = 1 - R_upper
-                elif func == 'SF':
-                    yy_lower = R_lower
-                    yy_upper = R_upper
-                elif func == 'HF':
-                    yy_lower0 = -np.log(R_lower)
-                    yy_upper0 = -np.log(R_upper)
-                    yy_lower = np.diff(np.hstack([[0], yy_lower0])) / np.diff(np.hstack([[0], t]))  # this formula is equivalent to dy/dx of the CHF
-                    yy_upper = np.diff(np.hstack([[0], yy_upper0])) / np.diff(np.hstack([[0], t]))  # this formula is equivalent to dy/dx of the CHF
-                elif func == 'CHF':
-                    yy_lower = -np.log(R_lower)  # this can cause nans which are removed before plotting in the fill_no_autoscale function
-                    yy_upper = -np.log(R_upper)  # this can cause nans which are removed before plotting in the fill_no_autoscale function
-
-                fill_no_autoscale(xlower=t + self.gamma, xupper=t + self.gamma, ylower=yy_lower, yupper=yy_upper, color=color, alpha=0.3, linewidth=0)
-                line_no_autoscale(x=t + self.gamma, y=yy_lower, color=color, linewidth=0)  # these are invisible but need to be added to the plot for crosshairs() to find them
-                line_no_autoscale(x=t + self.gamma, y=yy_upper, color=color, linewidth=0)  # still need to specify color otherwise the invisible CI lines will consume default colors
-                # plt.scatter(t + self.gamma, yy_upper, color='red')
-                # plt.scatter(t + self.gamma, yy_lower, color='blue')
 
     def quantile(self, q):
         '''
@@ -802,7 +608,7 @@ class Normal_Distribution:
     random_samples() - draws random samples from the distribution to which it is applied. Same as rvs in scipy.stats.
     '''
 
-    def __init__(self, mu=None, sigma=None):
+    def __init__(self, mu=None, sigma=None, **kwargs):
         self.name = 'Normal'
         self.name2 = 'Normal_2P'
         self.mu = mu
@@ -822,6 +628,32 @@ class Normal_Distribution:
         self.param_title_long = str('Normal Distribution (μ=' + str(round_to_decimals(self.mu, dec)) + ',σ=' + str(round_to_decimals(self.sigma, dec)) + ')')
         self.b5 = ss.norm.ppf(0.05, loc=self.mu, scale=self.sigma)
         self.b95 = ss.norm.ppf(0.95, loc=self.mu, scale=self.sigma)
+
+        # extracts values for confidence interval plotting
+        if 'mu_SE' in kwargs:
+            self.mu_SE = kwargs.pop('mu_SE')
+        else:
+            self.mu_SE = None
+        if 'sigma_SE' in kwargs:
+            self.sigma_SE = kwargs.pop('sigma_SE')
+        else:
+            self.sigma_SE = None
+        if 'Cov_mu_sigma' in kwargs:
+            self.Cov_mu_sigma = kwargs.pop('Cov_mu_sigma')
+        else:
+            self.Cov_mu_sigma = None
+        if 'CI' in kwargs:
+            CI = kwargs.pop('CI')
+            self.Z = -ss.norm.ppf((1 - CI) / 2)
+        else:
+            self.Z = None
+        if 'CI_type' in kwargs:
+            self.CI_type = kwargs.pop('CI_type')
+        else:
+            self.CI_type = 'time'
+        for item in kwargs.keys():
+            print('WARNING:', item, 'not recognised as an appropriate entry in kwargs. Appropriate entries are alpha_SE, beta_SE, Cov_alpha_beta, CI, and CI_type')
+
         self._pdf0 = 0  # the pdf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
         self._hf0 = 0  # the hf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
 
@@ -973,14 +805,18 @@ class Normal_Distribution:
         if show_plot == False:
             return cdf
         else:
+            CI_type, plot_CI, CI = distribution_confidence_intervals.CI_kwarg_handler(self, kwargs)
+
             limits = get_axes_limits()  # get the previous axes limits
 
-            plt.plot(X, cdf, **kwargs)
+            p = plt.plot(X, cdf, **kwargs)
             plt.xlabel('x values')
             plt.ylabel('Fraction failing')
             text_title = str('Normal Distribution\n' + ' Cumulative Distribution Function ' + '\n' + self.param_title)
             plt.title(text_title)
             plt.subplots_adjust(top=0.81)
+
+            distribution_confidence_intervals.normal_CI(self, func='CDF', CI_type=CI_type, plot_CI=plot_CI, CI=CI, text_title=text_title, color=p[0].get_color())
 
             restore_axes_limits(limits, dist=self, func='CDF', X=X, Y=cdf, xvals=xvals, xmin=xmin, xmax=xmax)
 
@@ -1014,14 +850,18 @@ class Normal_Distribution:
         if show_plot == False:
             return sf
         else:
+            CI_type, plot_CI, CI = distribution_confidence_intervals.CI_kwarg_handler(self, kwargs)
+
             limits = get_axes_limits()  # get the previous axes limits
 
-            plt.plot(X, sf, **kwargs)
+            p = plt.plot(X, sf, **kwargs)
             plt.xlabel('x values')
             plt.ylabel('Fraction surviving')
             text_title = str('Normal Distribution\n' + ' Survival Function ' + '\n' + self.param_title)
             plt.title(text_title)
             plt.subplots_adjust(top=0.81)
+
+            distribution_confidence_intervals.normal_CI(self, func='SF', CI_type=CI_type, plot_CI=plot_CI, CI=CI, text_title=text_title, color=p[0].get_color())
 
             restore_axes_limits(limits, dist=self, func='SF', X=X, Y=sf, xvals=xvals, xmin=xmin, xmax=xmax)
 
@@ -1092,18 +932,24 @@ class Normal_Distribution:
             X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
 
         chf = -np.log(ss.norm.sf(X, self.mu, self.sigma))
+        self._chf = chf  # required by the CI plotting part
+        self._X = X
 
         if show_plot == False:
             return chf
         else:
+            CI_type, plot_CI, CI = distribution_confidence_intervals.CI_kwarg_handler(self, kwargs)
+
             limits = get_axes_limits()  # get the previous axes limits
 
-            plt.plot(X, chf, **kwargs)
+            p = plt.plot(X, chf, **kwargs)
             plt.xlabel('x values')
             plt.ylabel('Cumulative hazard')
             text_title = str('Normal Distribution\n' + ' Cumulative Hazard Function ' + '\n' + self.param_title)
             plt.title(text_title)
             plt.subplots_adjust(top=0.81)
+
+            distribution_confidence_intervals.normal_CI(self, func='CHF', CI_type=CI_type, plot_CI=plot_CI, CI=CI, text_title=text_title, color=p[0].get_color())
 
             restore_axes_limits(limits, dist=self, func='CHF', X=X, Y=chf, xvals=xvals, xmin=xmin, xmax=xmax)
 
@@ -1229,7 +1075,7 @@ class Lognormal_Distribution:
     random_samples() - draws random samples from the distribution to which it is applied. Same as rvs in scipy.stats.
     '''
 
-    def __init__(self, mu=None, sigma=None, gamma=0):
+    def __init__(self, mu=None, sigma=None, gamma=0, **kwargs):
         self.name = 'Lognormal'
         self.mu = mu
         self.sigma = sigma
@@ -1256,6 +1102,32 @@ class Lognormal_Distribution:
             self.name2 = 'Lognormal_2P'
         self.b5 = ss.lognorm.ppf(0.05, self.sigma, self.gamma, np.exp(self.mu))  # note that scipy uses mu in a log way compared to most other software, so we must take the exp of the input
         self.b95 = ss.lognorm.ppf(0.95, self.sigma, self.gamma, np.exp(self.mu))
+
+        # extracts values for confidence interval plotting
+        if 'mu_SE' in kwargs:
+            self.mu_SE = kwargs.pop('mu_SE')
+        else:
+            self.mu_SE = None
+        if 'sigma_SE' in kwargs:
+            self.sigma_SE = kwargs.pop('sigma_SE')
+        else:
+            self.sigma_SE = None
+        if 'Cov_mu_sigma' in kwargs:
+            self.Cov_mu_sigma = kwargs.pop('Cov_mu_sigma')
+        else:
+            self.Cov_mu_sigma = None
+        if 'CI' in kwargs:
+            CI = kwargs.pop('CI')
+            self.Z = -ss.norm.ppf((1 - CI) / 2)
+        else:
+            self.Z = None
+        if 'CI_type' in kwargs:
+            self.CI_type = kwargs.pop('CI_type')
+        else:
+            self.CI_type = 'time'
+        for item in kwargs.keys():
+            print('WARNING:', item, 'not recognised as an appropriate entry in kwargs. Appropriate entries are alpha_SE, beta_SE, Cov_alpha_beta, CI, and CI_type')
+
         self._pdf0 = ss.lognorm.pdf(0, self.sigma, 0, np.exp(self.mu))  # the pdf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
         self._hf0 = ss.lognorm.pdf(0, self.sigma, 0, np.exp(self.mu)) / ss.lognorm.sf(0, self.sigma, 0, np.exp(self.mu))  # the hf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
 
@@ -1407,14 +1279,18 @@ class Lognormal_Distribution:
         if show_plot == False:
             return cdf
         else:
+            CI_type, plot_CI, CI = distribution_confidence_intervals.CI_kwarg_handler(self, kwargs)
+
             limits = get_axes_limits()  # get the previous axes limits
 
-            plt.plot(X, cdf, **kwargs)
+            p = plt.plot(X, cdf, **kwargs)
             plt.xlabel('x values')
             plt.ylabel('Fraction failing')
             text_title = str('Lognormal Distribution\n' + ' Cumulative Distribution Function ' + '\n' + self.param_title)
             plt.title(text_title)
             plt.subplots_adjust(top=0.81)
+
+            distribution_confidence_intervals.lognormal_CI(self, func='CDF', CI_type=CI_type, plot_CI=plot_CI, CI=CI, text_title=text_title, color=p[0].get_color())
 
             restore_axes_limits(limits, dist=self, func='CDF', X=X, Y=cdf, xvals=xvals, xmin=xmin, xmax=xmax)
 
@@ -1448,14 +1324,18 @@ class Lognormal_Distribution:
         if show_plot == False:
             return sf
         else:
+            CI_type, plot_CI, CI = distribution_confidence_intervals.CI_kwarg_handler(self, kwargs)
+
             limits = get_axes_limits()  # get the previous axes limits
 
-            plt.plot(X, sf, **kwargs)
+            p = plt.plot(X, sf, **kwargs)
             plt.xlabel('x values')
             plt.ylabel('Fraction surviving')
             text_title = str('Lognormal Distribution\n' + ' Survival Function ' + '\n' + self.param_title)
             plt.title(text_title)
             plt.subplots_adjust(top=0.81)
+
+            distribution_confidence_intervals.lognormal_CI(self, func='SF', CI_type=CI_type, plot_CI=plot_CI, CI=CI, text_title=text_title, color=p[0].get_color())
 
             restore_axes_limits(limits, dist=self, func='SF', X=X, Y=sf, xvals=xvals, xmin=xmin, xmax=xmax)
 
@@ -1526,18 +1406,24 @@ class Lognormal_Distribution:
             X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
 
         chf = -np.log(ss.lognorm.sf(X, self.sigma, self.gamma, np.exp(self.mu)))
+        self._chf = chf  # required by the CI plotting part
+        self._X = X
 
         if show_plot == False:
             return chf
         else:
+            CI_type, plot_CI, CI = distribution_confidence_intervals.CI_kwarg_handler(self, kwargs)
+
             limits = get_axes_limits()  # get the previous axes limits
 
-            plt.plot(X, chf, **kwargs)
+            p = plt.plot(X, chf, **kwargs)
             plt.xlabel('x values')
             plt.ylabel('Cumulative hazard')
             text_title = str('Lognormal Distribution\n' + ' Cumulative Hazard Function ' + '\n' + self.param_title)
             plt.title(text_title)
             plt.subplots_adjust(top=0.81)
+
+            distribution_confidence_intervals.lognormal_CI(self, func='CHF', CI_type=CI_type, plot_CI=plot_CI, CI=CI, text_title=text_title, color=p[0].get_color())
 
             restore_axes_limits(limits, dist=self, func='CHF', X=X, Y=chf, xvals=xvals, xmin=xmin, xmax=xmax)
 
@@ -1855,26 +1741,12 @@ class Exponential_Distribution:
         else:
             X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
 
-        # this determines if the user has specified for the CI bounds to be shown or hidden. kwargs are show_CI or plot_CI
-        kwargs_list = kwargs.keys()
-        if 'plot_CI' in kwargs_list:
-            plot_CI = kwargs.pop('plot_CI')
-        elif 'show_CI' in kwargs_list:
-            plot_CI = kwargs.pop('show_CI')
-        else:
-            plot_CI = True  # default
-        if 'CI_type' in kwargs_list:
-            kwargs.pop('CI_type')
-            print('WARNING: CI_type is not required for the Exponential distribution since the confidence intervals of time and reliability are identical')
-        if plot_CI not in [True, False]:
-            print('WARNING: unexpected value in kwargs. To show/hide the CI you can specify either show_CI=True/False or plot_CI=True/False')
-            plot_CI = True
-
         cdf = ss.expon.cdf(X, scale=1 / self.Lambda, loc=self.gamma)
 
         if show_plot == False:
             return cdf
         else:
+            plot_CI, CI = distribution_confidence_intervals.CI_kwarg_handler(self, kwargs)
 
             limits = get_axes_limits()
 
@@ -1887,7 +1759,7 @@ class Exponential_Distribution:
 
             restore_axes_limits(limits, dist=self, func='CDF', X=X, Y=cdf, xvals=xvals, xmin=xmin, xmax=xmax)
 
-            Exponential_Distribution.__expon_CI(self, func='CDF', plot_CI=plot_CI, text_title=text_title, color=p[0].get_color())
+            distribution_confidence_intervals.expon_CI(self, func='CDF', plot_CI=plot_CI, CI=CI, text_title=text_title, color=p[0].get_color())
 
             return cdf
 
@@ -1916,25 +1788,11 @@ class Exponential_Distribution:
         else:
             X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
 
-        # this determines if the user has specified for the CI bounds to be shown or hidden. kwargs are show_CI or plot_CI
-        kwargs_list = kwargs.keys()
-        if 'plot_CI' in kwargs_list:
-            plot_CI = kwargs.pop('plot_CI')
-        elif 'show_CI' in kwargs_list:
-            plot_CI = kwargs.pop('show_CI')
-        else:
-            plot_CI = True  # default
-        if 'CI_type' in kwargs_list:
-            kwargs.pop('CI_type')
-            print('WARNING: CI_type is not required for the Exponential distribution since the confidence intervals of time and reliability are identical')
-        if plot_CI not in [True, False]:
-            print('WARNING: unexpected value in kwargs. To show/hide the CI you can specify either show_CI=True/False or plot_CI=True/False')
-            plot_CI = True
-
         sf = ss.expon.sf(X, scale=1 / self.Lambda, loc=self.gamma)
         if show_plot == False:
             return sf
         else:
+            plot_CI, CI = distribution_confidence_intervals.CI_kwarg_handler(self, kwargs)
 
             limits = get_axes_limits()
 
@@ -1947,7 +1805,7 @@ class Exponential_Distribution:
 
             restore_axes_limits(limits, dist=self, func='SF', X=X, Y=sf, xvals=xvals, xmin=xmin, xmax=xmax)
 
-            Exponential_Distribution.__expon_CI(self, func='SF', plot_CI=plot_CI, text_title=text_title, color=p[0].get_color())
+            distribution_confidence_intervals.expon_CI(self, func='SF', plot_CI=plot_CI, CI=CI, text_title=text_title, color=p[0].get_color())
 
             return sf
 
@@ -1975,28 +1833,12 @@ class Exponential_Distribution:
         else:
             X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
 
-        # this determines if the user has specified for the CI bounds to be shown or hidden. kwargs are show_CI or plot_CI
-        kwargs_list = kwargs.keys()
-        if 'plot_CI' in kwargs_list:
-            plot_CI = kwargs.pop('plot_CI')
-        elif 'show_CI' in kwargs_list:
-            plot_CI = kwargs.pop('show_CI')
-        else:
-            plot_CI = True  # default
-        if 'CI_type' in kwargs_list:
-            kwargs.pop('CI_type')
-            print('WARNING: CI_type is not required for the Exponential distribution since the confidence intervals of time and reliability are identical')
-        if plot_CI not in [True, False]:
-            print('WARNING: unexpected value in kwargs. To show/hide the CI you can specify either show_CI=True/False or plot_CI=True/False')
-            plot_CI = True
-
         hf = np.ones_like(X) * self.Lambda
         hf = zeroise_below_gamma(X=X, Y=hf, gamma=self.gamma)
 
         if show_plot == False:
             return hf
         else:
-
             limits = get_axes_limits()
 
             p = plt.plot(X, hf, **kwargs)
@@ -2007,8 +1849,6 @@ class Exponential_Distribution:
             plt.subplots_adjust(top=0.81)
 
             restore_axes_limits(limits, dist=self, func='HF', X=X, Y=hf, xvals=xvals, xmin=xmin, xmax=xmax)
-
-            Exponential_Distribution.__expon_CI(self, func='HF', plot_CI=plot_CI, text_title=text_title, color=p[0].get_color())
 
             return hf
 
@@ -2038,27 +1878,14 @@ class Exponential_Distribution:
         else:
             X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
 
-        # this determines if the user has specified for the CI bounds to be shown or hidden. kwargs are show_CI or plot_CI
-        kwargs_list = kwargs.keys()
-        if 'plot_CI' in kwargs_list:
-            plot_CI = kwargs.pop('plot_CI')
-        elif 'show_CI' in kwargs_list:
-            plot_CI = kwargs.pop('show_CI')
-        else:
-            plot_CI = True  # default
-        if 'CI_type' in kwargs_list:
-            kwargs.pop('CI_type')
-            print('WARNING: CI_type is not required for the Exponential distribution since the confidence intervals of time and reliability are identical')
-        if plot_CI not in [True, False]:
-            print('WARNING: unexpected value in kwargs. To show/hide the CI you can specify either show_CI=True/False or plot_CI=True/False')
-            plot_CI = True
-
         chf = (X - self.gamma) * self.Lambda
         chf = zeroise_below_gamma(X=X, Y=chf, gamma=self.gamma)
 
         if show_plot == False:
             return chf
         else:
+            plot_CI, CI = distribution_confidence_intervals.CI_kwarg_handler(self, kwargs)
+
             limits = get_axes_limits()
 
             p = plt.plot(X, chf, **kwargs)
@@ -2070,63 +1897,9 @@ class Exponential_Distribution:
 
             restore_axes_limits(limits, dist=self, func='CHF', X=X, Y=chf, xvals=xvals, xmin=xmin, xmax=xmax)
 
-            Exponential_Distribution.__expon_CI(self, func='CHF', plot_CI=plot_CI, text_title=text_title, color=p[0].get_color())
+            distribution_confidence_intervals.expon_CI(self, func='CHF', plot_CI=plot_CI, CI=CI, text_title=text_title, color=p[0].get_color())
 
             return chf
-
-    def __expon_CI(self, func, plot_CI, text_title, color):
-        '''
-        Generates the confidence intervals for CDF, SF, HF, CHF
-        This is a hidden function intended only for use by other functions.
-        '''
-        if func not in ['CDF', 'SF', 'HF', 'CHF']:
-            raise ValueError('func must be either CDF, SF, HF, or CHF')
-
-        # this section plots the confidence interval
-        if self.Lambda_SE is not None and self.Z is not None and plot_CI is True:
-
-            # add a line to the plot title to include the confidence bounds information
-            CI_100 = round((1 - ss.norm.cdf(-self.Z) * 2) * 100, 4)  # Converts Z to CI and formats the confidence interval value ==> 0.95 becomes 95
-            if CI_100 % 1 == 0:
-                CI_100 = int(CI_100)  # removes decimals if the only decimal is 0
-            text_title = str(text_title + '\n' + str(CI_100) + '% confidence bounds')  # Adds the CI and CI_type to the title
-            plt.title(text_title)
-            plt.subplots_adjust(top=0.81)
-
-            Lambda_upper = self.Lambda * (np.exp(self.Z * (self.Lambda_SE / self.Lambda)))
-            Lambda_lower = self.Lambda * (np.exp(-self.Z * (self.Lambda_SE / self.Lambda)))
-            t_max = self.b95 * 5
-            t = np.geomspace(1e-5, t_max, 1000)
-
-            if func == 'CDF':
-                yy_upper0 = 1 - np.exp(-Lambda_upper * t)
-                yy_lower0 = 1 - np.exp(-Lambda_lower * t)
-                y_max = 1 - 1e-8
-                y_min = 1e-8
-            if func == 'SF':
-                yy_upper0 = np.exp(-Lambda_upper * t)
-                yy_lower0 = np.exp(-Lambda_lower * t)
-                y_max = 1 - 1e-8
-                y_min = 1e-8
-            if func == 'HF':
-                yy_upper0 = Lambda_upper * np.ones_like(t)
-                yy_lower0 = Lambda_lower * np.ones_like(t)
-                y_min = 0
-                y_max = Lambda_upper * 1.2
-                plt.ylim(0, y_max)  # this changes the ylims to ensure the CI will be included as it is a constant
-            if func == 'CHF':
-                yy_upper0 = -np.log(np.exp(-Lambda_upper * t))  # same as -np.log(SF)
-                yy_lower0 = -np.log(np.exp(-Lambda_lower * t))
-                y_min = 0
-                y_max = 1e10
-
-            # impose plotting limits so not plotting to infinity
-            yy_lower = np.where(yy_lower0 < y_min, y_min, np.where(yy_lower0 > y_max, y_max, yy_lower0))
-            yy_upper = np.where(yy_upper0 < y_min, y_min, np.where(yy_upper0 > y_max, y_max, yy_upper0))
-
-            fill_no_autoscale(xlower=t + self.gamma, xupper=t + self.gamma, ylower=yy_lower, yupper=yy_upper, color=color, alpha=0.3, linewidth=0)
-            line_no_autoscale(x=t + self.gamma, y=yy_lower, color=color, linewidth=0)  # these are invisible but need to be added to the plot for crosshairs() to find them
-            line_no_autoscale(x=t + self.gamma, y=yy_upper, color=color, linewidth=0)  # still need to specify color otherwise the invisible CI lines will consume default colors
 
     def quantile(self, q):
         '''
@@ -3367,23 +3140,12 @@ class Loglogistic_Distribution:
         else:
             X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
 
-        # this determines if the user has specified for the CI bounds to be shown or hidden.
-        kwargs_list = kwargs.keys()
-        if 'plot_CI' in kwargs_list:
-            plot_CI = kwargs.pop('plot_CI')
-        elif 'show_CI' in kwargs_list:
-            plot_CI = kwargs.pop('show_CI')
-        else:
-            plot_CI = True  # default
-        if plot_CI not in [True, False]:
-            print('WARNING: unexpected value in kwargs. To show/hide the CI you can specify either show_CI=True/False or plot_CI=True/False')
-            plot_CI = True
-
         cdf = ss.fisk.cdf(X, self.beta, scale=self.alpha, loc=self.gamma)
 
         if show_plot == False:
             return cdf
         else:
+            CI_type, plot_CI, CI = distribution_confidence_intervals.CI_kwarg_handler(self, kwargs)
 
             limits = get_axes_limits()  # get the previous axes limits
 
@@ -3396,7 +3158,7 @@ class Loglogistic_Distribution:
 
             restore_axes_limits(limits, dist=self, func='CDF', X=X, Y=cdf, xvals=xvals, xmin=xmin, xmax=xmax)
 
-            # Weibull_Distribution.__weibull_CI(self, func='CDF', plot_CI=plot_CI, text_title=text_title, color=p[0].get_color()) # commenting CI for now
+            distribution_confidence_intervals.loglogistic_CI(self, func='CDF', CI_type=CI_type, plot_CI=plot_CI, CI=CI, text_title=text_title, color=p[0].get_color())
 
             return cdf
 
@@ -3425,23 +3187,13 @@ class Loglogistic_Distribution:
         else:
             X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
 
-        # this determines if the user has specified for the CI bounds to be shown or hidden. Applicable kwargs are show_CI or plot_CI
-        kwargs_list = kwargs.keys()
-        if 'plot_CI' in kwargs_list:
-            plot_CI = kwargs.pop('plot_CI')
-        elif 'show_CI' in kwargs_list:
-            plot_CI = kwargs.pop('show_CI')
-        else:
-            plot_CI = True  # default
-        if plot_CI not in [True, False]:
-            print('WARNING: unexpected value in kwargs. To show/hide the CI you can specify either show_CI=True/False or plot_CI=True/False')
-            plot_CI = True
-
         sf = ss.fisk.sf(X, self.beta, scale=self.alpha, loc=self.gamma)
 
         if show_plot == False:
             return sf
         else:
+            CI_type, plot_CI, CI = distribution_confidence_intervals.CI_kwarg_handler(self, kwargs)
+
             limits = get_axes_limits()  # get the previous axes limits
 
             p = plt.plot(X, sf, **kwargs)
@@ -3453,7 +3205,7 @@ class Loglogistic_Distribution:
 
             restore_axes_limits(limits, dist=self, func='SF', X=X, Y=sf, xvals=xvals, xmin=xmin, xmax=xmax)
 
-            # Weibull_Distribution.__weibull_CI(self, func='SF', plot_CI=plot_CI, text_title=text_title, color=p[0].get_color()) # Commenting CI for now
+            distribution_confidence_intervals.loglogistic_CI(self, func='SF', CI_type=CI_type, plot_CI=plot_CI, CI=CI, text_title=text_title, color=p[0].get_color())
 
             return sf
 
@@ -3482,26 +3234,8 @@ class Loglogistic_Distribution:
         else:
             X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
 
-        # this determines if the user has specified for the CI bounds to be shown or hidden. Applicable kwargs are show_CI or plot_CI
-        kwargs_list = kwargs.keys()
-        if 'plot_CI' in kwargs_list:
-            plot_CI = kwargs.pop('plot_CI')
-        elif 'show_CI' in kwargs_list:
-            plot_CI = kwargs.pop('show_CI')
-        else:
-            plot_CI = True  # default
-        if plot_CI not in [True, False]:
-            print('WARNING: unexpected value in kwargs. To show/hide the CI you can specify either show_CI=True/False or plot_CI=True/False')
-            plot_CI = True
-
         hf = (self.beta / self.alpha) * ((X - self.gamma) / self.alpha) ** (self.beta - 1)
         hf = zeroise_below_gamma(X=X, Y=hf, gamma=self.gamma)
-        self._hf = hf  # required by the CI plotting part
-
-        chf = np.log(1 + ((X - self.gamma) / self.alpha) ** self.beta)
-        chf = zeroise_below_gamma(X=X, Y=chf, gamma=self.gamma)
-        self._chf = chf  # required by the CI plotting part
-        self._X = X
 
         if show_plot == False:
             return hf
@@ -3516,8 +3250,6 @@ class Loglogistic_Distribution:
             plt.subplots_adjust(top=0.81)
 
             restore_axes_limits(limits, dist=self, func='HF', X=X, Y=hf, xvals=xvals, xmin=xmin, xmax=xmax)
-
-            # Weibull_Distribution.__weibull_CI(self, func='HF', plot_CI=plot_CI, text_title=text_title, color=p[0].get_color())
 
             return hf
 
@@ -3546,18 +3278,6 @@ class Loglogistic_Distribution:
         else:
             X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
 
-        # this determines if the user has specified for the CI bounds to be shown or hidden. Applicable kwargs are show_CI or plot_CI
-        kwargs_list = kwargs.keys()
-        if 'plot_CI' in kwargs_list:
-            plot_CI = kwargs.pop('plot_CI')
-        elif 'show_CI' in kwargs_list:
-            plot_CI = kwargs.pop('show_CI')
-        else:
-            plot_CI = True  # default
-        if plot_CI not in [True, False]:
-            print('WARNING: unexpected value in kwargs. To show/hide the CI you can specify either show_CI=True/False or plot_CI=True/False')
-            plot_CI = True
-
         chf = np.log(1 + ((X - self.gamma) / self.alpha) ** self.beta)
         chf = zeroise_below_gamma(X=X, Y=chf, gamma=self.gamma)
         self._chf = chf  # required by the CI plotting part
@@ -3566,6 +3286,8 @@ class Loglogistic_Distribution:
         if show_plot == False:
             return chf
         else:
+            CI_type, plot_CI, CI = distribution_confidence_intervals.CI_kwarg_handler(self, kwargs)
+
             limits = get_axes_limits()  # get the previous axes limits
 
             p = plt.plot(X, chf, **kwargs)
@@ -3577,7 +3299,7 @@ class Loglogistic_Distribution:
 
             restore_axes_limits(limits, dist=self, func='CHF', X=X, Y=chf, xvals=xvals, xmin=xmin, xmax=xmax)
 
-            # Weibull_Distribution.__weibull_CI(self, func='CHF', plot_CI=plot_CI, text_title=text_title, color=p[0].get_color())
+            distribution_confidence_intervals.loglogistic_CI(self, func='CHF', CI_type=CI_type, plot_CI=plot_CI, CI=CI, text_title=text_title, color=p[0].get_color())
 
             return chf
 
@@ -3702,7 +3424,7 @@ class Gumbel_Distribution:
     random_samples() - draws random samples from the distribution to which it is applied. Same as rvs in scipy.stats.
     '''
 
-    def __init__(self, mu=None, sigma=None):
+    def __init__(self, mu=None, sigma=None, **kwargs):
         self.name = 'Gumbel'
         self.name2 = 'Gumbel_2P'
         self.mu = mu
@@ -3723,6 +3445,32 @@ class Gumbel_Distribution:
         self.param_title_long = str('Gumbel Distribution (μ=' + str(round_to_decimals(self.mu, dec)) + ',σ=' + str(round_to_decimals(self.sigma, dec)) + ')')
         self.b5 = ss.gumbel_l.ppf(0.05, loc=self.mu, scale=self.sigma)
         self.b95 = ss.gumbel_l.ppf(0.95, loc=self.mu, scale=self.sigma)
+
+        # extracts values for confidence interval plotting
+        if 'mu_SE' in kwargs:
+            self.mu_SE = kwargs.pop('mu_SE')
+        else:
+            self.mu_SE = None
+        if 'sigma_SE' in kwargs:
+            self.sigma_SE = kwargs.pop('sigma_SE')
+        else:
+            self.sigma_SE = None
+        if 'Cov_mu_sigma' in kwargs:
+            self.Cov_mu_sigma = kwargs.pop('Cov_mu_sigma')
+        else:
+            self.Cov_mu_sigma = None
+        if 'CI' in kwargs:
+            CI = kwargs.pop('CI')
+            self.Z = -ss.norm.ppf((1 - CI) / 2)
+        else:
+            self.Z = None
+        if 'CI_type' in kwargs:
+            self.CI_type = kwargs.pop('CI_type')
+        else:
+            self.CI_type = 'time'
+        for item in kwargs.keys():
+            print('WARNING:', item, 'not recognised as an appropriate entry in kwargs. Appropriate entries are alpha_SE, beta_SE, Cov_alpha_beta, CI, and CI_type')
+
         self._pdf0 = 0  # the pdf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
         self._hf0 = 0  # the hf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
 
@@ -3874,9 +3622,11 @@ class Gumbel_Distribution:
         if show_plot == False:
             return cdf
         else:
+            CI_type, plot_CI, CI = distribution_confidence_intervals.CI_kwarg_handler(self, kwargs)
+
             limits = get_axes_limits()  # get the previous axes limits
 
-            plt.plot(X, cdf, **kwargs)
+            p = plt.plot(X, cdf, **kwargs)
             plt.xlabel('x values')
             plt.ylabel('Fraction failing')
             text_title = str('Gumbel Distribution\n' + ' Cumulative Distribution Function ' + '\n' + self.param_title)
@@ -3884,6 +3634,8 @@ class Gumbel_Distribution:
             plt.subplots_adjust(top=0.85)
 
             restore_axes_limits(limits, dist=self, func='CDF', X=X, Y=cdf, xvals=xvals, xmin=xmin, xmax=xmax)
+
+            distribution_confidence_intervals.gumbel_CI(self, func='CDF', CI_type=CI_type, plot_CI=plot_CI, CI=CI, text_title=text_title, color=p[0].get_color())
 
             return cdf
 
@@ -3915,9 +3667,11 @@ class Gumbel_Distribution:
         if show_plot == False:
             return sf
         else:
+            CI_type, plot_CI, CI = distribution_confidence_intervals.CI_kwarg_handler(self, kwargs)
+
             limits = get_axes_limits()  # get the previous axes limits
 
-            plt.plot(X, sf, **kwargs)
+            p = plt.plot(X, sf, **kwargs)
             plt.xlabel('x values')
             plt.ylabel('Fraction surviving')
             text_title = str('Gumbel Distribution\n' + ' Survival Function ' + '\n' + self.param_title)
@@ -3925,6 +3679,8 @@ class Gumbel_Distribution:
             plt.subplots_adjust(top=0.85)
 
             restore_axes_limits(limits, dist=self, func='SF', X=X, Y=sf, xvals=xvals, xmin=xmin, xmax=xmax)
+
+            distribution_confidence_intervals.gumbel_CI(self, func='SF', CI_type=CI_type, plot_CI=plot_CI, CI=CI, text_title=text_title, color=p[0].get_color())
 
             return sf
 
@@ -3993,13 +3749,17 @@ class Gumbel_Distribution:
             X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)  # obtain the X array
 
         chf = np.exp((X - self.mu) / self.sigma)
+        self._X = X
+        self._chf = chf
 
         if show_plot == False:
             return chf
         else:
+            CI_type, plot_CI, CI = distribution_confidence_intervals.CI_kwarg_handler(self, kwargs)
+
             limits = get_axes_limits()  # get the previous axes limits
 
-            plt.plot(X, chf, **kwargs)
+            p = plt.plot(X, chf, **kwargs)
             plt.xlabel('x values')
             plt.ylabel('Cumulative hazard')
             text_title = str('Gumbel Distribution\n' + ' Cumulative Hazard Function ' + '\n' + self.param_title)
@@ -4007,6 +3767,8 @@ class Gumbel_Distribution:
             plt.subplots_adjust(top=0.85)
 
             restore_axes_limits(limits, dist=self, func='CHF', X=X, Y=chf, xvals=xvals, xmin=xmin, xmax=xmax)
+
+            distribution_confidence_intervals.gumbel_CI(self, func='CHF', CI_type=CI_type, plot_CI=plot_CI, CI=CI, text_title=text_title, color=p[0].get_color())
 
             return chf
 

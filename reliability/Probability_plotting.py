@@ -1,7 +1,7 @@
 '''
 Probability plotting
 
-This module contains the functions required to generate linearized probability plots of the 7 distributions included in reliability.
+This module contains the functions required to generate linearized probability plots of the 8 standard distributions included in reliability.
 The most common use of these type of probability plots is to assess goodness of fit.
 Also included in this module are probability-probability (PP) plots and quantile-quantile (QQ) plots.
 
@@ -15,6 +15,7 @@ Exponential_probability_plot - used for Exponential_1P and Exponential_2P plotti
 Exponential_probability_plot_Weibull_Scale - used for Exponential_1P and Exponential_2P plotting with Weibull Scale makes multiple plots with different Lambda parameters be parallel.
 Beta_probability_plot - used for Beta_2P plotting.
 Gamma_probability_plot - used for Gamma_2P and Gamma_3P plotting.
+Gumbel_probability_plot - used for Gumbel_2P plotting.
 QQ_plot_parametric - quantile-quantile plot. Compares two parametric distributions using shared quantiles. Useful for Field-to-Test conversions in ALT.
 QQ_plot_semiparametric - quantile-quantile plot. Compares failure data with a hypothesised parametric distribution. Useful to assess goodness of fit.
 PP_plot_parametric - probability-probability plot. Compares two parametric distributions using their CDFs. Useful to understand the differences between the quantiles of the distributions.
@@ -25,7 +26,7 @@ plot_points - plots the failure points on a scatter plot. Useful to overlay the 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from reliability.Distributions import Weibull_Distribution, Lognormal_Distribution, Normal_Distribution, Gamma_Distribution, Beta_Distribution, Exponential_Distribution, Loglogistic_Distribution
+from reliability.Distributions import Weibull_Distribution, Lognormal_Distribution, Normal_Distribution, Gamma_Distribution, Beta_Distribution, Exponential_Distribution, Loglogistic_Distribution, Gumbel_Distribution
 from reliability.Nonparametric import KaplanMeier, NelsonAalen, RankAdjustment
 from reliability.Utils import axes_transforms, round_to_decimals, probability_plot_xylims, probability_plot_xyticks
 
@@ -127,22 +128,20 @@ def Weibull_probability_plot(failures=None, right_censored=None, fit_gamma=False
     The plot is the only output. Use plt.show() to show it.
     '''
     # ensure the input data is arrays
-
     if len(failures) < 2 and __fitted_dist_params is None:
         raise ValueError('Insufficient data to fit a distribution. Minimum number of points is 2')
-    if type(failures) == np.ndarray:
-        pass
-    elif type(failures) == list:
-        failures = np.array(failures)
-    else:
+
+    if type(failures) not in [np.ndarray, list]:
         raise ValueError('failures must be a list or an array')
+    failures = np.asarray(failures)
+
     if right_censored is not None:
-        if type(right_censored) == np.ndarray:
-            pass
-        elif type(right_censored) == list:
-            right_censored = np.array(right_censored)
-        else:
+        if type(right_censored) not in [np.ndarray, list]:
             raise ValueError('right_censored must be a list or an array')
+        right_censored = np.asarray(right_censored)
+
+    if CI <= 0 or CI >= 1:
+        raise ValueError('CI must be between 0 and 1. Default is 0.95 for 95% Confidence interval.')
 
     if __fitted_dist_params is not None:
         if __fitted_dist_params.gamma > 0:
@@ -247,19 +246,18 @@ def Loglogistic_probability_plot(failures=None, right_censored=None, fit_gamma=F
 
     if len(failures) < 2 and __fitted_dist_params is None:
         raise ValueError('Insufficient data to fit a distribution. Minimum number of points is 2')
-    if type(failures) == np.ndarray:
-        pass
-    elif type(failures) == list:
-        failures = np.array(failures)
-    else:
+
+    if type(failures) not in [np.ndarray, list]:
         raise ValueError('failures must be a list or an array')
+    failures = np.asarray(failures)
+
     if right_censored is not None:
-        if type(right_censored) == np.ndarray:
-            pass
-        elif type(right_censored) == list:
-            right_censored = np.array(right_censored)
-        else:
+        if type(right_censored) not in [np.ndarray, list]:
             raise ValueError('right_censored must be a list or an array')
+        right_censored = np.asarray(right_censored)
+
+    if CI <= 0 or CI >= 1:
+        raise ValueError('CI must be between 0 and 1. Default is 0.95 for 95% Confidence interval.')
 
     if __fitted_dist_params is not None:
         if __fitted_dist_params.gamma > 0:
@@ -285,10 +283,8 @@ def Loglogistic_probability_plot(failures=None, right_censored=None, fit_gamma=F
         else:
             label = str('Fitted Loglogistic_2P (α=' + str(round_to_decimals(alpha, dec)) + ', β=' + str(round_to_decimals(beta, dec)) + ')')
         if 'color' in kwargs:
-            color = kwargs.pop('color')
-            data_color = color
+            data_color = kwargs.get('color')
         else:
-            color = 'red'
             data_color = 'k'
         xlabel = 'Time'
     elif fit_gamma is True:
@@ -314,10 +310,8 @@ def Loglogistic_probability_plot(failures=None, right_censored=None, fit_gamma=F
         else:
             label = str('Fitted Loglogistic_3P\n(α=' + str(round_to_decimals(alpha, dec)) + ', β=' + str(round_to_decimals(beta, dec)) + ', γ=' + str(round_to_decimals(gamma, dec)) + ')')
         if 'color' in kwargs:
-            color = kwargs.pop('color')
-            data_color = color
+            data_color = kwargs.get('color')
         else:
-            color = 'red'
             data_color = 'k'
         xlabel = 'Time - gamma'
         failures = failures - gamma
@@ -334,7 +328,7 @@ def Loglogistic_probability_plot(failures=None, right_censored=None, fit_gamma=F
     plt.grid(b=True, which='minor', color='k', alpha=0.08, linestyle='-')
     plt.gcf().set_size_inches(9, 9)  # adjust the figsize. This is done outside of figure creation so that layering of multiple plots is possible
     if show_fitted_distribution is True:
-        llf.CDF(color=color, label=label, **kwargs)
+        llf.CDF(label=label, **kwargs)
         plt.legend(loc='upper left')
     plt.title('Probability plot\nLoglogistic CDF')
     plt.ylabel('Fraction failing')
@@ -369,19 +363,18 @@ def Exponential_probability_plot_Weibull_Scale(failures=None, right_censored=Non
     # ensure the input data is arrays
     if len(failures) < 2 and __fitted_dist_params is None:
         raise ValueError('Insufficient data to fit a distribution. Minimum number of points is 2')
-    if type(failures) == np.ndarray:
-        pass
-    elif type(failures) == list:
-        failures = np.array(failures)
-    else:
+
+    if type(failures) not in [np.ndarray, list]:
         raise ValueError('failures must be a list or an array')
+    failures = np.asarray(failures)
+
     if right_censored is not None:
-        if type(right_censored) == np.ndarray:
-            pass
-        elif type(right_censored) == list:
-            right_censored = np.array(right_censored)
-        else:
+        if type(right_censored) not in [np.ndarray, list]:
             raise ValueError('right_censored must be a list or an array')
+        right_censored = np.asarray(right_censored)
+
+    if CI <= 0 or CI >= 1:
+        raise ValueError('CI must be between 0 and 1. Default is 0.95 for 95% Confidence interval.')
 
     if __fitted_dist_params is not None:
         if __fitted_dist_params.gamma > 0:
@@ -390,47 +383,47 @@ def Exponential_probability_plot_Weibull_Scale(failures=None, right_censored=Non
     if fit_gamma is False:
         if __fitted_dist_params is not None:
             Lambda = __fitted_dist_params.Lambda
-            Lambda_SE = __fitted_dist_params.Lambda_SE  ####
+            Lambda_SE = __fitted_dist_params.Lambda_SE
         else:
             from reliability.Fitters import Fit_Expon_1P
             fit = Fit_Expon_1P(failures=failures, right_censored=right_censored, CI=CI, show_probability_plot=False, print_results=False)
             Lambda = fit.Lambda
-            Lambda_SE = fit.Lambda_SE  ####
+            Lambda_SE = fit.Lambda_SE
         if 'label' in kwargs:
             label = kwargs.pop('label')
         else:
             label = str('Fitted Exponential_1P (λ=' + str(round_to_decimals(Lambda, dec)) + ')')
-        if 'color' in kwargs:  ####
-            data_color = kwargs.get('color')  ####
-        else:  ####
-            data_color = 'k'  ####
-        xlabel = 'Time'  ####
+        if 'color' in kwargs:
+            data_color = kwargs.get('color')
+        else:
+            data_color = 'k'
+        xlabel = 'Time'
     elif fit_gamma is True:
         if __fitted_dist_params is not None:
             Lambda = __fitted_dist_params.Lambda
-            Lambda_SE = __fitted_dist_params.Lambda_SE  ####
-            gamma = __fitted_dist_params.gamma  ####
+            Lambda_SE = __fitted_dist_params.Lambda_SE
+            gamma = __fitted_dist_params.gamma
         else:
             from reliability.Fitters import Fit_Expon_2P
             fit = Fit_Expon_2P(failures=failures, right_censored=right_censored, CI=CI, show_probability_plot=False, print_results=False)
             Lambda = fit.Lambda
-            Lambda_SE = fit.Lambda_SE  ####
-            gamma = fit.gamma  ####
+            Lambda_SE = fit.Lambda_SE
+            gamma = fit.gamma
 
         if 'label' in kwargs:
             label = kwargs.pop('label')
         else:
             label = str('Fitted Exponential_2P\n(λ=' + str(round_to_decimals(Lambda, dec)) + ', γ=' + str(round_to_decimals(gamma, dec)) + ')')
-        if 'color' in kwargs:  ####
-            data_color = kwargs.get('color')  ####
-        else:  ####
-            data_color = 'k'  ####
-        xlabel = 'Time - gamma'  ####
+        if 'color' in kwargs:
+            data_color = kwargs.get('color')
+        else:
+            data_color = 'k'
+        xlabel = 'Time - gamma'
         failures = failures - gamma + 0.009  # this 0.009 adjustment is to avoid taking the log of 0. It causes negligible difference to the fit and plot. 0.009 is chosen to be the same as Weibull_Fit_3P adjustment.
         if right_censored is not None:
             right_censored = right_censored - gamma + 0.009  # this 0.009 adjustment is to avoid taking the log of 0. It causes negligible difference to the fit and plot. 0.009 is chosen to be the same as Weibull_Fit_3P adjustment.
 
-    ef = Exponential_Distribution(Lambda=Lambda, Lambda_SE=Lambda_SE, CI=CI)  ####added extra params and removed .CDF
+    ef = Exponential_Distribution(Lambda=Lambda, Lambda_SE=Lambda_SE, CI=CI)
 
     # plot the failure points and format the scale and axes
     x, y = plotting_positions(failures=failures, right_censored=right_censored, a=a)
@@ -441,18 +434,92 @@ def Exponential_probability_plot_Weibull_Scale(failures=None, right_censored=Non
     plt.grid(b=True, which='minor', color='k', alpha=0.08, linestyle='-')
     plt.gcf().set_size_inches(9, 9)  # adjust the figsize. This is done outside of figure creation so that layering of multiple plots is possible
     if show_fitted_distribution is True:
-        ef.CDF(label=label, **kwargs)  #### remove color
+        ef.CDF(label=label, **kwargs)
         plt.legend(loc='upper left')
-    plt.ylabel('Fraction failing')  ####
-    plt.title('Probability plot\nExponential CDF (Weibull Scale)')  ####
-    plt.xlabel(xlabel)  #### needs to be set after plotting the CDF to override the default 'xvals'
+    plt.ylabel('Fraction failing')
+    plt.title('Probability plot\nExponential CDF (Weibull Scale)')
+    plt.xlabel(xlabel)  # needs to be set after plotting the CDF to override the default 'xvals'
     probability_plot_xylims(x=x, y=y, dist='weibull', spacing=0.1)
     probability_plot_xyticks()
     plt.subplots_adjust(top=0.92, bottom=0.09, left=0.12, right=0.94)
     return plt.gcf()
 
 
-def Normal_probability_plot(failures=None, right_censored=None, __fitted_dist_params=None, a=None, show_fitted_distribution=True, **kwargs):
+def Gumbel_probability_plot(failures=None, right_censored=None, __fitted_dist_params=None, a=None, show_fitted_distribution=True, CI=0.95, CI_type='time', **kwargs):
+    '''
+    Gumbel probability plot
+
+    Generates a probability plot on Gumbel scaled probability paper so that the distribution appears linear.
+    Inputs:
+    failures - the array or list of failure times
+    right_censored - the array or list of right censored failure times
+    show_fitted_distribution - True/False. If true, the fitted distribution will be plotted on the probability plot. Defaults to True
+    a - the heuristic constant for plotting positions of the form (k-a)/(n+1-2a). Default is a=0.3 which is the median rank method (same as the default in Minitab).
+        For more heuristics, see: https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics
+    kwargs are accepted for the fitted line (eg. linestyle, label, color)
+
+    Outputs:
+    The plot is the only output. Use plt.show() to show it.
+    '''
+    if len(failures) < 2 and __fitted_dist_params is None:
+        raise ValueError('Insufficient data to fit a distribution. Minimum number of points is 2')
+
+    if type(failures) not in [np.ndarray, list]:
+        raise ValueError('failures must be a list or an array')
+    failures = np.asarray(failures)
+
+    if right_censored is not None:
+        if type(right_censored) not in [np.ndarray, list]:
+            raise ValueError('right_censored must be a list or an array')
+        right_censored = np.asarray(right_censored)
+
+    if CI <= 0 or CI >= 1:
+        raise ValueError('CI must be between 0 and 1. Default is 0.95 for 95% Confidence interval.')
+
+    if __fitted_dist_params is not None:
+        mu = __fitted_dist_params.mu
+        sigma = __fitted_dist_params.sigma
+        mu_SE = __fitted_dist_params.mu_SE
+        sigma_SE = __fitted_dist_params.sigma_SE
+        Cov_mu_sigma = __fitted_dist_params.Cov_mu_sigma
+    else:
+        from reliability.Fitters import Fit_Gumbel_2P
+        fit = Fit_Gumbel_2P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False)
+        mu = fit.mu
+        sigma = fit.sigma
+        mu_SE = fit.mu_SE
+        sigma_SE = fit.sigma_SE
+        Cov_mu_sigma = fit.Cov_mu_sigma
+
+    if 'label' in kwargs:
+        label = kwargs.pop('label')
+    else:
+        label = str('Fitted Gumbel_2P (μ=' + str(round_to_decimals(mu, dec)) + ', σ=' + str(round_to_decimals(sigma, dec)) + ')')
+    if 'color' in kwargs:
+        data_color = kwargs.get('color')
+    else:
+        data_color = 'k'
+    gbf = Gumbel_Distribution(mu=mu, sigma=sigma, mu_SE=mu_SE, sigma_SE=sigma_SE, Cov_mu_sigma=Cov_mu_sigma, CI=CI, CI_type=CI_type)
+
+    x, y = plotting_positions(failures=failures, right_censored=right_censored, a=a)
+    plt.scatter(x, y, marker='.', linewidth=2, c=data_color)
+    plt.gca().set_yscale('function', functions=(axes_transforms.gumbel_forward, axes_transforms.gumbel_inverse))
+    plt.grid(b=True, which='major', color='k', alpha=0.3, linestyle='-')
+    plt.grid(b=True, which='minor', color='k', alpha=0.08, linestyle='-')
+    plt.gcf().set_size_inches(9, 9)  # adjust the figsize. This is done outside of figure creation so that layering of multiple plots is possible
+    if show_fitted_distribution is True:
+        gbf.CDF(label=label, **kwargs)
+        plt.legend(loc='upper left')
+    plt.title('Probability plot\nGumbel CDF')
+    plt.xlabel('Time')
+    plt.ylabel('Fraction failing')
+    probability_plot_xylims(x=x, y=y, dist='gumbel', spacing=0.1)
+    probability_plot_xyticks()
+    plt.subplots_adjust(top=0.92, bottom=0.09, left=0.12, right=0.94)
+    return plt.gcf()
+
+
+def Normal_probability_plot(failures=None, right_censored=None, __fitted_dist_params=None, a=None, CI=0.95, CI_type='time', show_fitted_distribution=True, **kwargs):
     '''
     Normal probability plot
 
@@ -470,33 +537,52 @@ def Normal_probability_plot(failures=None, right_censored=None, __fitted_dist_pa
     '''
     if len(failures) < 2 and __fitted_dist_params is None:
         raise ValueError('Insufficient data to fit a distribution. Minimum number of points is 2')
-    x, y = plotting_positions(failures=failures, right_censored=right_censored, a=a)
-    plt.gca().set_yscale('function', functions=(axes_transforms.normal_forward, axes_transforms.normal_inverse))
-    plt.grid(b=True, which='major', color='k', alpha=0.3, linestyle='-')
-    plt.grid(b=True, which='minor', color='k', alpha=0.08, linestyle='-')
+
+    if type(failures) not in [np.ndarray, list]:
+        raise ValueError('failures must be a list or an array')
+    failures = np.asarray(failures)
+
+    if right_censored is not None:
+        if type(right_censored) not in [np.ndarray, list]:
+            raise ValueError('right_censored must be a list or an array')
+        right_censored = np.asarray(right_censored)
+
+    if CI <= 0 or CI >= 1:
+        raise ValueError('CI must be between 0 and 1. Default is 0.95 for 95% Confidence interval.')
+
     if __fitted_dist_params is not None:
         mu = __fitted_dist_params.mu
         sigma = __fitted_dist_params.sigma
+        mu_SE = __fitted_dist_params.mu_SE
+        sigma_SE = __fitted_dist_params.sigma_SE
+        Cov_mu_sigma = __fitted_dist_params.Cov_mu_sigma
     else:
         from reliability.Fitters import Fit_Normal_2P
         fit = Fit_Normal_2P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False)
         mu = fit.mu
         sigma = fit.sigma
+        mu_SE = fit.mu_SE
+        sigma_SE = fit.sigma_SE
+        Cov_mu_sigma = fit.Cov_mu_sigma
     if 'label' in kwargs:
         label = kwargs.pop('label')
     else:
         label = str('Fitted Normal_2P (μ=' + str(round_to_decimals(mu, dec)) + ', σ=' + str(round_to_decimals(sigma, dec)) + ')')
     if 'color' in kwargs:
-        color = kwargs.pop('color')
-        data_color = color
+        data_color = kwargs.get('color')
     else:
-        color = 'red'
         data_color = 'k'
+    nf = Normal_Distribution(mu=mu, sigma=sigma, mu_SE=mu_SE, sigma_SE=sigma_SE, Cov_mu_sigma=Cov_mu_sigma, CI=CI, CI_type=CI_type)
+
+    # plot the failure points and format the scale and axes
+    x, y = plotting_positions(failures=failures, right_censored=right_censored, a=a)
     plt.scatter(x, y, marker='.', linewidth=2, c=data_color)
-    nf = Normal_Distribution(mu=mu, sigma=sigma)
+    plt.gca().set_yscale('function', functions=(axes_transforms.normal_forward, axes_transforms.normal_inverse))
+    plt.grid(b=True, which='major', color='k', alpha=0.3, linestyle='-')
+    plt.grid(b=True, which='minor', color='k', alpha=0.08, linestyle='-')
     plt.gcf().set_size_inches(9, 9)  # adjust the figsize. This is done outside of figure creation so that layering of multiple plots is possible
     if show_fitted_distribution is True:
-        nf.CDF(color=color, label=label, **kwargs)
+        nf.CDF(label=label, **kwargs)
         plt.legend(loc='upper left')
     plt.title('Probability plot\nNormal CDF')
     plt.xlabel('Time')
@@ -507,7 +593,7 @@ def Normal_probability_plot(failures=None, right_censored=None, __fitted_dist_pa
     return plt.gcf()
 
 
-def Lognormal_probability_plot(failures=None, right_censored=None, fit_gamma=False, __fitted_dist_params=None, a=None, show_fitted_distribution=True, **kwargs):
+def Lognormal_probability_plot(failures=None, right_censored=None, fit_gamma=False, __fitted_dist_params=None, a=None, CI=0.95, CI_type='time', show_fitted_distribution=True, **kwargs):
     '''
     Lognormal probability plot
 
@@ -528,19 +614,18 @@ def Lognormal_probability_plot(failures=None, right_censored=None, fit_gamma=Fal
     '''
     if len(failures) < 2 and __fitted_dist_params is None:
         raise ValueError('Insufficient data to fit a distribution. Minimum number of points is 2')
-    if type(failures) == np.ndarray:
-        pass
-    elif type(failures) == list:
-        failures = np.array(failures)
-    else:
+
+    if type(failures) not in [np.ndarray, list]:
         raise ValueError('failures must be a list or an array')
+    failures = np.asarray(failures)
+
     if right_censored is not None:
-        if type(right_censored) == np.ndarray:
-            pass
-        elif type(right_censored) == list:
-            right_censored = np.array(right_censored)
-        else:
+        if type(right_censored) not in [np.ndarray, list]:
             raise ValueError('right_censored must be a list or an array')
+        right_censored = np.asarray(right_censored)
+
+    if CI <= 0 or CI >= 1:
+        raise ValueError('CI must be between 0 and 1. Default is 0.95 for 95% Confidence interval.')
 
     if __fitted_dist_params is not None:
         if __fitted_dist_params.gamma > 0:
@@ -550,21 +635,25 @@ def Lognormal_probability_plot(failures=None, right_censored=None, fit_gamma=Fal
         if __fitted_dist_params is not None:
             mu = __fitted_dist_params.mu
             sigma = __fitted_dist_params.sigma
+            mu_SE = __fitted_dist_params.mu_SE
+            sigma_SE = __fitted_dist_params.sigma_SE
+            Cov_mu_sigma = __fitted_dist_params.Cov_mu_sigma
         else:
             from reliability.Fitters import Fit_Lognormal_2P
             fit = Fit_Lognormal_2P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False)
             mu = fit.mu
             sigma = fit.sigma
-        lnf = Lognormal_Distribution(mu=mu, sigma=sigma)
+            mu_SE = fit.mu_SE
+            sigma_SE = fit.sigma_SE
+            Cov_mu_sigma = fit.Cov_mu_sigma
+
         if 'label' in kwargs:
             label = kwargs.pop('label')
         else:
             label = str('Fitted Lognormal_2P (μ=' + str(round_to_decimals(mu, dec)) + ', σ=' + str(round_to_decimals(sigma, dec)) + ')')
         if 'color' in kwargs:
-            color = kwargs.pop('color')
-            data_color = color
+            data_color = kwargs.get('color')
         else:
-            color = 'red'
             data_color = 'k'
         xlabel = 'Time'
     elif fit_gamma is True:
@@ -572,27 +661,32 @@ def Lognormal_probability_plot(failures=None, right_censored=None, fit_gamma=Fal
             mu = __fitted_dist_params.mu
             sigma = __fitted_dist_params.sigma
             gamma = __fitted_dist_params.gamma
+            mu_SE = __fitted_dist_params.mu_SE
+            sigma_SE = __fitted_dist_params.sigma_SE
+            Cov_mu_sigma = __fitted_dist_params.Cov_mu_sigma
         else:
             from reliability.Fitters import Fit_Lognormal_3P
             fit = Fit_Lognormal_3P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False)
             mu = fit.mu
             sigma = fit.sigma
             gamma = fit.gamma
-        lnf = Lognormal_Distribution(mu=mu, sigma=sigma)
+            mu_SE = fit.mu_SE
+            sigma_SE = fit.sigma_SE
+            Cov_mu_sigma = fit.Cov_mu_sigma
         if 'label' in kwargs:
             label = kwargs.pop('label')
         else:
             label = str('Fitted Lognormal_3P (μ=' + str(round_to_decimals(mu, dec)) + ', σ=' + str(round_to_decimals(sigma, dec)) + ', γ=' + str(round_to_decimals(gamma, dec)) + ')')
         if 'color' in kwargs:
-            color = kwargs.pop('color')
-            data_color = color
+            data_color = kwargs.get('color')
         else:
-            color = 'red'
             data_color = 'k'
         xlabel = 'Time - gamma'
         failures = failures - gamma
         if right_censored is not None:
             right_censored = right_censored - gamma
+    lnf = Lognormal_Distribution(mu=mu, sigma=sigma, mu_SE=mu_SE, sigma_SE=sigma_SE, Cov_mu_sigma=Cov_mu_sigma, CI=CI, CI_type=CI_type)
+
     # plot the failure points and format the scale and axes
     x, y = plotting_positions(failures=failures, right_censored=right_censored, a=a)
     plt.scatter(x, y, marker='.', linewidth=2, c=data_color)
@@ -603,7 +697,7 @@ def Lognormal_probability_plot(failures=None, right_censored=None, fit_gamma=Fal
 
     plt.gcf().set_size_inches(9, 9)  # adjust the figsize. This is done outside of figure creation so that layering of multiple plots is possible
     if show_fitted_distribution is True:
-        lnf.CDF(color=color, label=label, **kwargs)
+        lnf.CDF(label=label, **kwargs)
         plt.legend(loc='upper left')
     plt.title('Probability plot\nLognormal CDF')
     plt.ylabel('Fraction failing')
@@ -614,7 +708,7 @@ def Lognormal_probability_plot(failures=None, right_censored=None, fit_gamma=Fal
     return plt.gcf()
 
 
-def Beta_probability_plot(failures=None, right_censored=None, __fitted_dist_params=None, a=None, show_fitted_distribution=True, **kwargs):
+def Beta_probability_plot(failures=None, right_censored=None, __fitted_dist_params=None, a=None, CI=0.95, CI_type='time', show_fitted_distribution=True, **kwargs):
     '''
     Beta probability plot
 
@@ -632,6 +726,19 @@ def Beta_probability_plot(failures=None, right_censored=None, __fitted_dist_para
     '''
     if len(failures) < 2 and __fitted_dist_params is None:
         raise ValueError('Insufficient data to fit a distribution. Minimum number of points is 2')
+
+    if type(failures) not in [np.ndarray, list]:
+        raise ValueError('failures must be a list or an array')
+    failures = np.asarray(failures)
+
+    if right_censored is not None:
+        if type(right_censored) not in [np.ndarray, list]:
+            raise ValueError('right_censored must be a list or an array')
+        right_censored = np.asarray(right_censored)
+
+    if CI <= 0 or CI >= 1:
+        raise ValueError('CI must be between 0 and 1. Default is 0.95 for 95% Confidence interval.')
+
     x, y = plotting_positions(failures=failures, right_censored=right_censored, a=a)
     plt.grid(b=True, which='major', color='k', alpha=0.3, linestyle='-')
     plt.grid(b=True, which='minor', color='k', alpha=0.08, linestyle='-')
@@ -648,22 +755,21 @@ def Beta_probability_plot(failures=None, right_censored=None, __fitted_dist_para
     else:
         label = str('Fitted Beta_2P (α=' + str(round_to_decimals(alpha, dec)) + ', β=' + str(round_to_decimals(beta, dec)) + ')')
     if 'color' in kwargs:
-        color = kwargs.pop('color')
-        data_color = color
+        data_color = kwargs.get('color')
     else:
-        color = 'red'
         data_color = 'k'
+    bf = Beta_Distribution(alpha=alpha, beta=beta)
+
     plt.scatter(x, y, marker='.', linewidth=2, c=data_color)
-    if show_fitted_distribution is True:
-        bf = Beta_Distribution(alpha=alpha, beta=beta)
     f_beta = lambda x: axes_transforms.beta_forward(x, alpha, beta)
     fi_beta = lambda x: axes_transforms.beta_inverse(x, alpha, beta)
     plt.gca().set_yscale('function', functions=(f_beta, fi_beta))
-    bf.CDF(color=color, label=label, **kwargs)
+    if show_fitted_distribution is True:
+        bf.CDF(label=label, **kwargs)
+        plt.legend(loc='upper left')
     plt.title('Probability plot\nBeta CDF')
     plt.xlabel('Time')
     plt.ylabel('Fraction failing')
-    plt.legend(loc='upper left')
     plt.gcf().set_size_inches(9, 9)  # adjust the figsize. This is done outside of figure creation so that layering of multiple plots is possible
     probability_plot_xylims(x=x, y=y, dist='beta', spacing=0.1, beta_alpha=alpha, beta_beta=beta)
     probability_plot_xyticks(yticks=[0.1, 0.3, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99, 0.999, 0.9999, 0.99999])
@@ -671,7 +777,7 @@ def Beta_probability_plot(failures=None, right_censored=None, __fitted_dist_para
     return plt.gcf()
 
 
-def Gamma_probability_plot(failures=None, right_censored=None, fit_gamma=False, __fitted_dist_params=None, a=None, show_fitted_distribution=True, **kwargs):
+def Gamma_probability_plot(failures=None, right_censored=None, fit_gamma=False, __fitted_dist_params=None, a=None, CI=0.95, CI_type='time', show_fitted_distribution=True, **kwargs):
     '''
     Gamma probability plot
 
@@ -691,19 +797,18 @@ def Gamma_probability_plot(failures=None, right_censored=None, fit_gamma=False, 
     # ensure the input data is arrays
     if len(failures) < 2 and __fitted_dist_params is None:
         raise ValueError('Insufficient data to fit a distribution. Minimum number of points is 2')
-    if type(failures) == np.ndarray:
-        pass
-    elif type(failures) == list:
-        failures = np.array(failures)
-    else:
+
+    if type(failures) not in [np.ndarray, list]:
         raise ValueError('failures must be a list or an array')
+    failures = np.asarray(failures)
+
     if right_censored is not None:
-        if type(right_censored) == np.ndarray:
-            pass
-        elif type(right_censored) == list:
-            right_censored = np.array(right_censored)
-        else:
+        if type(right_censored) not in [np.ndarray, list]:
             raise ValueError('right_censored must be a list or an array')
+        right_censored = np.asarray(right_censored)
+
+    if CI <= 0 or CI >= 1:
+        raise ValueError('CI must be between 0 and 1. Default is 0.95 for 95% Confidence interval.')
 
     if __fitted_dist_params is not None:
         if __fitted_dist_params.gamma > 0:
@@ -724,10 +829,8 @@ def Gamma_probability_plot(failures=None, right_censored=None, fit_gamma=False, 
         else:
             label = str('Fitted Gamma_2P (α=' + str(round_to_decimals(alpha, dec)) + ', β=' + str(round_to_decimals(beta, dec)) + ')')
         if 'color' in kwargs:
-            color = kwargs.pop('color')
-            data_color = color
+            data_color = kwargs.get('color')
         else:
-            color = 'red'
             data_color = 'k'
         xlabel = 'Time'
     elif fit_gamma is True:
@@ -747,10 +850,8 @@ def Gamma_probability_plot(failures=None, right_censored=None, fit_gamma=False, 
         else:
             label = str('Fitted Gamma_3P\n(α=' + str(round_to_decimals(alpha, dec)) + ', β=' + str(round_to_decimals(beta, dec)) + ', γ=' + str(round_to_decimals(gamma, dec)) + ')')
         if 'color' in kwargs:
-            color = kwargs.pop('color')
-            data_color = color
+            data_color = kwargs.get('color')
         else:
-            color = 'red'
             data_color = 'k'
         xlabel = 'Time - gamma'
         failures = failures - gamma
@@ -766,7 +867,7 @@ def Gamma_probability_plot(failures=None, right_censored=None, fit_gamma=False, 
     plt.grid(b=True, which='minor', color='k', alpha=0.08, linestyle='-')
     plt.gcf().set_size_inches(9, 9)  # adjust the figsize. This is done outside of figure creation so that layering of multiple plots is possible
     if show_fitted_distribution is True:
-        gf.CDF(color=color, label=label, **kwargs)
+        gf.CDF(label=label, **kwargs)
         plt.legend(loc='upper left')
     plt.title('Probability plot\nGamma CDF')
     plt.ylabel('Fraction failing')
@@ -797,6 +898,15 @@ def Exponential_probability_plot(failures=None, right_censored=None, fit_gamma=F
     '''
     if len(failures) < 2 and __fitted_dist_params is None:
         raise ValueError('Insufficient data to fit a distribution. Minimum number of points is 2')
+
+    if type(failures) not in [np.ndarray, list]:
+        raise ValueError('failures must be a list or an array')
+    failures = np.asarray(failures)
+
+    if right_censored is not None:
+        if type(right_censored) not in [np.ndarray, list]:
+            raise ValueError('right_censored must be a list or an array')
+        right_censored = np.asarray(right_censored)
 
     if CI <= 0 or CI >= 1:
         raise ValueError('CI must be between 0 and 1. Default is 0.95 for 95% Confidence interval.')
@@ -860,7 +970,7 @@ def Exponential_probability_plot(failures=None, right_censored=None, fit_gamma=F
         plt.legend(loc='upper left')
     plt.title('Probability plot\nExponential CDF')
     plt.ylabel('Fraction failing')
-    plt.xlabel(xlabel)  #### needs to be set after plotting the CDF to override the default 'xvals'
+    plt.xlabel(xlabel)  # needs to be set after plotting the CDF to override the default 'xvals'
     probability_plot_xylims(x=x, y=y, dist='exponential', spacing=0.1)
     probability_plot_xyticks(yticks=[0.1, 0.3, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99, 0.999, 0.9999, 0.99999])
     plt.subplots_adjust(top=0.92, bottom=0.09, left=0.12, right=0.94)
