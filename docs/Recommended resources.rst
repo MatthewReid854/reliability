@@ -59,6 +59,7 @@ The listing of a software package here does not imply my endorsement, and is onl
 -    `Derivative calculator <https://www.derivative-calculator.net/>`_ - calculates derivatives. Slightly more user friendly input method than Wolfram alpha and doesn't time out as easily for big calculations.
 -    `Integral calculator <https://www.integral-calculator.com/>`_ - calculates integrals. Slightly more user friendly input method than Wolfram alpha and doesn't time out as easily for big calculations.
 -    `GeoGebra <https://www.geogebra.org/calculator>`_ - An interactive calculator that is extremely useful for plotting equations. Also includes many mathematical operations (such as integrals and derivatives) that allow you to keep your equations in symbolic form. You can download your current calculator to save it. The only downside is that there are not many probability distribution functions inbuilt so you will need to enter the `equations <https://reliability.readthedocs.io/en/latest/Equations%20of%20supported%20distributions.html>`_ manually.
+-    `NewReleases.io <https://newreleases.io/>`_ - This website allows you to setup email notifications for when a new release of `reliability` (or any other package) is uploaded to PyPI. While not exactly a tool for reliability engineering, it is very useful to let you know when it's time to upgrade your version of reliability.
 
 **Online information resources**
 
