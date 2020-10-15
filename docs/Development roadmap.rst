@@ -7,12 +7,12 @@ Development roadmap
 
 The following development roadmap is the current task list and implementation plan for the Python reliability library. I welcome the addition of new suggestions, both large and small, as well as help with writing the code if you feel that you have the ability. This roadmap is regularly changing and you may see some things remain on here for a while without progressing, while others may be prioritized at short notice. If you have a suggested feature or you find a bug, please raise an `Issue <https://github.com/MatthewReid854/reliability/issues>`_ on Github or email me (alpha.reliability@gmail.com) and I will endeavour to either add it rapidly (for simple tasks and bug fixes) or add it to the roadmap. The current release schedule is approximately every 4 to 6 weeks.
 
-**Currently in development**
+**High priority (likely to be part of the next release)**
 
 -    Confidence intervals for Gamma and Beta Distributions. Currently the confidence intervals have been completed for all of the other standard distributions.
 -    Writing more automated tests. This will speed up the code development processes and help prevent future changes having unidentified effects.
 
-**High priority (expected by the end of 2020)**
+**Medium priority (expected in early 2021)**
 
 -    New Distributions along with their associated fitters and probability plots:
 
