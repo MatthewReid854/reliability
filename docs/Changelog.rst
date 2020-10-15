@@ -10,10 +10,19 @@ Changelog
 
 **New features**
 
--    Added Gumbel_Distribution
+-    Confidence intervals added for Normal, Lognormal, Loglogistic, and Gumbel Distributions (I still need to do Gamma and Beta Distributions)
+-    Added Gumbel_Distribution to Distributions
 -    Added Gumbel_Distribution to Other_functions.distribution_explorer
+-    Added Fit_Gumbel_2P to Fitters
+-    Added Gumbel_probability_plot to Probability_plotting
+-    Added Gumbel Distribution to Fitters.Fit_Everything
+-    Added Gumbel Distribution to Other_functions.similar_distributions
+-    Added Gumbel Distribution to Stress_strength.Probability_of_failure
+-    Added Loglogistic and Gumbel Distributions to PP_plot_parametric, QQ_plot_parametric, PP_plot_semiparametric, and QQ_plot_semiparametric. Loglogistic should have been added in version 0.5.3 but it was missed.
 
 **API Changes**
+
+-    Confidence intervals were previously available for the Weibull and Exponential distribution Hazard functions. This capability has been removed as it was not useful (just as confidence intervals on the PDF are not useful). Any attempt to use confidence interval related keywords (such as CI and CI_type) on the HF of any distribution will generate an error.
 
 **Bug Fixes**
 
@@ -23,22 +32,29 @@ Changelog
 **Other**
 
 -    Removed margins in the stress_strength plots so that the xaxis coincides with the plot window.
+-    Changed layout of Fitters.Fit_Everything probability plot and PP plot to be 4x3 without Beta fitted and 5x3 with Beta fitted. This was necessary to include the Gumbel Distribution in the space that Beta previously used.
+-    Formatting changes to Fitters.Fit_Everything PP plot so the red line extends to the edges of the plot.
+-    The histogram plot in Fitters.Fit_Everything now has its legend in the order of the the results, such that the best fitting distribution will appear first in the legend.
+-    Within Other_functions.similar_distributions there were cases when a 3P distribution was fitted and the optimal gamma was 0 (making it the same as its 2P distribution). A filter has been added so the 3P distribution will only be shown if the gamma parameter is non-zero.
+-    Improved plots for Stress_strength so the distribution xvals extend beyond the plot xlims. This is only noticable if the plot is moved.
+-    Adjusted scaling and line colors for all QQ and PP plots to improve the way they are displayed.
+-    PP_plot_parametric now has labels for quantile lines which are linked to the axes coords, so if the plot is moves / zoomed the labels will follow the plotting window.
 
 **Version: 0.5.3 --- Released: 29 September 2020**
 ''''''''''''''''''''''''''''''''''''''''''''''''''
 
 **New features**
 
--    Implemented Loglogistic_Distribution
--    Implemented Fit_Loglogistic_2P and Fit_Loglogistic_3P
--    Implemented Loglogistic_probability_plot
+-    Added Loglogistic_Distribution to Distributions
+-    Added Fit_Loglogistic_2P and Fit_Loglogistic_3P to Fitters
+-    Added Loglogistic_probability_plot to Probability_plotting
 -    Added Fit_Loglogistic_2P and Fit_Loglogistic_3P to Fitters.Fit_Everything
 -    Added Loglogistic distribution to Other_functions.similar_distributions
 -    Added Loglogistic distribution to Stress_strength.probability_of_failure
 -    Added the function Reliability_testing.reliability_test_duration
 -    Added the function Other_functions.distribution_explorer
 -    Added Utils.probability_plot_xylims and Utils.probability_plot_xyticks which provide better axes limits and tick labels. These are now incorporated into all probability plots, ALT probability plots and ALT Fitters.
--    Added Chi-squared and Kolomogorov-Smirnov goodness of fit tests to Reliability_testing
+-    Added Chi-squared and Kolmogorov-Smirnov goodness of fit tests to Reliability_testing
 -    Added Anderson-Darling goodness of fit test statistic into all Fitters (It is not approriate to use for ALT_fitters for the entire model). This now allows users to compare distributions goodness of fit using Log-likelihood, AICc, BIC, or AD. Note that the Anderson-Darling test statistic is the default goodness of fit test statistic in Minitab.
 -    Added Utils.anderson_darling to simplify the process of calculating the AD statistic. It's a lot of formulas that are best packaged into a function that is called by each of the Fitters.
 -    Added Datasets.mileage which is a simple dataset with no right censored data.
