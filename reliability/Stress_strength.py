@@ -6,7 +6,8 @@ Probability_of_failure - works with any distributions and uses numerical integra
 Probability_of_failure_normdist - works only when both the stress and strength distributions are Normal Distributions.
     Uses an exact method (formula) rather than calculating the integral. Use this function if you have two Normal Distributions.
 '''
-from reliability.Distributions import Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution, Loglogistic_Distribution
+from reliability.Distributions import Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution,\
+    Gamma_Distribution, Beta_Distribution, Loglogistic_Distribution, Gumbel_Distribution
 from reliability.Utils import round_to_decimals
 import numpy as np
 import scipy.stats as ss
@@ -37,7 +38,8 @@ def Probability_of_failure(stress, strength, show_distribution_plot=True, print_
     Probability_of_failure(stress=stress, strength=strength)
     '''
 
-    if type(stress) not in [Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution, Loglogistic_Distribution] or type(strength) not in [Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution, Loglogistic_Distribution]:
+    if type(stress) not in [Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution, Loglogistic_Distribution, Gumbel_Distribution] \
+            or type(strength) not in [Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution, Loglogistic_Distribution, Gumbel_Distribution]:
         raise ValueError('Stress and Strength must both be probability distributions. First define the distribution using reliability.Distributions.___')
     if type(stress) == Normal_Distribution and type(strength) == Normal_Distribution and warn is True:  # supress the warning by setting warn=False
         print('If strength and stress are both Normal distributions, it is more accurate to use the exact formula. The exact formula is supported in the function Probability_of_failure_normdist. To supress this warning set warn=False')
@@ -49,8 +51,8 @@ def Probability_of_failure(stress, strength, show_distribution_plot=True, print_
 
     if show_distribution_plot is True:
         xlims = plt.xlim(auto=None)
-        xmin = stress.b5
-        xmax = strength.b95
+        xmin = stress.quantile(0.00001)
+        xmax = strength.quantile(0.99999)
         if xmin < (xmax - xmin)/4:
             xmin = 0 #if the lower bound on xmin is near zero (relative to the entire range) then just make it zero
         if type(stress) == Beta_Distribution:
@@ -68,15 +70,15 @@ def Probability_of_failure(stress, strength, show_distribution_plot=True, print_
         plt.fill_between(xvals[0:intercept_idx],strength_PDF[0:intercept_idx],stress_PDF[0:intercept_idx],color='steelblue',alpha=0.3,linewidth=0, linestyle='--')
         plt.fill_between(xvals[intercept_idx::],stress_PDF[intercept_idx::],strength_PDF[intercept_idx::],color='darkorange',alpha=0.3,linewidth=0, linestyle='--')
         failure_text = str('Probability of\nfailure = ' + str(round_to_decimals(prob_of_failure, 4)))
-        plt.legend(title=failure_text, loc='upper right')
+        plt.legend(title=failure_text)
         plt.title('Stress - Strength Interference Plot')
         plt.ylabel('Probability Density')
         plt.xlabel('Stress and Strength Units')
         plt.subplots_adjust(left=0.16)
         if xlims != (0,1):
-            plt.xlim(min(xvals,xlims[0]),max(xvals,xlims[1]),auto=None)
+            plt.xlim(min(stress.b5,xlims[0]),max(strength.b95,xlims[1]),auto=None)
         else:
-            plt.xlim(min(xvals), max(xvals),auto=None)
+            plt.xlim(stress.b5, strength.b95,auto=None)
         plt.ylim(bottom=0,auto=None)
 
     if print_results is True:
@@ -117,8 +119,8 @@ def Probability_of_failure_normdist(stress=None, strength=None, show_distributio
 
     if show_distribution_plot is True:
         xlims = plt.xlim(auto=None)
-        xmin = stress.b5
-        xmax = strength.b95
+        xmin = stress.quantile(0.00001)
+        xmax = strength.quantile(0.99999)
         xvals = np.linspace(xmin, xmax, 1000)
         stress_PDF = stress.PDF(xvals=xvals, show_plot=False)
         strength_PDF = strength.PDF(xvals=xvals, show_plot=False)
@@ -130,15 +132,15 @@ def Probability_of_failure_normdist(stress=None, strength=None, show_distributio
         plt.fill_between(xvals[0:intercept_idx],strength_PDF[0:intercept_idx],stress_PDF[0:intercept_idx],color='steelblue',alpha=0.3,linewidth=0, linestyle='--')
         plt.fill_between(xvals[intercept_idx::],stress_PDF[intercept_idx::],strength_PDF[intercept_idx::],color='darkorange',alpha=0.3,linewidth=0, linestyle='--')
         failure_text = str('Probability of\nfailure = ' + str(round_to_decimals(prob_of_failure, 4)))
-        plt.legend(title=failure_text,loc='upper right')
+        plt.legend(title=failure_text)
         plt.title('Stress - Strength Interference Plot')
         plt.ylabel('Probability Density')
         plt.xlabel('Stress and Strength Units')
         plt.subplots_adjust(left=0.15, right=0.93)
         if xlims != (0,1):
-            plt.xlim(min(xvals,xlims[0]),max(xvals,xlims[1]),auto=None)
+            plt.xlim(min(stress.b5,xlims[0]),max(strength.b95,xlims[1]),auto=None)
         else:
-            plt.xlim(min(xvals), max(xvals),auto=None)
+            plt.xlim(stress.b5, strength.b95,auto=None)
         plt.ylim(bottom=0,auto=None)
 
     return prob_of_failure

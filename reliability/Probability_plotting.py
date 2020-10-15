@@ -24,6 +24,7 @@ plot_points - plots the failure points on a scatter plot. Useful to overlay the 
 '''
 
 import matplotlib.pyplot as plt
+from matplotlib.transforms import blended_transform_factory
 import numpy as np
 import pandas as pd
 from reliability.Distributions import Weibull_Distribution, Lognormal_Distribution, Normal_Distribution, Gamma_Distribution, Beta_Distribution, Exponential_Distribution, Loglogistic_Distribution, Gumbel_Distribution
@@ -995,7 +996,8 @@ def PP_plot_parametric(X_dist=None, Y_dist=None, y_quantile_lines=None, x_quanti
 
     if X_dist is None or Y_dist is None:
         raise ValueError('X_dist and Y_dist must both be specified as probability distributions generated using the Distributions module')
-    if type(X_dist) not in [Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution] or type(Y_dist) not in [Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution]:
+    if type(X_dist) not in [Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution, Loglogistic_Distribution, Gumbel_Distribution]\
+            or type(Y_dist) not in [Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution, Loglogistic_Distribution, Gumbel_Distribution]:
         raise ValueError('Invalid probability distribution. X_dist and Y_dist must both be specified as probability distributions generated using the Distributions module')
 
     # extract certain keyword arguments or specify them if they are not set
@@ -1019,50 +1021,31 @@ def PP_plot_parametric(X_dist=None, Y_dist=None, y_quantile_lines=None, x_quanti
     plt.scatter(dist_X_CDF, dist_Y_CDF, marker=marker, color=color, **kwargs)
 
     # this creates the labels for the axes using the parameters of the distributions
-    sigfig = 2
-    if X_dist.name == 'Weibull':
-        X_label_str = str('Weibull CDF (α=' + str(round(X_dist.alpha, sigfig)) + ', β=' + str(round(X_dist.beta, sigfig)) + ', γ=' + str(round(X_dist.gamma, sigfig)) + ')')
-    elif X_dist.name == 'Gamma':
-        X_label_str = str('Gamma CDF (α=' + str(round(X_dist.alpha, sigfig)) + ', β=' + str(round(X_dist.beta, sigfig)) + ', γ=' + str(round(X_dist.gamma, sigfig)) + ')')
-    elif X_dist.name == 'Exponential':
-        X_label_str = str('Exponential CDF (λ=' + str(round(X_dist.Lambda, sigfig)) + ', γ=' + str(round(X_dist.gamma, sigfig)) + ')')
-    elif X_dist.name == 'Normal':
-        X_label_str = str('Normal CDF (μ=' + str(round(X_dist.mu, sigfig)) + ', σ=' + str(round(X_dist.sigma, sigfig)) + ')')
-    elif X_dist.name == 'Lognormal':
-        X_label_str = str('Lognormal CDF (μ=' + str(round(X_dist.mu, sigfig)) + ', σ=' + str(round(X_dist.sigma, sigfig)) + ', γ=' + str(round(X_dist.gamma, sigfig)) + ')')
-    elif X_dist.name == 'Beta':
-        X_label_str = str('Beta CDF (α=' + str(round(X_dist.alpha, sigfig)) + ', β=' + str(round(X_dist.beta, sigfig)) + ')')
-
-    if Y_dist.name == 'Weibull':
-        Y_label_str = str('Weibull CDF (α=' + str(round(Y_dist.alpha, sigfig)) + ', β=' + str(round(Y_dist.beta, sigfig)) + ', γ=' + str(round(Y_dist.gamma, sigfig)) + ')')
-    elif Y_dist.name == 'Gamma':
-        Y_label_str = str('Gamma CDF (α=' + str(round(Y_dist.alpha, sigfig)) + ', β=' + str(round(Y_dist.beta, sigfig)) + ', γ=' + str(round(Y_dist.gamma, sigfig)) + ')')
-    elif Y_dist.name == 'Exponential':
-        Y_label_str = str('Exponential CDF (λ=' + str(round(Y_dist.Lambda, sigfig)) + ', γ=' + str(round(Y_dist.gamma, sigfig)) + ')')
-    elif Y_dist.name == 'Normal':
-        Y_label_str = str('Normal CDF (μ=' + str(round(Y_dist.mu, sigfig)) + ', σ=' + str(round(Y_dist.sigma, sigfig)) + ')')
-    elif Y_dist.name == 'Lognormal':
-        Y_label_str = str('Lognormal CDF (μ=' + str(round(Y_dist.mu, sigfig)) + ', σ=' + str(round(Y_dist.sigma, sigfig)) + ', γ=' + str(round(Y_dist.gamma, sigfig)) + ')')
-    elif Y_dist.name == 'Beta':
-        Y_label_str = str('Beta CDF (α=' + str(round(Y_dist.alpha, sigfig)) + ', β=' + str(round(Y_dist.beta, sigfig)) + ')')
+    X_label_str = str(X_dist.name+' CDF ('+X_dist.param_title+')')
+    Y_label_str = str(Y_dist.name+' CDF ('+Y_dist.param_title+')')
     plt.xlabel(X_label_str)
     plt.ylabel(Y_label_str)
 
+    ax = plt.gca()
+    stick_to_y = blended_transform_factory(ax.transAxes, ax.transData)
+    stick_to_x = blended_transform_factory(ax.transData,ax.transAxes)
     # this draws on the quantile lines
     if y_quantile_lines is not None:
         for q in y_quantile_lines:
             quantile = X_dist.CDF(xvals=Y_dist.quantile(q), show_plot=False)
-            plt.plot([0, quantile, quantile], [q, q, 0], color='blue', linewidth=0.5)
-            plt.text(0, q, str(q))
-            plt.text(quantile, 0, str(round(quantile, 2)))
+            plt.plot([-1000, quantile, quantile], [q, q, -1000], color='blue', linewidth=0.5)
+            plt.text(s=str(round(quantile, 2)),x=quantile,y=0,transform=stick_to_x,clip_on=True)
+            plt.text(s=str(q), x=0, y=q, transform=stick_to_y,clip_on=True)
+
     if x_quantile_lines is not None:
         for q in x_quantile_lines:
             quantile = Y_dist.CDF(xvals=X_dist.quantile(q), show_plot=False)
-            plt.plot([q, q, 0], [0, quantile, quantile], color='red', linewidth=0.5)
-            plt.text(q, 0, str(q))
-            plt.text(0, quantile, str(round(quantile, 2)))
+            plt.plot([q, q, -1000], [-1000, quantile, quantile], color='red', linewidth=0.5)
+            plt.text(s=str(round(quantile, 2)),x=0,y=quantile,transform=stick_to_y,clip_on=True)
+            plt.text(s=str(q), x=q, y=0, transform=stick_to_x,clip_on=True)
+
     if show_diagonal_line is True:
-        plt.plot([0, 1], [0, 1], color='blue', alpha=0.5, label='Y = X')
+        plt.plot([0, 1], [0, 1], color='red', alpha=0.7, label='Y = X')
     plt.title('Probability-Probability plot\nParametric')
     plt.axis('square')
     plt.xlim([0, 1])
@@ -1090,7 +1073,8 @@ def QQ_plot_parametric(X_dist=None, Y_dist=None, show_fitted_lines=True, show_di
 
     if X_dist is None or Y_dist is None:
         raise ValueError('dist_X and dist_Y must both be specified as probability distributions generated using the Distributions module')
-    if type(X_dist) not in [Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution] or type(Y_dist) not in [Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution]:
+    if type(X_dist) not in [Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution, Loglogistic_Distribution, Gumbel_Distribution] \
+            or type(Y_dist) not in [Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution, Loglogistic_Distribution, Gumbel_Distribution]:
         raise ValueError('dist_X and dist_Y must both be specified as probability distributions generated using the Distributions module')
     xvals = np.linspace(0.01, 0.99, 100)
 
@@ -1114,11 +1098,13 @@ def QQ_plot_parametric(X_dist=None, Y_dist=None, show_fitted_lines=True, show_di
     plt.scatter(dist_X_ISF, dist_Y_ISF, color=color, marker=marker, **kwargs)
 
     # fit lines and generate text for equations to go in legend
+    max_value = max(max(dist_X_ISF), max(dist_Y_ISF))
+    min_value = min(min(dist_X_ISF), min(dist_Y_ISF))
     x = dist_X_ISF[:, np.newaxis]
     y = dist_Y_ISF
     deg1 = np.polyfit(dist_X_ISF, dist_Y_ISF, deg=1)  # fit y=mx+c
     m = np.linalg.lstsq(x, y, rcond=-1)[0][0]  # fit y=mx
-    x_fit = np.linspace(0, max(dist_X_ISF) * 1.1, 100)
+    x_fit = np.linspace(-max_value, max_value*2, 100)
     y_fit = m * x_fit
     text_str = str('Y = ' + str(round(m, 3)) + ' X')
     y1_fit = deg1[0] * x_fit + deg1[1]
@@ -1126,49 +1112,28 @@ def QQ_plot_parametric(X_dist=None, Y_dist=None, show_fitted_lines=True, show_di
         text_str1 = str('Y = ' + str(round(deg1[0], 3)) + ' X' + ' - ' + str(round(-1 * deg1[1], 3)))
     else:
         text_str1 = str('Y = ' + str(round(deg1[0], 3)) + ' X' + ' + ' + str(round(deg1[1], 3)))
-    xmax = max(dist_X_ISF) * 1.1
-    ymax = max(dist_Y_ISF) * 1.1
-    overall_max = max(xmax, ymax)
+
     if show_diagonal_line is True:
-        plt.plot([0, overall_max], [0, overall_max], color='blue', alpha=0.5, label='Y = X')
+        plt.plot([-max_value, max_value*2], [-max_value, max_value*2], color='red', alpha=0.7, label='Y = X')
     if show_fitted_lines is True:
-        plt.plot(x_fit, y_fit, color='red', alpha=0.5, label=text_str)
+        plt.plot(x_fit, y_fit, color='darkorange', alpha=0.5, label=text_str)
         plt.plot(x_fit, y1_fit, color='green', alpha=0.5, label=text_str1)
         plt.legend(title='Fitted lines:')
 
     # this creates the labels for the axes using the parameters of the distributions
-    sigfig = 2
-    if X_dist.name == 'Weibull':
-        X_label_str = str('Weibull Quantiles (α=' + str(round(X_dist.alpha, sigfig)) + ', β=' + str(round(X_dist.beta, sigfig)) + ', γ=' + str(round(X_dist.gamma, sigfig)) + ')')
-    if X_dist.name == 'Gamma':
-        X_label_str = str('Gamma Quantiles (α=' + str(round(X_dist.alpha, sigfig)) + ', β=' + str(round(X_dist.beta, sigfig)) + ', γ=' + str(round(X_dist.gamma, sigfig)) + ')')
-    if X_dist.name == 'Exponential':
-        X_label_str = str('Exponential Quantiles (λ=' + str(round(X_dist.Lambda, sigfig)) + ', γ=' + str(round(X_dist.gamma, sigfig)) + ')')
-    if X_dist.name == 'Normal':
-        X_label_str = str('Normal Quantiles (μ=' + str(round(X_dist.mu, sigfig)) + ', σ=' + str(round(X_dist.sigma, sigfig)) + ')')
-    if X_dist.name == 'Lognormal':
-        X_label_str = str('Lognormal Quantiles (μ=' + str(round(X_dist.mu, sigfig)) + ', σ=' + str(round(X_dist.sigma, sigfig)) + ', γ=' + str(round(X_dist.gamma, sigfig)) + ')')
-    if X_dist.name == 'Beta':
-        X_label_str = str('Beta Quantiles (α=' + str(round(X_dist.alpha, sigfig)) + ', β=' + str(round(X_dist.beta, sigfig)) + ')')
-
-    if Y_dist.name == 'Weibull':
-        Y_label_str = str('Weibull Quantiles (α=' + str(round(Y_dist.alpha, sigfig)) + ', β=' + str(round(Y_dist.beta, sigfig)) + ', γ=' + str(round(Y_dist.gamma, sigfig)) + ')')
-    if Y_dist.name == 'Gamma':
-        Y_label_str = str('Gamma Quantiles (α=' + str(round(Y_dist.alpha, sigfig)) + ', β=' + str(round(Y_dist.beta, sigfig)) + ', γ=' + str(round(Y_dist.gamma, sigfig)) + ')')
-    if Y_dist.name == 'Exponential':
-        Y_label_str = str('Exponential Quantiles (λ=' + str(round(Y_dist.Lambda, sigfig)) + ', γ=' + str(round(Y_dist.gamma, sigfig)) + ')')
-    if Y_dist.name == 'Normal':
-        Y_label_str = str('Normal Quantiles (μ=' + str(round(Y_dist.mu, sigfig)) + ', σ=' + str(round(Y_dist.sigma, sigfig)) + ')')
-    if Y_dist.name == 'Lognormal':
-        Y_label_str = str('Lognormal Quantiles (μ=' + str(round(Y_dist.mu, sigfig)) + ', σ=' + str(round(Y_dist.sigma, sigfig)) + ', γ=' + str(round(Y_dist.gamma, sigfig)) + ')')
-    if Y_dist.name == 'Beta':
-        Y_label_str = str('Beta Quantiles (α=' + str(round(Y_dist.alpha, sigfig)) + ', β=' + str(round(Y_dist.beta, sigfig)) + ')')
+    X_label_str = str(X_dist.name + ' Quantiles (' + X_dist.param_title + ')')
+    Y_label_str = str(Y_dist.name + ' Quantiles (' + Y_dist.param_title + ')')
     plt.xlabel(X_label_str)
     plt.ylabel(Y_label_str)
     plt.title('Quantile-Quantile plot\nParametric')
-    plt.axis('square')
-    plt.xlim([0, overall_max])
-    plt.ylim([0, overall_max])
+    # plt.axis('equal')
+    xmin,xmax = min(dist_X_ISF),max(dist_X_ISF)
+    xdelta = xmax-xmin
+    ymin,ymax = min(dist_Y_ISF),max(dist_Y_ISF)
+    ydelta = ymax-ymin
+
+    plt.xlim([xmin-0.05*xdelta, xmax+0.05*xdelta])
+    plt.ylim([ymin-0.05*ydelta, ymax+0.05*ydelta])
     return [m, deg1[0], deg1[1]]
 
 
@@ -1194,7 +1159,8 @@ def PP_plot_semiparametric(X_data_failures=None, X_data_right_censored=None, Y_d
 
     if X_data_failures is None or Y_dist is None:
         raise ValueError('X_data_failures and Y_dist must both be specified. X_data_failures can be an array or list of failure times. Y_dist must be a probability distribution generated using the Distributions module')
-    if type(Y_dist) not in [Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution] or type(Y_dist) not in [Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution]:
+    if type(Y_dist) not in [Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution, Loglogistic_Distribution, Gumbel_Distribution] \
+            or type(Y_dist) not in [Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution, Loglogistic_Distribution, Gumbel_Distribution]:
         raise ValueError('Y_dist must be specified as a probability distribution generated using the Distributions module')
     if type(X_data_failures) == list:
         X_data_failures = np.sort(np.array(X_data_failures))
@@ -1243,30 +1209,18 @@ def PP_plot_semiparametric(X_data_failures=None, X_data_right_censored=None, Y_d
         xlabel = 'Empirical CDF (Rank Adjustment estimate)'
     else:
         raise ValueError('method must be "KM" for Kaplan-meier, "NA" for Nelson-Aalen, or "RA" for Rank Adjustment. Default is KM')
+
+    if show_diagonal_line is True:
+        plt.plot([-1, 2], [-1, 2], color='red', alpha=0.7)
+
     CDF = Y_dist.CDF(X_data_failures, show_plot=False)
     plt.scatter(ecdf, CDF, color=color, marker=marker, **kwargs)
-
-    # this creates the labels for the axes using the parameters of the distributions
-    sigfig = 2
-    if Y_dist.name == 'Weibull':
-        Y_label_str = str('Weibull CDF (α=' + str(round(Y_dist.alpha, sigfig)) + ', β=' + str(round(Y_dist.beta, sigfig)) + ', γ=' + str(round(Y_dist.gamma, sigfig)) + ')')
-    if Y_dist.name == 'Gamma':
-        Y_label_str = str('Gamma CDF (α=' + str(round(Y_dist.alpha, sigfig)) + ', β=' + str(round(Y_dist.beta, sigfig)) + ', γ=' + str(round(Y_dist.gamma, sigfig)) + ')')
-    if Y_dist.name == 'Exponential':
-        Y_label_str = str('Exponential CDF (λ=' + str(round(Y_dist.Lambda, sigfig)) + ', γ=' + str(round(Y_dist.gamma, sigfig)) + ')')
-    if Y_dist.name == 'Normal':
-        Y_label_str = str('Normal CDF (μ=' + str(round(Y_dist.mu, sigfig)) + ', σ=' + str(round(Y_dist.sigma, sigfig)) + ')')
-    if Y_dist.name == 'Lognormal':
-        Y_label_str = str('Lognormal CDF (μ=' + str(round(Y_dist.mu, sigfig)) + ', σ=' + str(round(Y_dist.sigma, sigfig)) + ', γ=' + str(round(Y_dist.gamma, sigfig)) + ')')
-    if Y_dist.name == 'Beta':
-        Y_label_str = str('Beta CDF (α=' + str(round(Y_dist.alpha, sigfig)) + ', β=' + str(round(Y_dist.beta, sigfig)) + ')')
+    Y_label_str = str(Y_dist.name + ' CDF (' + Y_dist.param_title + ')')
     plt.ylabel(Y_label_str)
     plt.xlabel(xlabel)
     plt.axis('square')
     plt.xlim([0, 1])
     plt.ylim([0, 1])
-    if show_diagonal_line is True:
-        plt.plot([0, 1], [0, 1], color='blue', alpha=0.5)
     plt.title('Probability-Probability Plot\nSemi-parametric')
     return plt.gcf()
 
@@ -1295,7 +1249,8 @@ def QQ_plot_semiparametric(X_data_failures=None, X_data_right_censored=None, Y_d
 
     if X_data_failures is None or Y_dist is None:
         raise ValueError('X_data_failures and Y_dist must both be specified. X_data_failures can be an array or list of failure times. Y_dist must be a probability distribution generated using the Distributions module')
-    if type(Y_dist) not in [Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution] or type(Y_dist) not in [Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution]:
+    if type(Y_dist) not in [Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution, Loglogistic_Distribution, Gumbel_Distribution] \
+            or type(Y_dist) not in [Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution, Loglogistic_Distribution, Gumbel_Distribution]:
         raise ValueError('Y_dist must be specified as a probability distribution generated using the Distributions module')
     if type(X_data_failures) == list:
         X_data_failures = np.sort(np.array(X_data_failures))
@@ -1356,16 +1311,17 @@ def QQ_plot_semiparametric(X_data_failures=None, X_data_right_censored=None, Y_d
     plt.ylabel(str('Theoretical Quantiles based on\n' + method_str + ' estimate and ' + Y_dist.name + ' distribution'))
     plt.xlabel('Actual Quantiles')
     plt.axis('square')
-    endval = max(max(dist_Y_ISF), max(X_data_failures)) * 1.1
+    max_value = max(max(dist_Y_ISF), max(X_data_failures))
+    min_value = min(min(dist_Y_ISF), min(X_data_failures))
     if show_diagonal_line is True:
-        plt.plot([0, endval], [0, endval], color='blue', alpha=0.5, label='Y = X')
+        plt.plot([-max_value, max_value*2], [-max_value, max_value*2], color='red', alpha=0.7, label='Y = X')
 
     # fit lines and generate text for equations to go in legend
     y = dist_Y_ISF[:, np.newaxis]
     x = X_data_failures[:, np.newaxis]
     deg1 = np.polyfit(X_data_failures, dist_Y_ISF, deg=1)  # fit y=mx+c
     m = np.linalg.lstsq(x, y, rcond=-1)[0][0][0]  # fit y=mx
-    x_fit = np.linspace(0, endval, 100)
+    x_fit = np.linspace(-max_value, max_value*2, 100)
     y_fit = m * x_fit
     text_str = str('Y = ' + str(round(m, 3)) + ' X')
     y1_fit = deg1[0] * x_fit + deg1[1]
@@ -1377,8 +1333,10 @@ def QQ_plot_semiparametric(X_data_failures=None, X_data_right_censored=None, Y_d
         plt.plot(x_fit, y_fit, color='red', alpha=0.5, label=text_str)
         plt.plot(x_fit, y1_fit, color='green', alpha=0.5, label=text_str1)
         plt.legend(title='Fitted lines:')
-    plt.xlim([0, endval])
-    plt.ylim([0, endval])
+    delta = max_value-min_value
+    lims = [min_value-0.05*delta, max_value+0.05*delta]
+    plt.xlim(lims)
+    plt.ylim(lims)
     plt.title('Quantile-Quantile Plot\nSemi-parametric')
     return [m, deg1[0], deg1[1]]
 

@@ -16,7 +16,8 @@ import numpy as np
 from matplotlib.lines import Line2D
 from mplcursors import cursor
 import warnings
-from reliability.Distributions import Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution, Loglogistic_Distribution, Gumbel_Distribution
+from reliability.Distributions import Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution,\
+    Gamma_Distribution, Beta_Distribution,Loglogistic_Distribution, Gumbel_Distribution
 from reliability.Fitters import Fit_Everything
 from matplotlib.widgets import Slider, RadioButtons
 import random
@@ -50,7 +51,7 @@ class similar_distributions:
 
     def __init__(self, distribution, include_location_shifted=True, show_plot=True, print_results=True, number_of_distributions_to_show=3):
         # ensure the input is a distribution object
-        if type(distribution) not in [Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution, Loglogistic_Distribution]:
+        if type(distribution) not in [Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution, Loglogistic_Distribution, Gumbel_Distribution]:
             raise ValueError('distribution must be a probability distribution object from the reliability.Distributions module. First define the distribution using Reliability.Distributions.___')
 
         # sample the CDF from 0.001 to 0.999. These samples will be used to fit all other distributions.
@@ -96,23 +97,31 @@ class similar_distributions:
             elif dist_name == 'Loglogistic_2P':
                 ranked_distributions_objects.append(Loglogistic_Distribution(alpha=fitted_results.Loglogistic_2P_alpha, beta=fitted_results.Loglogistic_2P_beta))
                 ranked_distributions_labels.append(str('Loglogistic_2P (α=' + str(round(fitted_results.Loglogistic_2P_alpha, sigfig)) + ',β=' + str(round(fitted_results.Loglogistic_2P_beta, sigfig)) + ')'))
+            elif dist_name == 'Gumbel_2P':
+                ranked_distributions_objects.append(Gumbel_Distribution(mu=fitted_results.Gumbel_2P_mu, sigma=fitted_results.Gumbel_2P_sigma))
+                ranked_distributions_labels.append(str('Gumbel_2P (μ=' + str(round(fitted_results.Gumbel_2P_mu, sigfig)) + ',σ=' + str(round(fitted_results.Gumbel_2P_sigma, sigfig)) + ')'))
 
             if include_location_shifted is True:
                 if dist_name == 'Weibull_3P':
-                    ranked_distributions_objects.append(Weibull_Distribution(alpha=fitted_results.Weibull_3P_alpha, beta=fitted_results.Weibull_3P_beta, gamma=fitted_results.Weibull_3P_gamma))
-                    ranked_distributions_labels.append(str('Weibull_3P (α=' + str(round(fitted_results.Weibull_3P_alpha, sigfig)) + ',β=' + str(round(fitted_results.Weibull_3P_beta, sigfig)) + ',γ=' + str(round(fitted_results.Weibull_3P_gamma, sigfig)) + ')'))
+                    if fitted_results.Weibull_3P_gamma is not 0:
+                        ranked_distributions_objects.append(Weibull_Distribution(alpha=fitted_results.Weibull_3P_alpha, beta=fitted_results.Weibull_3P_beta, gamma=fitted_results.Weibull_3P_gamma))
+                        ranked_distributions_labels.append(str('Weibull_3P (α=' + str(round(fitted_results.Weibull_3P_alpha, sigfig)) + ',β=' + str(round(fitted_results.Weibull_3P_beta, sigfig)) + ',γ=' + str(round(fitted_results.Weibull_3P_gamma, sigfig)) + ')'))
                 elif dist_name == 'Gamma_3P':
-                    ranked_distributions_objects.append(Gamma_Distribution(alpha=fitted_results.Gamma_3P_alpha, beta=fitted_results.Gamma_3P_beta, gamma=fitted_results.Gamma_3P_gamma))
-                    ranked_distributions_labels.append(str('Gamma_3P (α=' + str(round(fitted_results.Gamma_3P_alpha, sigfig)) + ',β=' + str(round(fitted_results.Gamma_3P_beta, sigfig)) + ',γ=' + str(round(fitted_results.Gamma_3P_gamma, sigfig)) + ')'))
+                    if fitted_results.Gamma_3P_gamma is not 0:
+                        ranked_distributions_objects.append(Gamma_Distribution(alpha=fitted_results.Gamma_3P_alpha, beta=fitted_results.Gamma_3P_beta, gamma=fitted_results.Gamma_3P_gamma))
+                        ranked_distributions_labels.append(str('Gamma_3P (α=' + str(round(fitted_results.Gamma_3P_alpha, sigfig)) + ',β=' + str(round(fitted_results.Gamma_3P_beta, sigfig)) + ',γ=' + str(round(fitted_results.Gamma_3P_gamma, sigfig)) + ')'))
                 elif dist_name == 'Lognormal_3P':
-                    ranked_distributions_objects.append(Lognormal_Distribution(mu=fitted_results.Lognormal_3P_mu, sigma=fitted_results.Lognormal_3P_sigma, gamma=fitted_results.Lognormal_3P_gamma))
-                    ranked_distributions_labels.append(str('Lognormal_3P (μ=' + str(round(fitted_results.Lognormal_3P_mu, sigfig)) + ',σ=' + str(round(fitted_results.Lognormal_3P_sigma, sigfig)) + ',γ=' + str(round(fitted_results.Lognormal_3P_gamma, sigfig)) + ')'))
+                    if fitted_results.Lognormal_3P_gamma is not 0:
+                        ranked_distributions_objects.append(Lognormal_Distribution(mu=fitted_results.Lognormal_3P_mu, sigma=fitted_results.Lognormal_3P_sigma, gamma=fitted_results.Lognormal_3P_gamma))
+                        ranked_distributions_labels.append(str('Lognormal_3P (μ=' + str(round(fitted_results.Lognormal_3P_mu, sigfig)) + ',σ=' + str(round(fitted_results.Lognormal_3P_sigma, sigfig)) + ',γ=' + str(round(fitted_results.Lognormal_3P_gamma, sigfig)) + ')'))
                 elif dist_name == 'Exponential_2P':
-                    ranked_distributions_objects.append(Exponential_Distribution(Lambda=fitted_results.Expon_1P_lambda, gamma=fitted_results.Expon_2P_gamma))
-                    ranked_distributions_labels.append(str('Exponential_1P (lambda=' + str(round(fitted_results.Expon_1P_lambda, sigfig)) + ',γ=' + str(round(fitted_results.Expon_2P_gamma, sigfig)) + ')'))
+                    if fitted_results.Expon_2P_gamma is not 0:
+                        ranked_distributions_objects.append(Exponential_Distribution(Lambda=fitted_results.Expon_1P_lambda, gamma=fitted_results.Expon_2P_gamma))
+                        ranked_distributions_labels.append(str('Exponential_1P (lambda=' + str(round(fitted_results.Expon_1P_lambda, sigfig)) + ',γ=' + str(round(fitted_results.Expon_2P_gamma, sigfig)) + ')'))
                 elif dist_name == 'Loglogistic_3P':
-                    ranked_distributions_objects.append(Loglogistic_Distribution(alpha=fitted_results.Loglogistic_3P_alpha, beta=fitted_results.Loglogistic_3P_beta, gamma=fitted_results.Loglogistic_3P_gamma))
-                    ranked_distributions_labels.append(str('Loglogistic_3P (α=' + str(round(fitted_results.Loglogistic_3P_alpha, sigfig)) + ',β=' + str(round(fitted_results.Loglogistic_3P_beta, sigfig)) + ',γ=' + str(round(fitted_results.Loglogistic_3P_gamma, sigfig)) + ')'))
+                    if fitted_results.Loglogistic_3P_gamma is not 0:
+                        ranked_distributions_objects.append(Loglogistic_Distribution(alpha=fitted_results.Loglogistic_3P_alpha, beta=fitted_results.Loglogistic_3P_beta, gamma=fitted_results.Loglogistic_3P_gamma))
+                        ranked_distributions_labels.append(str('Loglogistic_3P (α=' + str(round(fitted_results.Loglogistic_3P_alpha, sigfig)) + ',β=' + str(round(fitted_results.Loglogistic_3P_beta, sigfig)) + ',γ=' + str(round(fitted_results.Loglogistic_3P_gamma, sigfig)) + ')'))
 
         number_of_distributions_fitted = len(ranked_distributions_objects)
         self.results = ranked_distributions_objects
