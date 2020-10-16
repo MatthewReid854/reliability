@@ -46,7 +46,7 @@ To upgrade a previous installation of *reliability* to the most recent version, 
 pip install --upgrade reliability
 ```
 
-If you would like to be notified by email of when a new release of `reliability` is uploaded to PyPI, there is a free service to do exactly that called `NewReleases.io <https://newreleases.io/>`_.
+If you would like to receive an email notification when a new release of `reliability` is uploaded to PyPI, [NewReleases.io](https://newreleases.io/) provides this service for free.
 
 ## Documentation
 Check out [readthedocs](https://reliability.readthedocs.io/en/latest/) for detailed documentation and examples.
