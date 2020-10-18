@@ -6,7 +6,7 @@ Probability plots
 '''''''''''''''''
 
 Proabability plots are a general term for several different plotting techniques. One of these techniques is a graphical method for comparing two data sets and includes `probability-probability <https://reliability.readthedocs.io/en/latest/Probability-Probability%20plots.html>`_ (PP) plots and `quantile-quantile <https://reliability.readthedocs.io/en/latest/Quantile-Quantile%20plots.html>`_ (QQ) plots. The second plotting technique is used for assessing the goodness of fit of a distribution by plotting the empirical CDF of the failures against their failure time and scaling the axes in such as way that the distribution appears linear. This method allows the reliability analyst to fit the distribution parameters using a simple "least squares" fitting method for a straight line and was popular before computers were capable of calculating the MLE estimates of the parameters. While we do not typically favour the use of least squares as a fitting method, we can still use probability plots to assess the goodness of fit.
-The module ``reliability.Probability_plotting`` contains functions for each of the six distributions supported in ``reliability``. These functions are:
+The module ``reliability.Probability_plotting`` contains functions for each of the standard distributions supported in ``reliability``. These functions are:
 
 - Weibull_probability_plot
 - Normal_probability_plot
@@ -15,6 +15,7 @@ The module ``reliability.Probability_plotting`` contains functions for each of t
 - Beta_probability_plot
 - Exponential_probability_plot
 - Exponential_probability_plot_Weibull_Scale
+- Loglogistic_probability_plot
 
 There is also a function to obtain the plotting positions as well as the functions for custom axes scaling. These are explained more in the help file and will not be discussed further here.
 
@@ -118,7 +119,7 @@ In this fourth example, we will take a look at the special case of the Exponenti
 
 .. image:: images/expon_weibull_scale_V4.png
 
-In this final example, we take a look at how a probability plot can show us that there's something wrong with our assumption of a single distribution. To generate the data, the random samples are drawn from two different distributions which are shown in the left image. In the right image, the scatterplot of failure times is clearly non-linear. The red line is the attempt to fit a single Weibull_2P distribution and this will do a poor job of modelling the data. Also note that the points of the scatterplot do not fall on the True CDF of each distribution. This is because the median rank method of obtaining the plotting positions does not work well if the failure times come from more than one distribution. If you see a pattern like this, try a `mixture model <https://reliability.readthedocs.io/en/latest/Weibull%20mixture%20models.html>`_. Always remember that cusps, corners, and doglegs indicate a mixture of failure modes.
+In this final example, we take a look at how a probability plot can show us that there's something wrong with our assumption of a single distribution. To generate the data, the random samples are drawn from two different distributions which are shown in the left image. In the right image, the scatterplot of failure times is clearly non-linear. The green line is the attempt to fit a single Weibull_2P distribution and this will do a poor job of modelling the data. Also note that the points of the scatterplot do not fall on the True CDF of each distribution. This is because the median rank method of obtaining the plotting positions does not work well if the failure times come from more than one distribution. If you see a pattern like this, try a `mixture model <https://reliability.readthedocs.io/en/latest/Mixture%20models.html>`_. Always remember that cusps, corners, and doglegs indicate a mixture of failure modes.
 
 .. code:: python
 
