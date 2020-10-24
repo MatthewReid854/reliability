@@ -26,7 +26,7 @@ setuptools.setup(
                       "numpy>=1.19.2",
                       "matplotlib>=3.3.2",
                       "pandas>=1.1.2",
-                      "autograd-gamma>=0.4.2",
+                      "autograd-gamma>=0.5.0",
                       "mplcursors>=0.3"
     ],
     packages=setuptools.find_packages(exclude=["*.tests", "*.tests.*","*.notebooks", "*.notebooks.*"]),

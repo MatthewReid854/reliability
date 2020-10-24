@@ -426,7 +426,7 @@ class Weibull_Distribution:
         else:
             limits = get_axes_limits()  # get the previous axes limits
 
-            p = plt.plot(X, hf, **kwargs)
+            plt.plot(X, hf, **kwargs)
             plt.xlabel('x values')
             plt.ylabel('Hazard')
             text_title = str('Weibull Distribution\n' + ' Hazard Function ' + '\n' + self.param_title)
@@ -1746,7 +1746,7 @@ class Exponential_Distribution:
         if show_plot == False:
             return cdf
         else:
-            plot_CI, CI = distribution_confidence_intervals.CI_kwarg_handler(self, kwargs)
+            _, plot_CI, CI = distribution_confidence_intervals.CI_kwarg_handler(self, kwargs)
 
             limits = get_axes_limits()
 
@@ -1792,7 +1792,7 @@ class Exponential_Distribution:
         if show_plot == False:
             return sf
         else:
-            plot_CI, CI = distribution_confidence_intervals.CI_kwarg_handler(self, kwargs)
+            _, plot_CI, CI = distribution_confidence_intervals.CI_kwarg_handler(self, kwargs)
 
             limits = get_axes_limits()
 
@@ -1841,7 +1841,7 @@ class Exponential_Distribution:
         else:
             limits = get_axes_limits()
 
-            p = plt.plot(X, hf, **kwargs)
+            plt.plot(X, hf, **kwargs)
             plt.xlabel('x values')
             plt.ylabel('Hazard')
             text_title = str('Exponential Distribution\n' + ' Hazard Function ' + '\n' + self.param_title)
@@ -1884,7 +1884,7 @@ class Exponential_Distribution:
         if show_plot == False:
             return chf
         else:
-            plot_CI, CI = distribution_confidence_intervals.CI_kwarg_handler(self, kwargs)
+            _, plot_CI, CI = distribution_confidence_intervals.CI_kwarg_handler(self, kwargs)
 
             limits = get_axes_limits()
 
@@ -2024,7 +2024,7 @@ class Gamma_Distribution:
     random_samples() - draws random samples from the distribution to which it is applied. Same as rvs in scipy.stats.
     '''
 
-    def __init__(self, alpha=None, beta=None, gamma=0):
+    def __init__(self, alpha=None, beta=None, gamma=0, **kwargs):
         self.name = 'Gamma'
         self.alpha = alpha
         self.beta = beta
@@ -2054,6 +2054,31 @@ class Gamma_Distribution:
             self.name2 = 'Gamma_2P'
         self.b5 = ss.gamma.ppf(0.05, self.beta, scale=self.alpha, loc=self.gamma)
         self.b95 = ss.gamma.ppf(0.95, self.beta, scale=self.alpha, loc=self.gamma)
+
+        # extracts values for confidence interval plotting
+        if 'alpha_SE' in kwargs:
+            self.alpha_SE = kwargs.pop('alpha_SE')
+        else:
+            self.alpha_SE = None
+        if 'beta_SE' in kwargs:
+            self.beta_SE = kwargs.pop('beta_SE')
+        else:
+            self.beta_SE = None
+        if 'Cov_alpha_beta' in kwargs:
+            self.Cov_alpha_beta = kwargs.pop('Cov_alpha_beta')
+        else:
+            self.Cov_alpha_beta = None
+        if 'CI' in kwargs:
+            CI = kwargs.pop('CI')
+            self.Z = -ss.norm.ppf((1 - CI) / 2)
+        else:
+            self.Z = None
+        if 'CI_type' in kwargs:
+            self.CI_type = kwargs.pop('CI_type')
+        else:
+            self.CI_type = 'time'
+        for item in kwargs.keys():
+            print('WARNING:', item, 'not recognised as an appropriate entry in kwargs. Appropriate entries are alpha_SE, beta_SE, Cov_alpha_beta, CI, and CI_type')
         self._pdf0 = ss.gamma.pdf(0, self.beta, scale=self.alpha, loc=0)  # the pdf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
         self._hf0 = ss.gamma.pdf(0, self.beta, scale=self.alpha, loc=0) / ss.gamma.sf(0, self.beta, scale=self.alpha, loc=0)  # the hf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
 
@@ -2205,9 +2230,11 @@ class Gamma_Distribution:
         if show_plot == False:
             return cdf
         else:
+            CI_type, plot_CI, CI = distribution_confidence_intervals.CI_kwarg_handler(self, kwargs)
+
             limits = get_axes_limits()
 
-            plt.plot(X, cdf, **kwargs)
+            p = plt.plot(X, cdf, **kwargs)
             plt.xlabel('x values')
             plt.ylabel('Fraction failing')
             text_title = str('Gamma Distribution\n' + ' Cumulative Distribution Function ' + '\n' + self.param_title)
@@ -2215,6 +2242,8 @@ class Gamma_Distribution:
             plt.subplots_adjust(top=0.81)
 
             restore_axes_limits(limits, dist=self, func='CDF', X=X, Y=cdf, xvals=xvals, xmin=xmin, xmax=xmax)
+
+            distribution_confidence_intervals.gamma_CI(self, func='CDF', CI_type=CI_type, plot_CI=plot_CI, CI=CI, text_title=text_title, color=p[0].get_color())
 
             return cdf
 
@@ -3242,7 +3271,7 @@ class Loglogistic_Distribution:
         else:
             limits = get_axes_limits()  # get the previous axes limits
 
-            p = plt.plot(X, hf, **kwargs)
+            plt.plot(X, hf, **kwargs)
             plt.xlabel('x values')
             plt.ylabel('Hazard')
             text_title = str('Loglogistic Distribution\n' + ' Hazard Function ' + '\n' + self.param_title)
@@ -3903,7 +3932,7 @@ class Competing_Risks_Model:
         if type(distributions) not in [list, np.ndarray]:
             raise ValueError('distributions must be a list or array of distribution objects.')
         for dist in distributions:
-            if type(dist) not in [Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Beta_Distribution, Gamma_Distribution]:
+            if type(dist) not in [Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Beta_Distribution, Gamma_Distribution, Loglogistic_Distribution, Gumbel_Distribution]:
                 raise ValueError('distributions must be an array or list of probability distributions. Each distribution must be created using the reliability.Distributions module.')
         self.distributions = distributions  # this just passes the distributions to the __combiner which is used by the other functions along with the xvals. No combining can occur without xvals.
         self.name = 'Competing risks'
@@ -4368,7 +4397,7 @@ class Mixture_Model:
     The mixture model is used to create a distribution that contains parts from multiple distributions.
     This allows for a more complex model to be constructed as the sum of other distributions, each multiplied by a proportion (where the proportions sum to 1)
     The model is obtained using the sum of the survival functions: SF_total = (SF_1 x p_1) + (SF_2 x p2) x (SF_3 x p3) + .... + (SF_n x pn)
-    An equivalent form of this model is to sum the CDF. The result is the same. Note that you cannot simply sum the HF or CHF as this method would be equivalent to the competing risks model.
+    An equivalent form of this model is to sum the CDF or the PDF. The result is the same. Note that you cannot simply sum the HF or CHF as this method would be equivalent to the competing risks model.
     In this way, we see the mixture model will always lie somewhere between the constituent models.
 
     This model should be used when a data set cannot be modelled by a single distribution, as evidenced by the shape of the PDF, CDF or probability plot (points do not form a straight line)
@@ -4417,9 +4446,13 @@ class Mixture_Model:
     def __init__(self, distributions, proportions=None):
         if type(distributions) not in [list, np.ndarray]:
             raise ValueError('distributions must be a list or array of distribution objects.')
+        contains_normal_or_gumbel = False
         for dist in distributions:
-            if type(dist) not in [Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Beta_Distribution, Gamma_Distribution]:
+            if type(dist) not in [Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Beta_Distribution, Gamma_Distribution, Loglogistic_Distribution, Gumbel_Distribution]:
                 raise ValueError('distributions must be an array or list of probability distributions. Each distribution must be created using the reliability.Distributions module.')
+            if type(dist) in [Normal_Distribution, Gumbel_Distribution]:
+                contains_normal_or_gumbel = True  # check if we can have negative xvals (allowable if only normal and gumbel are in the mixture)
+        self.__contains_normal_or_gumbel = contains_normal_or_gumbel
 
         if proportions is not None:
             if sum(proportions) != 1:
@@ -4435,19 +4468,37 @@ class Mixture_Model:
         self.num_dists = len(distributions)
         self.name2 = str('Mixture using ' + str(self.num_dists) + ' distributions')
 
-        # This is essentially just the same as the __combiner method but more automated with a high amount of detail for the X array to avoid errors
-        xmax0 = 0
+        # This is essentially just the same as the __combiner method but more automated with a high amount of detail for the X array to minimize errors
+        xmax = -1e100
+        xmin = 1e100
+        xmax999 = -1e100
+        xmin001 = 1e100
         for dist in distributions:
-            xmax0 = max(xmax0, dist.quantile(0.99))
-        X = np.linspace(0, xmax0 * 4, 500000)  # an xmax0 multiplier of 4 with 500k samples was found optimal in simulations
+            xmax = max(xmax, dist.quantile(1-1e-10))
+            xmin = min(xmin, dist.quantile(1e-10))
+            xmax999 = max(xmax999, dist.quantile(0.999))
+            xmin001 = min(xmin001, dist.quantile(0.001))
+        self.__xmax999 = xmax999
+        self.__xmin001 = xmin001
+
+        X = np.linspace(xmin, xmax, 1000000)
+        X_positive = X[X >= 0]
+        X_negative = X[X < 0]
+        Y_negative = np.zeros_like(X_negative)
+
         sf = np.zeros_like(X)
+        pdf = np.zeros_like(X)
         # combine the distributions using the sum of the survival functions: SF_total = (SF_1 x p_1) + (SF_2 x p2) x (SF_3 x p3) + .... + (SF_n x pn)
         for i in range(len(distributions)):
-            sf += distributions[i].SF(X, show_plot=False) * proportions[i]
-        pdf = np.diff(np.hstack([[0], 1 - sf])) / np.diff(np.hstack([[0], X]))  # this formula is equivalent to dy/dx of the CDF
-        pdf[0] = 0
-        self.__pdf_init = pdf  # used by random_samples
-        self.__xvals_init = X  # used by random_samples
+            if type(distributions[i]) in [Normal_Distribution,Gumbel_Distribution]:
+                sf += distributions[i].SF(X, show_plot=False) * proportions[i]
+                pdf += distributions[i].PDF(X, show_plot=False) * proportions[i]
+            else:
+                sf += np.hstack([Y_negative,distributions[i].SF(X_positive, show_plot=False) * proportions[i]])
+                pdf += np.hstack([Y_negative,distributions[i].PDF(X_positive, show_plot=False) * proportions[i]])
+        self.__pdf_init = pdf
+        self.__sf_init = sf
+        self.__xvals_init = X
         self.mean = integrate.simps(pdf * X, x=X)
         self.standard_deviation = (integrate.simps(pdf * (X - self.mean) ** 2, x=X)) ** 0.5
         self.variance = self.standard_deviation ** 2
@@ -4469,52 +4520,46 @@ class Mixture_Model:
         distributions = self.distributions
         proportions = self.proportions
 
-        # obtain the X values
-        xmin0 = 10 ** 30  # these are just initial values which get changed during the xmin0 xmax0 update as each distribution is examined
-        xmax0 = 0
-        for dist in distributions:
-            xmin0 = min(xmin0, dist.quantile(0.001))
-            xmax0 = max(xmax0, dist.quantile(0.999))
-        delta = xmax0 - xmin0
-        if xmin0 < 0:
-            xmin0 = 0
-        else:
-            if xmin0 - 0.3 * delta <= 0:
-                xmin0 = 1e-5
-
+        # # obtain the X values
         if xvals is not None:
             X = xvals
         else:
             if xmin is None:
-                xmin = xmin0
+                if self.__xmin001 > 0 and self.__xmin001 - (self.__xmax999-self.__xmin001)*0.3 < 0:
+                    xmin = 0 #if its positive but close to zero then just make it zero
+                else:
+                    xmin = self.__xmin001
             if xmax is None:
-                xmax = xmax0
+                xmax = self.__xmax999
             if xmin > xmax:
                 xmin, xmax = xmax, xmin
             X = np.linspace(xmin, xmax, 1000)  # this is a big array because everything is numerical rather than empirical. Small array sizes will lead to blocky (inaccurate) results.
 
         # convert to numpy array if given list. raise error for other types. check for values below 0.
-        if type(X) is list:
-            X = np.array(X)
-        elif type(X) is np.ndarray:
-            pass
-        else:
+        if type(X) not in [np.ndarray,list]:
             raise ValueError('unexpected type in xvals. Must be  list, or array')
-        if min(X) < 0:
-            raise ValueError('xvals was found to contain values below 0')
+        else:
+            X = np.asarray(X)
+        if min(X) < 0 and self.__contains_normal_or_gumbel is False:
+            raise ValueError('xvals was found to contain values below 0. This is only allowed if some of the mixture components are Normal or Gumbel distributions.')
+
+        X_positive = X[X >= 0]
+        X_negative = X[X < 0]
+        Y_negative = np.zeros_like(X_negative)
 
         sf = np.zeros_like(X)
+        pdf = np.zeros_like(X)
         # combine the distributions using the sum of the survival functions: SF_total = (SF_1 x p_1) + (SF_2 x p2) x (SF_3 x p3) + .... + (SF_n x pn)
         for i in range(len(distributions)):
-            sf += distributions[i].SF(X, show_plot=False) * proportions[i]
+            if type(distributions[i]) in [Normal_Distribution,Gumbel_Distribution]:
+                sf += distributions[i].SF(X, show_plot=False) * proportions[i]
+                pdf += distributions[i].PDF(X, show_plot=False) * proportions[i]
+            else:
+                sf += np.hstack([Y_negative,distributions[i].SF(X_positive, show_plot=False) * proportions[i]])
+                pdf += np.hstack([Y_negative,distributions[i].PDF(X_positive, show_plot=False) * proportions[i]])
 
-        pdf = np.diff(np.hstack([[0], 1 - sf])) / np.diff(np.hstack([[0], X]))  # this formula is equivalent to dy/dx of the CDF
-        pdf[0] = 0  # fixes a nan artifact of np.diff for the first value.
-        hf = np.diff(np.hstack([[0], -np.log(sf)])) / np.diff(np.hstack([[0], X]))  # this formula is equivalent to dy/dx of the CHF
-        hf[0] = hf[1] + (X[0] - X[1]) * (hf[2] - hf[1]) / (X[2] - X[1])  # linear interpolation for hf[0] to correct for nan artifact from np.diff. Can't just set it equal to 0 as it's not like the pdf.
-        if hf[0] < 0:
-            hf[0] = 0
         # these are all hidden to the user but can be accessed by the other functions in this module
+        hf = pdf / sf
         self.__xvals = X
         self.__pdf = pdf
         self.__cdf = 1 - sf
@@ -4621,8 +4666,13 @@ class Mixture_Model:
             return self.__pdf
         else:
             if plot_components is True:  # this will plot the distributions that make up the components of the model
+
+                X_positive = self.__xvals[self.__xvals >= 0]
                 for dist in self.distributions:
-                    dist.PDF(xvals=self.__xvals, label=dist.param_title_long)
+                    if dist not in [Normal_Distribution,Gumbel_Distribution]:
+                        dist.PDF(xvals=X_positive, label=dist.param_title_long)
+                    else:
+                        dist.PDF(xvals=self.__xvals, label=dist.param_title_long)
             if 'label' in kwargs:
                 textlabel = kwargs.pop('label')
             else:
@@ -4663,8 +4713,12 @@ class Mixture_Model:
             return self.__cdf
         else:
             if plot_components is True:  # this will plot the distributions that make up the components of the model
+                X_positive = self.__xvals[self.__xvals >= 0]
                 for dist in self.distributions:
-                    dist.CDF(xvals=self.__xvals, label=dist.param_title_long)
+                    if dist not in [Normal_Distribution,Gumbel_Distribution]:
+                        dist.CDF(xvals=X_positive, label=dist.param_title_long)
+                    else:
+                        dist.CDF(xvals=self.__xvals, label=dist.param_title_long)
             if 'label' in kwargs:
                 textlabel = kwargs.pop('label')
             else:
@@ -4704,8 +4758,12 @@ class Mixture_Model:
             return self.__sf
         else:
             if plot_components is True:  # this will plot the distributions that make up the components of the model
+                X_positive = self.__xvals[self.__xvals >= 0]
                 for dist in self.distributions:
-                    dist.SF(xvals=self.__xvals, label=dist.param_title_long)
+                    if dist not in [Normal_Distribution,Gumbel_Distribution]:
+                        dist.SF(xvals=X_positive, label=dist.param_title_long)
+                    else:
+                        dist.SF(xvals=self.__xvals, label=dist.param_title_long)
             if 'label' in kwargs:
                 textlabel = kwargs.pop('label')
             else:
@@ -4746,8 +4804,12 @@ class Mixture_Model:
         else:
             limits = get_axes_limits()
             if plot_components is True:  # this will plot the distributions that make up the components of the model
+                X_positive = self.__xvals[self.__xvals >= 0]
                 for dist in self.distributions:
-                    dist.HF(xvals=self.__xvals, label=dist.param_title_long)
+                    if dist not in [Normal_Distribution,Gumbel_Distribution]:
+                        dist.HF(xvals=X_positive, label=dist.param_title_long)
+                    else:
+                        dist.HF(xvals=self.__xvals, label=dist.param_title_long)
             if 'label' in kwargs:
                 textlabel = kwargs.pop('label')
             else:
@@ -4787,8 +4849,12 @@ class Mixture_Model:
         else:
             limits = get_axes_limits()
             if plot_components is True:  # this will plot the distributions that make up the components of the model
+                X_positive = self.__xvals[self.__xvals >= 0]
                 for dist in self.distributions:
-                    dist.CHF(xvals=self.__xvals, label=dist.param_title_long)
+                    if dist not in [Normal_Distribution,Gumbel_Distribution]:
+                        dist.CHF(xvals=X_positive, label=dist.param_title_long)
+                    else:
+                        dist.CHF(xvals=self.__xvals, label=dist.param_title_long)
             if 'label' in kwargs:
                 textlabel = kwargs.pop('label')
             else:
@@ -4818,7 +4884,7 @@ class Mixture_Model:
                 raise ValueError('Quantile must be between 0 and 1')
         else:
             raise ValueError('Quantile must be of type int, float, list, array')
-        return self.__xvals[np.argmin(abs(self.__cdf - q))]
+        return self.__xvals_init[np.argmin(abs((1-self.__sf_init) - q))]
 
     def inverse_SF(self, q):
         '''Inverse survival function calculator
@@ -4834,7 +4900,7 @@ class Mixture_Model:
                 raise ValueError('Quantile must be between 0 and 1')
         else:
             raise ValueError('Quantile must be of type int, float, list, array')
-        return self.__xvals[np.argmin(abs(self.__sf - q))]
+        return self.__xvals_init[np.argmin(abs(self.__sf_init - q))]
 
     def stats(self):
         print('Descriptive statistics for Mixture Model')
@@ -4867,8 +4933,8 @@ class Mixture_Model:
 
         xmax = 0
         for dist in self.distributions:
-            xmax = max(xmax, dist.quantile(0.99))  # find the effective infinity for integration
-        t_full = np.linspace(t, xmax * 4, 500000)
+            xmax = max(xmax, dist.quantile(1-1e-10))  # find the effective infinity for integration
+        t_full = np.linspace(t, xmax, 1000000)
         sf_full = __subcombiner(t_full)
         sf_single = __subcombiner(t)
         MRL = integrate.simps(sf_full, x=t_full) / sf_single

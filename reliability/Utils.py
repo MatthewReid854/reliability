@@ -26,6 +26,9 @@ import matplotlib.pyplot as plt
 from matplotlib.collections import PolyCollection, LineCollection
 from matplotlib import ticker
 from autograd import jacobian as jac
+from autograd_gamma import gammainccinv
+from autograd_gamma import gammaincc
+# from scipy.special import gammaincc
 import autograd.numpy as anp
 
 
@@ -247,18 +250,20 @@ def restore_axes_limits(limits, dist, func, X, Y, xvals=None, xmin=None, xmax=No
                     xlim_lower = max(0, dist.quantile(0.001) - diff * 0.1)
             elif dist.name in ['Normal', 'Gumbel']:
                 xlim_lower = dist.quantile(0.001)
-            elif dist.name in ['Beta', 'Mixture', 'Competing risks']:
+            elif dist.name == 'Beta':
                 xlim_lower = 0
+            elif dist.name in ['Mixture', 'Competing risks']:
+                xlim_lower = min(X)
             else:
                 raise ValueError('Unrecognised distribution name')
         else:
             xlim_lower = xmin
 
         if xmax is None:
-            if dist.name != 'Beta':
-                xlim_upper = dist.quantile(0.999)
-            else:
+            if dist.name is 'Beta':
                 xlim_upper = 1
+            else:
+                xlim_upper = dist.quantile(0.999)
         else:
             xlim_upper = xmax
 
@@ -305,10 +310,16 @@ def restore_axes_limits(limits, dist, func, X, Y, xvals=None, xmin=None, xmax=No
         elif max(Y) > Y[-1]:  # a peaked hf
             ylim_upper = max(Y) * top_spacing
         else:  # an increasing hf. Not an asymptote
-            idx = np.where(X >= plt.xlim()[1])[0][0]
+            if len(np.where(X >= plt.xlim()[1])[0]) == 0:
+                idx = len(X) - 1  # this is for the mixture model and CR model
+            else:
+                idx = np.where(X >= plt.xlim()[1])[0][0]
             ylim_upper = Y[idx] * top_spacing
     elif func in ['chf', 'CHF']:
-        idx = np.where(X >= xlim_upper)[0][0]  # index of the chf where it is equal to b95
+        if len(np.where(X >= xlim_upper)[0]) == 0:
+            idx = len(X) - 1  # this is for the mixture model and CR model
+        else:
+            idx = np.where(X >= xlim_upper)[0][0]  # index of the chf where it is equal to b95
         if np.isfinite(Y[idx]):
             ylim_upper = Y[idx] * top_spacing
         else:
@@ -729,6 +740,150 @@ def anderson_darling(fitted_cdf, empirical_cdf):
     return AD
 
 
+class fitters_input_checking:
+    '''
+    performs error checking and some basic default operations for all the inputs given to each of the fitters
+    '''
+
+    def __init__(self, dist, failures, right_censored=None, initial_guess_method=None, optimizer=None, CI=0.95, percentiles=False, force_beta=None, force_sigma=None, CI_type=None):
+
+        if dist not in ['Everything', 'Weibull_2P', 'Weibull_3P', 'Gamma_2P', 'Gamma_3P', 'Exponential_1P', 'Exponential_2P', 'Gumbel_2P', 'Normal_2P', 'Lognormal_2P', 'Lognormal_3P', 'Loglogistic_2P', 'Loglogistic_3P', 'Beta_2P', 'Weibull_Mixture', 'Weibull_CR']:
+            raise ValueError('incorrect dist specified. Use the correct name. eg. Weibull_2P')
+
+        # fill right_censored with empty list if not specified
+        if right_censored is None:
+            right_censored = []
+
+        # type checking and converting to arrays for failures and right_censored
+        if type(failures) not in [list, np.ndarray]:
+            raise ValueError('failures must be a list or array of failure data')
+        if type(right_censored) not in [list, np.ndarray]:
+            raise ValueError('right_censored must be a list or array of right_censored failure data')
+        failures = np.asarray(failures)
+        right_censored = np.asarray(right_censored)
+
+        # check failures and right_censored are in the right range for the distribution
+        if dist not in ['Normal_2P', 'Gumbel_2P']:
+            # raise an error for values below zero
+            all_data = np.hstack([failures, right_censored])
+            if dist == 'Beta_2P' and (min(all_data) < 0 or max(all_data) > 1):
+                raise ValueError('All failure and censoring times for the beta distribution must be between 0 and 1.')
+            elif min(all_data) < 0:
+                raise ValueError('All failure and censoring times must be greater than zero.')
+            # remove zeros and issue a warning. These are impossible since the pdf should be 0 at t=0. Leaving them in causes an error.
+            rc0 = right_censored
+            f0 = failures
+            right_censored = rc0[rc0 != 0]
+            failures = f0[f0 != 0]
+            if len(failures) != len(f0):
+                if dist == 'Everything':
+                    print('WARNING: failures contained zeros. These have been removed to enable fitting of all distributions.')
+                else:
+                    print(str('WARNING: failures contained zeros. These have been removed to enable fitting of the ' + dist + ' distribution.'))
+
+            if len(right_censored) != len(rc0):
+                if dist == 'Everything':
+                    print('WARNING: right_censored contained zeros. These have been removed to enable fitting of all distributions.')
+                else:
+                    print(str('WARNING: right_censored contained zeros. These have been removed to enable fitting of the ' + dist + ' distribution.'))
+            if dist == 'Beta_2P':
+                rc1 = right_censored
+                f1 = failures
+                right_censored = rc1[rc1 != 1]
+                failures = f1[f1 != 0]
+                if len(failures) != len(f1):
+                    print(str('WARNING: failures contained ones. These have been removed to enable fitting of the Beta_2P distribution.'))
+                if len(right_censored) != len(rc1):
+                    print(str('WARNING: right_censored contained ones. These have been removed to enable fitting of the Beta_2P distribution.'))
+
+        # type and value checking for CI
+        if type(CI) not in [float, np.float64]:
+            raise ValueError('CI must be between 0 and 1. Default is 0.95 for 95% Confidence interval.')
+        if CI <= 0 or CI >= 1:
+            raise ValueError('CI must be between 0 and 1. Default is 0.95 for 95% Confidence interval.')
+
+        # error checking for optimizer
+        if optimizer not in ['L-BFGS-B', 'TNC', None]:
+            raise ValueError('optimizer must be either "L-BFGS-B" OR "TNC". Default is "L-BFGS-B".')
+
+        # error checking for initial_guess_method
+        if initial_guess_method is not None:
+            if initial_guess_method in ['scipy', 'Scipy', 'SP', 'sp']:
+                initial_guess_method = 'scipy'
+            elif initial_guess_method in ['least_squares', 'least squares', 'Least_squares', 'Least squares', 'Least Squares', 'Least_Squares', 'ls', 'LS']:
+                initial_guess_method = 'least squares'
+            elif dist in ['Weibull_3P', 'Loglogistic_3P'] and initial_guess_method in ['non_linear_least_squares', 'non-linear_least_squares', 'non-linear least squares', 'Non-Linear_Least_Squares', 'NLLS', 'non-linear', 'nlls', 'nlr', 'NLR', 'non-linear regression', 'non-linear_regression']:
+                initial_guess_method = 'non-linear least squares'
+            else:
+                if dist in ['Weibull_3P', 'Loglogistic_3P']:
+                    raise ValueError('initial_guess_method must be either "scipy", "least squares", or "non-linear least squares". Default is "scipy".')
+                elif dist in ['Weibull_2P', 'Loglogistic_2P']:
+                    raise ValueError('initial_guess_method must be either "scipy" or "least squares". Default is "least_squares".')
+                # initial_guess_method is not yet available for all distributions. This will come soon
+
+        # percentiles error checking
+        if type(percentiles) in [str, bool]:
+            if percentiles in ['auto', True, 'default', 'on']:
+                percentiles = np.array([1, 5, 10, 20, 25, 50, 75, 80, 90, 95, 99])  # percentiles to be used as the defaults in the table of percentiles
+        elif type(percentiles) is not type(None):
+            if type(percentiles) not in [list, np.ndarray]:
+                raise ValueError('percentiles must be a list or array')
+            percentiles = np.asarray(percentiles)
+            if max(percentiles) >= 100 or min(percentiles) <= 0:
+                raise ValueError('percentiles must be between 0 and 100')
+
+        # force_beta and force_sigma error checking
+        if force_beta is not None:
+            if force_beta <= 0:
+                raise ValueError('force_beta must be greater than 0.')
+        if force_sigma is not None:
+            if force_sigma <= 0:
+                raise ValueError('force_sigma must be greater than 0.')
+
+        # minimum number of failures checking
+        if dist in ['Weibull_3P', 'Gamma_3P', 'Lognormal_3P', 'Loglogistic_3P']:
+            min_failures = 3
+        elif dist in ['Weibull_2P', 'Gamma_2P', 'Normal_2P', 'Lognormal_2P', 'Gumbel_2P', 'Loglogistic_2P', 'Beta_2P', 'Exponential_2P', 'Everything']:
+            if force_sigma is None and force_beta is None:
+                min_failures = 2
+            else:
+                min_failures = 1
+        elif dist == 'Exponential_1P':
+            min_failures = 1
+        elif dist in ['Weibull_Mixture', 'Weibull_CR']:
+            min_failures = 4
+
+        if len(failures) < min_failures:
+            if force_beta is not None:
+                raise ValueError(str('The minimum number of failures required for a ' + dist + ' distribution with force_beta specified is ' + str(min_failures) + '.'))
+            elif force_sigma is not None:
+                raise ValueError(str('The minimum number of failures required for a ' + dist + ' distribution with force_sigma specified is ' + str(min_failures) + '.'))
+            elif dist == 'Everything':
+                raise ValueError('The minimum number of failures required to fit everything is ' + str(min_failures) + '.')
+            else:
+                raise ValueError(str('The minimum number of failures required for a ' + dist + ' distribution is ' + str(min_failures) + '.'))
+
+        # error checking for CI_type
+        if CI_type is not None:
+            if CI_type in ['t', 'time', 'T', 'TIME']:
+                CI_type = 'time'
+            elif CI_type in ['r', 'R', 'rel', 'REL', 'reliability', 'RELIABILITY']:
+                CI_type = 'reliability'
+            else:
+                raise ValueError('CI_type must be "time" or "reliability"')
+
+        # return everything
+        self.failures = failures
+        self.right_censored = right_censored
+        self.CI = CI
+        self.initial_guess_method = initial_guess_method
+        self.optimizer = optimizer
+        self.percentiles = percentiles
+        self.force_beta = force_beta
+        self.force_sigma = force_sigma
+        self.CI_type = CI_type
+
+
 def fill_no_autoscale(xlower, xupper, ylower, yupper, **kwargs):
     '''
     creates a filled region (polygon) without adding it to the global list of autoscale objects.
@@ -751,6 +906,16 @@ def fill_no_autoscale(xlower, xupper, ylower, yupper, **kwargs):
         idx_xupper = np.where(np.isfinite(xupper) == False)[0][0]
         yupper = yupper[0:idx_xupper]
         xupper = xupper[0:idx_xupper]
+    # this trims the y arrays free of 1's since the probability plot can't handle 1 as it's equivalent to inf
+    if max(ylower) >= 1:
+        idx_ylower_1 = np.where(ylower >= 1)[0][0]
+        ylower = ylower[0:idx_ylower_1]
+        xlower = xlower[0:idx_ylower_1]
+    if max(yupper) >= 1:
+        idx_yupper_1 = np.where(yupper >= 1)[0][0]
+        yupper = yupper[0:idx_yupper_1]
+        xupper = xupper[0:idx_yupper_1]
+    # generate the polygon
     polygon = np.column_stack([np.hstack([xlower, xupper[::-1]]), np.hstack([ylower, yupper[::-1]])])  # this is equivalent to fill as it makes a polygon
     col = PolyCollection([polygon], **kwargs)
     plt.gca().add_collection(col, autolim=False)
@@ -803,8 +968,9 @@ class distribution_confidence_intervals:
         if self.name == 'Exponential':
             if 'CI_type' in kwargs_list:
                 print('WARNING: CI_type is not required for the Exponential distribution since the confidence intervals of time and reliability are identical')
-                CI_type = kwargs.pop('CI_type')  # need to remove it so it won't be passed to plt.plot
-            return plot_CI, CI
+                CI_type = kwargs.pop('CI_type')  # remove it
+            else:
+                CI_type = None  # this will not be used but it is required for the output
         else:
             if 'CI_type' in kwargs_list:
                 CI_type = kwargs.pop('CI_type')  # this allows CI_type in the CDF,SF,CHF to override CI_type from above (either the default of time if unspecified or whatever came from the probability plot)
@@ -812,7 +978,7 @@ class distribution_confidence_intervals:
                 CI_type = self.CI_type
             else:
                 CI_type = 'time'
-            return CI_type, plot_CI, CI
+        return CI_type, plot_CI, CI
 
     @staticmethod
     def expon_CI(self, func, plot_CI=None, CI=None, text_title='', color=None, q=None):
@@ -863,6 +1029,8 @@ class distribution_confidence_intervals:
                 fill_no_autoscale(xlower=t + self.gamma, xupper=t + self.gamma, ylower=yy_lower, yupper=yy_upper, color=color, alpha=0.3, linewidth=0)
                 line_no_autoscale(x=t + self.gamma, y=yy_lower, color=color, linewidth=0)  # these are invisible but need to be added to the plot for crosshairs() to find them
                 line_no_autoscale(x=t + self.gamma, y=yy_upper, color=color, linewidth=0)  # still need to specify color otherwise the invisible CI lines will consume default colors
+                # plt.scatter(t + self.gamma, yy_lower,color='blue',marker='.')
+                # plt.scatter(t + self.gamma, yy_upper, color='red', marker='.')
             elif plot_CI is None and q is not None:
                 return t_lower, t_upper
 
@@ -959,6 +1127,116 @@ class distribution_confidence_intervals:
 
                 Y_lower = np.exp(-np.exp(u_lower))  # transform back from ln(-ln(R))
                 Y_upper = np.exp(-np.exp(u_upper))
+
+                if func == 'CDF':
+                    yy_lower = 1 - Y_lower
+                    yy_upper = 1 - Y_upper
+                elif func == 'SF':
+                    yy_lower = Y_lower
+                    yy_upper = Y_upper
+                else:  # CHF
+                    yy_lower = -np.log(Y_lower)
+                    yy_upper = -np.log(Y_upper)
+
+                fill_no_autoscale(xlower=t + self.gamma, xupper=t + self.gamma, ylower=yy_lower, yupper=yy_upper, color=color, alpha=0.3, linewidth=0)
+                line_no_autoscale(x=t + self.gamma, y=yy_lower, color=color, linewidth=0)  # these are invisible but need to be added to the plot for crosshairs() to find them
+                line_no_autoscale(x=t + self.gamma, y=yy_upper, color=color, linewidth=0)  # still need to specify color otherwise the invisible CI lines will consume default colors
+                # plt.scatter(t + self.gamma, yy_upper, color='red')
+                # plt.scatter(t + self.gamma, yy_lower, color='blue')
+
+    @staticmethod
+    def gamma_CI(self, func, plot_CI=None, CI_type=None, CI=None, text_title='', color=None, q=None):
+        '''
+        Generates the confidence intervals for CDF, SF, and CHF
+        This is a utility function intended only for use by the Gamma CDF, SF, and CHF functions.
+        '''
+        points = 200  # the number of data points in each confidence interval (upper and lower) line
+
+        # this determines if the user has specified for the CI bounds to be shown or hidden.
+        if self.alpha_SE is not None and self.beta_SE is not None and self.Cov_alpha_beta is not None and self.Z is not None and (plot_CI is True or q is not None):
+            if CI_type in ['time', 't', 'T', 'TIME', 'Time']:
+                CI_type = 'time'
+            elif CI_type in ['reliability', 'r', 'R', 'RELIABILITY', 'rel', 'REL', 'Reliability']:
+                CI_type = 'reliability'
+            if func not in ['CDF', 'SF', 'CHF']:
+                raise ValueError('func must be either CDF, SF, or CHF')
+            if type(q) not in [list, np.ndarray, type(None)]:
+                raise ValueError('q must be a list or array of quantiles. Default is None')
+            if q is not None:
+                q = np.asarray(q)
+
+            CI_100 = round(CI * 100, 4)  # formats the confidence interval value ==> 0.95 becomes 95
+            Z = -ss.norm.ppf((1 - CI) / 2)  # converts CI to Z
+            if CI_100 % 1 == 0:
+                CI_100 = int(CI_100)  # removes decimals if the only decimal is 0
+            text_title = str(text_title + '\n' + str(CI_100) + '% confidence bounds on ' + CI_type)  # Adds the CI and CI_type to the title
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.81)
+
+            def u(t, alpha, beta):  # u = gammainccinv(beta,R)
+                return t / alpha
+
+            def v(R, alpha, beta):  # v = t
+                return gammainccinv(beta, R) * alpha
+
+            du_da = jac(u, 1)  # derivative wrt alpha (bounds on reliability)
+            du_db = jac(u, 2)  # derivative wrt beta (bounds on reliability)
+            dv_da = jac(v, 1)  # derivative wrt alpha (bounds on time)
+            dv_db = jac(v, 2)  # derivative wrt beta (bounds on time)
+
+            def var_u(self, v):  # v is time
+                return du_da(v, self.alpha, self.beta) ** 2 * self.alpha_SE ** 2 \
+                       + du_db(v, self.alpha, self.beta) ** 2 * self.beta_SE ** 2 \
+                       + 2 * du_da(v, self.alpha, self.beta) * du_db(v, self.alpha, self.beta) * self.Cov_alpha_beta
+
+            def var_v(self, u):  # u is reliability
+                return dv_da(u, self.alpha, self.beta) ** 2 * self.alpha_SE ** 2 \
+                       + dv_db(u, self.alpha, self.beta) ** 2 * self.beta_SE ** 2 \
+                       + 2 * dv_da(u, self.alpha, self.beta) * dv_db(u, self.alpha, self.beta) * self.Cov_alpha_beta
+
+            if CI_type == 'time':  # Confidence bounds on time (in terms of reliability)
+                # Y is reliability (R)
+                if func == 'CHF':
+                    chf_array = np.geomspace(1e-8, self._chf[-1] * 1.5, points)
+                    Y = np.exp(-chf_array)
+                else:  # CDF and SF
+                    if q is not None:
+                        Y = q
+                    else:
+                        Y = transform_spaced('weibull', y_lower=1e-8, y_upper=1 - 1e-8, num=points)
+
+                # v is t
+                v_lower = v(Y, self.alpha, self.beta) - Z * (var_v(self, Y) ** 0.5)
+                v_upper = v(Y, self.alpha, self.beta) + Z * (var_v(self, Y) ** 0.5)
+
+                t_lower = v_lower + self.gamma
+                t_upper = v_upper + self.gamma
+
+                if func == 'CDF':
+                    yy = 1 - Y
+                elif func == 'SF':
+                    yy = Y
+                elif func == 'CHF':
+                    yy = -np.log(Y)
+
+                if plot_CI is True:
+                    fill_no_autoscale(xlower=t_lower, xupper=t_upper, ylower=yy, yupper=yy, color=color, alpha=0.3, linewidth=0)
+                    line_no_autoscale(x=t_lower, y=yy, color=color, linewidth=0)  # these are invisible but need to be added to the plot for crosshairs() to find them
+                    line_no_autoscale(x=t_upper, y=yy, color=color, linewidth=0)  # still need to specify color otherwise the invisible CI lines will consume default colors
+                    # plt.scatter(t_lower, yy, linewidth=1, color='blue')
+                    # plt.scatter(t_upper, yy, linewidth=1, color='red')
+                elif plot_CI is None and q is not None:
+                    return t_lower, t_upper
+
+            if CI_type == 'reliability':  # Confidence bounds on Reliability (in terms of time)
+                t = np.geomspace(self.quantile(0.00001) - self.gamma, self.quantile(0.99999) - self.gamma, points)
+
+                # u is reliability (gammainccinv(beta,R))
+                u_lower = u(t, self.alpha, self.beta) + Z * var_u(self, t) ** 0.5  # note that gamma is incorporated into u but not in var_u. This is the same as just shifting a Weibull_2P across
+                u_upper = u(t, self.alpha, self.beta) - Z * var_u(self, t) ** 0.5
+
+                Y_lower = gammaincc(self.beta, u_lower)  # transform back from u = gammainccinv(beta,R)
+                Y_upper = gammaincc(self.beta, u_upper)
 
                 if func == 'CDF':
                     yy_lower = 1 - Y_lower
