@@ -61,7 +61,7 @@ The following methods are available for all distributions:
 -   median
 -   mode
 -   b5 - the time at which 5% of units have failed. Same as dist.quantile(0.05)
--   b95 - - the time at which 95% of units have failed. Same as dist.quantile(0.95)
+-   b95 - the time at which 95% of units have failed. Same as dist.quantile(0.95)
 -   plot() - plots all functions (PDF, CDF, SF, HF, CHF). Also accepts xvals, xmin, xmax.
 -   PDF() - plots the probability density function. Also accepts xvals, xmin, xmax, show_plot, and plot keywords (eg. color).
 -   CDF() - plots the cumulative distribution function. Also accepts xvals, xmin, xmax, show_plot, and plot keywords (eg. color).
