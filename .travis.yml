@@ -1,12 +1,11 @@
 language: python
-#This will run all the tests on python versions 3.6, 3.7, 3.8, 3.9
+#This will run all the tests on python versions 3.6, 3.7, 3.8
 #The default OS to run these is Linux.
 #To use other OS see: https://docs.travis-ci.com/user/languages/python/#running-python-tests-on-multiple-operating-systems
 python:
   - "3.6"
   - "3.7"
   - "3.8"
-  - "3.9"
 
 # ensure pip is upgraded
 before_install:
