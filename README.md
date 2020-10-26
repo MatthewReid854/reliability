@@ -16,9 +16,9 @@
 
 ## Key features
 - Fitting probability distributions to data including right censored data
-- Fitting Weibull mixture models
+- Fitting Weibull mixture models and Weibull Competing risks models
 - Calculating the probability of failure for stress-strength interference between any combination of the supported distributions
-- Support for Exponential, Weibull, Gamma, Normal, Lognormal, Loglogistic, and Beta probability distributions
+- Support for Exponential, Weibull, Gamma, Gumbel, Normal, Lognormal, Loglogistic, and Beta probability distributions
 - Mean residual life, quantiles, descriptive statistics summaries, random sampling from distributions
 - Plots of probability density function (PDF), cumulative distribution function (CDF), survival function (SF), hazard function (HF), and cumulative hazard function (CHF)
 - Easy creation of distribution objects. Eg. dist = Weibull_Distribution(alpha=4,beta=2)
@@ -26,11 +26,12 @@
 - Goodness of fit tests (AICc, BIC, AD)
 - Probability plots on probability paper for all supported distributions
 - Quantile-Quantile plots and Probability-Probability plots
-- Reliability growth, optimal replacement time, sequential sampling charts, similar distributions
+- Reliability growth, optimal replacement time, sequential sampling charts, similar distributions, reliability test planners
+- Interactive matplotlib functions including crosshairs and distribution explorer
 - Physics of Failure (SN diagram, stress-strain, fracture mechanics, creep)
 - Accelerated Life Testing probability plots (Weibull, Exponential, Normal, Lognormal)
 - Accelerated Life Testing Models (Exponential, Eyring, Power, Dual-Exponential, Power-Exponential).
-- Mean cumulative function for repairable systems
+- Mean cumulative function and ROCOF for repairable systems
 
 ## Installation and upgrading
 
@@ -46,8 +47,8 @@ To upgrade a previous installation of *reliability* to the most recent version, 
 pip install --upgrade reliability
 ```
 
-If you would like to receive an email notification when a new release of `reliability` is uploaded to PyPI, [NewReleases.io](https://newreleases.io/) provides this service for free.
+If you would like to receive an email notification when a new release of *reliability* is uploaded to PyPI, [NewReleases.io](https://newreleases.io/) provides this service for free.
 
 ## Documentation
 Check out [readthedocs](https://reliability.readthedocs.io/en/latest/) for detailed documentation and examples.
-If you find any errors, have any suggestions, or would like to request that something be added, please email me: alpha.reliability@gmail.com.
+If you find any errors, have any suggestions, or would like to request that something be added, please email alpha.reliability@gmail.com.
