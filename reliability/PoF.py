@@ -19,6 +19,7 @@ import numpy as np
 import warnings
 import scipy.stats as ss
 from scipy.optimize import fsolve
+from reliability.Utils import colorprint
 
 
 def SN_diagram(stress, cycles, stress_runout=None, cycles_runout=None, xscale='log', stress_trace=None, cycles_trace=None, show_endurance_limit=None, method_for_bounds='statistical', CI=0.95, **kwargs):
@@ -91,7 +92,7 @@ def SN_diagram(stress, cycles, stress_runout=None, cycles_runout=None, xscale='l
     if stress_runout is None and show_endurance_limit is None:
         show_endurance_limit = False
     elif stress_runout is None and show_endurance_limit is True:
-        warnings.warn('Unable to show endurance limit without entries for stress_runout and cycles_runout. show_endurance_limit has been changed to False.')
+        colorprint('Unable to show endurance limit without entries for stress_runout and cycles_runout. show_endurance_limit has been changed to False.', text_color='red')
         show_endurance_limit = False
     elif stress_runout is not None and show_endurance_limit is None:
         show_endurance_limit = True
@@ -945,8 +946,8 @@ class fracture_mechanics_crack_growth:
         elif a_final < a_crit * 1000 - d:  # this is approved early stopping
             a_f = (a_final + d) / 1000
         else:
-            print('WARNING: In the simplified method, the specified a_final (', a_final, 'mm ) is greater than the critical crack length to cause failure (', round(a_crit * 1000 - d, 5), 'mm ).')
-            print('         a_final has been set to equal a_crit since cracks cannot grow beyond the critical length.')
+            colorprint(str('WARNING: In the simplified method, the specified a_final (' + str(a_final) + ' mm) is greater than the critical crack length to cause failure (' + str(round(a_crit * 1000 - d, 5)) + ' mm).'), text_color='red')
+            colorprint('         a_final has been set to equal a_crit since cracks cannot grow beyond the critical length.', text_color='red')
             a_f = a_crit
         lt = d / ((1.12 * Kt / f_g_fixed) ** 2 - 1) / 1000  # find the transition length due to the notch
         if lt > a_initial / 1000:  # two step process due to local stress concentration
@@ -1029,7 +1030,7 @@ class fracture_mechanics_crack_growth:
         self.Nf_stage_2_iterative = N - self.Nf_stage_1_iterative
         if a_final is not None:
             if a_final > a_crit * 1000 - d:
-                print('WARNING: During the iterative method, the specified a_final (', a_final, 'mm ) was found to be greater than the critical crack length to cause failure (', round(self.final_crack_length_iterative, 2), 'mm ).')
+                colorprint(str('WARNING: During the iterative method, the specified a_final (' + str(a_final) + ' mm) was found to be greater than the critical crack length to cause failure (' + str(round(self.final_crack_length_iterative, 2)) + ' mm).'), text_color='red')
         if print_results is True:
             print('ITERATIVE METHOD (recalculating f(g), S_max, and a_crit for each cycle):')
             if a_initial > lt2:

@@ -1,4 +1,4 @@
-from reliability.Fitters import Fit_Weibull_2P, Fit_Weibull_3P, Fit_Gamma_2P, Fit_Gamma_3P, Fit_Lognormal_2P, Fit_Lognormal_3P, Fit_Loglogistic_2P, Fit_Loglogistic_3P, Fit_Normal_2P, Fit_Expon_1P, Fit_Expon_2P, Fit_Beta_2P, Fit_Everything
+from reliability.Fitters import Fit_Weibull_2P, Fit_Weibull_3P, Fit_Gamma_2P, Fit_Gamma_3P, Fit_Lognormal_2P, Fit_Lognormal_3P, Fit_Loglogistic_2P, Fit_Loglogistic_3P, Fit_Normal_2P, Fit_Exponential_1P, Fit_Exponential_2P, Fit_Beta_2P, Fit_Everything
 from reliability.Distributions import Weibull_Distribution, Gamma_Distribution, Lognormal_Distribution, Loglogistic_Distribution, Normal_Distribution, Exponential_Distribution, Beta_Distribution
 from reliability.Other_functions import make_right_censored_data
 from numpy.testing import assert_allclose
@@ -127,22 +127,22 @@ def test_Fit_Normal_2P():
     assert_allclose(fit.loglik, -43.22308655628899,rtol=rtol,atol=atol)
 
 
-def test_Fit_Expon_1P():
+def test_Fit_Exponential_1P():
     dist = Exponential_Distribution(Lambda=5)
     rawdata = dist.random_samples(20, seed=5)
     data = make_right_censored_data(data=rawdata, threshold=dist.mean)
-    fit = Fit_Expon_1P(failures=data.failures, right_censored=data.right_censored, show_probability_plot=False, print_results=False)
+    fit = Fit_Exponential_1P(failures=data.failures, right_censored=data.right_censored, show_probability_plot=False, print_results=False)
     assert_allclose(fit.Lambda, 6.101199434421275,rtol=rtol,atol=atol)
     assert_allclose(fit.gamma, 0,rtol=rtol,atol=atol)
     assert_allclose(fit.AICc, -22.032339191099254,rtol=rtol,atol=atol)
     assert_allclose(fit.loglik, 12.127280706660738,rtol=rtol,atol=atol)
 
 
-def test_Fit_Expon_2P():
+def test_Fit_Exponential_2P():
     dist = Exponential_Distribution(Lambda=5, gamma=500)
     rawdata = dist.random_samples(20, seed=5)
     data = make_right_censored_data(data=rawdata, threshold=dist.mean)
-    fit = Fit_Expon_2P(failures=data.failures, right_censored=data.right_censored, show_probability_plot=False, print_results=False)
+    fit = Fit_Exponential_2P(failures=data.failures, right_censored=data.right_censored, show_probability_plot=False, print_results=False)
     assert_allclose(fit.Lambda, 7.00351280734533,rtol=rtol,atol=atol)
     assert_allclose(fit.gamma, 500.015837532126,rtol=rtol,atol=atol)
     assert_allclose(fit.AICc, -23.686473231109936,rtol=rtol,atol=atol)

@@ -9,15 +9,19 @@ Included functions are:
 round_to_decimals - applies different rounding rules to numbers above and below 1 so that small numbers do not get rounded to 0.
 transform_spaced - Creates linearly spaced array (in transform space) based on a specified transform. This is like np.logspace but it can make an array that is weibull spaced, normal spaced, etc.
 axes_transforms - Custom scale functions used in Probability_plotting
-fill_no_autoscale - creates a shaded region without adding it to the global list of objects to consider when autoscale is calculated
-line_no_autoscale - creates a line without adding it to the global list of objects to consider when autoscale is calculated
 get_axes_limits - gets the current axes limits
 restore_axes_limits - restores the axes limits based on values from get_axes_limits()
 generate_X_array - generates the X values for all distributions
 zeroise_below_gamma - sets all y values to zero when x < gamma. Used when the HF and CHF equations are specified
+xy_transform - provides conversions between spatial (-inf,inf) and axes coordinates (0,1).
 probability_plot_xylims - sets the x and y limits on probability plots
 probability_plot_xyticks - sets the x and y ticks on probability plots
 anderson_darling - calculates the Anderson-Darling goodness of fit statistic
+colorprint - prints to the console in color, bold, italic, and underline
+fitters_input_checking - error checking and default values for all the fitters
+fill_no_autoscale - creates a shaded region without adding it to the global list of objects to consider when autoscale is calculated
+line_no_autoscale - creates a line without adding it to the global list of objects to consider when autoscale is calculated
+distribution_confidence_intervals - calculated and plots the confidence intervals for the distributions
 '''
 
 import numpy as np
@@ -26,9 +30,7 @@ import matplotlib.pyplot as plt
 from matplotlib.collections import PolyCollection, LineCollection
 from matplotlib import ticker
 from autograd import jacobian as jac
-from autograd_gamma import gammainccinv
-from autograd_gamma import gammaincc
-# from scipy.special import gammaincc
+from autograd_gamma import gammainccinv, gammaincc
 import autograd.numpy as anp
 
 
@@ -49,35 +51,39 @@ def round_to_decimals(number, decimals=5, integer_floats_to_ints=True):
     0.00 ==> 0
     '''
 
-    if number < 0:
-        sign = -1
-        num = number * -1
-        skip_to_end = False
-    elif number > 0:
-        sign = 1
-        num = number
-        skip_to_end = False
-    else:  # number == 0
-        if integer_floats_to_ints is True:
-            out = int(number)
-        else:
-            out = number
-        sign = 0
-        skip_to_end = True
-    if skip_to_end is False:
-        if num > 1:
-            decimal = num % 1
-            whole = num - decimal
-            if decimal == 0:
-                if integer_floats_to_ints is True:
-                    out = int(whole)
-                else:
-                    out = whole
+    if np.isfinite(number):  # check the input is not NaN
+        if number < 0:
+            sign = -1
+            num = number * -1
+            skip_to_end = False
+        elif number > 0:
+            sign = 1
+            num = number
+            skip_to_end = False
+        else:  # number == 0
+            if integer_floats_to_ints is True:
+                out = int(number)
             else:
-                out = np.round(num, decimals)
-        else:  # num<1
-            out = np.round(num, decimals - int(np.floor(np.log10(abs(num)))) - 1)
-    return out * sign
+                out = number
+            sign = 0
+            skip_to_end = True
+        if skip_to_end is False:
+            if num > 1:
+                decimal = num % 1
+                whole = num - decimal
+                if decimal == 0:
+                    if integer_floats_to_ints is True:
+                        out = int(whole)
+                    else:
+                        out = whole
+                else:
+                    out = np.round(num, decimals)
+            else:  # num<1
+                out = np.round(num, decimals - int(np.floor(np.log10(abs(num)))) - 1)
+        output = out * sign
+    else:
+        output = number
+    return output
 
 
 def transform_spaced(transform, y_lower=1e-8, y_upper=1 - 1e-8, num=1000, alpha=None, beta=None):
@@ -166,11 +172,11 @@ class axes_transforms:
         return 1 - 1 / (np.exp(R) + 1)
 
     @staticmethod
-    def expon_forward(F):
+    def exponential_forward(F):
         return ss.expon.ppf(F)
 
     @staticmethod
-    def expon_inverse(R):
+    def exponential_inverse(R):
         return ss.expon.cdf(R)
 
     @staticmethod
@@ -545,11 +551,11 @@ def probability_plot_xylims(x, y, dist, spacing=0.1, gamma_beta=None, beta_alpha
         ylim_lower = axes_transforms.weibull_inverse(min_y_tfm - dy_tfm * spacing)
         ylim_upper = axes_transforms.weibull_inverse(max_y_tfm + dy_tfm * spacing)
     if dist == 'exponential':
-        min_y_tfm = axes_transforms.expon_forward(min(y))
-        max_y_tfm = axes_transforms.expon_forward(max(y))
+        min_y_tfm = axes_transforms.exponential_forward(min(y))
+        max_y_tfm = axes_transforms.exponential_forward(max(y))
         dy_tfm = max_y_tfm - min_y_tfm
-        ylim_lower = axes_transforms.expon_inverse(min_y_tfm - dy_tfm * spacing)
-        ylim_upper = axes_transforms.expon_inverse(max_y_tfm + dy_tfm * spacing)
+        ylim_lower = axes_transforms.exponential_inverse(min_y_tfm - dy_tfm * spacing)
+        ylim_upper = axes_transforms.exponential_inverse(max_y_tfm + dy_tfm * spacing)
     elif dist == 'gamma':
         min_y_tfm = axes_transforms.gamma_forward(min(y), gamma_beta)
         max_y_tfm = axes_transforms.gamma_forward(max(y), gamma_beta)
@@ -740,6 +746,90 @@ def anderson_darling(fitted_cdf, empirical_cdf):
     return AD
 
 
+def colorprint(string, text_color=None, background_color=None, bold=False, underline=False, italic=False):
+    '''
+    colorprint - Provides easy access to color printing in the console
+    Parameter names are self explanatory. Color options are grey, red, green, yellow, blue, pink, turquoise.
+    Some flexibility in color names is allowed. eg. red and r will both give red.
+    '''
+    text_colors = {'grey': '\033[90m',
+                   'red': '\033[91m',
+                   'green': '\033[92m',
+                   'yellow': '\033[93m',
+                   'blue': '\033[94m',
+                   'pink': '\033[95m',
+                   'turquoise': '\033[96m',
+                   None: '\033[39m'}
+
+    background_colors = {'grey': '\033[100m',
+                         'red': '\033[101m',
+                         'green': '\033[102m',
+                         'yellow': '\033[103m',
+                         'blue': '\033[104m',
+                         'pink': '\033[105m',
+                         'turquoise': '\033[106m',
+                         None: '\033[49m'}
+
+    if bold is True:
+        BOLD = '\033[1m'
+    else:
+        BOLD = '\033[21m'
+
+    if underline is True:
+        UNDERLINE = '\033[4m'
+    else:
+        UNDERLINE = '\033[24m'
+
+    if italic is True:
+        ITALIC = '\033[3m'
+    else:
+        ITALIC = '\033[23m'
+
+    if type(text_color) not in [str, np.str_, type(None)]:
+        raise ValueError('text_color must be a string')
+    elif text_color is None:
+        pass
+    elif text_color.upper() in ['GREY', 'GRAY', 'GR']:
+        text_color = 'grey'
+    elif text_color.upper() in ['RED', 'R']:
+        text_color = 'red'
+    elif text_color.upper() in ['GREEN', 'G']:
+        text_color = 'green'
+    elif text_color.upper() in ['YELLOW', 'Y']:
+        text_color = 'yellow'
+    elif text_color.upper() in ['BLUE', 'B', 'DARKBLUE', 'DARK BLUE']:
+        text_color = 'blue'
+    elif text_color.upper() in ['PINK', 'P', 'PURPLE']:
+        text_color = 'pink'
+    elif text_color.upper() in ['TURQUOISE', 'TURQ', 'T', 'CYAN', 'C', 'LIGHTBLUE', 'LIGHT BLUE', 'LB']:
+        text_color = 'turquoise'
+    else:
+        raise ValueError('Unknown text_color. Options are grey, red, green, yellow, blue, pink, turquoise.')
+
+    if type(background_color) not in [str, np.str_, type(None)]:
+        raise ValueError('background_color must be a string')
+    if background_color is None:
+        pass
+    elif background_color.upper() in ['GREY', 'GRAY', 'GR']:
+        background_color = 'grey'
+    elif background_color.upper() in ['RED', 'R']:
+        background_color = 'red'
+    elif background_color.upper() in ['GREEN', 'G']:
+        background_color = 'green'
+    elif background_color.upper() in ['YELLOW', 'Y']:
+        background_color = 'yellow'
+    elif background_color.upper() in ['BLUE', 'B', 'DARKBLUE', 'DARK BLUE']:
+        background_color = 'blue'
+    elif background_color.upper() in ['PINK', 'P', 'PURPLE']:
+        background_color = 'pink'
+    elif background_color.upper() in ['TURQUOISE', 'TURQ', 'T', 'CYAN', 'C', 'LIGHTBLUE', 'LIGHT BLUE', 'LB']:
+        background_color = 'turquoise'
+    else:
+        raise ValueError('Unknown text_color. Options are grey, red, green, yellow, blue, pink, turquoise.')
+
+    print(BOLD + ITALIC + UNDERLINE + background_colors[background_color] + text_colors[text_color] + string + '\033[0m')
+
+
 class fitters_input_checking:
     '''
     performs error checking and some basic default operations for all the inputs given to each of the fitters
@@ -777,24 +867,24 @@ class fitters_input_checking:
             failures = f0[f0 != 0]
             if len(failures) != len(f0):
                 if dist == 'Everything':
-                    print('WARNING: failures contained zeros. These have been removed to enable fitting of all distributions.')
+                    colorprint('WARNING: failures contained zeros. These have been removed to enable fitting of all distributions.', text_color='red')
                 else:
-                    print(str('WARNING: failures contained zeros. These have been removed to enable fitting of the ' + dist + ' distribution.'))
+                    colorprint(str('WARNING: failures contained zeros. These have been removed to enable fitting of the ' + dist + ' distribution.'), text_color='red')
 
             if len(right_censored) != len(rc0):
                 if dist == 'Everything':
-                    print('WARNING: right_censored contained zeros. These have been removed to enable fitting of all distributions.')
+                    colorprint('WARNING: right_censored contained zeros. These have been removed to enable fitting of all distributions.', text_color='red')
                 else:
-                    print(str('WARNING: right_censored contained zeros. These have been removed to enable fitting of the ' + dist + ' distribution.'))
+                    colorprint(str('WARNING: right_censored contained zeros. These have been removed to enable fitting of the ' + dist + ' distribution.'), text_color='red')
             if dist == 'Beta_2P':
                 rc1 = right_censored
                 f1 = failures
                 right_censored = rc1[rc1 != 1]
                 failures = f1[f1 != 0]
                 if len(failures) != len(f1):
-                    print(str('WARNING: failures contained ones. These have been removed to enable fitting of the Beta_2P distribution.'))
+                    colorprint('WARNING: failures contained ones. These have been removed to enable fitting of the Beta_2P distribution.', text_color='red')
                 if len(right_censored) != len(rc1):
-                    print(str('WARNING: right_censored contained ones. These have been removed to enable fitting of the Beta_2P distribution.'))
+                    colorprint('WARNING: right_censored contained ones. These have been removed to enable fitting of the Beta_2P distribution.', text_color='red')
 
         # type and value checking for CI
         if type(CI) not in [float, np.float64]:
@@ -853,15 +943,16 @@ class fitters_input_checking:
         elif dist in ['Weibull_Mixture', 'Weibull_CR']:
             min_failures = 4
 
-        if len(failures) < min_failures:
+        number_of_unique_failures = len(np.unique(failures))  # failures need to be unique. ie. [4,4] counts as 1 distinct failure
+        if number_of_unique_failures < min_failures:
             if force_beta is not None:
-                raise ValueError(str('The minimum number of failures required for a ' + dist + ' distribution with force_beta specified is ' + str(min_failures) + '.'))
+                raise ValueError(str('The minimum number of distinct failures required for a ' + dist + ' distribution with force_beta specified is ' + str(min_failures) + '.'))
             elif force_sigma is not None:
-                raise ValueError(str('The minimum number of failures required for a ' + dist + ' distribution with force_sigma specified is ' + str(min_failures) + '.'))
+                raise ValueError(str('The minimum number of distinct failures required for a ' + dist + ' distribution with force_sigma specified is ' + str(min_failures) + '.'))
             elif dist == 'Everything':
-                raise ValueError('The minimum number of failures required to fit everything is ' + str(min_failures) + '.')
+                raise ValueError('The minimum number of distinct failures required to fit everything is ' + str(min_failures) + '.')
             else:
-                raise ValueError(str('The minimum number of failures required for a ' + dist + ' distribution is ' + str(min_failures) + '.'))
+                raise ValueError(str('The minimum number of distinct failures required for a ' + dist + ' distribution is ' + str(min_failures) + '.'))
 
         # error checking for CI_type
         if CI_type is not None:
@@ -955,7 +1046,7 @@ class distribution_confidence_intervals:
         else:
             plot_CI = True  # default
         if plot_CI not in [True, False]:
-            print('WARNING: unexpected value in plot_CI. To show/hide the CI you can specify either show_CI=True/False or plot_CI=True/False')
+            colorprint('WARNING: unexpected value in plot_CI. To show/hide the CI you can specify either show_CI=True/False or plot_CI=True/False', text_color='red')
             plot_CI = True
 
         if 'CI' in kwargs_list:
@@ -967,7 +1058,7 @@ class distribution_confidence_intervals:
 
         if self.name == 'Exponential':
             if 'CI_type' in kwargs_list:
-                print('WARNING: CI_type is not required for the Exponential distribution since the confidence intervals of time and reliability are identical')
+                colorprint('WARNING: CI_type is not required for the Exponential distribution since the confidence intervals of time and reliability are identical', text_color='red')
                 CI_type = kwargs.pop('CI_type')  # remove it
             else:
                 CI_type = None  # this will not be used but it is required for the output
@@ -981,7 +1072,7 @@ class distribution_confidence_intervals:
         return CI_type, plot_CI, CI
 
     @staticmethod
-    def expon_CI(self, func, plot_CI=None, CI=None, text_title='', color=None, q=None):
+    def exponential_CI(self, func, plot_CI=None, CI=None, text_title='', color=None, q=None):
         '''
         Generates the confidence intervals for CDF, SF, and CHF
         This is a utility function intended only for use by the Exponential CDF, SF, and CHF functions.

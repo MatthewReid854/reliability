@@ -64,7 +64,7 @@ import scipy.stats as ss
 import numpy as np
 from scipy import integrate
 import matplotlib.pyplot as plt
-from reliability.Utils import round_to_decimals, get_axes_limits, restore_axes_limits, generate_X_array, zeroise_below_gamma, distribution_confidence_intervals
+from reliability.Utils import round_to_decimals, get_axes_limits, restore_axes_limits, generate_X_array, zeroise_below_gamma, distribution_confidence_intervals, colorprint
 
 dec = 4  # number of decimals to use when rounding descriptive statistics and parameter titles
 np.seterr(divide='ignore', invalid='ignore')  # ignore the divide by zero warnings
@@ -169,7 +169,7 @@ class Weibull_Distribution:
         else:
             self.CI_type = 'time'
         for item in kwargs.keys():
-            print('WARNING:', item, 'not recognised as an appropriate entry in kwargs. Appropriate entries are alpha_SE, beta_SE, Cov_alpha_beta, CI, and CI_type')
+            colorprint(str('WARNING: ' + item + ' is not recognised as an appropriate entry in kwargs. Appropriate entries are alpha_SE, beta_SE, Cov_alpha_beta, CI, and CI_type.'), text_color='red')
         self._pdf0 = ss.weibull_min.pdf(0, self.beta, scale=self.alpha, loc=0)  # the pdf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
         self._hf0 = ss.weibull_min.pdf(0, self.beta, scale=self.alpha, loc=0) / ss.weibull_min.sf(0, self.beta, scale=self.alpha, loc=0)  # the hf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
 
@@ -652,7 +652,7 @@ class Normal_Distribution:
         else:
             self.CI_type = 'time'
         for item in kwargs.keys():
-            print('WARNING:', item, 'not recognised as an appropriate entry in kwargs. Appropriate entries are alpha_SE, beta_SE, Cov_alpha_beta, CI, and CI_type')
+            colorprint(str('WARNING: ' + item + 'is not recognised as an appropriate entry in kwargs. Appropriate entries are mu_SE, sigma_SE, Cov_mu_sigma, CI, and CI_type.'), text_color='red')
 
         self._pdf0 = 0  # the pdf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
         self._hf0 = 0  # the hf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
@@ -1126,7 +1126,7 @@ class Lognormal_Distribution:
         else:
             self.CI_type = 'time'
         for item in kwargs.keys():
-            print('WARNING:', item, 'not recognised as an appropriate entry in kwargs. Appropriate entries are alpha_SE, beta_SE, Cov_alpha_beta, CI, and CI_type')
+            colorprint(str('WARNING: ' + item + 'is not recognised as an appropriate entry in kwargs. Appropriate entries are mu_SE, sigma_SE, Cov_mu_sigma, CI, and CI_type.'), text_color='red')
 
         self._pdf0 = ss.lognorm.pdf(0, self.sigma, 0, np.exp(self.mu))  # the pdf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
         self._hf0 = ss.lognorm.pdf(0, self.sigma, 0, np.exp(self.mu)) / ss.lognorm.sf(0, self.sigma, 0, np.exp(self.mu))  # the hf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
@@ -1588,7 +1588,7 @@ class Exponential_Distribution:
         else:
             self.Z = None
         for item in kwargs.keys():
-            print('WARNING:', item, 'not recognised as an appropriate entry in kwargs. Appropriate entries are Lambda_SE and CI')
+            colorprint(str('WARNING: ' + item + ' is not recognised as an appropriate entry in kwargs. Appropriate entries are Lambda_SE and CI.'), text_color='red')
         self._pdf0 = ss.expon.pdf(0, scale=1 / self.Lambda, loc=0)  # the pdf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array.
         self._hf0 = self.Lambda  # the hf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
 
@@ -1759,7 +1759,7 @@ class Exponential_Distribution:
 
             restore_axes_limits(limits, dist=self, func='CDF', X=X, Y=cdf, xvals=xvals, xmin=xmin, xmax=xmax)
 
-            distribution_confidence_intervals.expon_CI(self, func='CDF', plot_CI=plot_CI, CI=CI, text_title=text_title, color=p[0].get_color())
+            distribution_confidence_intervals.exponential_CI(self, func='CDF', plot_CI=plot_CI, CI=CI, text_title=text_title, color=p[0].get_color())
 
             return cdf
 
@@ -1805,7 +1805,7 @@ class Exponential_Distribution:
 
             restore_axes_limits(limits, dist=self, func='SF', X=X, Y=sf, xvals=xvals, xmin=xmin, xmax=xmax)
 
-            distribution_confidence_intervals.expon_CI(self, func='SF', plot_CI=plot_CI, CI=CI, text_title=text_title, color=p[0].get_color())
+            distribution_confidence_intervals.exponential_CI(self, func='SF', plot_CI=plot_CI, CI=CI, text_title=text_title, color=p[0].get_color())
 
             return sf
 
@@ -1897,7 +1897,7 @@ class Exponential_Distribution:
 
             restore_axes_limits(limits, dist=self, func='CHF', X=X, Y=chf, xvals=xvals, xmin=xmin, xmax=xmax)
 
-            distribution_confidence_intervals.expon_CI(self, func='CHF', plot_CI=plot_CI, CI=CI, text_title=text_title, color=p[0].get_color())
+            distribution_confidence_intervals.exponential_CI(self, func='CHF', plot_CI=plot_CI, CI=CI, text_title=text_title, color=p[0].get_color())
 
             return chf
 
@@ -2055,30 +2055,30 @@ class Gamma_Distribution:
         self.b5 = ss.gamma.ppf(0.05, self.beta, scale=self.alpha, loc=self.gamma)
         self.b95 = ss.gamma.ppf(0.95, self.beta, scale=self.alpha, loc=self.gamma)
 
-        # extracts values for confidence interval plotting
-        if 'alpha_SE' in kwargs:
-            self.alpha_SE = kwargs.pop('alpha_SE')
-        else:
-            self.alpha_SE = None
-        if 'beta_SE' in kwargs:
-            self.beta_SE = kwargs.pop('beta_SE')
-        else:
-            self.beta_SE = None
-        if 'Cov_alpha_beta' in kwargs:
-            self.Cov_alpha_beta = kwargs.pop('Cov_alpha_beta')
-        else:
-            self.Cov_alpha_beta = None
-        if 'CI' in kwargs:
-            CI = kwargs.pop('CI')
-            self.Z = -ss.norm.ppf((1 - CI) / 2)
-        else:
-            self.Z = None
-        if 'CI_type' in kwargs:
-            self.CI_type = kwargs.pop('CI_type')
-        else:
-            self.CI_type = 'time'
-        for item in kwargs.keys():
-            print('WARNING:', item, 'not recognised as an appropriate entry in kwargs. Appropriate entries are alpha_SE, beta_SE, Cov_alpha_beta, CI, and CI_type')
+        # # extracts values for confidence interval plotting
+        # if 'alpha_SE' in kwargs:
+        #     self.alpha_SE = kwargs.pop('alpha_SE')
+        # else:
+        #     self.alpha_SE = None
+        # if 'beta_SE' in kwargs:
+        #     self.beta_SE = kwargs.pop('beta_SE')
+        # else:
+        #     self.beta_SE = None
+        # if 'Cov_alpha_beta' in kwargs:
+        #     self.Cov_alpha_beta = kwargs.pop('Cov_alpha_beta')
+        # else:
+        #     self.Cov_alpha_beta = None
+        # if 'CI' in kwargs:
+        #     CI = kwargs.pop('CI')
+        #     self.Z = -ss.norm.ppf((1 - CI) / 2)
+        # else:
+        #     self.Z = None
+        # if 'CI_type' in kwargs:
+        #     self.CI_type = kwargs.pop('CI_type')
+        # else:
+        #     self.CI_type = 'time'
+        # for item in kwargs.keys():
+        #     colorprint(str('WARNING: '+ item + ' is not recognised as an appropriate entry in kwargs. Appropriate entries are alpha_SE, beta_SE, Cov_alpha_beta, CI, and CI_type'),text_color='red')
         self._pdf0 = ss.gamma.pdf(0, self.beta, scale=self.alpha, loc=0)  # the pdf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
         self._hf0 = ss.gamma.pdf(0, self.beta, scale=self.alpha, loc=0) / ss.gamma.sf(0, self.beta, scale=self.alpha, loc=0)  # the hf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
 
@@ -2230,11 +2230,12 @@ class Gamma_Distribution:
         if show_plot == False:
             return cdf
         else:
-            CI_type, plot_CI, CI = distribution_confidence_intervals.CI_kwarg_handler(self, kwargs)
+            # CI_type, plot_CI, CI = distribution_confidence_intervals.CI_kwarg_handler(self, kwargs)
 
             limits = get_axes_limits()
 
-            p = plt.plot(X, cdf, **kwargs)
+            # p = plt.plot(X, cdf, **kwargs)
+            plt.plot(X, cdf, **kwargs)
             plt.xlabel('x values')
             plt.ylabel('Fraction failing')
             text_title = str('Gamma Distribution\n' + ' Cumulative Distribution Function ' + '\n' + self.param_title)
@@ -2243,7 +2244,7 @@ class Gamma_Distribution:
 
             restore_axes_limits(limits, dist=self, func='CDF', X=X, Y=cdf, xvals=xvals, xmin=xmin, xmax=xmax)
 
-            distribution_confidence_intervals.gamma_CI(self, func='CDF', CI_type=CI_type, plot_CI=plot_CI, CI=CI, text_title=text_title, color=p[0].get_color())
+            # distribution_confidence_intervals.gamma_CI(self, func='CDF', CI_type=CI_type, plot_CI=plot_CI, CI=CI, text_title=text_title, color=p[0].get_color())
 
             return cdf
 
@@ -2994,7 +2995,7 @@ class Loglogistic_Distribution:
         else:
             self.CI_type = 'time'
         for item in kwargs.keys():
-            print('WARNING:', item, 'not recognised as an appropriate entry in kwargs. Appropriate entries are alpha_SE, beta_SE, Cov_alpha_beta, CI, and CI_type')
+            colorprint(str('WARNING:' + item + ' is not recognised as an appropriate entry in kwargs. Appropriate entries are alpha_SE, beta_SE, Cov_alpha_beta, CI, and CI_type.'), text_color='red')
         self._pdf0 = ss.fisk.pdf(0, self.beta, scale=self.alpha, loc=0)  # the pdf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
         self._hf0 = ss.fisk.pdf(0, self.beta, scale=self.alpha, loc=0) / ss.fisk.sf(0, self.beta, scale=self.alpha, loc=0)  # the hf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
 
@@ -3498,7 +3499,7 @@ class Gumbel_Distribution:
         else:
             self.CI_type = 'time'
         for item in kwargs.keys():
-            print('WARNING:', item, 'not recognised as an appropriate entry in kwargs. Appropriate entries are alpha_SE, beta_SE, Cov_alpha_beta, CI, and CI_type')
+            colorprint(str('WARNING: ' + item + 'is not recognised as an appropriate entry in kwargs. Appropriate entries are mu_SE, sigma_SE, Cov_mu_sigma, CI, and CI_type.'), text_color='red')
 
         self._pdf0 = 0  # the pdf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
         self._hf0 = 0  # the hf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
@@ -4474,7 +4475,7 @@ class Mixture_Model:
         xmax999 = -1e100
         xmin001 = 1e100
         for dist in distributions:
-            xmax = max(xmax, dist.quantile(1-1e-10))
+            xmax = max(xmax, dist.quantile(1 - 1e-10))
             xmin = min(xmin, dist.quantile(1e-10))
             xmax999 = max(xmax999, dist.quantile(0.999))
             xmin001 = min(xmin001, dist.quantile(0.001))
@@ -4490,12 +4491,12 @@ class Mixture_Model:
         pdf = np.zeros_like(X)
         # combine the distributions using the sum of the survival functions: SF_total = (SF_1 x p_1) + (SF_2 x p2) x (SF_3 x p3) + .... + (SF_n x pn)
         for i in range(len(distributions)):
-            if type(distributions[i]) in [Normal_Distribution,Gumbel_Distribution]:
+            if type(distributions[i]) in [Normal_Distribution, Gumbel_Distribution]:
                 sf += distributions[i].SF(X, show_plot=False) * proportions[i]
                 pdf += distributions[i].PDF(X, show_plot=False) * proportions[i]
             else:
-                sf += np.hstack([Y_negative,distributions[i].SF(X_positive, show_plot=False) * proportions[i]])
-                pdf += np.hstack([Y_negative,distributions[i].PDF(X_positive, show_plot=False) * proportions[i]])
+                sf += np.hstack([Y_negative, distributions[i].SF(X_positive, show_plot=False) * proportions[i]])
+                pdf += np.hstack([Y_negative, distributions[i].PDF(X_positive, show_plot=False) * proportions[i]])
         self.__pdf_init = pdf
         self.__sf_init = sf
         self.__xvals_init = X
@@ -4525,8 +4526,8 @@ class Mixture_Model:
             X = xvals
         else:
             if xmin is None:
-                if self.__xmin001 > 0 and self.__xmin001 - (self.__xmax999-self.__xmin001)*0.3 < 0:
-                    xmin = 0 #if its positive but close to zero then just make it zero
+                if self.__xmin001 > 0 and self.__xmin001 - (self.__xmax999 - self.__xmin001) * 0.3 < 0:
+                    xmin = 0  # if its positive but close to zero then just make it zero
                 else:
                     xmin = self.__xmin001
             if xmax is None:
@@ -4536,7 +4537,7 @@ class Mixture_Model:
             X = np.linspace(xmin, xmax, 1000)  # this is a big array because everything is numerical rather than empirical. Small array sizes will lead to blocky (inaccurate) results.
 
         # convert to numpy array if given list. raise error for other types. check for values below 0.
-        if type(X) not in [np.ndarray,list]:
+        if type(X) not in [np.ndarray, list]:
             raise ValueError('unexpected type in xvals. Must be  list, or array')
         else:
             X = np.asarray(X)
@@ -4551,12 +4552,12 @@ class Mixture_Model:
         pdf = np.zeros_like(X)
         # combine the distributions using the sum of the survival functions: SF_total = (SF_1 x p_1) + (SF_2 x p2) x (SF_3 x p3) + .... + (SF_n x pn)
         for i in range(len(distributions)):
-            if type(distributions[i]) in [Normal_Distribution,Gumbel_Distribution]:
+            if type(distributions[i]) in [Normal_Distribution, Gumbel_Distribution]:
                 sf += distributions[i].SF(X, show_plot=False) * proportions[i]
                 pdf += distributions[i].PDF(X, show_plot=False) * proportions[i]
             else:
-                sf += np.hstack([Y_negative,distributions[i].SF(X_positive, show_plot=False) * proportions[i]])
-                pdf += np.hstack([Y_negative,distributions[i].PDF(X_positive, show_plot=False) * proportions[i]])
+                sf += np.hstack([Y_negative, distributions[i].SF(X_positive, show_plot=False) * proportions[i]])
+                pdf += np.hstack([Y_negative, distributions[i].PDF(X_positive, show_plot=False) * proportions[i]])
 
         # these are all hidden to the user but can be accessed by the other functions in this module
         hf = pdf / sf
@@ -4669,7 +4670,7 @@ class Mixture_Model:
 
                 X_positive = self.__xvals[self.__xvals >= 0]
                 for dist in self.distributions:
-                    if dist not in [Normal_Distribution,Gumbel_Distribution]:
+                    if dist not in [Normal_Distribution, Gumbel_Distribution]:
                         dist.PDF(xvals=X_positive, label=dist.param_title_long)
                     else:
                         dist.PDF(xvals=self.__xvals, label=dist.param_title_long)
@@ -4715,7 +4716,7 @@ class Mixture_Model:
             if plot_components is True:  # this will plot the distributions that make up the components of the model
                 X_positive = self.__xvals[self.__xvals >= 0]
                 for dist in self.distributions:
-                    if dist not in [Normal_Distribution,Gumbel_Distribution]:
+                    if dist not in [Normal_Distribution, Gumbel_Distribution]:
                         dist.CDF(xvals=X_positive, label=dist.param_title_long)
                     else:
                         dist.CDF(xvals=self.__xvals, label=dist.param_title_long)
@@ -4760,7 +4761,7 @@ class Mixture_Model:
             if plot_components is True:  # this will plot the distributions that make up the components of the model
                 X_positive = self.__xvals[self.__xvals >= 0]
                 for dist in self.distributions:
-                    if dist not in [Normal_Distribution,Gumbel_Distribution]:
+                    if dist not in [Normal_Distribution, Gumbel_Distribution]:
                         dist.SF(xvals=X_positive, label=dist.param_title_long)
                     else:
                         dist.SF(xvals=self.__xvals, label=dist.param_title_long)
@@ -4806,7 +4807,7 @@ class Mixture_Model:
             if plot_components is True:  # this will plot the distributions that make up the components of the model
                 X_positive = self.__xvals[self.__xvals >= 0]
                 for dist in self.distributions:
-                    if dist not in [Normal_Distribution,Gumbel_Distribution]:
+                    if dist not in [Normal_Distribution, Gumbel_Distribution]:
                         dist.HF(xvals=X_positive, label=dist.param_title_long)
                     else:
                         dist.HF(xvals=self.__xvals, label=dist.param_title_long)
@@ -4851,7 +4852,7 @@ class Mixture_Model:
             if plot_components is True:  # this will plot the distributions that make up the components of the model
                 X_positive = self.__xvals[self.__xvals >= 0]
                 for dist in self.distributions:
-                    if dist not in [Normal_Distribution,Gumbel_Distribution]:
+                    if dist not in [Normal_Distribution, Gumbel_Distribution]:
                         dist.CHF(xvals=X_positive, label=dist.param_title_long)
                     else:
                         dist.CHF(xvals=self.__xvals, label=dist.param_title_long)
@@ -4884,7 +4885,7 @@ class Mixture_Model:
                 raise ValueError('Quantile must be between 0 and 1')
         else:
             raise ValueError('Quantile must be of type int, float, list, array')
-        return self.__xvals_init[np.argmin(abs((1-self.__sf_init) - q))]
+        return self.__xvals_init[np.argmin(abs((1 - self.__sf_init) - q))]
 
     def inverse_SF(self, q):
         '''Inverse survival function calculator
@@ -4933,7 +4934,7 @@ class Mixture_Model:
 
         xmax = 0
         for dist in self.distributions:
-            xmax = max(xmax, dist.quantile(1-1e-10))  # find the effective infinity for integration
+            xmax = max(xmax, dist.quantile(1 - 1e-10))  # find the effective infinity for integration
         t_full = np.linspace(t, xmax, 1000000)
         sf_full = __subcombiner(t_full)
         sf_single = __subcombiner(t)

@@ -386,8 +386,8 @@ def Exponential_probability_plot_Weibull_Scale(failures=None, right_censored=Non
             Lambda = __fitted_dist_params.Lambda
             Lambda_SE = __fitted_dist_params.Lambda_SE
         else:
-            from reliability.Fitters import Fit_Expon_1P
-            fit = Fit_Expon_1P(failures=failures, right_censored=right_censored, CI=CI, show_probability_plot=False, print_results=False)
+            from reliability.Fitters import Fit_Exponential_1P
+            fit = Fit_Exponential_1P(failures=failures, right_censored=right_censored, CI=CI, show_probability_plot=False, print_results=False)
             Lambda = fit.Lambda
             Lambda_SE = fit.Lambda_SE
         if 'label' in kwargs:
@@ -405,8 +405,8 @@ def Exponential_probability_plot_Weibull_Scale(failures=None, right_censored=Non
             Lambda_SE = __fitted_dist_params.Lambda_SE
             gamma = __fitted_dist_params.gamma
         else:
-            from reliability.Fitters import Fit_Expon_2P
-            fit = Fit_Expon_2P(failures=failures, right_censored=right_censored, CI=CI, show_probability_plot=False, print_results=False)
+            from reliability.Fitters import Fit_Exponential_2P
+            fit = Fit_Exponential_2P(failures=failures, right_censored=right_censored, CI=CI, show_probability_plot=False, print_results=False)
             Lambda = fit.Lambda
             Lambda_SE = fit.Lambda_SE
             gamma = fit.gamma
@@ -709,7 +709,7 @@ def Lognormal_probability_plot(failures=None, right_censored=None, fit_gamma=Fal
     return plt.gcf()
 
 
-def Beta_probability_plot(failures=None, right_censored=None, __fitted_dist_params=None, a=None, CI=0.95, CI_type='time', show_fitted_distribution=True, **kwargs):
+def Beta_probability_plot(failures=None, right_censored=None, __fitted_dist_params=None, a=None, CI=0.95, show_fitted_distribution=True, **kwargs):
     '''
     Beta probability plot
 
@@ -778,7 +778,7 @@ def Beta_probability_plot(failures=None, right_censored=None, __fitted_dist_para
     return plt.gcf()
 
 
-def Gamma_probability_plot(failures=None, right_censored=None, fit_gamma=False, __fitted_dist_params=None, a=None, CI=0.95, CI_type='time', show_fitted_distribution=True, **kwargs):
+def Gamma_probability_plot(failures=None, right_censored=None, fit_gamma=False, __fitted_dist_params=None, a=None, CI=0.95, show_fitted_distribution=True, **kwargs):
     '''
     Gamma probability plot
 
@@ -921,8 +921,8 @@ def Exponential_probability_plot(failures=None, right_censored=None, fit_gamma=F
             Lambda = __fitted_dist_params.Lambda
             Lambda_SE = __fitted_dist_params.Lambda_SE
         else:
-            from reliability.Fitters import Fit_Expon_1P
-            fit = Fit_Expon_1P(failures=failures, right_censored=right_censored, CI=CI, show_probability_plot=False, print_results=False)
+            from reliability.Fitters import Fit_Exponential_1P
+            fit = Fit_Exponential_1P(failures=failures, right_censored=right_censored, CI=CI, show_probability_plot=False, print_results=False)
             Lambda = fit.Lambda
             Lambda_SE = fit.Lambda_SE
         if 'label' in kwargs:
@@ -940,8 +940,8 @@ def Exponential_probability_plot(failures=None, right_censored=None, fit_gamma=F
             Lambda_SE = __fitted_dist_params.Lambda_SE
             gamma = __fitted_dist_params.gamma
         else:
-            from reliability.Fitters import Fit_Expon_2P
-            fit = Fit_Expon_2P(failures=failures, right_censored=right_censored, CI=CI, show_probability_plot=False, print_results=False)
+            from reliability.Fitters import Fit_Exponential_2P
+            fit = Fit_Exponential_2P(failures=failures, right_censored=right_censored, CI=CI, show_probability_plot=False, print_results=False)
             Lambda = fit.Lambda
             Lambda_SE = fit.Lambda_SE
             gamma = fit.gamma
@@ -962,7 +962,7 @@ def Exponential_probability_plot(failures=None, right_censored=None, fit_gamma=F
 
     x, y = plotting_positions(failures=failures, right_censored=right_censored, a=a)
     plt.scatter(x, y, marker='.', linewidth=2, c=data_color)
-    plt.gca().set_yscale('function', functions=(axes_transforms.expon_forward, axes_transforms.expon_inverse))
+    plt.gca().set_yscale('function', functions=(axes_transforms.exponential_forward, axes_transforms.exponential_inverse))
     plt.grid(b=True, which='major', color='k', alpha=0.3, linestyle='-')
     plt.grid(b=True, which='minor', color='k', alpha=0.08, linestyle='-')
     plt.gcf().set_size_inches(9, 9)  # adjust the figsize. This is done outside of figure creation so that layering of multiple plots is possible
@@ -1099,7 +1099,6 @@ def QQ_plot_parametric(X_dist=None, Y_dist=None, show_fitted_lines=True, show_di
 
     # fit lines and generate text for equations to go in legend
     max_value = max(max(dist_X_ISF), max(dist_Y_ISF))
-    min_value = min(min(dist_X_ISF), min(dist_Y_ISF))
     x = dist_X_ISF[:, np.newaxis]
     y = dist_Y_ISF
     deg1 = np.polyfit(dist_X_ISF, dist_Y_ISF, deg=1)  # fit y=mx+c

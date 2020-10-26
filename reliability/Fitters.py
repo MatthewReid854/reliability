@@ -36,14 +36,14 @@ import warnings
 from reliability.Distributions import Weibull_Distribution, Gamma_Distribution, Beta_Distribution, Exponential_Distribution, Normal_Distribution, Lognormal_Distribution, Loglogistic_Distribution, Gumbel_Distribution, Mixture_Model, Competing_Risks_Model
 from reliability.Nonparametric import KaplanMeier
 from reliability.Probability_plotting import plotting_positions
-from reliability.Utils import round_to_decimals, anderson_darling, distribution_confidence_intervals, fitters_input_checking
+from reliability.Utils import round_to_decimals, anderson_darling, distribution_confidence_intervals, fitters_input_checking, colorprint
 import autograd.numpy as anp
 from autograd import value_and_grad
+from autograd.differential_operators import hessian
 from autograd.scipy.special import gamma as agamma
 from autograd.scipy.special import beta as abeta
-from autograd.differential_operators import hessian
-from autograd_gamma import betainc
 from autograd.scipy.special import erf
+from autograd_gamma import betainc
 from autograd_gamma import gammaincc
 
 anp.seterr('ignore')
@@ -94,14 +94,12 @@ class Fit_Everything:
     print('Weibull Alpha =',output.Weibull_2P_alpha,'\nWeibull Beta =',output.Weibull_2P_beta)
     '''
 
-    def __init__(self, failures=None, right_censored=None, exclude=[], sort_by='BIC', print_results=True, show_histogram_plot=True, show_PP_plot=True, show_probability_plot=True):
+    def __init__(self, failures=None, right_censored=None, exclude=None, sort_by='BIC', print_results=True, show_histogram_plot=True, show_PP_plot=True, show_probability_plot=True):
 
         inputs = fitters_input_checking(dist='Everything', failures=failures, right_censored=right_censored)
         failures = inputs.failures
         right_censored = inputs.right_censored
 
-        if len(failures) < 3:
-            exclude.extend(['Weibull_3P', 'Gamma_3P', 'Loglogistic_3P', 'Lognormal_3P'])  # do not fit the 3P distributions if there are only 2 failures
         if show_histogram_plot not in [True, False]:
             raise ValueError('show_histogram_plot must be either True or False. Defaults to True.')
         if print_results not in [True, False]:
@@ -117,12 +115,19 @@ class Fit_Everything:
         self._frac_fail = len(failures) / len(self._all_data)  # This is used for scaling the histogram when there is censored data
         d = sorted(self._all_data)  # sorting the failure data is necessary for plotting quantiles in order
 
+        if exclude is None:
+            exclude = []
+        if type(exclude) == np.ndarray:
+            exclude = list(exclude)
         if type(exclude) not in [list, np.ndarray]:
-            raise ValueError('exclude must be a list or array of strings that specified the distributions to be excluded from fitting.')
+            raise ValueError('exclude must be a list or array or strings that match the names of the distributions to be excluded. eg "Weibull_2P".')
+        if len(failures) < 3:
+            exclude.extend(['Weibull_3P', 'Gamma_3P', 'Loglogistic_3P', 'Lognormal_3P'])  # do not fit the 3P distributions if there are only 2 failures
+        # flexible name checking for excluded distributions
         excluded_distributions = []
         unknown_exclusions = []
         for item in exclude:
-            if type(item) is not str:
+            if type(item) not in [str, np.str_]:
                 raise ValueError('exclude must be a list or array of strings that specified the distributions to be excluded from fitting. Available strings are:'
                                  '\nWeibull_2P\nWeibull_3P\nNormal_2P\nGamma_2P\nLoglogistic_2P\nGamma_3P\nLognormal_2P\nLognormal_3P\nLoglogistic_3P\nGumbel_2P\nExponential_2P\nExponential_1P\nBeta_2P')
             if item.upper() in ['WEIBULL_2P', 'WEIBULL2P', 'WEIBULL2']:
@@ -154,9 +159,8 @@ class Fit_Everything:
             else:
                 unknown_exclusions.append(item)
         if len(unknown_exclusions) > 0:
-            print('WARNING: The following items were not recognised distributions to exclude:', unknown_exclusions)
-            print('Available distributions to exclude are: Weibull_2P, Weibull_3P, Normal_2P, Gamma_2P, Loglogistic_2P, Gamma_3P, Lognormal_2P, Lognormal_3P, Loglogistic_3P, Gumbel_2P, Exponential_2P, Exponential_1P, Beta_2P')
-
+            colorprint(str('WARNING: The following items were not recognised distributions to exclude: ' + str(unknown_exclusions)), text_color='red')
+            colorprint('Available distributions to exclude are: Weibull_2P, Weibull_3P, Normal_2P, Gamma_2P, Loglogistic_2P, Gamma_3P, Lognormal_2P, Lognormal_3P, Loglogistic_3P, Gumbel_2P, Exponential_2P, Exponential_1P, Beta_2P', text_color='red')
         if 'Beta_2P' not in excluded_distributions:  # if Beta wasn't manually excluded, check if is needs to be automatically excluded based on data above 1
             if max(self._all_data) >= 1:
                 excluded_distributions.append('Beta_2P')
@@ -188,14 +192,14 @@ class Fit_Everything:
             df = df.append({'Distribution': 'Gamma_3P', 'Alpha': self.Gamma_3P_alpha, 'Beta': self.Gamma_3P_beta, 'Gamma': self.Gamma_3P_gamma, 'Mu': '', 'Sigma': '', 'Lambda': '', 'AICc': self.Gamma_3P_AICc, 'BIC': self.Gamma_3P_BIC, 'AD': self.Gamma_3P_AD}, ignore_index=True)
 
         if 'Exponential_2P' not in self.excluded_distributions:
-            self.__Expon_2P_params = Fit_Expon_2P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False)
-            self.Expon_2P_lambda = self.__Expon_2P_params.Lambda
-            self.Expon_2P_gamma = self.__Expon_2P_params.gamma
-            self.Expon_2P_BIC = self.__Expon_2P_params.BIC
-            self.Expon_2P_AICc = self.__Expon_2P_params.AICc
-            self.Expon_2P_AD = self.__Expon_2P_params.AD
-            self._parametric_CDF_Exponential_2P = self.__Expon_2P_params.distribution.CDF(xvals=d, show_plot=False)
-            df = df.append({'Distribution': 'Exponential_2P', 'Alpha': '', 'Beta': '', 'Gamma': self.Expon_2P_gamma, 'Mu': '', 'Sigma': '', 'Lambda': self.Expon_2P_lambda, 'AICc': self.Expon_2P_AICc, 'BIC': self.Expon_2P_BIC, 'AD': self.Expon_2P_AD}, ignore_index=True)
+            self.__Exponential_2P_params = Fit_Exponential_2P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False)
+            self.Exponential_2P_lambda = self.__Exponential_2P_params.Lambda
+            self.Exponential_2P_gamma = self.__Exponential_2P_params.gamma
+            self.Exponential_2P_BIC = self.__Exponential_2P_params.BIC
+            self.Exponential_2P_AICc = self.__Exponential_2P_params.AICc
+            self.Exponential_2P_AD = self.__Exponential_2P_params.AD
+            self._parametric_CDF_Exponential_2P = self.__Exponential_2P_params.distribution.CDF(xvals=d, show_plot=False)
+            df = df.append({'Distribution': 'Exponential_2P', 'Alpha': '', 'Beta': '', 'Gamma': self.Exponential_2P_gamma, 'Mu': '', 'Sigma': '', 'Lambda': self.Exponential_2P_lambda, 'AICc': self.Exponential_2P_AICc, 'BIC': self.Exponential_2P_BIC, 'AD': self.Exponential_2P_AD}, ignore_index=True)
 
         if 'Lognormal_3P' not in self.excluded_distributions:
             self.__Lognormal_3P_params = Fit_Lognormal_3P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False)
@@ -259,13 +263,13 @@ class Fit_Everything:
             df = df.append({'Distribution': 'Gamma_2P', 'Alpha': self.Gamma_2P_alpha, 'Beta': self.Gamma_2P_beta, 'Gamma': '', 'Mu': '', 'Sigma': '', 'Lambda': '', 'AICc': self.Gamma_2P_AICc, 'BIC': self.Gamma_2P_BIC, 'AD': self.Gamma_2P_AD}, ignore_index=True)
 
         if 'Exponential_1P' not in self.excluded_distributions:
-            self.__Expon_1P_params = Fit_Expon_1P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False)
-            self.Expon_1P_lambda = self.__Expon_1P_params.Lambda
-            self.Expon_1P_BIC = self.__Expon_1P_params.BIC
-            self.Expon_1P_AICc = self.__Expon_1P_params.AICc
-            self.Expon_1P_AD = self.__Expon_1P_params.AD
-            self._parametric_CDF_Exponential_1P = self.__Expon_1P_params.distribution.CDF(xvals=d, show_plot=False)
-            df = df.append({'Distribution': 'Exponential_1P', 'Alpha': '', 'Beta': '', 'Gamma': '', 'Mu': '', 'Sigma': '', 'Lambda': self.Expon_1P_lambda, 'AICc': self.Expon_1P_AICc, 'BIC': self.Expon_1P_BIC, 'AD': self.Expon_1P_AD}, ignore_index=True)
+            self.__Exponential_1P_params = Fit_Exponential_1P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False)
+            self.Exponential_1P_lambda = self.__Exponential_1P_params.Lambda
+            self.Exponential_1P_BIC = self.__Exponential_1P_params.BIC
+            self.Exponential_1P_AICc = self.__Exponential_1P_params.AICc
+            self.Exponential_1P_AD = self.__Exponential_1P_params.AD
+            self._parametric_CDF_Exponential_1P = self.__Exponential_1P_params.distribution.CDF(xvals=d, show_plot=False)
+            df = df.append({'Distribution': 'Exponential_1P', 'Alpha': '', 'Beta': '', 'Gamma': '', 'Mu': '', 'Sigma': '', 'Lambda': self.Exponential_1P_lambda, 'AICc': self.Exponential_1P_AICc, 'BIC': self.Exponential_1P_BIC, 'AD': self.Exponential_1P_AD}, ignore_index=True)
 
         if 'Loglogistic_2P' not in self.excluded_distributions:
             self.__Loglogistic_2P_params = Fit_Loglogistic_2P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False)
@@ -331,9 +335,9 @@ class Fit_Everything:
         elif best_dist == 'Lognormal_3P':
             self.best_distribution = Lognormal_Distribution(mu=self.Lognormal_3P_mu, sigma=self.Lognormal_3P_sigma, gamma=self.Lognormal_3P_gamma)
         elif best_dist == 'Exponential_1P':
-            self.best_distribution = Exponential_Distribution(Lambda=self.Expon_1P_lambda)
+            self.best_distribution = Exponential_Distribution(Lambda=self.Exponential_1P_lambda)
         elif best_dist == 'Exponential_2P':
-            self.best_distribution = Exponential_Distribution(Lambda=self.Expon_2P_lambda, gamma=self.Expon_2P_gamma)
+            self.best_distribution = Exponential_Distribution(Lambda=self.Exponential_2P_lambda, gamma=self.Exponential_2P_gamma)
         elif best_dist == 'Normal_2P':
             self.best_distribution = Normal_Distribution(mu=self.Normal_2P_mu, sigma=self.Normal_2P_sigma)
         elif best_dist == 'Beta_2P':
@@ -417,9 +421,9 @@ class Fit_Everything:
             elif item == 'Gamma_3P':
                 Gamma_Distribution(alpha=self.Gamma_3P_alpha, beta=self.Gamma_3P_beta, gamma=self.Gamma_3P_gamma).PDF(label=r'Gamma ($\alpha , \beta , \gamma$)')
             elif item == 'Exponential_1P':
-                Exponential_Distribution(Lambda=self.Expon_1P_lambda).PDF(label=r'Exponential ($\lambda$)')
+                Exponential_Distribution(Lambda=self.Exponential_1P_lambda).PDF(label=r'Exponential ($\lambda$)')
             elif item == 'Exponential_2P':
-                Exponential_Distribution(Lambda=self.Expon_2P_lambda, gamma=self.Expon_2P_gamma).PDF(label=r'Exponential ($\lambda , \gamma$)')
+                Exponential_Distribution(Lambda=self.Exponential_2P_lambda, gamma=self.Exponential_2P_gamma).PDF(label=r'Exponential ($\lambda , \gamma$)')
             elif item == 'Lognormal_2P':
                 Lognormal_Distribution(mu=self.Lognormal_2P_mu, sigma=self.Lognormal_2P_sigma).PDF(label=r'Lognormal ($\mu , \sigma$)')
             elif item == 'Lognormal_3P':
@@ -454,9 +458,9 @@ class Fit_Everything:
             elif item == 'Gamma_3P':
                 Gamma_Distribution(alpha=self.Gamma_3P_alpha, beta=self.Gamma_3P_beta, gamma=self.Gamma_3P_gamma).CDF(label=r'Gamma ($\alpha , \beta , \gamma$)')
             elif item == 'Exponential_1P':
-                Exponential_Distribution(Lambda=self.Expon_1P_lambda).CDF(label=r'Exponential ($\lambda$)')
+                Exponential_Distribution(Lambda=self.Exponential_1P_lambda).CDF(label=r'Exponential ($\lambda$)')
             elif item == 'Exponential_2P':
-                Exponential_Distribution(Lambda=self.Expon_2P_lambda, gamma=self.Expon_2P_gamma).CDF(label=r'Exponential ($\lambda , \gamma$)')
+                Exponential_Distribution(Lambda=self.Exponential_2P_lambda, gamma=self.Exponential_2P_gamma).CDF(label=r'Exponential ($\lambda , \gamma$)')
             elif item == 'Lognormal_2P':
                 Lognormal_Distribution(mu=self.Lognormal_2P_mu, sigma=self.Lognormal_2P_sigma).CDF(label=r'Lognormal ($\mu , \sigma$)')
             elif item == 'Lognormal_3P':
@@ -556,9 +560,9 @@ class Fit_Everything:
         for item in plotting_order:
             plt.subplot(rows, cols, subplot_counter)
             if item == 'Exponential_1P':
-                Exponential_probability_plot_Weibull_Scale(failures=self.failures, right_censored=self.right_censored, __fitted_dist_params=self.__Expon_1P_params)
+                Exponential_probability_plot_Weibull_Scale(failures=self.failures, right_censored=self.right_censored, __fitted_dist_params=self.__Exponential_1P_params)
             elif item == 'Exponential_2P':
-                Exponential_probability_plot_Weibull_Scale(failures=self.failures, right_censored=self.right_censored, __fitted_dist_params=self.__Expon_2P_params)
+                Exponential_probability_plot_Weibull_Scale(failures=self.failures, right_censored=self.right_censored, __fitted_dist_params=self.__Exponential_2P_params)
             elif item == 'Lognormal_2P':
                 Lognormal_probability_plot(failures=self.failures, right_censored=self.right_censored, __fitted_dist_params=self.__Lognormal_2P_params)
             elif item == 'Lognormal_3P':
@@ -736,7 +740,7 @@ class Fit_Weibull_2P:
                     self.beta = force_beta
             else:
                 self.success = False
-                print('WARNING: Fitting using Autograd FAILED for Weibull_2P. A modified form of the fit from Scipy was used instead so results may not be accurate.')
+                colorprint('WARNING: Fitting using Autograd FAILED for Weibull_2P. A modified form of the fit from Scipy was used instead so results may not be accurate.', text_color='red')
                 if force_beta is None:
                     self.alpha = self.initial_guess[0]
                     self.beta = self.initial_guess[1]
@@ -932,7 +936,7 @@ class Fit_Weibull_2P_grouped:
         dataframe0 = dataframe
         dataframe = dataframe0[dataframe0['time'] > 0]
         if len(dataframe0.time.values) != len(dataframe.time.values):
-            print('WARNING: dataframe contained zeros. These have been removed to enable fitting.')
+            colorprint('WARNING: dataframe contained zeros. These have been removed to enable fitting.', text_color='red')
 
         # unpack the dataframe
         failures_df = dataframe[dataframe['category'] == 'F']
@@ -1044,7 +1048,7 @@ class Fit_Weibull_2P_grouped:
                     self.beta = force_beta
             else:
                 self.success = False
-                print('WARNING: Fitting using Autograd FAILED for Weibull_2P_grouped. The', initial_guess_method, 'estimates were used instead so results may not be accurate.')
+                colorprint(str('WARNING: Fitting using Autograd FAILED for Weibull_2P_grouped. The' + initial_guess_method + ' estimates were used instead so results may not be accurate.'), text_color='red')
                 if force_beta is None:
                     self.alpha = self.initial_guess[0]
                     self.beta = self.initial_guess[1]
@@ -1234,7 +1238,7 @@ class Fit_Weibull_3P:
                 self.initial_guess = [LS_alpha, LS_beta, gamma_initial_guess]
                 guess = self.initial_guess
             elif initial_guess_method == 'non-linear least squares' and len(failures) < 4:
-                print('WARNING: initial_guess_method changed to least squares as a minimum of 4 failures are required for non-linear least squares.')
+                colorprint('WARNING: initial_guess_method changed to least squares as a minimum of 4 failures are required for non-linear least squares.', text_color='red')
                 self.initial_guess = [LS_alpha, LS_beta, gamma_initial_guess]
                 guess = self.initial_guess
             else:
@@ -1248,7 +1252,7 @@ class Fit_Weibull_3P:
                     self.initial_guess = [popt[0], popt[1], popt[2]]
                 except RuntimeError:  # Sometimes the curve_fit fails due to "RuntimeError: Optimal parameters not found: The maximum number of function evaluations is exceeded."
                     self.initial_guess = [LS_alpha, LS_beta, gamma_initial_guess]
-                    print('WARNING: non-linear least squares failed to obtain the initial guess. Using least squares instead.')
+                    colorprint('WARNING: non-linear least squares failed to obtain the initial guess. Using least squares instead.', text_color='red')
                 guess = self.initial_guess
 
         self.initial_guess_method = initial_guess_method
@@ -1284,7 +1288,7 @@ class Fit_Weibull_3P:
                 self.gamma = params[2]
             else:
                 self.success = False
-                print('WARNING: Fitting using Autograd FAILED for Weibull_3P. The fit from Scipy was used instead so the results may not be accurate.')
+                colorprint('WARNING: Fitting using Autograd FAILED for Weibull_3P. The fit from Scipy was used instead so the results may not be accurate.', text_color='red')
                 sp = ss.weibull_min.fit(all_data, optimizer='powell')
                 self.alpha = sp[2]
                 self.beta = sp[0]
@@ -1798,7 +1802,31 @@ class Fit_Weibull_CR:
 
 class Fit_Expon_1P:
     '''
-    Fit_Expon_1P
+    Deprecated Function due to renaming
+    Use Fit_Exponential_1P instead
+    '''
+
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, percentiles=None, **kwargs):
+        warning_str = 'DeprecationWarning: Fit_Expon_1P was renamed to Fit_Exponential_1P in version 0.5.4. Your function has still been run, however, Fit_Expon_1P will be fully deprecated in March 2021.'
+        colorprint(warning_str, text_color='red')
+        Fit_Exponential_1P(failures=failures, right_censored=right_censored, show_probability_plot=show_probability_plot, print_results=print_results, CI=CI, percentiles=percentiles, **kwargs)
+
+
+class Fit_Expon_2P:
+    '''
+    Deprecated Function due to renaming
+    Use Fit_Exponential_2P instead
+    '''
+
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, percentiles=None, **kwargs):
+        warning_str = 'DeprecationWarning: Fit_Expon_2P was renamed to Fit_Exponential_2P in version 0.5.4. Your function has still been run, however, Fit_Expon_2P will be fully deprecated in March 2021.'
+        colorprint(warning_str, text_color='red')
+        Fit_Exponential_2P(failures=failures, right_censored=right_censored, show_probability_plot=show_probability_plot, print_results=print_results, CI=CI, percentiles=percentiles, **kwargs)
+
+
+class Fit_Exponential_1P:
+    '''
+    Fit_Exponential_1P
     Fits a 1-parameter Exponential distribution (Lambda) to the data provided.
 
     Inputs:
@@ -1816,7 +1844,7 @@ class Fit_Expon_1P:
         there is censored data as scipy does not have the ability to fit censored data. Failure of autograd to find the solution should be rare and
         if it occurs, it is likely that the distribution is an extremely bad fit for the data. Try scaling your data, removing extreme values, or using
         another distribution.
-    Lambda - the fitted Expon_1P lambda parameter
+    Lambda - the fitted Exponential_1P lambda parameter
     loglik - Log Likelihood (as used in Minitab and Reliasoft)
     loglik2 - LogLikelihood*-2 (as used in JMP Pro)
     AICc - Akaike Information Criterion
@@ -1847,7 +1875,7 @@ class Fit_Expon_1P:
         sp = ss.expon.fit(all_data, floc=0, optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
         guess = [1 / sp[1]]
         warnings.filterwarnings('ignore')  # necessary to supress the warning about the jacobian when using the nelder-mead optimizer
-        result = minimize(value_and_grad(Fit_Expon_1P.LL), guess, args=(failures, right_censored), jac=True, tol=1e-6, method='nelder-mead')
+        result = minimize(value_and_grad(Fit_Exponential_1P.LL), guess, args=(failures, right_censored), jac=True, tol=1e-6, method='nelder-mead')
 
         if result.success is True:
             params = result.x
@@ -1855,13 +1883,13 @@ class Fit_Expon_1P:
             self.Lambda = params[0]
         else:
             self.success = False
-            print('WARNING: Fitting using Autograd FAILED for Expon_1P. The fit from Scipy was used instead so results may not be accurate.')
+            colorprint('WARNING: Fitting using Autograd FAILED for Exponential_1P. The fit from Scipy was used instead so results may not be accurate.', text_color='red')
             self.Lambda = 1 / sp[1]
 
         params = [self.Lambda]
         k = len(params)
         n = len(all_data)
-        LL2 = 2 * Fit_Expon_1P.LL(params, failures, right_censored)
+        LL2 = 2 * Fit_Exponential_1P.LL(params, failures, right_censored)
         self.loglik2 = LL2
         self.loglik = LL2 * -0.5
         if n - k - 1 > 0:
@@ -1872,7 +1900,7 @@ class Fit_Expon_1P:
 
         # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
-        hessian_matrix = hessian(Fit_Expon_1P.LL)(np.array(tuple(params)), np.array(tuple(failures)), np.array(tuple(right_censored)))
+        hessian_matrix = hessian(Fit_Exponential_1P.LL)(np.array(tuple(params)), np.array(tuple(failures)), np.array(tuple(right_censored)))
         covariance_matrix = np.linalg.inv(hessian_matrix)
         self.Lambda_SE = abs(covariance_matrix[0][0]) ** 0.5
         self.Lambda_upper = self.Lambda * (np.exp(Z * (self.Lambda_SE / self.Lambda)))
@@ -1890,7 +1918,7 @@ class Fit_Expon_1P:
 
         if percentiles is not None:
             point_estimate = self.distribution.quantile(q=percentiles / 100)
-            lower_estimate, upper_estimate = distribution_confidence_intervals.expon_CI(self=self.distribution, func='CDF', CI=CI, q=1 - (percentiles / 100))
+            lower_estimate, upper_estimate = distribution_confidence_intervals.exponential_CI(self=self.distribution, func='CDF', CI=CI, q=1 - (percentiles / 100))
             Percentile_Data = {'Percentile': percentiles,
                                'Lower Estimate': lower_estimate,
                                'Point Estimate': point_estimate,
@@ -1905,7 +1933,7 @@ class Fit_Expon_1P:
                 CI_rounded = int(CI * 100)
             else:
                 CI_rounded = CI * 100
-            print(str('Results from Fit_Expon_1P (' + str(CI_rounded) + '% CI):'))
+            print(str('Results from Fit_Exponential_1P (' + str(CI_rounded) + '% CI):'))
             print(self.results)
             print('Log-Likelihood:', self.loglik, '\n')
 
@@ -1933,14 +1961,14 @@ class Fit_Expon_1P:
     def LL(params, T_f, T_rc):  # log likelihood function (1 parameter Expon)
         LL_f = 0
         LL_rc = 0
-        LL_f += Fit_Expon_1P.logf(T_f, params[0]).sum()  # failure times
-        LL_rc += Fit_Expon_1P.logR(T_rc, params[0]).sum()  # right censored times
+        LL_f += Fit_Exponential_1P.logf(T_f, params[0]).sum()  # failure times
+        LL_rc += Fit_Exponential_1P.logR(T_rc, params[0]).sum()  # right censored times
         return -(LL_f + LL_rc)
 
 
-class Fit_Expon_2P:
+class Fit_Exponential_2P:
     '''
-    Fit_Expon_2P
+    Fit_Exponential_2P
     Fits a 2-parameter Exponential distribution (Lambda,gamma) to the data provided.
     You may also enter right censored data.
 
@@ -1959,9 +1987,9 @@ class Fit_Expon_2P:
         there is censored data as scipy does not have the ability to fit censored data. Failure of autograd to find the solution should be rare and
         if it occurs, it is likely that the distribution is an extremely bad fit for the data. Try scaling your data, removing extreme values, or using
         another distribution.
-    Lambda - the fitted Expon_2P lambda parameter
+    Lambda - the fitted Exponential_2P lambda parameter
     Lambda_inv - the inverse of the Lambda parameter (1/Lambda)
-    gamma - the fitted Expon_2P gamma parameter
+    gamma - the fitted Exponential_2P gamma parameter
     loglik - Log Likelihood (as used in Minitab and Reliasoft)
     loglik2 - LogLikelihood*-2 (as used in JMP Pro)
     AICc - Akaike Information Criterion
@@ -1986,7 +2014,7 @@ class Fit_Expon_2P:
     def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, percentiles=None, **kwargs):
         # Regarding the confidence intervals of the parameters, the gamma parameter is estimated by optimizing the log-likelihood function but
         # it is assumed as fixed because the variance-covariance matrix of the estimated parameters cannot be determined numerically. By assuming
-        # the standard error in gamma is zero, we can use Expon_1P to obtain the confidence intervals for Lambda. This is the same procedure
+        # the standard error in gamma is zero, we can use Exponential_1P to obtain the confidence intervals for Lambda. This is the same procedure
         # performed by both Reliasoft and Minitab. You may find the results are slightly different to Minitab and this is because the optimisation
         # of gamma is done more efficiently here than Minitab does it. This is evidenced by comparing the log-likelihood for the same data input.
 
@@ -2019,20 +2047,20 @@ class Fit_Expon_2P:
         while delta_BIC > 0.001 and runs < 5:  # exits after BIC convergence or 5 iterations
             runs += 1
             if inv is True:
-                result = minimize(value_and_grad(Fit_Expon_2P.LL_inv), guess, args=(failures, right_censored), jac=True, method='L-BFGS-B', bounds=bnds2)
+                result = minimize(value_and_grad(Fit_Exponential_2P.LL_inv), guess, args=(failures, right_censored), jac=True, method='L-BFGS-B', bounds=bnds2)
             if result.success is False or inv is False:
                 if runs == 1:
                     guess = [1 / sp[1], self.gamma]  # fix the guess to be the non-inverted form
                     self.initial_guess = guess
-                result = minimize(value_and_grad(Fit_Expon_2P.LL), guess, args=(failures, right_censored), jac=True, method='L-BFGS-B', bounds=bnds2)
+                result = minimize(value_and_grad(Fit_Exponential_2P.LL), guess, args=(failures, right_censored), jac=True, method='L-BFGS-B', bounds=bnds2)
                 inv = False  # inversion status changed for subsequent loops
 
             params = result.x
             guess = [params[0], params[1]]
             if inv is False:
-                LL2 = 2 * Fit_Expon_2P.LL(guess, failures, right_censored)
+                LL2 = 2 * Fit_Exponential_2P.LL(guess, failures, right_censored)
             else:
-                LL2 = 2 * Fit_Expon_2P.LL_inv(guess, failures, right_censored)
+                LL2 = 2 * Fit_Exponential_2P.LL_inv(guess, failures, right_censored)
             BIC_array.append(np.log(n) * k + LL2)
             delta_BIC = abs(BIC_array[-1] - BIC_array[-2])
 
@@ -2046,7 +2074,7 @@ class Fit_Expon_2P:
             self.gamma = params[1]
         else:
             self.success = False
-            print('WARNING: Fitting using Autograd FAILED for Expon_2P. The fit from Scipy was used instead so results may not be accurate.')
+            colorprint('WARNING: Fitting using Autograd FAILED for Exponential_2P. The fit from Scipy was used instead so results may not be accurate.', text_color='red')
             sp = ss.expon.fit(all_data, optimizer='powell')
             self.Lambda = sp[1]
             self.gamma = sp[0]
@@ -2059,9 +2087,9 @@ class Fit_Expon_2P:
             self.AICc = 'Insufficient data'
         self.BIC = np.log(n) * k + LL2
 
-        # confidence interval estimates of parameters. Uses Expon_1P because gamma (while optimized) cannot be used in the MLE solution as the solution is unbounded
+        # confidence interval estimates of parameters. Uses Exponential_1P because gamma (while optimized) cannot be used in the MLE solution as the solution is unbounded
         Z = -ss.norm.ppf((1 - CI) / 2)
-        hessian_matrix = hessian(Fit_Expon_1P.LL)(np.array(tuple([self.Lambda])), np.array(tuple(failures - self.gamma)), np.array(tuple(right_censored - self.gamma)))
+        hessian_matrix = hessian(Fit_Exponential_1P.LL)(np.array(tuple([self.Lambda])), np.array(tuple(failures - self.gamma)), np.array(tuple(right_censored - self.gamma)))
         covariance_matrix = np.linalg.inv(hessian_matrix)
         self.Lambda_SE = abs(covariance_matrix[0][0]) ** 0.5
         self.gamma_SE = 0
@@ -2087,7 +2115,7 @@ class Fit_Expon_2P:
 
         if percentiles is not None:
             point_estimate = self.distribution.quantile(q=percentiles / 100)
-            lower_estimate, upper_estimate = distribution_confidence_intervals.expon_CI(self=self.distribution, func='CDF', CI=CI, q=1 - (percentiles / 100))
+            lower_estimate, upper_estimate = distribution_confidence_intervals.exponential_CI(self=self.distribution, func='CDF', CI=CI, q=1 - (percentiles / 100))
             Percentile_Data = {'Percentile': percentiles,
                                'Lower Estimate': lower_estimate,
                                'Point Estimate': point_estimate,
@@ -2102,7 +2130,7 @@ class Fit_Expon_2P:
                 CI_rounded = int(CI * 100)
             else:
                 CI_rounded = CI * 100
-            print(str('Results from Fit_Expon_2P (' + str(CI_rounded) + '% CI):'))
+            print(str('Results from Fit_Exponential_2P (' + str(CI_rounded) + '% CI):'))
             print(self.results)
             print('Log-Likelihood:', self.loglik, '\n')
 
@@ -2130,8 +2158,8 @@ class Fit_Expon_2P:
     def LL(params, T_f, T_rc):  # log likelihood function (2 parameter Expon)
         LL_f = 0
         LL_rc = 0
-        LL_f += Fit_Expon_2P.logf(T_f, params[0], params[1]).sum()  # failure times
-        LL_rc += Fit_Expon_2P.logR(T_rc, params[0], params[1]).sum()  # right censored times
+        LL_f += Fit_Exponential_2P.logf(T_f, params[0], params[1]).sum()  # failure times
+        LL_rc += Fit_Exponential_2P.logR(T_rc, params[0], params[1]).sum()  # right censored times
         return -(LL_f + LL_rc)
 
     # #this is the inverted forms of the above functions. It simply changes Lambda to be 1/Lambda which is necessary when Lambda<<1
@@ -2139,8 +2167,8 @@ class Fit_Expon_2P:
     def LL_inv(params, T_f, T_rc):  # log likelihood function (2 parameter Expon)
         LL_f = 0
         LL_rc = 0
-        LL_f += Fit_Expon_2P.logf(T_f, 1 / params[0], params[1]).sum()  # failure times
-        LL_rc += Fit_Expon_2P.logR(T_rc, 1 / params[0], params[1]).sum()  # right censored times
+        LL_f += Fit_Exponential_2P.logf(T_f, 1 / params[0], params[1]).sum()  # failure times
+        LL_rc += Fit_Exponential_2P.logR(T_rc, 1 / params[0], params[1]).sum()  # right censored times
         return -(LL_f + LL_rc)
 
 
@@ -2219,7 +2247,7 @@ class Fit_Normal_2P:
                 self.sigma = force_sigma
         else:
             self.success = False
-            print('WARNING: Fitting using Autograd FAILED for Normal_2P. The fit from Scipy was used instead so results may not be accurate.')
+            colorprint('WARNING: Fitting using Autograd FAILED for Normal_2P. The fit from Scipy was used instead so results may not be accurate.', text_color='red')
             self.mu = sp[0]
             self.sigma = sp[1]
 
@@ -2389,7 +2417,7 @@ class Fit_Gumbel_2P:
             self.sigma = params[1]
         else:
             self.success = False
-            print('WARNING: Fitting using Autograd FAILED for Gumbel_2P. The fit from Scipy was used instead so results may not be accurate.')
+            colorprint('WARNING: Fitting using Autograd FAILED for Gumbel_2P. The fit from Scipy was used instead so results may not be accurate.', text_color='red')
             self.mu = sp[0]
             self.sigma = sp[1]
 
@@ -2552,7 +2580,7 @@ class Fit_Lognormal_2P:
 
         else:
             self.success = False
-            print('WARNING: Fitting using Autograd FAILED for Lognormal_2P. The fit from Scipy was used instead so results may not be accurate.')
+            colorprint('WARNING: Fitting using Autograd FAILED for Lognormal_2P. The fit from Scipy was used instead so results may not be accurate.', text_color='red')
             self.mu = np.log(sp[2])
             self.sigma = sp[0]
 
@@ -2762,7 +2790,7 @@ class Fit_Lognormal_3P:
             self.gamma = params[2]
         else:
             self.success = False
-            print('WARNING: Fitting using Autograd FAILED for Lognormal_3P. The fit from Scipy was used instead so the results may not be accurate.')
+            colorprint('WARNING: Fitting using Autograd FAILED for Lognormal_3P. The fit from Scipy was used instead so the results may not be accurate.', text_color='red')
             sp = ss.lognorm.fit(all_data, optimizer='powell')
             self.mu = np.log(sp[2])
             self.sigma = sp[0]
@@ -2870,7 +2898,7 @@ class Fit_Lognormal_3P:
             mu = params[0]
             sigma = params[1]
         else:
-            print('WARNING: Fitting using Autograd FAILED for the gamma optimisation section of Lognormal_3P. The fit from Scipy was used instead so results may not be accurate.')
+            colorprint('WARNING: Fitting using Autograd FAILED for the gamma optimisation section of Lognormal_3P. The fit from Scipy was used instead so results may not be accurate.', text_color='red')
             mu = sp[2]
             sigma = sp[0]
 
@@ -2931,14 +2959,18 @@ class Fit_Gamma_2P:
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     '''
 
-    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, percentiles=None, CI_type='time', **kwargs):
-
-        inputs = fitters_input_checking(dist='Gamma_2P', failures=failures, right_censored=right_censored, CI=CI, percentiles=percentiles, CI_type=CI_type)
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, **kwargs):
+        # def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, percentiles=None, CI_type='time', **kwargs):
+        # inputs = fitters_input_checking(dist='Gamma_2P', failures=failures, right_censored=right_censored, CI=CI, percentiles=percentiles, CI_type=CI_type)
+        # failures = inputs.failures
+        # right_censored = inputs.right_censored
+        # CI = inputs.CI
+        # percentiles = inputs.percentiles
+        # CI_type = inputs.CI_type
+        inputs = fitters_input_checking(dist='Gamma_2P', failures=failures, right_censored=right_censored, CI=CI)
         failures = inputs.failures
         right_censored = inputs.right_censored
         CI = inputs.CI
-        percentiles = inputs.percentiles
-        CI_type = inputs.CI_type
 
         all_data = np.hstack([failures, right_censored])
         # solve it
@@ -2973,7 +3005,7 @@ class Fit_Gamma_2P:
             self.beta = params[1]
         else:
             self.success = False
-            print('WARNING: Fitting using Autograd FAILED for Gamma_2P. A modified form of the fit from Scipy was used instead so results may not be accurate.')
+            colorprint('WARNING: Fitting using Autograd FAILED for Gamma_2P. A modified form of the fit from Scipy was used instead so results may not be accurate.', text_color='red')
             self.alpha = self.initial_guess[0]
             self.beta = self.initial_guess[1]
             self.gamma = 0
@@ -3007,7 +3039,8 @@ class Fit_Gamma_2P:
                 'Upper CI': [self.alpha_upper, self.beta_upper]}
         df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
         self.results = df.set_index('Parameter')
-        self.distribution = Gamma_Distribution(alpha=self.alpha, beta=self.beta, alpha_SE=self.alpha_SE, beta_SE=self.beta_SE, Cov_alpha_beta=self.Cov_alpha_beta, CI=CI, CI_type=CI_type)
+        # self.distribution = Gamma_Distribution(alpha=self.alpha, beta=self.beta, alpha_SE=self.alpha_SE, beta_SE=self.beta_SE, Cov_alpha_beta=self.Cov_alpha_beta, CI=CI, CI_type=CI_type)
+        self.distribution = Gamma_Distribution(alpha=self.alpha, beta=self.beta)
         self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=failures, show_plot=False), empirical_cdf=y)
 
         # if percentiles is not None:
@@ -3145,7 +3178,7 @@ class Fit_Gamma_3P:
             self.gamma = params[2]
         else:
             self.success = False
-            print('WARNING: Fitting using Autograd FAILED for Gamma_3P. The fit from Scipy was used instead so the results may not be accurate.')
+            colorprint('WARNING: Fitting using Autograd FAILED for Gamma_3P. The fit from Scipy was used instead so the results may not be accurate.', text_color='red')
             sp = ss.gamma.fit(all_data, optimizer='powell')
             self.alpha = sp[2]
             self.beta = sp[0]
@@ -3302,7 +3335,7 @@ class Fit_Beta_2P:
             self.beta = params[1]
         else:
             self.success = False
-            print('WARNING: Fitting using Autograd FAILED for Beta_2P. The fit from Scipy was used instead so results may not be accurate.')
+            colorprint('WARNING: Fitting using Autograd FAILED for Beta_2P. The fit from Scipy was used instead so results may not be accurate.', text_color='red')
             self.alpha = sp[0]
             self.beta = sp[1]
 
@@ -3479,7 +3512,7 @@ class Fit_Loglogistic_2P:
                 self.beta = params[1]
             else:
                 self.success = False
-                print('WARNING: Fitting using Autograd FAILED for Loglogistic_2P. The fit from Scipy was used instead so results may not be accurate.')
+                colorprint('WARNING: Fitting using Autograd FAILED for Loglogistic_2P. The fit from Scipy was used instead so results may not be accurate.', text_color='red')
                 self.alpha = self.initial_guess[0]
                 self.beta = self.initial_guess[1]
 
@@ -3644,7 +3677,7 @@ class Fit_Loglogistic_3P:
                 self.initial_guess = [LS_alpha, LS_beta, gamma_initial_guess]
                 guess = self.initial_guess
             elif initial_guess_method == 'non-linear least squares' and len(failures) < 4:
-                print('WARNING: initial_guess_method changed to least squares as a minimum of 4 failures are required for non-linear least squares.')
+                colorprint('WARNING: initial_guess_method changed to least squares as a minimum of 4 failures are required for non-linear least squares.', text_color='red')
                 self.initial_guess = [LS_alpha, LS_beta, gamma_initial_guess]
                 guess = self.initial_guess
             else:
@@ -3658,7 +3691,7 @@ class Fit_Loglogistic_3P:
                     self.initial_guess = [popt[0], popt[1], popt[2]]
                 except RuntimeError:  # Sometimes the curve_fit fails due to "RuntimeError: Optimal parameters not found: The maximum number of function evaluations is exceeded."
                     self.initial_guess = [LS_alpha, LS_beta, gamma_initial_guess]
-                    print('WARNING: non-linear least squares failed to obtain the initial guess. Using least squares instead.')
+                    colorprint('WARNING: non-linear least squares failed to obtain the initial guess. Using least squares instead.', text_color='red')
                 guess = self.initial_guess
 
         self.initial_guess_method = initial_guess_method
@@ -3694,7 +3727,7 @@ class Fit_Loglogistic_3P:
                 self.gamma = params[2]
             else:
                 self.success = False
-                print('WARNING: Fitting using Autograd FAILED for Weibull_3P. The fit from Scipy was used instead so the results may not be accurate.')
+                colorprint('WARNING: Fitting using Autograd FAILED for Weibull_3P. The fit from Scipy was used instead so the results may not be accurate.', text_color='red')
                 sp = ss.fisk.fit(all_data, optimizer='powell')
                 self.alpha = sp[2]
                 self.beta = sp[0]

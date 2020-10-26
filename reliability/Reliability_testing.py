@@ -19,7 +19,8 @@ import numpy as np
 import pandas as pd
 import math
 import time
-from reliability.Distributions import Normal_Distribution, Weibull_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution, Loglogistic_Distribution
+from reliability.Distributions import Normal_Distribution, Weibull_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution, Loglogistic_Distribution, Gumbel_Distribution
+from reliability.Utils import colorprint
 
 
 def one_sample_proportion(trials=None, successes=None, CI=0.95):
@@ -355,7 +356,7 @@ class reliability_test_planner:
             print('Number of failures:', self.number_of_failures)
             print(str('Confidence interval (' + str(sides) + ' sided): ' + str(self.CI)))
             if print_CI_warn is True:
-                print('WARNING: The calculated CI is less than 0.5. This indicates that the desired MTBF is unachievable for the specified test_duration and number_of_failures.')
+                colorprint('WARNING: The calculated CI is less than 0.5. This indicates that the desired MTBF is unachievable for the specified test_duration and number_of_failures.', text_color='red')
 
 
 def reliability_test_duration(MTBF_required, MTBF_design, consumer_risk, producer_risk, one_sided=True, time_terminated=True, show_plot=True, print_results=True):
@@ -415,7 +416,7 @@ def reliability_test_duration(MTBF_required, MTBF_design, consumer_risk, produce
             break
         failures += 1  # increment failures
         if time.time() - time_start > time_out:
-            print('WARNING: The algorithm is taking a long time to find the solution. This is probably because MTBF_required is too close to MTBF_design so the item struggles to pass the test. --- Current runtime:', int(round(time.time() - time_start, 0)), 'seconds')
+            colorprint(str('WARNING: The algorithm is taking a long time to find the solution. This is probably because MTBF_required is too close to MTBF_design so the item struggles to pass the test. --- Current runtime: ' + str(int(round(time.time() - time_start, 0))) + ' seconds'), text_color='red')
             time_out += 10
 
     duration_solution = duration_array[solution_index]
@@ -472,14 +473,14 @@ class chi2test:
     def __init__(self, distribution, data, significance=0.05, bins=None, print_results=True, show_plot=True):
 
         # ensure the input is a distribution object
-        if type(distribution) not in [Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution, Loglogistic_Distribution]:
+        if type(distribution) not in [Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution, Loglogistic_Distribution, Gumbel_Distribution]:
             raise ValueError('distribution must be a probability distribution object from the reliability.Distributions module. First define the distribution using Reliability.Distributions.___')
 
         # ensure data is a list or array
         if type(data) not in [list, np.ndarray]:
             raise ValueError('data must be a list or array')
-        if min(data) < 0 and type(distribution) != Normal_Distribution:
-            raise ValueError('data contains values below 0 which is not appropriate when the distribution is not a Normal Distribution')
+        if min(data) < 0 and type(distribution) not in [Normal_Distribution, Gumbel_Distribution]:
+            raise ValueError('data contains values below 0 which is not appropriate when the distribution is not a Normal or Gumbel Distribution')
 
         if significance <= 0 or significance > 0.5:
             raise ValueError('significance should be between 0 and 0.5. Default is 0.05 which gives 95% confidence')
@@ -492,17 +493,17 @@ class chi2test:
         observed, bin_edges = np.histogram(data, bins=bins, normed=False)  # get a histogram of the data to find the observed values
 
         if sum(observed) != len(data):
-            print('Warning: the bins do not encompass all of the data')
-            print('data range:', min(data), 'to', max(data))
-            print('bins range:', min(bin_edges), 'to', max(bin_edges))
+            colorprint('WARNING: the bins do not encompass all of the data', text_color='red')
+            colorprint(str('data range: ' + str(min(data)) + ' to ' + str(max(data))), text_color='red')
+            colorprint(str('bins range: ' + str(min(bin_edges)) + ' to ' + str(max(bin_edges))), text_color='red')
             observed, bin_edges = np.histogram(data, bins='auto', normed=False)
-            print('bins has been reset to "auto".')
-            print('The new bins are:', bin_edges, '\n')
+            colorprint('bins has been reset to "auto".', text_color='red')
+            colorprint(str('The new bins are: ' + str(bin_edges) + '\n'), text_color='red')
 
-        if min(bin_edges < 0) and type(distribution) != Normal_Distribution:
-            observed, bin_edges = np.histogram(data, bins='auto', normed=False)  # error will result if bins contains values below 0 for anything but the Normal Distribution
-            print('Warning: The specified bins contained values below 0. This is not appropriate when the distribution is not a Normal Distribution. bins has been reset to "auto".')
-            print('The new bins are:', bin_edges)
+        if min(bin_edges < 0) and type(distribution) not in [Normal_Distribution, Gumbel_Distribution]:
+            observed, bin_edges = np.histogram(data, bins='auto', normed=False)  # error will result if bins contains values below 0 for anything but the Normal or Gumbel Distributions
+            colorprint('WARNING: The specified bins contained values below 0. This is not appropriate when the distribution is not a Normal or Gumbel Distribution. bins has been reset to "auto".')
+            colorprint(str('The new bins are: ' + bin_edges), text_color='red')
 
         cdf = distribution.CDF(xvals=bin_edges, show_plot=False)
         cdf_diff = np.diff(cdf) / sum(np.diff(cdf))  # this ensures the sum is 1
@@ -570,11 +571,11 @@ class KStest:
     def __init__(self, distribution, data, significance=0.05, print_results=True, show_plot=True):
 
         # ensure the input is a distribution object
-        if type(distribution) not in [Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution, Loglogistic_Distribution]:
+        if type(distribution) not in [Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution, Loglogistic_Distribution, Gumbel_Distribution]:
             raise ValueError('distribution must be a probability distribution object from the reliability.Distributions module. First define the distribution using Reliability.Distributions.___')
 
-        if min(data) < 0 and type(distribution) != Normal_Distribution:
-            raise ValueError('data contains values below 0 which is not appropriate when the distribution is not a Normal Distribution')
+        if min(data) < 0 and type(distribution) not in [Normal_Distribution, Gumbel_Distribution]:
+            raise ValueError('data contains values below 0 which is not appropriate when the distribution is not a Normal or Gumbel Distribution')
 
         if significance <= 0 or significance > 0.5:
             raise ValueError('significance should be between 0 and 0.5. Default is 0.05 which gives 95% confidence')

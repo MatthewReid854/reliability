@@ -12,11 +12,11 @@ MCF_parametric - Mean Cumulative Function Parametric. Fits a parametric model to
 
 import numpy as np
 import matplotlib.pyplot as plt
-import warnings
 from scipy import integrate
 import pandas as pd
 import scipy.stats as ss
 from scipy.optimize import curve_fit
+from reliability.Utils import colorprint
 
 
 class reliability_growth:
@@ -119,7 +119,7 @@ class optimal_replacement_time:
         if cost_PM > cost_CM:
             raise ValueError('Cost_PM must be less than Cost_CM otherwise preventative maintenance should not be conducted.')
         if weibull_beta < 1:
-            warnings.warn('weibull_beta is < 1 so the hazard rate is decreasing, therefore preventative maintenance should not be conducted.')
+            colorprint('WARNING: weibull_beta is < 1 so the hazard rate is decreasing, therefore preventative maintenance should not be conducted.',text_color='red')
 
         if q == 1:  # as good as old
             alpha_multiple = 4  # just used for plot limits

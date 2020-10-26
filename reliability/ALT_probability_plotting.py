@@ -13,8 +13,8 @@ Within the module ALT_probability_plotting, are the following functions:
 import numpy as np
 import matplotlib.pyplot as plt
 from reliability import Probability_plotting
-from reliability.Fitters import Fit_Weibull_2P, Fit_Lognormal_2P, Fit_Normal_2P, Fit_Expon_1P
-from reliability.Utils import probability_plot_xylims, probability_plot_xyticks
+from reliability.Fitters import Fit_Weibull_2P, Fit_Lognormal_2P, Fit_Normal_2P, Fit_Exponential_1P
+from reliability.Utils import probability_plot_xylims, probability_plot_xyticks, colorprint
 import pandas as pd
 from scipy.optimize import minimize
 
@@ -330,7 +330,7 @@ class ALT_probability_plot_Exponential:
 
         weibull_fit_alpha_array = []
         weibull_fit_beta_array = []
-        expon_fit_lambda_array = []
+        exponential_fit_lambda_array = []
         color_list = ['steelblue', 'darkorange', 'red', 'green', 'purple', 'blue', 'grey', 'deeppink', 'cyan', 'chocolate']
         # within this loop, each list of failures and right censored values will be unpacked for each unique stress to find the common beta parameter
         for stress in unique_stresses_f:
@@ -369,21 +369,21 @@ class ALT_probability_plot_Exponential:
                     RIGHT_CENSORED = None
             else:
                 RIGHT_CENSORED = None
-            expon_fit = Fit_Expon_1P(failures=FAILURES, right_censored=RIGHT_CENSORED, show_probability_plot=False, print_results=False)
+            exponential_fit = Fit_Exponential_1P(failures=FAILURES, right_censored=RIGHT_CENSORED, show_probability_plot=False, print_results=False)
             weib_fit = Fit_Weibull_2P(failures=FAILURES, right_censored=RIGHT_CENSORED, show_probability_plot=False, print_results=False, force_beta=np.average(weibull_fit_beta_array))
-            expon_fit_lambda_array.append(expon_fit.Lambda)
-            if type(expon_fit.AICc) == str:
+            exponential_fit_lambda_array.append(exponential_fit.Lambda)
+            if type(exponential_fit.AICc) == str:
                 AICc = False
             else:
-                AICc_total += expon_fit.AICc
+                AICc_total += exponential_fit.AICc
             if type(weib_fit.AICc) == str:
                 AICc_weib = False
             else:
                 AICc_total_weib += weib_fit.AICc
-            BIC_total += expon_fit.BIC
+            BIC_total += exponential_fit.BIC
             BIC_total_weib += weib_fit.BIC
             if show_plot is True:
-                expon_fit.distribution.CDF(linestyle='--', color=color_list[i], xvals=xvals, plot_CI=False)  # plotting of the confidence intervals has been turned off
+                exponential_fit.distribution.CDF(linestyle='--', color=color_list[i], xvals=xvals, plot_CI=False)  # plotting of the confidence intervals has been turned off
                 Probability_plotting.Weibull_probability_plot(failures=FAILURES, right_censored=RIGHT_CENSORED, plot_CI=False, color=color_list[i], label=str(stress))
             x, y = Probability_plotting.plotting_positions(failures=FAILURES, right_censored=RIGHT_CENSORED)
             x_array = np.append(x_array, np.array(x))
@@ -406,7 +406,7 @@ class ALT_probability_plot_Exponential:
                 beta_differences.append(str('+' + str(round(item * 100, 2)) + '%'))
             else:
                 beta_differences.append(str(str(round(item * 100, 2)) + '%'))
-        results = {'stress': unique_stresses_f, 'weibull alpha': weibull_fit_alpha_array, 'weibull beta': weibull_fit_beta_array, 'new 1/Lambda': 1 / np.array(expon_fit_lambda_array), 'common shape': np.ones_like(unique_stresses_f), 'shape change': beta_differences}
+        results = {'stress': unique_stresses_f, 'weibull alpha': weibull_fit_alpha_array, 'weibull beta': weibull_fit_beta_array, 'new 1/Lambda': 1 / np.array(exponential_fit_lambda_array), 'common shape': np.ones_like(unique_stresses_f), 'shape change': beta_differences}
         results_df = pd.DataFrame(results, columns=['stress', 'weibull alpha', 'weibull beta', 'new 1/Lambda', 'common shape', 'shape change'])
         blankIndex = [''] * len(results_df)
         results_df.index = blankIndex
@@ -424,7 +424,7 @@ class ALT_probability_plot_Exponential:
             print('Total AICc (weibull):', self.AICc_sum_weibull)
             print('Total BIC (weibull):', self.BIC_sum_weibull)
         if self.BIC_sum > self.BIC_sum_weibull:
-            print('WARNING: The Weibull distribution would be a more appropriate fit for this data set as it has a lower BIC (using the average method to obtain BIC) than the Exponential distribution.')
+            colorprint('WARNING: The Weibull distribution would be a more appropriate fit for this data set as it has a lower BIC (using the average method to obtain BIC) than the Exponential distribution.',text_color='red')
 
         if show_plot is True:
             plt.legend(title='Stress')
