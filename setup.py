@@ -13,7 +13,7 @@ setuptools.setup(
     author_email="alpha.reliability@gmail.com",
     license="LGPLv3",
     url="https://reliability.readthedocs.io/en/latest/",
-    keywords=["reliability","engineering","RAM","weibull","lognormal","exponential","beta","gamma","normal","loglogistic","kaplan meier","kaplan-meier","survival","analysis","censored","data","lifelines","probability","distribution","distributions","quality","ALT","accelerated","life","testing","MCF","mean","cumulative","CIF"],
+    keywords=["reliability","engineering","RAM","weibull","lognormal","exponential","beta","gamma","normal","loglogistic","gumbel","extreme","value","kaplan meier","kaplan-meier","survival","analysis","censored","data","lifelines","probability","distribution","distributions","fit","fitting","curve","quality","ALT","accelerated","life","testing","MCF","mean","cumulative","CIF"],
     long_description=long_description,
     long_description_content_type="text/markdown",
     classifiers=[
