@@ -10,7 +10,7 @@ Changelog
 
 **New features**
 
--    Confidence intervals added for Normal, Lognormal, Loglogistic, and Gumbel Distributions (I still need to do Gamma and Beta Distributions)
+-    Confidence intervals added for Normal, Lognormal, Loglogistic, and Gumbel Distributions. *Confidence intervals still need to be done for the Gamma and Beta Distributions*
 -    Added Gumbel_Distribution to Distributions
 -    Added Gumbel_Distribution to Other_functions.distribution_explorer
 -    Added Fit_Gumbel_2P to Fitters
@@ -18,16 +18,25 @@ Changelog
 -    Added Gumbel Distribution to Fitters.Fit_Everything
 -    Added Gumbel Distribution to Other_functions.similar_distributions
 -    Added Gumbel Distribution to Stress_strength.Probability_of_failure
+-    Added Gumbel Distribution to Reliability_testing.chi2test and Reliability_testing.KStest
 -    Added Loglogistic and Gumbel Distributions to PP_plot_parametric, QQ_plot_parametric, PP_plot_semiparametric, and QQ_plot_semiparametric. Loglogistic should have been added in version 0.5.3 but it was missed.
+-    Added Loglogistic and Gumbel Distributions to Mixture Model and Competing Risks Model. Loglogistic should have been added in version 0.5.3 but it was missed.
+-    Fit_Everything now plots everything in order of best fit for all 3 of the plots generated.
+-    Mixture Model now works for negative xvals when the mixture contains one or more Normal and/or Gumbel Distributions. Previously these would be truncated at 0 which could lead to inaccuracies. *This still needs to be done for the Competing_Risks_Model*
 
 **API Changes**
 
--    Confidence intervals were previously available for the Weibull and Exponential distribution Hazard functions. This capability has been removed as it was not useful (just as confidence intervals on the PDF are not useful). Any attempt to use confidence interval related keywords (such as CI and CI_type) on the HF of any distribution will generate an error.
+-    Confidence intervals were previously available for the Hazard functions of the Weibull and Exponential distributions. This capability has been removed as it was not useful (just as confidence intervals on the PDF are not useful). Any attempt to use confidence interval related keywords (such as CI and CI_type) on the HF of any distribution will generate an error.
+-    Fit_Everything now includes an option to exclude distributions.
+-    Fit_Expon_1P and Fit_Expon_2P are deprecated. These have been replaced by Fit_Exponential_1P and Fit_Exponential_2P. Using the old functions will still work and will issue a DeprecationWarning printed to the console. Full deprecation/removal will occur in March 2021. The reason for the change is to minimize the use of abbreviated terms. It was originaly abbreviated because the word Exponential_Distribution seemed too long, but this is no longer valid with Loglogistic_Distribution being added. Also, scipy's function for Exponential is "expon" so Fit_Expon_1P initially seemed like an appropriate abbreviation.
+-    percentiles have been added to all fitters (except Gamma and Beta). This will print a table of percentiles (with bounds on time) to the console. This is similar to the output that Minitab gives when fitting a distribution.
 
 **Bug Fixes**
 
--    Other_functions.distribution_explorer has a bug caused by a recent update to matplotlib. When a non-existent axis was deleted, the error matplotlib generated was a ValueError and that is now changed to AttributeError which was not being appropriately handled by distribution explorer. This is now resolved.
--    All 7 of the standard distributions expected a list or array for their 5 functions (PDF, CDF, SF, HF, CHF). A command like this "dist.SF(1)" would cause an error and should have been entered as dist.SF([1]). This is now fixed such that if the input is not in a list or array then it will no longer produce an error and the output type will be np.float64.
+-    Other_functions.distribution_explorer had a bug caused by a recent update to matplotlib. When a non-existent axis was deleted, the error matplotlib generated was a ValueError and that is now changed to AttributeError which was not being appropriately handled by distribution_explorer.
+-    All of the standard distributions expected a list or array for their 5 functions (PDF, CDF, SF, HF, CHF). A command like this "dist.SF(1)" would cause an error and should have been entered as dist.SF([1]). This is now fixed such that if the input is not in a list or array then it will no longer produce an error and the output type will be np.float64.
+-   Within Fit_Everything if only 3 points were entered some of the AIC values would be 'Insufficient Data'. If the user also specified sort_by='AIC' then an error would be raised by pandas trying to sort by strings and numbers. In this case the sort_by method will automatically be changed to BIC.
+-   The Exponential confidence intervals were invisibe if there were only 2 failures for the fit. This was cause by the upper CI reaching 1 which is effectively infinity on a probability plot. 1's are now filtered out so the CI will always appear.
 
 **Other**
 
@@ -39,6 +48,10 @@ Changelog
 -    Improved plots for Stress_strength so the distribution xvals extend beyond the plot xlims. This is only noticable if the plot is moved.
 -    Adjusted scaling and line colors for all QQ and PP plots to improve the way they are displayed.
 -    PP_plot_parametric now has labels for quantile lines which are linked to the axes coords, so if the plot is moves / zoomed the labels will follow the plotting window.
+-    Improved the Mixture Model PDF and HF using the actual formula rather than taking the numerical derivatives of CDF and CHF respectively.
+-    Fit_Everything can now accept a minimum of 2 failures (previously the minimum was 3) and it will automatically exclude the 3P distributions
+-    All warnings throughout reliability are now printed in red.
+-    Improved input checking for all the fitters. This has been standardised in a Utils function so nothing is missed for each of the fitters.
 
 **Version: 0.5.3 --- Released: 29 September 2020**
 ''''''''''''''''''''''''''''''''''''''''''''''''''
