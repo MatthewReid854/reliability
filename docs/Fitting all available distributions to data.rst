@@ -5,13 +5,14 @@
 Fitting all available distributions to data
 '''''''''''''''''''''''''''''''''''''''''''
 
-To fit all of the `distributions available <https://reliability.readthedocs.io/en/latest/Fitting%20a%20specific%20distribution%20to%20data.html>`_ in ``reliability``, is a similar process to fitting a specific distribution. The user needs to specify the failures and any right censored data. The Beta distribution will only be fitted if you specify data that is in the range 0 to 1. The selection of what can be fitted is all done automatically based on the data provided.
+To fit all of the `distributions available <https://reliability.readthedocs.io/en/latest/Fitting%20a%20specific%20distribution%20to%20data.html>`_ in ``reliability``, is a similar process to fitting a specific distribution. The user needs to specify the failures and any right censored data. The Beta distribution will only be fitted if you specify data that is in the range 0 to 1. The selection of what can be fitted is all done automatically based on the data provided. Manual exclusion of certain datasets is also possible.
 
 Inputs:
 
 -   failures - an array or list of the failure times.
--   right_censored - an array or list of the right failure times.
+-   right_censored - an array or list of the right censored failure times.
 -   sort_by - goodness of fit test to sort results by. Must be either 'BIC','AIC', or 'AD'. Default is BIC.
+-   exclude - list or array of strings specifying which distributions to exclude. Default is None. Options are Weibull_2P, Weibull_3P, Normal_2P, Gamma_2P, Loglogistic_2P, Gamma_3P, Lognormal_2P, Lognormal_3P, Loglogistic_3P, Gumbel_2P, Exponential_2P, Exponential_1P, Beta_2P
 -   show_histogram_plot - True/False. Defaults to True. Will show the PDF and CDF of the fitted distributions along with a histogram of the failure data.
 -   show_PP_plot - True/False. Defaults to True. Provides a comparison of parametric vs non-parametric fit using a `semiparametric Probability-Probability (PP) plot <https://reliability.readthedocs.io/en/latest/Probability-Probability%20plots.html#semiparametric-probability-probability-plot>`_ for each fitted distribution.
 -   show_probability_plot - True/False. Defaults to True. Provides a `probability plot <https://reliability.readthedocs.io/en/latest/Probability%20plots.html>`_ of each of the fitted distributions.
@@ -27,9 +28,9 @@ Outputs:
 -   best_distribution_name - the name of the best fitting distribution. E.g. 'Weibull_3P'
 -   parameters and goodness of fit tests for each fitted distribution. For example, the Weibull_3P distribution values are: Weibull_3P_alpha, Weibull_3P_beta, Weibull_3P_gamma, Weibull_3P_BIC, Weibull_3P_AICc, Weibull_3P_AD.
 
-Confidence intervals for each of the fitted parameters are not reported by ``Fitters.Fit_Everything`` as this would be a large number of outputs. If you need the confidence intervals for the fitted parameters you can repeat the fitting using just a specific distribution and the results will include the confidence intervals.
+Confidence intervals are shown on the plots but they are not reported for each of the fitted parameters as this would be a large number of outputs. If you need the confidence intervals for the fitted parameters you can repeat the fitting using just a specific distribution and the results will include the confidence intervals.
 
-In this first example, we will use Fit_Everything on some data and will return only the dataframe of results. Note that we are actively supressing the 3 plots that would normally be shown to provide graphical goodness of fit indications.
+In this first example, we will use *Fit_Everything* on some data and will return only the dataframe of results. Note that we are actively supressing the 3 plots that would normally be shown to provide graphical goodness of fit indications.
 
 .. code:: python
 
@@ -53,7 +54,7 @@ In this first example, we will use Fit_Everything on some data and will return o
     Exponential_1P                                                   0.267857  141.180947  142.439287  4.710926
     '''
 
-In this second example, we will create some right censored data and use Fit_Everything. All outputs are shown, and the best fitting distribution is accessed and printed.
+In this second example, we will create some right censored data and use *Fit_Everything*. All outputs are shown, and the best fitting distribution is accessed and printed.
 
 .. code:: python
 
@@ -84,12 +85,14 @@ In this second example, we will create some right censored data and use Fit_Ever
     The best fitting distribution was Weibull_2P which had parameters [11.27730642  3.30300716  0.        ]
     '''
 
-.. image:: images/Fit_everything_histogram_plot_V5.png
+.. image:: images/Fit_everything_histogram_plot_V6.png
 
-.. image:: images/Fit_everything_probability_plot_V4.png
+.. image:: images/Fit_everything_probability_plot_V6.png
 
-.. image:: images/Fit_everything_PP_plot_V4.png
+.. image:: images/Fit_everything_PP_plot_V6.png
 
-The histogram is scaled based on the amount of censored data. If your censored data is all above or below your failure data then the histogram bars should line up well with the fitted distributions (assuming you have enough data). However, if your censored data is not always greater than the max of your failure data then the heights of the histogram bars will be scaled down and the plot may look incorrect. This is to be expected as the histogram is only a plot of the failure data and the totals will not add to 100% if there is censored data.
+All plots are ordered based on the goodness of fit order of the results. For the histogram this is reflected in the order of the legend. For the probability plots and PP plots, these are ordered left to right and top to bottom.
 
-.. note:: The confidence intervals shown on the probability plots are only available for the Exponential (1P and 2P) and Weibull (2P and 3P) fitters. This library is being actively developed and over the next few months the confidence intervals will be added for the remaining Fitters.
+The histogram is scaled based on the amount of censored data. If your censored data is all above your failure data then the histogram bars should line up well with the fitted distributions (assuming you have enough data). However, if your censored data is not always greater than the max of your failure data then the heights of the histogram bars will be scaled down and the plot may look incorrect. This is to be expected as the histogram is only a plot of the failure data and the totals will not add to 100% if there is censored data.
+
+.. note:: The confidence intervals shown on the probability plots are not available for Gamma_2P, Gamma_3P, or Beta_2P. This library is being actively developed the remaining confidence intervals will be added soon.
