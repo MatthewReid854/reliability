@@ -18,7 +18,7 @@ The module *reliability.Probability_plotting* contains functions for each of the
 - Loglogistic_probability_plot
 - Gumbel_probability_plot
 
-There is also a function to obtain the plotting positions called plot_points. This is explained in the second example `here <https://reliability.readthedocs.io/en/latest/Fitting%20a%20specific%20distribution%20to%20data.html>`_.
+There is also a function to obtain the plotting positions called plotting_positions. This function is mainly used by other functions and is not discussed further here. For more detail, consult the help file of the function. To obtain a scatter plot of the plotting positions in the form of the PDF, CDF, SF, HF, or CHF, you can use the function plot_points. This is explained in the second example `here <https://reliability.readthedocs.io/en/latest/Fitting%20a%20specific%20distribution%20to%20data.html>`_.
 
 Within each of the above probability plotting functions you may enter failure data as well as right censored data. For those distributions that have a function in *reliability.Fitters* for fitting location shifted distributions (Weibull_3P, Gamma_3P, Lognormal_3P, Exponential_2P), you can explicitly tell the probability plotting function to fit the gamma parameter using fit_gamma=True. By default the gamma parameter is not fitted. Fitting the gamma parameter will also change the x-axis to time-gamma such that everything will appear linear. An example of this is shown in the second example below.
 
