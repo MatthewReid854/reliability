@@ -10,7 +10,7 @@ Changelog
 
 **New features**
 
--    Confidence intervals added for Normal, Lognormal, Loglogistic, and Gumbel Distributions. *Confidence intervals still need to be done for the Gamma and Beta Distributions*
+-    Confidence intervals added for Normal, Lognormal, Loglogistic, and Gumbel Distributions. *Confidence intervals for the Gamma and Beta Distributions will be part of 0.5.5 in Jan 2021*
 -    Added Gumbel_Distribution to Distributions
 -    Added Gumbel_Distribution to Other_functions.distribution_explorer
 -    Added Fit_Gumbel_2P to Fitters
@@ -22,7 +22,7 @@ Changelog
 -    Added Loglogistic and Gumbel Distributions to PP_plot_parametric, QQ_plot_parametric, PP_plot_semiparametric, and QQ_plot_semiparametric. Loglogistic should have been added in version 0.5.3 but it was missed.
 -    Added Loglogistic and Gumbel Distributions to Mixture Model and Competing Risks Model. Loglogistic should have been added in version 0.5.3 but it was missed.
 -    Fit_Everything now plots everything in order of best fit for all 3 of the plots generated.
--    Mixture Model now works for negative xvals when the mixture contains one or more Normal and/or Gumbel Distributions. Previously these would be truncated at 0 which could lead to inaccuracies. *This still needs to be done for the Competing_Risks_Model*
+-    Both the Competing Risks Model and Mixture Model now work for negative xvals when the mixture contains one or more Normal and/or Gumbel Distributions. Previously these were be truncated at 0 which could lead to inaccuracies if the model contained Normal Distributions (or Gumbel Distributions, though Gumbel was not available previously).
 
 **API Changes**
 
