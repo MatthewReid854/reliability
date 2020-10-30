@@ -16,7 +16,7 @@ To open the distribution explorer, use the following code:
     from reliability.Other_functions import distribution_explorer
     distribution_explorer()
 
-.. image:: images/distribution_explorer.png
+.. image:: images/distribution_explorerV2.png
 
 .. raw:: html
 
