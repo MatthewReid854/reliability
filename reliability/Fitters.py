@@ -66,7 +66,7 @@ class Fit_Everything:
     show_PP_plot - True/False. Defaults to True.
         Provides a comparison of parametric vs non-parametric fit using Probability-Probability (PP) plot.
     show_probability_plot - True/False. Defaults to True. Provides a probability plot of each of the fitted distributions.
-    exclude - list or array of strings specifying which distributions to exclude. Default is empty list. Options are Weibull_2P, Weibull_3P, Normal_2P,
+    exclude - list or array of strings specifying which distributions to exclude. Default is None. Options are Weibull_2P, Weibull_3P, Normal_2P,
         Gamma_2P, Loglogistic_2P, Gamma_3P, Lognormal_2P, Lognormal_3P, Loglogistic_3P, Gumbel_2P, Exponential_2P, Exponential_1P, Beta_2P
 
     Outputs:

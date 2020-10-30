@@ -607,8 +607,8 @@ class ALT_probability_plot_Lognormal:
                 AICc_total += lognormal_fit_common_shape.AICc
             BIC_total += lognormal_fit_common_shape.BIC
             if show_plot is True:
-                lognormal_fit_common_shape.distribution.CDF(linestyle='--', color=color_list[i], xvals=xvals)
-                Probability_plotting.Lognormal_probability_plot(failures=FAILURES, right_censored=RIGHT_CENSORED, color=color_list[i], label=str(stress))
+                lognormal_fit_common_shape.distribution.CDF(linestyle='--', color=color_list[i], xvals=xvals, plot_CI=False) # plotting of the confidence intervals has been turned off
+                Probability_plotting.Lognormal_probability_plot(failures=FAILURES, right_censored=RIGHT_CENSORED,plot_CI=False, color=color_list[i], label=str(stress))
             x, y = Probability_plotting.plotting_positions(failures=FAILURES, right_censored=RIGHT_CENSORED)
             x_array = np.append(x_array, np.array(x))
             y_array = np.append(y_array, np.array(y))
@@ -828,8 +828,8 @@ class ALT_probability_plot_Normal:
                 AICc_total += normal_fit_common_shape.AICc
             BIC_total += normal_fit_common_shape.BIC
             if show_plot is True:
-                normal_fit_common_shape.distribution.CDF(linestyle='--', color=color_list[i], xvals=xvals)
-                Probability_plotting.Normal_probability_plot(failures=FAILURES, right_censored=RIGHT_CENSORED, color=color_list[i], label=str(stress))
+                normal_fit_common_shape.distribution.CDF(linestyle='--', color=color_list[i], xvals=xvals, plot_CI=False) # plotting of the confidence intervals has been turned off
+                Probability_plotting.Normal_probability_plot(failures=FAILURES, right_censored=RIGHT_CENSORED,plot_CI=False, color=color_list[i], label=str(stress))
             x, y = Probability_plotting.plotting_positions(failures=FAILURES, right_censored=RIGHT_CENSORED)
             x_array = np.append(x_array, np.array(x))
             y_array = np.append(y_array, np.array(y))
