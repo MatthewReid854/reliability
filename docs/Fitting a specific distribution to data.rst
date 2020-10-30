@@ -5,33 +5,35 @@
 Fitting a specific distribution to data
 '''''''''''''''''''''''''''''''''''''''
 
-The module ``reliability.Fitters`` provides many probability distribution fitting functions. These functions can be thought of in two categories; non-location shifted distributions [eg. Weibull (α,β)], and location shifted distributions [eg. Weibull (α,β,γ)]. All of the distributions can be fitted to both complete and imcomplete (right censored) data. All distributions in the Fitters module are named with their number of parameters (eg. Fit_Weibull_2P uses α,β, whereas Fit_Weibull_3P uses α,β,γ). This is intended to remove ambiguity about what distribution you are fitting.
+The module ``reliability.Fitters`` provides many probability distribution fitting functions. These functions can be thought of in three categories; non-location shifted distributions [eg. Weibull (α,β)], location shifted distributions [eg. Weibull (α,β,γ)], and special distributions (e.g. Weibull Mixture model). All of the distributions can be fitted to both complete and incomplete (right censored) data. All distributions in the Fitters module are named with their number of parameters (eg. Fit_Weibull_2P uses α,β, whereas Fit_Weibull_3P uses α,β,γ). This is intended to remove ambiguity about what distribution you are fitting.
 
 Distributions are fitted simply by using the desired function and specifying the data as failures or right_censored data. You must have at least as many failures as there are distribution parameters or the fit would be under-constrained. It is generally advisable to have at least 4 data points as the accuracy of the fit is proportional to the amount of data. Once fitted, the results are assigned to an object and the fitted parameters can be accessed by name, as shown in the examples below. The goodness of fit criterions are also available as AICc (Akaike Information Criterion corrected), BIC (Bayesian Information Criterion), and AD (Anderson-Darling), though these are more useful when comparing the fit of multiple distributions such as in the `Fit_Everything <https://reliability.readthedocs.io/en/latest/Fitting%20all%20available%20distributions%20to%20data.html>`_ function. As a matter of convenience, each of the modules in Fitters also generates a distribution object that has the parameters of the fitted distribution.
 
-The supported distributions are:
+The available functions are:
 
--   Weibull_2P
--   Weibull_3P
--   Exponential_1P
--   Exponential_2P
--   Gamma_2P
--   Gamma_3P
--   Lognormal_2P
--   Lognormal_3P
--   Loglogistic_2P
--   Loglogistic_3P
--   Normal_2P
--   Beta_2P
--   Weibull_Mixture (see the `section <https://reliability.readthedocs.io/en/latest/Weibull%20mixture%20models.html>`_ on this)
+-   Fit_Weibull_2P
+-   Fit_Weibull_3P
+-   Fit_Exponential_1P
+-   Fit_Exponential_2P
+-   Fit_Gamma_2P
+-   Fit_Gamma_3P
+-   Fit_Lognormal_2P
+-   Fit_Lognormal_3P
+-   Fit_Loglogistic_2P
+-   Fit_Loglogistic_3P
+-   Fit_Normal_2P
+-   Fit_Gumbel_2P
+-   Fit_Beta_2P
+-   Fit_Weibull_Mixture (see the `section <https://reliability.readthedocs.io/en/latest/Mixture%20models.html>`_ on this)
+-   Fit_Weibull_CR (see the `section <https://reliability.readthedocs.io/en/latest/Competing%20risk%20models.html>`_ on this)
 
 .. note:: The Beta distribution is only for data in the range 0 to 1. Specifying data outside of this range will cause an error.
 
 .. note:: If you have a very large amount of data (>100000 samples) then it is likely that your computer will take significant time to compute the results. This is a limitation of interpreted languages like Python compared to compiled languages like C++ which many commerial reliability software packages are written in. If you have very large volumes of data, you may want to consider using commercial software for faster computation time. The function Fit_Weibull_2P_grouped is designed to accept a dataframe which has multiple occurrences of some values (eg. multiple values all right censored to the same value when the test was ended). Depending on the size of the data set and the amount of grouping in your data, Fit_Weibull_2P_grouped may be much faster than Fit_Weibull_2P and achieve the same level of accuracy. This difference is not noticable if you have less than 10000 samples. For more information, see the example below on `using Fit_Weibull_2P_grouped <https://reliability.readthedocs.io/en/latest/Fitting%20a%20specific%20distribution%20to%20data.html#using-fit-weibull-2p-grouped-for-large-data-sets>`_.
 
-.. note:: Heavily censored data (>99.9% censoring) may result in a failure of the optimizer to find a solution. If you have heavily censored data, you may have a limited failure population problem. It is recommended that you do not try fitting one of these standard distributions to such a dataset as your results (while they may have achieved a successful fit) will be a poor description of your overall population statistic and you risk drawing the wrong conclusions when the wrong model is fitted. The limited failure population model is planned for a future release of reliability, though development on this model is yet to commence. In the meantime, see JMP Pro's model for `Defective Subpopulations. <https://www.jmp.com/en_my/events/ondemand/statistical-methods-in-reliability/defective-subpopulation-distributions.html>`_
+.. note:: Heavily censored data (>99.9% censoring) may result in a failure of the optimizer to find a solution. If you have heavily censored data, you may have a limited failure population problem. It is recommended that you do not try fitting one of these standard distributions to such a dataset as your results (while they may have achieved a successful fit) will be a poor description of your overall population statistic and you risk drawing the wrong conclusions when the wrong model is fitted. The limited failure population model is planned for a future release of *reliability*, though development on this model is yet to commence. In the meantime, see JMP Pro's model for `Defective Subpopulations. <https://www.jmp.com/en_my/events/ondemand/statistical-methods-in-reliability/defective-subpopulation-distributions.html>`_
 
-.. note:: The confidence intervals shown on the plots below are only available for the Exponential (1P and 2P) and Weibull (2P and 3P) fitters. This library is being actively developed and over the next few months the confidence intervals will be added for the rest of the Fitters.
+.. note:: The confidence intervals are available for all of the standard distributions except for Fit_Gamma_2P, Fit_Gamma_3P and Fit_Beta_2P. This library is being actively developed and it is likely that Gamma and Beta distributions will have confidence intervals added in the next release.
 
 If you do not know which distribution you want to fit, then please see the `section <https://reliability.readthedocs.io/en/latest/Fitting%20all%20available%20distributions%20to%20data.html>`_ on using the Fit_Everything function which will find the best distribution to describe your data. It is highly recommended that you always try to fit everything and accept the best fit rather than choosing a particular distribution for subjective reasons.
 
@@ -44,6 +46,7 @@ Inputs:
 -   show_probability_plot - True/False. Defaults to True. Produces a probability plot of the failure data and fitted distribution.
 -   print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
 -   CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
+-   percentiles - True/False (for default list) or specified list or array of percentiles (0 to 100) to print with the results. These are the percentiles on time based on the specified CI. Not available for Fit_Gamma_2P, Fit_Gamma_3P and Fit_Beta_2P due to confidence intervals not yet implemented.
 -   force_beta (in Fit_Weibull_2P) or force_sigma (in Fit_Normal_2P and Fit_Lognormal_2P). This allows the user to force the shape parameter to be a set value. Useful for ALT probability plotting. Optional input and only available for Fit_Weibull_2P, Fit_Normal_2P and Fit_Lognormal_2P as these are the distributions typically used in ALT probability plotting.
 -   keyword argumets are also accepted for the probability plot (eg. color, linestyle, marker)
 
@@ -65,6 +68,7 @@ Outputs (the following example outputs are for the Fit_Weibull_2P distribution b
 -   beta_upper - the upper CI estimate of the parameter. This will be '' if the shape parameter has been forced to a set value.
 -   beta_lower - the lower CI estimate of the parameter. This will be '' if the shape parameter has been forced to a set value.
 -   results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
+-   percentiles - a dataframe of the percentiles.
 -   success - True/False. Indicated whether the solution was found by autograd. If success is False a warning will be printed indicating that the initial guess was used as autograd failed. This fit will not be accurate if there is censored data. Failure of autograd to find the solution should be rare and if it occurs, it is likely that the distribution is an extremely bad fit for the data. Try scaling your data, removing extreme values, or using another distribution.
 
 To learn how we can fit a distribution, we will start by using a simple example with 30 failure times. These times were generated from a Weibull distribution with α=50, β=3. Note that the output also provides the confidence intervals and standard error of the parameter estimates. The probability plot is generated be default (you will need to specify plt.show() to show it). See the section on `probability plotting <https://reliability.readthedocs.io/en/latest/Probability%20plots.html#what-does-a-probability-plot-show-me>`_ to learn how to interpret this plot.
@@ -88,13 +92,13 @@ To learn how we can fit a distribution, we will start by using a simple example 
 
 .. image:: images/Fit_Weibull_2P_V4.png
 
-The above probability plot is the typical way to visualise how the CDF (the blue line) models the failure data (the black points). If you would like to view the failure points alongside the CDF, SF, or CHF without the axis being scaled then you can generate the scatter plot using the function plot_points which is available within reliability.Probability_plotting. In the example below we create some data, then fit a Weibull distribution to the data (ensuring we turn off the probability plot). From the fitted distribution object we plot the Survival Function (SF). We then use plot_points to generate a scatter plot of the plotting positions for the survival function.
+The above probability plot is the typical way to visualise how the CDF (the blue line) models the failure data (the black points). If you would like to view the failure points alongside the PDF, CDF, SF, HF, or CHF without the axis being scaled then you can generate the scatter plot using the function plot_points which is available within reliability.Probability_plotting. In the example below we create some data, then fit a Weibull distribution to the data (ensuring we turn off the probability plot). From the fitted distribution object we plot the Survival Function (SF). We then use plot_points to generate a scatter plot of the plotting positions for the survival function.
 
 For the function plot_points the inputs are:
 
 -   failures - an array or list of failure data
 -   right_censored - an array or list of right censored data. Optional input
--   func - the function to be plotted. Must be 'PDF','CDF', 'SF', 'HF', or 'CHF'. Default is 'CDF'. Note that the options for 'PDF' and 'HF' will look much more scattered as they are found using the integral of a non-continuous function.
+-   func - the function to be plotted. Must be 'PDF', 'CDF', 'SF', 'HF', or 'CHF'. Default is 'CDF'. Note that the options for 'PDF' and 'HF' will look much more scattered as they are found using the integral of a non-continuous function.
 -   a - this is the plotting heuristic. Default is 0.3. See `probability plotting <https://reliability.readthedocs.io/en/latest/Probability%20plots.html>`_ and `Wikipedia <https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics>`_ for more details.
 -   keywords for the scatter plot are also accepted.
 
