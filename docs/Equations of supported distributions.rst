@@ -197,8 +197,6 @@ There is another parameterization of the loglogistic distribution using :math:`\
 Gumbel Distribution
 ====================
 
-.. note:: The Gumbel Distribution will be available in version 0.5.4 which is currently unreleased.
-
 :math:`\mu` = location parameter :math:`( -\infty < \mu < \infty )`
 
 :math:`\sigma` = scale parameter :math:`( \sigma > 0 )`
