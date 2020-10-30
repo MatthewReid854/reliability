@@ -12,6 +12,7 @@ There are a few datasets that have been included with reliability that users may
 - automotive - 10 failures, 21 right censored. It is used in `this example <https://reliability.readthedocs.io/en/latest/Kaplan-Meier%20estimate%20of%20reliability.html>`_
 - defective_sample - 1350 failures, 12296 right censored. It exhibits the behavior of a defective sample (also known as Limited failure population or Defective subpopulation).
 - electronics - 10 failures, 4072 right censored. It is used in `this example <https://reliability.readthedocs.io/en/latest/Fitting%20a%20specific%20distribution%20to%20data.html#using-fit-weibull-2p-grouped-for-large-data-sets>`_.
+- mileage - 100 values with no right censoring. It is used in the examples for `KStest <https://reliability.readthedocs.io/en/latest/Kolmogorov-Smirnov%20test.html>`_ and `chi2test <https://reliability.readthedocs.io/en/latest/Chi-squared%20test.html>`_.
 
 **ALT Datasets**
 
