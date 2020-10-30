@@ -215,7 +215,7 @@ where :math:`z = \frac{t-\mu}{\sigma}`
 
 :math:`\text{CHF:} \hspace{9mm} H(t) = {\rm e}^{z}`
 
-The parametrization of the Gumbel Distribution shown above is also known as the Smallest Extreme Value (SEV) distribution. There are several types of extreme value distributions, and the article on `Wikipedia <https://en.wikipedia.org/wiki/Gumbel_distribution>`_ is for the Largest Extreme Value (LEV) distribution. There is only a slight difference in the parametrisation between SEV and LEV distributions, but this change effectively flips the PDF about :math:`\mu` to give the LEV positive skewness (a longer tail to the right), while the SEV has negative skewness (a longer tail to the left), hence the name "smallest extreme value".
+The parametrization of the Gumbel Distribution shown above is also known as the Smallest Extreme Value (SEV) distribution. There are several types of extreme value distributions, and the article on `Wikipedia <https://en.wikipedia.org/wiki/Gumbel_distribution>`_ is for the Largest Extreme Value (LEV) distribution. There is only a slight difference in the parametrisation between SEV and LEV distributions, but this change effectively flips the PDF about :math:`\mu` to give the LEV positive skewness (a longer tail to the right), while the SEV has negative skewness (a longer tail to the left).
 
 Location shifting the distributions
 ===================================
