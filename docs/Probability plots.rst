@@ -6,7 +6,7 @@ Probability plots
 '''''''''''''''''
 
 Proabability plots are a general term for several different plotting techniques. One of these techniques is a graphical method for comparing two data sets and includes `probability-probability <https://reliability.readthedocs.io/en/latest/Probability-Probability%20plots.html>`_ (PP) plots and `quantile-quantile <https://reliability.readthedocs.io/en/latest/Quantile-Quantile%20plots.html>`_ (QQ) plots. The second plotting technique is used for assessing the goodness of fit of a distribution by plotting the empirical CDF of the failures against their failure time and scaling the axes in such as way that the distribution appears linear. This method allows the reliability analyst to fit the distribution parameters using a simple "least squares" fitting method for a straight line and was popular before computers were capable of calculating the MLE estimates of the parameters. While we do not typically favour the use of least squares as a fitting method, we can still use probability plots to assess the goodness of fit.
-The module ``reliability.Probability_plotting`` contains functions for each of the standard distributions supported in ``reliability``. These functions are:
+The module *reliability.Probability_plotting* contains functions for each of the standard distributions supported in *reliability*. These functions are:
 
 - Weibull_probability_plot
 - Normal_probability_plot
@@ -16,12 +16,15 @@ The module ``reliability.Probability_plotting`` contains functions for each of t
 - Exponential_probability_plot
 - Exponential_probability_plot_Weibull_Scale
 - Loglogistic_probability_plot
+- Gumbel_probability_plot
 
-There is also a function to obtain the plotting positions as well as the functions for custom axes scaling. These are explained more in the help file and will not be discussed further here.
+There is also a function to obtain the plotting positions called plot_points. This is explained in the second example `here <https://reliability.readthedocs.io/en/latest/Fitting%20a%20specific%20distribution%20to%20data.html>`_.
 
-Within each of the above probability plotting functions you may enter failure data as well as right censored data. For those distributions that have a function in ``reliability.Fitters`` for fitting location shifted distributions (Weibull_3P, Gamma_3P, Lognormal_3P, Exponential_2P), you can explicitly tell the probability plotting function to fit the gamma parameter using fit_gamma=True. By default the gamma parameter is not fitted. Fitting the gamma parameter will also change the x-axis to time-gamma such that everything will appear linear. An example of this is shown in the second example below.
+Within each of the above probability plotting functions you may enter failure data as well as right censored data. For those distributions that have a function in *reliability.Fitters* for fitting location shifted distributions (Weibull_3P, Gamma_3P, Lognormal_3P, Exponential_2P), you can explicitly tell the probability plotting function to fit the gamma parameter using fit_gamma=True. By default the gamma parameter is not fitted. Fitting the gamma parameter will also change the x-axis to time-gamma such that everything will appear linear. An example of this is shown in the second example below.
 
-Note that the Beta and Gamma probability plots have their y-axes scaled based on the distribution's parameters so you will find that when you overlay two gamma or two beta distributions on the same gamma or beta probability paper, one will be a curved line if they have different shape parameters. This is unavoidable due to the nature of gamma and beta probability paper and is the reason why you will never find a hardcopy of such paper and also the reason why these distributions are not used in ALT probability plotting.
+.. note:: Beta and Gamma probability plots have their y-axes scaled based on the distribution's parameters so you will find that when you overlay two Gamma or two Beta distributions on the same Gamma or Beta probability paper, one will be a curved line if they have different shape parameters. This is unavoidable due to the nature of Gamma and Beta probability paper and is the reason why you will never find a hardcopy of such paper and also the reason why these distributions are not used in ALT probability plotting.
+
+.. note:: Confidence intervals will not appear on Gamma or Beta probability plots. These confidence intervals are in development.
 
 Inputs:
 
@@ -30,8 +33,7 @@ Inputs:
 - fit_gamma - this is only included for Weibull, Gamma, Lognormal, and Exponential probability plots. Specify fit_gamma=True to fit the location shifted distribution.
 - a - this is the heuristic for plotting positions of the form (k-a)/(n+1-2a). Default is a=0.3 which is the median rank method (same as in Minitab). You can specify any heuristic that follows this form. For more heuristics, see `wikipedia <https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics>`_.
 - show_fitted_distribution - True/False. If True, the fitted distribution will be plotted on the probability plot. Defaults to True. If you want a probability plot with just the data points and no line for the distribution then set this to False.
-- plotting keywords are also accepted where relevant and they are mostly applied to the fitted distribution line. The exception to this is for color which defaults to red line and black points but if specified the chosen color will be applied to both line and points. This is useful when overlaying multiple datasets on a single probability plot.
-- keyword arguments for the plot are accepted (eg. color, linestyle, marker)
+- plotting keywords are also accepted where relevant and they are mostly applied to the fitted distribution line. The exception to this is for color which defaults to blue line and black points but if specified the chosen color will be applied to both line and points. This is useful when overlaying multiple datasets on a single probability plot.
 
 Outputs:
 
@@ -46,12 +48,13 @@ In the example below we generate some samples from a Normal Distribution and pro
     import matplotlib.pyplot as plt
     
     dist = Normal_Distribution(mu=50,sigma=10)
-    dist.CDF(linestyle='--',label='True CDF') #this is the actual distribution provided for comparison
     failures = dist.random_samples(100, seed=5)
     Normal_probability_plot(failures=failures) #generates the probability plot
+    dist.CDF(linestyle='--',label='True CDF') #this is the actual distribution provided for comparison
+    plt.legend()
     plt.show()
     
-.. image:: images/Normal_probability_plot2.png
+.. image:: images/Normal_probability_plotV2.png
 
 In this second example, we will fit an Exponential distribution to some right censored data. To create this data, we will draw it from an Exponential distribution that has a location shift of 12. Once again, the true CDF has also been plotted to provide the comparison. Note that the x-axis is time-gamma as it is necessary to subtract gamma from the x-plotting positions if we want the plot to appear linear.
 
@@ -67,11 +70,10 @@ In this second example, we will fit an Exponential distribution to some right ce
     data = make_right_censored_data(raw_data, threshold=17)  # right censor the data at 17
     Exponential_Distribution(Lambda=0.25).CDF(linestyle='--', label='True CDF')  # we can't plot dist because it will be location shifted
     Exponential_probability_plot(failures=data.failures, right_censored=data.right_censored, fit_gamma=True)  # do the probability plot. Note that we have specified to fit gamma
+    plt.legend()
     plt.show()
 
-.. image:: images/Exponential_probability_plot_V4.png
-
-.. note:: The confidence intervals appear on the Exponential plot above but not in the Normal probability plot in the first example. This is because the confidence intervals are only available for the Exponential (1P and 2P) and Weibull (2P and 3P) fitters. This library is being actively developed and over the next few months the confidence intervals will be added to all the Fitters.
+.. image:: images/Exponential_probability_plot_V5.png
 
 In this third example, we will see how probability plotting can be used to highlight the importance of getting as much data as possible. This code performs a loop in which increasing numbers of samples are used for fitting a Weibull distribution and the accuracy of the results (shown both in the legend and by comparison with the True CDF) increases with the number of samples.
 
@@ -94,7 +96,7 @@ In this third example, we will see how probability plotting can be used to highl
  
 .. image:: images/Weibull_probability_plot_multi_V4.png
 
-In this fourth example, we will take a look at the special case of the Exponential probability plot using the Weibull Scale. This plot is essentially a Weibull probability plot, but the fitting and plotting functions are Exponential. The reason for plotting an Exponential distribution on Weibull probability paper is to achieve parallel lines for different Lambda parameters rather than having the lines radiating from the origin as we see in the Exponential probability plot on Exponential probability paper. This has applications in ALT probability plotting. An example of the differences between the plots are shown below. Remember that the alpha parameter from the Weibull distribution is equivalent to 1/Lambda from the Exponential distribution and a Weibull distribution with Beta = 1 is the same as an exponential distribution.
+In this fourth example, we will take a look at the special case of the Exponential probability plot using the Weibull Scale. This plot is essentially a Weibull probability plot, but the fitting and plotting functions are Exponential. The reason for plotting an Exponential distribution on Weibull probability paper is to achieve parallel lines for different Lambda parameters rather than having the lines radiating from the origin as we see in the Exponential probability plot on Exponential probability paper. This has applications in ALT probability plotting and is the default plot provided from Fit_Exponential_1P and Fit_Exponential_2P. An example of the differences between the plots are shown below. Remember that the alpha parameter from the Weibull distribution is equivalent to 1/Lambda from the Exponential distribution and a Weibull distribution with Beta = 1 is the same as an Exponential distribution.
 
 .. code:: python
 
@@ -119,7 +121,7 @@ In this fourth example, we will take a look at the special case of the Exponenti
 
 .. image:: images/expon_weibull_scale_V4.png
 
-In this final example, we take a look at how a probability plot can show us that there's something wrong with our assumption of a single distribution. To generate the data, the random samples are drawn from two different distributions which are shown in the left image. In the right image, the scatterplot of failure times is clearly non-linear. The green line is the attempt to fit a single Weibull_2P distribution and this will do a poor job of modelling the data. Also note that the points of the scatterplot do not fall on the True CDF of each distribution. This is because the median rank method of obtaining the plotting positions does not work well if the failure times come from more than one distribution. If you see a pattern like this, try a `mixture model <https://reliability.readthedocs.io/en/latest/Mixture%20models.html>`_. Always remember that cusps, corners, and doglegs indicate a mixture of failure modes.
+In this final example, we take a look at how a probability plot can show us that there's something wrong with our assumption of a single distribution. To generate the data, the random samples are drawn from two different distributions which are shown in the left image. In the right image, the scatterplot of failure times is clearly non-linear. The green line is the attempt to fit a single Weibull_2P distribution and this will do a poor job of modelling the data. Also note that the points of the scatterplot do not fall on the True CDF of each distribution. This is because the median rank method of obtaining the plotting positions does not work well if the failure times come from more than one distribution. If you see a pattern like this, try a `mixture model <https://reliability.readthedocs.io/en/latest/Mixture%20models.html>`_ or a `competing risks model <https://reliability.readthedocs.io/en/latest/Competing%20risk%20models.html>`_. Always remember that cusps, corners, and doglegs indicate a mixture of failure modes.
 
 .. code:: python
 
@@ -160,7 +162,7 @@ A probability plot shows how well your data is modelled by a particular distribu
     from reliability.Distributions import Weibull_Distribution
     import matplotlib.pyplot as plt
     
-    data = Weibull_Distribution(alpha=5,beta=3).random_samples(100)
+    data = Weibull_Distribution(alpha=5,beta=3).random_samples(100,seed=1)
     plt.subplot(121)
     Weibull_probability_plot(failures=data)
     plt.title('Example of a good fit')
@@ -170,4 +172,4 @@ A probability plot shows how well your data is modelled by a particular distribu
     plt.subplots_adjust(bottom=0.1, right=0.94, top=0.93, wspace=0.34)  # adjust the formatting
     plt.show()
 
-.. image:: images/probability_plotting_good_and_bad_V4.png
+.. image:: images/probability_plotting_good_and_bad_V5.png
