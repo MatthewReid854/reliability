@@ -20,9 +20,7 @@ Mixture models are a combination of two or more distributions added together to 
 
 :math:`{CHF}_{mixture} = -ln({SF}_{mixture})`
 
-Another option to obtain the hazard function is to find the numerical derivative of the CHF. This is often more reliable since the PDF/SF approach can lead to noisy results caused by limitations in floating point precision when the SF is near zero.
-
-Mixture models are useful when there is more than one failure mode that is generating the failure data. This can be recognised by the shape of the PDF and CDF being outside of what any single distribution can accurately model. On a probability plot, a mixture of failure modes can be identified by bends or S-shapes in the data that you might otherwise expect to be linear. An example of this is shown in the image below. You should not use a mixture model just because it can fit almost anything really well, but you should use a mixture model if you suspect that there are multiple failure modes contributing to the failure data you are observing. To judge whether a mixture model is justified, look at the goodness of fit criterion (AICc or BIC) which penalises the score based on the number of parameters in the model. The closer the goodness of fit criterion is to zero, the better the fit.
+Mixture models are useful when there is more than one failure mode that is generating the failure data. This can be recognised by the shape of the PDF and CDF being outside of what any single distribution can accurately model. On a probability plot, a mixture of failure modes can be identified by bends or S-shapes in the data that you might otherwise expect to be linear. An example of this is shown in the image below. You should not use a mixture model just because it can fit almost anything really well, but you should use a mixture model if you suspect that there are multiple failure modes contributing to the failure data you are observing. To judge whether a mixture model is justified, look at the goodness of fit criterion (AICc or BIC) which penalises the score based on the number of parameters in the model. The closer the goodness of fit criterion is to zero, the better the fit. Using AD or log-likelihood for this check is not appropriate as these goodness of fit criterions do not penalise the score based on the number of parameters in the model and are therefore prone to overfitting.
 
 See also `competing risk models <https://reliability.readthedocs.io/en/latest/Competing%20risk%20models.html>`_ for another method of combining distributions using the product of the SF rather than the sum of the CDF.
 
@@ -31,7 +29,7 @@ See also `competing risk models <https://reliability.readthedocs.io/en/latest/Co
 Creating a mixture model
 ========================
 
-Within ``reliability.Distributions`` is the Mixture_Model. This class accepts an array or list of distribution objects created using the reliability.Distributions module (available distributions are Exponential, Weibull, Normal, Lognormal, Loglogistic, Gamma, Beta). There is no limit to the number of components you can add to the mixture, but is is generally preferable to use as few as are required to fit the data appropriately (typically 2 or 3). In addition to the distributions, you can specify the proportions contributed by each distribution in the mixture. These proportions must sum to 1. If not specified the proportions will be set as equal for each component.
+Within *reliability.Distributions* is the Mixture_Model. This function accepts an array or list of distribution objects created using the *reliability.Distributions* module (available distributions are Exponential, Weibull, Gumbel, Normal, Lognormal, Loglogistic, Gamma, Beta). There is no limit to the number of components you can add to the mixture, but is is generally preferable to use as few as are required to fit the data appropriately (typically 2 or 3). In addition to the distributions, you can specify the proportions contributed by each distribution in the mixture. These proportions must sum to 1. If not specified the proportions will be set as equal for each component.
 
 As this process is additive for the survival function, and may accept many distributions of different types, the mathematical formulation quickly gets complex.
 For this reason, the algorithm combines the models numerically rather than empirically so there are no simple formulas for many of the descriptive statistics (mean, median, etc.). Also, the accuracy of the model is dependent on xvals. If the xvals array is small (<100 values) then the answer will be "blocky" and inaccurate. The variable xvals is only accepted for PDF, CDF, SF, HF, and CHF. The other methods (like random samples) use the default xvals for maximum accuracy. The default number of values generated when xvals is not given is 1000. Consider this carefully when specifying xvals in order to avoid inaccuracies in the results.
@@ -40,7 +38,7 @@ The API is similar to the other probability distributions (Weibull, Normal, etc.
 
 Inputs:
 
--    distributions - a list or array of probability distributions used to construct the model
+-    distributions - a list or array of probability distributions used to construct the model.
 -    proportions - how much of each distribution to add to the mixture. The sum of proportions must always be 1.
 
 Methods:
@@ -102,21 +100,21 @@ The following example shows how the Mixture_Model object can be created, visuali
     The mean of the distribution is: 74.91674657035722
     '''
 
-.. image:: images/Weibull_Mixture_dist1a.png
+.. image:: images/Weibull_Mixture_distV1.png
 
-.. image:: images/Weibull_Mixture_dist2a.png
+.. image:: images/Weibull_Mixture_dist_propsV1.png
 
 Fitting a mixture model
 =======================
 
-Within ``reliability.Fitters`` is Fit_Weibull_Mixture. This function will fit a weibull mixture model consisting of 2 x Weibull_2P distributions (this does not fit the gamma parameter). Just as with all of the other distributions in ``reliability.Fitters``, right censoring is supported, though care should be taken to ensure that there still appears to be two groups when plotting only the failure data. A second group cannot be made from a mostly or totally censored set of samples.
+Within *reliability.Fitters* is Fit_Weibull_Mixture. This function will fit a weibull mixture model consisting of 2 x Weibull_2P distributions (this does not fit the gamma parameter). Just as with all of the other distributions in *reliability.Fitters*, right censoring is supported, though care should be taken to ensure that there still appears to be two groups when plotting only the failure data. A second group cannot be made from a mostly or totally censored set of samples.
 
 Whilst some failure modes may not be fitted as well by a Weibull distribution as they may be by another distribution, it is unlikely that a mixture of data from two distributions (particularly if they are overlapping) will be fitted noticeably better by other types of mixtures than would be achieved by a Weibull mixture. For this reason, other types of mixtures are not implemented.
  
 Inputs:
 
 -   failures - an array or list of the failure data. There must be at least 4 failures, but it is highly recommended to use another model if you have less than 20 failures.
--   right_censored - an array or list of right censored data
+-   right_censored - an array or list of right censored failure data. Optional input.
 -   print_results - True/False. This will print results to console. Default is True
 -   CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
 -   show_probability_plot - True/False. This will show the probability plot with the fitted mixture CDF. Default is True.
@@ -191,7 +189,7 @@ In this first example, we will create some data using two Weibull distributions 
     Log-Likelihood: -375.9906311550037
     '''
 
-.. image:: images/Weibull_Mixture_V5.png
+.. image:: images/Weibull_Mixture_V6.png
 
 .. image:: images/Weibull_Mixture_histV2.png
 
