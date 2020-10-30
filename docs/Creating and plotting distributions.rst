@@ -1,11 +1,11 @@
-﻿.. image:: images/logo.png
+.. image:: images/logo.png
 
 -------------------------------------
 
 Creating and plotting distributions
 '''''''''''''''''''''''''''''''''''
 
-There are 7 different probability distributions available in ``reliability.Distributions``. These are:
+There are 8 standard probability `distributions <https://reliability.readthedocs.io/en/latest/Equations%20of%20supported%20distributions.html>`_ available in ``reliability.Distributions``. These are:
 
 -   Weibull Distribution (α, β, γ)
 -   Exponential Distribution (λ, γ)
@@ -13,10 +13,11 @@ There are 7 different probability distributions available in ``reliability.Distr
 -   Normal Distribution (μ, σ)
 -   Lognormal Distribution (μ, σ, γ)
 -   Loglogistic Distribution (α, β, γ)
+-   Gumbel Distribution (μ, σ)
 -   Beta Distribution (α, β)
 
-In all of the distributions which use γ, the γ parameter is used to location shift the distribution to the right.
-The Beta distribution is only defined in the range  0 to 1. All distributions except the Normal distribution are defined in the positive domain only (x>0).
+In all of the distributions which use γ, the γ parameter is used to location shift the distribution to the right. If used, the γ parameter must be greater than or equal to 0.
+The Beta distribution is only defined in the range  0 to 1. All distributions except the Normal and Gumbel distributions are defined in the positive domain only (x>0).
 
 Understanding how to create and plot distributions is easiest with an example. In this first example, we will create a Weibull Distribution with parameters alpha = 50 and beta = 2. We will then plot the PDF of the distribution.
 
@@ -42,7 +43,7 @@ Just as easily as we plotted the PDF in the above example, we can plot any of th
 
 .. image:: images/Lognormal_plot2.png
 
-Probability distributions within ``reliability`` are Python objects, which allows us to specify just the type of distribution and its parameters. Once the distribution object is created, we can access a large number of methods (such as PDF or plot as we did above). Some of the methods require additional input and some have optional inputs.
+Probability distributions within *reliability* are Python objects, which allows us to specify just the type of distribution and its parameters. Once the distribution object is created, we can access a large number of methods (such as PDF or plot as we did above). Some of the methods require additional input and some have optional inputs.
 
 The following methods are available for all distributions:
 
