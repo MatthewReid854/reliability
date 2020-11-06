@@ -576,7 +576,7 @@ class MCF_parametric:
 
     Outputs:
     If print_results is True, the model parameters will be printed along with a brief diagnosis of the long term health of the system based on the beta parameter.
-    time - this is the times (x values) from the scatter plot. This value is calculated using MCF_nonparametric.
+    times - this is the times (x values) from the scatter plot. This value is calculated using MCF_nonparametric.
     MCF - this is the MCF (y values) from the scatter plot. This value is calculated using MCF_nonparametric.
     alpha - the calculated alpha parameter from MCF = (t/alpha)^beta
     beta - the calculated beta parameter from MCF = (t/alpha)^beta

@@ -1,7 +1,8 @@
-from reliability.Fitters import Fit_Weibull_2P, Fit_Weibull_3P, Fit_Gamma_2P, Fit_Gamma_3P, Fit_Lognormal_2P, Fit_Lognormal_3P, Fit_Loglogistic_2P, Fit_Loglogistic_3P, Fit_Normal_2P, Fit_Exponential_1P, Fit_Exponential_2P, Fit_Beta_2P, Fit_Everything
-from reliability.Distributions import Weibull_Distribution, Gamma_Distribution, Lognormal_Distribution, Loglogistic_Distribution, Normal_Distribution, Exponential_Distribution, Beta_Distribution
+from reliability.Fitters import Fit_Weibull_2P, Fit_Weibull_3P, Fit_Gamma_2P, Fit_Gamma_3P, Fit_Lognormal_2P, Fit_Lognormal_3P, Fit_Loglogistic_2P, Fit_Loglogistic_3P, Fit_Normal_2P, Fit_Exponential_1P, Fit_Exponential_2P, Fit_Beta_2P, Fit_Gumbel_2P, Fit_Weibull_Mixture, Fit_Weibull_CR, Fit_Everything
+from reliability.Distributions import Weibull_Distribution, Gamma_Distribution, Lognormal_Distribution, Loglogistic_Distribution, Normal_Distribution, Exponential_Distribution, Beta_Distribution, Gumbel_Distribution, Mixture_Model, Competing_Risks_Model
 from reliability.Other_functions import make_right_censored_data
 from numpy.testing import assert_allclose
+import numpy as np
 atol = 1e-8
 rtol = 1e-7
 
@@ -127,6 +128,18 @@ def test_Fit_Normal_2P():
     assert_allclose(fit.loglik, -43.22308655628899,rtol=rtol,atol=atol)
 
 
+def test_Fit_Gumbel_2P():
+    dist = Gumbel_Distribution(mu=50,sigma=8)
+    rawdata = dist.random_samples(20, seed=5)
+    data = make_right_censored_data(data=rawdata, threshold=dist.mean)
+    fit = Fit_Gumbel_2P(failures=data.failures, right_censored=data.right_censored, show_probability_plot=False, print_results=False)
+    assert_allclose(fit.mu, 47.978167597211396,rtol=rtol,atol=atol)
+    assert_allclose(fit.sigma, 5.487173373377182,rtol=rtol,atol=atol)
+    assert_allclose(fit.AICc, 83.17550426511939,rtol=rtol,atol=atol)
+    assert_allclose(fit.Cov_mu_sigma, 1.8550359215645946,rtol=rtol,atol=atol)
+    assert_allclose(fit.loglik, -39.234810956089106,rtol=rtol,atol=atol)
+
+
 def test_Fit_Exponential_1P():
     dist = Exponential_Distribution(Lambda=5)
     rawdata = dist.random_samples(20, seed=5)
@@ -157,8 +170,36 @@ def test_Fit_Beta_2P():
     assert_allclose(fit.alpha, 7.429034112498652,rtol=rtol,atol=atol)
     assert_allclose(fit.beta, 6.519320902041194,rtol=rtol,atol=atol)
     assert_allclose(fit.AICc, 4.947836247294108,rtol=rtol,atol=atol)
-    assert_allclose(fit.Cov_alpha_beta, 9.9955246167663,rtol=0.0005,atol=0.005) # I don't know why travis-CI gives slightly different results for this one
+    assert_allclose(fit.Cov_alpha_beta, 9.9955246167663,rtol=0.0005,atol=0.005) # I don't know why travis-CI gives slightly different results for this one. Maybe it uses an older version of scipy
     assert_allclose(fit.loglik, -0.1209769471764659,rtol=rtol,atol=atol)
+
+def test_Fit_Weibull_Mixture():
+    group_1 = Weibull_Distribution(alpha=10, beta=3).random_samples(40, seed=2)
+    group_2 = Weibull_Distribution(alpha=40, beta=4).random_samples(60, seed=2)
+    raw_data = np.hstack([group_1, group_2])
+    data = make_right_censored_data(data=raw_data, threshold=40)
+    fit = Fit_Weibull_Mixture(failures=data.failures, right_censored=data.right_censored, print_results=False, show_probability_plot=False)
+    assert_allclose(fit.alpha_1, 8.711417800323375,rtol=rtol,atol=atol)
+    assert_allclose(fit.alpha_2, 36.96927163816745, rtol=rtol, atol=atol)
+    assert_allclose(fit.beta_1, 3.8780149153215278, rtol=rtol, atol=atol)
+    assert_allclose(fit.beta_2, 4.901762153365169, rtol=rtol, atol=atol)
+    assert_allclose(fit.AICc, 678.8135631521253, rtol=rtol, atol=atol)
+    assert_allclose(fit.loglik, -334.08763263989243, rtol=rtol, atol=atol)
+
+
+def test_Fit_Weibull_CR():
+    d1 = Weibull_Distribution(alpha=50, beta=2)
+    d2 = Weibull_Distribution(alpha=40, beta=10)
+    CR_model = Competing_Risks_Model(distributions=[d1, d2])
+    raw_data = CR_model.random_samples(100, seed=2)
+    data = make_right_censored_data(data=raw_data, threshold=40)
+    fit = Fit_Weibull_CR(failures=data.failures, right_censored=data.right_censored, print_results=False, show_probability_plot=False)
+    assert_allclose(fit.alpha_1, 53.046588163359885,rtol=rtol,atol=atol)
+    assert_allclose(fit.alpha_2, 38.029009901631845, rtol=rtol, atol=atol)
+    assert_allclose(fit.beta_1, 1.9386519084349318, rtol=rtol, atol=atol)
+    assert_allclose(fit.beta_2, 9.036248817085612, rtol=rtol, atol=atol)
+    assert_allclose(fit.AICc, 665.5312987516257, rtol=rtol, atol=atol)
+    assert_allclose(fit.loglik, -328.5551230600234, rtol=rtol, atol=atol)
 
 
 def test_Fit_Everything():

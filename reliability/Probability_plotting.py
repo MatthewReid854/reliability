@@ -1351,7 +1351,7 @@ def plot_points(failures=None, right_censored=None, func='CDF', a=None, **kwargs
     The PDF and HF points are correct but not as useful as CDF, SF, and CHF.
 
     Inputs:
-    failures - an array or list of the failure times. Minimum number of points allowed is 2.
+    failures - an array or list of the failure times. Minimum number of points allowed is 1.
     right_censored -  an array or list of the right censored failure times.
     func - The distribution function to plot. Choose either 'PDF,'CDF','SF','HF','CHF'. Default is 'CDF'
     a - the heuristic constant for plotting positions of the form (k-a)/(n+1-2a). Default is a=0.3 which is the median rank method (same as the default in Minitab).
@@ -1372,8 +1372,8 @@ def plot_points(failures=None, right_censored=None, func='CDF', a=None, **kwargs
     fitted_dist.distribution.SF() #plot the distribution
     plt.show()
     '''
-    if failures is None or len(failures) < 2:
-        raise ValueError('failures must be an array or list with at least 2 failure times')
+    if failures is None or len(failures) < 1:
+        raise ValueError('failures must be an array or list with at least 1 failure time')
 
     x, y = plotting_positions(failures=failures, right_censored=right_censored, a=a)  # get the plotting positions
     y = np.array(y)
@@ -1382,7 +1382,7 @@ def plot_points(failures=None, right_censored=None, func='CDF', a=None, **kwargs
     if func in ['pdf', 'PDF']:  # the output of this looks messy because the derivative is of discrete points and not a continuous function
         dy = np.diff(np.hstack([[0], y]))
         dx = np.diff(np.hstack([[0], x]))
-        y_adjusted = dy / dx  # PDF = dy/dx CDF
+        y_adjusted = abs(dy / dx)  # PDF = dy/dx CDF
     elif func in ['cdf', 'CDF']:
         y_adjusted = y
     elif func in ['sf', 'SF']:
@@ -1390,11 +1390,11 @@ def plot_points(failures=None, right_censored=None, func='CDF', a=None, **kwargs
     elif func in ['hf', 'HF']:  # the output of this looks messy because the derivative is of discrete points and not a continuous function
         dy = np.diff(np.hstack([[0], -np.log(1 - y)]))
         dx = np.diff(np.hstack([[0], x]))
-        y_adjusted = dy / dx  # HF = dy/dx CHF
+        y_adjusted = abs(dy / dx)  # HF = dy/dx CHF
     elif func in ['chf', 'CHF']:
         y_adjusted = -np.log(1 - y)  # CHF = -ln(SF)
     else:
-        raise ValueError('func must be either CDF, SF, or CHF. Default is CDF')
+        raise ValueError('func must be either PDF, CDF, SF, HF, or CHF. Default is CDF')
 
     # set plotting defaults for keywords
     if 'color' in kwargs:
