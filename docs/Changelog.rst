@@ -5,8 +5,24 @@
 Changelog
 ---------
 
-**Version: 0.5.4 --- Currently unreleased --- due for release around mid-November**
+**Version: 0.5.5 --- Currently unreleased --- due for release around mid-February**
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+**New features**
+
+
+**API Changes**
+
+
+**Bug Fixes**
+
+
+**Other**
+
+-    Utils has 2 new functions (linear_regression and least_squares). These are now used by Fitters to obtain the least squares estimates.
+
+**Version: 0.5.4 --- Released: 7 November 2020**
+''''''''''''''''''''''''''''''''''''''''''''''''
 
 **New features**
 
@@ -52,6 +68,7 @@ Changelog
 -    Fit_Everything can now accept a minimum of 2 failures (previously the minimum was 3) and it will automatically exclude the 3P distributions
 -    All warnings throughout reliability are now printed in red.
 -    Improved input checking for all the fitters. This has been standardised in a Utils function so nothing is missed for each of the fitters.
+-    Probability_plotting.plot_points previously has a minimum of 2 failures required to plot the points. The minimum is now 1 failure required.
 
 **Version: 0.5.3 --- Released: 29 September 2020**
 ''''''''''''''''''''''''''''''''''''''''''''''''''
