@@ -8,6 +8,8 @@
 
 .. image:: images/readme_image_V2.png
 
+If you frequently use the Python Reliability Library, please consider filling out a quick `survey <https://form.jotform.com/203156856636058>`_ to help guide the development of the library and this documentation.
+
 Contents:
 ============
 
