@@ -9,6 +9,7 @@
 [![LGPLv3 license](https://img.shields.io/badge/License-LGPLv3-blue.svg?logo=GNU&logoColor=white)](https://www.gnu.org/licenses/lgpl-3.0.txt)
 [![DOI](https://img.shields.io/badge/DOI-10.5281/zenodo.3937999-blue.svg?logo=Buffer&logoColor=white)](https://doi.org/10.5281/zenodo.3937999)
 [![Donate](https://img.shields.io/badge/Donate-$$$-blueviolet.svg?logo=paypal)](https://reliability.readthedocs.io/en/latest/How%20to%20donate%20to%20the%20project.html)
+[![survey](https://img.shields.io/badge/Provide-feedback-9cf.svg?logo=Verizon)](https://form.jotform.com/203156856636058)
 
 *reliability* is a Python library for [reliability engineering](https://en.wikipedia.org/wiki/Reliability_engineering) and [survival analysis](https://en.wikipedia.org/wiki/Survival_analysis). It significantly extends the functionality of scipy.stats and also includes many specialist tools that are otherwise only available in proprietary software.
 
