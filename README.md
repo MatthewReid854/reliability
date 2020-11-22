@@ -12,8 +12,8 @@
 [![survey](https://img.shields.io/badge/Provide%20feedback-cornflowerblue.svg?logo=Verizon)](https://form.jotform.com/203156856636058)
 [![Donate](https://img.shields.io/badge/Donate-black.svg?logo=paypal)](https://reliability.readthedocs.io/en/latest/How%20to%20donate%20to%20the%20project.html)
 [![survey](https://img.shields.io/badge/Provide%20feedback-black.svg?logo=Verizon)](https://form.jotform.com/203156856636058)
-[![Donate](https://img.shields.io/badge/Donate-green.svg?logo=paypal)](https://reliability.readthedocs.io/en/latest/How%20to%20donate%20to%20the%20project.html)
-[![survey](https://img.shields.io/badge/Provide%20feedback-green.svg?logo=Verizon)](https://form.jotform.com/203156856636058)
+[![Donate](https://img.shields.io/badge/Donate-darkgreen.svg?logo=paypal)](https://reliability.readthedocs.io/en/latest/How%20to%20donate%20to%20the%20project.html)
+[![survey](https://img.shields.io/badge/Provide%20feedback-darkgreen.svg?logo=Verizon)](https://form.jotform.com/203156856636058)
 
 
 *reliability* is a Python library for [reliability engineering](https://en.wikipedia.org/wiki/Reliability_engineering) and [survival analysis](https://en.wikipedia.org/wiki/Survival_analysis). It significantly extends the functionality of scipy.stats and also includes many specialist tools that are otherwise only available in proprietary software.
