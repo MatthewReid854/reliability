@@ -10,8 +10,8 @@
 [![DOI](https://img.shields.io/badge/DOI-10.5281/zenodo.3937999-blue.svg?logo=Buffer&logoColor=white)](https://doi.org/10.5281/zenodo.3937999)
 [![Donate](https://img.shields.io/badge/Donate-cornflowerblue.svg?logo=paypal)](https://reliability.readthedocs.io/en/latest/How%20to%20donate%20to%20the%20project.html)
 [![survey](https://img.shields.io/badge/Provide%20feedback-cornflowerblue.svg?logo=Verizon)](https://form.jotform.com/203156856636058)
-[![Donate](https://img.shields.io/badge/Donate-black.svg?logo=paypal)](https://reliability.readthedocs.io/en/latest/How%20to%20donate%20to%20the%20project.html)
-[![survey](https://img.shields.io/badge/Provide%20feedback-black.svg?logo=Verizon)](https://form.jotform.com/203156856636058)
+[![Donate](https://img.shields.io/badge/Donate-darkorange.svg?logo=paypal)](https://reliability.readthedocs.io/en/latest/How%20to%20donate%20to%20the%20project.html)
+[![survey](https://img.shields.io/badge/Provide%20feedback-darkorange.svg?logo=Verizon)](https://form.jotform.com/203156856636058)
 [![Donate](https://img.shields.io/badge/Donate-darkgreen.svg?logo=paypal)](https://reliability.readthedocs.io/en/latest/How%20to%20donate%20to%20the%20project.html)
 [![survey](https://img.shields.io/badge/Provide%20feedback-darkgreen.svg?logo=Verizon)](https://form.jotform.com/203156856636058)
 
