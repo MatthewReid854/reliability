@@ -2,7 +2,7 @@
 
 -------------------------------------
 
-|pypi| |docs| |build| |code quality| |LOC| |downloads| |license| |DOI| |donate|
+|pypi| |docs| |build| |code quality| |LOC| |downloads| |license| |DOI| |donate| |survey|
 
 *reliability* is a Python library for `reliability engineering <https://en.wikipedia.org/wiki/Reliability_engineering>`_ and `survival analysis <https://en.wikipedia.org/wiki/Survival_analysis>`_. It significantly extends the functionality of scipy.stats and also includes many specialist tools that are otherwise only available in proprietary software.
 
@@ -161,7 +161,12 @@ Contents:
     :scale: 100%
     :target: https://doi.org/10.5281/zenodo.3937999
 
-.. |donate| image:: https://img.shields.io/badge/Donate-$$$-blueviolet.svg?logo=paypal
+.. |donate| image:: https://img.shields.io/badge/Donate-grey.svg?logo=paypal
     :alt: donate
     :scale: 100%
     :target: https://reliability.readthedocs.io/en/latest/How%20to%20donate%20to%20the%20project.html
+
+.. |survey| image:: https://img.shields.io/badge/Provide%20feedback-gray.svg?logo=Verizon
+    :alt: donate
+    :scale: 100%
+    :target: https://form.jotform.com/203156856636058
