@@ -10,16 +10,37 @@ Changelog
 
 **New features**
 
+-    All of the standard fitters have been significantly improved with the following features:
+
+    -    Least Squares estimation is now available. Previously the fit was solely achieved using MLE. MLE remains the default.
+    -    For the least squares estimation, users may select RRX, RRY, LS. RRX and RRY are rank regression on X and rank regression on Y respectively. LS will perform both RRX and RRY and use the one with the best log-likelihood.
+    -    There are 3 optimisers to choose from for all of the standard fitters. These are L-BFGS-B, TNC, powell. Previously there was only an option for some of the fitters and the optimiser was not standardized.
+    -    Removal of scipy as the method to obtain the initial guess for MLE. With the inclusion of least squares estimation, the MLE method is much faster since it is not reliant on scipy to provide an initial guess (which failed to account for right censored data and often gave a poor guess).
+
+-    Addition of a new module for converting data between different formats. The module reliability.Convert_data allows for conversion between FR (failures, right censored), FNRN (failures, number of failures, right censored, number of right censored), and XCN (event time, censoring code, number of events). It also provides a streamlined process for importing data from xlsx files, for exporting data to xlsx files, and for printing the dataset in a dataframe for easy visualisation.
 
 **API Changes**
 
+-    All of the standard fitters now include method and optimizer arguments.
+-    Fitters.Fit_Weibull_2P, Fitters.Fit_Weibull_3P, Fitters.Fit_Weibull_2P_grouped have had some changes to their input arguments so that they all include method and optimizer. The initial_guess_method option is gone as it has been replaced by least squares estimation.
+-    The entire Stress_strength module has been deprecated. This is because there were (and likely only ever would be) two functions in this module which is not enough to justify a separate module. The two function have been moved into Other_functions and renamed. Full deprecation will occur in March 2021 (in version 0.5.6), and until then a DeprecationWarning will be printed and the old functions will still work. The renaming is as follows:
+
+     -    reliability.Stress_strength.Probability_of_failure :math:`\Rightarrow` reliability.Other_functions.stress_strength
+     -    reliability.Stress_strength.Probability_of_failure_normdist :math:`\Rightarrow` reliability.Other_functions.stress_strength_normal
 
 **Bug Fixes**
 
+-    fixed a bug in Reliability_testing.reliability_test_duration in which certain inputs resulted in 1 failure and the plot limits caused a crash when left=right limit.
 
 **Other**
 
 -    Utils has 2 new functions (linear_regression and least_squares). These are now used by Fitters to obtain the least squares estimates.
+-    The format of all the printed fitters outputs has been improved. More detail is provided and the formatting is better.
+-    Dataframes from fitters are formatted better to retain the index but not display it.
+-    Text output for sample_size_no_failures
+-    Text output for one_sample_proportion
+-    Text output for two_proportion_test
+-    one_sample_proportion will now return 0 or 1 for the lower and upper reliability estimates instead of NaN in cases when there are all failures or all successes.
 
 **Version: 0.5.4 --- Released: 7 November 2020**
 ''''''''''''''''''''''''''''''''''''''''''''''''
@@ -67,6 +88,7 @@ Changelog
 -    Improved the Mixture Model PDF and HF using the actual formula rather than taking the numerical derivatives of CDF and CHF respectively.
 -    Fit_Everything can now accept a minimum of 2 failures (previously the minimum was 3) and it will automatically exclude the 3P distributions
 -    All warnings throughout reliability are now printed in red.
+-    New Utils function colorprint. This provides a simple API for printing in color, bold, underline and italic.
 -    Improved input checking for all the fitters. This has been standardised in a Utils function so nothing is missed for each of the fitters.
 -    Probability_plotting.plot_points previously has a minimum of 2 failures required to plot the points. The minimum is now 1 failure required.
 
