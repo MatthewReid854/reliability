@@ -2055,6 +2055,7 @@ class Gamma_Distribution:
         self.b5 = ss.gamma.ppf(0.05, self.beta, scale=self.alpha, loc=self.gamma)
         self.b95 = ss.gamma.ppf(0.95, self.beta, scale=self.alpha, loc=self.gamma)
 
+        #################
         # # extracts values for confidence interval plotting
         # if 'alpha_SE' in kwargs:
         #     self.alpha_SE = kwargs.pop('alpha_SE')
@@ -2079,6 +2080,8 @@ class Gamma_Distribution:
         #     self.CI_type = 'time'
         # for item in kwargs.keys():
         #     colorprint(str('WARNING: '+ item + ' is not recognised as an appropriate entry in kwargs. Appropriate entries are alpha_SE, beta_SE, Cov_alpha_beta, CI, and CI_type'),text_color='red')
+        ################
+
         self._pdf0 = ss.gamma.pdf(0, self.beta, scale=self.alpha, loc=0)  # the pdf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
         self._hf0 = ss.gamma.pdf(0, self.beta, scale=self.alpha, loc=0) / ss.gamma.sf(0, self.beta, scale=self.alpha, loc=0)  # the hf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
 

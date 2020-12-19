@@ -402,6 +402,26 @@ class ALT_temperature3:
         self.info = df
 
 
+class ALT_temperature4:
+    '''
+    This is an accelerated life test (ALT) dataset conducted at 3 temperatures
+    It should be used with an ALT probability plot
+    This is a relatively small dataset with just 20 values, none of which are censored.
+    '''
+
+    def __init__(self):
+        self.failures = [267, 443, 521, 570, 713, 721, 802, 808, 173, 174, 290, 321, 334, 502, 102, 104, 158, 197, 224, 243]
+        self.failure_stresses = [413, 413, 413, 413, 413, 413, 413, 413, 433, 433, 433, 433, 433, 433, 453, 453, 453, 453, 453, 453]
+        rc = 0
+        f = len(self.failures)
+        tot = f + rc
+        data = {'Stat': ['Name', 'Total Values', 'Failures', 'Right Censored', 'Number of stresses'], 'Value': ['ALT_temperature4', tot, str(str(f) + ' (' + str(round(f / tot * 100, 2)) + '%)'), str(str(rc) + ' (' + str(round(rc / tot * 100, 2)) + '%)'), 3]}
+        df = pd.DataFrame(data, columns=['Stat', 'Value'])
+        blankIndex = [''] * len(df)
+        df.index = blankIndex
+        self.info = df
+
+
 class ALT_load:
     '''
     This is an accelerated life test (ALT) dataset conducted at 3 loads

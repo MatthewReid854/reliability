@@ -36,7 +36,7 @@ import warnings
 from reliability.Distributions import Weibull_Distribution, Gamma_Distribution, Beta_Distribution, Exponential_Distribution, Normal_Distribution, Lognormal_Distribution, Loglogistic_Distribution, Gumbel_Distribution, Mixture_Model, Competing_Risks_Model
 from reliability.Nonparametric import KaplanMeier
 from reliability.Probability_plotting import plotting_positions
-from reliability.Utils import round_to_decimals, anderson_darling, distribution_confidence_intervals, fitters_input_checking, colorprint
+from reliability.Utils import round_to_decimals, anderson_darling, distribution_confidence_intervals, fitters_input_checking, colorprint, least_squares, MLE_optimisation, LS_optimisation
 import autograd.numpy as anp
 from autograd import value_and_grad
 from autograd.differential_operators import hessian
@@ -49,6 +49,11 @@ from autograd_gamma import gammaincc
 anp.seterr('ignore')
 dec = 3  # number of decimals to use when rounding fitted parameters in labels
 
+# change pandas display options
+pd.options.display.float_format = '{:g}'.format  # improves formatting of numbers in dataframe
+pd.options.display.max_columns = 9  # shows the dataframe without ... truncation
+pd.options.display.width = 200  # prevents wrapping after default 80 characters
+
 
 class Fit_Everything:
     '''
@@ -58,7 +63,9 @@ class Fit_Everything:
     Inputs:
     failures - an array or list of the failure times (this does not need to be sorted).
     right_censored - an array or list of the right failure times (this does not need to be sorted).
-    sort_by - goodness of fit test to sort results by. Must be either 'BIC' or 'AICc'. Default is BIC.
+    sort_by - goodness of fit test to sort results by. Must be 'BIC','AICc','AD', or 'Log-likilihood'. Default is BIC.
+    method - 'LS' (least squares) or 'MLE' (maximum likelihood estimation). Default is 'MLE'.
+    optimizer - 'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
     print_results - True/False. Defaults to True. Will show the results of the fitted parameters and the goodness of fit
         tests in a dataframe.
     show_histogram_plot - True/False. Defaults to True. Will show a histogram (scaled to account for censored data) with
@@ -82,6 +89,7 @@ class Fit_Everything:
         Weibull_3P_gamma
         Weibull_3P_BIC
         Weibull_3P_AICc
+        Weibull_3P_AD
     All parametric models have the number of parameters in the name. For example, Weibull_2P used alpha and beta, whereas Weibull_3P
     uses alpha, beta, and gamma. This is applied even for Normal_2P for consistency in naming conventions.
     From the results, the distributions are sorted based on their goodness of fit test results, where the smaller the goodness of fit
@@ -94,11 +102,16 @@ class Fit_Everything:
     print('Weibull Alpha =',output.Weibull_2P_alpha,'\nWeibull Beta =',output.Weibull_2P_beta)
     '''
 
-    def __init__(self, failures=None, right_censored=None, exclude=None, sort_by='BIC', print_results=True, show_histogram_plot=True, show_PP_plot=True, show_probability_plot=True):
+    def __init__(self, failures=None, right_censored=None, exclude=None, sort_by='BIC', method='MLE',optimizer='L-BFGS-B', print_results=True, show_histogram_plot=True, show_PP_plot=True, show_probability_plot=True):
 
-        inputs = fitters_input_checking(dist='Everything', failures=failures, right_censored=right_censored)
+        inputs = fitters_input_checking(dist='Everything', failures=failures, right_censored=right_censored, method=method,optimizer=optimizer)
         failures = inputs.failures
         right_censored = inputs.right_censored
+        method = inputs.method
+        optimizer = inputs.optimizer
+
+        if method in ['RRX', 'RRY', 'LS', 'NLLS']:
+            method = 'LS'
 
         if show_histogram_plot not in [True, False]:
             raise ValueError('show_histogram_plot must be either True or False. Defaults to True.')
@@ -113,6 +126,7 @@ class Fit_Everything:
         self.right_censored = right_censored
         self._all_data = np.hstack([failures, right_censored])
         self._frac_fail = len(failures) / len(self._all_data)  # This is used for scaling the histogram when there is censored data
+        self._frac_cens = len(right_censored) / len(self._all_data)  # This is used for reporting the fraction censored in the printed output
         d = sorted(self._all_data)  # sorting the failure data is necessary for plotting quantiles in order
 
         if exclude is None:
@@ -167,160 +181,176 @@ class Fit_Everything:
         self.excluded_distributions = excluded_distributions
 
         # create an empty dataframe to append the data from the fitted distributions
-        df = pd.DataFrame(columns=['Distribution', 'Alpha', 'Beta', 'Gamma', 'Mu', 'Sigma', 'Lambda', 'AICc', 'BIC', 'AD'])
+        df = pd.DataFrame(columns=['Distribution', 'Alpha', 'Beta', 'Gamma', 'Mu', 'Sigma', 'Lambda', 'Log-likelihood','AICc', 'BIC', 'AD'])
         # Fit the parametric models and extract the fitted parameters
         if 'Weibull_3P' not in self.excluded_distributions:
-            self.__Weibull_3P_params = Fit_Weibull_3P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False)
+            self.__Weibull_3P_params = Fit_Weibull_3P(failures=failures, right_censored=right_censored, method=method,optimizer=optimizer, show_probability_plot=False, print_results=False)
             self.Weibull_3P_alpha = self.__Weibull_3P_params.alpha
             self.Weibull_3P_beta = self.__Weibull_3P_params.beta
             self.Weibull_3P_gamma = self.__Weibull_3P_params.gamma
+            self.Weibull_3P_loglik = self.__Weibull_3P_params.loglik
             self.Weibull_3P_BIC = self.__Weibull_3P_params.BIC
             self.Weibull_3P_AICc = self.__Weibull_3P_params.AICc
             self.Weibull_3P_AD = self.__Weibull_3P_params.AD
             self._parametric_CDF_Weibull_3P = self.__Weibull_3P_params.distribution.CDF(xvals=d, show_plot=False)
-            df = df.append({'Distribution': 'Weibull_3P', 'Alpha': self.Weibull_3P_alpha, 'Beta': self.Weibull_3P_beta, 'Gamma': self.Weibull_3P_gamma, 'Mu': '', 'Sigma': '', 'Lambda': '', 'AICc': self.Weibull_3P_AICc, 'BIC': self.Weibull_3P_BIC, 'AD': self.Weibull_3P_AD}, ignore_index=True)
+            df = df.append({'Distribution': 'Weibull_3P', 'Alpha': self.Weibull_3P_alpha, 'Beta': self.Weibull_3P_beta, 'Gamma': self.Weibull_3P_gamma, 'Mu': '', 'Sigma': '', 'Lambda': '','Log-likelihood': self.Weibull_3P_loglik, 'AICc': self.Weibull_3P_AICc, 'BIC': self.Weibull_3P_BIC, 'AD': self.Weibull_3P_AD}, ignore_index=True)
 
         if 'Gamma_3P' not in self.excluded_distributions:
-            self.__Gamma_3P_params = Fit_Gamma_3P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False)
+            self.__Gamma_3P_params = Fit_Gamma_3P(failures=failures, right_censored=right_censored, method=method,optimizer=optimizer, show_probability_plot=False, print_results=False)
             self.Gamma_3P_alpha = self.__Gamma_3P_params.alpha
             self.Gamma_3P_beta = self.__Gamma_3P_params.beta
             self.Gamma_3P_gamma = self.__Gamma_3P_params.gamma
+            self.Gamma_3P_loglik = self.__Gamma_3P_params.loglik
             self.Gamma_3P_BIC = self.__Gamma_3P_params.BIC
             self.Gamma_3P_AICc = self.__Gamma_3P_params.AICc
             self.Gamma_3P_AD = self.__Gamma_3P_params.AD
             self._parametric_CDF_Gamma_3P = self.__Gamma_3P_params.distribution.CDF(xvals=d, show_plot=False)
-            df = df.append({'Distribution': 'Gamma_3P', 'Alpha': self.Gamma_3P_alpha, 'Beta': self.Gamma_3P_beta, 'Gamma': self.Gamma_3P_gamma, 'Mu': '', 'Sigma': '', 'Lambda': '', 'AICc': self.Gamma_3P_AICc, 'BIC': self.Gamma_3P_BIC, 'AD': self.Gamma_3P_AD}, ignore_index=True)
+            df = df.append({'Distribution': 'Gamma_3P', 'Alpha': self.Gamma_3P_alpha, 'Beta': self.Gamma_3P_beta, 'Gamma': self.Gamma_3P_gamma, 'Mu': '', 'Sigma': '', 'Lambda': '','Log-likelihood': self.Gamma_3P_loglik, 'AICc': self.Gamma_3P_AICc, 'BIC': self.Gamma_3P_BIC, 'AD': self.Gamma_3P_AD}, ignore_index=True)
 
         if 'Exponential_2P' not in self.excluded_distributions:
-            self.__Exponential_2P_params = Fit_Exponential_2P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False)
+            self.__Exponential_2P_params = Fit_Exponential_2P(failures=failures, right_censored=right_censored, method=method,optimizer=optimizer, show_probability_plot=False, print_results=False)
             self.Exponential_2P_lambda = self.__Exponential_2P_params.Lambda
             self.Exponential_2P_gamma = self.__Exponential_2P_params.gamma
+            self.Exponential_2P_loglik = self.__Exponential_2P_params.loglik
             self.Exponential_2P_BIC = self.__Exponential_2P_params.BIC
             self.Exponential_2P_AICc = self.__Exponential_2P_params.AICc
             self.Exponential_2P_AD = self.__Exponential_2P_params.AD
             self._parametric_CDF_Exponential_2P = self.__Exponential_2P_params.distribution.CDF(xvals=d, show_plot=False)
-            df = df.append({'Distribution': 'Exponential_2P', 'Alpha': '', 'Beta': '', 'Gamma': self.Exponential_2P_gamma, 'Mu': '', 'Sigma': '', 'Lambda': self.Exponential_2P_lambda, 'AICc': self.Exponential_2P_AICc, 'BIC': self.Exponential_2P_BIC, 'AD': self.Exponential_2P_AD}, ignore_index=True)
+            df = df.append({'Distribution': 'Exponential_2P', 'Alpha': '', 'Beta': '', 'Gamma': self.Exponential_2P_gamma, 'Mu': '', 'Sigma': '', 'Lambda': self.Exponential_2P_lambda,'Log-likelihood': self.Exponential_2P_loglik, 'AICc': self.Exponential_2P_AICc, 'BIC': self.Exponential_2P_BIC, 'AD': self.Exponential_2P_AD}, ignore_index=True)
 
         if 'Lognormal_3P' not in self.excluded_distributions:
-            self.__Lognormal_3P_params = Fit_Lognormal_3P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False)
+            self.__Lognormal_3P_params = Fit_Lognormal_3P(failures=failures, right_censored=right_censored, method=method,optimizer=optimizer, show_probability_plot=False, print_results=False)
             self.Lognormal_3P_mu = self.__Lognormal_3P_params.mu
             self.Lognormal_3P_sigma = self.__Lognormal_3P_params.sigma
             self.Lognormal_3P_gamma = self.__Lognormal_3P_params.gamma
+            self.Lognormal_3P_loglik = self.__Lognormal_3P_params.loglik
             self.Lognormal_3P_BIC = self.__Lognormal_3P_params.BIC
             self.Lognormal_3P_AICc = self.__Lognormal_3P_params.AICc
             self.Lognormal_3P_AD = self.__Lognormal_3P_params.AD
             self._parametric_CDF_Lognormal_3P = self.__Lognormal_3P_params.distribution.CDF(xvals=d, show_plot=False)
-            df = df.append({'Distribution': 'Lognormal_3P', 'Alpha': '', 'Beta': '', 'Gamma': self.Lognormal_3P_gamma, 'Mu': self.Lognormal_3P_mu, 'Sigma': self.Lognormal_3P_sigma, 'Lambda': '', 'AICc': self.Lognormal_3P_AICc, 'BIC': self.Lognormal_3P_BIC, 'AD': self.Lognormal_3P_AD}, ignore_index=True)
+            df = df.append({'Distribution': 'Lognormal_3P', 'Alpha': '', 'Beta': '', 'Gamma': self.Lognormal_3P_gamma, 'Mu': self.Lognormal_3P_mu, 'Sigma': self.Lognormal_3P_sigma, 'Lambda': '','Log-likelihood': self.Lognormal_3P_loglik, 'AICc': self.Lognormal_3P_AICc, 'BIC': self.Lognormal_3P_BIC, 'AD': self.Lognormal_3P_AD}, ignore_index=True)
 
         if 'Normal_2P' not in self.excluded_distributions:
-            self.__Normal_2P_params = Fit_Normal_2P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False)
+            self.__Normal_2P_params = Fit_Normal_2P(failures=failures, right_censored=right_censored, method=method,optimizer=optimizer, show_probability_plot=False, print_results=False)
             self.Normal_2P_mu = self.__Normal_2P_params.mu
             self.Normal_2P_sigma = self.__Normal_2P_params.sigma
+            self.Normal_2P_loglik = self.__Normal_2P_params.loglik
             self.Normal_2P_BIC = self.__Normal_2P_params.BIC
             self.Normal_2P_AICc = self.__Normal_2P_params.AICc
             self.Normal_2P_AD = self.__Normal_2P_params.AD
             self._parametric_CDF_Normal_2P = self.__Normal_2P_params.distribution.CDF(xvals=d, show_plot=False)
-            df = df.append({'Distribution': 'Normal_2P', 'Alpha': '', 'Beta': '', 'Gamma': '', 'Mu': self.Normal_2P_mu, 'Sigma': self.Normal_2P_sigma, 'Lambda': '', 'AICc': self.Normal_2P_AICc, 'BIC': self.Normal_2P_BIC, 'AD': self.Normal_2P_AD}, ignore_index=True)
+            df = df.append({'Distribution': 'Normal_2P', 'Alpha': '', 'Beta': '', 'Gamma': '', 'Mu': self.Normal_2P_mu, 'Sigma': self.Normal_2P_sigma, 'Lambda': '','Log-likelihood': self.Normal_2P_loglik, 'AICc': self.Normal_2P_AICc, 'BIC': self.Normal_2P_BIC, 'AD': self.Normal_2P_AD}, ignore_index=True)
 
         if 'Lognormal_2P' not in self.excluded_distributions:
-            self.__Lognormal_2P_params = Fit_Lognormal_2P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False)
+            self.__Lognormal_2P_params = Fit_Lognormal_2P(failures=failures, right_censored=right_censored, method=method,optimizer=optimizer, show_probability_plot=False, print_results=False)
             self.Lognormal_2P_mu = self.__Lognormal_2P_params.mu
             self.Lognormal_2P_sigma = self.__Lognormal_2P_params.sigma
+            self.Lognormal_2P_loglik = self.__Lognormal_2P_params.loglik
             self.Lognormal_2P_BIC = self.__Lognormal_2P_params.BIC
             self.Lognormal_2P_AICc = self.__Lognormal_2P_params.AICc
             self.Lognormal_2P_AD = self.__Lognormal_2P_params.AD
             self._parametric_CDF_Lognormal_2P = self.__Lognormal_2P_params.distribution.CDF(xvals=d, show_plot=False)
-            df = df.append({'Distribution': 'Lognormal_2P', 'Alpha': '', 'Beta': '', 'Gamma': '', 'Mu': self.Lognormal_2P_mu, 'Sigma': self.Lognormal_2P_sigma, 'Lambda': '', 'AICc': self.Lognormal_2P_AICc, 'BIC': self.Lognormal_2P_BIC, 'AD': self.Lognormal_2P_AD}, ignore_index=True)
+            df = df.append({'Distribution': 'Lognormal_2P', 'Alpha': '', 'Beta': '', 'Gamma': '', 'Mu': self.Lognormal_2P_mu, 'Sigma': self.Lognormal_2P_sigma, 'Lambda': '','Log-likelihood': self.Lognormal_2P_loglik, 'AICc': self.Lognormal_2P_AICc, 'BIC': self.Lognormal_2P_BIC, 'AD': self.Lognormal_2P_AD}, ignore_index=True)
 
         if 'Gumbel_2P' not in self.excluded_distributions:
-            self.__Gumbel_2P_params = Fit_Gumbel_2P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False)
+            self.__Gumbel_2P_params = Fit_Gumbel_2P(failures=failures, right_censored=right_censored, method=method,optimizer=optimizer, show_probability_plot=False, print_results=False)
             self.Gumbel_2P_mu = self.__Gumbel_2P_params.mu
             self.Gumbel_2P_sigma = self.__Gumbel_2P_params.sigma
+            self.Gumbel_2P_loglik = self.__Gumbel_2P_params.loglik
             self.Gumbel_2P_BIC = self.__Gumbel_2P_params.BIC
             self.Gumbel_2P_AICc = self.__Gumbel_2P_params.AICc
             self.Gumbel_2P_AD = self.__Gumbel_2P_params.AD
             self._parametric_CDF_Gumbel_2P = self.__Gumbel_2P_params.distribution.CDF(xvals=d, show_plot=False)
-            df = df.append({'Distribution': 'Gumbel_2P', 'Alpha': '', 'Beta': '', 'Gamma': '', 'Mu': self.Gumbel_2P_mu, 'Sigma': self.Gumbel_2P_sigma, 'Lambda': '', 'AICc': self.Gumbel_2P_AICc, 'BIC': self.Gumbel_2P_BIC, 'AD': self.Gumbel_2P_AD}, ignore_index=True)
+            df = df.append({'Distribution': 'Gumbel_2P', 'Alpha': '', 'Beta': '', 'Gamma': '', 'Mu': self.Gumbel_2P_mu, 'Sigma': self.Gumbel_2P_sigma, 'Lambda': '','Log-likelihood': self.Gumbel_2P_loglik, 'AICc': self.Gumbel_2P_AICc, 'BIC': self.Gumbel_2P_BIC, 'AD': self.Gumbel_2P_AD}, ignore_index=True)
 
         if 'Weibull_2P' not in self.excluded_distributions:
-            self.__Weibull_2P_params = Fit_Weibull_2P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False)
+            self.__Weibull_2P_params = Fit_Weibull_2P(failures=failures, right_censored=right_censored, method=method,optimizer=optimizer, show_probability_plot=False, print_results=False)
             self.Weibull_2P_alpha = self.__Weibull_2P_params.alpha
             self.Weibull_2P_beta = self.__Weibull_2P_params.beta
+            self.Weibull_2P_loglik = self.__Weibull_2P_params.loglik
             self.Weibull_2P_BIC = self.__Weibull_2P_params.BIC
             self.Weibull_2P_AICc = self.__Weibull_2P_params.AICc
             self.Weibull_2P_AD = self.__Weibull_2P_params.AD
             self._parametric_CDF_Weibull_2P = self.__Weibull_2P_params.distribution.CDF(xvals=d, show_plot=False)
-            df = df.append({'Distribution': 'Weibull_2P', 'Alpha': self.Weibull_2P_alpha, 'Beta': self.Weibull_2P_beta, 'Gamma': '', 'Mu': '', 'Sigma': '', 'Lambda': '', 'AICc': self.Weibull_2P_AICc, 'BIC': self.Weibull_2P_BIC, 'AD': self.Weibull_2P_AD}, ignore_index=True)
+            df = df.append({'Distribution': 'Weibull_2P', 'Alpha': self.Weibull_2P_alpha, 'Beta': self.Weibull_2P_beta, 'Gamma': '', 'Mu': '', 'Sigma': '', 'Lambda': '','Log-likelihood': self.Weibull_2P_loglik, 'AICc': self.Weibull_2P_AICc, 'BIC': self.Weibull_2P_BIC, 'AD': self.Weibull_2P_AD}, ignore_index=True)
 
         if 'Gamma_2P' not in self.excluded_distributions:
-            self.__Gamma_2P_params = Fit_Gamma_2P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False)
+            self.__Gamma_2P_params = Fit_Gamma_2P(failures=failures, right_censored=right_censored, method=method,optimizer=optimizer, show_probability_plot=False, print_results=False)
             self.Gamma_2P_alpha = self.__Gamma_2P_params.alpha
             self.Gamma_2P_beta = self.__Gamma_2P_params.beta
+            self.Gamma_2P_loglik = self.__Gamma_2P_params.loglik
             self.Gamma_2P_BIC = self.__Gamma_2P_params.BIC
             self.Gamma_2P_AICc = self.__Gamma_2P_params.AICc
             self.Gamma_2P_AD = self.__Gamma_2P_params.AD
             self._parametric_CDF_Gamma_2P = self.__Gamma_2P_params.distribution.CDF(xvals=d, show_plot=False)
-            df = df.append({'Distribution': 'Gamma_2P', 'Alpha': self.Gamma_2P_alpha, 'Beta': self.Gamma_2P_beta, 'Gamma': '', 'Mu': '', 'Sigma': '', 'Lambda': '', 'AICc': self.Gamma_2P_AICc, 'BIC': self.Gamma_2P_BIC, 'AD': self.Gamma_2P_AD}, ignore_index=True)
+            df = df.append({'Distribution': 'Gamma_2P', 'Alpha': self.Gamma_2P_alpha, 'Beta': self.Gamma_2P_beta, 'Gamma': '', 'Mu': '', 'Sigma': '', 'Lambda': '','Log-likelihood': self.Gamma_2P_loglik, 'AICc': self.Gamma_2P_AICc, 'BIC': self.Gamma_2P_BIC, 'AD': self.Gamma_2P_AD}, ignore_index=True)
 
         if 'Exponential_1P' not in self.excluded_distributions:
-            self.__Exponential_1P_params = Fit_Exponential_1P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False)
+            self.__Exponential_1P_params = Fit_Exponential_1P(failures=failures, right_censored=right_censored, method=method,optimizer=optimizer, show_probability_plot=False, print_results=False)
             self.Exponential_1P_lambda = self.__Exponential_1P_params.Lambda
+            self.Exponential_1P_loglik = self.__Exponential_1P_params.loglik
             self.Exponential_1P_BIC = self.__Exponential_1P_params.BIC
             self.Exponential_1P_AICc = self.__Exponential_1P_params.AICc
             self.Exponential_1P_AD = self.__Exponential_1P_params.AD
             self._parametric_CDF_Exponential_1P = self.__Exponential_1P_params.distribution.CDF(xvals=d, show_plot=False)
-            df = df.append({'Distribution': 'Exponential_1P', 'Alpha': '', 'Beta': '', 'Gamma': '', 'Mu': '', 'Sigma': '', 'Lambda': self.Exponential_1P_lambda, 'AICc': self.Exponential_1P_AICc, 'BIC': self.Exponential_1P_BIC, 'AD': self.Exponential_1P_AD}, ignore_index=True)
+            df = df.append({'Distribution': 'Exponential_1P', 'Alpha': '', 'Beta': '', 'Gamma': '', 'Mu': '', 'Sigma': '', 'Lambda': self.Exponential_1P_lambda,'Log-likelihood': self.Exponential_1P_loglik, 'AICc': self.Exponential_1P_AICc, 'BIC': self.Exponential_1P_BIC, 'AD': self.Exponential_1P_AD}, ignore_index=True)
 
         if 'Loglogistic_2P' not in self.excluded_distributions:
-            self.__Loglogistic_2P_params = Fit_Loglogistic_2P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False)
+            self.__Loglogistic_2P_params = Fit_Loglogistic_2P(failures=failures, right_censored=right_censored, method=method,optimizer=optimizer, show_probability_plot=False, print_results=False)
             self.Loglogistic_2P_alpha = self.__Loglogistic_2P_params.alpha
             self.Loglogistic_2P_beta = self.__Loglogistic_2P_params.beta
+            self.Loglogistic_2P_loglik = self.__Loglogistic_2P_params.loglik
             self.Loglogistic_2P_BIC = self.__Loglogistic_2P_params.BIC
             self.Loglogistic_2P_AICc = self.__Loglogistic_2P_params.AICc
             self.Loglogistic_2P_AD = self.__Loglogistic_2P_params.AD
             self._parametric_CDF_Loglogistic_2P = self.__Loglogistic_2P_params.distribution.CDF(xvals=d, show_plot=False)
-            df = df.append({'Distribution': 'Loglogistic_2P', 'Alpha': self.Loglogistic_2P_alpha, 'Beta': self.Loglogistic_2P_beta, 'Gamma': '', 'Mu': '', 'Sigma': '', 'Lambda': '', 'AICc': self.Loglogistic_2P_AICc, 'BIC': self.Loglogistic_2P_BIC, 'AD': self.Loglogistic_2P_AD}, ignore_index=True)
+            df = df.append({'Distribution': 'Loglogistic_2P', 'Alpha': self.Loglogistic_2P_alpha, 'Beta': self.Loglogistic_2P_beta, 'Gamma': '', 'Mu': '', 'Sigma': '', 'Lambda': '','Log-likelihood': self.Loglogistic_2P_loglik, 'AICc': self.Loglogistic_2P_AICc, 'BIC': self.Loglogistic_2P_BIC, 'AD': self.Loglogistic_2P_AD}, ignore_index=True)
 
         if 'Loglogistic_3P' not in self.excluded_distributions:
-            self.__Loglogistic_3P_params = Fit_Loglogistic_3P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False)
+            self.__Loglogistic_3P_params = Fit_Loglogistic_3P(failures=failures, right_censored=right_censored, method=method,optimizer=optimizer, show_probability_plot=False, print_results=False)
             self.Loglogistic_3P_alpha = self.__Loglogistic_3P_params.alpha
             self.Loglogistic_3P_beta = self.__Loglogistic_3P_params.beta
             self.Loglogistic_3P_gamma = self.__Loglogistic_3P_params.gamma
+            self.Loglogistic_3P_loglik = self.__Loglogistic_3P_params.loglik
             self.Loglogistic_3P_BIC = self.__Loglogistic_3P_params.BIC
             self.Loglogistic_3P_AICc = self.__Loglogistic_3P_params.AICc
             self.Loglogistic_3P_AD = self.__Loglogistic_3P_params.AD
             self._parametric_CDF_Loglogistic_3P = self.__Loglogistic_3P_params.distribution.CDF(xvals=d, show_plot=False)
-            df = df.append({'Distribution': 'Loglogistic_3P', 'Alpha': self.Loglogistic_3P_alpha, 'Beta': self.Loglogistic_3P_beta, 'Gamma': self.Loglogistic_3P_gamma, 'Mu': '', 'Sigma': '', 'Lambda': '', 'AICc': self.Loglogistic_3P_AICc, 'BIC': self.Loglogistic_3P_BIC, 'AD': self.Loglogistic_3P_AD}, ignore_index=True)
+            df = df.append({'Distribution': 'Loglogistic_3P', 'Alpha': self.Loglogistic_3P_alpha, 'Beta': self.Loglogistic_3P_beta, 'Gamma': self.Loglogistic_3P_gamma, 'Mu': '', 'Sigma': '', 'Lambda': '','Log-likelihood': self.Loglogistic_3P_loglik, 'AICc': self.Loglogistic_3P_AICc, 'BIC': self.Loglogistic_3P_BIC, 'AD': self.Loglogistic_3P_AD}, ignore_index=True)
 
         if 'Beta_2P' not in self.excluded_distributions:
-            self.__Beta_2P_params = Fit_Beta_2P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False)
+            self.__Beta_2P_params = Fit_Beta_2P(failures=failures, right_censored=right_censored, method=method,optimizer=optimizer, show_probability_plot=False, print_results=False)
             self.Beta_2P_alpha = self.__Beta_2P_params.alpha
             self.Beta_2P_beta = self.__Beta_2P_params.beta
+            self.Beta_2P_loglik = self.__Beta_2P_params.loglik
             self.Beta_2P_BIC = self.__Beta_2P_params.BIC
             self.Beta_2P_AICc = self.__Beta_2P_params.AICc
             self.Beta_2P_AD = self.__Beta_2P_params.AD
             self._parametric_CDF_Beta_2P = self.__Beta_2P_params.distribution.CDF(xvals=d, show_plot=False)
-            df = df.append({'Distribution': 'Beta_2P', 'Alpha': self.Beta_2P_alpha, 'Beta': self.Beta_2P_beta, 'Gamma': '', 'Mu': '', 'Sigma': '', 'Lambda': '', 'AICc': self.Beta_2P_AICc, 'BIC': self.Beta_2P_BIC, 'AD': self.Beta_2P_AD}, ignore_index=True)
+            df = df.append({'Distribution': 'Beta_2P', 'Alpha': self.Beta_2P_alpha, 'Beta': self.Beta_2P_beta, 'Gamma': '', 'Mu': '', 'Sigma': '', 'Lambda': '','Log-likelihood': self.Beta_2P_loglik, 'AICc': self.Beta_2P_AICc, 'BIC': self.Beta_2P_BIC, 'AD': self.Beta_2P_AD}, ignore_index=True)
 
         # change to sorting by BIC if there is insifficient data to get the AICc for everything that was fitted
         if sort_by in ['AIC', 'aic', 'aicc', 'AICc'] and 'Insufficient data' in df['AICc'].values:
             sort_by = 'BIC'
         # sort the dataframe by BIC, AICc, or AD. Smallest AICc, BIC, AD is better fit
-        if sort_by in ['BIC', 'bic']:
+        if type(sort_by) != str:
+            raise ValueError("Invalid input to sort_by. Options are 'BIC', 'AICc', 'AD', or 'Log-likelihood'. Default is 'BIC'.")
+        if sort_by.upper() == 'BIC':
             df2 = df.reindex(df.BIC.sort_values().index)
-        elif sort_by in ['AICc', 'AIC', 'aic', 'aicc']:
+        elif sort_by.upper() in ['AICC', 'AIC']:
             df2 = df.reindex(df.AICc.sort_values().index)
-        elif sort_by in ['ad', 'AD']:
+        elif sort_by.upper() == 'AD':
             df2 = df.reindex(df.AD.sort_values().index)
+        elif sort_by.upper() in ['LOGLIK','LOG LIK', 'LOG-LIKELIHOOD','LL','LOGLIKELIHOOD','LOG LIKELIHOOD']:
+            df2 = df.reindex(abs(df['Log-likelihood']).sort_values().index)
         else:
-            raise ValueError('Invalid input to sort_by. Options are BIC, AICc, or AD. Default is BIC')
-        df3 = df2.set_index('Distribution')
-        if len(df3.index.values) == 0:
+            raise ValueError("Invalid input to sort_by. Options are 'BIC', 'AICc', 'AD', or 'Log-likelihood'. Default is 'BIC'.")
+        if len(df2.index.values) == 0:
             raise ValueError('You have excluded all available distributions')
-        self.results = df3
+        self.results = df2
 
         # creates a distribution object of the best fitting distribution and assigns its name
-        best_dist = df3.index.values[0]
+        best_dist = self.results['Distribution'].values[0]
         self.best_distribution_name = best_dist
         if best_dist == 'Weibull_2P':
             self.best_distribution = Weibull_Distribution(alpha=self.Weibull_2P_alpha, beta=self.Weibull_2P_beta)
@@ -351,9 +381,13 @@ class Fit_Everything:
 
         # print the results
         if print_results is True:  # printing occurs by default
-            pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
-            pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
-            print(self.results)
+            frac_cens = self._frac_cens * 100
+            if frac_cens % 1 == 0:
+                frac_cens = int(frac_cens)
+            colorprint('Results from Fit_Everything:', bold=True, underline=True)
+            print('Analysis method:', method)
+            print('Failures / Right censored:', str(str(len(failures)) + '/' + str(len(right_censored))), str('(' + str(frac_cens) + '% right censored)'), '\n')
+            print(self.results.to_string(index=False), '\n')
 
         if show_histogram_plot is True:
             Fit_Everything.histogram_plot(self)  # plotting occurs by default
@@ -368,7 +402,7 @@ class Fit_Everything:
             plt.show()
 
     def probplot_layout(self):
-        items = len(self.results.index.values)
+        items = len(self.results.index.values)  # number of items that were fitted
         if items == 13:  # ------------------------ w   , h    w , h
             cols, rows, figsize, figsizePP = 5, 3, (17.5, 8), (10, 7.5)
         elif items in [10, 11, 12]:
@@ -399,7 +433,7 @@ class Fit_Everything:
 
         plt.figure(figsize=(14, 6))
         # we need to make the histogram manually (can't use plt.hist) due to need to scale the heights when there's censored data
-        plotting_order = self.results.index.values  # this is the order to plot things so that the legend matches the results dataframe
+        plotting_order = self.results['Distribution'].values  # this is the order to plot things so that the legend matches the results dataframe
         iqr = np.subtract(*np.percentile(X, [75, 25]))  # interquartile range
         bin_width = 2 * iqr * len(X) ** -(1 / 3)  # Freedman–Diaconis rule ==> https://en.wikipedia.org/wiki/Freedman%E2%80%93Diaconis_rule
         num_bins = int(np.ceil((max(X) - min(X)) / bin_width))
@@ -490,7 +524,7 @@ class Fit_Everything:
         nonparametric_CDF = 1 - np.array(nonparametric.KM)  # change SF into CDF
 
         cols, rows, _, figsizePP = Fit_Everything.probplot_layout(self)
-        plotting_order = self.results.index.values  # this is the order to plot things which matches the results dataframe
+        plotting_order = self.results['Distribution'].values  # this is the order to plot things which matches the results dataframe
         plt.figure(figsize=figsizePP)
         plt.suptitle('Semi-parametric Probability-Probability plots of each fitted distribution\nParametric (x-axis) vs Non-Parametric (y-axis)\n')
         subplot_counter = 1
@@ -552,7 +586,7 @@ class Fit_Everything:
             Beta_probability_plot, Lognormal_probability_plot, Exponential_probability_plot_Weibull_Scale, Loglogistic_probability_plot, Gumbel_probability_plot
 
         cols, rows, figsize, _ = Fit_Everything.probplot_layout(self)
-        plotting_order = self.results.index.values  # this is the order to plot things which matches the results dataframe
+        plotting_order = self.results['Distribution'].values  # this is the order to plot things which matches the results dataframe
 
         plt.figure()
         plt.suptitle('Probability plots of each fitted distribution\n\n')
@@ -612,8 +646,8 @@ class Fit_Weibull_2P:
     right_censored - an array or list of right censored data
     show_probability_plot - True/False. Defaults to True.
     print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
-    initial_guess_method - 'scipy' OR 'least squares'. Default is 'least squares'. Both do not take into account censored data but scipy uses MLE, and least squares is least squares regression of the plotting positions. Least squares proved more accurate during testing.
-    optimizer - 'L-BFGS-B' OR 'TNC'. These are both bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
+    method - 'MLE' (maximum likelihood estimation), 'LS' (least squares estimation), 'RRX' (Rank regression on X), 'RRY' (Rank regression on Y). LS will perform both RRX and RRY and return the better one. Default is 'MLE'.
+    optimizer - 'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
     CI_type - time, reliability, None. Default is time. This is the confidence bounds on time or on reliability. Use None to turn off the confidence intervals.
     force_beta - Use this to specify the beta value if you need to force beta to be a certain value. Used in ALT probability plotting. Optional input.
@@ -621,11 +655,7 @@ class Fit_Weibull_2P:
     kwargs are accepted for the probability plot (eg. linestyle, label, color)
 
     outputs:
-    success - Whether the solution was found by autograd (True/False)
-        if success is False a warning will be printed indicating that scipy's fit was used as autograd failed. This fit will not be accurate if
-        there is censored data as scipy does not have the ability to fit censored data. Failure of autograd to find the solution should be rare and
-        if it occurs, it is likely that the distribution is an extremely bad fit for the data. Try scaling your data, removing extreme values, or using
-        another distribution.
+    success - Whether the solution was found by autograd (True/False). If False then the value returned will be the initial guess from Least Squares Estimation.
     alpha - the fitted Weibull_2P alpha parameter
     beta - the fitted Weibull_2P beta parameter
     loglik - Log Likelihood (as used in Minitab and Reliasoft)
@@ -642,124 +672,46 @@ class Fit_Weibull_2P:
     beta_upper - the upper CI estimate of the parameter
     beta_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
+    goodness_of_fit - a dataframe of the goodness of fit values (Log-likelihood, AICc, BIC, AD).
     percentiles - a dataframe of the percentiles with bounds on time. This is only produced if percentiles is 'auto' or a list or array. Since percentiles defaults to None, this output is not normally produced.
     '''
 
-    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, percentiles=None, CI_type='time', initial_guess_method='least squares', optimizer='L-BFGS-B', force_beta=None, **kwargs):
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, percentiles=None, CI_type='time', method='MLE', optimizer='L-BFGS-B', force_beta=None, **kwargs):
 
-        inputs = fitters_input_checking(dist='Weibull_2P', failures=failures, right_censored=right_censored, initial_guess_method=initial_guess_method, optimizer=optimizer, CI=CI, percentiles=percentiles, force_beta=force_beta, CI_type=CI_type)
+        inputs = fitters_input_checking(dist='Weibull_2P', failures=failures, right_censored=right_censored, method=method, optimizer=optimizer, CI=CI, percentiles=percentiles, force_beta=force_beta, CI_type=CI_type)
         failures = inputs.failures
         right_censored = inputs.right_censored
         CI = inputs.CI
-        initial_guess_method = inputs.initial_guess_method
+        method = inputs.method
         optimizer = inputs.optimizer
         percentiles = inputs.percentiles
         force_beta = inputs.force_beta
         CI_type = inputs.CI_type
-
-        all_data = np.hstack([failures, right_censored])
-        if min(all_data) < 0:
-            raise ValueError('All failure and censoring times must be greater than zero.')
         self.gamma = 0
-        # Obtain initial guess using either Least squares or Scipy
-        x, y = plotting_positions(failures=failures, right_censored=right_censored)
-        if initial_guess_method == 'least squares':
-            # obtain least squares estimate based on the plotting positions
-            x_linearised = np.log(x)
-            y_linearised = np.log(-np.log(1 - np.array(y)))
-            slope, intercept, _, _, _ = ss.linregress(x_linearised, y_linearised)
-            LS_beta = slope
-            LS_alpha = np.exp(-intercept / LS_beta)
-            guess = [LS_alpha, LS_beta]
-        else:  # scipy method of obtaining the initial guess
-            all_data = np.hstack([failures, right_censored])
-            if len(right_censored) / len(all_data) > 0.98:  # for heavily censored datasets (>98% censored), all data is used for the initial guess with scipy
-                sp_data = all_data
-            else:  # if not heavily censored then scipy gives a better initial guess with just the failure data
-                sp_data = failures
-            sp = ss.weibull_min.fit(sp_data, floc=0, optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
-            if len(right_censored) / len(all_data) > 0.5:
-                guess = [sp[2] * 1.5, sp[0] * 0.6]  # correction to the scipy initial guess for large amounts of censored data (>50% censored)
-            else:
-                guess = [sp[2], sp[0]]
-        self.initial_guess = guess
 
-        warnings.filterwarnings('ignore')  # it is necessary to supress the warning about the jacobian when using the nelder-mead optimizer
-        n = len(all_data)
-        delta_BIC = 1
-        BIC_array = [1000000]
-        runs = 0
-        if force_beta is None:
-            bnds = [(0, None), (0, None)]  # bounds on the solution. Helps a lot with stability
-            k = len(guess)
-            while delta_BIC > 0.001 and runs < 5:  # exits after BIC convergence or 5 iterations
-                runs += 1
-                result = minimize(value_and_grad(Fit_Weibull_2P.LL), guess, args=(failures, right_censored), jac=True, method=optimizer, bounds=bnds)
-                params = result.x
-                guess = [params[0], params[1]]
-                LL2 = 2 * Fit_Weibull_2P.LL(guess, failures, right_censored)
-                BIC_array.append(np.log(n) * k + LL2)
-                delta_BIC = abs(BIC_array[-1] - BIC_array[-2])
+        # Obtain least squares estimates
+        if method == 'MLE':
+            LS_method = 'LS'
         else:
-            bnds = [(0, None)]  # bounds on the solution. Helps a lot with stability
-            guess = [guess[0]]
-            k = len(guess)
-            while delta_BIC > 0.001 and runs < 5:  # exits after BIC convergence or 5 iterations
-                runs += 1
-                result = minimize(value_and_grad(Fit_Weibull_2P.LL_fb), guess, args=(failures, right_censored, force_beta), jac=True, method=optimizer, bounds=bnds)
-                params = result.x
-                guess = [params[0]]
-                LL2 = 2 * Fit_Weibull_2P.LL_fb(guess, failures, right_censored, force_beta)
-                BIC_array.append(np.log(n) * k + LL2)
-                delta_BIC = abs(BIC_array[-1] - BIC_array[-2])
+            LS_method = method
+        LS_results = LS_optimisation(func_name='Weibull_2P', LL_func=Fit_Weibull_2P.LL, failures=failures, right_censored=right_censored, method=LS_method, force_shape=force_beta, LL_func_force=Fit_Weibull_2P.LL_fb)
 
-        if result.success is True:
-            params = result.x
-            self.success = True
-            if force_beta is None:
-                self.alpha = params[0]
-                self.beta = params[1]
-            else:
-                self.alpha = params[0]
-                self.beta = force_beta
-        else:  # if the L-BFGS-B optimizer fails then we have a second attempt using the slower but slightly more reliable nelder-mead optimizer
-            if force_beta is None:
-                guess = self.initial_guess
-                result = minimize(value_and_grad(Fit_Weibull_2P.LL), guess, args=(failures, right_censored), jac=True, tol=1e-4, method='nelder-mead')
-            else:
-                guess = [self.initial_guess[0]]
-                result = minimize(value_and_grad(Fit_Weibull_2P.LL_fb), guess, args=(failures, right_censored, force_beta), jac=True, tol=1e-4, method='nelder-mead')
-            if result.success is True:
-                params = result.x
-                self.success = True
-                if force_beta is None:
-                    self.alpha = params[0]
-                    self.beta = params[1]
-                else:
-                    self.alpha = params[0]
-                    self.beta = force_beta
-            else:
-                self.success = False
-                colorprint('WARNING: Fitting using Autograd FAILED for Weibull_2P. A modified form of the fit from Scipy was used instead so results may not be accurate.', text_color='red')
-                if force_beta is None:
-                    self.alpha = self.initial_guess[0]
-                    self.beta = self.initial_guess[1]
-                else:
-                    self.alpha = self.initial_guess[0]
-                    self.beta = force_beta
+        # least squares method
+        if method in ['LS', 'RRX', 'RRY']:
+            self.alpha = LS_results.guess[0]
+            self.beta = LS_results.guess[1]
+            self.method = str('Least Squares Estimation (' + LS_results.method + ')')
 
-        params = [self.alpha, self.beta]
-        LL2 = 2 * Fit_Weibull_2P.LL(params, failures, right_censored)
-        self.loglik2 = LL2
-        self.loglik = LL2 * -0.5
-        if n - k - 1 > 0:
-            self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
-        else:
-            self.AICc = 'Insufficient data'
-        self.BIC = np.log(n) * k + LL2
+        # maximum likelihood method
+        elif method == 'MLE':
+            MLE_results = MLE_optimisation(func_name='Weibull_2P', LL_func=Fit_Weibull_2P.LL, initial_guess=[LS_results.guess[0], LS_results.guess[1]], failures=failures, right_censored=right_censored, optimizer=optimizer, force_shape=force_beta, LL_func_force=Fit_Weibull_2P.LL_fb)
+            self.alpha = MLE_results.scale
+            self.beta = MLE_results.shape
+            self.method = 'Maximum Likelihood Estimation (MLE)'
 
-        # confidence interval estimates of parameters
+        # confidence interval estimates of parameters. This uses the Fisher Matrix so it can be applied to both MLE and LS estimates.
         Z = -ss.norm.ppf((1 - CI) / 2)
+        params = [self.alpha, self.beta]
         if force_beta is None:
             hessian_matrix = hessian(Fit_Weibull_2P.LL)(np.array(tuple(params)), np.array(tuple(failures)), np.array(tuple(right_censored)))
             covariance_matrix = np.linalg.inv(hessian_matrix)
@@ -781,40 +733,61 @@ class Fit_Weibull_2P:
             self.beta_upper = self.beta
             self.beta_lower = self.beta
 
-        Data = {'Parameter': ['Alpha', 'Beta'],
-                'Point Estimate': [self.alpha, self.beta],
-                'Standard Error': [self.alpha_SE, self.beta_SE],
-                'Lower CI': [self.alpha_lower, self.beta_lower],
-                'Upper CI': [self.alpha_upper, self.beta_upper]}
-        df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
-        self.results = df.set_index('Parameter')
+        results_data = {'Parameter': ['Alpha', 'Beta'],
+                        'Point Estimate': [self.alpha, self.beta],
+                        'Standard Error': [self.alpha_SE, self.beta_SE],
+                        'Lower CI': [self.alpha_lower, self.beta_lower],
+                        'Upper CI': [self.alpha_upper, self.beta_upper]}
+        self.results = pd.DataFrame(results_data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
         self.distribution = Weibull_Distribution(alpha=self.alpha, beta=self.beta, alpha_SE=self.alpha_SE, beta_SE=self.beta_SE, Cov_alpha_beta=self.Cov_alpha_beta, CI=CI, CI_type=CI_type)
-        self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=failures, show_plot=False), empirical_cdf=y)
 
         if percentiles is not None:
             point_estimate = self.distribution.quantile(q=percentiles / 100)
             lower_estimate, upper_estimate = distribution_confidence_intervals.weibull_CI(self=self.distribution, func='CDF', CI_type='time', CI=CI, q=1 - (percentiles / 100))
-            Percentile_Data = {'Percentile': percentiles,
+            percentile_data = {'Percentile': percentiles,
                                'Lower Estimate': lower_estimate,
                                'Point Estimate': point_estimate,
                                'Upper Estimate': upper_estimate}
-            percentiles = pd.DataFrame(Percentile_Data, columns=['Percentile', 'Lower Estimate', 'Point Estimate', 'Upper Estimate'])
-            self.percentiles = percentiles.set_index('Percentile')
+            self.percentiles = pd.DataFrame(percentile_data, columns=['Percentile', 'Lower Estimate', 'Point Estimate', 'Upper Estimate'])
+
+        # goodness of fit measures
+        n = len(failures) + len(right_censored)
+        if force_beta is None:
+            k = 2
+            LL2 = 2 * Fit_Weibull_2P.LL(params, failures, right_censored)
+        else:
+            k = 1
+            LL2 = 2 * Fit_Weibull_2P.LL_fb(params, failures, right_censored, force_beta)
+        self.loglik2 = LL2
+        self.loglik = LL2 * -0.5
+        if n - k - 1 > 0:
+            self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
+        else:
+            self.AICc = 'Insufficient data'
+        self.BIC = np.log(n) * k + LL2
+
+        x, y = plotting_positions(failures=failures, right_censored=right_censored)
+        self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=x, show_plot=False), empirical_cdf=y)
+        GoF_data = {'Goodness of fit': ['Log-likelihood', 'AICc', 'BIC', 'AD'],
+                    'Value': [self.loglik, self.AICc, self.BIC, self.AD]}
+        self.goodness_of_fit = pd.DataFrame(GoF_data, columns=['Goodness of fit', 'Value'])
 
         if print_results is True:
-            pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
-            pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
-            if CI * 100 % 1 == 0:
+            CI_rounded = CI * 100
+            if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            else:
-                CI_rounded = CI * 100
-            print(str('Results from Fit_Weibull_2P (' + str(CI_rounded) + '% CI):'))
-            print(self.results)
-            print('Log-Likelihood:', self.loglik, '\n')
+            frac_censored = round_to_decimals(len(right_censored) / n * 100)
+            if frac_censored % 1 == 0:
+                frac_censored = int(frac_censored)
+            colorprint(str('Results from Fit_Weibull_2P (' + str(CI_rounded) + '% CI):'), bold=True, underline=True)
+            print('Analysis method:', self.method)
+            print('Failures / Right censored:', str(str(len(failures)) + '/' + str(len(right_censored))), str('(' + str(frac_censored) + '% right censored)'), '\n')
+            print(self.results.to_string(index=False), '\n')
+            print(self.goodness_of_fit.to_string(index=False), '\n')
 
             if percentiles is not None:
                 print(str('Table of percentiles (' + str(CI_rounded) + '% CI bounds on time):'))
-                print(self.percentiles)
+                print(self.percentiles.to_string(index=False), '\n')
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Weibull_probability_plot
@@ -864,17 +837,13 @@ class Fit_Weibull_2P_grouped:
     print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
     force_beta - Use this to specify the beta value if you need to force beta to be a certain value. Used in ALT probability plotting. Optional input.
-    initial_guess_method - 'scipy' OR 'least squares'. Default is 'least squares'. Both do not take into account censored data but scipy uses MLE, and least squares is least squares regression of the plotting positions. Least squares proved more accurate during testing.
-    optimizer - 'L-BFGS-B' OR 'TNC'. These are both bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
+    method - 'MLE' (maximum likelihood estimation), 'LS' (least squares estimation), 'RRX' (Rank regression on X), 'RRY' (Rank regression on Y). LS will perform both RRX and RRY and return the better one. Default is 'MLE'.
+    optimizer - 'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
     percentiles - percentiles to produce a table of percentiles failed with lower, point, and upper estimates. Default is None which results in no output. True or 'auto' will use default array [1, 5, 10,..., 95, 99]. If an array or list is specified then it will be used instead of the default array.
     kwargs are accepted for the probability plot (eg. linestyle, label, color)
 
     Outputs:
-    success - Whether the solution was found by autograd (True/False)
-        if success is False a warning will be printed indicating that scipy's fit was used as autograd failed. This fit will not be accurate if there is
-        censored data as scipy and least squares do not have the ability to fit censored data. Failure of autograd to find the solution should be rare and
-        if it occurs, it is likely that the distribution is an extremely bad fit for the data. Try scaling your data, removing extreme values, or using
-        another distribution.
+    success - Whether the solution was found by autograd (True/False). If False then the value returned will be the initial guess from Least Squares Estimation.
     alpha - the fitted Weibull_2P alpha parameter
     beta - the fitted Weibull_2P beta parameter
     loglik - Log Likelihood (as used in Minitab and Reliasoft)
@@ -920,7 +889,7 @@ class Fit_Weibull_2P_grouped:
     Fit_Weibull_2P_grouped(dataframe=df)
     '''
 
-    def __init__(self, dataframe=None, show_probability_plot=True, print_results=True, CI=0.95, force_beta=None, percentiles=None, initial_guess_method='least squares', optimizer='L-BFGS-B', CI_type='time', **kwargs):
+    def __init__(self, dataframe=None, show_probability_plot=True, print_results=True, CI=0.95, force_beta=None, percentiles=None, method='MLE', optimizer='L-BFGS-B', CI_type='time', **kwargs):
 
         if dataframe is None or type(dataframe) is not pd.core.frame.DataFrame:
             raise ValueError('dataframe must be a pandas dataframe with the columns "category" (F for failure or C for censored), "time" (the failure times), and "quantity" (the number of events at each time)')
@@ -955,88 +924,78 @@ class Fit_Weibull_2P_grouped:
             right_censored = np.append(right_censored, right_censored_times[i] * np.ones(int(right_censored_qty[i])))
 
         # perform input error checking for the rest of the inputs
-        inputs = fitters_input_checking(dist='Weibull_2P', failures=failures, right_censored=right_censored, initial_guess_method=initial_guess_method, optimizer=optimizer, CI=CI, percentiles=percentiles, force_beta=force_beta, CI_type=CI_type)
+        inputs = fitters_input_checking(dist='Weibull_2P', failures=failures, right_censored=right_censored, method=method, optimizer=optimizer, CI=CI, percentiles=percentiles, force_beta=force_beta, CI_type=CI_type)
         failures = inputs.failures
         right_censored = inputs.right_censored
         CI = inputs.CI
-        initial_guess_method = inputs.initial_guess_method
+        method = inputs.method
         optimizer = inputs.optimizer
         percentiles = inputs.percentiles
         force_beta = inputs.force_beta
         CI_type = inputs.CI_type
-
         self.gamma = 0
-        # Obtain initial guess using either Least squares or Scipy
-        x, y = plotting_positions(failures=failures, right_censored=right_censored)
-        if initial_guess_method == 'least squares':
-            # obtain least squares estimate based on the plotting positions
-            x_linearised = np.log(x)
-            y_linearised = np.log(-np.log(1 - np.array(y)))
-            slope, intercept, _, _, _ = ss.linregress(x_linearised, y_linearised)
-            LS_beta = slope
-            LS_alpha = np.exp(-intercept / LS_beta)
-            guess = [LS_alpha, LS_beta]
-        else:  # scipy method of obtaining the initial guess
-            all_data = np.hstack([failures, right_censored])
-            if len(right_censored) / len(all_data) > 0.98:  # for heavily censored datasets (>98% censored), all data is used for the initial guess with scipy
-                sp_data = all_data
-            else:  # if not heavily censored then scipy gives a better initial guess with just the failure data
-                sp_data = failures
-            sp = ss.weibull_min.fit(sp_data, floc=0, optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
-            if len(right_censored) / len(all_data) > 0.5:
-                guess = [sp[2] * 1.5, sp[0] * 0.6]  # correction to the scipy initial guess for large amounts of censored data (>50% censored)
-            else:
-                guess = [sp[2], sp[0]]
-        self.initial_guess = guess
 
-        warnings.filterwarnings('ignore')  # it is necessary to supress the warning about the jacobian when using the nelder-mead optimizer
-        n = sum(failure_qty) + sum(right_censored_qty)
-        k = len(guess)
-        if force_beta is None:
-            bnds = [(0, None), (0, None)]  # bounds on the solution. Helps a lot with stability
-            runs = 0
-            delta_BIC = 1
-            BIC_array = [1000000]
-            while delta_BIC > 0.001 and runs < 5:  # exits after BIC convergence or 5 iterations
-                runs += 1
-                result = minimize(value_and_grad(Fit_Weibull_2P_grouped.LL), guess, args=(failure_times, right_censored_times, failure_qty, right_censored_qty), jac=True, method=optimizer, bounds=bnds)
-                params = result.x
-                guess = [params[0], params[1]]
-                LL2 = 2 * Fit_Weibull_2P_grouped.LL(guess, failure_times, right_censored_times, failure_qty, right_censored_qty)
-                BIC_array.append(np.log(n) * k + LL2)
-                delta_BIC = abs(BIC_array[-1] - BIC_array[-2])
-        else:  # force beta is True
-            bnds = [(0, None)]  # bounds on the solution. Helps a lot with stability
-            runs = 0
-            delta_BIC = 1
-            BIC_array = [1000000]
-            guess = [guess[0]]
+        if method == 'RRX':
+            guess = least_squares(dist='Weibull_2P', failures=failures, right_censored=right_censored, method='RRX', force_shape=force_beta)
+            LS_method = 'RRX'
+        elif method == 'RRY':
+            guess = least_squares(dist='Weibull_2P', failures=failures, right_censored=right_censored, method='RRY', force_shape=force_beta)
+            LS_method = 'RRY'
+        elif method in ['LS', 'MLE']:
+            guess_RRX = least_squares(dist='Weibull_2P', failures=failures, right_censored=right_censored, method='RRX', force_shape=force_beta)
+            guess_RRY = least_squares(dist='Weibull_2P', failures=failures, right_censored=right_censored, method='RRY', force_shape=force_beta)
+            if force_beta is not None:
+                loglik_RRX = -Fit_Weibull_2P_grouped.LL_fb(guess_RRX, failure_times, right_censored_times, failure_qty, right_censored_qty, force_beta)
+                loglik_RRY = -Fit_Weibull_2P_grouped.LL_fb(guess_RRY, failure_times, right_censored_times, failure_qty, right_censored_qty, force_beta)
+            else:
+                loglik_RRX = -Fit_Weibull_2P_grouped.LL(guess_RRX, failure_times, right_censored_times, failure_qty, right_censored_qty)
+                loglik_RRY = -Fit_Weibull_2P_grouped.LL(guess_RRY, failure_times, right_censored_times, failure_qty, right_censored_qty)
+            # take the best one
+            if abs(loglik_RRX) < abs(loglik_RRY):  # RRX is best
+                LS_method = 'RRX'
+                guess = guess_RRX
+            else:  # RRY is best
+                LS_method = 'RRY'
+                guess = guess_RRY
+
+        if method in ['LS', 'RRX', 'RRY']:
+            self.alpha = guess[0]
+            self.beta = guess[1]
+            self.method = str('Least Squares Estimation (' + LS_method + ')')
+        elif method == 'MLE':
+            self.method = 'Maximum Likelihood Estimation (MLE)'
+            n = sum(failure_qty) + sum(right_censored_qty)
             k = len(guess)
-            while delta_BIC > 0.001 and runs < 5:  # exits after BIC convergence or 5 iterations
-                runs += 1
-                result = minimize(value_and_grad(Fit_Weibull_2P_grouped.LL_fb), guess, args=(failure_times, right_censored_times, failure_qty, right_censored_qty, force_beta), jac=True, method=optimizer, bounds=bnds)
-                params = result.x
-                guess = [params[0]]
-                LL2 = 2 * Fit_Weibull_2P_grouped.LL_fb(guess, failure_times, right_censored_times, failure_qty, right_censored_qty, force_beta)
-                BIC_array.append(np.log(n) * k + LL2)
-                delta_BIC = abs(BIC_array[-1] - BIC_array[-2])
+            initial_guess = guess
+            if force_beta is None:
+                bnds = [(0, None), (0, None)]  # bounds on the solution. Helps a lot with stability
+                runs = 0
+                delta_BIC = 1
+                BIC_array = [1000000]
+                while delta_BIC > 0.001 and runs < 10:  # exits after BIC convergence or 10 iterations
+                    runs += 1
+                    result = minimize(value_and_grad(Fit_Weibull_2P_grouped.LL), guess, args=(failure_times, right_censored_times, failure_qty, right_censored_qty), jac=True, method=optimizer, bounds=bnds, options={'maxiter': 300})  # this includes maxiter as TNC often exceeds the default limit of 100
+                    params = result.x
+                    guess = [params[0], params[1]]
+                    LL2 = 2 * Fit_Weibull_2P_grouped.LL(guess, failure_times, right_censored_times, failure_qty, right_censored_qty)
+                    BIC_array.append(np.log(n) * k + LL2)
+                    delta_BIC = abs(BIC_array[-1] - BIC_array[-2])
+            else:  # force beta is True
+                bnds = [(0, None)]  # bounds on the solution. Helps a lot with stability
+                runs = 0
+                delta_BIC = 1
+                BIC_array = [1000000]
+                guess = [guess[0]]
+                k = len(guess)
+                while delta_BIC > 0.001 and runs < 10:  # exits after BIC convergence or 5 iterations
+                    runs += 1
+                    result = minimize(value_and_grad(Fit_Weibull_2P_grouped.LL_fb), guess, args=(failure_times, right_censored_times, failure_qty, right_censored_qty, force_beta), jac=True, method=optimizer, bounds=bnds, options={'maxiter': 300})
+                    params = result.x
+                    guess = [params[0]]
+                    LL2 = 2 * Fit_Weibull_2P_grouped.LL_fb(guess, failure_times, right_censored_times, failure_qty, right_censored_qty, force_beta)
+                    BIC_array.append(np.log(n) * k + LL2)
+                    delta_BIC = abs(BIC_array[-1] - BIC_array[-2])
 
-        if result.success is True:
-            params = result.x
-            self.success = True
-            if force_beta is None:
-                self.alpha = params[0]
-                self.beta = params[1]
-            else:
-                self.alpha = params[0]
-                self.beta = force_beta
-        else:  # if the L-BFGS-B or TNC optimizer fails then we have a second attempt using the slower but slightly more reliable nelder-mead optimizer
-            if force_beta is None:
-                guess = self.initial_guess
-                result = minimize(value_and_grad(Fit_Weibull_2P_grouped.LL), guess, args=(failure_times, right_censored_times, failure_qty, right_censored_qty), jac=True, tol=1e-4, method='nelder-mead')
-            else:
-                guess = self.initial_guess[0]
-                result = minimize(value_and_grad(Fit_Weibull_2P_grouped.LL_fb), guess, args=(failure_times, right_censored_times, failure_qty, right_censored_qty, force_beta), jac=True, tol=1e-4, method='nelder-mead')
             if result.success is True:
                 params = result.x
                 self.success = True
@@ -1046,28 +1005,35 @@ class Fit_Weibull_2P_grouped:
                 else:
                     self.alpha = params[0]
                     self.beta = force_beta
-            else:
-                self.success = False
-                colorprint(str('WARNING: Fitting using Autograd FAILED for Weibull_2P_grouped. The' + initial_guess_method + ' estimates were used instead so results may not be accurate.'), text_color='red')
+            else:  # if the L-BFGS-B or TNC optimizer fails then we have a second attempt using the slower but slightly more reliable nelder-mead optimizer
                 if force_beta is None:
-                    self.alpha = self.initial_guess[0]
-                    self.beta = self.initial_guess[1]
+                    guess = initial_guess
+                    result = minimize(value_and_grad(Fit_Weibull_2P_grouped.LL), guess, args=(failure_times, right_censored_times, failure_qty, right_censored_qty), jac=True, tol=1e-4, method='nelder-mead')
                 else:
-                    self.alpha = self.initial_guess[0]
-                    self.beta = force_beta
-
-        params = [self.alpha, self.beta]
-        LL2 = 2 * Fit_Weibull_2P_grouped.LL(params, failure_times, right_censored_times, failure_qty, right_censored_qty)
-        self.loglik2 = LL2
-        self.loglik = LL2 * -0.5
-        if n - k - 1 > 0:
-            self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
-        else:
-            self.AICc = 'Insufficient data'
-        self.BIC = np.log(n) * k + LL2
+                    guess = initial_guess[0]
+                    result = minimize(value_and_grad(Fit_Weibull_2P_grouped.LL_fb), guess, args=(failure_times, right_censored_times, failure_qty, right_censored_qty, force_beta), jac=True, tol=1e-4, method='nelder-mead')
+                if result.success is True:
+                    params = result.x
+                    self.success = True
+                    if force_beta is None:
+                        self.alpha = params[0]
+                        self.beta = params[1]
+                    else:
+                        self.alpha = params[0]
+                        self.beta = force_beta
+                else:
+                    self.success = False
+                    colorprint(str('WARNING: MLE estimates failed for Weibull_2P_grouped. The least squares estimates have been returned. These results may not be as accurate as MLE.'), text_color='red')
+                    if force_beta is None:
+                        self.alpha = initial_guess[0]
+                        self.beta = initial_guess[1]
+                    else:
+                        self.alpha = initial_guess[0]
+                        self.beta = force_beta
 
         # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
+        params = [self.alpha, self.beta]
         if force_beta is None:
             hessian_matrix = hessian(Fit_Weibull_2P_grouped.LL)(np.array(tuple(params)), np.array(tuple(failure_times)), np.array(tuple(right_censored_times)), np.array(tuple(failure_qty)), np.array(tuple(right_censored_qty)))
             covariance_matrix = np.linalg.inv(hessian_matrix)
@@ -1082,53 +1048,76 @@ class Fit_Weibull_2P_grouped:
             hessian_matrix = hessian(Fit_Weibull_2P_grouped.LL_fb)(np.array(tuple([self.alpha])), np.array(tuple(failure_times)), np.array(tuple(right_censored_times)), np.array(tuple(failure_qty)), np.array(tuple(right_censored_qty)), np.array(tuple([force_beta])))
             covariance_matrix = np.linalg.inv(hessian_matrix)
             self.alpha_SE = abs(covariance_matrix[0][0]) ** 0.5
-            self.beta_SE = ''
-            self.Cov_alpha_beta = ''
+            self.beta_SE = 0
+            self.Cov_alpha_beta = 0
             self.alpha_upper = self.alpha * (np.exp(Z * (self.alpha_SE / self.alpha)))
             self.alpha_lower = self.alpha * (np.exp(-Z * (self.alpha_SE / self.alpha)))
-            self.beta_upper = ''
-            self.beta_lower = ''
+            self.beta_upper = self.beta
+            self.beta_lower = self.beta
 
-        Data = {'Parameter': ['Alpha', 'Beta'],
-                'Point Estimate': [self.alpha, self.beta],
-                'Standard Error': [self.alpha_SE, self.beta_SE],
-                'Lower CI': [self.alpha_lower, self.beta_lower],
-                'Upper CI': [self.alpha_upper, self.beta_upper]}
-        df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
-        self.results = df.set_index('Parameter')
-
+        results_data = {'Parameter': ['Alpha', 'Beta'],
+                        'Point Estimate': [self.alpha, self.beta],
+                        'Standard Error': [self.alpha_SE, self.beta_SE],
+                        'Lower CI': [self.alpha_lower, self.beta_lower],
+                        'Upper CI': [self.alpha_upper, self.beta_upper]}
+        self.results = pd.DataFrame(results_data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
         self.distribution = Weibull_Distribution(alpha=self.alpha, beta=self.beta, alpha_SE=self.alpha_SE, beta_SE=self.beta_SE, Cov_alpha_beta=self.Cov_alpha_beta, CI=CI, CI_type=CI_type)
-        self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=failures, show_plot=False), empirical_cdf=y)
 
         if percentiles is not None:
             point_estimate = self.distribution.quantile(q=percentiles / 100)
             lower_estimate, upper_estimate = distribution_confidence_intervals.weibull_CI(self=self.distribution, func='CDF', CI_type='time', CI=CI, q=1 - (percentiles / 100))
-            Percentile_Data = {'Percentile': percentiles,
+            percentile_data = {'Percentile': percentiles,
                                'Lower Estimate': lower_estimate,
                                'Point Estimate': point_estimate,
                                'Upper Estimate': upper_estimate}
-            percentiles = pd.DataFrame(Percentile_Data, columns=['Percentile', 'Lower Estimate', 'Point Estimate', 'Upper Estimate'])
-            self.percentiles = percentiles.set_index('Percentile')
+            self.percentiles = pd.DataFrame(percentile_data, columns=['Percentile', 'Lower Estimate', 'Point Estimate', 'Upper Estimate'])
+
+        # goodness of fit measures
+        n = sum(failure_qty) + sum(right_censored_qty)
+        if force_beta is None:
+            k = 2
+            LL2 = 2 * Fit_Weibull_2P_grouped.LL(params, failure_times, right_censored_times, failure_qty, right_censored_qty)
+        else:
+            k = 1
+            LL2 = 2 * Fit_Weibull_2P_grouped.LL_fb(params, failure_times, right_censored_times, failure_qty, right_censored_qty, force_beta)
+        self.loglik2 = LL2
+        self.loglik = LL2 * -0.5
+        if n - k - 1 > 0:
+            self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
+        else:
+            self.AICc = 'Insufficient data'
+        self.BIC = np.log(n) * k + LL2
+
+        x, y = plotting_positions(failures=failures, right_censored=right_censored)
+        self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=x, show_plot=False), empirical_cdf=y)
+        GoF_data = {'Goodness of fit': ['Log-likelihood', 'AICc', 'BIC', 'AD'],
+                    'Value': [self.loglik, self.AICc, self.BIC, self.AD]}
+        self.goodness_of_fit = pd.DataFrame(GoF_data, columns=['Goodness of fit', 'Value'])
 
         if print_results is True:
-            pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
-            pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
-            if CI * 100 % 1 == 0:
+            CI_rounded = CI * 100
+            if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            else:
-                CI_rounded = CI * 100
-            print(str('Results from Fit_Weibull_2P_grouped (' + str(CI_rounded) + '% CI):'))
-            print(self.results)
-            print('Log-Likelihood:', self.loglik)
-            print('Number of failures:', sum(failure_qty), '\nNumber of right censored:', sum(right_censored_qty), '\nFraction censored:', round(sum(right_censored_qty) / (sum(right_censored_qty) + sum(failure_qty)) * 100, 5), '%\n')
+            frac_censored = round_to_decimals(sum(right_censored_qty) / n * 100)
+            if frac_censored % 1 == 0:
+                frac_censored = int(frac_censored)
+            colorprint(str('Results from Fit_Weibull_2P_grouped (' + str(CI_rounded) + '% CI):'), bold=True, underline=True)
+            print('Analysis method:', self.method)
+            print('Failures / Right censored:', str(str(sum(failure_qty)) + '/' + str(sum(right_censored_qty))), str('(' + str(frac_censored) + '% right censored)'), '\n')
+            print(self.results.to_string(index=False), '\n')
+            print(self.goodness_of_fit.to_string(index=False), '\n')
 
             if percentiles is not None:
                 print(str('Table of percentiles (' + str(CI_rounded) + '% CI bounds on time):'))
-                print(self.percentiles)
+                print(self.percentiles.to_string(index=False), '\n')
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Weibull_probability_plot
-            Weibull_probability_plot(failures=failures, right_censored=right_censored, __fitted_dist_params=self, CI=CI, CI_type=CI_type, **kwargs)
+            if len(right_censored) == 0:
+                rc = None
+            else:
+                rc = right_censored
+            Weibull_probability_plot(failures=failures, right_censored=rc, __fitted_dist_params=self, CI=CI, CI_type=CI_type, **kwargs)
 
     @staticmethod
     def logf(t, a, b):  # Log PDF (2 parameter Weibull)
@@ -1168,17 +1157,13 @@ class Fit_Weibull_3P:
     print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
     CI_type - 'time' or 'reliability'. Default is time. Used for the probability plot and the distribution object in the output.
-    initial_guess_method - 'scipy', 'least squares' or 'non-linear least squares. Default is 'scipy'. All three do not take into account censored data but scipy uses MLE, and least squares is least squares regression of the plotting positions. Non-linear least squares uses least squares as an intial guess before using scipy.optimise.curve_fit for the CDF. Scipy proved more accurate during testing.
-    optimizer - 'L-BFGS-B' OR 'TNC'. These are both bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
+    method - 'MLE' (maximum likelihood estimation), or 'LS' (least squares estimation). LS will perform non-linear least squares estimation. Default is 'MLE'.
+    optimizer - 'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
     percentiles - percentiles to produce a table of percentiles failed with lower, point, and upper estimates. Default is None which results in no output. True or 'auto' will use default array [1, 5, 10,..., 95, 99]. If an array or list is specified then it will be used instead of the default array.
     kwargs are accepted for the probability plot (eg. linestyle, label, color)
 
     Outputs:
-    success - Whether the solution was found by autograd (True/False)
-        if success is False a warning will be printed indicating that scipy's fit was used as autograd failed. This fit will not be accurate if
-        there is censored data as scipy does not have the ability to fit censored data. Failure of autograd to find the solution should be rare and
-        if it occurs, it is likely that the distribution is an extremely bad fit for the data. Try scaling your data, removing extreme values, or using
-        another distribution.
+    success - Whether the solution was found by autograd (True/False). If False then the value returned will be the initial guess from Least Squares Estimation.
     alpha - the fitted Weibull_3P alpha parameter
     beta - the fitted Weibull_3P beta parameter
     gamma - the fitted Weibull_3P gamma parameter
@@ -1199,109 +1184,42 @@ class Fit_Weibull_3P:
     gamma_upper - the upper CI estimate of the parameter
     gamma_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
+    goodness_of_fit - a dataframe of the goodness of fit values (Log-likelihood, AICc, BIC, AD).
     percentiles - a dataframe of the percentiles with bounds on time. This is only produced if percentiles is 'auto' or a list or array. Since percentiles defaults to None, this output is not normally produced.
     '''
 
-    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, percentiles=None, CI_type='time', optimizer='L-BFGS-B', initial_guess_method='scipy', **kwargs):
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, percentiles=None, CI_type='time', optimizer='L-BFGS-B', method='MLE', **kwargs):
 
-        inputs = fitters_input_checking(dist='Weibull_3P', failures=failures, right_censored=right_censored, initial_guess_method=initial_guess_method, optimizer=optimizer, CI=CI, percentiles=percentiles, CI_type=CI_type)
+        inputs = fitters_input_checking(dist='Weibull_3P', failures=failures, right_censored=right_censored, method=method, optimizer=optimizer, CI=CI, percentiles=percentiles, CI_type=CI_type)
         failures = inputs.failures
         right_censored = inputs.right_censored
         CI = inputs.CI
-        initial_guess_method = inputs.initial_guess_method
+        method = inputs.method
         optimizer = inputs.optimizer
         percentiles = inputs.percentiles
         CI_type = inputs.CI_type
 
-        # Weibull_3P INITIAL GUESS SECTION
-        all_data = np.hstack([failures, right_censored])
-        if min(all_data) < 0:
-            raise ValueError('All failure and censoring times must be greater than zero.')
-        offset = 0.0001  # this is to ensure the upper bound for gamma is not equal to min(data) which would result in inf log-likelihood. This small offset fixes that issue
-        gamma_initial_guess = min(all_data) - offset  # get a quick guess for gamma by setting it as the minimum of the data
-        x, y = plotting_positions(failures=failures - gamma_initial_guess, right_censored=right_censored - gamma_initial_guess)
-        if initial_guess_method == 'scipy':  # default method
-            data_shifted = all_data - gamma_initial_guess
-            sp = ss.weibull_min.fit(data_shifted, floc=0, optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
-            guess = [sp[2], sp[0], gamma_initial_guess]
-            self.initial_guess = guess
-        elif initial_guess_method in ['least squares', 'non-linear least squares']:
-            if len(failures) > 5:
-                x, y = x[1::], y[1::]  # this removes the first value which is almost always way left due to the gamma initial guess adjustment. It is only done if there is enough data (>5 failures)
-            x_linearised = np.log(x)
-            y_linearised = np.log(-np.log(1 - np.array(y)))
-            slope, intercept, _, _, _ = ss.linregress(x_linearised, y_linearised)
-            LS_beta = slope
-            LS_alpha = np.exp(-intercept / LS_beta)
-
-            if initial_guess_method == 'least squares':
-                self.initial_guess = [LS_alpha, LS_beta, gamma_initial_guess]
-                guess = self.initial_guess
-            elif initial_guess_method == 'non-linear least squares' and len(failures) < 4:
-                colorprint('WARNING: initial_guess_method changed to least squares as a minimum of 4 failures are required for non-linear least squares.', text_color='red')
-                self.initial_guess = [LS_alpha, LS_beta, gamma_initial_guess]
-                guess = self.initial_guess
-            else:
-                def __F(t, alpha, beta, gamma):  # function to be fitted by curve_fit [F(t)]
-                    return 1 - np.exp(-(((t - gamma) / alpha) ** beta))
-
-                x2, y2 = plotting_positions(failures=failures, right_censored=right_censored)
-                curve_fit_bounds = ([0, 0, offset], [LS_alpha * 100, LS_beta * 15, gamma_initial_guess])  # ([alpha_lower,beta_lower,gamma_lower],[alpha_upper,beta_upper,gamma_upper])
-                try:
-                    popt, _ = curve_fit(__F, x2, y2, p0=[LS_alpha, LS_beta, gamma_initial_guess], bounds=curve_fit_bounds)  # This is the non-linear least squares method
-                    self.initial_guess = [popt[0], popt[1], popt[2]]
-                except RuntimeError:  # Sometimes the curve_fit fails due to "RuntimeError: Optimal parameters not found: The maximum number of function evaluations is exceeded."
-                    self.initial_guess = [LS_alpha, LS_beta, gamma_initial_guess]
-                    colorprint('WARNING: non-linear least squares failed to obtain the initial guess. Using least squares instead.', text_color='red')
-                guess = self.initial_guess
-
-        self.initial_guess_method = initial_guess_method
-        warnings.filterwarnings('ignore')  # it is necessary to supress the warning about the jacobian when using the nelder-mead optimizer
-        k = len(guess)
-        n = len(all_data)
-        delta_BIC = 1
-        BIC_array = [1000000]
-        runs = 0
-        bnds = [(0, None), (0, None), (0, min(all_data) - offset)]  # bounds on the solution. Helps a lot with stability
-        while delta_BIC > 0.001 and runs < 5:  # exits after BIC convergence or 5 iterations
-            runs += 1
-            result = minimize(value_and_grad(Fit_Weibull_3P.LL), guess, args=(failures, right_censored), jac=True, method=optimizer, bounds=bnds)
-            params = result.x
-            guess = [params[0], params[1], params[2]]
-            LL2 = 2 * Fit_Weibull_3P.LL(guess, failures, right_censored)
-            BIC_array.append(np.log(n) * k + LL2)
-            delta_BIC = abs(BIC_array[-1] - BIC_array[-2])
-
-        if result.success is True:
-            params = result.x
-            self.success = True
-            self.alpha = params[0]
-            self.beta = params[1]
-            self.gamma = params[2]
-        else:  # if the L-BFGS-B or TNC optimizer fails then we have a second attempt using the slower but slightly more reliable nelder-mead optimizer
-            result = minimize(value_and_grad(Fit_Weibull_3P.LL), self.initial_guess, args=(failures, right_censored), jac=True, method='nelder-mead')
-            if result.success is True:
-                params = result.x
-                self.success = True
-                self.alpha = params[0]
-                self.beta = params[1]
-                self.gamma = params[2]
-            else:
-                self.success = False
-                colorprint('WARNING: Fitting using Autograd FAILED for Weibull_3P. The fit from Scipy was used instead so the results may not be accurate.', text_color='red')
-                sp = ss.weibull_min.fit(all_data, optimizer='powell')
-                self.alpha = sp[2]
-                self.beta = sp[0]
-                self.gamma = sp[1]
-
-        params = [self.alpha, self.beta, self.gamma]
-        self.loglik2 = LL2
-        self.loglik = LL2 * -0.5
-        if n - k - 1 > 0:
-            self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
+        # Obtain least squares estimates
+        if method == 'MLE':
+            LS_method = 'LS'
         else:
-            self.AICc = 'Insufficient data'
-        self.BIC = np.log(n) * k + LL2
+            LS_method = method
+        LS_results = LS_optimisation(func_name='Weibull_3P', LL_func=Fit_Weibull_3P.LL, failures=failures, right_censored=right_censored, method=LS_method)
+
+        # least squares method
+        if method in ['LS', 'RRX', 'RRY']:
+            self.alpha = LS_results.guess[0]
+            self.beta = LS_results.guess[1]
+            self.gamma = LS_results.guess[2]
+            self.method = str('Least Squares Estimation (' + LS_results.method + ')')
+
+        # maximum likelihood method
+        elif method == 'MLE':
+            MLE_results = MLE_optimisation(func_name='Weibull_3P', LL_func=Fit_Weibull_3P.LL, initial_guess=[LS_results.guess[0], LS_results.guess[1], LS_results.guess[2]], failures=failures, right_censored=right_censored, optimizer=optimizer)
+            self.alpha = MLE_results.scale
+            self.beta = MLE_results.shape
+            self.gamma = MLE_results.gamma
+            self.method = 'Maximum Likelihood Estimation (MLE)'
 
         if self.gamma < 0.01:  # If the solver finds that gamma is very near zero then we should have used a Weibull_2P distribution. Can't proceed with Weibull_3P as the confidence interval calculations for gamma result in nan (Zero division error). Need to recalculate everything as the SE values will be incorrect for Weibull_3P
             weibull_2P_results = Fit_Weibull_2P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False, CI=CI)
@@ -1318,14 +1236,17 @@ class Fit_Weibull_3P:
             self.beta_lower = weibull_2P_results.beta_lower
             self.gamma_upper = 0
             self.gamma_lower = 0
+            params_3P = [self.alpha, self.beta, self.gamma]
         else:
             # confidence interval estimates of parameters
             Z = -ss.norm.ppf((1 - CI) / 2)
+            params_2P = [self.alpha, self.beta]
+            params_3P = [self.alpha, self.beta, self.gamma]
             # here we need to get alpha_SE and beta_SE from the Weibull_2P by providing an adjusted dataset (adjusted for gamma)
-            hessian_matrix = hessian(Fit_Weibull_2P.LL)(np.array(tuple([self.alpha, self.beta])), np.array(tuple(failures - self.gamma)), np.array(tuple(right_censored - self.gamma)))
+            hessian_matrix = hessian(Fit_Weibull_2P.LL)(np.array(tuple(params_2P)), np.array(tuple(failures - self.gamma)), np.array(tuple(right_censored - self.gamma)))
             covariance_matrix = np.linalg.inv(hessian_matrix)
             # this is to get the gamma_SE. Unfortunately this approach for alpha_SE and beta_SE give SE values that are very large resulting in incorrect CI plots. This is the same method used by Reliasoft
-            hessian_matrix_for_gamma = hessian(Fit_Weibull_3P.LL)(np.array(tuple(params)), np.array(tuple(failures)), np.array(tuple(right_censored)))
+            hessian_matrix_for_gamma = hessian(Fit_Weibull_3P.LL)(np.array(tuple(params_3P)), np.array(tuple(failures)), np.array(tuple(right_censored)))
             covariance_matrix_for_gamma = np.linalg.inv(hessian_matrix_for_gamma)
             self.alpha_SE = abs(covariance_matrix[0][0]) ** 0.5
             self.beta_SE = abs(covariance_matrix[1][1]) ** 0.5
@@ -1338,40 +1259,58 @@ class Fit_Weibull_3P:
             self.gamma_upper = self.gamma * (np.exp(Z * (self.gamma_SE / self.gamma)))  # here we assume gamma can only be positive as there are bounds placed on it in the optimizer. Minitab assumes positive or negative so bounds are different
             self.gamma_lower = self.gamma * (np.exp(-Z * (self.gamma_SE / self.gamma)))
 
-        Data = {'Parameter': ['Alpha', 'Beta', 'Gamma'],
-                'Point Estimate': [self.alpha, self.beta, self.gamma],
-                'Standard Error': [self.alpha_SE, self.beta_SE, self.gamma_SE],
-                'Lower CI': [self.alpha_lower, self.beta_lower, self.gamma_lower],
-                'Upper CI': [self.alpha_upper, self.beta_upper, self.gamma_upper]}
-        df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
-        self.results = df.set_index('Parameter')
+        results_data = {'Parameter': ['Alpha', 'Beta', 'Gamma'],
+                        'Point Estimate': [self.alpha, self.beta, self.gamma],
+                        'Standard Error': [self.alpha_SE, self.beta_SE, self.gamma_SE],
+                        'Lower CI': [self.alpha_lower, self.beta_lower, self.gamma_lower],
+                        'Upper CI': [self.alpha_upper, self.beta_upper, self.gamma_upper]}
+        self.results = pd.DataFrame(results_data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
         self.distribution = Weibull_Distribution(alpha=self.alpha, beta=self.beta, gamma=self.gamma, alpha_SE=self.alpha_SE, beta_SE=self.beta_SE, Cov_alpha_beta=self.Cov_alpha_beta, CI=CI, CI_type=CI_type)
-        self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=failures, show_plot=False), empirical_cdf=y)
 
         if percentiles is not None:
             point_estimate = self.distribution.quantile(q=percentiles / 100)
             lower_estimate, upper_estimate = distribution_confidence_intervals.weibull_CI(self=self.distribution, func='CDF', CI_type='time', CI=CI, q=1 - (percentiles / 100))
-            Percentile_Data = {'Percentile': percentiles,
+            percentile_data = {'Percentile': percentiles,
                                'Lower Estimate': lower_estimate,
                                'Point Estimate': point_estimate,
                                'Upper Estimate': upper_estimate}
-            percentiles = pd.DataFrame(Percentile_Data, columns=['Percentile', 'Lower Estimate', 'Point Estimate', 'Upper Estimate'])
+            percentiles = pd.DataFrame(percentile_data, columns=['Percentile', 'Lower Estimate', 'Point Estimate', 'Upper Estimate'])
             self.percentiles = percentiles.set_index('Percentile')
 
+        # goodness of fit measures
+        n = len(failures) + len(right_censored)
+        k = 3
+        LL2 = 2 * Fit_Weibull_3P.LL(params_3P, failures, right_censored)
+        self.loglik2 = LL2
+        self.loglik = LL2 * -0.5
+        if n - k - 1 > 0:
+            self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
+        else:
+            self.AICc = 'Insufficient data'
+        self.BIC = np.log(n) * k + LL2
+
+        x, y = plotting_positions(failures=failures, right_censored=right_censored)
+        self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=x, show_plot=False), empirical_cdf=y)
+        GoF_data = {'Goodness of fit': ['Log-likelihood', 'AICc', 'BIC', 'AD'],
+                    'Value': [self.loglik, self.AICc, self.BIC, self.AD]}
+        self.goodness_of_fit = pd.DataFrame(GoF_data, columns=['Goodness of fit', 'Value'])
+
         if print_results is True:
-            pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
-            pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
-            if CI * 100 % 1 == 0:
+            CI_rounded = CI * 100
+            if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            else:
-                CI_rounded = CI * 100
-            print(str('Results from Fit_Weibull_3P (' + str(CI_rounded) + '% CI):'))
-            print(self.results)
-            print('Log-Likelihood:', self.loglik, '\n')
+            frac_censored = round_to_decimals(len(right_censored) / n * 100)
+            if frac_censored % 1 == 0:
+                frac_censored = int(frac_censored)
+            colorprint(str('Results from Fit_Weibull_3P (' + str(CI_rounded) + '% CI):'), bold=True, underline=True)
+            print('Analysis method:', self.method)
+            print('Failures / Right censored:', str(str(len(failures)) + '/' + str(len(right_censored))), str('(' + str(frac_censored) + '% right censored)'), '\n')
+            print(self.results.to_string(index=False), '\n')
+            print(self.goodness_of_fit.to_string(index=False), '\n')
 
             if percentiles is not None:
                 print(str('Table of percentiles (' + str(CI_rounded) + '% CI bounds on time):'))
-                print(self.percentiles)
+                print(self.percentiles.to_string(index=False), '\n')
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Weibull_probability_plot
@@ -1457,6 +1396,7 @@ class Fit_Weibull_Mixture:
     BIC - Bayesian Information Criterion
     AD - the Anderson Darling (corrected) statistic (as reported by Minitab)
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
+    goodness_of_fit - a dataframe of the goodness of fit values (Log-likelihood, AICc, BIC, AD).
     '''
 
     def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95):
@@ -1531,7 +1471,6 @@ class Fit_Weibull_Mixture:
         dist_1 = Weibull_Distribution(alpha=self.alpha_1, beta=self.beta_1)
         dist_2 = Weibull_Distribution(alpha=self.alpha_2, beta=self.beta_2)
         self.distribution = Mixture_Model(distributions=[dist_1, dist_2], proportions=[self.proportion_1, self.proportion_2])
-        self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=failures, show_plot=False), empirical_cdf=y)
 
         params = [self.alpha_1, self.beta_1, self.alpha_2, self.beta_2, self.proportion_1]
         k = len(params)
@@ -1570,26 +1509,38 @@ class Fit_Weibull_Mixture:
                 'Standard Error': [self.alpha_1_SE, self.beta_1_SE, self.alpha_2_SE, self.beta_2_SE, self.proportion_1_SE],
                 'Lower CI': [self.alpha_1_lower, self.beta_1_lower, self.alpha_2_lower, self.beta_2_lower, self.proportion_1_lower],
                 'Upper CI': [self.alpha_1_upper, self.beta_1_upper, self.alpha_2_upper, self.beta_2_upper, self.proportion_1_upper]}
-        df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
-        self.results = df.set_index('Parameter')
+        self.results = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
+
+        x, y = plotting_positions(failures=failures, right_censored=right_censored)
+        self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=x, show_plot=False), empirical_cdf=y)
+        GoF_data = {'Goodness of fit': ['Log-likelihood', 'AICc', 'BIC', 'AD'],
+                    'Value': [self.loglik, self.AICc, self.BIC, self.AD]}
+        self.goodness_of_fit = pd.DataFrame(GoF_data, columns=['Goodness of fit', 'Value'])
 
         if print_results is True:
-            pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
-            pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
-            if CI * 100 % 1 == 0:
+            CI_rounded = CI * 100
+            if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            else:
-                CI_rounded = CI * 100
-            print(str('Results from Fit_Weibull_Mixture (' + str(CI_rounded) + '% CI):'))
-            print(self.results)
-            print('Log-Likelihood:', self.loglik, '\n')
+            frac_censored = round_to_decimals(len(right_censored) / n * 100)
+            if frac_censored % 1 == 0:
+                frac_censored = int(frac_censored)
+            colorprint(str('Results from Fit_Weibull_Mixture (' + str(CI_rounded) + '% CI):'), bold=True, underline=True)
+            print('Analysis method: MLE')
+            print('Failures / Right censored:', str(str(len(failures)) + '/' + str(len(right_censored))), str('(' + str(frac_censored) + '% right censored)'), '\n')
+            print(self.results.to_string(index=False), '\n')
+            print(self.goodness_of_fit.to_string(index=False), '\n')
+
         if show_probability_plot is True:
             from reliability.Probability_plotting import Weibull_probability_plot
-            Weibull_probability_plot(failures=failures, right_censored=right_censored, show_fitted_distribution=False)
+            if len(right_censored) == 0:
+                rc = None
+            else:
+                rc = right_censored
+            Weibull_probability_plot(failures=failures, right_censored=rc, show_fitted_distribution=False)
             label_str = str(r'Fitted Weibull MM ' + str(round_to_decimals(self.proportion_1, dec)) + r' ($\alpha_1=$' + str(round_to_decimals(self.alpha_1, dec)) + r', $\beta_1=$' + str(round_to_decimals(self.beta_1, dec))
                             + ')+\n                             ' + str(round_to_decimals(self.proportion_2, dec)) + r' ($\alpha_2=$' + str(round_to_decimals(self.alpha_2, dec)) + r', $\beta_2=$' + str(round_to_decimals(self.beta_2, dec)) + ')')
             xvals = np.logspace(np.log10(min(failures)) - 3, np.log10(max(failures)) + 1, 1000)
-            self.distribution.CDF(xvals=xvals, label=label_str)
+            self.distribution.CDF(xvals=xvals, label=label_str)  # need to add this manually as Weibull_probability_plot can only add Weibull_2P and Weibull_3P using __fitted_dist_params
             plt.title('Probability Plot\nWeibull Mixture CDF')
 
     @staticmethod
@@ -1655,6 +1606,7 @@ class Fit_Weibull_CR:
     BIC - Bayesian Information Criterion
     AD - the Anderson Darling (corrected) statistic (as reported by Minitab)
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
+    goodness_of_fit - a dataframe of the goodness of fit values (Log-likelihood, AICc, BIC, AD).
     '''
 
     def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95):
@@ -1725,7 +1677,6 @@ class Fit_Weibull_CR:
         dist_1 = Weibull_Distribution(alpha=self.alpha_1, beta=self.beta_1)
         dist_2 = Weibull_Distribution(alpha=self.alpha_2, beta=self.beta_2)
         self.distribution = Competing_Risks_Model(distributions=[dist_1, dist_2])
-        self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=failures, show_plot=False), empirical_cdf=y)
 
         params = [self.alpha_1, self.beta_1, self.alpha_2, self.beta_2]
         k = len(params)
@@ -1761,22 +1712,34 @@ class Fit_Weibull_CR:
                 'Standard Error': [self.alpha_1_SE, self.beta_1_SE, self.alpha_2_SE, self.beta_2_SE],
                 'Lower CI': [self.alpha_1_lower, self.beta_1_lower, self.alpha_2_lower, self.beta_2_lower],
                 'Upper CI': [self.alpha_1_upper, self.beta_1_upper, self.alpha_2_upper, self.beta_2_upper]}
-        df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
-        self.results = df.set_index('Parameter')
+        self.results = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
+
+        x, y = plotting_positions(failures=failures, right_censored=right_censored)
+        self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=x, show_plot=False), empirical_cdf=y)
+        GoF_data = {'Goodness of fit': ['Log-likelihood', 'AICc', 'BIC', 'AD'],
+                    'Value': [self.loglik, self.AICc, self.BIC, self.AD]}
+        self.goodness_of_fit = pd.DataFrame(GoF_data, columns=['Goodness of fit', 'Value'])
 
         if print_results is True:
-            pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
-            pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
-            if CI * 100 % 1 == 0:
+            CI_rounded = CI * 100
+            if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            else:
-                CI_rounded = CI * 100
-            print(str('Results from Fit_Weibull_CR (' + str(CI_rounded) + '% CI):'))
-            print(self.results)
-            print('Log-Likelihood:', self.loglik, '\n')
+            frac_censored = round_to_decimals(len(right_censored) / n * 100)
+            if frac_censored % 1 == 0:
+                frac_censored = int(frac_censored)
+            colorprint(str('Results from Fit_Weibull_CR (' + str(CI_rounded) + '% CI):'), bold=True, underline=True)
+            print('Analysis method: MLE')
+            print('Failures / Right censored:', str(str(len(failures)) + '/' + str(len(right_censored))), str('(' + str(frac_censored) + '% right censored)'), '\n')
+            print(self.results.to_string(index=False), '\n')
+            print(self.goodness_of_fit.to_string(index=False), '\n')
+
         if show_probability_plot is True:
             from reliability.Probability_plotting import Weibull_probability_plot
-            Weibull_probability_plot(failures=failures, right_censored=right_censored, show_fitted_distribution=False)
+            if len(right_censored) == 0:
+                rc = None
+            else:
+                rc = right_censored
+            Weibull_probability_plot(failures=failures, right_censored=rc, show_fitted_distribution=False)
             label_str = str(r'Fitted Weibull CR ' + r' ($\alpha_1=$' + str(round_to_decimals(self.alpha_1, dec)) + r', $\beta_1=$' + str(round_to_decimals(self.beta_1, dec))
                             + ') ×\n                            ' + r' ($\alpha_2=$' + str(round_to_decimals(self.alpha_2, dec)) + r', $\beta_2=$' + str(round_to_decimals(self.beta_2, dec)) + ')')
             xvals = np.logspace(np.log10(min(failures)) - 3, np.log10(max(failures)) + 1, 1000)
@@ -1836,14 +1799,12 @@ class Fit_Exponential_1P:
     print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
     percentiles - percentiles to produce a table of percentiles failed with lower, point, and upper estimates. Default is None which results in no output. True or 'auto' will use default array [1, 5, 10,..., 95, 99]. If an array or list is specified then it will be used instead of the default array.
+    method - 'MLE' (maximum likelihood estimation), 'LS' (least squares estimation), 'RRX' (Rank regression on X), 'RRY' (Rank regression on Y). LS will perform both RRX and RRY and return the better one. Default is 'MLE'.
+    optimizer - 'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
     kwargs are accepted for the probability plot (eg. linestyle, label, color)
 
     Outputs:
-    success - Whether the solution was found by autograd (True/False)
-        if success is False a warning will be printed indicating that scipy's fit was used as autograd failed. This fit will not be accurate if
-        there is censored data as scipy does not have the ability to fit censored data. Failure of autograd to find the solution should be rare and
-        if it occurs, it is likely that the distribution is an extremely bad fit for the data. Try scaling your data, removing extreme values, or using
-        another distribution.
+    success - Whether the solution was found by autograd (True/False). If False then the value returned will be the initial guess from Least Squares Estimation.
     Lambda - the fitted Exponential_1P lambda parameter
     loglik - Log Likelihood (as used in Minitab and Reliasoft)
     loglik2 - LogLikelihood*-2 (as used in JMP Pro)
@@ -1855,40 +1816,71 @@ class Fit_Exponential_1P:
     Lambda_upper - the upper CI estimate of the parameter
     Lambda_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for the parameter)
+    goodness_of_fit - a dataframe of the goodness of fit values (Log-likelihood, AICc, BIC, AD).
     percentiles - a dataframe of the percentiles with bounds on time. This is only produced if percentiles is 'auto' or a list or array. Since percentiles defaults to None, this output is not normally produced.
 
-    *Note that this is a 1 parameter distribution but Lambda_inv is also provided as some programs (such as minitab and scipy.stats) use this instead of Lambda
+    *Note that this is a 1 parameter distribution but Lambda_inv is also provided as some programs (such as Minitab and scipy.stats) use this instead of Lambda
     '''
 
-    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, percentiles=None, **kwargs):
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, percentiles=None, method='MLE', optimizer='L-BFGS-B', **kwargs):
 
-        inputs = fitters_input_checking(dist='Exponential_1P', failures=failures, right_censored=right_censored, CI=CI, percentiles=percentiles)
+        inputs = fitters_input_checking(dist='Exponential_1P', failures=failures, right_censored=right_censored, method=method, optimizer=optimizer, CI=CI, percentiles=percentiles)
         failures = inputs.failures
         right_censored = inputs.right_censored
         CI = inputs.CI
+        method = inputs.method
+        optimizer = inputs.optimizer
         percentiles = inputs.percentiles
-
-        all_data = np.hstack([failures, right_censored])
-        # solve it
-        x, y = plotting_positions(failures=failures, right_censored=right_censored)
         self.gamma = 0
-        sp = ss.expon.fit(all_data, floc=0, optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
-        guess = [1 / sp[1]]
-        warnings.filterwarnings('ignore')  # necessary to supress the warning about the jacobian when using the nelder-mead optimizer
-        result = minimize(value_and_grad(Fit_Exponential_1P.LL), guess, args=(failures, right_censored), jac=True, tol=1e-6, method='nelder-mead')
 
-        if result.success is True:
-            params = result.x
-            self.success = True
-            self.Lambda = params[0]
+        # Obtain least squares estimates
+        if method == 'MLE':
+            LS_method = 'LS'
         else:
-            self.success = False
-            colorprint('WARNING: Fitting using Autograd FAILED for Exponential_1P. The fit from Scipy was used instead so results may not be accurate.', text_color='red')
-            self.Lambda = 1 / sp[1]
+            LS_method = method
+        LS_results = LS_optimisation(func_name='Exponential_1P', LL_func=Fit_Exponential_1P.LL, failures=failures, right_censored=right_censored, method=LS_method)
 
+        # least squares method
+        if method in ['LS', 'RRX', 'RRY']:
+            self.Lambda = LS_results.guess[0]
+            self.method = str('Least Squares Estimation (' + LS_results.method + ')')
+
+        # maximum likelihood method
+        elif method == 'MLE':
+            MLE_results = MLE_optimisation(func_name='Exponential_1P', LL_func=Fit_Exponential_1P.LL, initial_guess=[LS_results.guess[0]], failures=failures, right_censored=right_censored, optimizer=optimizer)
+            self.Lambda = MLE_results.scale
+            self.method = 'Maximum Likelihood Estimation (MLE)'
+
+        # confidence interval estimates of parameters
+        Z = -ss.norm.ppf((1 - CI) / 2)
         params = [self.Lambda]
-        k = len(params)
-        n = len(all_data)
+        hessian_matrix = hessian(Fit_Exponential_1P.LL)(np.array(tuple(params)), np.array(tuple(failures)), np.array(tuple(right_censored)))
+        covariance_matrix = np.linalg.inv(hessian_matrix)
+        self.Lambda_SE = abs(covariance_matrix[0][0]) ** 0.5
+        self.Lambda_upper = self.Lambda * (np.exp(Z * (self.Lambda_SE / self.Lambda)))
+        self.Lambda_lower = self.Lambda * (np.exp(-Z * (self.Lambda_SE / self.Lambda)))
+        SE_inv = abs(1 / self.Lambda * np.log(self.Lambda / self.Lambda_upper) / Z)
+
+        results_data = {'Parameter': ['Lambda', '1/Lambda'],
+                        'Point Estimate': [self.Lambda, 1 / self.Lambda],
+                        'Standard Error': [self.Lambda_SE, SE_inv],
+                        'Lower CI': [self.Lambda_lower, 1 / self.Lambda_upper],
+                        'Upper CI': [self.Lambda_upper, 1 / self.Lambda_lower]}
+        self.results = pd.DataFrame(results_data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
+        self.distribution = Exponential_Distribution(Lambda=self.Lambda, Lambda_SE=self.Lambda_SE, CI=CI)
+
+        if percentiles is not None:
+            point_estimate = self.distribution.quantile(q=percentiles / 100)
+            lower_estimate, upper_estimate = distribution_confidence_intervals.exponential_CI(self=self.distribution, func='CDF', CI_type='time', CI=CI, q=1 - (percentiles / 100))
+            percentile_data = {'Percentile': percentiles,
+                               'Lower Estimate': lower_estimate,
+                               'Point Estimate': point_estimate,
+                               'Upper Estimate': upper_estimate}
+            self.percentiles = pd.DataFrame(percentile_data, columns=['Percentile', 'Lower Estimate', 'Point Estimate', 'Upper Estimate'])
+
+        # goodness of fit measures
+        n = len(failures) + len(right_censored)
+        k = 1
         LL2 = 2 * Fit_Exponential_1P.LL(params, failures, right_censored)
         self.loglik2 = LL2
         self.loglik = LL2 * -0.5
@@ -1898,48 +1890,28 @@ class Fit_Exponential_1P:
             self.AICc = 'Insufficient data'
         self.BIC = np.log(n) * k + LL2
 
-        # confidence interval estimates of parameters
-        Z = -ss.norm.ppf((1 - CI) / 2)
-        hessian_matrix = hessian(Fit_Exponential_1P.LL)(np.array(tuple(params)), np.array(tuple(failures)), np.array(tuple(right_censored)))
-        covariance_matrix = np.linalg.inv(hessian_matrix)
-        self.Lambda_SE = abs(covariance_matrix[0][0]) ** 0.5
-        self.Lambda_upper = self.Lambda * (np.exp(Z * (self.Lambda_SE / self.Lambda)))
-        self.Lambda_lower = self.Lambda * (np.exp(-Z * (self.Lambda_SE / self.Lambda)))
-        SE_inv = abs(1 / self.Lambda * np.log(self.Lambda / self.Lambda_upper) / Z)
-        Data = {'Parameter': ['Lambda', '1/Lambda'],
-                'Point Estimate': [self.Lambda, 1 / self.Lambda],
-                'Standard Error': [self.Lambda_SE, SE_inv],
-                'Lower CI': [self.Lambda_lower, 1 / self.Lambda_upper],
-                'Upper CI': [self.Lambda_upper, 1 / self.Lambda_lower]}
-        df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
-        self.results = df.set_index('Parameter')
-        self.distribution = Exponential_Distribution(Lambda=self.Lambda, Lambda_SE=self.Lambda_SE, CI=CI)  ####
-        self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=failures, show_plot=False), empirical_cdf=y)
-
-        if percentiles is not None:
-            point_estimate = self.distribution.quantile(q=percentiles / 100)
-            lower_estimate, upper_estimate = distribution_confidence_intervals.exponential_CI(self=self.distribution, func='CDF', CI=CI, q=1 - (percentiles / 100))
-            Percentile_Data = {'Percentile': percentiles,
-                               'Lower Estimate': lower_estimate,
-                               'Point Estimate': point_estimate,
-                               'Upper Estimate': upper_estimate}
-            percentiles = pd.DataFrame(Percentile_Data, columns=['Percentile', 'Lower Estimate', 'Point Estimate', 'Upper Estimate'])
-            self.percentiles = percentiles.set_index('Percentile')
+        x, y = plotting_positions(failures=failures, right_censored=right_censored)
+        self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=x, show_plot=False), empirical_cdf=y)
+        GoF_data = {'Goodness of fit': ['Log-likelihood', 'AICc', 'BIC', 'AD'],
+                    'Value': [self.loglik, self.AICc, self.BIC, self.AD]}
+        self.goodness_of_fit = pd.DataFrame(GoF_data, columns=['Goodness of fit', 'Value'])
 
         if print_results is True:
-            pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
-            pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
-            if CI * 100 % 1 == 0:
+            CI_rounded = CI * 100
+            if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            else:
-                CI_rounded = CI * 100
-            print(str('Results from Fit_Exponential_1P (' + str(CI_rounded) + '% CI):'))
-            print(self.results)
-            print('Log-Likelihood:', self.loglik, '\n')
+            frac_censored = round_to_decimals(len(right_censored) / n * 100)
+            if frac_censored % 1 == 0:
+                frac_censored = int(frac_censored)
+            colorprint(str('Results from Fit_Exponential_1P (' + str(CI_rounded) + '% CI):'), bold=True, underline=True)
+            print('Analysis method:', self.method)
+            print('Failures / Right censored:', str(str(len(failures)) + '/' + str(len(right_censored))), str('(' + str(frac_censored) + '% right censored)'), '\n')
+            print(self.results.to_string(index=False), '\n')
+            print(self.goodness_of_fit.to_string(index=False), '\n')
 
             if percentiles is not None:
-                print(str('Table of percentiles (' + str(CI_rounded) + '% CI bounds):'))
-                print(self.percentiles)
+                print(str('Table of percentiles (' + str(CI_rounded) + '% CI bounds on time):'))
+                print(self.percentiles.to_string(index=False), '\n')
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Exponential_probability_plot_Weibull_Scale
@@ -1947,7 +1919,7 @@ class Fit_Exponential_1P:
                 rc = None
             else:
                 rc = right_censored
-            Exponential_probability_plot_Weibull_Scale(failures=failures, right_censored=rc, CI=CI, __fitted_dist_params=self, **kwargs)  ####
+            Exponential_probability_plot_Weibull_Scale(failures=failures, right_censored=rc, __fitted_dist_params=self, CI=CI, **kwargs)
 
     @staticmethod
     def logf(t, L):  # Log PDF (1 parameter Expon)
@@ -1979,14 +1951,12 @@ class Fit_Exponential_2P:
     print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
     percentiles - percentiles to produce a table of percentiles failed with lower, point, and upper estimates. Default is None which results in no output. True or 'auto' will use default array [1, 5, 10,..., 95, 99]. If an array or list is specified then it will be used instead of the default array.
+    method - 'MLE' (maximum likelihood estimation), 'LS' (least squares estimation), 'RRX' (Rank regression on X), 'RRY' (Rank regression on Y). LS will perform both RRX and RRY and return the better one. Default is 'MLE'.
+    optimizer - 'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
     kwargs are accepted for the probability plot (eg. linestyle, label, color)
 
     Outputs:
-    success - Whether the solution was found by autograd (True/False)
-        if success is False a warning will be printed indicating that scipy's fit was used as autograd failed. This fit will not be accurate if
-        there is censored data as scipy does not have the ability to fit censored data. Failure of autograd to find the solution should be rare and
-        if it occurs, it is likely that the distribution is an extremely bad fit for the data. Try scaling your data, removing extreme values, or using
-        another distribution.
+    success - Whether the solution was found by autograd (True/False). If False then the value returned will be the initial guess from Least Squares Estimation.
     Lambda - the fitted Exponential_2P lambda parameter
     Lambda_inv - the inverse of the Lambda parameter (1/Lambda)
     gamma - the fitted Exponential_2P gamma parameter
@@ -2006,90 +1976,56 @@ class Fit_Exponential_2P:
     gamma_upper - the upper CI estimate of the parameter
     gamma_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for the parameter)
+    goodness_of_fit - a dataframe of the goodness of fit values (Log-likelihood, AICc, BIC, AD).
     percentiles - a dataframe of the percentiles with bounds on time. This is only produced if percentiles is 'auto' or a list or array. Since percentiles defaults to None, this output is not normally produced.
 
-    *Note that this is a 2 parameter distribution but Lambda_inv is also provided as some programs (such as minitab and scipy.stats) use this instead of Lambda
+    *Note that this is a 2 parameter distribution but Lambda_inv is also provided as some programs (such as Minitab and scipy.stats) use this instead of Lambda
     '''
 
-    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, percentiles=None, **kwargs):
-        # Regarding the confidence intervals of the parameters, the gamma parameter is estimated by optimizing the log-likelihood function but
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, percentiles=None, method='MLE', optimizer='L-BFGS-B', **kwargs):
+        # To obtain the confidence intervals of the parameters, the gamma parameter is estimated by optimizing the log-likelihood function but
         # it is assumed as fixed because the variance-covariance matrix of the estimated parameters cannot be determined numerically. By assuming
         # the standard error in gamma is zero, we can use Exponential_1P to obtain the confidence intervals for Lambda. This is the same procedure
         # performed by both Reliasoft and Minitab. You may find the results are slightly different to Minitab and this is because the optimisation
         # of gamma is done more efficiently here than Minitab does it. This is evidenced by comparing the log-likelihood for the same data input.
 
-        inputs = fitters_input_checking(dist='Exponential_2P', failures=failures, right_censored=right_censored, CI=CI, percentiles=percentiles)
+        inputs = fitters_input_checking(dist='Exponential_2P', failures=failures, right_censored=right_censored, CI=CI, percentiles=percentiles, method=method, optimizer=optimizer)
         failures = inputs.failures
         right_censored = inputs.right_censored
         CI = inputs.CI
         percentiles = inputs.percentiles
+        method = inputs.method
+        optimizer = inputs.optimizer
 
-        all_data = np.hstack([failures, right_censored])
-        # get a quick initial guess for gamma by setting gamma as the minimum of all data
-        offset = 0.001  # this is to ensure the upper bound for gamma is not equal to min(data) which would result in inf log-likelihood. This small offset fixes that issue
-        self.gamma = min(all_data) - offset
-
-        x, y = plotting_positions(failures=failures - self.gamma, right_censored=right_censored - self.gamma)
-        # get an initial guess for Lambda
-        data_shifted = all_data - self.gamma
-        sp = ss.expon.fit(data_shifted, floc=0, optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
-        guess = [sp[1], self.gamma]  # this uses the inverted form given by scipy
-        self.initial_guess = guess
-        k = len(guess)
-        n = len(all_data)
-
-        delta_BIC = 1
-        BIC_array = [1000000]
-        runs = 0
-        bnds2 = [(0, None), (0, min(all_data) - offset)]  # bounds on the solution. Helps a lot with stability
-        inv = True  # try the inverted form first
-        # The reason for having an inverted and non-inverted cases is due to the gradient being too shallow in some cases. If Lambda<1 we invert it so it's bigger. This prevents the gradient getting too shallow for the optimizer to find the correct minimum.
-        while delta_BIC > 0.001 and runs < 5:  # exits after BIC convergence or 5 iterations
-            runs += 1
-            if inv is True:
-                result = minimize(value_and_grad(Fit_Exponential_2P.LL_inv), guess, args=(failures, right_censored), jac=True, method='L-BFGS-B', bounds=bnds2)
-            if result.success is False or inv is False:
-                if runs == 1:
-                    guess = [1 / sp[1], self.gamma]  # fix the guess to be the non-inverted form
-                    self.initial_guess = guess
-                result = minimize(value_and_grad(Fit_Exponential_2P.LL), guess, args=(failures, right_censored), jac=True, method='L-BFGS-B', bounds=bnds2)
-                inv = False  # inversion status changed for subsequent loops
-
-            params = result.x
-            guess = [params[0], params[1]]
-            if inv is False:
-                LL2 = 2 * Fit_Exponential_2P.LL(guess, failures, right_censored)
-            else:
-                LL2 = 2 * Fit_Exponential_2P.LL_inv(guess, failures, right_censored)
-            BIC_array.append(np.log(n) * k + LL2)
-            delta_BIC = abs(BIC_array[-1] - BIC_array[-2])
-
-        if result.success is True:
-            params = result.x
-            self.success = True
-            if inv is False:
-                self.Lambda = params[0]
-            else:
-                self.Lambda = 1 / params[0]
-            self.gamma = params[1]
+        # Obtain least squares estimates
+        if method == 'MLE':
+            LS_method = 'LS'
         else:
-            self.success = False
-            colorprint('WARNING: Fitting using Autograd FAILED for Exponential_2P. The fit from Scipy was used instead so results may not be accurate.', text_color='red')
-            sp = ss.expon.fit(all_data, optimizer='powell')
-            self.Lambda = sp[1]
-            self.gamma = sp[0]
+            LS_method = method
+        LS_results = LS_optimisation(func_name='Exponential_2P', LL_func=Fit_Exponential_2P.LL, failures=failures, right_censored=right_censored, method=LS_method)
 
-        self.loglik2 = LL2
-        self.loglik = LL2 * -0.5
-        if n - k - 1 > 0:
-            self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
-        else:
-            self.AICc = 'Insufficient data'
-        self.BIC = np.log(n) * k + LL2
+        # least squares method
+        if method in ['LS', 'RRX', 'RRY']:
+            self.Lambda = LS_results.guess[0]
+            self.gamma = LS_results.guess[1]
+            self.method = str('Least Squares Estimation (' + LS_results.method + ')')
+
+        # maximum likelihood method
+        elif method == 'MLE':
+            if LS_results.guess[0] < 1:  # The reason for having an inverted and non-inverted cases is due to the gradient being too shallow in some cases. If Lambda<1 we invert it so it's bigger. This prevents the gradient getting too shallow for the optimizer to find the correct minimum.
+                MLE_results = MLE_optimisation(func_name='Exponential_2P', LL_func=Fit_Exponential_2P.LL_inv, initial_guess=[1 / LS_results.guess[0], LS_results.guess[1]], failures=failures, right_censored=right_censored, optimizer=optimizer)
+                self.Lambda = 1 / MLE_results.scale
+            else:
+                MLE_results = MLE_optimisation(func_name='Exponential_2P', LL_func=Fit_Exponential_2P.LL, initial_guess=[LS_results.guess[0], LS_results.guess[1]], failures=failures, right_censored=right_censored, optimizer=optimizer)
+                self.Lambda = MLE_results.scale
+            self.gamma = MLE_results.gamma
+            self.method = 'Maximum Likelihood Estimation (MLE)'
 
         # confidence interval estimates of parameters. Uses Exponential_1P because gamma (while optimized) cannot be used in the MLE solution as the solution is unbounded
         Z = -ss.norm.ppf((1 - CI) / 2)
-        hessian_matrix = hessian(Fit_Exponential_1P.LL)(np.array(tuple([self.Lambda])), np.array(tuple(failures - self.gamma)), np.array(tuple(right_censored - self.gamma)))
+        params_1P = [self.Lambda]
+        params_2P = [self.Lambda, self.gamma]
+        hessian_matrix = hessian(Fit_Exponential_1P.LL)(np.array(tuple(params_1P)), np.array(tuple(failures - self.gamma)), np.array(tuple(right_censored - self.gamma)))
         covariance_matrix = np.linalg.inv(hessian_matrix)
         self.Lambda_SE = abs(covariance_matrix[0][0]) ** 0.5
         self.gamma_SE = 0
@@ -2102,41 +2038,58 @@ class Fit_Exponential_2P:
         self.Lambda_lower_inv = 1 / self.Lambda_upper
         self.Lambda_upper_inv = 1 / self.Lambda_lower
 
-        Data = {'Parameter': ['Lambda', '1/Lambda', 'Gamma'],
-                'Point Estimate': [self.Lambda, self.Lambda_inv, self.gamma],
-                'Standard Error': [self.Lambda_SE, self.Lambda_SE_inv, self.gamma_SE],
-                'Lower CI': [self.Lambda_lower, self.Lambda_lower_inv, self.gamma_lower],
-                'Upper CI': [self.Lambda_upper, self.Lambda_upper_inv, self.gamma_upper]}
+        results_data = {'Parameter': ['Lambda', '1/Lambda', 'Gamma'],
+                        'Point Estimate': [self.Lambda, self.Lambda_inv, self.gamma],
+                        'Standard Error': [self.Lambda_SE, self.Lambda_SE_inv, self.gamma_SE],
+                        'Lower CI': [self.Lambda_lower, self.Lambda_lower_inv, self.gamma_lower],
+                        'Upper CI': [self.Lambda_upper, self.Lambda_upper_inv, self.gamma_upper]}
 
-        df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
-        self.results = df.set_index('Parameter')
+        self.results = pd.DataFrame(results_data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
         self.distribution = Exponential_Distribution(Lambda=self.Lambda, gamma=self.gamma, Lambda_SE=self.Lambda_SE, CI=CI)
-        self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=failures, show_plot=False), empirical_cdf=y)
 
         if percentiles is not None:
             point_estimate = self.distribution.quantile(q=percentiles / 100)
-            lower_estimate, upper_estimate = distribution_confidence_intervals.exponential_CI(self=self.distribution, func='CDF', CI=CI, q=1 - (percentiles / 100))
-            Percentile_Data = {'Percentile': percentiles,
+            lower_estimate, upper_estimate = distribution_confidence_intervals.exponential_CI(self=self.distribution, func='CDF', CI_type='time', CI=CI, q=1 - (percentiles / 100))
+            percentile_data = {'Percentile': percentiles,
                                'Lower Estimate': lower_estimate,
                                'Point Estimate': point_estimate,
                                'Upper Estimate': upper_estimate}
-            percentiles = pd.DataFrame(Percentile_Data, columns=['Percentile', 'Lower Estimate', 'Point Estimate', 'Upper Estimate'])
-            self.percentiles = percentiles.set_index('Percentile')
+            self.percentiles = pd.DataFrame(percentile_data, columns=['Percentile', 'Lower Estimate', 'Point Estimate', 'Upper Estimate'])
+
+        # goodness of fit measures
+        n = len(failures) + len(right_censored)
+        k = 2
+        LL2 = 2 * Fit_Exponential_2P.LL(params_2P, failures, right_censored)
+        self.loglik2 = LL2
+        self.loglik = LL2 * -0.5
+        if n - k - 1 > 0:
+            self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
+        else:
+            self.AICc = 'Insufficient data'
+        self.BIC = np.log(n) * k + LL2
+
+        x, y = plotting_positions(failures=failures, right_censored=right_censored)
+        self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=x, show_plot=False), empirical_cdf=y)
+        GoF_data = {'Goodness of fit': ['Log-likelihood', 'AICc', 'BIC', 'AD'],
+                    'Value': [self.loglik, self.AICc, self.BIC, self.AD]}
+        self.goodness_of_fit = pd.DataFrame(GoF_data, columns=['Goodness of fit', 'Value'])
 
         if print_results is True:
-            pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
-            pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
-            if CI * 100 % 1 == 0:
+            CI_rounded = CI * 100
+            if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            else:
-                CI_rounded = CI * 100
-            print(str('Results from Fit_Exponential_2P (' + str(CI_rounded) + '% CI):'))
-            print(self.results)
-            print('Log-Likelihood:', self.loglik, '\n')
+            frac_censored = round_to_decimals(len(right_censored) / n * 100)
+            if frac_censored % 1 == 0:
+                frac_censored = int(frac_censored)
+            colorprint(str('Results from Fit_Exponential_2P (' + str(CI_rounded) + '% CI):'), bold=True, underline=True)
+            print('Analysis method:', self.method)
+            print('Failures / Right censored:', str(str(len(failures)) + '/' + str(len(right_censored))), str('(' + str(frac_censored) + '% right censored)'), '\n')
+            print(self.results.to_string(index=False), '\n')
+            print(self.goodness_of_fit.to_string(index=False), '\n')
 
             if percentiles is not None:
-                print(str('Table of percentiles (' + str(CI_rounded) + '% CI bounds):'))
-                print(self.percentiles)
+                print(str('Table of percentiles (' + str(CI_rounded) + '% CI bounds on time):'))
+                print(self.percentiles.to_string(index=False), '\n')
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Exponential_probability_plot_Weibull_Scale
@@ -2185,15 +2138,13 @@ class Fit_Normal_2P:
     show_probability_plot - True/False. Defaults to True.
     print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
+    method - 'MLE' (maximum likelihood estimation), 'LS' (least squares estimation), 'RRX' (Rank regression on X), 'RRY' (Rank regression on Y). LS will perform both RRX and RRY and return the better one. Default is 'MLE'.
+    optimizer - 'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
     force_sigma - Use this to specify the sigma value if you need to force sigma to be a certain value. Used in ALT probability plotting. Optional input.
     kwargs are accepted for the probability plot (eg. linestyle, label, color)
 
     Outputs:
-    success - Whether the solution was found by autograd (True/False)
-        if success is False a warning will be printed indicating that scipy's fit was used as autograd failed. This fit will not be accurate if
-        there is censored data as scipy does not have the ability to fit censored data. Failure of autograd to find the solution should be rare and
-        if it occurs, it is likely that the distribution is an extremely bad fit for the data. Try scaling your data, removing extreme values, or using
-        another distribution.
+    success - Whether the solution was found by autograd (True/False). If False then the value returned will be the initial guess from Least Squares Estimation.
     mu - the fitted Normal_2P mu parameter
     sigma - the fitted Normal_2P sigma parameter
     loglik - Log Likelihood (as used in Minitab and Reliasoft)
@@ -2210,60 +2161,45 @@ class Fit_Normal_2P:
     sigma_upper - the upper CI estimate of the parameter
     sigma_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
+    goodness_of_fit - a dataframe of the goodness of fit values (Log-likelihood, AICc, BIC, AD).
+    percentiles - a dataframe of the percentiles with bounds on time. This is only produced if percentiles is 'auto' or a list or array. Since percentiles defaults to None, this output is not normally produced.
     '''
 
-    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, percentiles=None, CI_type='time', force_sigma=None, **kwargs):
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, percentiles=None, optimizer='L-BFGS-B', CI_type='time', method='MLE', force_sigma=None, **kwargs):
 
-        inputs = fitters_input_checking(dist='Normal_2P', failures=failures, right_censored=right_censored, CI=CI, percentiles=percentiles, force_sigma=force_sigma, CI_type=CI_type)
+        inputs = fitters_input_checking(dist='Normal_2P', failures=failures, right_censored=right_censored, method=method, optimizer=optimizer, CI=CI, percentiles=percentiles, force_sigma=force_sigma, CI_type=CI_type)
         failures = inputs.failures
         right_censored = inputs.right_censored
         CI = inputs.CI
+        method = inputs.method
+        optimizer = inputs.optimizer
         percentiles = inputs.percentiles
         force_sigma = inputs.force_sigma
         CI_type = inputs.CI_type
 
-        all_data = np.hstack([failures, right_censored])
-        x, y = plotting_positions(failures=failures, right_censored=right_censored)
-        # solve it
-        sp = ss.norm.fit(all_data, optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
-        warnings.filterwarnings('ignore')  # necessary to supress the warning about the jacobian when using the nelder-mead optimizer
-        if force_sigma is None:
-            guess = [sp[0], sp[1]]
-            k = len(guess)
-            result = minimize(value_and_grad(Fit_Normal_2P.LL), guess, args=(failures, right_censored), jac=True, method='nelder-mead', tol=1e-6)
+        # Obtain least squares estimates
+        if method == 'MLE':
+            LS_method = 'LS'
         else:
-            guess = [sp[0]]
-            k = len(guess)
-            result = minimize(value_and_grad(Fit_Normal_2P.LL_fs), guess, args=(failures, right_censored, force_sigma), jac=True, method='nelder-mead', tol=1e-6)
+            LS_method = method
+        LS_results = LS_optimisation(func_name='Normal_2P', LL_func=Fit_Normal_2P.LL, failures=failures, right_censored=right_censored, method=LS_method, force_shape=force_sigma, LL_func_force=Fit_Normal_2P.LL_fs)
 
-        if result.success is True:
-            params = result.x
-            self.success = True
-            if force_sigma is None:
-                self.mu = params[0]
-                self.sigma = params[1]
-            else:
-                self.mu = params * 1  # the *-1 converts ndarray to float64
-                self.sigma = force_sigma
-        else:
-            self.success = False
-            colorprint('WARNING: Fitting using Autograd FAILED for Normal_2P. The fit from Scipy was used instead so results may not be accurate.', text_color='red')
-            self.mu = sp[0]
-            self.sigma = sp[1]
+        # least squares method
+        if method in ['LS', 'RRX', 'RRY']:
+            self.mu = LS_results.guess[0]
+            self.sigma = LS_results.guess[1]
+            self.method = str('Least Squares Estimation (' + LS_results.method + ')')
 
-        params = [self.mu, self.sigma]
-        n = len(all_data)
-        LL2 = 2 * Fit_Normal_2P.LL(params, failures, right_censored)
-        self.loglik2 = LL2
-        self.loglik = LL2 * -0.5
-        if n - k - 1 > 0:
-            self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
-        else:
-            self.AICc = 'Insufficient data'
-        self.BIC = np.log(n) * k + LL2
+        # maximum likelihood method
+        elif method == 'MLE':
+            MLE_results = MLE_optimisation(func_name='Normal_2P', LL_func=Fit_Normal_2P.LL, initial_guess=[LS_results.guess[0], LS_results.guess[1]], failures=failures, right_censored=right_censored, optimizer=optimizer, force_shape=force_sigma, LL_func_force=Fit_Normal_2P.LL_fs)
+            self.mu = MLE_results.scale
+            self.sigma = MLE_results.shape
+            self.method = 'Maximum Likelihood Estimation (MLE)'
 
         # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
+        params = [self.mu, self.sigma]
         if force_sigma is None:
             hessian_matrix = hessian(Fit_Normal_2P.LL)(np.array(tuple(params)), np.array(tuple(failures)), np.array(tuple(right_censored)))
             covariance_matrix = np.linalg.inv(hessian_matrix)
@@ -2278,47 +2214,68 @@ class Fit_Normal_2P:
             hessian_matrix = hessian(Fit_Normal_2P.LL_fs)(np.array(tuple([self.mu])), np.array(tuple(failures)), np.array(tuple(right_censored)), np.array(tuple([force_sigma])))
             covariance_matrix = np.linalg.inv(hessian_matrix)
             self.mu_SE = abs(covariance_matrix[0][0]) ** 0.5
-            self.sigma_SE = ''
-            self.Cov_mu_sigma = ''
+            self.sigma_SE = 0
+            self.Cov_mu_sigma = 0
             self.mu_upper = self.mu + (Z * self.mu_SE)  # these are unique to normal and lognormal mu params
             self.mu_lower = self.mu + (-Z * self.mu_SE)
-            self.sigma_upper = ''
-            self.sigma_lower = ''
+            self.sigma_upper = self.sigma
+            self.sigma_lower = self.sigma
 
-        Data = {'Parameter': ['Mu', 'Sigma'],
-                'Point Estimate': [self.mu, self.sigma],
-                'Standard Error': [self.mu_SE, self.sigma_SE],
-                'Lower CI': [self.mu_lower, self.sigma_lower],
-                'Upper CI': [self.mu_upper, self.sigma_upper]}
-        df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
-        self.results = df.set_index('Parameter')
+        results_data = {'Parameter': ['Mu', 'Sigma'],
+                        'Point Estimate': [self.mu, self.sigma],
+                        'Standard Error': [self.mu_SE, self.sigma_SE],
+                        'Lower CI': [self.mu_lower, self.sigma_lower],
+                        'Upper CI': [self.mu_upper, self.sigma_upper]}
+        self.results = pd.DataFrame(results_data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
         self.distribution = Normal_Distribution(mu=self.mu, sigma=self.sigma, mu_SE=self.mu_SE, sigma_SE=self.sigma_SE, Cov_mu_sigma=self.Cov_mu_sigma, CI=CI, CI_type=CI_type)
-        self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=failures, show_plot=False), empirical_cdf=y)
 
         if percentiles is not None:
             point_estimate = self.distribution.quantile(q=percentiles / 100)
             lower_estimate, upper_estimate = distribution_confidence_intervals.normal_CI(self=self.distribution, func='CDF', CI_type='time', CI=CI, q=1 - (percentiles / 100))
-            Percentile_Data = {'Percentile': percentiles,
+            percentile_data = {'Percentile': percentiles,
                                'Lower Estimate': lower_estimate,
                                'Point Estimate': point_estimate,
                                'Upper Estimate': upper_estimate}
-            percentiles = pd.DataFrame(Percentile_Data, columns=['Percentile', 'Lower Estimate', 'Point Estimate', 'Upper Estimate'])
-            self.percentiles = percentiles.set_index('Percentile')
+            self.percentiles = pd.DataFrame(percentile_data, columns=['Percentile', 'Lower Estimate', 'Point Estimate', 'Upper Estimate'])
+
+        # goodness of fit measures
+        n = len(failures) + len(right_censored)
+        if force_sigma is None:
+            k = 2
+            LL2 = 2 * Fit_Normal_2P.LL(params, failures, right_censored)
+        else:
+            k = 1
+            LL2 = 2 * Fit_Normal_2P.LL_fs([self.mu], failures, right_censored, force_sigma)
+        self.loglik2 = LL2
+        self.loglik = LL2 * -0.5
+        if n - k - 1 > 0:
+            self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
+        else:
+            self.AICc = 'Insufficient data'
+        self.BIC = np.log(n) * k + LL2
+
+        x, y = plotting_positions(failures=failures, right_censored=right_censored)
+        self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=x, show_plot=False), empirical_cdf=y)
+        GoF_data = {'Goodness of fit': ['Log-likelihood', 'AICc', 'BIC', 'AD'],
+                    'Value': [self.loglik, self.AICc, self.BIC, self.AD]}
+        self.goodness_of_fit = pd.DataFrame(GoF_data, columns=['Goodness of fit', 'Value'])
 
         if print_results is True:
-            pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
-            pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
-            if CI * 100 % 1 == 0:
+            CI_rounded = CI * 100
+            if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            else:
-                CI_rounded = CI * 100
-            print(str('Results from Fit_Normal_2P (' + str(CI_rounded) + '% CI):'))
-            print(self.results)
-            print('Log-Likelihood:', self.loglik, '\n')
+            frac_censored = round_to_decimals(len(right_censored) / n * 100)
+            if frac_censored % 1 == 0:
+                frac_censored = int(frac_censored)
+            colorprint(str('Results from Fit_Normal_2P (' + str(CI_rounded) + '% CI):'), bold=True, underline=True)
+            print('Analysis method:', self.method)
+            print('Failures / Right censored:', str(str(len(failures)) + '/' + str(len(right_censored))), str('(' + str(frac_censored) + '% right censored)'), '\n')
+            print(self.results.to_string(index=False), '\n')
+            print(self.goodness_of_fit.to_string(index=False), '\n')
 
             if percentiles is not None:
                 print(str('Table of percentiles (' + str(CI_rounded) + '% CI bounds on time):'))
-                print(self.percentiles)
+                print(self.percentiles.to_string(index=False), '\n')
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Normal_probability_plot
@@ -2366,14 +2323,12 @@ class Fit_Gumbel_2P:
     show_probability_plot - True/False. Defaults to True.
     print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
+    method - 'MLE' (maximum likelihood estimation), 'LS' (least squares estimation), 'RRX' (Rank regression on X), 'RRY' (Rank regression on Y). LS will perform both RRX and RRY and return the better one. Default is 'MLE'.
+    optimizer - 'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
     kwargs are accepted for the probability plot (eg. linestyle, label, color)
 
     Outputs:
-    success - Whether the solution was found by autograd (True/False)
-        if success is False a warning will be printed indicating that scipy's fit was used as autograd failed. This fit will not be accurate if
-        there is censored data as scipy does not have the ability to fit censored data. Failure of autograd to find the solution should be rare and
-        if it occurs, it is likely that the distribution is an extremely bad fit for the data. Try scaling your data, removing extreme values, or using
-        another distribution.
+    success - Whether the solution was found by autograd (True/False). If False then the value returned will be the initial guess from Least Squares Estimation.
     mu - the fitted Gumbel_2P mu parameter
     sigma - the fitted Gumbel_2P sigma parameter
     loglik - Log Likelihood (as used in Minitab and Reliasoft)
@@ -2390,50 +2345,44 @@ class Fit_Gumbel_2P:
     sigma_upper - the upper CI estimate of the parameter
     sigma_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
+    goodness_of_fit - a dataframe of the goodness of fit values (Log-likelihood, AICc, BIC, AD).
+    percentiles - a dataframe of the percentiles with bounds on time. This is only produced if percentiles is 'auto' or a list or array. Since percentiles defaults to None, this output is not normally produced.
     '''
 
-    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, percentiles=None, CI_type='time', **kwargs):
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, percentiles=None, CI_type='time', method='MLE', optimizer='L-BFGS-B', **kwargs):
 
-        inputs = fitters_input_checking(dist='Gumbel_2P', failures=failures, right_censored=right_censored, CI=CI, percentiles=percentiles, CI_type=CI_type)
+        inputs = fitters_input_checking(dist='Gumbel_2P', failures=failures, right_censored=right_censored, method=method, optimizer=optimizer, CI=CI, percentiles=percentiles, CI_type=CI_type)
         failures = inputs.failures
         right_censored = inputs.right_censored
         CI = inputs.CI
+        method = inputs.method
+        optimizer = inputs.optimizer
         percentiles = inputs.percentiles
         CI_type = inputs.CI_type
 
-        all_data = np.hstack([failures, right_censored])
-        x, y = plotting_positions(failures=failures, right_censored=right_censored)
-        # solve it
-        sp = ss.gumbel_l.fit(all_data, optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
-        warnings.filterwarnings('ignore')  # necessary to supress the warning about the jacobian when using the nelder-mead optimizer
-        guess = [sp[0], sp[1]]
-        k = len(guess)
-        result = minimize(value_and_grad(Fit_Gumbel_2P.LL), guess, args=(failures, right_censored), jac=True, method='nelder-mead', tol=1e-6)
-
-        if result.success is True:
-            params = result.x
-            self.success = True
-            self.mu = params[0]
-            self.sigma = params[1]
+        # Obtain least squares estimates
+        if method == 'MLE':
+            LS_method = 'LS'
         else:
-            self.success = False
-            colorprint('WARNING: Fitting using Autograd FAILED for Gumbel_2P. The fit from Scipy was used instead so results may not be accurate.', text_color='red')
-            self.mu = sp[0]
-            self.sigma = sp[1]
+            LS_method = method
+        LS_results = LS_optimisation(func_name='Gumbel_2P', LL_func=Fit_Gumbel_2P.LL, failures=failures, right_censored=right_censored, method=LS_method)
 
-        params = [self.mu, self.sigma]
-        n = len(all_data)
-        LL2 = 2 * Fit_Gumbel_2P.LL(params, failures, right_censored)
-        self.loglik2 = LL2
-        self.loglik = LL2 * -0.5
-        if n - k - 1 > 0:
-            self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
-        else:
-            self.AICc = 'Insufficient data'
-        self.BIC = np.log(n) * k + LL2
+        # least squares method
+        if method in ['LS', 'RRX', 'RRY']:
+            self.mu = LS_results.guess[0]
+            self.sigma = LS_results.guess[1]
+            self.method = str('Least Squares Estimation (' + LS_results.method + ')')
+
+        # maximum likelihood method
+        elif method == 'MLE':
+            MLE_results = MLE_optimisation(func_name='Gumbel_2P', LL_func=Fit_Gumbel_2P.LL, initial_guess=[LS_results.guess[0], LS_results.guess[1]], failures=failures, right_censored=right_censored, optimizer=optimizer)
+            self.mu = MLE_results.scale
+            self.sigma = MLE_results.shape
+            self.method = 'Maximum Likelihood Estimation (MLE)'
 
         # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
+        params = [self.mu, self.sigma]
         hessian_matrix = hessian(Fit_Gumbel_2P.LL)(np.array(tuple(params)), np.array(tuple(failures)), np.array(tuple(right_censored)))
         covariance_matrix = np.linalg.inv(hessian_matrix)
         self.mu_SE = abs(covariance_matrix[0][0]) ** 0.5
@@ -2444,40 +2393,57 @@ class Fit_Gumbel_2P:
         self.sigma_upper = self.sigma * (np.exp(Z * (self.sigma_SE / self.sigma)))
         self.sigma_lower = self.sigma * (np.exp(-Z * (self.sigma_SE / self.sigma)))
 
-        Data = {'Parameter': ['Mu', 'Sigma'],
-                'Point Estimate': [self.mu, self.sigma],
-                'Standard Error': [self.mu_SE, self.sigma_SE],
-                'Lower CI': [self.mu_lower, self.sigma_lower],
-                'Upper CI': [self.mu_upper, self.sigma_upper]}
-        df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
-        self.results = df.set_index('Parameter')
+        results_data = {'Parameter': ['Mu', 'Sigma'],
+                        'Point Estimate': [self.mu, self.sigma],
+                        'Standard Error': [self.mu_SE, self.sigma_SE],
+                        'Lower CI': [self.mu_lower, self.sigma_lower],
+                        'Upper CI': [self.mu_upper, self.sigma_upper]}
+        self.results = pd.DataFrame(results_data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
         self.distribution = Gumbel_Distribution(mu=self.mu, sigma=self.sigma, mu_SE=self.mu_SE, sigma_SE=self.sigma_SE, Cov_mu_sigma=self.Cov_mu_sigma, CI=CI, CI_type=CI_type)
-        self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=failures, show_plot=False), empirical_cdf=y)
 
         if percentiles is not None:
             point_estimate = self.distribution.quantile(q=percentiles / 100)
             lower_estimate, upper_estimate = distribution_confidence_intervals.gumbel_CI(self=self.distribution, func='CDF', CI_type='time', CI=CI, q=1 - (percentiles / 100))
-            Percentile_Data = {'Percentile': percentiles,
+            percentile_data = {'Percentile': percentiles,
                                'Lower Estimate': lower_estimate,
                                'Point Estimate': point_estimate,
                                'Upper Estimate': upper_estimate}
-            percentiles = pd.DataFrame(Percentile_Data, columns=['Percentile', 'Lower Estimate', 'Point Estimate', 'Upper Estimate'])
-            self.percentiles = percentiles.set_index('Percentile')
+            self.percentiles = pd.DataFrame(percentile_data, columns=['Percentile', 'Lower Estimate', 'Point Estimate', 'Upper Estimate'])
+
+        # goodness of fit measures
+        n = len(failures) + len(right_censored)
+        k = 2
+        LL2 = 2 * Fit_Gumbel_2P.LL(params, failures, right_censored)
+        self.loglik2 = LL2
+        self.loglik = LL2 * -0.5
+        if n - k - 1 > 0:
+            self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
+        else:
+            self.AICc = 'Insufficient data'
+        self.BIC = np.log(n) * k + LL2
+
+        x, y = plotting_positions(failures=failures, right_censored=right_censored)
+        self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=x, show_plot=False), empirical_cdf=y)
+        GoF_data = {'Goodness of fit': ['Log-likelihood', 'AICc', 'BIC', 'AD'],
+                    'Value': [self.loglik, self.AICc, self.BIC, self.AD]}
+        self.goodness_of_fit = pd.DataFrame(GoF_data, columns=['Goodness of fit', 'Value'])
 
         if print_results is True:
-            pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
-            pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
-            if CI * 100 % 1 == 0:
+            CI_rounded = CI * 100
+            if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            else:
-                CI_rounded = CI * 100
-            print(str('Results from Fit_Gumbel_2P (' + str(CI_rounded) + '% CI):'))
-            print(self.results)
-            print('Log-Likelihood:', self.loglik, '\n')
+            frac_censored = round_to_decimals(len(right_censored) / n * 100)
+            if frac_censored % 1 == 0:
+                frac_censored = int(frac_censored)
+            colorprint(str('Results from Fit_Gumbel_2P (' + str(CI_rounded) + '% CI):'), bold=True, underline=True)
+            print('Analysis method:', self.method)
+            print('Failures / Right censored:', str(str(len(failures)) + '/' + str(len(right_censored))), str('(' + str(frac_censored) + '% right censored)'), '\n')
+            print(self.results.to_string(index=False), '\n')
+            print(self.goodness_of_fit.to_string(index=False), '\n')
 
             if percentiles is not None:
                 print(str('Table of percentiles (' + str(CI_rounded) + '% CI bounds on time):'))
-                print(self.percentiles)
+                print(self.percentiles.to_string(index=False), '\n')
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Gumbel_probability_plot
@@ -2485,7 +2451,7 @@ class Fit_Gumbel_2P:
                 rc = None
             else:
                 rc = right_censored
-            Gumbel_probability_plot(failures=failures, right_censored=rc, __fitted_dist_params=self, **kwargs)
+            Gumbel_probability_plot(failures=failures, right_censored=rc, __fitted_dist_params=self, CI=CI, CI_type=CI_type, **kwargs)
 
     @staticmethod
     def logf(t, mu, sigma):  # Log PDF (Gumbel)
@@ -2515,15 +2481,13 @@ class Fit_Lognormal_2P:
     show_probability_plot - True/False. Defaults to True.
     print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
+    method - 'MLE' (maximum likelihood estimation), 'LS' (least squares estimation), 'RRX' (Rank regression on X), 'RRY' (Rank regression on Y). LS will perform both RRX and RRY and return the better one. Default is 'MLE'.
+    optimizer - 'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
     force_sigma - Use this to specify the sigma value if you need to force sigma to be a certain value. Used in ALT probability plotting. Optional input.
     kwargs are accepted for the probability plot (eg. linestyle, label, color)
 
     Outputs:
-    success - Whether the solution was found by autograd (True/False)
-        if success is False a warning will be printed indicating that scipy's fit was used as autograd failed. This fit will not be accurate if
-        there is censored data as scipy does not have the ability to fit censored data. Failure of autograd to find the solution should be rare and
-        if it occurs, it is likely that the distribution is an extremely bad fit for the data. Try scaling your data, removing extreme values, or using
-        another distribution.
+    success - Whether the solution was found by autograd (True/False). If False then the value returned will be the initial guess from Least Squares Estimation.
     mu - the fitted Lognormal_2P mu parameter
     sigma - the fitted Lognormal_2P sigma parameter
     loglik - Log Likelihood (as used in Minitab and Reliasoft)
@@ -2540,63 +2504,47 @@ class Fit_Lognormal_2P:
     sigma_upper - the upper CI estimate of the parameter
     sigma_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
+    goodness_of_fit - a dataframe of the goodness of fit values (Log-likelihood, AICc, BIC, AD).
+    percentiles - a dataframe of the percentiles with bounds on time. This is only produced if percentiles is 'auto' or a list or array. Since percentiles defaults to None, this output is not normally produced.
+
     '''
 
-    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, percentiles=None, CI_type='time', force_sigma=None, **kwargs):
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, percentiles=None, optimizer='L-BFGS-B', CI_type='time', method='MLE', force_sigma=None, **kwargs):
 
-        inputs = fitters_input_checking(dist='Lognormal_2P', failures=failures, right_censored=right_censored, CI=CI, percentiles=percentiles, force_sigma=force_sigma, CI_type=CI_type)
+        inputs = fitters_input_checking(dist='Lognormal_2P', failures=failures, right_censored=right_censored, method=method, optimizer=optimizer, CI=CI, percentiles=percentiles, force_sigma=force_sigma, CI_type=CI_type)
         failures = inputs.failures
         right_censored = inputs.right_censored
         CI = inputs.CI
+        method = inputs.method
+        optimizer = inputs.optimizer
         percentiles = inputs.percentiles
         force_sigma = inputs.force_sigma
         CI_type = inputs.CI_type
-
         self.gamma = 0
-        all_data = np.hstack([failures, right_censored])
-        x, y = plotting_positions(failures=failures, right_censored=right_censored)
-        # solve it
-        sp = ss.lognorm.fit(all_data, floc=0, optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
-        if force_sigma is None:
-            bnds = [(0.0001, None), (0.0001, None)]  # bounds of solution
-            guess = [np.log(sp[2]), sp[0]]
-            k = len(guess)
-            result = minimize(value_and_grad(Fit_Lognormal_2P.LL), guess, args=(failures, right_censored), jac=True, method='L-BFGS-B', bounds=bnds)
-        else:
-            bnds = [(0.0001, None)]  # bounds of solution
-            guess = [np.log(sp[2])]
-            k = len(guess)
-            result = minimize(value_and_grad(Fit_Lognormal_2P.LL_fs), guess, args=(failures, right_censored, force_sigma), jac=True, method='L-BFGS-B', bounds=bnds)
 
-        if result.success is True:
-            params = result.x
-            self.success = True
-            if force_sigma is None:
-                self.mu = params[0]
-                self.sigma = params[1]
-            else:
-                self.mu = params[0]
-                self.sigma = force_sigma
-
+        # Obtain least squares estimates
+        if method == 'MLE':
+            LS_method = 'LS'
         else:
-            self.success = False
-            colorprint('WARNING: Fitting using Autograd FAILED for Lognormal_2P. The fit from Scipy was used instead so results may not be accurate.', text_color='red')
-            self.mu = np.log(sp[2])
-            self.sigma = sp[0]
+            LS_method = method
+        LS_results = LS_optimisation(func_name='Lognormal_2P', LL_func=Fit_Lognormal_2P.LL, failures=failures, right_censored=right_censored, method=LS_method, force_shape=force_sigma, LL_func_force=Fit_Lognormal_2P.LL_fs)
 
-        params = [self.mu, self.sigma]
-        n = len(all_data)
-        LL2 = 2 * Fit_Lognormal_2P.LL(params, failures, right_censored)
-        self.loglik2 = LL2
-        self.loglik = LL2 * -0.5
-        if n - k - 1 > 0:
-            self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
-        else:
-            self.AICc = 'Insufficient data'
-        self.BIC = np.log(n) * k + LL2
+        # least squares method
+        if method in ['LS', 'RRX', 'RRY']:
+            self.mu = LS_results.guess[0]
+            self.sigma = LS_results.guess[1]
+            self.method = str('Least Squares Estimation (' + LS_results.method + ')')
+
+        # maximum likelihood method
+        elif method == 'MLE':
+            MLE_results = MLE_optimisation(func_name='Lognormal_2P', LL_func=Fit_Lognormal_2P.LL, initial_guess=[LS_results.guess[0], LS_results.guess[1]], failures=failures, right_censored=right_censored, optimizer=optimizer, force_shape=force_sigma, LL_func_force=Fit_Lognormal_2P.LL_fs)
+            self.mu = MLE_results.scale
+            self.sigma = MLE_results.shape
+            self.method = 'Maximum Likelihood Estimation (MLE)'
 
         # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
+        params = [self.mu, self.sigma]
         if force_sigma is None:
             hessian_matrix = hessian(Fit_Lognormal_2P.LL)(np.array(tuple(params)), np.array(tuple(failures)), np.array(tuple(right_censored)))
             covariance_matrix = np.linalg.inv(hessian_matrix)
@@ -2611,47 +2559,68 @@ class Fit_Lognormal_2P:
             hessian_matrix = hessian(Fit_Lognormal_2P.LL_fs)(np.array(tuple([self.mu])), np.array(tuple(failures)), np.array(tuple(right_censored)), np.array(tuple([force_sigma])))
             covariance_matrix = np.linalg.inv(hessian_matrix)
             self.mu_SE = abs(covariance_matrix[0][0]) ** 0.5
-            self.sigma_SE = ''
-            self.Cov_mu_sigma = ''
+            self.sigma_SE = 0
+            self.Cov_mu_sigma = 0
             self.mu_upper = self.mu + (Z * self.mu_SE)  # mu is positive or negative
             self.mu_lower = self.mu + (-Z * self.mu_SE)
-            self.sigma_upper = ''
-            self.sigma_lower = ''
+            self.sigma_upper = self.sigma
+            self.sigma_lower = self.sigma
 
-        Data = {'Parameter': ['Mu', 'Sigma'],
-                'Point Estimate': [self.mu, self.sigma],
-                'Standard Error': [self.mu_SE, self.sigma_SE],
-                'Lower CI': [self.mu_lower, self.sigma_lower],
-                'Upper CI': [self.mu_upper, self.sigma_upper]}
-        df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
-        self.results = df.set_index('Parameter')
+        results_data = {'Parameter': ['Mu', 'Sigma'],
+                        'Point Estimate': [self.mu, self.sigma],
+                        'Standard Error': [self.mu_SE, self.sigma_SE],
+                        'Lower CI': [self.mu_lower, self.sigma_lower],
+                        'Upper CI': [self.mu_upper, self.sigma_upper]}
+        self.results = pd.DataFrame(results_data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
         self.distribution = Lognormal_Distribution(mu=self.mu, sigma=self.sigma, mu_SE=self.mu_SE, sigma_SE=self.sigma_SE, Cov_mu_sigma=self.Cov_mu_sigma, CI=CI, CI_type=CI_type)
-        self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=failures, show_plot=False), empirical_cdf=y)
 
         if percentiles is not None:
             point_estimate = self.distribution.quantile(q=percentiles / 100)
             lower_estimate, upper_estimate = distribution_confidence_intervals.lognormal_CI(self=self.distribution, func='CDF', CI_type='time', CI=CI, q=1 - (percentiles / 100))
-            Percentile_Data = {'Percentile': percentiles,
+            percentile_data = {'Percentile': percentiles,
                                'Lower Estimate': lower_estimate,
                                'Point Estimate': point_estimate,
                                'Upper Estimate': upper_estimate}
-            percentiles = pd.DataFrame(Percentile_Data, columns=['Percentile', 'Lower Estimate', 'Point Estimate', 'Upper Estimate'])
-            self.percentiles = percentiles.set_index('Percentile')
+            self.percentiles = pd.DataFrame(percentile_data, columns=['Percentile', 'Lower Estimate', 'Point Estimate', 'Upper Estimate'])
+
+        # goodness of fit measures
+        n = len(failures) + len(right_censored)
+        if force_sigma is None:
+            k = 2
+            LL2 = 2 * Fit_Lognormal_2P.LL(params, failures, right_censored)
+        else:
+            k = 1
+            LL2 = 2 * Fit_Lognormal_2P.LL_fs([self.mu], failures, right_censored, force_sigma)
+        self.loglik2 = LL2
+        self.loglik = LL2 * -0.5
+        if n - k - 1 > 0:
+            self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
+        else:
+            self.AICc = 'Insufficient data'
+        self.BIC = np.log(n) * k + LL2
+
+        x, y = plotting_positions(failures=failures, right_censored=right_censored)
+        self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=x, show_plot=False), empirical_cdf=y)
+        GoF_data = {'Goodness of fit': ['Log-likelihood', 'AICc', 'BIC', 'AD'],
+                    'Value': [self.loglik, self.AICc, self.BIC, self.AD]}
+        self.goodness_of_fit = pd.DataFrame(GoF_data, columns=['Goodness of fit', 'Value'])
 
         if print_results is True:
-            pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
-            pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
-            if CI * 100 % 1 == 0:
+            CI_rounded = CI * 100
+            if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            else:
-                CI_rounded = CI * 100
-            print(str('Results from Fit_Lognormal_2P (' + str(CI_rounded) + '% CI):'))
-            print(self.results)
-            print('Log-Likelihood:', self.loglik, '\n')
+            frac_censored = round_to_decimals(len(right_censored) / n * 100)
+            if frac_censored % 1 == 0:
+                frac_censored = int(frac_censored)
+            colorprint(str('Results from Fit_Lognormal_2P (' + str(CI_rounded) + '% CI):'), bold=True, underline=True)
+            print('Analysis method:', self.method)
+            print('Failures / Right censored:', str(str(len(failures)) + '/' + str(len(right_censored))), str('(' + str(frac_censored) + '% right censored)'), '\n')
+            print(self.results.to_string(index=False), '\n')
+            print(self.goodness_of_fit.to_string(index=False), '\n')
 
             if percentiles is not None:
                 print(str('Table of percentiles (' + str(CI_rounded) + '% CI bounds on time):'))
-                print(self.percentiles)
+                print(self.percentiles.to_string(index=False), '\n')
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Lognormal_probability_plot
@@ -2698,14 +2667,12 @@ class Fit_Lognormal_3P:
     show_probability_plot - True/False. Defaults to True.
     print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
+    method - 'MLE' (maximum likelihood estimation), 'LS' (least squares estimation), 'RRX' (Rank regression on X), 'RRY' (Rank regression on Y). LS will perform both RRX and RRY and return the better one. Default is 'MLE'.
+    optimizer - 'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
     kwargs are accepted for the probability plot (eg. linestyle, label, color)
 
     Outputs:
-    success - Whether the solution was found by autograd (True/False)
-        if success is False a warning will be printed indicating that scipy's fit was used as autograd failed. This fit will not be accurate if
-        there is censored data as scipy does not have the ability to fit censored data. Failure of autograd to find the solution should be rare and
-        if it occurs, it is likely that the distribution is an extremely bad fit for the data. Try scaling your data, removing extreme values, or using
-        another distribution.
+    success - Whether the solution was found by autograd (True/False). If False then the value returned will be the initial guess from Least Squares Estimation.
     mu - the fitted Lognormal_3P mu parameter
     sigma - the fitted Lognormal_3P sigma parameter
     gamma - the fitted Lognormal_3P gamma parameter
@@ -2725,85 +2692,42 @@ class Fit_Lognormal_3P:
     gamma_upper - the upper CI estimate of the parameter
     gamma_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
+    goodness_of_fit - a dataframe of the goodness of fit values (Log-likelihood, AICc, BIC, AD).
+    percentiles - a dataframe of the percentiles with bounds on time. This is only produced if percentiles is 'auto' or a list or array. Since percentiles defaults to None, this output is not normally produced.
     '''
 
-    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, percentiles=None, CI_type='time', **kwargs):
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, percentiles=None, CI_type='time', optimizer='L-BFGS-B', method='MLE', **kwargs):
 
-        inputs = fitters_input_checking(dist='Weibull_2P', failures=failures, right_censored=right_censored, CI=CI, percentiles=percentiles, CI_type=CI_type)
+        inputs = fitters_input_checking(dist='Lognormal_3P', failures=failures, right_censored=right_censored, method=method, optimizer=optimizer, CI=CI, percentiles=percentiles, CI_type=CI_type)
         failures = inputs.failures
         right_censored = inputs.right_censored
         CI = inputs.CI
+        method = inputs.method
+        optimizer = inputs.optimizer
         percentiles = inputs.percentiles
         CI_type = inputs.CI_type
 
-        all_data = np.hstack([failures, right_censored])
-        # this tries two methods to get the guess for gamma. If the fast way fails (which is about 1 in 1000 chance) then it will do the slower more reliable way.
-        success = False
-        iterations = 0
-        offset = 0.0001  # this is to ensure the upper bound for gamma is not equal to min(data) which would result in inf log-likelihood. This small offset fixes that issue
-        while success is False:
-            iterations += 1
-            if iterations == 1:
-                # get a quick initial guess using the minimum of the data
-                if min(all_data) <= np.e:
-                    self.gamma = 0
-                else:
-                    self.gamma = np.log(min(all_data))
-                gamma_initial_guess = self.gamma
-            else:
-                # get a better guess for gamma by optimizing the LL of a shifted distribution. This will only be run if the first attempt didn't work
-                gamma_initial_guess = min(all_data) - offset
-                bnds1 = [(0, min(all_data) - offset)]  # bounds on the solution. Helps a lot with stability
-                gamma_res = minimize(Fit_Lognormal_3P.gamma_optimizer, gamma_initial_guess, args=(failures, right_censored), method='L-BFGS-B', bounds=bnds1)
-                self.gamma = gamma_res.x[0]
-
-            x, y = plotting_positions(failures=failures - self.gamma, right_censored=right_censored - self.gamma)
-            # obtain the initial guess for mu and sigma
-            data_shifted = all_data - self.gamma
-            sp = ss.lognorm.fit(data_shifted, floc=0, optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
-            guess = [np.log(sp[2]), sp[0], self.gamma]
-            self.initial_guess = guess
-            k = len(guess)
-            n = len(all_data)
-
-            delta_BIC = 1
-            BIC_array = [1000000]
-            runs = 0
-
-            gamma_lower_bound = 0.85 * gamma_initial_guess  # 0.85 is found to be the optimal point to minimise the error while also not causing autograd to fail
-            bnds2 = [(-10, None), (0, None), (gamma_lower_bound, min(all_data) - offset)]  # bounds on the solution. Helps a lot with stability
-            while delta_BIC > 0.001 and runs < 5:  # exits after BIC convergence or 5 iterations
-                runs += 1
-                result = minimize(value_and_grad(Fit_Lognormal_3P.LL), guess, args=(failures, right_censored), jac=True, method='L-BFGS-B', bounds=bnds2)
-                params = result.x
-                guess = [params[0], params[1], params[2]]
-                LL2 = 2 * Fit_Lognormal_3P.LL(guess, failures, right_censored)
-                BIC_array.append(np.log(n) * k + LL2)
-                delta_BIC = abs(BIC_array[-1] - BIC_array[-2])
-            success = result.success
-
-        if result.success is True:
-            params = result.x
-            self.success = True
-            self.mu = params[0]
-            self.sigma = params[1]
-            self.gamma = params[2]
+        # Obtain least squares estimates
+        if method == 'MLE':
+            LS_method = 'LS'
         else:
-            self.success = False
-            colorprint('WARNING: Fitting using Autograd FAILED for Lognormal_3P. The fit from Scipy was used instead so the results may not be accurate.', text_color='red')
-            sp = ss.lognorm.fit(all_data, optimizer='powell')
-            self.mu = np.log(sp[2])
-            self.sigma = sp[0]
-            self.gamma = sp[1]
+            LS_method = method
+        LS_results = LS_optimisation(func_name='Lognormal_3P', LL_func=Fit_Lognormal_3P.LL, failures=failures, right_censored=right_censored, method=LS_method)
 
-        params = [self.mu, self.sigma, self.gamma]
-        self.loglik2 = LL2
-        self.loglik = LL2 * -0.5
-        if n - k - 1 > 0:
-            self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
-        else:
-            self.AICc = 'Insufficient data'
-        self.BIC = np.log(n) * k + LL2
+        # least squares method
+        if method in ['LS', 'RRX', 'RRY']:
+            self.mu = LS_results.guess[0]
+            self.sigma = LS_results.guess[1]
+            self.gamma = LS_results.guess[2]
+            self.method = str('Least Squares Estimation (' + LS_results.method + ')')
+
+        # maximum likelihood method
+        elif method == 'MLE':
+            MLE_results = MLE_optimisation(func_name='Lognormal_3P', LL_func=Fit_Lognormal_3P.LL, initial_guess=[LS_results.guess[0], LS_results.guess[1], LS_results.guess[2]], failures=failures, right_censored=right_censored, optimizer=optimizer)
+            self.mu = MLE_results.scale
+            self.sigma = MLE_results.shape
+            self.gamma = MLE_results.gamma
+            self.method = 'Maximum Likelihood Estimation (MLE)'
 
         if self.gamma < 0.01:  # If the solver finds that gamma is very near zero then we should have used a Lognormal_2P distribution. Can't proceed with Lognormal_3P as the confidence interval calculations for gamma result in nan (Zero division error). Need to recalculate everything as the SE values will be incorrect for Lognormal_3P
             lognormal_2P_results = Fit_Lognormal_2P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False, CI=CI)
@@ -2820,14 +2744,18 @@ class Fit_Lognormal_3P:
             self.sigma_lower = lognormal_2P_results.sigma_lower
             self.gamma_upper = 0
             self.gamma_lower = 0
+            params_3P = [self.mu, self.sigma, self.gamma]
+
         else:
             # confidence interval estimates of parameters
             Z = -ss.norm.ppf((1 - CI) / 2)
+            params_2P = [self.mu, self.sigma]
+            params_3P = [self.mu, self.sigma, self.gamma]
             # here we need to get mu_SE and sigma_SE from the Lognormal_2P by providing an adjusted dataset (adjusted for gamma)
-            hessian_matrix = hessian(Fit_Lognormal_2P.LL)(np.array(tuple([self.mu, self.sigma])), np.array(tuple(failures - self.gamma)), np.array(tuple(right_censored - self.gamma)))
+            hessian_matrix = hessian(Fit_Lognormal_2P.LL)(np.array(tuple(params_2P)), np.array(tuple(failures - self.gamma)), np.array(tuple(right_censored - self.gamma)))
             covariance_matrix = np.linalg.inv(hessian_matrix)
             # this is to get the gamma_SE. Unfortunately this approach for mu_SE and sigma_SE give SE values that are very large resulting in incorrect CI plots. This is the same method used by Reliasoft
-            hessian_matrix_for_gamma = hessian(Fit_Lognormal_3P.LL)(np.array(tuple(params)), np.array(tuple(failures)), np.array(tuple(right_censored)))
+            hessian_matrix_for_gamma = hessian(Fit_Lognormal_3P.LL)(np.array(tuple(params_3P)), np.array(tuple(failures)), np.array(tuple(right_censored)))
             covariance_matrix_for_gamma = np.linalg.inv(hessian_matrix_for_gamma)
             self.mu_SE = abs(covariance_matrix[0][0]) ** 0.5
             self.sigma_SE = abs(covariance_matrix[1][1]) ** 0.5
@@ -2840,40 +2768,57 @@ class Fit_Lognormal_3P:
             self.gamma_upper = self.gamma * (np.exp(Z * (self.gamma_SE / self.gamma)))  # here we assume gamma can only be positive as there are bounds placed on it in the optimizer. Minitab assumes positive or negative so bounds are different
             self.gamma_lower = self.gamma * (np.exp(-Z * (self.gamma_SE / self.gamma)))
 
-        Data = {'Parameter': ['Mu', 'Sigma', 'Gamma'],
-                'Point Estimate': [self.mu, self.sigma, self.gamma],
-                'Standard Error': [self.mu_SE, self.sigma_SE, self.gamma_SE],
-                'Lower CI': [self.mu_lower, self.sigma_lower, self.gamma_lower],
-                'Upper CI': [self.mu_upper, self.sigma_upper, self.gamma_upper]}
-        df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
-        self.results = df.set_index('Parameter')
+        results_data = {'Parameter': ['Mu', 'Sigma', 'Gamma'],
+                        'Point Estimate': [self.mu, self.sigma, self.gamma],
+                        'Standard Error': [self.mu_SE, self.sigma_SE, self.gamma_SE],
+                        'Lower CI': [self.mu_lower, self.sigma_lower, self.gamma_lower],
+                        'Upper CI': [self.mu_upper, self.sigma_upper, self.gamma_upper]}
+        self.results = pd.DataFrame(results_data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
         self.distribution = Lognormal_Distribution(mu=self.mu, sigma=self.sigma, gamma=self.gamma, mu_SE=self.mu_SE, sigma_SE=self.sigma_SE, Cov_mu_sigma=self.Cov_mu_sigma, CI=CI, CI_type=CI_type)
-        self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=failures, show_plot=False), empirical_cdf=y)
 
         if percentiles is not None:
             point_estimate = self.distribution.quantile(q=percentiles / 100)
             lower_estimate, upper_estimate = distribution_confidence_intervals.lognormal_CI(self=self.distribution, func='CDF', CI_type='time', CI=CI, q=1 - (percentiles / 100))
-            Percentile_Data = {'Percentile': percentiles,
+            percentile_data = {'Percentile': percentiles,
                                'Lower Estimate': lower_estimate,
                                'Point Estimate': point_estimate,
                                'Upper Estimate': upper_estimate}
-            percentiles = pd.DataFrame(Percentile_Data, columns=['Percentile', 'Lower Estimate', 'Point Estimate', 'Upper Estimate'])
-            self.percentiles = percentiles.set_index('Percentile')
+            self.percentiles = pd.DataFrame(percentile_data, columns=['Percentile', 'Lower Estimate', 'Point Estimate', 'Upper Estimate'])
+
+        # goodness of fit measures
+        n = len(failures) + len(right_censored)
+        k = 3
+        LL2 = 2 * Fit_Lognormal_3P.LL(params_3P, failures, right_censored)
+        self.loglik2 = LL2
+        self.loglik = LL2 * -0.5
+        if n - k - 1 > 0:
+            self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
+        else:
+            self.AICc = 'Insufficient data'
+        self.BIC = np.log(n) * k + LL2
+
+        x, y = plotting_positions(failures=failures, right_censored=right_censored)
+        self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=x, show_plot=False), empirical_cdf=y)
+        GoF_data = {'Goodness of fit': ['Log-likelihood', 'AICc', 'BIC', 'AD'],
+                    'Value': [self.loglik, self.AICc, self.BIC, self.AD]}
+        self.goodness_of_fit = pd.DataFrame(GoF_data, columns=['Goodness of fit', 'Value'])
 
         if print_results is True:
-            pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
-            pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
-            if CI * 100 % 1 == 0:
+            CI_rounded = CI * 100
+            if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            else:
-                CI_rounded = CI * 100
-            print(str('Results from Fit_Lognormal_3P (' + str(CI_rounded) + '% CI):'))
-            print(self.results)
-            print('Log-Likelihood:', self.loglik, '\n')
+            frac_censored = round_to_decimals(len(right_censored) / n * 100)
+            if frac_censored % 1 == 0:
+                frac_censored = int(frac_censored)
+            colorprint(str('Results from Fit_Lognormal_3P (' + str(CI_rounded) + '% CI):'), bold=True, underline=True)
+            print('Analysis method:', self.method)
+            print('Failures / Right censored:', str(str(len(failures)) + '/' + str(len(right_censored))), str('(' + str(frac_censored) + '% right censored)'), '\n')
+            print(self.results.to_string(index=False), '\n')
+            print(self.goodness_of_fit.to_string(index=False), '\n')
 
             if percentiles is not None:
                 print(str('Table of percentiles (' + str(CI_rounded) + '% CI bounds on time):'))
-                print(self.percentiles)
+                print(self.percentiles.to_string(index=False), '\n')
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Lognormal_probability_plot
@@ -2881,29 +2826,10 @@ class Fit_Lognormal_3P:
                 rc = None
             else:
                 rc = right_censored
-            Lognormal_probability_plot(failures=failures, right_censored=rc, __fitted_dist_params=self, CI=CI, CI_type=CI_type, **kwargs)
-
-    @staticmethod
-    def gamma_optimizer(gamma_guess, failures, right_censored):
-        failures_shifted = failures - gamma_guess[0]
-        right_censored_shifted = right_censored - gamma_guess[0]
-        all_data_shifted = np.hstack([failures_shifted, right_censored_shifted])
-        sp = ss.lognorm.fit(all_data_shifted, floc=0, optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
-        guess = [np.log(sp[2]), sp[0]]
-        warnings.filterwarnings('ignore')  # necessary to supress the warning about the jacobian when using the nelder-mead optimizer
-        result = minimize(value_and_grad(Fit_Lognormal_2P.LL), guess, args=(failures_shifted, right_censored_shifted), jac=True, tol=1e-2, method='nelder-mead')
-
-        if result.success is True:
-            params = result.x
-            mu = params[0]
-            sigma = params[1]
-        else:
-            colorprint('WARNING: Fitting using Autograd FAILED for the gamma optimisation section of Lognormal_3P. The fit from Scipy was used instead so results may not be accurate.', text_color='red')
-            mu = sp[2]
-            sigma = sp[0]
-
-        LL2 = 2 * Fit_Lognormal_2P.LL([mu, sigma], failures_shifted, right_censored_shifted)
-        return LL2
+            fig = Lognormal_probability_plot(failures=failures, right_censored=rc, __fitted_dist_params=self, CI=CI, CI_type=CI_type, **kwargs)
+            if self.gamma < 0.01:
+                # manually change the legend to reflect that Lognormal_3P was fitted. The default legend in the probability plot thinks Lognormal_2P was fitted when gamma=0
+                fig.axes[0].legend_.get_texts()[0].set_text(str('Fitted Lognormal_3P\n(μ=' + str(round_to_decimals(self.mu, dec)) + ', σ=' + str(round_to_decimals(self.sigma, dec)) + ', γ=' + str(round_to_decimals(self.gamma, dec)) + ')'))
 
     @staticmethod
     def logf(t, mu, sigma, gamma):  # Log PDF (3 parameter Lognormal)
@@ -2933,14 +2859,12 @@ class Fit_Gamma_2P:
     show_probability_plot - True/False. Defaults to True.
     print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
+    method - 'MLE' (maximum likelihood estimation), 'LS' (least squares estimation), 'RRX' (Rank regression on X), 'RRY' (Rank regression on Y). LS will perform both RRX and RRY and return the better one. Default is 'MLE'.
+    optimizer - 'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
     kwargs are accepted for the probability plot (eg. linestyle, label, color)
 
     Outputs:
-    success - Whether the solution was found by autograd (True/False)
-        if success is False a warning will be printed indicating that scipy's fit was used as autograd failed. This fit will not be accurate if
-        there is censored data as scipy does not have the ability to fit censored data. Failure of autograd to find the solution should be rare and
-        if it occurs, it is likely that the distribution is an extremely bad fit for the data. Try scaling your data, removing extreme values, or using
-        another distribution.
+    success - Whether the solution was found by autograd (True/False). If False then the value returned will be the initial guess from Least Squares Estimation.
     alpha - the fitted Gamma_2P alpha parameter
     beta - the fitted Gamma_2P beta parameter
     loglik - Log Likelihood (as used in Minitab and Reliasoft)
@@ -2957,71 +2881,41 @@ class Fit_Gamma_2P:
     beta_upper - the upper CI estimate of the parameter
     beta_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
+    goodness_of_fit - a dataframe of the goodness of fit values (Log-likelihood, AICc, BIC, AD).
+    percentiles - a dataframe of the percentiles with bounds on time. This is only produced if percentiles is 'auto' or a list or array. Since percentiles defaults to None, this output is not normally produced.
     '''
 
-    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, **kwargs):
-        # def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, percentiles=None, CI_type='time', **kwargs):
-        # inputs = fitters_input_checking(dist='Gamma_2P', failures=failures, right_censored=right_censored, CI=CI, percentiles=percentiles, CI_type=CI_type)
-        # failures = inputs.failures
-        # right_censored = inputs.right_censored
-        # CI = inputs.CI
-        # percentiles = inputs.percentiles
-        # CI_type = inputs.CI_type
-        inputs = fitters_input_checking(dist='Gamma_2P', failures=failures, right_censored=right_censored, CI=CI)
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, method='MLE', optimizer='L-BFGS-B', **kwargs):
+
+        inputs = fitters_input_checking(dist='Gamma_2P', failures=failures, right_censored=right_censored, method=method, optimizer=optimizer, CI=CI)
         failures = inputs.failures
         right_censored = inputs.right_censored
         CI = inputs.CI
-
-        all_data = np.hstack([failures, right_censored])
-        # solve it
-        _, y = plotting_positions(failures=failures, right_censored=right_censored)  # this is just used to obtain AD
+        method = inputs.method
+        optimizer = inputs.optimizer
+        # percentiles = inputs.percentiles
+        # CI_type = inputs.CI_type
         self.gamma = 0
-        sp = ss.gamma.fit(failures, floc=0, optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
-        guess = [sp[2], sp[0]]
-        if guess[1] > 50:  # guess corrector for gamma distributions with high beta. Scipy tends to overestimate beta and underestimate alpha.
-            guess = [guess[0] * 4, guess[1] * 0.25]
-        self.initial_guess = guess
 
-        k = len(guess)
-        n = len(all_data)
-        delta_BIC = 1
-        BIC_array = [1000000]
-        runs = 0
-        warnings.filterwarnings('ignore')
-        bnds = [(0, None), (0, None)]  # bounds on the solution. Helps a lot with stability
-        while delta_BIC > 0.001 and runs < 5:  # exits after BIC convergence or 5 iterations
-            runs += 1
-            result = minimize(value_and_grad(Fit_Gamma_2P.LL), guess, args=(failures, right_censored), jac=True, method='L-BFGS-B', bounds=bnds)
-            params = result.x
-            guess = [params[0], params[1]]
-            LL2 = 2 * Fit_Gamma_2P.LL(guess, failures, right_censored)
-            BIC_array.append(np.log(n) * k + LL2)
-            delta_BIC = abs(BIC_array[-1] - BIC_array[-2])
+        # Obtain least squares estimates
+        LS_results = LS_optimisation(func_name='Gamma_2P', LL_func=Fit_Gamma_2P.LL, failures=failures, right_censored=right_censored, method='LS')
 
-        if result.success is True:
-            params = result.x
-            self.success = True
-            self.alpha = params[0]
-            self.beta = params[1]
-        else:
-            self.success = False
-            colorprint('WARNING: Fitting using Autograd FAILED for Gamma_2P. A modified form of the fit from Scipy was used instead so results may not be accurate.', text_color='red')
-            self.alpha = self.initial_guess[0]
-            self.beta = self.initial_guess[1]
-            self.gamma = 0
+        # least squares method
+        if method in ['LS', 'RRX', 'RRY']:
+            self.alpha = LS_results.guess[0]
+            self.beta = LS_results.guess[1]
+            self.method = str('Least Squares Estimation (' + LS_results.method + ')')
 
-        params = [self.alpha, self.beta]
-        LL2 = 2 * Fit_Gamma_2P.LL(params, failures, right_censored)
-        self.loglik2 = LL2
-        self.loglik = LL2 * -0.5
-        if n - k - 1 > 0:
-            self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
-        else:
-            self.AICc = 'Insufficient data'
-        self.BIC = np.log(n) * k + LL2
+        # maximum likelihood method
+        elif method == 'MLE':
+            MLE_results = MLE_optimisation(func_name='Gamma_2P', LL_func=Fit_Gamma_2P.LL, initial_guess=[LS_results.guess[0], LS_results.guess[1]], failures=failures, right_censored=right_censored, optimizer=optimizer)
+            self.alpha = MLE_results.scale
+            self.beta = MLE_results.shape
+            self.method = 'Maximum Likelihood Estimation (MLE)'
 
         # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
+        params = [self.alpha, self.beta]
         hessian_matrix = hessian(Fit_Gamma_2P.LL)(np.array(tuple(params)), np.array(tuple(failures)), np.array(tuple(right_censored)))
         covariance_matrix = np.linalg.inv(hessian_matrix)
         self.alpha_SE = abs(covariance_matrix[0][0]) ** 0.5
@@ -3032,41 +2926,58 @@ class Fit_Gamma_2P:
         self.beta_upper = self.beta * (np.exp(Z * (self.beta_SE / self.beta)))
         self.beta_lower = self.beta * (np.exp(-Z * (self.beta_SE / self.beta)))
 
-        Data = {'Parameter': ['Alpha', 'Beta'],
-                'Point Estimate': [self.alpha, self.beta],
-                'Standard Error': [self.alpha_SE, self.beta_SE],
-                'Lower CI': [self.alpha_lower, self.beta_lower],
-                'Upper CI': [self.alpha_upper, self.beta_upper]}
-        df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
-        self.results = df.set_index('Parameter')
-        # self.distribution = Gamma_Distribution(alpha=self.alpha, beta=self.beta, alpha_SE=self.alpha_SE, beta_SE=self.beta_SE, Cov_alpha_beta=self.Cov_alpha_beta, CI=CI, CI_type=CI_type)
+        results_data = {'Parameter': ['Alpha', 'Beta'],
+                        'Point Estimate': [self.alpha, self.beta],
+                        'Standard Error': [self.alpha_SE, self.beta_SE],
+                        'Lower CI': [self.alpha_lower, self.beta_lower],
+                        'Upper CI': [self.alpha_upper, self.beta_upper]}
+        self.results = pd.DataFrame(results_data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
         self.distribution = Gamma_Distribution(alpha=self.alpha, beta=self.beta)
-        self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=failures, show_plot=False), empirical_cdf=y)
+        # self.distribution = Gamma_Distribution(alpha=self.alpha, beta=self.beta, alpha_SE=self.alpha_SE, beta_SE=self.beta_SE, Cov_alpha_beta=self.Cov_alpha_beta, CI=CI, CI_type=CI_type)
 
         # if percentiles is not None:
         #     point_estimate = self.distribution.quantile(q=percentiles / 100)
         #     lower_estimate, upper_estimate = distribution_confidence_intervals.gamma_CI(self=self.distribution, func='CDF', CI_type='time', CI=CI, q=1 - (percentiles / 100))
-        #     Percentile_Data = {'Percentile': percentiles,
+        #     percentile_data = {'Percentile': percentiles,
         #                        'Lower Estimate': lower_estimate,
         #                        'Point Estimate': point_estimate,
         #                        'Upper Estimate': upper_estimate}
-        #     percentiles = pd.DataFrame(Percentile_Data, columns=['Percentile', 'Lower Estimate', 'Point Estimate', 'Upper Estimate'])
-        #     self.percentiles = percentiles.set_index('Percentile')
+        #     self.percentiles = pd.DataFrame(percentile_data, columns=['Percentile', 'Lower Estimate', 'Point Estimate', 'Upper Estimate'])
+
+        # goodness of fit measures
+        n = len(failures) + len(right_censored)
+        k = 2
+        LL2 = 2 * Fit_Gamma_2P.LL(params, failures, right_censored)
+        self.loglik2 = LL2
+        self.loglik = LL2 * -0.5
+        if n - k - 1 > 0:
+            self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
+        else:
+            self.AICc = 'Insufficient data'
+        self.BIC = np.log(n) * k + LL2
+
+        x, y = plotting_positions(failures=failures, right_censored=right_censored)
+        self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=x, show_plot=False), empirical_cdf=y)
+        GoF_data = {'Goodness of fit': ['Log-likelihood', 'AICc', 'BIC', 'AD'],
+                    'Value': [self.loglik, self.AICc, self.BIC, self.AD]}
+        self.goodness_of_fit = pd.DataFrame(GoF_data, columns=['Goodness of fit', 'Value'])
 
         if print_results is True:
-            pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
-            pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
-            if CI * 100 % 1 == 0:
+            CI_rounded = CI * 100
+            if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            else:
-                CI_rounded = CI * 100
-            print(str('Results from Fit_Gamma_2P (' + str(CI_rounded) + '% CI):'))
-            print(self.results)
-            print('Log-Likelihood:', self.loglik, '\n')
+            frac_censored = round_to_decimals(len(right_censored) / n * 100)
+            if frac_censored % 1 == 0:
+                frac_censored = int(frac_censored)
+            colorprint(str('Results from Fit_Gamma_2P (' + str(CI_rounded) + '% CI):'), bold=True, underline=True)
+            print('Analysis method:', self.method)
+            print('Failures / Right censored:', str(str(len(failures)) + '/' + str(len(right_censored))), str('(' + str(frac_censored) + '% right censored)'), '\n')
+            print(self.results.to_string(index=False), '\n')
+            print(self.goodness_of_fit.to_string(index=False), '\n')
 
             # if percentiles is not None:
             #     print(str('Table of percentiles (' + str(CI_rounded) + '% CI bounds on time):'))
-            #     print(self.percentiles)
+            #     print(self.percentiles.to_string(index=False), '\n')
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Gamma_probability_plot
@@ -3075,6 +2986,7 @@ class Fit_Gamma_2P:
             else:
                 rc = right_censored
             Gamma_probability_plot(failures=failures, right_censored=rc, __fitted_dist_params=self, **kwargs)
+            # Gamma_probability_plot(failures=failures, right_censored=rc, __fitted_dist_params=self, CI=CI, CI_type=CI_type, **kwargs)
 
     @staticmethod
     def logf(t, a, b):  # Log PDF (2 parameter Gamma)
@@ -3105,14 +3017,12 @@ class Fit_Gamma_3P:
     show_probability_plot - True/False. Defaults to True.
     print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
+    method - 'MLE' (maximum likelihood estimation), or 'LS' (least squares estimation). LS will perform non-linear least squares estimation. Default is 'MLE'.
+    optimizer - 'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
     kwargs are accepted for the probability plot (eg. linestyle, label, color)
 
     Outputs:
-    success - Whether the solution was found by autograd (True/False)
-        if success is False a warning will be printed indicating that scipy's fit was used as autograd failed. This fit will not be accurate if
-        there is censored data as scipy does not have the ability to fit censored data. Failure of autograd to find the solution should be rare and
-        if it occurs, it is likely that the distribution is an extremely bad fit for the data. Try scaling your data, removing extreme values, or using
-        another distribution.
+    success - Whether the solution was found by autograd (True/False). If False then the value returned will be the initial guess from Least Squares Estimation.
     alpha - the fitted Gamma_3P alpha parameter
     beta - the fitted Gamma_3P beta parameter
     gamma - the fitted Gamma_3P gamma parameter
@@ -3132,66 +3042,42 @@ class Fit_Gamma_3P:
     gamma_upper - the upper CI estimate of the parameter
     gamma_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
+    goodness_of_fit - a dataframe of the goodness of fit values (Log-likelihood, AICc, BIC, AD).
+    percentiles - a dataframe of the percentiles with bounds on time. This is only produced if percentiles is 'auto' or a list or array. Since percentiles defaults to None, this output is not normally produced.
     '''
 
-    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, **kwargs):
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, optimizer='L-BFGS-B', method='MLE', **kwargs):
 
-        inputs = fitters_input_checking(dist='Gamma_3P', failures=failures, right_censored=right_censored, CI=CI)
+        inputs = fitters_input_checking(dist='Gamma_3P', failures=failures, right_censored=right_censored, method=method, optimizer=optimizer, CI=CI)
         failures = inputs.failures
         right_censored = inputs.right_censored
         CI = inputs.CI
+        method = inputs.method
+        optimizer = inputs.optimizer
+        # percentiles = inputs.percentiles
+        # CI_type = inputs.CI_type
 
-        all_data = np.hstack([failures, right_censored])
-        # get a quick guess for gamma by setting it as the minimum of all the data.
-        offset = 0.0001  # this is to ensure the upper bound for gamma is not equal to min(data) which would result in inf log-likelihood. This small offset fixes that issue
-        self.gamma = min(all_data) - offset
-
-        if len(failures) < 10:
-            data_shifted = all_data - self.gamma
+        # Obtain least squares estimates
+        if method == 'MLE':
+            LS_method = 'LS'
         else:
-            data_shifted = failures - self.gamma
-        _, y = plotting_positions(failures=failures - self.gamma, right_censored=right_censored - self.gamma)  # this is just to obtain AD
-        sp = ss.gamma.fit(data_shifted, floc=0, optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
-        guess = [sp[2], sp[0], self.gamma]
-        self.initial_guess = guess
-        k = len(guess)
-        n = len(all_data)
+            LS_method = method
+        LS_results = LS_optimisation(func_name='Gamma_3P', LL_func=Fit_Gamma_3P.LL, failures=failures, right_censored=right_censored, method=LS_method)
 
-        delta_BIC = 1
-        BIC_array = [1000000]
-        runs = 0
-        bnds = [(0, None), (0, None), (0, min(all_data) - offset)]  # bounds on the solution. Helps a lot with stability
-        while delta_BIC > 0.001 and runs < 5:  # exits after BIC convergence or 5 iterations
-            runs += 1
-            result = minimize(value_and_grad(Fit_Gamma_3P.LL), guess, args=(failures, right_censored), jac=True, method='L-BFGS-B', bounds=bnds)
-            params = result.x
-            guess = [params[0], params[1], params[2]]
-            LL2 = 2 * Fit_Gamma_3P.LL(guess, failures, right_censored)
-            BIC_array.append(np.log(n) * k + LL2)
-            delta_BIC = abs(BIC_array[-1] - BIC_array[-2])
+        # least squares method
+        if method in ['LS', 'RRX', 'RRY']:
+            self.alpha = LS_results.guess[0]
+            self.beta = LS_results.guess[1]
+            self.gamma = LS_results.guess[2]
+            self.method = str('Least Squares Estimation (' + LS_results.method + ')')
 
-        if result.success is True:
-            params = result.x
-            self.success = True
-            self.alpha = params[0]
-            self.beta = params[1]
-            self.gamma = params[2]
-        else:
-            self.success = False
-            colorprint('WARNING: Fitting using Autograd FAILED for Gamma_3P. The fit from Scipy was used instead so the results may not be accurate.', text_color='red')
-            sp = ss.gamma.fit(all_data, optimizer='powell')
-            self.alpha = sp[2]
-            self.beta = sp[0]
-            self.gamma = sp[1]
-
-        params = [self.alpha, self.beta, self.gamma]
-        self.loglik2 = LL2
-        self.loglik = LL2 * -0.5
-        if n - k - 1 > 0:
-            self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
-        else:
-            self.AICc = 'Insufficient data'
-        self.BIC = np.log(n) * k + LL2
+        # maximum likelihood method
+        elif method == 'MLE':
+            MLE_results = MLE_optimisation(func_name='Gamma_3P', LL_func=Fit_Gamma_3P.LL, initial_guess=[LS_results.guess[0], LS_results.guess[1], LS_results.guess[2]], failures=failures, right_censored=right_censored, optimizer=optimizer)
+            self.alpha = MLE_results.scale
+            self.beta = MLE_results.shape
+            self.gamma = MLE_results.gamma
+            self.method = 'Maximum Likelihood Estimation (MLE)'
 
         if self.gamma < 0.01:  # If the solver finds that gamma is very near zero then we should have used a Gamma_2P distribution. Can't proceed with Gamma_3P as the confidence interval calculations for gamma result in nan (Zero division error). Need to recalculate everything as the SE values will be incorrect for Gamma_3P
             gamma_2P_results = Fit_Gamma_2P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False, CI=CI)
@@ -3208,14 +3094,17 @@ class Fit_Gamma_3P:
             self.beta_lower = gamma_2P_results.beta_lower
             self.gamma_upper = 0
             self.gamma_lower = 0
+            params_3P = [self.alpha, self.beta, self.gamma]
         else:
             # confidence interval estimates of parameters
             Z = -ss.norm.ppf((1 - CI) / 2)
-            # here we need to get alpha_SE and beta_SE from the Weibull_2P by providing an adjusted dataset (adjusted for gamma)
-            hessian_matrix = hessian(Fit_Gamma_2P.LL)(np.array(tuple([self.alpha, self.beta])), np.array(tuple(failures - self.gamma)), np.array(tuple(right_censored - self.gamma)))
+            params_2P = [self.alpha, self.beta]
+            params_3P = [self.alpha, self.beta, self.gamma]
+            # here we need to get alpha_SE and beta_SE from the Gamma_2P by providing an adjusted dataset (adjusted for gamma)
+            hessian_matrix = hessian(Fit_Gamma_2P.LL)(np.array(tuple(params_2P)), np.array(tuple(failures - self.gamma)), np.array(tuple(right_censored - self.gamma)))
             covariance_matrix = np.linalg.inv(hessian_matrix)
             # this is to get the gamma_SE. Unfortunately this approach for alpha_SE and beta_SE give SE values that are very large resulting in incorrect CI plots. This is the same method used by Reliasoft
-            hessian_matrix_for_gamma = hessian(Fit_Gamma_3P.LL)(np.array(tuple(params)), np.array(tuple(failures)), np.array(tuple(right_censored)))
+            hessian_matrix_for_gamma = hessian(Fit_Gamma_3P.LL)(np.array(tuple(params_3P)), np.array(tuple(failures)), np.array(tuple(right_censored)))
             covariance_matrix_for_gamma = np.linalg.inv(hessian_matrix_for_gamma)
             self.alpha_SE = abs(covariance_matrix[0][0]) ** 0.5
             self.beta_SE = abs(covariance_matrix[1][1]) ** 0.5
@@ -3228,26 +3117,58 @@ class Fit_Gamma_3P:
             self.gamma_upper = self.gamma * (np.exp(Z * (self.gamma_SE / self.gamma)))  # here we assume gamma can only be positive as there are bounds placed on it in the optimizer. Minitab assumes positive or negative so bounds are different
             self.gamma_lower = self.gamma * (np.exp(-Z * (self.gamma_SE / self.gamma)))
 
-        Data = {'Parameter': ['Alpha', 'Beta', 'Gamma'],
-                'Point Estimate': [self.alpha, self.beta, self.gamma],
-                'Standard Error': [self.alpha_SE, self.beta_SE, self.gamma_SE],
-                'Lower CI': [self.alpha_lower, self.beta_lower, self.gamma_lower],
-                'Upper CI': [self.alpha_upper, self.beta_upper, self.gamma_upper]}
-        df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
-        self.results = df.set_index('Parameter')
+        results_data = {'Parameter': ['Alpha', 'Beta', 'Gamma'],
+                        'Point Estimate': [self.alpha, self.beta, self.gamma],
+                        'Standard Error': [self.alpha_SE, self.beta_SE, self.gamma_SE],
+                        'Lower CI': [self.alpha_lower, self.beta_lower, self.gamma_lower],
+                        'Upper CI': [self.alpha_upper, self.beta_upper, self.gamma_upper]}
+        self.results = pd.DataFrame(results_data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
+        # self.distribution = Gamma_Distribution(alpha=self.alpha, beta=self.beta, gamma=self.gamma, alpha_SE=self.alpha_SE, beta_SE=self.beta_SE, Cov_alpha_beta=self.Cov_alpha_beta, CI=CI, CI_type=CI_type)
         self.distribution = Gamma_Distribution(alpha=self.alpha, beta=self.beta, gamma=self.gamma)
-        self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=failures, show_plot=False), empirical_cdf=y)
+
+        # if percentiles is not None:
+        #     point_estimate = self.distribution.quantile(q=percentiles / 100)
+        #     lower_estimate, upper_estimate = distribution_confidence_intervals.gamma_CI(self=self.distribution, func='CDF', CI_type='time', CI=CI, q=1 - (percentiles / 100))
+        #     percentile_data = {'Percentile': percentiles,
+        #                        'Lower Estimate': lower_estimate,
+        #                        'Point Estimate': point_estimate,
+        #                        'Upper Estimate': upper_estimate}
+        #     self.percentiles = pd.DataFrame(percentile_data, columns=['Percentile', 'Lower Estimate', 'Point Estimate', 'Upper Estimate'])
+
+        # goodness of fit measures
+        n = len(failures) + len(right_censored)
+        k = 3
+        LL2 = 2 * Fit_Gamma_3P.LL(params_3P, failures, right_censored)
+        self.loglik2 = LL2
+        self.loglik = LL2 * -0.5
+        if n - k - 1 > 0:
+            self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
+        else:
+            self.AICc = 'Insufficient data'
+        self.BIC = np.log(n) * k + LL2
+
+        x, y = plotting_positions(failures=failures, right_censored=right_censored)
+        self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=x, show_plot=False), empirical_cdf=y)
+        GoF_data = {'Goodness of fit': ['Log-likelihood', 'AICc', 'BIC', 'AD'],
+                    'Value': [self.loglik, self.AICc, self.BIC, self.AD]}
+        self.goodness_of_fit = pd.DataFrame(GoF_data, columns=['Goodness of fit', 'Value'])
 
         if print_results is True:
-            pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
-            pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
-            if CI * 100 % 1 == 0:
+            CI_rounded = CI * 100
+            if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            else:
-                CI_rounded = CI * 100
-            print(str('Results from Fit_Gamma_3P (' + str(CI_rounded) + '% CI):'))
-            print(self.results)
-            print('Log-Likelihood:', self.loglik, '\n')
+            frac_censored = round_to_decimals(len(right_censored) / n * 100)
+            if frac_censored % 1 == 0:
+                frac_censored = int(frac_censored)
+            colorprint(str('Results from Fit_Gamma_3P (' + str(CI_rounded) + '% CI):'), bold=True, underline=True)
+            print('Analysis method:', self.method)
+            print('Failures / Right censored:', str(str(len(failures)) + '/' + str(len(right_censored))), str('(' + str(frac_censored) + '% right censored)'), '\n')
+            print(self.results.to_string(index=False), '\n')
+            print(self.goodness_of_fit.to_string(index=False), '\n')
+
+            # if percentiles is not None:
+            #     print(str('Table of percentiles (' + str(CI_rounded) + '% CI bounds on time):'))
+            #     print(self.percentiles.to_string(index=False), '\n')
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Gamma_probability_plot
@@ -3255,7 +3176,11 @@ class Fit_Gamma_3P:
                 rc = None
             else:
                 rc = right_censored
-            Gamma_probability_plot(failures=failures, right_censored=rc, __fitted_dist_params=self, **kwargs)
+            # fig = Gamma_probability_plot(failures=failures, right_censored=rc, __fitted_dist_params=self, CI=CI, CI_type=CI_type, **kwargs)
+            fig = Gamma_probability_plot(failures=failures, right_censored=rc, __fitted_dist_params=self, **kwargs)
+            if self.gamma < 0.01:
+                # manually change the legend to reflect that Gamma_3P was fitted. The default legend in the probability plot thinks Gamma_2P was fitted when gamma=0
+                fig.axes[0].legend_.get_texts()[0].set_text(str('Fitted Gamma_3P\n(α=' + str(round_to_decimals(self.alpha, dec)) + ', β=' + str(round_to_decimals(self.beta, dec)) + ', γ=' + str(round_to_decimals(self.gamma, dec)) + ')'))
 
     @staticmethod
     def logf(t, a, b, g):  # Log PDF (3 parameter Gamma)
@@ -3278,7 +3203,7 @@ class Fit_Beta_2P:
     '''
     Fit_Beta_2P
     Fits a 2-parameter Beta distribution (alpha,beta) to the data provided.
-    All data must be in the range 0-1.
+    All data must be in the range 0 < x < 1.
 
     Inputs:
     failures - an array or list of failure data
@@ -3286,14 +3211,12 @@ class Fit_Beta_2P:
     show_probability_plot - True/False. Defaults to True.
     print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
+    method - 'MLE' (maximum likelihood estimation), 'LS' (least squares estimation), 'RRX' (Rank regression on X), 'RRY' (Rank regression on Y). LS will perform both RRX and RRY and return the better one. Default is 'MLE'.
+    optimizer - 'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
     kwargs are accepted for the probability plot (eg. linestyle, label, color)
 
     Outputs:
-    success - Whether the solution was found by autograd (True/False)
-        if success is False a warning will be printed indicating that scipy's fit was used as autograd failed. This fit will not be accurate if
-        there is censored data as scipy does not have the ability to fit censored data. Failure of autograd to find the solution should be rare and
-        if it occurs, it is likely that the distribution is an extremely bad fit for the data. Try scaling your data, removing extreme values, or using
-        another distribution.
+    success - Whether the solution was found by autograd (True/False). If False then the value returned will be the initial guess from Least Squares Estimation.
     alpha - the fitted Beta_2P alpha parameter
     beta - the fitted Beta_2P beta parameter
     loglik - Log Likelihood (as used in Minitab and Reliasoft)
@@ -3310,49 +3233,44 @@ class Fit_Beta_2P:
     beta_upper - the upper CI estimate of the parameter
     beta_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
+    goodness_of_fit - a dataframe of the goodness of fit values (Log-likelihood, AICc, BIC, AD).
+    percentiles - a dataframe of the percentiles with bounds on time. This is only produced if percentiles is 'auto' or a list or array. Since percentiles defaults to None, this output is not normally produced.
     '''
 
-    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, **kwargs):
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, method='MLE', optimizer='L-BFGS-B', **kwargs):
 
-        inputs = fitters_input_checking(dist='Beta_2P', failures=failures, right_censored=right_censored, CI=CI)
+        inputs = fitters_input_checking(dist='Beta_2P', failures=failures, right_censored=right_censored, method=method, optimizer=optimizer, CI=CI)
         failures = inputs.failures
         right_censored = inputs.right_censored
         CI = inputs.CI
+        method = inputs.method
+        optimizer = inputs.optimizer
+        # percentiles = inputs.percentiles
+        # CI_type = inputs.CI_type
 
-        all_data = np.hstack([failures, right_censored])
-        bnds = [(0.0001, None), (0.0001, None)]  # bounds of solution
-        # solve it
-        self.gamma = 0
-        _, y = plotting_positions(failures=failures, right_censored=right_censored)  # this is just to obtain AD
-        sp = ss.beta.fit(all_data, floc=0, fscale=1, optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
-        guess = [sp[0], sp[1]]
-        result = minimize(value_and_grad(Fit_Beta_2P.LL), guess, args=(failures, right_censored), jac=True, method='L-BFGS-B', bounds=bnds)
-
-        if result.success is True:
-            params = result.x
-            self.success = True
-            self.alpha = params[0]
-            self.beta = params[1]
+        # Obtain least squares estimates
+        if method == 'MLE':
+            LS_method = 'LS'
         else:
-            self.success = False
-            colorprint('WARNING: Fitting using Autograd FAILED for Beta_2P. The fit from Scipy was used instead so results may not be accurate.', text_color='red')
-            self.alpha = sp[0]
-            self.beta = sp[1]
+            LS_method = method
+        LS_results = LS_optimisation(func_name='Beta_2P', LL_func=Fit_Beta_2P.LL, failures=failures, right_censored=right_censored, method=LS_method)
 
-        params = [self.alpha, self.beta]
-        k = len(params)
-        n = len(all_data)
-        LL2 = 2 * Fit_Beta_2P.LL(params, failures, right_censored)
-        self.loglik2 = LL2
-        self.loglik = LL2 * -0.5
-        if n - k - 1 > 0:
-            self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
-        else:
-            self.AICc = 'Insufficient data'
-        self.BIC = np.log(n) * k + LL2
+        # least squares method
+        if method in ['LS', 'RRX', 'RRY']:
+            self.alpha = LS_results.guess[0]
+            self.beta = LS_results.guess[1]
+            self.method = str('Least Squares Estimation (' + LS_results.method + ')')
+
+        # maximum likelihood method
+        elif method == 'MLE':
+            MLE_results = MLE_optimisation(func_name='Beta_2P', LL_func=Fit_Beta_2P.LL, initial_guess=[LS_results.guess[0], LS_results.guess[1]], failures=failures, right_censored=right_censored, optimizer=optimizer)
+            self.alpha = MLE_results.scale
+            self.beta = MLE_results.shape
+            self.method = 'Maximum Likelihood Estimation (MLE)'
 
         # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
+        params = [self.alpha, self.beta]
         hessian_matrix = hessian(Fit_Beta_2P.LL)(np.array(tuple(params)), np.array(tuple(failures)), np.array(tuple(right_censored)))
         covariance_matrix = np.linalg.inv(hessian_matrix)
         self.alpha_SE = abs(covariance_matrix[0][0]) ** 0.5
@@ -3362,26 +3280,59 @@ class Fit_Beta_2P:
         self.alpha_lower = self.alpha * (np.exp(-Z * (self.alpha_SE / self.alpha)))
         self.beta_upper = self.beta * (np.exp(Z * (self.beta_SE / self.beta)))
         self.beta_lower = self.beta * (np.exp(-Z * (self.beta_SE / self.beta)))
-        Data = {'Parameter': ['Alpha', 'Beta'],
-                'Point Estimate': [self.alpha, self.beta],
-                'Standard Error': [self.alpha_SE, self.beta_SE],
-                'Lower CI': [self.alpha_lower, self.beta_lower],
-                'Upper CI': [self.alpha_upper, self.beta_upper]}
-        df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
-        self.results = df.set_index('Parameter')
+
+        results_data = {'Parameter': ['Alpha', 'Beta'],
+                        'Point Estimate': [self.alpha, self.beta],
+                        'Standard Error': [self.alpha_SE, self.beta_SE],
+                        'Lower CI': [self.alpha_lower, self.beta_lower],
+                        'Upper CI': [self.alpha_upper, self.beta_upper]}
+        self.results = pd.DataFrame(results_data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
         self.distribution = Beta_Distribution(alpha=self.alpha, beta=self.beta)
-        self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=failures, show_plot=False), empirical_cdf=y)
+        # self.distribution = Beta_Distribution(alpha=self.alpha, beta=self.beta, alpha_SE=self.alpha_SE, beta_SE=self.beta_SE, Cov_alpha_beta=self.Cov_alpha_beta, CI=CI, CI_type=CI_type)
+
+        # if percentiles is not None:
+        #     point_estimate = self.distribution.quantile(q=percentiles / 100)
+        #     lower_estimate, upper_estimate = distribution_confidence_intervals.beta_CI(self=self.distribution, func='CDF', CI_type='time', CI=CI, q=1 - (percentiles / 100))
+        #     percentile_data = {'Percentile': percentiles,
+        #                        'Lower Estimate': lower_estimate,
+        #                        'Point Estimate': point_estimate,
+        #                        'Upper Estimate': upper_estimate}
+        #     self.percentiles = pd.DataFrame(percentile_data, columns=['Percentile', 'Lower Estimate', 'Point Estimate', 'Upper Estimate'])
+
+        # goodness of fit measures
+        n = len(failures) + len(right_censored)
+        k = 2
+        LL2 = 2 * Fit_Beta_2P.LL(params, failures, right_censored)
+        self.loglik2 = LL2
+        self.loglik = LL2 * -0.5
+        if n - k - 1 > 0:
+            self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
+        else:
+            self.AICc = 'Insufficient data'
+        self.BIC = np.log(n) * k + LL2
+
+        x, y = plotting_positions(failures=failures, right_censored=right_censored)
+        self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=x, show_plot=False), empirical_cdf=y)
+        GoF_data = {'Goodness of fit': ['Log-likelihood', 'AICc', 'BIC', 'AD'],
+                    'Value': [self.loglik, self.AICc, self.BIC, self.AD]}
+        self.goodness_of_fit = pd.DataFrame(GoF_data, columns=['Goodness of fit', 'Value'])
 
         if print_results is True:
-            pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
-            pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
-            if CI * 100 % 1 == 0:
+            CI_rounded = CI * 100
+            if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            else:
-                CI_rounded = CI * 100
-            print(str('Results from Fit_Beta_2P (' + str(CI_rounded) + '% CI):'))
-            print(self.results)
-            print('Log-Likelihood:', self.loglik, '\n')
+            frac_censored = round_to_decimals(len(right_censored) / n * 100)
+            if frac_censored % 1 == 0:
+                frac_censored = int(frac_censored)
+            colorprint(str('Results from Fit_Beta_2P (' + str(CI_rounded) + '% CI):'), bold=True, underline=True)
+            print('Analysis method:', self.method)
+            print('Failures / Right censored:', str(str(len(failures)) + '/' + str(len(right_censored))), str('(' + str(frac_censored) + '% right censored)'), '\n')
+            print(self.results.to_string(index=False), '\n')
+            print(self.goodness_of_fit.to_string(index=False), '\n')
+
+            # if percentiles is not None:
+            #     print(str('Table of percentiles (' + str(CI_rounded) + '% CI bounds on time):'))
+            #     print(self.percentiles.to_string(index=False), '\n')
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Beta_probability_plot
@@ -3389,6 +3340,7 @@ class Fit_Beta_2P:
                 rc = None
             else:
                 rc = right_censored
+            # Beta_probability_plot(failures=failures, right_censored=rc, __fitted_dist_params=self, CI=CI, CI_type=CI_type, **kwargs)
             Beta_probability_plot(failures=failures, right_censored=rc, __fitted_dist_params=self, **kwargs)
 
     @staticmethod
@@ -3419,18 +3371,14 @@ class Fit_Loglogistic_2P:
     right_censored - an array or list of right censored data
     show_probability_plot - True/False. Defaults to True.
     print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
-    initial_guess_method - 'scipy' OR 'least squares'. Default is 'least squares'. Both do not take into account censored data but scipy uses MLE, and least squares is least squares regression of the plotting positions. Least squares is generally more accurate.
-    optimizer - 'L-BFGS-B' OR 'TNC'. These are both bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
+    method - 'MLE' (maximum likelihood estimation), 'LS' (least squares estimation), 'RRX' (Rank regression on X), 'RRY' (Rank regression on Y). LS will perform both RRX and RRY and return the better one. Default is 'MLE'.
+    optimizer - 'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
     CI_type - time, reliability, None. Default is time. This is the confidence bounds on time or on reliability. Use None to turn off the confidence intervals.
     kwargs are accepted for the probability plot (eg. linestyle, label, color)
 
     outputs:
-    success - Whether the solution was found by autograd (True/False)
-        if success is False a warning will be printed indicating that scipy's fit was used as autograd failed. This fit will not be accurate if
-        there is censored data as scipy does not have the ability to fit censored data. Failure of autograd to find the solution should be rare and
-        if it occurs, it is likely that the distribution is an extremely bad fit for the data. Try scaling your data, removing extreme values, or using
-        another distribution.
+    success - Whether the solution was found by autograd (True/False). If False then the value returned will be the initial guess from Least Squares Estimation.
     alpha - the fitted Loglogistic_2P alpha parameter
     beta - the fitted Loglogistic_2P beta parameter
     loglik - Log Likelihood (as used in Minitab and Reliasoft)
@@ -3447,87 +3395,45 @@ class Fit_Loglogistic_2P:
     beta_upper - the upper CI estimate of the parameter
     beta_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
+    goodness_of_fit - a dataframe of the goodness of fit values (Log-likelihood, AICc, BIC, AD).
+    percentiles - a dataframe of the percentiles with bounds on time. This is only produced if percentiles is 'auto' or a list or array. Since percentiles defaults to None, this output is not normally produced.
     '''
 
-    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, percentiles=None, CI_type='time', initial_guess_method='least squares', optimizer='L-BFGS-B', **kwargs):
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, percentiles=None, CI_type='time', method='MLE', optimizer='L-BFGS-B', **kwargs):
 
-        inputs = fitters_input_checking(dist='Loglogistic_2P', failures=failures, right_censored=right_censored, initial_guess_method=initial_guess_method, optimizer=optimizer, CI=CI, percentiles=percentiles, CI_type=CI_type)
+        inputs = fitters_input_checking(dist='Loglogistic_2P', failures=failures, right_censored=right_censored, method=method, optimizer=optimizer, CI=CI, percentiles=percentiles, CI_type=CI_type)
         failures = inputs.failures
         right_censored = inputs.right_censored
         CI = inputs.CI
-        initial_guess_method = inputs.initial_guess_method
+        method = inputs.method
         optimizer = inputs.optimizer
         percentiles = inputs.percentiles
         CI_type = inputs.CI_type
-
-        all_data = np.hstack([failures, right_censored])
         self.gamma = 0
-        x, y = plotting_positions(failures=failures, right_censored=right_censored)
-        # Obtain initial guess using either Least squares or Scipy
-        if initial_guess_method == 'least squares':
-            # obtain least squares estimate based on the plotting positions
-            x_linearised = np.log(x)
-            y_linearised = np.log(1 / np.array(y) - 1)
-            slope, intercept, _, _, _ = ss.linregress(x_linearised, y_linearised)
-            LS_beta = -slope
-            LS_alpha = np.exp(intercept / LS_beta)
-            guess = [LS_alpha, LS_beta]
-        else:  # scipy method of obtaining the initial guess
-            all_data = np.hstack([failures, right_censored])
-            sp = ss.fisk.fit(all_data, floc=0, optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
-            if sp[0] > 100:  # correction to high beta which generally occurs with heavily censored datasets
-                guess = [sp[2] * 1.5, sp[0] * 0.4]
-            else:
-                guess = [sp[2], sp[0]]
-        self.initial_guess = guess
 
-        warnings.filterwarnings('ignore')  # it is necessary to supress the warning about the jacobian when using the nelder-mead optimizer
-        n = len(all_data)
-        delta_BIC = 1
-        BIC_array = [1000000]
-        runs = 0
-        bnds = [(0, None), (0, None)]  # bounds on the solution. Helps a lot with stability
-        k = len(guess)
-        while delta_BIC > 0.001 and runs < 5:  # exits after BIC convergence or 5 iterations
-            runs += 1
-            result = minimize(value_and_grad(Fit_Loglogistic_2P.LL), guess, args=(failures, right_censored), jac=True, method=optimizer, bounds=bnds)
-            params = result.x
-            guess = [params[0], params[1]]
-            LL2 = 2 * Fit_Loglogistic_2P.LL(guess, failures, right_censored)
-            BIC_array.append(np.log(n) * k + LL2)
-            delta_BIC = abs(BIC_array[-1] - BIC_array[-2])
-
-        if result.success is True:
-            params = result.x
-            self.success = True
-            self.alpha = params[0]
-            self.beta = params[1]
-        else:  # if the L-BFGS-B optimizer fails then we have a second attempt using the slower but slightly more reliable nelder-mead optimizer
-            guess = self.initial_guess
-            result = minimize(value_and_grad(Fit_Loglogistic_2P.LL), guess, args=(failures, right_censored), jac=True, tol=1e-4, method='nelder-mead')
-            if result.success is True:
-                params = result.x
-                self.success = True
-                self.alpha = params[0]
-                self.beta = params[1]
-            else:
-                self.success = False
-                colorprint('WARNING: Fitting using Autograd FAILED for Loglogistic_2P. The fit from Scipy was used instead so results may not be accurate.', text_color='red')
-                self.alpha = self.initial_guess[0]
-                self.beta = self.initial_guess[1]
-
-        params = [self.alpha, self.beta]
-        LL2 = 2 * Fit_Loglogistic_2P.LL(params, failures, right_censored)
-        self.loglik2 = LL2
-        self.loglik = LL2 * -0.5
-        if n - k - 1 > 0:
-            self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
+        # Obtain least squares estimates
+        if method == 'MLE':
+            LS_method = 'LS'
         else:
-            self.AICc = 'Insufficient data'
-        self.BIC = np.log(n) * k + LL2
+            LS_method = method
+        LS_results = LS_optimisation(func_name='Loglogistic_2P', LL_func=Fit_Loglogistic_2P.LL, failures=failures, right_censored=right_censored, method=LS_method)
+
+        # least squares method
+        if method in ['LS', 'RRX', 'RRY']:
+            self.alpha = LS_results.guess[0]
+            self.beta = LS_results.guess[1]
+            self.method = str('Least Squares Estimation (' + LS_results.method + ')')
+
+        # maximum likelihood method
+        elif method == 'MLE':
+            MLE_results = MLE_optimisation(func_name='Loglogistic_2P', LL_func=Fit_Loglogistic_2P.LL, initial_guess=[LS_results.guess[0], LS_results.guess[1]], failures=failures, right_censored=right_censored, optimizer=optimizer)
+            self.alpha = MLE_results.scale
+            self.beta = MLE_results.shape
+            self.method = 'Maximum Likelihood Estimation (MLE)'
 
         # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
+        params = [self.alpha, self.beta]
         hessian_matrix = hessian(Fit_Loglogistic_2P.LL)(np.array(tuple(params)), np.array(tuple(failures)), np.array(tuple(right_censored)))
         covariance_matrix = np.linalg.inv(hessian_matrix)
         self.alpha_SE = abs(covariance_matrix[0][0]) ** 0.5
@@ -3538,40 +3444,57 @@ class Fit_Loglogistic_2P:
         self.beta_upper = self.beta * (np.exp(Z * (self.beta_SE / self.beta)))
         self.beta_lower = self.beta * (np.exp(-Z * (self.beta_SE / self.beta)))
 
-        Data = {'Parameter': ['Alpha', 'Beta'],
-                'Point Estimate': [self.alpha, self.beta],
-                'Standard Error': [self.alpha_SE, self.beta_SE],
-                'Lower CI': [self.alpha_lower, self.beta_lower],
-                'Upper CI': [self.alpha_upper, self.beta_upper]}
-        df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
-        self.results = df.set_index('Parameter')
+        results_data = {'Parameter': ['Alpha', 'Beta'],
+                        'Point Estimate': [self.alpha, self.beta],
+                        'Standard Error': [self.alpha_SE, self.beta_SE],
+                        'Lower CI': [self.alpha_lower, self.beta_lower],
+                        'Upper CI': [self.alpha_upper, self.beta_upper]}
+        self.results = pd.DataFrame(results_data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
         self.distribution = Loglogistic_Distribution(alpha=self.alpha, beta=self.beta, alpha_SE=self.alpha_SE, beta_SE=self.beta_SE, Cov_alpha_beta=self.Cov_alpha_beta, CI=CI, CI_type=CI_type)
-        self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=failures, show_plot=False), empirical_cdf=y)
 
         if percentiles is not None:
             point_estimate = self.distribution.quantile(q=percentiles / 100)
             lower_estimate, upper_estimate = distribution_confidence_intervals.loglogistic_CI(self=self.distribution, func='CDF', CI_type='time', CI=CI, q=1 - (percentiles / 100))
-            Percentile_Data = {'Percentile': percentiles,
+            percentile_data = {'Percentile': percentiles,
                                'Lower Estimate': lower_estimate,
                                'Point Estimate': point_estimate,
                                'Upper Estimate': upper_estimate}
-            percentiles = pd.DataFrame(Percentile_Data, columns=['Percentile', 'Lower Estimate', 'Point Estimate', 'Upper Estimate'])
-            self.percentiles = percentiles.set_index('Percentile')
+            self.percentiles = pd.DataFrame(percentile_data, columns=['Percentile', 'Lower Estimate', 'Point Estimate', 'Upper Estimate'])
+
+        # goodness of fit measures
+        n = len(failures) + len(right_censored)
+        k = 2
+        LL2 = 2 * Fit_Loglogistic_2P.LL(params, failures, right_censored)
+        self.loglik2 = LL2
+        self.loglik = LL2 * -0.5
+        if n - k - 1 > 0:
+            self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
+        else:
+            self.AICc = 'Insufficient data'
+        self.BIC = np.log(n) * k + LL2
+
+        x, y = plotting_positions(failures=failures, right_censored=right_censored)
+        self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=x, show_plot=False), empirical_cdf=y)
+        GoF_data = {'Goodness of fit': ['Log-likelihood', 'AICc', 'BIC', 'AD'],
+                    'Value': [self.loglik, self.AICc, self.BIC, self.AD]}
+        self.goodness_of_fit = pd.DataFrame(GoF_data, columns=['Goodness of fit', 'Value'])
 
         if print_results is True:
-            pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
-            pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
-            if CI * 100 % 1 == 0:
+            CI_rounded = CI * 100
+            if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            else:
-                CI_rounded = CI * 100
-            print(str('Results from Fit_Loglogistic_2P (' + str(CI_rounded) + '% CI):'))
-            print(self.results)
-            print('Log-Likelihood:', self.loglik, '\n')
+            frac_censored = round_to_decimals(len(right_censored) / n * 100)
+            if frac_censored % 1 == 0:
+                frac_censored = int(frac_censored)
+            colorprint(str('Results from Fit_Loglogistic_2P (' + str(CI_rounded) + '% CI):'), bold=True, underline=True)
+            print('Analysis method:', self.method)
+            print('Failures / Right censored:', str(str(len(failures)) + '/' + str(len(right_censored))), str('(' + str(frac_censored) + '% right censored)'), '\n')
+            print(self.results.to_string(index=False), '\n')
+            print(self.goodness_of_fit.to_string(index=False), '\n')
 
             if percentiles is not None:
                 print(str('Table of percentiles (' + str(CI_rounded) + '% CI bounds on time):'))
-                print(self.percentiles)
+                print(self.percentiles.to_string(index=False), '\n')
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Loglogistic_probability_plot
@@ -3611,16 +3534,12 @@ class Fit_Loglogistic_3P:
     print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
     CI_type - 'time' or 'reliability'. Default is time. Used for the probability plot and the distribution object in the output.
-    initial_guess_method - 'scipy', 'least squares' or 'non-linear least squares'. Default is 'scipy'. All three do not take into account censored data but scipy uses MLE, and least squares is least squares regression of the plotting positions. Non-linear least squares uses least squares as an intial guess before using scipy.optimise.curve_fit for the CDF. Scipy proved more accurate during testing.
-    optimizer - 'L-BFGS-B' OR 'TNC'. These are both bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
+    method - 'MLE' (maximum likelihood estimation), or 'LS' (least squares estimation). LS will perform non-linear least squares estimation. Default is 'MLE'.
+    optimizer - 'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
     kwargs are accepted for the probability plot (eg. linestyle, label, color)
 
     Outputs:
-    success - Whether the solution was found by autograd (True/False)
-        if success is False a warning will be printed indicating that scipy's fit was used as autograd failed. This fit will not be accurate if
-        there is censored data as scipy does not have the ability to fit censored data. Failure of autograd to find the solution should be rare and
-        if it occurs, it is likely that the distribution is an extremely bad fit for the data. Try scaling your data, removing extreme values, or using
-        another distribution.
+    success - Whether the solution was found by autograd (True/False). If False then the value returned will be the initial guess from Least Squares Estimation.
     alpha - the fitted Loglogistic_3P alpha parameter
     beta - the fitted Loglogistic_3P beta parameter
     gamma - the fitted Loglogistic_3P gamma parameter
@@ -3641,106 +3560,42 @@ class Fit_Loglogistic_3P:
     gamma_upper - the upper CI estimate of the parameter
     gamma_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
+    goodness_of_fit - a dataframe of the goodness of fit values (Log-likelihood, AICc, BIC, AD).
+    percentiles - a dataframe of the percentiles with bounds on time. This is only produced if percentiles is 'auto' or a list or array. Since percentiles defaults to None, this output is not normally produced.
     '''
 
-    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, CI_type='time', optimizer='L-BFGS-B', initial_guess_method='scipy', percentiles=None, **kwargs):
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, CI_type='time', optimizer='L-BFGS-B', method='MLE', percentiles=None, **kwargs):
 
-        inputs = fitters_input_checking(dist='Loglogistic_3P', failures=failures, right_censored=right_censored, initial_guess_method=initial_guess_method, optimizer=optimizer, CI=CI, percentiles=percentiles, CI_type=CI_type)
+        inputs = fitters_input_checking(dist='Loglogistic_3P', failures=failures, right_censored=right_censored, method=method, optimizer=optimizer, CI=CI, percentiles=percentiles, CI_type=CI_type)
         failures = inputs.failures
         right_censored = inputs.right_censored
         CI = inputs.CI
-        initial_guess_method = inputs.initial_guess_method
+        method = inputs.method
         optimizer = inputs.optimizer
         percentiles = inputs.percentiles
         CI_type = inputs.CI_type
 
-        # Loglogistic_3P INITIAL GUESS SECTION
-        all_data = np.hstack([failures, right_censored])
-        offset = 0.0001  # this is to ensure the lower bound for gamma is not equal to min(data) which would result in inf log-likelihood. This small offset fixes that issue
-        gamma_initial_guess = min(all_data) - offset  # get a quick guess for gamma by setting it as the minimum of the data
-        x, y = plotting_positions(failures=failures - gamma_initial_guess, right_censored=right_censored - gamma_initial_guess)
-        if initial_guess_method == 'scipy':  # default method
-            data_shifted = all_data - gamma_initial_guess
-            sp = ss.fisk.fit(data_shifted, floc=0, optimizer='powell')  # scipy's answer is used as an initial guess. Scipy is only correct when there is no censored data
-            guess = [sp[2], sp[0], gamma_initial_guess]
-            self.initial_guess = guess
-        elif initial_guess_method in ['least squares', 'non-linear least squares']:
-            if len(failures) > 4:
-                x, y = x[1::], y[1::]  # this removes the first value which is almost always way left due to the gamma initial guess adjustment. It is only done if there is enough data (>4 failures)
-            x_linearised = np.log(x)
-            y_linearised = np.log((1 - np.array(y)) / np.array(y))
-            slope, intercept, _, _, _ = ss.linregress(x_linearised, y_linearised)
-            LS_beta = -slope
-            LS_alpha = np.exp(intercept / LS_beta)
-
-            if initial_guess_method == 'least squares':
-                self.initial_guess = [LS_alpha, LS_beta, gamma_initial_guess]
-                guess = self.initial_guess
-            elif initial_guess_method == 'non-linear least squares' and len(failures) < 4:
-                colorprint('WARNING: initial_guess_method changed to least squares as a minimum of 4 failures are required for non-linear least squares.', text_color='red')
-                self.initial_guess = [LS_alpha, LS_beta, gamma_initial_guess]
-                guess = self.initial_guess
-            else:
-                def __F(t, alpha, beta, gamma):  # function to be fitted by curve_fit [F(t)]
-                    return 1 / (1 + (((t - gamma) / alpha) ** -beta))
-
-                x2, y2 = plotting_positions(failures=failures, right_censored=right_censored)
-                curve_fit_bounds = ([0, 0, offset], [LS_alpha * 100, LS_beta * 15, gamma_initial_guess])  # ([alpha_lower,beta_lower,gamma_lower],[alpha_upper,beta_upper,gamma_upper])
-                try:
-                    popt, _ = curve_fit(__F, x2, y2, p0=[LS_alpha, LS_beta, gamma_initial_guess], bounds=curve_fit_bounds)  # This is the non-linear least squares method
-                    self.initial_guess = [popt[0], popt[1], popt[2]]
-                except RuntimeError:  # Sometimes the curve_fit fails due to "RuntimeError: Optimal parameters not found: The maximum number of function evaluations is exceeded."
-                    self.initial_guess = [LS_alpha, LS_beta, gamma_initial_guess]
-                    colorprint('WARNING: non-linear least squares failed to obtain the initial guess. Using least squares instead.', text_color='red')
-                guess = self.initial_guess
-
-        self.initial_guess_method = initial_guess_method
-        warnings.filterwarnings('ignore')  # it is necessary to supress the warning about the jacobian when using the nelder-mead optimizer
-        k = len(guess)
-        n = len(all_data)
-        delta_BIC = 1
-        BIC_array = [1000000]
-        runs = 0
-        bnds = [(0, None), (0, None), (0, min(all_data) - offset)]  # bounds on the solution. Helps a lot with stability
-        while delta_BIC > 0.001 and runs < 5:  # exits after BIC convergence or 5 iterations
-            runs += 1
-            result = minimize(value_and_grad(Fit_Loglogistic_3P.LL), guess, args=(failures, right_censored), jac=True, method=optimizer, bounds=bnds)
-            params = result.x
-            guess = [params[0], params[1], params[2]]
-            LL2 = 2 * Fit_Loglogistic_3P.LL(guess, failures, right_censored)
-            BIC_array.append(np.log(n) * k + LL2)
-            delta_BIC = abs(BIC_array[-1] - BIC_array[-2])
-
-        if result.success is True:
-            params = result.x
-            self.success = True
-            self.alpha = params[0]
-            self.beta = params[1]
-            self.gamma = params[2]
-        else:  # if the L-BFGS-B or TNC optimizer fails then we have a second attempt using the slower but slightly more reliable nelder-mead optimizer
-            result = minimize(value_and_grad(Fit_Loglogistic_3P.LL), self.initial_guess, args=(failures, right_censored), jac=True, method='nelder-mead')
-            if result.success is True:
-                params = result.x
-                self.success = True
-                self.alpha = params[0]
-                self.beta = params[1]
-                self.gamma = params[2]
-            else:
-                self.success = False
-                colorprint('WARNING: Fitting using Autograd FAILED for Weibull_3P. The fit from Scipy was used instead so the results may not be accurate.', text_color='red')
-                sp = ss.fisk.fit(all_data, optimizer='powell')
-                self.alpha = sp[2]
-                self.beta = sp[0]
-                self.gamma = sp[1]
-
-        params = [self.alpha, self.beta, self.gamma]
-        self.loglik2 = LL2
-        self.loglik = LL2 * -0.5
-        if n - k - 1 > 0:
-            self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
+        # Obtain least squares estimates
+        if method == 'MLE':
+            LS_method = 'LS'
         else:
-            self.AICc = 'Insufficient data'
-        self.BIC = np.log(n) * k + LL2
+            LS_method = method
+        LS_results = LS_optimisation(func_name='Loglogistic_3P', LL_func=Fit_Lognormal_3P.LL, failures=failures, right_censored=right_censored, method=LS_method)
+
+        # least squares method
+        if method in ['LS', 'RRX', 'RRY']:
+            self.alpha = LS_results.guess[0]
+            self.beta = LS_results.guess[1]
+            self.gamma = LS_results.guess[2]
+            self.method = str('Least Squares Estimation (' + LS_results.method + ')')
+
+        # maximum likelihood method
+        elif method == 'MLE':
+            MLE_results = MLE_optimisation(func_name='Loglogistic_3P', LL_func=Fit_Loglogistic_3P.LL, initial_guess=[LS_results.guess[0], LS_results.guess[1], LS_results.guess[2]], failures=failures, right_censored=right_censored, optimizer=optimizer)
+            self.alpha = MLE_results.scale
+            self.beta = MLE_results.shape
+            self.gamma = MLE_results.gamma
+            self.method = 'Maximum Likelihood Estimation (MLE)'
 
         if self.gamma < 0.01:  # If the solver finds that gamma is very near zero then we should have used a Loglogistic_2P distribution. Can't proceed with Loglogistic_3P as the confidence interval calculations for gamma result in nan (Zero division error). Need to recalculate everything as the SE values will be incorrect for Loglogistic_3P
             loglogistic_2P_results = Fit_Loglogistic_2P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False, CI=CI)
@@ -3757,14 +3612,17 @@ class Fit_Loglogistic_3P:
             self.beta_lower = loglogistic_2P_results.beta_lower
             self.gamma_upper = 0
             self.gamma_lower = 0
+            params_3P = [self.alpha, self.beta, self.gamma]
         else:
             # confidence interval estimates of parameters
             Z = -ss.norm.ppf((1 - CI) / 2)
+            params_2P = [self.alpha, self.beta]
+            params_3P = [self.alpha, self.beta, self.gamma]
             # here we need to get alpha_SE and beta_SE from the Loglogistic_2P by providing an adjusted dataset (adjusted for gamma)
-            hessian_matrix = hessian(Fit_Loglogistic_2P.LL)(np.array(tuple([self.alpha, self.beta])), np.array(tuple(failures - self.gamma)), np.array(tuple(right_censored - self.gamma)))
+            hessian_matrix = hessian(Fit_Loglogistic_2P.LL)(np.array(tuple(params_2P)), np.array(tuple(failures - self.gamma)), np.array(tuple(right_censored - self.gamma)))
             covariance_matrix = np.linalg.inv(hessian_matrix)
             # this is to get the gamma_SE. Unfortunately this approach for alpha_SE and beta_SE give SE values that are very large resulting in incorrect CI plots. This is the same method used by Reliasoft
-            hessian_matrix_for_gamma = hessian(Fit_Loglogistic_3P.LL)(np.array(tuple(params)), np.array(tuple(failures)), np.array(tuple(right_censored)))
+            hessian_matrix_for_gamma = hessian(Fit_Loglogistic_3P.LL)(np.array(tuple(params_3P)), np.array(tuple(failures)), np.array(tuple(right_censored)))
             covariance_matrix_for_gamma = np.linalg.inv(hessian_matrix_for_gamma)
             self.alpha_SE = abs(covariance_matrix[0][0]) ** 0.5
             self.beta_SE = abs(covariance_matrix[1][1]) ** 0.5
@@ -3777,40 +3635,57 @@ class Fit_Loglogistic_3P:
             self.gamma_upper = self.gamma * (np.exp(Z * (self.gamma_SE / self.gamma)))  # here we assume gamma can only be positive as there are bounds placed on it in the optimizer. Minitab assumes positive or negative so bounds are different
             self.gamma_lower = self.gamma * (np.exp(-Z * (self.gamma_SE / self.gamma)))
 
-        Data = {'Parameter': ['Alpha', 'Beta', 'Gamma'],
-                'Point Estimate': [self.alpha, self.beta, self.gamma],
-                'Standard Error': [self.alpha_SE, self.beta_SE, self.gamma_SE],
-                'Lower CI': [self.alpha_lower, self.beta_lower, self.gamma_lower],
-                'Upper CI': [self.alpha_upper, self.beta_upper, self.gamma_upper]}
-        df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
-        self.results = df.set_index('Parameter')
+        results_data = {'Parameter': ['Alpha', 'Beta', 'Gamma'],
+                        'Point Estimate': [self.alpha, self.beta, self.gamma],
+                        'Standard Error': [self.alpha_SE, self.beta_SE, self.gamma_SE],
+                        'Lower CI': [self.alpha_lower, self.beta_lower, self.gamma_lower],
+                        'Upper CI': [self.alpha_upper, self.beta_upper, self.gamma_upper]}
+        self.results = pd.DataFrame(results_data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
         self.distribution = Loglogistic_Distribution(alpha=self.alpha, beta=self.beta, gamma=self.gamma, alpha_SE=self.alpha_SE, beta_SE=self.beta_SE, Cov_alpha_beta=self.Cov_alpha_beta, CI=CI, CI_type=CI_type)
-        self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=failures, show_plot=False), empirical_cdf=y)
 
         if percentiles is not None:
             point_estimate = self.distribution.quantile(q=percentiles / 100)
             lower_estimate, upper_estimate = distribution_confidence_intervals.loglogistic_CI(self=self.distribution, func='CDF', CI_type='time', CI=CI, q=1 - (percentiles / 100))
-            Percentile_Data = {'Percentile': percentiles,
+            percentile_data = {'Percentile': percentiles,
                                'Lower Estimate': lower_estimate,
                                'Point Estimate': point_estimate,
                                'Upper Estimate': upper_estimate}
-            percentiles = pd.DataFrame(Percentile_Data, columns=['Percentile', 'Lower Estimate', 'Point Estimate', 'Upper Estimate'])
-            self.percentiles = percentiles.set_index('Percentile')
+            self.percentiles = pd.DataFrame(percentile_data, columns=['Percentile', 'Lower Estimate', 'Point Estimate', 'Upper Estimate'])
+
+        # goodness of fit measures
+        n = len(failures) + len(right_censored)
+        k = 3
+        LL2 = 2 * Fit_Loglogistic_3P.LL(params_3P, failures, right_censored)
+        self.loglik2 = LL2
+        self.loglik = LL2 * -0.5
+        if n - k - 1 > 0:
+            self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
+        else:
+            self.AICc = 'Insufficient data'
+        self.BIC = np.log(n) * k + LL2
+
+        x, y = plotting_positions(failures=failures, right_censored=right_censored)
+        self.AD = anderson_darling(fitted_cdf=self.distribution.CDF(xvals=x, show_plot=False), empirical_cdf=y)
+        GoF_data = {'Goodness of fit': ['Log-likelihood', 'AICc', 'BIC', 'AD'],
+                    'Value': [self.loglik, self.AICc, self.BIC, self.AD]}
+        self.goodness_of_fit = pd.DataFrame(GoF_data, columns=['Goodness of fit', 'Value'])
 
         if print_results is True:
-            pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
-            pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
-            if CI * 100 % 1 == 0:
+            CI_rounded = CI * 100
+            if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            else:
-                CI_rounded = CI * 100
-            print(str('Results from Fit_Loglogistic_3P (' + str(CI_rounded) + '% CI):'))
-            print(self.results)
-            print('Log-Likelihood:', self.loglik, '\n')
+            frac_censored = round_to_decimals(len(right_censored) / n * 100)
+            if frac_censored % 1 == 0:
+                frac_censored = int(frac_censored)
+            colorprint(str('Results from Fit_Loglogistic_3P (' + str(CI_rounded) + '% CI):'), bold=True, underline=True)
+            print('Analysis method:', self.method)
+            print('Failures / Right censored:', str(str(len(failures)) + '/' + str(len(right_censored))), str('(' + str(frac_censored) + '% right censored)'), '\n')
+            print(self.results.to_string(index=False), '\n')
+            print(self.goodness_of_fit.to_string(index=False), '\n')
 
             if percentiles is not None:
                 print(str('Table of percentiles (' + str(CI_rounded) + '% CI bounds on time):'))
-                print(self.percentiles)
+                print(self.percentiles.to_string(index=False), '\n')
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Loglogistic_probability_plot

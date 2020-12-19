@@ -22,6 +22,8 @@ fitters_input_checking - error checking and default values for all the fitters
 fill_no_autoscale - creates a shaded region without adding it to the global list of objects to consider when autoscale is calculated
 line_no_autoscale - creates a line without adding it to the global list of objects to consider when autoscale is calculated
 distribution_confidence_intervals - calculated and plots the confidence intervals for the distributions
+linear_regression - given x and y data it will return slope and intercept of line of best fit. Includes options to specify slope or intercept.
+least_squares - provides parameter estimates for distributions using the method of least squares. Used extensively by Fitters.
 '''
 
 import numpy as np
@@ -30,8 +32,18 @@ import matplotlib.pyplot as plt
 from matplotlib.collections import PolyCollection, LineCollection
 from matplotlib import ticker
 from autograd import jacobian as jac
-from autograd_gamma import gammainccinv, gammaincc
+from autograd_gamma import gammainccinv as agammainccinv
+from autograd_gamma import gammaincc as agammaincc
+from autograd import value_and_grad
 import autograd.numpy as anp
+from scipy.special import gammainc, betainc, erf
+from scipy.optimize import curve_fit, minimize, OptimizeWarning
+from numpy.linalg import LinAlgError
+import warnings
+import os
+
+warnings.filterwarnings(action='ignore', category=OptimizeWarning)  # ignores the optimize warning that curve_fit sometimes outputs when there are 3 data points to fit a 3P curve
+warnings.filterwarnings(action='ignore', category=RuntimeWarning)  # ignores the runtime warning from scipy when the nelder-mean or powell optimizers are used and jac is not required
 
 
 def round_to_decimals(number, decimals=5, integer_floats_to_ints=True):
@@ -524,6 +536,7 @@ def probability_plot_xylims(x, y, dist, spacing=0.1, gamma_beta=None, beta_alpha
     finds the x and y limits of probability plots.
     This function is called by probability_plotting
     '''
+
     # x limits
     if dist in ['weibull', 'lognormal', 'loglogistic']:
         min_x_log = np.log10(min(x))
@@ -531,12 +544,18 @@ def probability_plot_xylims(x, y, dist, spacing=0.1, gamma_beta=None, beta_alpha
         dx_log = max_x_log - min_x_log
         xlim_lower = 10 ** (min_x_log - dx_log * spacing)
         xlim_upper = 10 ** (max_x_log + dx_log * spacing)
+        if xlim_lower == xlim_upper:
+            xlim_lower = 10 ** (np.log10(xlim_lower) - 10 * spacing)
+            xlim_upper = 10 ** (np.log10(xlim_upper) + 10 * spacing)
     elif dist in ['normal', 'gamma', 'exponential', 'beta', 'gumbel']:
         min_x = min(x)
         max_x = max(x)
         dx = max_x - min_x
         xlim_lower = min_x - dx * spacing
         xlim_upper = max_x + dx * spacing
+        if xlim_lower == xlim_upper:
+            xlim_lower = 0
+            xlim_upper = xlim_upper * 2
     else:
         raise ValueError('dist is unrecognised')
     if xlim_lower < 0 and dist not in ['normal', 'gumbel']:
@@ -586,6 +605,10 @@ def probability_plot_xylims(x, y, dist, spacing=0.1, gamma_beta=None, beta_alpha
         dy_tfm = max_y_tfm - min_y_tfm
         ylim_lower = axes_transforms.loglogistic_inverse(min_y_tfm - dy_tfm * spacing)
         ylim_upper = axes_transforms.loglogistic_inverse(max_y_tfm + dy_tfm * spacing)
+    if ylim_upper == ylim_lower:
+        dx = min(1 - ylim_upper, ylim_upper - 1)
+        ylim_upper = ylim_upper - spacing * dx
+        ylim_lower = ylim_lower + spacing * dx
     plt.ylim(ylim_lower, ylim_upper)
 
 
@@ -835,7 +858,7 @@ class fitters_input_checking:
     performs error checking and some basic default operations for all the inputs given to each of the fitters
     '''
 
-    def __init__(self, dist, failures, right_censored=None, initial_guess_method=None, optimizer=None, CI=0.95, percentiles=False, force_beta=None, force_sigma=None, CI_type=None):
+    def __init__(self, dist, failures, right_censored=None, method=None, optimizer=None, CI=0.95, percentiles=False, force_beta=None, force_sigma=None, CI_type=None):
 
         if dist not in ['Everything', 'Weibull_2P', 'Weibull_3P', 'Gamma_2P', 'Gamma_3P', 'Exponential_1P', 'Exponential_2P', 'Gumbel_2P', 'Normal_2P', 'Lognormal_2P', 'Lognormal_3P', 'Loglogistic_2P', 'Loglogistic_3P', 'Beta_2P', 'Weibull_Mixture', 'Weibull_CR']:
             raise ValueError('incorrect dist specified. Use the correct name. eg. Weibull_2P')
@@ -893,29 +916,28 @@ class fitters_input_checking:
             raise ValueError('CI must be between 0 and 1. Default is 0.95 for 95% Confidence interval.')
 
         # error checking for optimizer
-        if optimizer not in ['L-BFGS-B', 'TNC', None]:
-            raise ValueError('optimizer must be either "L-BFGS-B" OR "TNC". Default is "L-BFGS-B".')
+        if optimizer is not None:
+            if optimizer.upper() not in ['L-BFGS-B', 'TNC', 'POWELL']:
+                raise ValueError('optimizer must be either "L-BFGS-B", "TNC", or "powell". Default is "L-BFGS-B".')
 
-        # error checking for initial_guess_method
-        if initial_guess_method is not None:
-            if initial_guess_method in ['scipy', 'Scipy', 'SP', 'sp']:
-                initial_guess_method = 'scipy'
-            elif initial_guess_method in ['least_squares', 'least squares', 'Least_squares', 'Least squares', 'Least Squares', 'Least_Squares', 'ls', 'LS']:
-                initial_guess_method = 'least squares'
-            elif dist in ['Weibull_3P', 'Loglogistic_3P'] and initial_guess_method in ['non_linear_least_squares', 'non-linear_least_squares', 'non-linear least squares', 'Non-Linear_Least_Squares', 'NLLS', 'non-linear', 'nlls', 'nlr', 'NLR', 'non-linear regression', 'non-linear_regression']:
-                initial_guess_method = 'non-linear least squares'
+        # error checking for method
+        if method is not None:
+            if method.upper() == 'RRX':
+                method = 'RRX'
+            elif method.upper() == 'RRY':
+                method = 'RRY'
+            elif method.upper() in ['LS', 'LEAST SQUARES', 'LSQ', 'NLRR', 'NLLS']:
+                method = 'LS'
+            elif method.upper() in ['MLE', 'ML', 'MAXIMUM LIKELIHOOD ESTIMATION', 'MAXIMUM LIKELIHOOD', 'MAX LIKELIHOOD']:
+                method = 'MLE'
             else:
-                if dist in ['Weibull_3P', 'Loglogistic_3P']:
-                    raise ValueError('initial_guess_method must be either "scipy", "least squares", or "non-linear least squares". Default is "scipy".')
-                elif dist in ['Weibull_2P', 'Loglogistic_2P']:
-                    raise ValueError('initial_guess_method must be either "scipy" or "least squares". Default is "least_squares".')
-                # initial_guess_method is not yet available for all distributions. This will come soon
+                raise ValueError('method must be either "MLE" (maximum likelihood estimation), "LS" (least squares), "RRX" (rank regression on X), or "RRY" (rank regression on Y).')
 
         # percentiles error checking
         if type(percentiles) in [str, bool]:
             if percentiles in ['auto', True, 'default', 'on']:
                 percentiles = np.array([1, 5, 10, 20, 25, 50, 75, 80, 90, 95, 99])  # percentiles to be used as the defaults in the table of percentiles
-        elif type(percentiles) is not type(None):
+        elif percentiles is not None:
             if type(percentiles) not in [list, np.ndarray]:
                 raise ValueError('percentiles must be a list or array')
             percentiles = np.asarray(percentiles)
@@ -926,9 +948,13 @@ class fitters_input_checking:
         if force_beta is not None:
             if force_beta <= 0:
                 raise ValueError('force_beta must be greater than 0.')
+            if type(force_beta) == int:
+                force_beta = float(force_beta)  # autograd needs floats. crashes with ints
         if force_sigma is not None:
             if force_sigma <= 0:
                 raise ValueError('force_sigma must be greater than 0.')
+            if type(force_sigma) == int:
+                force_sigma = float(force_sigma)  # autograd needs floats. crashes with ints
 
         # minimum number of failures checking
         if dist in ['Weibull_3P', 'Gamma_3P', 'Lognormal_3P', 'Loglogistic_3P']:
@@ -967,7 +993,7 @@ class fitters_input_checking:
         self.failures = failures
         self.right_censored = right_censored
         self.CI = CI
-        self.initial_guess_method = initial_guess_method
+        self.method = method
         self.optimizer = optimizer
         self.percentiles = percentiles
         self.force_beta = force_beta
@@ -997,19 +1023,27 @@ def fill_no_autoscale(xlower, xupper, ylower, yupper, **kwargs):
         idx_xupper = np.where(np.isfinite(xupper) == False)[0][0]
         yupper = yupper[0:idx_xupper]
         xupper = xupper[0:idx_xupper]
-    # this trims the y arrays free of 1's since the probability plot can't handle 1 as it's equivalent to inf
-    if max(ylower) >= 1:
-        idx_ylower_1 = np.where(ylower >= 1)[0][0]
-        ylower = ylower[0:idx_ylower_1]
-        xlower = xlower[0:idx_ylower_1]
-    if max(yupper) >= 1:
-        idx_yupper_1 = np.where(yupper >= 1)[0][0]
-        yupper = yupper[0:idx_yupper_1]
-        xupper = xupper[0:idx_yupper_1]
-    # generate the polygon
-    polygon = np.column_stack([np.hstack([xlower, xupper[::-1]]), np.hstack([ylower, yupper[::-1]])])  # this is equivalent to fill as it makes a polygon
-    col = PolyCollection([polygon], **kwargs)
-    plt.gca().add_collection(col, autolim=False)
+
+    if len(xlower) != len(xupper) or len(xlower) != len(yupper) or len(xlower) != len(ylower) or len(xlower) < 2:
+        colorprint('ERROR in fill_no_autoscale: Confidence intervals could not be plotted due to the presence of too many NaNs in the arrays.', text_color='red')
+    else:
+        # this trims the y arrays free of 1's since the probability plot can't handle 1 as it's equivalent to inf
+        if max(ylower) >= 1:
+            idx_ylower_1 = np.where(ylower >= 1)[0][0]
+            ylower = ylower[0:idx_ylower_1]
+            xlower = xlower[0:idx_ylower_1]
+        if max(yupper) >= 1:
+            idx_yupper_1 = np.where(yupper >= 1)[0][0]
+            yupper = yupper[0:idx_yupper_1]
+            xupper = xupper[0:idx_yupper_1]
+
+        if len(xlower) != len(xupper) or len(xlower) != len(yupper) or len(xlower) != len(ylower) or len(xlower) < 2:
+            colorprint('ERROR in fill_no_autoscale: Confidence intervals could not be plotted due to the presence of too many NaNs in the arrays.', text_color='red')
+        else:
+            # generate the polygon
+            polygon = np.column_stack([np.hstack([xlower, xupper[::-1]]), np.hstack([ylower, yupper[::-1]])])  # this is equivalent to fill as it makes a polygon
+            col = PolyCollection([polygon], **kwargs)
+            plt.gca().add_collection(col, autolim=False)
 
 
 def line_no_autoscale(x, y, **kwargs):
@@ -1268,7 +1302,7 @@ class distribution_confidence_intervals:
                 return t / alpha
 
             def v(R, alpha, beta):  # v = t
-                return gammainccinv(beta, R) * alpha
+                return agammainccinv(beta, R) * alpha
 
             du_da = jac(u, 1)  # derivative wrt alpha (bounds on reliability)
             du_db = jac(u, 2)  # derivative wrt beta (bounds on reliability)
@@ -1326,8 +1360,8 @@ class distribution_confidence_intervals:
                 u_lower = u(t, self.alpha, self.beta) + Z * var_u(self, t) ** 0.5  # note that gamma is incorporated into u but not in var_u. This is the same as just shifting a Weibull_2P across
                 u_upper = u(t, self.alpha, self.beta) - Z * var_u(self, t) ** 0.5
 
-                Y_lower = gammaincc(self.beta, u_lower)  # transform back from u = gammainccinv(beta,R)
-                Y_upper = gammaincc(self.beta, u_upper)
+                Y_lower = agammaincc(self.beta, u_lower)  # transform back from u = gammainccinv(beta,R)
+                Y_upper = agammaincc(self.beta, u_upper)
 
                 if func == 'CDF':
                     yy_lower = 1 - Y_lower
@@ -1781,3 +1815,611 @@ class distribution_confidence_intervals:
                 line_no_autoscale(x=t, y=yy_upper, color=color, linewidth=0)  # still need to specify color otherwise the invisible CI lines will consume default colors
                 # plt.scatter(t, yy_upper, color='red')
                 # plt.scatter(t, yy_lower, color='blue')
+
+
+def linear_regression(x, y, slope=None, x_intercept=None, y_intercept=None, RRX_or_RRY='RRX', show_plot=False, **kwargs):
+    '''
+    linear algebra solution to find line of best fix passing through points (x,y)
+    specify slope or intercept to force these parameters.
+    Rank regression can be on X (RRX) or Y (RRY). Default is RRX.
+    note that slope depends on RRX_or_RRY. If you use RRY then slope is dy/dx but if you use RRX then slope is dx/dy.
+    :returns slope,intercept in terms of Y = slope * X + intercept
+
+    '''
+    x = np.asarray(x)
+    y = np.asarray(y)
+    if len(x) != len(y):
+        raise ValueError('x and y are different lengths')
+    if RRX_or_RRY not in ['RRX', 'RRY']:
+        raise ValueError('RRX_or_RRY must be either "RRX" or "RRY". Default is "RRY".')
+    if x_intercept is not None and RRX_or_RRY == 'RRY':
+        raise ValueError('RRY must use y_intercept not x_intercept')
+    if y_intercept is not None and RRX_or_RRY == 'RRX':
+        raise ValueError('RRX must use x_intercept not y_intercept')
+    if slope is not None and (x_intercept is not None or y_intercept is not None):
+        raise ValueError('You can not specify both slope and intercept')
+
+    if RRX_or_RRY == 'RRY':
+        if y_intercept is not None:  # only the slope must be found
+            min_pts = 1
+            xx = np.array([x]).T
+            yy = (y - y_intercept).T
+        elif slope is not None:  # only the intercept must be found
+            min_pts = 1
+            xx = np.array([np.ones_like(x)]).T
+            yy = (y - slope * x).T
+        else:  # both slope and intercept must be found
+            min_pts = 2
+            xx = np.array([x, np.ones_like(x)]).T
+            yy = y.T
+    else:  # RRX
+        if x_intercept is not None:  # only the slope must be found
+            min_pts = 1
+            yy = np.array([y]).T
+            xx = (x - x_intercept).T
+        elif slope is not None:  # only the intercept must be found
+            min_pts = 1
+            yy = np.array([np.ones_like(y)]).T
+            xx = (x - slope * y).T
+        else:  # both slope and intercept must be found
+            min_pts = 2
+            yy = np.array([y, np.ones_like(y)]).T
+            xx = x.T
+
+    if len(x) < min_pts:
+        if slope is not None:
+            err_str = str('A minimum of 1 point is required to fit the line when the slope is specified.')
+        elif x_intercept is not None and y_intercept is not None:
+            err_str = str('A minimum of 1 point is required to fit the line when the intercept is specified.')
+        else:
+            err_str = str('A minimum of 2 points are required to fit the line when slope or intercept are not specified.')
+        raise ValueError(err_str)
+
+    if RRX_or_RRY == 'RRY':
+        solution = np.linalg.inv(xx.T.dot(xx)).dot(xx.T).dot(yy)  # linear regression formula for RRY
+        if y_intercept is not None:
+            m = solution[0]
+            c = y_intercept
+        elif slope is not None:
+            m = slope
+            c = solution[0]
+        else:
+            m = solution[0]
+            c = solution[1]
+    else:  # RRX
+        solution = np.linalg.inv(yy.T.dot(yy)).dot(yy.T).dot(xx)  # linear regression formula for RRX
+        if x_intercept is not None:
+            m_x = solution[0]
+            m = 1 / m_x
+            c = -x_intercept / m_x
+        elif slope is not None:
+            m = 1 / slope
+            c_x = solution[0]
+            c = -c_x / slope
+        else:
+            m_x = solution[0]
+            c_x = solution[1]
+            m = 1 / m_x
+            c = -c_x / m_x
+
+    if show_plot is True:
+        plt.scatter(x, y, marker='.', color='k')
+        delta_x = max(x) - min(x)
+        delta_y = max(y) - min(y)
+        xvals = np.linspace(min(x) - delta_x, max(x) + delta_x, 10)
+        yvals = m * xvals + c
+        if 'label' in kwargs:
+            label = kwargs.pop('label')
+        else:
+            label = str('y=' + str(round_to_decimals(m, 2)) + '.x + ' + str(round_to_decimals(c, 2)))
+        plt.plot(xvals, yvals, label=label, **kwargs)
+        plt.xlim(min(x) - delta_x * 0.2, max(x) + delta_x * 0.2)
+        plt.ylim(min(y) - delta_y * 0.2, max(y) + delta_y * 0.2)
+    return m, c
+
+
+def least_squares(dist, failures, right_censored, method='RRX', force_shape=None):
+    '''
+    Uses least squares or non-linear least squares estimation to fit the parameters of the distribution to the plotting positions.
+    Plotting positions are based on failures and right_censored so while least squares estimation does not consider the right_censored data in the same way as MLE, the plotting positions do.
+    The output of this method may be used as the initial guess for the MLE method.
+    method may be RRX or RRY. Default is RRX.
+
+    return the model's parameters in a list.
+        E.g. for "Weibull_2P" it will return [alpha,beta]
+             for "Weibull_3P" it will return [alpha,beta,gamma]
+    '''
+
+    if min(failures) <= 0 and dist not in ['Normal_2P', 'Gumbel_2P']:
+        raise ValueError('failures contains zeros or negative values which are only suitable when dist is Normal_2P or Gumbel_2P')
+    if max(failures) >= 1 and dist == 'Beta_2P':
+        raise ValueError('failures contains values greater than or equal to one which is not allowed when dist is Beta_2P')
+    if force_shape is not None and dist not in ['Weibull_2P', 'Normal_2P', 'Lognormal_2P']:
+        raise ValueError('force_shape can only be applied to Weibull_2P, Normal_2P, and Lognormal_2P')
+    if method not in ['RRX', 'RRY']:
+        raise ValueError('method muct be either "RRX" or "RRY". Default is RRX.')
+
+    from reliability.Probability_plotting import plotting_positions  # this import needs to be here to prevent circular import if it is in the main module
+    x, y = plotting_positions(failures=failures, right_censored=right_censored)
+    x = np.array(x)
+    y = np.array(y)
+    gamma0 = min(np.hstack([failures, right_censored])) - 0.001  # initial guess for gamma when it is required for the 3P fitters
+    if gamma0 < 0:
+        gamma0 = 0
+
+    if dist == 'Weibull_2P':
+        xlin = np.log(x)
+        ylin = np.log(-np.log(1 - y))
+        slope, intercept = linear_regression(xlin, ylin, slope=force_shape, RRX_or_RRY=method)
+        LS_beta = slope
+        LS_alpha = np.exp(-intercept / LS_beta)
+        guess = [LS_alpha, LS_beta]
+
+    elif dist == 'Weibull_3P':
+        # Weibull_2P estimate to create the guess for Weibull_3P
+        xlin = np.log(x - gamma0)
+        ylin = np.log(-np.log(1 - y))
+        slope, intercept = linear_regression(xlin, ylin, RRX_or_RRY=method)
+        LS_beta = slope
+        LS_alpha = np.exp(-intercept / LS_beta)
+
+        # NLLS for Weibull_3P
+        def __weibull_3P_CDF(t, alpha, beta, gamma):
+            return 1 - np.exp(-(((t - gamma) / alpha) ** beta))
+
+        try:
+            curve_fit_bounds = ([0, 0, 0], [1e20, 1000, gamma0])  # ([alpha_lower,beta_lower,gamma_lower],[alpha_upper,beta_upper,gamma_upper])
+            popt, _ = curve_fit(__weibull_3P_CDF, x, y, p0=[LS_alpha, LS_beta, gamma0], bounds=curve_fit_bounds, jac='cs', method='dogbox', max_nfev=300 * len(failures))  # This is the non-linear least squares method. p0 is the initial guess for [alpha,beta,gamma]
+            NLLS_alpha = popt[0]
+            NLLS_beta = popt[1]
+            NLLS_gamma = popt[2]
+            guess = [NLLS_alpha, NLLS_beta, NLLS_gamma]
+        except (ValueError, LinAlgError, RuntimeError):
+            colorprint('WARNING: Non-linear least squares for Weibull_3P failed. The result returned is an estimate that is likely to be incorrect.', text_color='red')
+            guess = [LS_alpha, LS_beta, gamma0]
+
+    elif dist == 'Exponential_1P':
+        if method == 'RRY':
+            x_intercept = None
+            y_intercept = 0
+        elif method == 'RRX':
+            y_intercept = None
+            x_intercept = 0
+
+        ylin = -np.log(1 - y)
+        slope, _ = linear_regression(x, ylin, x_intercept=x_intercept, y_intercept=y_intercept, RRX_or_RRY=method)  # equivalent to y = m.x
+        LS_Lambda = slope
+        guess = [LS_Lambda]
+
+    elif dist == 'Exponential_2P':
+        # Exponential_1P estimate to create the guess for Exponential_2P
+        # while it is mathematically possible to use ordinary least squares (y=mx+c) for this, the LS method does not allow bounds on gamma. This can result in gamma > min(data) which should be impossible and will cause other errors.
+        xlin = x - gamma0
+        ylin = -np.log(1 - y)
+        slope, _ = linear_regression(xlin, ylin, x_intercept=0, RRX_or_RRY='RRX')
+        LS_Lambda = slope
+
+        # NLLS for Exponential_2P
+        def __exponential_2P_CDF(t, Lambda, gamma):
+            return 1 - np.exp(-Lambda * (t - gamma))
+
+        try:
+            curve_fit_bounds = ([0, 0], [1e20, gamma0])  # ([Lambda_lower,gamma_lower],[Lambda_upper,gamma_upper])
+            popt, _ = curve_fit(__exponential_2P_CDF, x, y, p0=[LS_Lambda, gamma0], bounds=curve_fit_bounds, jac='cs', method='dogbox', max_nfev=300 * len(failures))
+            NLLS_Lambda = popt[0]
+            NLLS_gamma = popt[1]
+            guess = [NLLS_Lambda, NLLS_gamma]
+        except (ValueError, LinAlgError, RuntimeError):
+            colorprint('WARNING: Non-linear least squares for Exponential_2P failed. The result returned is an estimate that is likely to be incorrect.', text_color='red')
+            guess = [LS_Lambda, gamma0]
+
+    elif dist == 'Normal_2P':
+        ylin = ss.norm.ppf(y)
+        if force_shape is not None and method == 'RRY':
+            force_shape = 1 / force_shape  # only needs to be inverted for RRY not RRX
+        slope, intercept = linear_regression(x, ylin, slope=force_shape, RRX_or_RRY=method)
+        LS_sigma = 1 / slope
+        LS_mu = -intercept * LS_sigma
+        guess = [LS_mu, LS_sigma]
+
+    elif dist == 'Gumbel_2P':
+        ylin = np.log(-np.log(1 - y))
+        slope, intercept = linear_regression(x, ylin, RRX_or_RRY=method)
+        LS_sigma = 1 / slope
+        LS_mu = -intercept * LS_sigma
+        guess = [LS_mu, LS_sigma]
+
+    elif dist == 'Lognormal_2P':
+        xlin = np.log(x)
+        ylin = ss.norm.ppf(y)
+        if force_shape is not None and method == 'RRY':
+            force_shape = 1 / force_shape  # only needs to be inverted for RRY not RRX
+        slope, intercept = linear_regression(xlin, ylin, slope=force_shape, RRX_or_RRY=method)
+        LS_sigma = 1 / slope
+        LS_mu = -intercept * LS_sigma
+        guess = [LS_mu, LS_sigma]
+
+    elif dist == 'Lognormal_3P':
+        # uses least squares to fit a normal distribution to the log of the data and minimizes the correlation coefficient (1 - R^2)
+        def __gamma_optimizer(gamma_guess, x, y):
+            xlin = np.log(x - gamma_guess)
+            ylin = ss.norm.ppf(y)
+            _, _, r, _, _ = ss.linregress(xlin, ylin)
+            return 1 - (r ** 2)
+
+        # NLLS for Normal_2P which is used by Lognormal_3P by taking the log of the data. This is more accurate than doing it with Lognormal_3P.
+        def __normal_2P_CDF(t, mu, sigma):
+            return (1 + erf(((t - mu) / sigma) / 2 ** 0.5)) / 2
+
+        res = minimize(__gamma_optimizer, gamma0, args=(x, y), method='TNC', bounds=[([0, gamma0])])  # this obtains gamma
+        gamma = res.x[0]
+
+        try:
+            curve_fit_bounds = ([-1e20, 0], [1e20, 1000])  # ([mu_lower,sigma_lower],[mu_upper,sigma_upper])
+            popt, _ = curve_fit(__normal_2P_CDF, np.log(x - gamma), y, p0=[np.mean(np.log(x - gamma)), np.std(np.log(x - gamma))], bounds=curve_fit_bounds, max_nfev=300 * len(failures))  # This is the non-linear least squares method. p0 is the initial guess for [mu,sigma].
+            NLLS_mu = popt[0]
+            NLLS_sigma = popt[1]
+            guess = [NLLS_mu, NLLS_sigma, gamma]
+        except (ValueError, LinAlgError, RuntimeError):
+            colorprint('WARNING: Non-linear least squares for Lognormal_3P failed. The result returned is an estimate that is likely to be incorrect.', text_color='red')
+            guess = [np.mean(np.log(x - gamma)), np.std(np.log(x - gamma)), gamma]
+
+    elif dist == 'Loglogistic_2P':
+        xlin = np.log(x)
+        ylin = np.log(1 / y - 1)
+        slope, intercept = linear_regression(xlin, ylin, RRX_or_RRY=method)
+        LS_beta = -slope
+        LS_alpha = np.exp(intercept / LS_beta)
+        guess = [LS_alpha, LS_beta]
+
+    elif dist == 'Loglogistic_3P':
+        def __loglogistic_3P_CDF(t, alpha, beta, gamma):
+            return 1 / (1 + ((t - gamma) / alpha) ** -beta)
+
+        # Loglogistic_2P estimate to create the guess for Loglogistic_3P
+        xlin = np.log(x - gamma0)
+        ylin = np.log(1 / y - 1)
+        slope, intercept = linear_regression(xlin, ylin, RRX_or_RRY=method)
+        LS_beta = -slope
+        LS_alpha = np.exp(intercept / LS_beta)
+
+        try:
+            # Loglogistic_3P estimate
+            curve_fit_bounds = ([0, 0, 0], [1e20, 1000, gamma0])  # ([alpha_lower,beta_lower,gamma_lower],[alpha_upper,beta_upper,gamma_upper])
+            popt, _ = curve_fit(__loglogistic_3P_CDF, x, y, p0=[LS_alpha, LS_beta, gamma0], bounds=curve_fit_bounds, jac='cs', method='dogbox', max_nfev=300 * len(failures))  # This is the non-linear least squares method. p0 is the initial guess for [alpha,beta,gamma].
+            NLLS_alpha = popt[0]
+            NLLS_beta = popt[1]
+            NLLS_gamma = popt[2]
+            guess = [NLLS_alpha, NLLS_beta, NLLS_gamma]
+        except (ValueError, LinAlgError, RuntimeError):
+            colorprint('WARNING: Non-linear least squares for Loglogistic_3P failed. The result returned is an estimate that is likely to be incorrect.', text_color='red')
+            guess = [LS_alpha, LS_beta, gamma0]
+
+    elif dist == 'Gamma_2P':
+        def __gamma_2P_CDF(t, alpha, beta):
+            return gammainc(beta, t / alpha)
+
+        # Weibull_2P estimate which is converted to a Gamma_2P initial guess
+        xlin = np.log(x)
+        ylin = np.log(-np.log(1 - y))
+        slope, intercept = linear_regression(xlin, ylin, RRX_or_RRY=method)
+        LS_beta = slope
+        LS_alpha = np.exp(-intercept / LS_beta)
+
+        # conversion of weibull parameters to gamma parameters. These values were found empirically and the relationship is only an approximate model
+        beta_guess = abs(0.6932 * LS_beta ** 2 - 0.0908 * LS_beta + 0.2804)
+        alpha_guess = abs(LS_alpha / (-0.00095 * beta_guess ** 2 + 1.1119 * beta_guess))
+
+        def __perform_curve_fit():  # separated out for repeated use
+            curve_fit_bounds = ([0, 0], [1e20, 1000])  # ([alpha_lower,beta_lower],[alpha_upper,beta_upper])
+            popt, _ = curve_fit(__gamma_2P_CDF, x, y, p0=[alpha_guess, beta_guess], bounds=curve_fit_bounds, method='dogbox', max_nfev=300 * len(failures))  # This is the non-linear least squares method. p0 is the initial guess for [alpha,beta]
+            return [popt[0], popt[1]]
+
+        try:
+            # Gamma_2P estimate
+            guess = __perform_curve_fit()
+        except (ValueError, LinAlgError, RuntimeError):
+            try:
+                guess = __perform_curve_fit()
+                # We repeat the same attempt at a curve_fit because of a very strange event.
+                # When Fit_Gamma_2P is run twice in a row, the second attempt fails if there was a probability plot generated for the first attempt.
+                # This was unable to debugged since the curve_fit has identical inputs each run and the curve_fit should not interact with the probability plot in any way.
+                # One possible cause of this error may relate to memory usage though this is not confirmed.
+                # By simply repeating the attempted curve_fit one more time, it often will work perfectly on the second try.
+                # If it fails the second try then we report the failure and return the initial guess.
+            except (ValueError, LinAlgError, RuntimeError):
+                colorprint('WARNING: Non-linear least squares for Gamma_2P failed. The result returned is an estimate that is likely to be incorrect.', text_color='red')
+                guess = [alpha_guess, beta_guess]
+
+    elif dist == 'Gamma_3P':
+        def __gamma_2P_CDF(t, alpha, beta):
+            return gammainc(beta, t / alpha)
+
+        def __gamma_3P_CDF(t, alpha, beta, gamma):
+            return gammainc(beta, (t - gamma) / alpha)
+
+        # Weibull_2P estimate which is converted to a Gamma_2P initial guess
+        xlin = np.log(x - gamma0 * 0.98)
+        ylin = np.log(-np.log(1 - y))
+        slope, intercept = linear_regression(xlin, ylin, RRX_or_RRY=method)
+        LS_beta = slope
+        LS_alpha = np.exp(-intercept / LS_beta)
+
+        # conversion of weibull parameters to gamma parameters. These values were found empirically and the relationship is only an approximate model
+        beta_guess = abs(0.6932 * LS_beta ** 2 - 0.0908 * LS_beta + 0.2804)
+        alpha_guess = abs(LS_alpha / (-0.00095 * beta_guess ** 2 + 1.1119 * beta_guess))
+
+        def __perform_curve_fit_gamma_2P():  # separated out for repeated use
+            curve_fit_bounds = ([0, 0], [1e20, 1000])  # ([alpha_lower,beta_lower],[alpha_upper,beta_upper])
+            popt, _ = curve_fit(__gamma_2P_CDF, x, y, p0=[alpha_guess, beta_guess], bounds=curve_fit_bounds, method='dogbox', max_nfev=300 * len(failures))  # This is the non-linear least squares method. p0 is the initial guess for [alpha,beta]
+            return [popt[0], popt[1]]
+
+        def __perform_curve_fit_gamma_3P():  # separated out for repeated use
+            curve_fit_bounds_3P = ([0, 0, 0], [1e20, 1000, gamma0])  # ([alpha_lower,beta_lower,gamma_lower],[alpha_upper,beta_upper,gamma_upper])
+            popt, _ = curve_fit(__gamma_3P_CDF, x, y, p0=[NLLS_alpha_2P, NLLS_beta_2P, gamma0 * 0.98], bounds=curve_fit_bounds_3P, method='trf', max_nfev=300 * len(failures))  # This is the non-linear least squares method. p0 is the initial guess for [alpha,beta,gamma]
+            return [popt[0], popt[1], popt[2]]
+
+        try:
+            # Gamma_2P estimate to create the guess for Gamma_3P
+            guess_2P = __perform_curve_fit_gamma_2P()
+            NLLS_alpha_2P, NLLS_beta_2P = guess_2P[0], guess_2P[1]
+            try:
+                # Gamma_3P estimate
+                guess = __perform_curve_fit_gamma_3P()
+            except (ValueError, LinAlgError, RuntimeError):
+                try:
+                    # try gamma_3P a second time
+                    guess = __perform_curve_fit_gamma_3P()
+                except (ValueError, LinAlgError, RuntimeError):
+                    colorprint('WARNING: Non-linear least squares for Gamma_3P failed during Gamma_3P optimization. The result returned is an estimate that is likely to be incorrect.', text_color='red')
+                    guess = [NLLS_alpha_2P, NLLS_beta_2P, gamma0 * 0.98]
+        except (ValueError, LinAlgError, RuntimeError):
+            # We repeat the same attempt at a curve_fit because of a very strange event.
+            # When Fit_Gamma_3P is run twice in a row, the second attempt fails if there was a probability plot generated for the first attempt.
+            # This was unable to debugged since the curve_fit has identical inputs each run and the curve_fit should not interact with the probability plot in any way.
+            # One possible cause of this error may relate to memory usage though this is not confirmed.
+            # By simply repeating the attempted curve_fit one more time, it often will work perfectly on the second try.
+            # If it fails the second try then we report the failure and return the initial guess.
+            try:
+                guess_2P = __perform_curve_fit_gamma_2P()
+                NLLS_alpha_2P, NLLS_beta_2P = guess_2P[0], guess_2P[1]
+                try:
+                    # Gamma_3P estimate
+                    guess = __perform_curve_fit_gamma_3P()
+                except (ValueError, LinAlgError, RuntimeError):
+                    try:
+                        # try gamma_3P for a second time
+                        guess = __perform_curve_fit_gamma_3P()
+                    except (ValueError, LinAlgError, RuntimeError):
+                        colorprint('WARNING: Non-linear least squares for Gamma_3P failed during Gamma_3P optimization. The result returned is an estimate that is likely to be incorrect.', text_color='red')
+                        guess = [NLLS_alpha_2P, NLLS_beta_2P, gamma0 * 0.98]
+            except (ValueError, LinAlgError, RuntimeError):
+                colorprint('WARNING: Non-linear least squares for Gamma_3P failed during Gamma_2P optimization. The result returned is an estimate that is likely to be incorrect.', text_color='red')
+                guess = [alpha_guess, beta_guess, gamma0 * 0.98]
+
+    elif dist == 'Beta_2P':
+        def __beta_2P_CDF(t, alpha, beta):
+            return betainc(alpha, beta, t)
+
+        try:
+            curve_fit_bounds = ([0, 0], [100, 100])  # ([alpha_lower,beta_lower],[alpha_upper,beta_upper])
+            popt, _ = curve_fit(__beta_2P_CDF, x, y, p0=[2, 1], bounds=curve_fit_bounds, max_nfev=300 * len(failures))  # This is the non-linear least squares method. p0 is the initial guess for [alpha,beta]
+            NLLS_alpha = popt[0]
+            NLLS_beta = popt[1]
+            guess = [NLLS_alpha, NLLS_beta]
+        except (ValueError, LinAlgError, RuntimeError):
+            colorprint('WARNING: Non-linear least squares for Beta_2P failed. The result returned is an estimate that is likely to be incorrect.', text_color='red')
+            guess = [2, 1]
+    else:
+        raise ValueError('Unknown dist. Use the correct name. eg. "Weibull_2P"')
+    return guess
+
+
+class LS_optimisation:
+    def __init__(self, func_name, LL_func, failures, right_censored, method='LS', force_shape=None, LL_func_force=None):
+        if method not in ['RRX', 'RRY', 'LS', 'NLLS']:
+            raise ValueError('method must be either RRX, RRY, LS, or NLLS. Default is LS')
+        if func_name in ['Weibull_3P', 'Gamma_2P', 'Gamma_3P', 'Beta_2P', 'Lognormal_3P', 'Loglogistic_3P', 'Exponential_2P']:
+            guess = least_squares(dist=func_name, failures=failures, right_censored=right_censored)
+            LS_method = 'NLLS'
+        elif method in ['RRX', 'RRY']:
+            guess = least_squares(dist=func_name, failures=failures, right_censored=right_censored, method=method, force_shape=force_shape)
+            LS_method = method
+        else:  # LS
+            # RRX
+            guess_RRX = least_squares(dist=func_name, failures=failures, right_censored=right_censored, method='RRX', force_shape=force_shape)
+            if force_shape is not None:
+                loglik_RRX = -LL_func_force(guess_RRX, failures, right_censored, force_shape)
+            else:
+                loglik_RRX = -LL_func(guess_RRX, failures, right_censored)
+            # RRY
+            guess_RRY = least_squares(dist=func_name, failures=failures, right_censored=right_censored, method='RRY', force_shape=force_shape)
+            if force_shape is not None:
+                loglik_RRY = -LL_func_force(guess_RRY, failures, right_censored, force_shape)
+            else:
+                loglik_RRY = -LL_func(guess_RRY, failures, right_censored)
+            # take the best one
+            if abs(loglik_RRX) < abs(loglik_RRY):  # RRX is best
+                LS_method = 'RRX'
+                guess = guess_RRX
+            else:  # RRY is best
+                LS_method = 'RRY'
+                guess = guess_RRY
+        self.guess = guess
+        self.method = LS_method
+
+
+class MLE_optimisation:
+    def __init__(self, func_name, LL_func, initial_guess, failures, right_censored, optimizer, force_shape=None, LL_func_force=None):
+
+        gamma0 = max(0, min(np.hstack([failures, right_censored])) - 0.0001)
+
+        if func_name in ['Weibull_2P', 'Gamma_2P', 'Beta_2P', 'Loglogistic_2P']:
+            bounds = [(0, None), (0, None)]
+        elif func_name in ['Weibull_3P', 'Gamma_3P', 'Loglogistic_3P']:
+            bounds = [(0, None), (0, None), (0, gamma0)]
+        elif func_name in ['Normal_2P', 'Gumbel_2P', 'Lognormal_2P']:
+            bounds = [(None, None), (0, None)]
+        elif func_name == 'Lognormal_3P':
+            bounds = [(None, None), (0, None), (0, gamma0)]
+        elif func_name == 'Exponential_1P':
+            bounds = [(0, None)]
+        elif func_name == 'Exponential_2P':
+            bounds = [(0, None), (0, gamma0)]
+        else:
+            raise ValueError('func_name is not recognised. Use the correct name e.g. "Weibull_2P"')
+
+        n = len(failures) + len(right_censored)
+        delta_BIC = 1
+        BIC_array = [1000000]
+        runs = 0
+        guess = initial_guess  # use least squares and the initial guess for MLE
+        if force_shape is None:
+            k = len(bounds)
+            while delta_BIC > 0.001 and runs < 5:  # exits after BIC convergence or 5 iterations
+                runs += 1
+                result = minimize(value_and_grad(LL_func), guess, args=(failures, right_censored), jac=True, method=optimizer, bounds=bounds)
+                params = result.x
+                if func_name == 'Exponential_1P':
+                    guess = [params[0]]
+                elif func_name in ['Weibull_2P', 'Gamma_2P', 'Beta_2P', 'Loglogistic_2P', 'Lognormal_2P', 'Exponential_2P']:
+                    guess = [params[0], params[1]]
+                elif func_name in ['Weibull_3P', 'Gamma_3P', 'Loglogistic_3P', 'Lognormal_3P']:
+                    guess = [params[0], params[1], params[2]]
+                LL2 = 2 * LL_func(guess, failures, right_censored)
+                BIC_array.append(np.log(n) * k + LL2)
+                delta_BIC = abs(BIC_array[-1] - BIC_array[-2])
+        else:  # this will only be run for Weibull_2P, Normal_2P, and Lognormal_2P so the guess is sturctured with this in mind
+            bounds = [bounds[0]]  # bounds on the solution. Helps a lot with stability
+            guess = [guess[0]]
+            k = 1
+            while delta_BIC > 0.001 and runs < 5:  # exits after BIC convergence or 5 iterations
+                runs += 1
+                result = minimize(value_and_grad(LL_func_force), guess, args=(failures, right_censored, force_shape), jac=True, method=optimizer, bounds=bounds)
+                params = result.x
+                guess = [params[0]]
+                LL2 = 2 * LL_func_force(guess, failures, right_censored, force_shape)
+                BIC_array.append(np.log(n) * k + LL2)
+                delta_BIC = abs(BIC_array[-1] - BIC_array[-2])
+
+        if result.success is True:
+            params = result.x
+            self.success = True
+            if force_shape is None:
+                self.scale = params[0]  # alpha, mu, Lambda
+                if func_name not in ['Exponential_1P', 'Exponential_2P']:
+                    self.shape = params[1]  # beta, sigma
+                else:
+                    if func_name == 'Exponential_2P':
+                        self.gamma = params[1]  # gamma for Exponential_2P
+                if func_name in ['Weibull_3P', 'Gamma_3P', 'Loglogistic_3P', 'Lognormal_3P']:
+                    self.gamma = params[2]  # gamma for Weibull_3P, Gamma_3P, Loglogistic_3P, Lognormal_3P
+            else:  # this will only be reached for Weibull_2P, Normal_2P and Lognormal_2P so the scale and shape extraction is fine for these
+                self.scale = params[0]
+                self.shape = force_shape
+        else:  # if the bounded optimizer (L-BFGS-B, TNC, powell) fails then we have a second attempt using the slower but slightly more reliable nelder-mead optimizer.
+            if force_shape is None:
+                guess = initial_guess
+                result = minimize(value_and_grad(LL_func), guess, args=(failures, right_censored), jac=True, tol=1e-4, method='nelder-mead')
+            else:
+                guess = [initial_guess[0]]
+                result = minimize(value_and_grad(LL_func_force), guess, args=(failures, right_censored, force_shape), jac=True, tol=1e-4, method='nelder-mead')
+            if result.success is True:
+                params = result.x
+                if force_shape is None:
+                    self.scale = params[0]  # alpha, mu, Lambda
+                    if func_name not in ['Exponential_1P', 'Exponential_2P']:
+                        self.shape = params[1]  # beta, sigma
+                    else:
+                        if func_name == 'Exponential_2P':
+                            self.gamma = params[1]  # gamma for Exponential_2P
+                    if func_name in ['Weibull_3P', 'Gamma_3P', 'Loglogistic_3P', 'Lognormal_3P']:
+                        self.gamma = params[2]  # gamma for Weibull_3P, Gamma_3P, Loglogistic_3P, Lognormal_3P
+                else:  # this will only be reached for Weibull_2P, Normal_2P and Lognormal_2P so the scale and shape extraction is fine for these
+                    self.scale = params[0]
+                    self.shape = force_shape
+            else:
+                colorprint(str('WARNING: MLE estimates failed for ' + func_name + '. The least squares estimates have been returned. These results may not be as accurate as MLE.'), text_color='red')
+                if force_shape is None:
+                    self.scale = initial_guess[0]  # alpha, mu, Lambda
+                    if func_name not in ['Exponential_1P', 'Exponential_2P']:
+                        self.shape = initial_guess[1]  # beta, sigma
+                    else:
+                        if func_name == 'Exponential_2P':
+                            self.gamma = initial_guess[1]  # gamma for Exponential_2P
+                    if func_name in ['Weibull_3P', 'Gamma_3P', 'Loglogistic_3P', 'Lognormal_3P']:
+                        self.gamma = initial_guess[2]  # gamma for Weibull_3P, Gamma_3P, Loglogistic_3P, Lognormal_3P
+                else:  # this will only be reached for Weibull_2P, Normal_2P and Lognormal_2P so the scale and shape extraction is fine for these
+                    self.scale = initial_guess[0]
+                    self.shape = force_shape
+
+
+def write_df_to_xlsx(df, path, **kwargs):
+    '''
+    Writes a dataframe to an xlsx file
+    For use exclusively by the Convert_data module
+    '''
+    # this section checks whether the file exists and reprompts the user based on their choices
+    ready_to_write = False
+    counter1 = 0
+    counter2 = 0
+    path_changed = False
+    while ready_to_write is False:
+        counter1 += 1
+        counter2 += 1
+        try:
+            f = open(path)  # try to open the file to see if it exists
+            f.close()
+            if counter1 == 1:
+                colorprint('WARNING: the specified output file already exists', text_color='red')
+            if counter2 == 1:
+                choice = input('Do you want to overwrite the existing file (Y/N): ')
+            else:
+                choice = 'N'  # subsequent loops can only be entered if the user did not want to overwrite the file
+            if choice.upper() == 'N':
+                X = os.path.split(path)
+                Y = X[1].split('.')
+                Z = str(Y[0] + '(new)' + '.' + Y[1])  # auto renaming will keep adding (new) to the filename if it already exists
+                path = str(X[0] + '\\' + Z)
+                path_changed = True
+            elif choice.upper() == 'Y':
+                ready_to_write = True
+            else:
+                print('Invalid choice. Please specify Y or N')
+                counter2 = 0
+        except IOError:  # file does not exist
+            ready_to_write = True
+    if path_changed is True:
+        print('Your output file has been renamed to:', path)
+    # this section does the writing
+    keys = kwargs.keys()
+    if 'excel_writer' in keys:
+        colorprint('WARNING: excel_writer has been overridden by path. Please only use path to specify the file path for the xlsx file to write.', text_color='red')
+        kwargs.pop('excel_writer')
+    if 'index' in keys:
+        write_index = kwargs.pop('index')
+    else:
+        write_index = False
+    df.to_excel(path, index=write_index, **kwargs)
+
+
+def removeNaNs(X):
+    '''
+    removes NaNs from a list or array. This is better than simply using "x = x[numpy.logical_not(numpy.isnan(x))]" as numpy crashes for str and bool.
+    returns a list or array of the same type as the input
+    '''
+    if type(X) == np.ndarray:
+        X = list(X)
+        arr_out = True
+    else:
+        arr_out = False
+    out = []
+    for i in X:
+        if type(i) in [str, bool, np.str_]:
+            if i != 'nan':
+                out.append(i)
+        elif np.logical_not(np.isnan(i)):  # this only works for numbers
+            out.append(i)
+    if arr_out is True:
+        out = np.asarray(out)
+    return out

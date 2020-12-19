@@ -29,7 +29,7 @@ import numpy as np
 import pandas as pd
 from reliability.Distributions import Weibull_Distribution, Lognormal_Distribution, Normal_Distribution, Gamma_Distribution, Beta_Distribution, Exponential_Distribution, Loglogistic_Distribution, Gumbel_Distribution
 from reliability.Nonparametric import KaplanMeier, NelsonAalen, RankAdjustment
-from reliability.Utils import axes_transforms, round_to_decimals, probability_plot_xylims, probability_plot_xyticks
+from reliability.Utils import axes_transforms, round_to_decimals, probability_plot_xylims, probability_plot_xyticks, colorprint
 
 np.seterr('ignore')
 dec = 3  # number of decimals to use when rounding fitted parameters in labels
@@ -141,68 +141,69 @@ def Weibull_probability_plot(failures=None, right_censored=None, fit_gamma=False
             raise ValueError('right_censored must be a list or an array')
         right_censored = np.asarray(right_censored)
 
-    if CI <= 0 or CI >= 1:
-        raise ValueError('CI must be between 0 and 1. Default is 0.95 for 95% Confidence interval.')
+    if show_fitted_distribution == False and fit_gamma == True:
+        colorprint('WARNING: fit_gamma has been reset to False because the distribution is not fitted when show_fitted_distribution = False.', text_color='red')
 
-    if __fitted_dist_params is not None:
-        if __fitted_dist_params.gamma > 0:
-            fit_gamma = True
+    if 'color' in kwargs:
+        data_color = kwargs.get('color')
+    else:
+        data_color = 'k'
+    xlabel = 'Time'  # this will be overridden if gamma is fitted
+    if show_fitted_distribution is True:
+        if CI <= 0 or CI >= 1:
+            raise ValueError('CI must be between 0 and 1. Default is 0.95 for 95% Confidence interval.')
 
-    if fit_gamma is False:
         if __fitted_dist_params is not None:
-            alpha = __fitted_dist_params.alpha
-            beta = __fitted_dist_params.beta
-            alpha_SE = __fitted_dist_params.alpha_SE
-            beta_SE = __fitted_dist_params.beta_SE
-            Cov_alpha_beta = __fitted_dist_params.Cov_alpha_beta
-        else:
-            from reliability.Fitters import Fit_Weibull_2P
-            fit = Fit_Weibull_2P(failures=failures, right_censored=right_censored, CI=CI, show_probability_plot=False, print_results=False)
-            alpha = fit.alpha
-            beta = fit.beta
-            alpha_SE = fit.alpha_SE
-            beta_SE = fit.beta_SE
-            Cov_alpha_beta = fit.Cov_alpha_beta
-        if 'label' in kwargs:
-            label = kwargs.pop('label')
-        else:
-            label = str('Fitted Weibull_2P (α=' + str(round_to_decimals(alpha, dec)) + ', β=' + str(round_to_decimals(beta, dec)) + ')')
-        if 'color' in kwargs:
-            data_color = kwargs.get('color')
-        else:
-            data_color = 'k'
-        xlabel = 'Time'
-    elif fit_gamma is True:
-        if __fitted_dist_params is not None:
-            alpha = __fitted_dist_params.alpha
-            beta = __fitted_dist_params.beta
-            gamma = __fitted_dist_params.gamma
-            alpha_SE = __fitted_dist_params.alpha_SE
-            beta_SE = __fitted_dist_params.beta_SE
-            Cov_alpha_beta = __fitted_dist_params.Cov_alpha_beta
-        else:
-            from reliability.Fitters import Fit_Weibull_3P
-            fit = Fit_Weibull_3P(failures=failures, right_censored=right_censored, CI=CI, show_probability_plot=False, print_results=False)
-            alpha = fit.alpha
-            beta = fit.beta
-            gamma = fit.gamma
-            alpha_SE = fit.alpha_SE
-            beta_SE = fit.beta_SE
-            Cov_alpha_beta = fit.Cov_alpha_beta
+            if __fitted_dist_params.gamma > 0:
+                fit_gamma = True
 
-        if 'label' in kwargs:
-            label = kwargs.pop('label')
-        else:
-            label = str('Fitted Weibull_3P\n(α=' + str(round_to_decimals(alpha, dec)) + ', β=' + str(round_to_decimals(beta, dec)) + ', γ=' + str(round_to_decimals(gamma, dec)) + ')')
-        if 'color' in kwargs:
-            data_color = kwargs.get('color')
-        else:
-            data_color = 'k'
-        xlabel = 'Time - gamma'
-        failures = failures - gamma
-        if right_censored is not None:
-            right_censored = right_censored - gamma
-    wbf = Weibull_Distribution(alpha=alpha, beta=beta, alpha_SE=alpha_SE, beta_SE=beta_SE, Cov_alpha_beta=Cov_alpha_beta, CI=CI, CI_type=CI_type)
+        if fit_gamma is False:
+            if __fitted_dist_params is not None:
+                alpha = __fitted_dist_params.alpha
+                beta = __fitted_dist_params.beta
+                alpha_SE = __fitted_dist_params.alpha_SE
+                beta_SE = __fitted_dist_params.beta_SE
+                Cov_alpha_beta = __fitted_dist_params.Cov_alpha_beta
+            else:
+                from reliability.Fitters import Fit_Weibull_2P
+                fit = Fit_Weibull_2P(failures=failures, right_censored=right_censored, CI=CI, show_probability_plot=False, print_results=False)
+                alpha = fit.alpha
+                beta = fit.beta
+                alpha_SE = fit.alpha_SE
+                beta_SE = fit.beta_SE
+                Cov_alpha_beta = fit.Cov_alpha_beta
+            if 'label' in kwargs:
+                label = kwargs.pop('label')
+            else:
+                label = str('Fitted Weibull_2P (α=' + str(round_to_decimals(alpha, dec)) + ', β=' + str(round_to_decimals(beta, dec)) + ')')
+        elif fit_gamma is True:
+            if __fitted_dist_params is not None:
+                alpha = __fitted_dist_params.alpha
+                beta = __fitted_dist_params.beta
+                gamma = __fitted_dist_params.gamma
+                alpha_SE = __fitted_dist_params.alpha_SE
+                beta_SE = __fitted_dist_params.beta_SE
+                Cov_alpha_beta = __fitted_dist_params.Cov_alpha_beta
+            else:
+                from reliability.Fitters import Fit_Weibull_3P
+                fit = Fit_Weibull_3P(failures=failures, right_censored=right_censored, CI=CI, show_probability_plot=False, print_results=False)
+                alpha = fit.alpha
+                beta = fit.beta
+                gamma = fit.gamma
+                alpha_SE = fit.alpha_SE
+                beta_SE = fit.beta_SE
+                Cov_alpha_beta = fit.Cov_alpha_beta
+
+            if 'label' in kwargs:
+                label = kwargs.pop('label')
+            else:
+                label = str('Fitted Weibull_3P\n(α=' + str(round_to_decimals(alpha, dec)) + ', β=' + str(round_to_decimals(beta, dec)) + ', γ=' + str(round_to_decimals(gamma, dec)) + ')')
+
+            xlabel = 'Time - gamma'
+            failures = failures - gamma
+            if right_censored is not None:
+                right_censored = right_censored - gamma
+        wbf = Weibull_Distribution(alpha=alpha, beta=beta, alpha_SE=alpha_SE, beta_SE=beta_SE, Cov_alpha_beta=Cov_alpha_beta, CI=CI, CI_type=CI_type)
 
     # plot the failure points and format the scale and axes
     x, y = plotting_positions(failures=failures, right_censored=right_censored, a=a)
@@ -257,68 +258,68 @@ def Loglogistic_probability_plot(failures=None, right_censored=None, fit_gamma=F
             raise ValueError('right_censored must be a list or an array')
         right_censored = np.asarray(right_censored)
 
-    if CI <= 0 or CI >= 1:
-        raise ValueError('CI must be between 0 and 1. Default is 0.95 for 95% Confidence interval.')
+    if show_fitted_distribution == False and fit_gamma == True:
+        colorprint('WARNING: fit_gamma has been reset to False because the distribution is not fitted when show_fitted_distribution = False.', text_color='red')
 
-    if __fitted_dist_params is not None:
-        if __fitted_dist_params.gamma > 0:
-            fit_gamma = True
+    if 'color' in kwargs:
+        data_color = kwargs.get('color')
+    else:
+        data_color = 'k'
+    xlabel = 'Time'  # this will be overridden if gamma is fitted
+    if show_fitted_distribution is True:
+        if CI <= 0 or CI >= 1:
+            raise ValueError('CI must be between 0 and 1. Default is 0.95 for 95% Confidence interval.')
 
-    if fit_gamma is False:
         if __fitted_dist_params is not None:
-            alpha = __fitted_dist_params.alpha
-            beta = __fitted_dist_params.beta
-            alpha_SE = __fitted_dist_params.alpha_SE
-            beta_SE = __fitted_dist_params.beta_SE
-            Cov_alpha_beta = __fitted_dist_params.Cov_alpha_beta
-        else:
-            from reliability.Fitters import Fit_Loglogistic_2P
-            fit = Fit_Loglogistic_2P(failures=failures, right_censored=right_censored, CI=CI, show_probability_plot=False, print_results=False)
-            alpha = fit.alpha
-            beta = fit.beta
-            alpha_SE = fit.alpha_SE
-            beta_SE = fit.beta_SE
-            Cov_alpha_beta = fit.Cov_alpha_beta
-        if 'label' in kwargs:
-            label = kwargs.pop('label')
-        else:
-            label = str('Fitted Loglogistic_2P (α=' + str(round_to_decimals(alpha, dec)) + ', β=' + str(round_to_decimals(beta, dec)) + ')')
-        if 'color' in kwargs:
-            data_color = kwargs.get('color')
-        else:
-            data_color = 'k'
-        xlabel = 'Time'
-    elif fit_gamma is True:
-        if __fitted_dist_params is not None:
-            alpha = __fitted_dist_params.alpha
-            beta = __fitted_dist_params.beta
-            gamma = __fitted_dist_params.gamma
-            alpha_SE = __fitted_dist_params.alpha_SE
-            beta_SE = __fitted_dist_params.beta_SE
-            Cov_alpha_beta = __fitted_dist_params.Cov_alpha_beta
-        else:
-            from reliability.Fitters import Fit_Loglogistic_3P
-            fit = Fit_Loglogistic_3P(failures=failures, right_censored=right_censored, CI=CI, show_probability_plot=False, print_results=False)
-            alpha = fit.alpha
-            beta = fit.beta
-            gamma = fit.gamma
-            alpha_SE = fit.alpha_SE
-            beta_SE = fit.beta_SE
-            Cov_alpha_beta = fit.Cov_alpha_beta
+            if __fitted_dist_params.gamma > 0:
+                fit_gamma = True
 
-        if 'label' in kwargs:
-            label = kwargs.pop('label')
-        else:
-            label = str('Fitted Loglogistic_3P\n(α=' + str(round_to_decimals(alpha, dec)) + ', β=' + str(round_to_decimals(beta, dec)) + ', γ=' + str(round_to_decimals(gamma, dec)) + ')')
-        if 'color' in kwargs:
-            data_color = kwargs.get('color')
-        else:
-            data_color = 'k'
-        xlabel = 'Time - gamma'
-        failures = failures - gamma
-        if right_censored is not None:
-            right_censored = right_censored - gamma
-    llf = Loglogistic_Distribution(alpha=alpha, beta=beta, alpha_SE=alpha_SE, beta_SE=beta_SE, Cov_alpha_beta=Cov_alpha_beta, CI=CI, CI_type=CI_type)
+        if fit_gamma is False:
+            if __fitted_dist_params is not None:
+                alpha = __fitted_dist_params.alpha
+                beta = __fitted_dist_params.beta
+                alpha_SE = __fitted_dist_params.alpha_SE
+                beta_SE = __fitted_dist_params.beta_SE
+                Cov_alpha_beta = __fitted_dist_params.Cov_alpha_beta
+            else:
+                from reliability.Fitters import Fit_Loglogistic_2P
+                fit = Fit_Loglogistic_2P(failures=failures, right_censored=right_censored, CI=CI, show_probability_plot=False, print_results=False)
+                alpha = fit.alpha
+                beta = fit.beta
+                alpha_SE = fit.alpha_SE
+                beta_SE = fit.beta_SE
+                Cov_alpha_beta = fit.Cov_alpha_beta
+            if 'label' in kwargs:
+                label = kwargs.pop('label')
+            else:
+                label = str('Fitted Loglogistic_2P (α=' + str(round_to_decimals(alpha, dec)) + ', β=' + str(round_to_decimals(beta, dec)) + ')')
+        elif fit_gamma is True:
+            if __fitted_dist_params is not None:
+                alpha = __fitted_dist_params.alpha
+                beta = __fitted_dist_params.beta
+                gamma = __fitted_dist_params.gamma
+                alpha_SE = __fitted_dist_params.alpha_SE
+                beta_SE = __fitted_dist_params.beta_SE
+                Cov_alpha_beta = __fitted_dist_params.Cov_alpha_beta
+            else:
+                from reliability.Fitters import Fit_Loglogistic_3P
+                fit = Fit_Loglogistic_3P(failures=failures, right_censored=right_censored, CI=CI, show_probability_plot=False, print_results=False)
+                alpha = fit.alpha
+                beta = fit.beta
+                gamma = fit.gamma
+                alpha_SE = fit.alpha_SE
+                beta_SE = fit.beta_SE
+                Cov_alpha_beta = fit.Cov_alpha_beta
+
+            if 'label' in kwargs:
+                label = kwargs.pop('label')
+            else:
+                label = str('Fitted Loglogistic_3P\n(α=' + str(round_to_decimals(alpha, dec)) + ', β=' + str(round_to_decimals(beta, dec)) + ', γ=' + str(round_to_decimals(gamma, dec)) + ')')
+            xlabel = 'Time - gamma'
+            failures = failures - gamma
+            if right_censored is not None:
+                right_censored = right_censored - gamma
+        llf = Loglogistic_Distribution(alpha=alpha, beta=beta, alpha_SE=alpha_SE, beta_SE=beta_SE, Cov_alpha_beta=Cov_alpha_beta, CI=CI, CI_type=CI_type)
 
     # plot the failure points and format the scale and axes
     x, y = plotting_positions(failures=failures, right_censored=right_censored, a=a)
@@ -374,57 +375,57 @@ def Exponential_probability_plot_Weibull_Scale(failures=None, right_censored=Non
             raise ValueError('right_censored must be a list or an array')
         right_censored = np.asarray(right_censored)
 
-    if CI <= 0 or CI >= 1:
-        raise ValueError('CI must be between 0 and 1. Default is 0.95 for 95% Confidence interval.')
+    if show_fitted_distribution == False and fit_gamma == True:
+        colorprint('WARNING: fit_gamma has been reset to False because the distribution is not fitted when show_fitted_distribution = False.', text_color='red')
 
-    if __fitted_dist_params is not None:
-        if __fitted_dist_params.gamma > 0:
-            fit_gamma = True
+    if 'color' in kwargs:
+        data_color = kwargs.get('color')
+    else:
+        data_color = 'k'
+    xlabel = 'Time'  # this will be overridden if gamma is fitted
+    if show_fitted_distribution is True:
+        if CI <= 0 or CI >= 1:
+            raise ValueError('CI must be between 0 and 1. Default is 0.95 for 95% Confidence interval.')
 
-    if fit_gamma is False:
         if __fitted_dist_params is not None:
-            Lambda = __fitted_dist_params.Lambda
-            Lambda_SE = __fitted_dist_params.Lambda_SE
-        else:
-            from reliability.Fitters import Fit_Exponential_1P
-            fit = Fit_Exponential_1P(failures=failures, right_censored=right_censored, CI=CI, show_probability_plot=False, print_results=False)
-            Lambda = fit.Lambda
-            Lambda_SE = fit.Lambda_SE
-        if 'label' in kwargs:
-            label = kwargs.pop('label')
-        else:
-            label = str('Fitted Exponential_1P (λ=' + str(round_to_decimals(Lambda, dec)) + ')')
-        if 'color' in kwargs:
-            data_color = kwargs.get('color')
-        else:
-            data_color = 'k'
-        xlabel = 'Time'
-    elif fit_gamma is True:
-        if __fitted_dist_params is not None:
-            Lambda = __fitted_dist_params.Lambda
-            Lambda_SE = __fitted_dist_params.Lambda_SE
-            gamma = __fitted_dist_params.gamma
-        else:
-            from reliability.Fitters import Fit_Exponential_2P
-            fit = Fit_Exponential_2P(failures=failures, right_censored=right_censored, CI=CI, show_probability_plot=False, print_results=False)
-            Lambda = fit.Lambda
-            Lambda_SE = fit.Lambda_SE
-            gamma = fit.gamma
+            if __fitted_dist_params.gamma > 0:
+                fit_gamma = True
 
-        if 'label' in kwargs:
-            label = kwargs.pop('label')
-        else:
-            label = str('Fitted Exponential_2P\n(λ=' + str(round_to_decimals(Lambda, dec)) + ', γ=' + str(round_to_decimals(gamma, dec)) + ')')
-        if 'color' in kwargs:
-            data_color = kwargs.get('color')
-        else:
-            data_color = 'k'
-        xlabel = 'Time - gamma'
-        failures = failures - gamma + 0.009  # this 0.009 adjustment is to avoid taking the log of 0. It causes negligible difference to the fit and plot. 0.009 is chosen to be the same as Weibull_Fit_3P adjustment.
-        if right_censored is not None:
-            right_censored = right_censored - gamma + 0.009  # this 0.009 adjustment is to avoid taking the log of 0. It causes negligible difference to the fit and plot. 0.009 is chosen to be the same as Weibull_Fit_3P adjustment.
+        if fit_gamma is False:
+            if __fitted_dist_params is not None:
+                Lambda = __fitted_dist_params.Lambda
+                Lambda_SE = __fitted_dist_params.Lambda_SE
+            else:
+                from reliability.Fitters import Fit_Exponential_1P
+                fit = Fit_Exponential_1P(failures=failures, right_censored=right_censored, CI=CI, show_probability_plot=False, print_results=False)
+                Lambda = fit.Lambda
+                Lambda_SE = fit.Lambda_SE
+            if 'label' in kwargs:
+                label = kwargs.pop('label')
+            else:
+                label = str('Fitted Exponential_1P (λ=' + str(round_to_decimals(Lambda, dec)) + ')')
+        elif fit_gamma is True:
+            if __fitted_dist_params is not None:
+                Lambda = __fitted_dist_params.Lambda
+                Lambda_SE = __fitted_dist_params.Lambda_SE
+                gamma = __fitted_dist_params.gamma
+            else:
+                from reliability.Fitters import Fit_Exponential_2P
+                fit = Fit_Exponential_2P(failures=failures, right_censored=right_censored, CI=CI, show_probability_plot=False, print_results=False)
+                Lambda = fit.Lambda
+                Lambda_SE = fit.Lambda_SE
+                gamma = fit.gamma
 
-    ef = Exponential_Distribution(Lambda=Lambda, Lambda_SE=Lambda_SE, CI=CI)
+            if 'label' in kwargs:
+                label = kwargs.pop('label')
+            else:
+                label = str('Fitted Exponential_2P\n(λ=' + str(round_to_decimals(Lambda, dec)) + ', γ=' + str(round_to_decimals(gamma, dec)) + ')')
+            xlabel = 'Time - gamma'
+            failures = failures - gamma + 0.009  # this 0.009 adjustment is to avoid taking the log of 0. It causes negligible difference to the fit and plot. 0.009 is chosen to be the same as Weibull_Fit_3P adjustment.
+            if right_censored is not None:
+                right_censored = right_censored - gamma + 0.009  # this 0.009 adjustment is to avoid taking the log of 0. It causes negligible difference to the fit and plot. 0.009 is chosen to be the same as Weibull_Fit_3P adjustment.
+
+        ef = Exponential_Distribution(Lambda=Lambda, Lambda_SE=Lambda_SE, CI=CI)
 
     # plot the failure points and format the scale and axes
     x, y = plotting_positions(failures=failures, right_censored=right_censored, a=a)
@@ -474,33 +475,34 @@ def Gumbel_probability_plot(failures=None, right_censored=None, __fitted_dist_pa
             raise ValueError('right_censored must be a list or an array')
         right_censored = np.asarray(right_censored)
 
-    if CI <= 0 or CI >= 1:
-        raise ValueError('CI must be between 0 and 1. Default is 0.95 for 95% Confidence interval.')
-
-    if __fitted_dist_params is not None:
-        mu = __fitted_dist_params.mu
-        sigma = __fitted_dist_params.sigma
-        mu_SE = __fitted_dist_params.mu_SE
-        sigma_SE = __fitted_dist_params.sigma_SE
-        Cov_mu_sigma = __fitted_dist_params.Cov_mu_sigma
-    else:
-        from reliability.Fitters import Fit_Gumbel_2P
-        fit = Fit_Gumbel_2P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False)
-        mu = fit.mu
-        sigma = fit.sigma
-        mu_SE = fit.mu_SE
-        sigma_SE = fit.sigma_SE
-        Cov_mu_sigma = fit.Cov_mu_sigma
-
-    if 'label' in kwargs:
-        label = kwargs.pop('label')
-    else:
-        label = str('Fitted Gumbel_2P (μ=' + str(round_to_decimals(mu, dec)) + ', σ=' + str(round_to_decimals(sigma, dec)) + ')')
     if 'color' in kwargs:
         data_color = kwargs.get('color')
     else:
         data_color = 'k'
-    gbf = Gumbel_Distribution(mu=mu, sigma=sigma, mu_SE=mu_SE, sigma_SE=sigma_SE, Cov_mu_sigma=Cov_mu_sigma, CI=CI, CI_type=CI_type)
+    if show_fitted_distribution is True:
+        if CI <= 0 or CI >= 1:
+            raise ValueError('CI must be between 0 and 1. Default is 0.95 for 95% Confidence interval.')
+
+        if __fitted_dist_params is not None:
+            mu = __fitted_dist_params.mu
+            sigma = __fitted_dist_params.sigma
+            mu_SE = __fitted_dist_params.mu_SE
+            sigma_SE = __fitted_dist_params.sigma_SE
+            Cov_mu_sigma = __fitted_dist_params.Cov_mu_sigma
+        else:
+            from reliability.Fitters import Fit_Gumbel_2P
+            fit = Fit_Gumbel_2P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False)
+            mu = fit.mu
+            sigma = fit.sigma
+            mu_SE = fit.mu_SE
+            sigma_SE = fit.sigma_SE
+            Cov_mu_sigma = fit.Cov_mu_sigma
+
+        if 'label' in kwargs:
+            label = kwargs.pop('label')
+        else:
+            label = str('Fitted Gumbel_2P (μ=' + str(round_to_decimals(mu, dec)) + ', σ=' + str(round_to_decimals(sigma, dec)) + ')')
+        gbf = Gumbel_Distribution(mu=mu, sigma=sigma, mu_SE=mu_SE, sigma_SE=sigma_SE, Cov_mu_sigma=Cov_mu_sigma, CI=CI, CI_type=CI_type)
 
     x, y = plotting_positions(failures=failures, right_censored=right_censored, a=a)
     plt.scatter(x, y, marker='.', linewidth=2, c=data_color)
@@ -548,32 +550,33 @@ def Normal_probability_plot(failures=None, right_censored=None, __fitted_dist_pa
             raise ValueError('right_censored must be a list or an array')
         right_censored = np.asarray(right_censored)
 
-    if CI <= 0 or CI >= 1:
-        raise ValueError('CI must be between 0 and 1. Default is 0.95 for 95% Confidence interval.')
-
-    if __fitted_dist_params is not None:
-        mu = __fitted_dist_params.mu
-        sigma = __fitted_dist_params.sigma
-        mu_SE = __fitted_dist_params.mu_SE
-        sigma_SE = __fitted_dist_params.sigma_SE
-        Cov_mu_sigma = __fitted_dist_params.Cov_mu_sigma
-    else:
-        from reliability.Fitters import Fit_Normal_2P
-        fit = Fit_Normal_2P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False)
-        mu = fit.mu
-        sigma = fit.sigma
-        mu_SE = fit.mu_SE
-        sigma_SE = fit.sigma_SE
-        Cov_mu_sigma = fit.Cov_mu_sigma
-    if 'label' in kwargs:
-        label = kwargs.pop('label')
-    else:
-        label = str('Fitted Normal_2P (μ=' + str(round_to_decimals(mu, dec)) + ', σ=' + str(round_to_decimals(sigma, dec)) + ')')
     if 'color' in kwargs:
         data_color = kwargs.get('color')
     else:
         data_color = 'k'
-    nf = Normal_Distribution(mu=mu, sigma=sigma, mu_SE=mu_SE, sigma_SE=sigma_SE, Cov_mu_sigma=Cov_mu_sigma, CI=CI, CI_type=CI_type)
+    if show_fitted_distribution is True:
+        if CI <= 0 or CI >= 1:
+            raise ValueError('CI must be between 0 and 1. Default is 0.95 for 95% Confidence interval.')
+
+        if __fitted_dist_params is not None:
+            mu = __fitted_dist_params.mu
+            sigma = __fitted_dist_params.sigma
+            mu_SE = __fitted_dist_params.mu_SE
+            sigma_SE = __fitted_dist_params.sigma_SE
+            Cov_mu_sigma = __fitted_dist_params.Cov_mu_sigma
+        else:
+            from reliability.Fitters import Fit_Normal_2P
+            fit = Fit_Normal_2P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False)
+            mu = fit.mu
+            sigma = fit.sigma
+            mu_SE = fit.mu_SE
+            sigma_SE = fit.sigma_SE
+            Cov_mu_sigma = fit.Cov_mu_sigma
+        if 'label' in kwargs:
+            label = kwargs.pop('label')
+        else:
+            label = str('Fitted Normal_2P (μ=' + str(round_to_decimals(mu, dec)) + ', σ=' + str(round_to_decimals(sigma, dec)) + ')')
+        nf = Normal_Distribution(mu=mu, sigma=sigma, mu_SE=mu_SE, sigma_SE=sigma_SE, Cov_mu_sigma=Cov_mu_sigma, CI=CI, CI_type=CI_type)
 
     # plot the failure points and format the scale and axes
     x, y = plotting_positions(failures=failures, right_censored=right_censored, a=a)
@@ -625,68 +628,68 @@ def Lognormal_probability_plot(failures=None, right_censored=None, fit_gamma=Fal
             raise ValueError('right_censored must be a list or an array')
         right_censored = np.asarray(right_censored)
 
-    if CI <= 0 or CI >= 1:
-        raise ValueError('CI must be between 0 and 1. Default is 0.95 for 95% Confidence interval.')
+    if show_fitted_distribution == False and fit_gamma == True:
+        colorprint('WARNING: fit_gamma has been reset to False because the distribution is not fitted when show_fitted_distribution = False.', text_color='red')
 
-    if __fitted_dist_params is not None:
-        if __fitted_dist_params.gamma > 0:
-            fit_gamma = True
+    if 'color' in kwargs:
+        data_color = kwargs.get('color')
+    else:
+        data_color = 'k'
+    xlabel = 'Time'  # this will be overridden if gamma is fitted
+    if show_fitted_distribution is True:
+        if CI <= 0 or CI >= 1:
+            raise ValueError('CI must be between 0 and 1. Default is 0.95 for 95% Confidence interval.')
 
-    if fit_gamma is False:
         if __fitted_dist_params is not None:
-            mu = __fitted_dist_params.mu
-            sigma = __fitted_dist_params.sigma
-            mu_SE = __fitted_dist_params.mu_SE
-            sigma_SE = __fitted_dist_params.sigma_SE
-            Cov_mu_sigma = __fitted_dist_params.Cov_mu_sigma
-        else:
-            from reliability.Fitters import Fit_Lognormal_2P
-            fit = Fit_Lognormal_2P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False)
-            mu = fit.mu
-            sigma = fit.sigma
-            mu_SE = fit.mu_SE
-            sigma_SE = fit.sigma_SE
-            Cov_mu_sigma = fit.Cov_mu_sigma
+            if __fitted_dist_params.gamma > 0:
+                fit_gamma = True
 
-        if 'label' in kwargs:
-            label = kwargs.pop('label')
-        else:
-            label = str('Fitted Lognormal_2P (μ=' + str(round_to_decimals(mu, dec)) + ', σ=' + str(round_to_decimals(sigma, dec)) + ')')
-        if 'color' in kwargs:
-            data_color = kwargs.get('color')
-        else:
-            data_color = 'k'
-        xlabel = 'Time'
-    elif fit_gamma is True:
-        if __fitted_dist_params is not None:
-            mu = __fitted_dist_params.mu
-            sigma = __fitted_dist_params.sigma
-            gamma = __fitted_dist_params.gamma
-            mu_SE = __fitted_dist_params.mu_SE
-            sigma_SE = __fitted_dist_params.sigma_SE
-            Cov_mu_sigma = __fitted_dist_params.Cov_mu_sigma
-        else:
-            from reliability.Fitters import Fit_Lognormal_3P
-            fit = Fit_Lognormal_3P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False)
-            mu = fit.mu
-            sigma = fit.sigma
-            gamma = fit.gamma
-            mu_SE = fit.mu_SE
-            sigma_SE = fit.sigma_SE
-            Cov_mu_sigma = fit.Cov_mu_sigma
-        if 'label' in kwargs:
-            label = kwargs.pop('label')
-        else:
-            label = str('Fitted Lognormal_3P (μ=' + str(round_to_decimals(mu, dec)) + ', σ=' + str(round_to_decimals(sigma, dec)) + ', γ=' + str(round_to_decimals(gamma, dec)) + ')')
-        if 'color' in kwargs:
-            data_color = kwargs.get('color')
-        else:
-            data_color = 'k'
-        xlabel = 'Time - gamma'
-        failures = failures - gamma
-        if right_censored is not None:
-            right_censored = right_censored - gamma
-    lnf = Lognormal_Distribution(mu=mu, sigma=sigma, mu_SE=mu_SE, sigma_SE=sigma_SE, Cov_mu_sigma=Cov_mu_sigma, CI=CI, CI_type=CI_type)
+        if fit_gamma is False:
+            if __fitted_dist_params is not None:
+                mu = __fitted_dist_params.mu
+                sigma = __fitted_dist_params.sigma
+                mu_SE = __fitted_dist_params.mu_SE
+                sigma_SE = __fitted_dist_params.sigma_SE
+                Cov_mu_sigma = __fitted_dist_params.Cov_mu_sigma
+            else:
+                from reliability.Fitters import Fit_Lognormal_2P
+                fit = Fit_Lognormal_2P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False)
+                mu = fit.mu
+                sigma = fit.sigma
+                mu_SE = fit.mu_SE
+                sigma_SE = fit.sigma_SE
+                Cov_mu_sigma = fit.Cov_mu_sigma
+
+            if 'label' in kwargs:
+                label = kwargs.pop('label')
+            else:
+                label = str('Fitted Lognormal_2P (μ=' + str(round_to_decimals(mu, dec)) + ', σ=' + str(round_to_decimals(sigma, dec)) + ')')
+        elif fit_gamma is True:
+            if __fitted_dist_params is not None:
+                mu = __fitted_dist_params.mu
+                sigma = __fitted_dist_params.sigma
+                gamma = __fitted_dist_params.gamma
+                mu_SE = __fitted_dist_params.mu_SE
+                sigma_SE = __fitted_dist_params.sigma_SE
+                Cov_mu_sigma = __fitted_dist_params.Cov_mu_sigma
+            else:
+                from reliability.Fitters import Fit_Lognormal_3P
+                fit = Fit_Lognormal_3P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False)
+                mu = fit.mu
+                sigma = fit.sigma
+                gamma = fit.gamma
+                mu_SE = fit.mu_SE
+                sigma_SE = fit.sigma_SE
+                Cov_mu_sigma = fit.Cov_mu_sigma
+            if 'label' in kwargs:
+                label = kwargs.pop('label')
+            else:
+                label = str('Fitted Lognormal_3P (μ=' + str(round_to_decimals(mu, dec)) + ', σ=' + str(round_to_decimals(sigma, dec)) + ', γ=' + str(round_to_decimals(gamma, dec)) + ')')
+            xlabel = 'Time - gamma'
+            failures = failures - gamma
+            if right_censored is not None:
+                right_censored = right_censored - gamma
+        lnf = Lognormal_Distribution(mu=mu, sigma=sigma, mu_SE=mu_SE, sigma_SE=sigma_SE, Cov_mu_sigma=Cov_mu_sigma, CI=CI, CI_type=CI_type)
 
     # plot the failure points and format the scale and axes
     x, y = plotting_positions(failures=failures, right_censored=right_censored, a=a)
@@ -695,7 +698,6 @@ def Lognormal_probability_plot(failures=None, right_censored=None, fit_gamma=Fal
     plt.xscale('log')
     plt.grid(b=True, which='major', color='k', alpha=0.3, linestyle='-')
     plt.grid(b=True, which='minor', color='k', alpha=0.08, linestyle='-')
-
     plt.gcf().set_size_inches(9, 9)  # adjust the figsize. This is done outside of figure creation so that layering of multiple plots is possible
     if show_fitted_distribution is True:
         lnf.CDF(label=label, **kwargs)
@@ -737,12 +739,15 @@ def Beta_probability_plot(failures=None, right_censored=None, __fitted_dist_para
             raise ValueError('right_censored must be a list or an array')
         right_censored = np.asarray(right_censored)
 
+    if 'color' in kwargs:
+        data_color = kwargs.get('color')
+    else:
+        data_color = 'k'
+
+    # We can't skip fitting when show_fitted_distribution = False because the axes scaling needs alpha and beta
     if CI <= 0 or CI >= 1:
         raise ValueError('CI must be between 0 and 1. Default is 0.95 for 95% Confidence interval.')
 
-    x, y = plotting_positions(failures=failures, right_censored=right_censored, a=a)
-    plt.grid(b=True, which='major', color='k', alpha=0.3, linestyle='-')
-    plt.grid(b=True, which='minor', color='k', alpha=0.08, linestyle='-')
     if __fitted_dist_params is not None:
         alpha = __fitted_dist_params.alpha
         beta = __fitted_dist_params.beta
@@ -755,12 +760,11 @@ def Beta_probability_plot(failures=None, right_censored=None, __fitted_dist_para
         label = kwargs.pop('label')
     else:
         label = str('Fitted Beta_2P (α=' + str(round_to_decimals(alpha, dec)) + ', β=' + str(round_to_decimals(beta, dec)) + ')')
-    if 'color' in kwargs:
-        data_color = kwargs.get('color')
-    else:
-        data_color = 'k'
     bf = Beta_Distribution(alpha=alpha, beta=beta)
 
+    x, y = plotting_positions(failures=failures, right_censored=right_censored, a=a)
+    plt.grid(b=True, which='major', color='k', alpha=0.3, linestyle='-')
+    plt.grid(b=True, which='minor', color='k', alpha=0.08, linestyle='-')
     plt.scatter(x, y, marker='.', linewidth=2, c=data_color)
     f_beta = lambda x: axes_transforms.beta_forward(x, alpha, beta)
     fi_beta = lambda x: axes_transforms.beta_inverse(x, alpha, beta)
@@ -808,6 +812,16 @@ def Gamma_probability_plot(failures=None, right_censored=None, fit_gamma=False, 
             raise ValueError('right_censored must be a list or an array')
         right_censored = np.asarray(right_censored)
 
+    if show_fitted_distribution == False and fit_gamma == True:
+        colorprint('WARNING: fit_gamma has been reset to False because the distribution is not fitted when show_fitted_distribution = False.', text_color='red')
+
+    if 'color' in kwargs:
+        data_color = kwargs.get('color')
+    else:
+        data_color = 'k'
+    xlabel = 'Time'  # this will be overridden if gamma is fitted
+
+    # We can't skip fitting when show_fitted_distribution = False because the axes scaling needs beta
     if CI <= 0 or CI >= 1:
         raise ValueError('CI must be between 0 and 1. Default is 0.95 for 95% Confidence interval.')
 
@@ -824,16 +838,10 @@ def Gamma_probability_plot(failures=None, right_censored=None, fit_gamma=False, 
             fit = Fit_Gamma_2P(failures=failures, right_censored=right_censored, show_probability_plot=False, print_results=False)
             alpha = fit.alpha
             beta = fit.beta
-        gf = Gamma_Distribution(alpha=alpha, beta=beta)
         if 'label' in kwargs:
             label = kwargs.pop('label')
         else:
             label = str('Fitted Gamma_2P (α=' + str(round_to_decimals(alpha, dec)) + ', β=' + str(round_to_decimals(beta, dec)) + ')')
-        if 'color' in kwargs:
-            data_color = kwargs.get('color')
-        else:
-            data_color = 'k'
-        xlabel = 'Time'
     elif fit_gamma is True:
         if __fitted_dist_params is not None:
             alpha = __fitted_dist_params.alpha
@@ -845,19 +853,17 @@ def Gamma_probability_plot(failures=None, right_censored=None, fit_gamma=False, 
             alpha = fit.alpha
             beta = fit.beta
             gamma = fit.gamma
-        gf = Gamma_Distribution(alpha=alpha, beta=beta)
+
         if 'label' in kwargs:
             label = kwargs.pop('label')
         else:
             label = str('Fitted Gamma_3P\n(α=' + str(round_to_decimals(alpha, dec)) + ', β=' + str(round_to_decimals(beta, dec)) + ', γ=' + str(round_to_decimals(gamma, dec)) + ')')
-        if 'color' in kwargs:
-            data_color = kwargs.get('color')
-        else:
-            data_color = 'k'
         xlabel = 'Time - gamma'
         failures = failures - gamma
         if right_censored is not None:
             right_censored = right_censored - gamma
+    gf = Gamma_Distribution(alpha=alpha, beta=beta)
+
     # plot the failure points and format the scale and axes
     x, y = plotting_positions(failures=failures, right_censored=right_censored, a=a)
     plt.scatter(x, y, marker='.', linewidth=2, c=data_color)
@@ -909,56 +915,55 @@ def Exponential_probability_plot(failures=None, right_censored=None, fit_gamma=F
             raise ValueError('right_censored must be a list or an array')
         right_censored = np.asarray(right_censored)
 
-    if CI <= 0 or CI >= 1:
-        raise ValueError('CI must be between 0 and 1. Default is 0.95 for 95% Confidence interval.')
+    if show_fitted_distribution == False and fit_gamma == True:
+        colorprint('WARNING: fit_gamma has been reset to False because the distribution is not fitted when show_fitted_distribution = False.', text_color='red')
 
-    if __fitted_dist_params is not None:
-        if __fitted_dist_params.gamma > 0:
-            fit_gamma = True
+    if 'color' in kwargs:
+        data_color = kwargs.get('color')
+    else:
+        data_color = 'k'
+    xlabel = 'Time'  # this will be overridden if gamma is fitted
+    if show_fitted_distribution is True:
+        if CI <= 0 or CI >= 1:
+            raise ValueError('CI must be between 0 and 1. Default is 0.95 for 95% Confidence interval.')
 
-    if fit_gamma is False:
         if __fitted_dist_params is not None:
-            Lambda = __fitted_dist_params.Lambda
-            Lambda_SE = __fitted_dist_params.Lambda_SE
-        else:
-            from reliability.Fitters import Fit_Exponential_1P
-            fit = Fit_Exponential_1P(failures=failures, right_censored=right_censored, CI=CI, show_probability_plot=False, print_results=False)
-            Lambda = fit.Lambda
-            Lambda_SE = fit.Lambda_SE
-        if 'label' in kwargs:
-            label = kwargs.pop('label')
-        else:
-            label = str('Fitted Exponential_1P (λ=' + str(round_to_decimals(Lambda, dec)) + ')')
-        if 'color' in kwargs:
-            data_color = kwargs.get('color')
-        else:
-            data_color = 'k'
-        xlabel = 'Time'
-    elif fit_gamma is True:
-        if __fitted_dist_params is not None:
-            Lambda = __fitted_dist_params.Lambda
-            Lambda_SE = __fitted_dist_params.Lambda_SE
-            gamma = __fitted_dist_params.gamma
-        else:
-            from reliability.Fitters import Fit_Exponential_2P
-            fit = Fit_Exponential_2P(failures=failures, right_censored=right_censored, CI=CI, show_probability_plot=False, print_results=False)
-            Lambda = fit.Lambda
-            Lambda_SE = fit.Lambda_SE
-            gamma = fit.gamma
-        if 'label' in kwargs:
-            label = kwargs.pop('label')
-        else:
-            label = str('Fitted Exponential_2P\n(λ=' + str(round_to_decimals(Lambda, dec)) + ', γ=' + str(round_to_decimals(gamma, dec)) + ')')
-        if 'color' in kwargs:
-            data_color = kwargs.get('color')
-        else:
-            data_color = 'k'
-        xlabel = 'Time - gamma'
-        failures = failures - gamma
-        if right_censored is not None:
-            right_censored = right_censored - gamma
+            if __fitted_dist_params.gamma > 0:
+                fit_gamma = True
 
-    ef = Exponential_Distribution(Lambda=Lambda, Lambda_SE=Lambda_SE, CI=CI)
+        if fit_gamma is False:
+            if __fitted_dist_params is not None:
+                Lambda = __fitted_dist_params.Lambda
+                Lambda_SE = __fitted_dist_params.Lambda_SE
+            else:
+                from reliability.Fitters import Fit_Exponential_1P
+                fit = Fit_Exponential_1P(failures=failures, right_censored=right_censored, CI=CI, show_probability_plot=False, print_results=False)
+                Lambda = fit.Lambda
+                Lambda_SE = fit.Lambda_SE
+            if 'label' in kwargs:
+                label = kwargs.pop('label')
+            else:
+                label = str('Fitted Exponential_1P (λ=' + str(round_to_decimals(Lambda, dec)) + ')')
+        elif fit_gamma is True:
+            if __fitted_dist_params is not None:
+                Lambda = __fitted_dist_params.Lambda
+                Lambda_SE = __fitted_dist_params.Lambda_SE
+                gamma = __fitted_dist_params.gamma
+            else:
+                from reliability.Fitters import Fit_Exponential_2P
+                fit = Fit_Exponential_2P(failures=failures, right_censored=right_censored, CI=CI, show_probability_plot=False, print_results=False)
+                Lambda = fit.Lambda
+                Lambda_SE = fit.Lambda_SE
+                gamma = fit.gamma
+            if 'label' in kwargs:
+                label = kwargs.pop('label')
+            else:
+                label = str('Fitted Exponential_2P\n(λ=' + str(round_to_decimals(Lambda, dec)) + ', γ=' + str(round_to_decimals(gamma, dec)) + ')')
+            xlabel = 'Time - gamma'
+            failures = failures - gamma
+            if right_censored is not None:
+                right_censored = right_censored - gamma
+        ef = Exponential_Distribution(Lambda=Lambda, Lambda_SE=Lambda_SE, CI=CI)
 
     x, y = plotting_positions(failures=failures, right_censored=right_censored, a=a)
     plt.scatter(x, y, marker='.', linewidth=2, c=data_color)
@@ -996,7 +1001,7 @@ def PP_plot_parametric(X_dist=None, Y_dist=None, y_quantile_lines=None, x_quanti
 
     if X_dist is None or Y_dist is None:
         raise ValueError('X_dist and Y_dist must both be specified as probability distributions generated using the Distributions module')
-    if type(X_dist) not in [Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution, Loglogistic_Distribution, Gumbel_Distribution]\
+    if type(X_dist) not in [Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution, Loglogistic_Distribution, Gumbel_Distribution] \
             or type(Y_dist) not in [Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution, Loglogistic_Distribution, Gumbel_Distribution]:
         raise ValueError('Invalid probability distribution. X_dist and Y_dist must both be specified as probability distributions generated using the Distributions module')
 
@@ -1021,28 +1026,28 @@ def PP_plot_parametric(X_dist=None, Y_dist=None, y_quantile_lines=None, x_quanti
     plt.scatter(dist_X_CDF, dist_Y_CDF, marker=marker, color=color, **kwargs)
 
     # this creates the labels for the axes using the parameters of the distributions
-    X_label_str = str(X_dist.name+' CDF ('+X_dist.param_title+')')
-    Y_label_str = str(Y_dist.name+' CDF ('+Y_dist.param_title+')')
+    X_label_str = str(X_dist.name + ' CDF (' + X_dist.param_title + ')')
+    Y_label_str = str(Y_dist.name + ' CDF (' + Y_dist.param_title + ')')
     plt.xlabel(X_label_str)
     plt.ylabel(Y_label_str)
 
     ax = plt.gca()
     stick_to_y = blended_transform_factory(ax.transAxes, ax.transData)
-    stick_to_x = blended_transform_factory(ax.transData,ax.transAxes)
+    stick_to_x = blended_transform_factory(ax.transData, ax.transAxes)
     # this draws on the quantile lines
     if y_quantile_lines is not None:
         for q in y_quantile_lines:
             quantile = X_dist.CDF(xvals=Y_dist.quantile(q), show_plot=False)
             plt.plot([-1000, quantile, quantile], [q, q, -1000], color='blue', linewidth=0.5)
-            plt.text(s=str(round(quantile, 2)),x=quantile,y=0,transform=stick_to_x,clip_on=True)
-            plt.text(s=str(q), x=0, y=q, transform=stick_to_y,clip_on=True)
+            plt.text(s=str(round(quantile, 2)), x=quantile, y=0, transform=stick_to_x, clip_on=True)
+            plt.text(s=str(q), x=0, y=q, transform=stick_to_y, clip_on=True)
 
     if x_quantile_lines is not None:
         for q in x_quantile_lines:
             quantile = Y_dist.CDF(xvals=X_dist.quantile(q), show_plot=False)
             plt.plot([q, q, -1000], [-1000, quantile, quantile], color='red', linewidth=0.5)
-            plt.text(s=str(round(quantile, 2)),x=0,y=quantile,transform=stick_to_y,clip_on=True)
-            plt.text(s=str(q), x=q, y=0, transform=stick_to_x,clip_on=True)
+            plt.text(s=str(round(quantile, 2)), x=0, y=quantile, transform=stick_to_y, clip_on=True)
+            plt.text(s=str(q), x=q, y=0, transform=stick_to_x, clip_on=True)
 
     if show_diagonal_line is True:
         plt.plot([0, 1], [0, 1], color='red', alpha=0.7, label='Y = X')
@@ -1103,7 +1108,7 @@ def QQ_plot_parametric(X_dist=None, Y_dist=None, show_fitted_lines=True, show_di
     y = dist_Y_ISF
     deg1 = np.polyfit(dist_X_ISF, dist_Y_ISF, deg=1)  # fit y=mx+c
     m = np.linalg.lstsq(x, y, rcond=-1)[0][0]  # fit y=mx
-    x_fit = np.linspace(-max_value, max_value*2, 100)
+    x_fit = np.linspace(-max_value, max_value * 2, 100)
     y_fit = m * x_fit
     text_str = str('Y = ' + str(round(m, 3)) + ' X')
     y1_fit = deg1[0] * x_fit + deg1[1]
@@ -1113,7 +1118,7 @@ def QQ_plot_parametric(X_dist=None, Y_dist=None, show_fitted_lines=True, show_di
         text_str1 = str('Y = ' + str(round(deg1[0], 3)) + ' X' + ' + ' + str(round(deg1[1], 3)))
 
     if show_diagonal_line is True:
-        plt.plot([-max_value, max_value*2], [-max_value, max_value*2], color='red', alpha=0.7, label='Y = X')
+        plt.plot([-max_value, max_value * 2], [-max_value, max_value * 2], color='red', alpha=0.7, label='Y = X')
     if show_fitted_lines is True:
         plt.plot(x_fit, y_fit, color='darkorange', alpha=0.5, label=text_str)
         plt.plot(x_fit, y1_fit, color='green', alpha=0.5, label=text_str1)
@@ -1126,13 +1131,13 @@ def QQ_plot_parametric(X_dist=None, Y_dist=None, show_fitted_lines=True, show_di
     plt.ylabel(Y_label_str)
     plt.title('Quantile-Quantile plot\nParametric')
     # plt.axis('equal')
-    xmin,xmax = min(dist_X_ISF),max(dist_X_ISF)
-    xdelta = xmax-xmin
-    ymin,ymax = min(dist_Y_ISF),max(dist_Y_ISF)
-    ydelta = ymax-ymin
+    xmin, xmax = min(dist_X_ISF), max(dist_X_ISF)
+    xdelta = xmax - xmin
+    ymin, ymax = min(dist_Y_ISF), max(dist_Y_ISF)
+    ydelta = ymax - ymin
 
-    plt.xlim([xmin-0.05*xdelta, xmax+0.05*xdelta])
-    plt.ylim([ymin-0.05*ydelta, ymax+0.05*ydelta])
+    plt.xlim([xmin - 0.05 * xdelta, xmax + 0.05 * xdelta])
+    plt.ylim([ymin - 0.05 * ydelta, ymax + 0.05 * ydelta])
     return [m, deg1[0], deg1[1]]
 
 
@@ -1313,14 +1318,14 @@ def QQ_plot_semiparametric(X_data_failures=None, X_data_right_censored=None, Y_d
     max_value = max(max(dist_Y_ISF), max(X_data_failures))
     min_value = min(min(dist_Y_ISF), min(X_data_failures))
     if show_diagonal_line is True:
-        plt.plot([-max_value, max_value*2], [-max_value, max_value*2], color='red', alpha=0.7, label='Y = X')
+        plt.plot([-max_value, max_value * 2], [-max_value, max_value * 2], color='red', alpha=0.7, label='Y = X')
 
     # fit lines and generate text for equations to go in legend
     y = dist_Y_ISF[:, np.newaxis]
     x = X_data_failures[:, np.newaxis]
     deg1 = np.polyfit(X_data_failures, dist_Y_ISF, deg=1)  # fit y=mx+c
     m = np.linalg.lstsq(x, y, rcond=-1)[0][0][0]  # fit y=mx
-    x_fit = np.linspace(-max_value, max_value*2, 100)
+    x_fit = np.linspace(-max_value, max_value * 2, 100)
     y_fit = m * x_fit
     text_str = str('Y = ' + str(round(m, 3)) + ' X')
     y1_fit = deg1[0] * x_fit + deg1[1]
@@ -1332,8 +1337,8 @@ def QQ_plot_semiparametric(X_data_failures=None, X_data_right_censored=None, Y_d
         plt.plot(x_fit, y_fit, color='red', alpha=0.5, label=text_str)
         plt.plot(x_fit, y1_fit, color='green', alpha=0.5, label=text_str1)
         plt.legend(title='Fitted lines:')
-    delta = max_value-min_value
-    lims = [min_value-0.05*delta, max_value+0.05*delta]
+    delta = max_value - min_value
+    lims = [min_value - 0.05 * delta, max_value + 0.05 * delta]
     plt.xlim(lims)
     plt.ylim(lims)
     plt.title('Quantile-Quantile Plot\nSemi-parametric')

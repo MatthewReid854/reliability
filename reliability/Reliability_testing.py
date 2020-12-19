@@ -20,10 +20,10 @@ import pandas as pd
 import math
 import time
 from reliability.Distributions import Normal_Distribution, Weibull_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution, Loglogistic_Distribution, Gumbel_Distribution
-from reliability.Utils import colorprint
+from reliability.Utils import colorprint, round_to_decimals
 
 
-def one_sample_proportion(trials=None, successes=None, CI=0.95):
+def one_sample_proportion(trials=None, successes=None, CI=0.95, print_results=True):
     '''
     Calculates the upper and lower bounds of reliability for a given number of trials and successes.
 
@@ -31,9 +31,9 @@ def one_sample_proportion(trials=None, successes=None, CI=0.95):
     trials - the number of trials which were conducted
     successes - the number of trials which were successful
     CI - the desired confidence interval. Defaults to 0.95 for 95% CI.
+    print_results - if True the results will be printed to the console.
 
     returns: lower, upper - Confidence interval limits.
-        will return nan for lower or upper if only one sided CI is calculated (ie. when successes=0 or successes=trials).
     '''
     if trials is None or successes is None:
         raise ValueError('You must specify the number of trials and successes.')
@@ -49,16 +49,34 @@ def one_sample_proportion(trials=None, successes=None, CI=0.95):
     F_lower = ss.f.ppf(alpha_lower, V1_lower, V2_lower)
     LOWER_LIM = (V1_lower * F_lower) / (V2_lower + V1_lower * F_lower)
 
+    LOWER_LIM = np.nan_to_num(LOWER_LIM,nan=0)
+    if LOWER_LIM == 0:
+        LOWER_LIM = int(0)
+
     V1_upper = 2 * (successes + 1)
     V2_upper = 2 * (trials - successes)
     alpha_upper = 1 - alpha_lower
     F_upper = ss.f.ppf(alpha_upper, V1_upper, V2_upper)
     UPPER_LIM = (V1_upper * F_upper) / (V2_upper + V1_upper * F_upper)
 
+    UPPER_LIM = np.nan_to_num(UPPER_LIM,nan=1)
+    if UPPER_LIM == 1:
+        UPPER_LIM = int(1)
+
+    CI_rounded = CI * 100
+    if CI_rounded % 1 == 0:
+        CI_rounded = int(CI_rounded)
+
+    if print_results is True:
+        colorprint('Results from one_sample_proportion:', bold=True, underline=True)
+        print('For a test with', trials, 'trials of which there were', successes, 'successes and', trials - successes, 'failures, the bounds on reliability are:')
+        print('Lower', str(str(CI_rounded) + '%'), 'confidence bound:', LOWER_LIM)
+        print('Upper', str(str(CI_rounded) + '%'), 'confidence bound:', UPPER_LIM)
+
     return LOWER_LIM, UPPER_LIM  # will return nan for lower or upper if only one sided CI is calculated (ie. when successes=0 or successes=trials).
 
 
-def two_proportion_test(sample_1_trials=None, sample_1_successes=None, sample_2_trials=None, sample_2_successes=None, CI=0.95):
+def two_proportion_test(sample_1_trials=None, sample_1_successes=None, sample_2_trials=None, sample_2_successes=None, CI=0.95, print_results=True):
     '''
     Calculates whether the difference in test results between two samples is statistically significant. For example, assume we have
     a poll of respondents in which 27/40 people agreed, and another poll in which 42/80 agreed. This test will determine if the difference
@@ -70,6 +88,7 @@ def two_proportion_test(sample_1_trials=None, sample_1_successes=None, sample_2_
     sample_2_trials - number of trials in the second sample
     sample_2_successes - number of successes in the second sample
     CI - desired confidence interval. Defaults to 0.95 for 95% CI.
+    print_results - if True the results will be printed to the console.
 
     returns:
     lower,upper,result - lower and upper are bounds on the difference. If the bounds do not include 0 then it is a statistically significant difference.
@@ -89,12 +108,27 @@ def two_proportion_test(sample_1_trials=None, sample_1_successes=None, sample_2_
     upper = diff + k
     if lower < 0 and upper > 0:
         result = 'non-significant'
+        contains_zero_string = 'contain 0'
     else:
         result = 'significant'
+        contains_zero_string = 'do not contain 0'
+
+
+    CI_rounded = CI * 100
+    if CI_rounded % 1 == 0:
+        CI_rounded = int(CI_rounded)
+
+    if print_results is True:
+        colorprint('Results from two_proportion_test:', bold=True, underline=True)
+        print('Sample 1 test results (successes/tests):',str(str(sample_1_successes)+'/'+str(sample_1_trials)))
+        print('Sample 2 test results (successes/tests):',str(str(sample_2_successes)+'/'+str(sample_2_trials)))
+        print('The',str(str(CI_rounded)+'%'),'confidence bounds on the difference in these results is:',lower,'to',upper)
+        print('Since the confidence bounds',contains_zero_string,'the result is statistically',str(result+'.'))
+
     return lower, upper, result
 
 
-def sample_size_no_failures(reliability, CI=0.95, lifetimes=1, weibull_shape=1):
+def sample_size_no_failures(reliability, CI=0.95, lifetimes=1, weibull_shape=1, print_results=True):
     '''
     This is used to determine the sample size required for a test in which no failures are expected, and the desired
     outcome is the lower bound on the reliability based on the sample size and desired confidence interval.
@@ -107,6 +141,7 @@ def sample_size_no_failures(reliability, CI=0.95, lifetimes=1, weibull_shape=1):
         less than one full lifetime then a larger sample size will be required. Default is 1.
     weibull_shape - if the weibull shape (beta) of the failure mode is known, specify it here. Otherwise leave the
         default of 1 for the exponential distribution.
+    print_results - if True the results will be printed to the console.
 
     returns:
     number of items required in the test. This will always be an integer (rounded up).
@@ -122,6 +157,22 @@ def sample_size_no_failures(reliability, CI=0.95, lifetimes=1, weibull_shape=1):
     if lifetimes <= 0:
         raise ValueError('lifetimes must be >0. Default is 1. No more than 5 is recommended due to test feasibility.')
     n = int(np.ceil((np.log(1 - CI)) / (lifetimes ** weibull_shape * np.log(reliability))))  # rounds up to nearest integer
+
+    CI_rounded = CI * 100
+    if CI_rounded % 1 == 0:
+        CI_rounded = int(CI_rounded)
+    if lifetimes != 1:
+        lifetime_string = 'lifetimes.'
+    else:
+        lifetime_string = 'lifetime.'
+
+    if print_results is True:
+        colorprint('Results from sample_size_no_failures:', bold=True, underline=True)
+        print('To achieve the desired reliability of', reliability, 'with a', str(str(CI_rounded) + '%'), 'lower confidence bound, the required sample size to test is', n, 'items.\n')
+        print('This result is based on a specified weibull shape parameter of', weibull_shape, 'and an equivalent test duration of', lifetimes, lifetime_string)
+        print('If there are any failures during this test, then the desired lower confidence bound will not be achieved.')
+        print('If this occurs, use the function Reliability_testing.one_sample_proportion to determine the lower and upper bounds on reliability.')
+
     return n
 
 
@@ -440,7 +491,8 @@ def reliability_test_duration(MTBF_required, MTBF_design, consumer_risk, produce
         plt.xlabel('Test duration')
         plt.ylabel('Risk')
         plt.legend(loc='upper right')
-        plt.xlim(min(duration_array), max(duration_array))
+        if len(duration_array) > 1:
+            plt.xlim(min(duration_array), max(duration_array))
         plt.axvline(x=duration_solution, color='k', linestyle='--', linewidth=1)
         plt.title("Test duration vs Producer's and Consumer's Risk")
         plt.text(x=duration_solution, y=plt.ylim()[0], s=str(' Test duration\n ' + str(int(math.ceil(duration_solution)))), va='bottom')

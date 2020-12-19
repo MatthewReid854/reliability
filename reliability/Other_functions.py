@@ -3,6 +3,8 @@ Other Functions
 
 This is a collection of several other functions that did not otherwise fit within their own module.
 Included functions are:
+stress_strength - stress-strength interference for any distributions (uses numerical integration).
+stress_strength_normal - stress-strength interference two normal distributions (uses empirical method).
 similar_distributions - finds the parameters of distributions that are similar to the input distribution and plots the results.
 convert_dataframe_to_grouped_lists - groups values in a 2-column dataframe based on the values in the left column and returns those groups in a list of lists
 make_right_censored_data - a simple tool to right censor a complete dataset based on a threshold. Primarily used for testing Fitters when some right censored data is needed.
@@ -16,12 +18,154 @@ import numpy as np
 from matplotlib.lines import Line2D
 from mplcursors import cursor
 import warnings
-from reliability.Distributions import Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution,\
-    Gamma_Distribution, Beta_Distribution,Loglogistic_Distribution, Gumbel_Distribution
+from reliability.Distributions import Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution, Loglogistic_Distribution, Gumbel_Distribution
 from reliability.Fitters import Fit_Everything
-from reliability.Utils import colorprint
+from reliability.Utils import colorprint, round_to_decimals
 from matplotlib.widgets import Slider, RadioButtons
 import random
+import scipy.stats as ss
+
+
+def stress_strength(stress, strength, show_distribution_plot=True, print_results=True, warn=True):
+    '''
+    Stress - Strength Interference
+    Given the probability distributions for stress and strength, this module will find the probability of failure due to stress-strength interference.
+    Failure is defined as when stress>strength.
+    The calculation is achieved using numerical integration.
+
+    Inputs:
+    stress - a probability distribution from the Distributions module
+    strength - a probability distribution from the Distributions module
+    show_distribution_plot - True/False (default is True)
+    print_results - True/False (default is True)
+    warn - a warning will be issued if both stress and strength are Normal as you should use stress_strength_normal. You can supress this using warn=False
+         - a warning will be issued if the stress.mean > strength.mean as the user may have assigned the distributions to the wrong variables. You can supress this using warn=False
+
+    Returns:
+    probability of failure
+
+    Example use:
+    from reliability.Distributions import Weibull_Distribution, Gamma_Distribution
+    stress = Weibull_Distribution(alpha=2,beta=3,gamma=1)
+    strength = Gamma_Distribution(alpha=2,beta=3,gamma=3)
+    stress_strength(stress=stress, strength=strength)
+    '''
+
+    if type(stress) not in [Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution, Loglogistic_Distribution, Gumbel_Distribution] \
+            or type(strength) not in [Weibull_Distribution, Normal_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution, Loglogistic_Distribution, Gumbel_Distribution]:
+        raise ValueError('Stress and Strength must both be probability distributions. First define the distribution using reliability.Distributions.___')
+    if type(stress) == Normal_Distribution and type(strength) == Normal_Distribution and warn is True:  # supress the warning by setting warn=False
+        colorprint('WARNING: If strength and stress are both Normal distributions, it is more accurate to use the exact formula. The exact formula is supported in the function Probability_of_failure_normdist. To supress this warning set warn=False', text_color='red')
+    if stress.mean > strength.mean and warn == True:
+        colorprint('WARNING: The mean of the stress distribution is above the mean of the strength distribution. Please check you have assigned stress and strength to the correct variables. To supress this warning set warn=False', text_color='red')
+
+    x = np.linspace(stress.quantile(1e-8), strength.quantile(1 - 1e-8), 1000)
+    prob_of_failure = np.trapz(stress.PDF(x, show_plot=False) * strength.CDF(x, show_plot=False), x)
+
+    if show_distribution_plot is True:
+        xlims = plt.xlim(auto=None)
+        xmin = stress.quantile(0.00001)
+        xmax = strength.quantile(0.99999)
+        if xmin < (xmax - xmin) / 4:
+            xmin = 0  # if the lower bound on xmin is near zero (relative to the entire range) then just make it zero
+        if type(stress) == Beta_Distribution:
+            xmin = 0
+        if type(strength) == Beta_Distribution:
+            xmax = 1
+        xvals = np.linspace(xmin, xmax, 10000)
+        stress_PDF = stress.PDF(xvals=xvals, show_plot=False)
+        strength_PDF = strength.PDF(xvals=xvals, show_plot=False)
+        Y = [(min(strength_PDF[i], stress_PDF[i])) for i in range(len(xvals))]  # finds the lower of the two lines which is used as the upper boundary for fill_between
+        plt.plot(xvals, stress_PDF, label='Stress')
+        plt.plot(xvals, strength_PDF, label='Strength')
+        intercept_idx = Y.index(max(Y))
+        plt.fill_between(xvals, np.zeros_like(xvals), Y, color='salmon', alpha=1, linewidth=0, linestyle='--')
+        plt.fill_between(xvals[0:intercept_idx], strength_PDF[0:intercept_idx], stress_PDF[0:intercept_idx], color='steelblue', alpha=0.3, linewidth=0, linestyle='--')
+        plt.fill_between(xvals[intercept_idx::], stress_PDF[intercept_idx::], strength_PDF[intercept_idx::], color='darkorange', alpha=0.3, linewidth=0, linestyle='--')
+        failure_text = str('Probability of\nfailure = ' + str(round_to_decimals(prob_of_failure, 4)))
+        plt.legend(title=failure_text)
+        plt.title('Stress - Strength Interference Plot')
+        plt.ylabel('Probability Density')
+        plt.xlabel('Stress and Strength Units')
+        plt.subplots_adjust(left=0.16)
+        if xlims != (0, 1):
+            plt.xlim(min(stress.b5, xlims[0]), max(strength.b95, xlims[1]), auto=None)
+        else:
+            plt.xlim(stress.b5, strength.b95, auto=None)
+        plt.ylim(bottom=0, auto=None)
+
+    if print_results is True:
+        colorprint('Stress - Strength Interference', bold=True, underline=True)
+        print('Stress Distribution:', stress.param_title_long)
+        print('Strength Distribution:', strength.param_title_long)
+        print('Probability of failure (stress > strength):', round_to_decimals(prob_of_failure * 100), '%')
+
+    return prob_of_failure
+
+
+def stress_strength_normal(stress, strength, show_distribution_plot=True, print_results=True, warn=True):
+    '''
+    Stress - Strength Interference for two Normal Distributions
+    Given the probability distributions for stress and strength, this module will find the probability of failure due to stress-strength interference.
+    Failure is defined as when stress>strength.
+    Uses the exact formula method which is only valid for two Normal Distributions.
+
+    Inputs:
+    stress - a probability distribution from the Distributions module
+    strength - a probability distribution from the Distributions module
+    show_distribution_plot - True/False (default is True)
+    print_results - True/False (default is True)
+    warn - a warning will be issued if the stress.mean > strength.mean as the user may have assigned the distributions to the wrong variables. You can supress this using warn=False
+
+    Returns:
+    the probability of failure
+    '''
+    if type(stress) is not Normal_Distribution:
+        raise ValueError('Both stress and strength must be a Normal_Distribution. If you need another distribution then use stress_strength rather than stress_strength_normal')
+    if type(strength) is not Normal_Distribution:
+        raise ValueError('Both stress and strength must be a Normal_Distribution. If you need another distribution then use stress_strength rather than stress_strength_normal')
+    if stress.mean > strength.mean and warn == True:
+        colorprint('WARNING: The mean of the stress distribution is above the mean of the strength distribution. Please check you have assigned stress and strength to the correct variables. To supress this warning set warn=False', text_color='red')
+
+    sigma_strength = strength.sigma
+    mu_strength = strength.mu
+    sigma_stress = stress.sigma
+    mu_stress = stress.mu
+    prob_of_failure = ss.norm.cdf(-(mu_strength - mu_stress) / ((sigma_strength ** 2 + sigma_stress ** 2) ** 0.5))
+
+    if show_distribution_plot is True:
+        xlims = plt.xlim(auto=None)
+        xmin = stress.quantile(0.00001)
+        xmax = strength.quantile(0.99999)
+        xvals = np.linspace(xmin, xmax, 1000)
+        stress_PDF = stress.PDF(xvals=xvals, show_plot=False)
+        strength_PDF = strength.PDF(xvals=xvals, show_plot=False)
+        plt.plot(xvals, stress_PDF, label='Stress')
+        plt.plot(xvals, strength_PDF, label='Strength')
+        Y = [(min(strength_PDF[i], stress_PDF[i])) for i in range(len(xvals))]  # finds the lower of the two lines which is used as the upper boundary for fill_between
+        intercept_idx = Y.index(max(Y))
+        plt.fill_between(xvals, np.zeros_like(xvals), Y, color='salmon', alpha=1, linewidth=0, linestyle='--')
+        plt.fill_between(xvals[0:intercept_idx], strength_PDF[0:intercept_idx], stress_PDF[0:intercept_idx], color='steelblue', alpha=0.3, linewidth=0, linestyle='--')
+        plt.fill_between(xvals[intercept_idx::], stress_PDF[intercept_idx::], strength_PDF[intercept_idx::], color='darkorange', alpha=0.3, linewidth=0, linestyle='--')
+        failure_text = str('Probability of\nfailure = ' + str(round_to_decimals(prob_of_failure, 4)))
+        plt.legend(title=failure_text)
+        plt.title('Stress - Strength Interference Plot')
+        plt.ylabel('Probability Density')
+        plt.xlabel('Stress and Strength Units')
+        plt.subplots_adjust(left=0.15, right=0.93)
+        if xlims != (0, 1):
+            plt.xlim(min(stress.b5, xlims[0]), max(strength.b95, xlims[1]), auto=None)
+        else:
+            plt.xlim(stress.b5, strength.b95, auto=None)
+        plt.ylim(bottom=0, auto=None)
+
+    if print_results is True:
+        colorprint('Stress - Strength Interference', bold=True, underline=True)
+        print('Stress Distribution:', stress.param_title_long)
+        print('Strength Distribution:', strength.param_title_long)
+        print('Probability of failure (stress > strength):', round_to_decimals(prob_of_failure * 100), '%')
+
+    return prob_of_failure
 
 
 class similar_distributions:
@@ -67,7 +211,7 @@ class similar_distributions:
             else:
                 negative_values_error = True
         if negative_values_error is True:
-            colorprint('WARNING: The input distribution has non-negligible area for x<0. Samples from this region have been discarded to enable other distributions to be fitted.',text_color='red')
+            colorprint('WARNING: The input distribution has non-negligible area for x<0. Samples from this region have been discarded to enable other distributions to be fitted.', text_color='red')
 
         fitted_results = Fit_Everything(failures=RVS_filtered, print_results=False, show_probability_plot=False, show_histogram_plot=False, show_PP_plot=False)  # fit all distributions to the filtered samples
         ranked_distributions = list(fitted_results.results.index.values)
@@ -224,11 +368,17 @@ def histogram(data, white_above=None, bins=None, density=True, cumulative=False,
 
 def convert_dataframe_to_grouped_lists(input_dataframe):
     '''
+    convert_dataframe_to_grouped_lists
+
     Accepts a dataframe containing 2 columns
     This function assumes the identifying column is the left column
     returns:
     lists , names - lists is a list of the grouped lists
                   - names is the identifying values used to group the lists from the first column
+
+    DeprecationWarning: This function is scheduled for deprecation in July 2021.
+        The original purpose of this function has largely been captured by the functions within the Convert_data module.
+        If you still require this function to be included in future releases, please email alpha.reliability@gmail.com with an example use case.
 
     Example usage:
     #create sample data
@@ -241,6 +391,11 @@ def convert_dataframe_to_grouped_lists(input_dataframe):
     print(names[1]) >>> Failed
     print(lists[1]) >>> [1253, 1342, 1489]
     '''
+    warning_str = 'DeprecationWarning: Your function has still been run, however, this function is scheduled for deprecation in July 2021.\n' \
+                  'The original purpose of convert_dataframe_to_grouped_lists has largely been captured by the functions within the Convert_data module.\n' \
+                  'If you still require this function to be included in future releases, please email alpha.reliability@gmail.com with an example use case.'
+    colorprint(warning_str, text_color='red')
+
     df = input_dataframe
     column_names = df.columns.values
     if len(column_names) > 2:

@@ -46,10 +46,13 @@ from reliability.Fitters import Fit_Weibull_2P, Fit_Lognormal_2P, Fit_Normal_2P,
 from reliability.ALT_probability_plotting import ALT_probability_plot_Weibull, ALT_probability_plot_Lognormal, ALT_probability_plot_Normal
 from reliability.Distributions import Weibull_Distribution, Lognormal_Distribution, Normal_Distribution, Exponential_Distribution
 from reliability.Probability_plotting import Weibull_probability_plot, Lognormal_probability_plot, Normal_probability_plot, Exponential_probability_plot_Weibull_Scale
-from reliability.Utils import probability_plot_xyticks, probability_plot_xylims
+from reliability.Utils import probability_plot_xyticks, probability_plot_xylims, colorprint
 
 anp.seterr('ignore')
 color_list = ['steelblue', 'darkorange', 'red', 'green', 'purple', 'blue', 'grey', 'deeppink', 'cyan', 'chocolate', 'blueviolet', 'indianred', 'yellow', 'olivedrab', 'crimson', 'black', 'lightseagreen', 'pink', 'indigo', 'darkgreen']
+
+pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
+pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
 
 
 class Fit_Weibull_Exponential:
@@ -90,7 +93,7 @@ class Fit_Weibull_Exponential:
     beta_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     mean_life - the mean life at the use_level_stress. Only calculated if use_level_stress is specified
-
+    alpha_at_use_stress - the equivalent Weibull alpha parameter at the use level stress (only provided if use_level_stress is provided).
     '''
 
     def __init__(self, failures=None, failure_stress=None, right_censored=None, right_censored_stress=None, use_level_stress=None, show_plot=True, print_results=True, CI=0.95, initial_guess=None):
@@ -125,12 +128,10 @@ class Fit_Weibull_Exponential:
         def __expon(stress, a, b):
             return b * np.exp(a / stress)
 
-        [a, b], _ = curve_fit(__expon, failure_stress, failures)
         if initial_guess is None:
-            initial_guess = [a, b]
+            initial_guess, _ = curve_fit(__expon, failure_stress, failures)
         if len(initial_guess) != 2:
-            error_str = str('initial_guess must have 2 elements: [a, b]. Default is: ' + str([a, b]))
-            raise ValueError(error_str)
+            raise ValueError('initial_guess must have 2 elements: [a, b].')
 
         # this gets the common beta for the initial guess using the functions already built into ALT_probability_plot_Weibull
         ALT_fit = ALT_probability_plot_Weibull(failures=failures, right_censored=right_censored, failure_stress=failure_stress, right_censored_stress=right_censored_stress, print_results=False, show_plot=False, common_shape_method='average')
@@ -199,18 +200,19 @@ class Fit_Weibull_Exponential:
                 'Standard Error': [self.a_SE, self.b_SE, self.beta_SE],
                 'Lower CI': [self.a_lower, self.b_lower, self.beta_lower],
                 'Upper CI': [self.a_upper, self.b_upper, self.beta_upper]}
-        df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
-        self.results = df.set_index('Parameter')
+        self.results = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
 
         if use_level_stress is not None:
-            use_life = self.b * np.exp(self.a / use_level_stress)
-            self.mean_life = Weibull_Distribution(alpha=use_life, beta=self.beta).mean
+            self.alpha_at_use_stress = self.b * np.exp(self.a / use_level_stress)
+            self.mean_life = Weibull_Distribution(alpha=self.alpha_at_use_stress, beta=self.beta).mean
 
         if print_results is True:
-            pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
-            pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
-            print(str('Results from Fit_Weibull_Exponential (' + str(int(CI * 100)) + '% CI):'))
-            print(self.results)
+
+            CI_rounded = CI * 100
+            if CI_rounded % 1 == 0:
+                CI_rounded = int(CI * 100)
+            colorprint(str('Results from Fit_Weibull_Exponential (' + str(CI_rounded) + '% CI):'), bold=True, underline=True)
+            print(self.results.to_string(index=False), '\n')
             print('If this model is being used for the Arrhenius Model, a = Ea/K_B ==> Ea =', round(self.a * 8.617333262145 * 10 ** -5, 5), 'eV')
             if use_level_stress is not None:
                 print('At the use level stress of', use_level_stress, ', the mean life is', round(self.mean_life, 5))
@@ -263,12 +265,14 @@ class Fit_Weibull_Exponential:
                 Weibull_probability_plot(failures=FAILURES, right_censored=RIGHT_CENSORED, __fitted_dist_params=fitted_dist_params, color=color_list[i], linestyle='--', label='')
             if use_level_stress is not None:
                 use_label_str = str(str(use_level_stress) + ' (use level)')
-                Weibull_Distribution(alpha=use_life, beta=self.beta).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
+                Weibull_Distribution(alpha=self.alpha_at_use_stress, beta=self.beta).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
+                x_array = np.hstack([Weibull_Distribution(alpha=self.alpha_at_use_stress, beta=self.beta).quantile(max(ALT_fit.y_array)), ALT_fit.x_array])
+            else:
+                x_array = ALT_fit.x_array
             plt.xlim(10 ** xmin, 10 ** xmax)
             plt.legend(title='Stress')
             plt.title('Weibull-Exponential Model')
             probability_plot_xyticks()
-            x_array = np.hstack([Weibull_Distribution(alpha=use_life, beta=self.beta).quantile(max(ALT_fit.y_array)), ALT_fit.x_array])
             probability_plot_xylims(x=x_array, y=ALT_fit.y_array, dist='weibull', spacing=0.1)
             plt.tight_layout()
 
@@ -328,7 +332,7 @@ class Fit_Weibull_Eyring:
     beta_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     mean_life - the mean life at the use_level_stress. Only calculated if use_level_stress is specified
-
+    alpha_at_use_stress - the equivalent Weibull alpha parameter at the use level stress (only provided if use_level_stress is provided).        alpha_at_use_stress - the equivalent Weibull alpha parameter at the use level stress (only provided if use_level_stress is provided).
     '''
 
     def __init__(self, failures=None, failure_stress=None, right_censored=None, right_censored_stress=None, use_level_stress=None, show_plot=True, print_results=True, CI=0.95, initial_guess=None):
@@ -363,12 +367,10 @@ class Fit_Weibull_Eyring:
         def __eyring(stress, a, c):
             return 1 / stress * np.exp(-(c - a / stress))
 
-        [a, c], _ = curve_fit(__eyring, failure_stress, failures)
         if initial_guess is None:
-            initial_guess = [a, c]
+            initial_guess, _ = curve_fit(__eyring, failure_stress, failures)
         if len(initial_guess) != 2:
-            error_str = str('initial_guess must have 2 elements: [a, c]. Default is: ' + str([a, c]))
-            raise ValueError(error_str)
+            raise ValueError('initial_guess must have 2 elements: [a, c].')
 
         # this gets the common beta for the initial guess using the functions already built into ALT_probability_plot_Weibull
         ALT_fit = ALT_probability_plot_Weibull(failures=failures, right_censored=right_censored, failure_stress=failure_stress, right_censored_stress=right_censored_stress, print_results=False, show_plot=False, common_shape_method='average')
@@ -437,18 +439,18 @@ class Fit_Weibull_Eyring:
                 'Standard Error': [self.a_SE, self.c_SE, self.beta_SE],
                 'Lower CI': [self.a_lower, self.c_lower, self.beta_lower],
                 'Upper CI': [self.a_upper, self.c_upper, self.beta_upper]}
-        df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
-        self.results = df.set_index('Parameter')
+        self.results = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
 
         if use_level_stress is not None:
-            use_life = 1 / use_level_stress * np.exp(-(self.c - self.a / use_level_stress))
-            self.mean_life = Weibull_Distribution(alpha=use_life, beta=self.beta).mean
+            self.alpha_at_use_stress = 1 / use_level_stress * np.exp(-(self.c - self.a / use_level_stress))
+            self.mean_life = Weibull_Distribution(alpha=self.alpha_at_use_stress, beta=self.beta).mean
 
         if print_results is True:
-            pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
-            pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
-            print(str('Results from Fit_Weibull_Eyring (' + str(int(CI * 100)) + '% CI):'))
-            print(self.results)
+            CI_rounded = CI * 100
+            if CI_rounded % 1 == 0:
+                CI_rounded = int(CI * 100)
+            colorprint(str('Results from Fit_Weibull_Eyring (' + str(CI_rounded) + '% CI):'), bold=True, underline=True)
+            print(self.results.to_string(index=False), '\n')
             if use_level_stress is not None:
                 print('At the use level stress of', use_level_stress, ', the mean life is', round(self.mean_life, 5))
 
@@ -500,12 +502,14 @@ class Fit_Weibull_Eyring:
                 Weibull_probability_plot(failures=FAILURES, right_censored=RIGHT_CENSORED, __fitted_dist_params=fitted_dist_params, color=color_list[i], linestyle='--', label='')
             if use_level_stress is not None:
                 use_label_str = str(str(use_level_stress) + ' (use level)')
-                Weibull_Distribution(alpha=use_life, beta=self.beta).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
+                Weibull_Distribution(alpha=self.alpha_at_use_stress, beta=self.beta).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
+                x_array = np.hstack([Weibull_Distribution(alpha=self.alpha_at_use_stress, beta=self.beta).quantile(max(ALT_fit.y_array)), ALT_fit.x_array])
+            else:
+                x_array = ALT_fit.x_array
             plt.xlim(10 ** xmin, 10 ** xmax)
             plt.legend(title='Stress')
             plt.title('Weibull-Eyring Model')
             probability_plot_xyticks()
-            x_array = np.hstack([Weibull_Distribution(alpha=use_life, beta=self.beta).quantile(max(ALT_fit.y_array)), ALT_fit.x_array])
             probability_plot_xylims(x=x_array, y=ALT_fit.y_array, dist='weibull', spacing=0.1)
             plt.tight_layout()
 
@@ -565,7 +569,7 @@ class Fit_Weibull_Power:
     beta_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     mean_life - the mean life at the use_level_stress. Only calculated if use_level_stress is specified
-
+    alpha_at_use_stress - the equivalent Weibull alpha parameter at the use level stress (only provided if use_level_stress is provided).
     '''
 
     def __init__(self, failures=None, failure_stress=None, right_censored=None, right_censored_stress=None, use_level_stress=None, show_plot=True, print_results=True, CI=0.95, initial_guess=None):
@@ -600,12 +604,10 @@ class Fit_Weibull_Power:
         def __power(stress, a, n):
             return a * stress ** n
 
-        [a, n], _ = curve_fit(__power, failure_stress, failures)
         if initial_guess is None:
-            initial_guess = [a, n]
+            initial_guess, _ = curve_fit(__power, failure_stress, failures)
         if len(initial_guess) != 2:
-            error_str = str('initial_guess must have 2 elements: [a, n]. Default is: ' + str([a, n]))
-            raise ValueError(error_str)
+            raise ValueError('initial_guess must have 2 elements: [a, n].')
 
         # this gets the common beta for the initial guess using the functions already built into ALT_probability_plot_Weibull
         ALT_fit = ALT_probability_plot_Weibull(failures=failures, right_censored=right_censored, failure_stress=failure_stress, right_censored_stress=right_censored_stress, print_results=False, show_plot=False, common_shape_method='average')
@@ -674,18 +676,18 @@ class Fit_Weibull_Power:
                 'Standard Error': [self.a_SE, self.n_SE, self.beta_SE],
                 'Lower CI': [self.a_lower, self.n_lower, self.beta_lower],
                 'Upper CI': [self.a_upper, self.n_upper, self.beta_upper]}
-        df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
-        self.results = df.set_index('Parameter')
+        self.results = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
 
         if use_level_stress is not None:
-            use_life = self.a * use_level_stress ** self.n
-            self.mean_life = Weibull_Distribution(alpha=use_life, beta=self.beta).mean
+            self.alpha_at_use_stress = self.a * use_level_stress ** self.n
+            self.mean_life = Weibull_Distribution(alpha=self.alpha_at_use_stress, beta=self.beta).mean
 
         if print_results is True:
-            pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
-            pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
-            print(str('Results from Fit_Weibull_Power (' + str(int(CI * 100)) + '% CI):'))
-            print(self.results)
+            CI_rounded = CI * 100
+            if CI_rounded % 1 == 0:
+                CI_rounded = int(CI * 100)
+            colorprint(str('Results from Fit_Weibull_Power (' + str(CI_rounded) + '% CI):'), bold=True, underline=True)
+            print(self.results.to_string(index=False), '\n')
             if use_level_stress is not None:
                 print('At the use level stress of', use_level_stress, ', the mean life is', round(self.mean_life, 5))
 
@@ -737,12 +739,14 @@ class Fit_Weibull_Power:
                 Weibull_probability_plot(failures=FAILURES, right_censored=RIGHT_CENSORED, __fitted_dist_params=fitted_dist_params, color=color_list[i], linestyle='--', label='')
             if use_level_stress is not None:
                 use_label_str = str(str(use_level_stress) + ' (use level)')
-                Weibull_Distribution(alpha=use_life, beta=self.beta).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
+                Weibull_Distribution(alpha=self.alpha_at_use_stress, beta=self.beta).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
+                x_array = np.hstack([Weibull_Distribution(alpha=self.alpha_at_use_stress, beta=self.beta).quantile(max(ALT_fit.y_array)), ALT_fit.x_array])
+            else:
+                x_array = ALT_fit.x_array
             plt.xlim(10 ** xmin, 10 ** xmax)
             plt.legend(title='Stress')
             plt.title('Weibull-Power Model')
             probability_plot_xyticks()
-            x_array = np.hstack([Weibull_Distribution(alpha=use_life, beta=self.beta).quantile(max(ALT_fit.y_array)), ALT_fit.x_array])
             probability_plot_xylims(x=x_array, y=ALT_fit.y_array, dist='weibull', spacing=0.1)
             plt.tight_layout()
 
@@ -808,6 +812,7 @@ class Fit_Weibull_Dual_Exponential:
     beta_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     mean_life - the mean life at the use_level_stress. Only calculated if use_level_stress is specified
+    alpha_at_use_stress - the equivalent Weibull alpha parameter at the use level stress (only provided if use_level_stress is provided).
     '''
 
     def __init__(self, failures=None, failure_stress_1=None, failure_stress_2=None, right_censored=None, right_censored_stress_1=None, right_censored_stress_2=None, use_level_stress=None, show_plot=True, print_results=True, CI=0.95, initial_guess=None):
@@ -860,12 +865,10 @@ class Fit_Weibull_Dual_Exponential:
             return c * np.exp(a / T + b / H)
 
         xdata = np.array(list(zip(failure_stress_1, failure_stress_2))).T
-        [a, b, c], _ = curve_fit(__dual_expon, xdata, failures)
         if initial_guess is None:
-            initial_guess = [a, b, c]
+            initial_guess, _ = curve_fit(__dual_expon, xdata, failures)
         if len(initial_guess) != 3:
-            error_str = str('initial_guess must have 3 elements: [a, b, c]. Default is: ' + str([a, b, c]))
-            raise ValueError(error_str)
+            raise ValueError('initial_guess must have 3 elements: [a, b, c]')
 
         # this gets the common beta for the initial guess using the functions already built into ALT_probability_plot_Weibull
         ALT_fit_1 = ALT_probability_plot_Weibull(failures=failures, right_censored=right_censored, failure_stress=failure_stress_1, right_censored_stress=right_censored_stress_1, print_results=False, show_plot=False, common_shape_method='average')
@@ -942,18 +945,18 @@ class Fit_Weibull_Dual_Exponential:
                 'Standard Error': [self.a_SE, self.b_SE, self.c_SE, self.beta_SE],
                 'Lower CI': [self.a_lower, self.b_lower, self.c_lower, self.beta_lower],
                 'Upper CI': [self.a_upper, self.b_upper, self.c_upper, self.beta_upper]}
-        df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
-        self.results = df.set_index('Parameter')
+        self.results = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
 
         if use_level_stress is not None:
-            use_life = self.c * np.exp(self.a / use_level_stress[0] + self.b / use_level_stress[1])
-            self.mean_life = Weibull_Distribution(alpha=use_life, beta=self.beta).mean
+            self.alpha_at_use_stress = self.c * np.exp(self.a / use_level_stress[0] + self.b / use_level_stress[1])
+            self.mean_life = Weibull_Distribution(alpha=self.alpha_at_use_stress, beta=self.beta).mean
 
         if print_results is True:
-            pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
-            pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
-            print(str('Results from Fit_Weibull_Dual_Exponential (' + str(int(CI * 100)) + '% CI):'))
-            print(self.results)
+            CI_rounded = CI * 100
+            if CI_rounded % 1 == 0:
+                CI_rounded = int(CI * 100)
+            colorprint(str('Results from Fit_Weibull_Dual_Exponential (' + str(CI_rounded) + '% CI):'), bold=True, underline=True)
+            print(self.results.to_string(index=False), '\n')
             if use_level_stress is not None:
                 print('At the use level stresses of', use_level_stress[0], 'and', use_level_stress[1], ', the mean life is', round(self.mean_life, 5))
 
@@ -1010,13 +1013,15 @@ class Fit_Weibull_Dual_Exponential:
                 Weibull_probability_plot(failures=FAILURES, right_censored=RIGHT_CENSORED, __fitted_dist_params=fitted_dist_params, color=color_list[i], linestyle='--', label='')
             if use_level_stress is not None:
                 use_label_str = str(str(float(use_level_stress[0])) + ' , ' + str(float(use_level_stress[1])) + ' (use level)')
-                Weibull_Distribution(alpha=use_life, beta=self.beta).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
+                Weibull_Distribution(alpha=self.alpha_at_use_stress, beta=self.beta).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
+                x_array = np.hstack([Weibull_Distribution(alpha=self.alpha_at_use_stress, beta=self.beta).quantile(max(ALT_fit_1.y_array)), ALT_fit_1.x_array])
+            else:
+                x_array = ALT_fit_1.x_array
             plt.xlim(10 ** xmin, 10 ** xmax)
             leg = plt.legend(title='     Stress 1 , Stress 2')
             leg._legend_box.align = 'left'
             plt.title('Weibull-Dual-Exponential Model')
             probability_plot_xyticks()
-            x_array = np.hstack([Weibull_Distribution(alpha=use_life, beta=self.beta).quantile(max(ALT_fit_1.y_array)), ALT_fit_1.x_array])
             probability_plot_xylims(x=x_array, y=ALT_fit_1.y_array, dist='weibull', spacing=0.1)
             plt.tight_layout()
 
@@ -1083,6 +1088,7 @@ class Fit_Weibull_Power_Exponential:
     beta_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     mean_life - the mean life at the use_level_stress. Only calculated if use_level_stress is specified
+    alpha_at_use_stress - the equivalent Weibull alpha parameter at the use level stress (only provided if use_level_stress is provided).
     '''
 
     def __init__(self, failures=None, failure_stress_thermal=None, failure_stress_nonthermal=None, right_censored=None, right_censored_stress_thermal=None, right_censored_stress_nonthermal=None, use_level_stress=None, show_plot=True, print_results=True, CI=0.95, initial_guess=None):
@@ -1135,12 +1141,10 @@ class Fit_Weibull_Power_Exponential:
             return c * S ** n * np.exp(a / T)
 
         xdata = np.array(list(zip(failure_stress_thermal, failure_stress_nonthermal))).T
-        [a, c, n], _ = curve_fit(__power_expon, xdata, failures)
         if initial_guess is None:
-            initial_guess = [a, c, n]
+            initial_guess, _ = curve_fit(__power_expon, xdata, failures)
         if len(initial_guess) != 3:
-            error_str = str('initial_guess must have 3 elements: [a, c, n]. Default is: ' + str([a, c, n]))
-            raise ValueError(error_str)
+            raise ValueError('initial_guess must have 3 elements: [a, c, n].')
 
         # this gets the common beta for the initial guess using the functions already built into ALT_probability_plot_Weibull
         ALT_fit_1 = ALT_probability_plot_Weibull(failures=failures, right_censored=right_censored, failure_stress=failure_stress_thermal, right_censored_stress=right_censored_stress_thermal, print_results=False, show_plot=False, common_shape_method='average')
@@ -1217,18 +1221,18 @@ class Fit_Weibull_Power_Exponential:
                 'Standard Error': [self.a_SE, self.c_SE, self.n_SE, self.beta_SE],
                 'Lower CI': [self.a_lower, self.c_lower, self.n_lower, self.beta_lower],
                 'Upper CI': [self.a_upper, self.c_upper, self.n_upper, self.beta_upper]}
-        df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
-        self.results = df.set_index('Parameter')
+        self.results = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
 
         if use_level_stress is not None:
-            use_life = self.c * (use_level_stress[1]) ** self.n * np.exp(self.a / use_level_stress[0])
-            self.mean_life = Weibull_Distribution(alpha=use_life, beta=self.beta).mean
+            self.alpha_at_use_stress = self.c * (use_level_stress[1]) ** self.n * np.exp(self.a / use_level_stress[0])
+            self.mean_life = Weibull_Distribution(alpha=self.alpha_at_use_stress, beta=self.beta).mean
 
         if print_results is True:
-            pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
-            pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
-            print(str('Results from Fit_Weibull_Power_Exponential (' + str(int(CI * 100)) + '% CI):'))
-            print(self.results)
+            CI_rounded = CI * 100
+            if CI_rounded % 1 == 0:
+                CI_rounded = int(CI * 100)
+            colorprint(str('Results from Fit_Weibull_Power_Exponential (' + str(CI_rounded) + '% CI):'), bold=True, underline=True)
+            print(self.results.to_string(index=False), '\n')
             if use_level_stress is not None:
                 print('At the use level stresses of', use_level_stress[0], 'and', use_level_stress[1], ', the mean life is', round(self.mean_life, 5))
 
@@ -1285,13 +1289,15 @@ class Fit_Weibull_Power_Exponential:
                 Weibull_probability_plot(failures=FAILURES, right_censored=RIGHT_CENSORED, __fitted_dist_params=fitted_dist_params, color=color_list[i], linestyle='--', label='')
             if use_level_stress is not None:
                 use_label_str = str(str(float(use_level_stress[0])) + ' , ' + str(float(use_level_stress[1])) + ' (use level)')
-                Weibull_Distribution(alpha=use_life, beta=self.beta).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
+                Weibull_Distribution(alpha=self.alpha_at_use_stress, beta=self.beta).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
+                x_array = np.hstack([Weibull_Distribution(alpha=self.alpha_at_use_stress, beta=self.beta).quantile(max(ALT_fit_1.y_array)), ALT_fit_1.x_array])
+            else:
+                x_array = ALT_fit_1.x_array
             plt.xlim(10 ** xmin, 10 ** xmax)
             leg = plt.legend(title='Thermal stress , Non-thermal stress')
             leg._legend_box.align = 'left'
             plt.title('Weibull-Power-Exponential Model')
             probability_plot_xyticks()
-            x_array = np.hstack([Weibull_Distribution(alpha=use_life, beta=self.beta).quantile(max(ALT_fit_1.y_array)), ALT_fit_1.x_array])
             probability_plot_xylims(x=x_array, y=ALT_fit_1.y_array, dist='weibull', spacing=0.1)
             plt.tight_layout()
 
@@ -1352,7 +1358,7 @@ class Fit_Lognormal_Exponential:
     sigma_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     mean_life - the mean life at the use_level_stress. Only calculated if use_level_stress is specified
-
+    mu_at_use_stress - the equivalent Lognormal mu parameter at the use level stress (only provided if use_level_stress is provided).
     '''
 
     def __init__(self, failures=None, failure_stress=None, right_censored=None, right_censored_stress=None, use_level_stress=None, show_plot=True, print_results=True, CI=0.95, initial_guess=None):
@@ -1387,12 +1393,10 @@ class Fit_Lognormal_Exponential:
         def __expon(stress, a, b):
             return b * np.exp(a / stress)
 
-        [a, b], _ = curve_fit(__expon, failure_stress, failures)
         if initial_guess is None:
-            initial_guess = [a, b]
+            initial_guess, _ = curve_fit(__expon, failure_stress, failures)
         if len(initial_guess) != 2:
-            error_str = str('initial_guess must have 2 elements: [a, b]. Default is: ' + str([a, b]))
-            raise ValueError(error_str)
+            raise ValueError('initial_guess must have 2 elements: [a, b].')
 
         # this gets the common shape for the initial guess using the functions already built into ALT_probability_plot_Lognormal
         ALT_fit = ALT_probability_plot_Lognormal(failures=failures, right_censored=right_censored, failure_stress=failure_stress, right_censored_stress=right_censored_stress, print_results=False, show_plot=False, common_shape_method='average')
@@ -1461,18 +1465,19 @@ class Fit_Lognormal_Exponential:
                 'Standard Error': [self.a_SE, self.b_SE, self.sigma_SE],
                 'Lower CI': [self.a_lower, self.b_lower, self.sigma_lower],
                 'Upper CI': [self.a_upper, self.b_upper, self.sigma_upper]}
-        df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
-        self.results = df.set_index('Parameter')
+        self.results = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
 
         if use_level_stress is not None:
             use_life = self.b * np.exp(self.a / use_level_stress)
-            self.mean_life = Lognormal_Distribution(mu=np.log(use_life), sigma=self.sigma).mean
+            self.mu_at_use_stress = np.log(use_life)
+            self.mean_life = Lognormal_Distribution(mu=self.mu_at_use_stress, sigma=self.sigma).mean
 
         if print_results is True:
-            pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
-            pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
-            print(str('Results from Fit_Lognormal_Exponential (' + str(int(CI * 100)) + '% CI):'))
-            print(self.results)
+            CI_rounded = CI * 100
+            if CI_rounded % 1 == 0:
+                CI_rounded = int(CI * 100)
+            colorprint(str('Results from Fit_Lognormal_Exponential (' + str(CI_rounded) + '% CI):'), bold=True, underline=True)
+            print(self.results.to_string(index=False), '\n')
             print('If this model is being used for the Arrhenius Model, a = Ea/K_B ==> Ea =', round(self.a * 8.617333262145 * 10 ** -5, 5), 'eV')
             if use_level_stress is not None:
                 print('At the use level stress of', use_level_stress, ', the mean life is', round(self.mean_life, 5))
@@ -1522,12 +1527,14 @@ class Fit_Lognormal_Exponential:
                 Lognormal_probability_plot(failures=FAILURES, right_censored=RIGHT_CENSORED, __fitted_dist_params=fitted_dist_params, color=color_list[i], linestyle='--', label='')
             if use_level_stress is not None:
                 use_label_str = str(str(use_level_stress) + ' (use level)')
-                Lognormal_Distribution(mu=np.log(use_life), sigma=self.sigma).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
+                Lognormal_Distribution(mu=self.mu_at_use_stress, sigma=self.sigma).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
+                x_array = np.hstack([Lognormal_Distribution(mu=self.mu_at_use_stress, sigma=self.sigma).quantile(max(ALT_fit.y_array)), ALT_fit.x_array])
+            else:
+                x_array = ALT_fit.x_array
             plt.xlim(10 ** xmin, 10 ** xmax)
             plt.legend(title='Stress')
             plt.title('Lognormal-Exponential Model')
             probability_plot_xyticks()
-            x_array = np.hstack([Lognormal_Distribution(mu=np.log(use_life), sigma=self.sigma).quantile(max(ALT_fit.y_array)), ALT_fit.x_array])
             probability_plot_xylims(x=x_array, y=ALT_fit.y_array, dist='lognormal', spacing=0.1)
             plt.tight_layout()
 
@@ -1587,7 +1594,7 @@ class Fit_Lognormal_Eyring:
     sigma_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     mean_life - the mean life at the use_level_stress. Only calculated if use_level_stress is specified
-
+    mu_at_use_stress - the equivalent Lognormal mu parameter at the use level stress (only provided if use_level_stress is provided).
     '''
 
     def __init__(self, failures=None, failure_stress=None, right_censored=None, right_censored_stress=None, use_level_stress=None, show_plot=True, print_results=True, CI=0.95, initial_guess=None):
@@ -1622,12 +1629,10 @@ class Fit_Lognormal_Eyring:
         def __eyring(stress, a, c):
             return 1 / stress * np.exp(-(c - a / stress))
 
-        [a, c], _ = curve_fit(__eyring, failure_stress, failures)
         if initial_guess is None:
-            initial_guess = [a, c]
+            initial_guess, _ = curve_fit(__eyring, failure_stress, failures)
         if len(initial_guess) != 2:
-            error_str = str('initial_guess must have 2 elements: [a, c]. Default is: ' + str([a, c]))
-            raise ValueError(error_str)
+            raise ValueError('initial_guess must have 2 elements: [a, c].')
 
         # this gets the common sigma for the initial guess using the functions already built into ALT_probability_plot_Lognormal
         ALT_fit = ALT_probability_plot_Lognormal(failures=failures, right_censored=right_censored, failure_stress=failure_stress, right_censored_stress=right_censored_stress, print_results=False, show_plot=False, common_shape_method='average')
@@ -1696,18 +1701,19 @@ class Fit_Lognormal_Eyring:
                 'Standard Error': [self.a_SE, self.c_SE, self.sigma_SE],
                 'Lower CI': [self.a_lower, self.c_lower, self.sigma_lower],
                 'Upper CI': [self.a_upper, self.c_upper, self.sigma_upper]}
-        df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
-        self.results = df.set_index('Parameter')
+        self.results = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
 
         if use_level_stress is not None:
             use_life = 1 / use_level_stress * np.exp(-(self.c - self.a / use_level_stress))
-            self.mean_life = Lognormal_Distribution(mu=np.log(use_life), sigma=self.sigma).mean
+            self.mu_at_use_stress = np.log(use_life)
+            self.mean_life = Lognormal_Distribution(mu=self.mu_at_use_stress, sigma=self.sigma).mean
 
         if print_results is True:
-            pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
-            pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
-            print(str('Results from Fit_Lognormal_Eyring (' + str(int(CI * 100)) + '% CI):'))
-            print(self.results)
+            CI_rounded = CI * 100
+            if CI_rounded % 1 == 0:
+                CI_rounded = int(CI * 100)
+            colorprint(str('Results from Fit_Lognormal_Eyring (' + str(CI_rounded) + '% CI):'), bold=True, underline=True)
+            print(self.results.to_string(index=False), '\n')
             if use_level_stress is not None:
                 print('At the use level stress of', use_level_stress, ', the mean life is', round(self.mean_life, 5))
 
@@ -1756,12 +1762,14 @@ class Fit_Lognormal_Eyring:
                 Lognormal_probability_plot(failures=FAILURES, right_censored=RIGHT_CENSORED, __fitted_dist_params=fitted_dist_params, color=color_list[i], linestyle='--', label='')
             if use_level_stress is not None:
                 use_label_str = str(str(use_level_stress) + ' (use level)')
-                Lognormal_Distribution(mu=np.log(use_life), sigma=self.sigma).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
+                Lognormal_Distribution(mu=self.mu_at_use_stress, sigma=self.sigma).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
+                x_array = np.hstack([Lognormal_Distribution(mu=self.mu_at_use_stress, sigma=self.sigma).quantile(max(ALT_fit.y_array)), ALT_fit.x_array])
+            else:
+                x_array = ALT_fit.x_array
             plt.xlim(10 ** xmin, 10 ** xmax)
             plt.legend(title='Stress')
             plt.title('Lognormal-Eyring Model')
             probability_plot_xyticks()
-            x_array = np.hstack([Lognormal_Distribution(mu=np.log(use_life), sigma=self.sigma).quantile(max(ALT_fit.y_array)), ALT_fit.x_array])
             probability_plot_xylims(x=x_array, y=ALT_fit.y_array, dist='lognormal', spacing=0.1)
             plt.tight_layout()
 
@@ -1821,7 +1829,7 @@ class Fit_Lognormal_Power:
     sigma_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     mean_life - the mean life at the use_level_stress. Only calculated if use_level_stress is specified
-
+    mu_at_use_stress - the equivalent Lognormal mu parameter at the use level stress (only provided if use_level_stress is provided).
     '''
 
     def __init__(self, failures=None, failure_stress=None, right_censored=None, right_censored_stress=None, use_level_stress=None, show_plot=True, print_results=True, CI=0.95, initial_guess=None):
@@ -1856,12 +1864,10 @@ class Fit_Lognormal_Power:
         def __power(stress, a, n):
             return a * stress ** n
 
-        [a, n], _ = curve_fit(__power, failure_stress, failures)
         if initial_guess is None:
-            initial_guess = [a, n]
+            initial_guess, _ = curve_fit(__power, failure_stress, failures)
         if len(initial_guess) != 2:
-            error_str = str('initial_guess must have 2 elements: [a, n]. Default is: ' + str([a, n]))
-            raise ValueError(error_str)
+            raise ValueError('initial_guess must have 2 elements: [a, n]')
 
         # this gets the common sigma for the initial guess using the functions already built into ALT_probability_plot_Lognormal
         ALT_fit = ALT_probability_plot_Lognormal(failures=failures, right_censored=right_censored, failure_stress=failure_stress, right_censored_stress=right_censored_stress, print_results=False, show_plot=False, common_shape_method='average')
@@ -1930,18 +1936,19 @@ class Fit_Lognormal_Power:
                 'Standard Error': [self.a_SE, self.n_SE, self.sigma_SE],
                 'Lower CI': [self.a_lower, self.n_lower, self.sigma_lower],
                 'Upper CI': [self.a_upper, self.n_upper, self.sigma_upper]}
-        df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
-        self.results = df.set_index('Parameter')
+        self.results = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
 
         if use_level_stress is not None:
             use_life = self.a * use_level_stress ** self.n
-            self.mean_life = Lognormal_Distribution(mu=np.log(use_life), sigma=self.sigma).mean
+            self.mu_at_use_stress = np.log(use_life)
+            self.mean_life = Lognormal_Distribution(mu=self.mu_at_use_stress, sigma=self.sigma).mean
 
         if print_results is True:
-            pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
-            pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
-            print(str('Results from Fit_Lognormal_Power (' + str(int(CI * 100)) + '% CI):'))
-            print(self.results)
+            CI_rounded = CI * 100
+            if CI_rounded % 1 == 0:
+                CI_rounded = int(CI * 100)
+            colorprint(str('Results from Fit_Lognormal_Power (' + str(CI_rounded) + '% CI):'), bold=True, underline=True)
+            print(self.results.to_string(index=False), '\n')
             if use_level_stress is not None:
                 print('At the use level stress of', use_level_stress, ', the mean life is', round(self.mean_life, 5))
 
@@ -1990,12 +1997,14 @@ class Fit_Lognormal_Power:
                 Lognormal_probability_plot(failures=FAILURES, right_censored=RIGHT_CENSORED, __fitted_dist_params=fitted_dist_params, color=color_list[i], linestyle='--', label='')
             if use_level_stress is not None:
                 use_label_str = str(str(use_level_stress) + ' (use level)')
-                Lognormal_Distribution(mu=np.log(use_life), sigma=self.sigma).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
+                Lognormal_Distribution(mu=self.mu_at_use_stress, sigma=self.sigma).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
+                x_array = np.hstack([Lognormal_Distribution(mu=self.mu_at_use_stress, sigma=self.sigma).quantile(max(ALT_fit.y_array)), ALT_fit.x_array])
+            else:
+                x_array = ALT_fit.x_array
             plt.xlim(10 ** xmin, 10 ** xmax)
             plt.legend(title='Stress')
             plt.title('Lognormal-Power Model')
             probability_plot_xyticks()
-            x_array = np.hstack([Lognormal_Distribution(mu=np.log(use_life), sigma=self.sigma).quantile(max(ALT_fit.y_array)), ALT_fit.x_array])
             probability_plot_xylims(x=x_array, y=ALT_fit.y_array, dist='lognormal', spacing=0.1)
             plt.tight_layout()
 
@@ -2061,6 +2070,7 @@ class Fit_Lognormal_Dual_Exponential:
     sigma_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     mean_life - the mean life at the use_level_stress. Only calculated if use_level_stress is specified
+    mu_at_use_stress - the equivalent Lognormal mu parameter at the use level stress (only provided if use_level_stress is provided).
     '''
 
     def __init__(self, failures=None, failure_stress_1=None, failure_stress_2=None, right_censored=None, right_censored_stress_1=None, right_censored_stress_2=None, use_level_stress=None, show_plot=True, print_results=True, CI=0.95, initial_guess=None):
@@ -2113,12 +2123,10 @@ class Fit_Lognormal_Dual_Exponential:
             return c * np.exp(a / T + b / H)
 
         xdata = np.array(list(zip(failure_stress_1, failure_stress_2))).T
-        [a, b, c], _ = curve_fit(__dual_expon, xdata, failures)
         if initial_guess is None:
-            initial_guess = [a, b, c]
+            initial_guess, _ = curve_fit(__dual_expon, xdata, failures)
         if len(initial_guess) != 3:
-            error_str = str('initial_guess must have 3 elements: [a, b, c]. Default is: ' + str([a, b, c]))
-            raise ValueError(error_str)
+            raise ValueError('initial_guess must have 3 elements: [a, b, c]')
 
         # this gets the common sigma for the initial guess using the functions already built into ALT_probability_plot_Lognormal
         ALT_fit_1 = ALT_probability_plot_Lognormal(failures=failures, right_censored=right_censored, failure_stress=failure_stress_1, right_censored_stress=right_censored_stress_1, print_results=False, show_plot=False, common_shape_method='average')
@@ -2195,18 +2203,19 @@ class Fit_Lognormal_Dual_Exponential:
                 'Standard Error': [self.a_SE, self.b_SE, self.c_SE, self.sigma_SE],
                 'Lower CI': [self.a_lower, self.b_lower, self.c_lower, self.sigma_lower],
                 'Upper CI': [self.a_upper, self.b_upper, self.c_upper, self.sigma_upper]}
-        df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
-        self.results = df.set_index('Parameter')
+        self.results = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
 
         if use_level_stress is not None:
             use_life = self.c * np.exp(self.a / use_level_stress[0] + self.b / use_level_stress[1])
-            self.mean_life = Lognormal_Distribution(mu=np.log(use_life), sigma=self.sigma).mean
+            self.mu_at_use_stress = np.log(use_life)
+            self.mean_life = Lognormal_Distribution(mu=self.mu_at_use_stress, sigma=self.sigma).mean
 
         if print_results is True:
-            pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
-            pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
-            print(str('Results from Fit_Lognormal_Dual_Exponential (' + str(int(CI * 100)) + '% CI):'))
-            print(self.results)
+            CI_rounded = CI * 100
+            if CI_rounded % 1 == 0:
+                CI_rounded = int(CI * 100)
+            colorprint(str('Results from Fit_Lognormal_Dual_Exponential (' + str(CI_rounded) + '% CI):'), bold=True, underline=True)
+            print(self.results.to_string(index=False), '\n')
             if use_level_stress is not None:
                 print('At the use level stresses of', use_level_stress[0], 'and', use_level_stress[1], ', the mean life is', round(self.mean_life, 5))
 
@@ -2260,13 +2269,15 @@ class Fit_Lognormal_Dual_Exponential:
                 Lognormal_probability_plot(failures=FAILURES, right_censored=RIGHT_CENSORED, __fitted_dist_params=fitted_dist_params, color=color_list[i], linestyle='--', label='')
             if use_level_stress is not None:
                 use_label_str = str(str(float(use_level_stress[0])) + ' , ' + str(float(use_level_stress[1])) + ' (use level)')
-                Lognormal_Distribution(mu=np.log(use_life), sigma=self.sigma).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
+                Lognormal_Distribution(mu=self.mu_at_use_stress, sigma=self.sigma).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
+                x_array = np.hstack([Lognormal_Distribution(mu=self.mu_at_use_stress, sigma=self.sigma).quantile(max(ALT_fit_1.y_array)), ALT_fit_1.x_array])
+            else:
+                x_array = ALT_fit_1.x_array
             plt.xlim(10 ** xmin, 10 ** xmax)
             leg = plt.legend(title='     Stress 1 , Stress 2')
             leg._legend_box.align = 'left'
             plt.title('Lognormal-Dual-Exponential Model')
             probability_plot_xyticks()
-            x_array = np.hstack([Lognormal_Distribution(mu=np.log(use_life), sigma=self.sigma).quantile(max(ALT_fit_1.y_array)), ALT_fit_1.x_array])
             probability_plot_xylims(x=x_array, y=ALT_fit_1.y_array, dist='lognormal', spacing=0.1)
             plt.tight_layout()
 
@@ -2333,6 +2344,7 @@ class Fit_Lognormal_Power_Exponential:
     sigma_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     mean_life - the mean life at the use_level_stress. Only calculated if use_level_stress is specified
+    mu_at_use_stress - the equivalent Lognormal mu parameter at the use level stress (only provided if use_level_stress is provided).
     '''
 
     def __init__(self, failures=None, failure_stress_thermal=None, failure_stress_nonthermal=None, right_censored=None, right_censored_stress_thermal=None, right_censored_stress_nonthermal=None, use_level_stress=None, show_plot=True, print_results=True, CI=0.95, initial_guess=None):
@@ -2385,12 +2397,10 @@ class Fit_Lognormal_Power_Exponential:
             return c * S ** n * np.exp(a / T)
 
         xdata = np.array(list(zip(failure_stress_thermal, failure_stress_nonthermal))).T
-        [a, c, n], _ = curve_fit(__power_expon, xdata, failures)
         if initial_guess is None:
-            initial_guess = [a, c, n]
+            initial_guess, _ = curve_fit(__power_expon, xdata, failures)
         if len(initial_guess) != 3:
-            error_str = str('initial_guess must have 3 elements: [a, c, n]. Default is: ' + str([a, c, n]))
-            raise ValueError(error_str)
+            raise ValueError('initial_guess must have 3 elements: [a, c, n]')
 
         # this gets the common sigma for the initial guess using the functions already built into ALT_probability_plot_Lognormal
         ALT_fit_1 = ALT_probability_plot_Lognormal(failures=failures, right_censored=right_censored, failure_stress=failure_stress_thermal, right_censored_stress=right_censored_stress_thermal, print_results=False, show_plot=False, common_shape_method='average')
@@ -2467,18 +2477,19 @@ class Fit_Lognormal_Power_Exponential:
                 'Standard Error': [self.a_SE, self.c_SE, self.n_SE, self.sigma_SE],
                 'Lower CI': [self.a_lower, self.c_lower, self.n_lower, self.sigma_lower],
                 'Upper CI': [self.a_upper, self.c_upper, self.n_upper, self.sigma_upper]}
-        df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
-        self.results = df.set_index('Parameter')
+        self.results = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
 
         if use_level_stress is not None:
             use_life = self.c * (use_level_stress[1]) ** self.n * np.exp(self.a / use_level_stress[0])
-            self.mean_life = Lognormal_Distribution(mu=np.log(use_life), sigma=self.sigma).mean
+            self.mu_at_use_stress = np.log(use_life)
+            self.mean_life = Lognormal_Distribution(mu=self.mu_at_use_stress, sigma=self.sigma).mean
 
         if print_results is True:
-            pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
-            pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
-            print(str('Results from Fit_Lognormal_Power_Exponential (' + str(int(CI * 100)) + '% CI):'))
-            print(self.results)
+            CI_rounded = CI * 100
+            if CI_rounded % 1 == 0:
+                CI_rounded = int(CI * 100)
+            colorprint(str('Results from Fit_Lognormal_Power_Exponential (' + str(CI_rounded) + '% CI):'), bold=True, underline=True)
+            print(self.results.to_string(index=False), '\n')
             if use_level_stress is not None:
                 print('At the use level stresses of', use_level_stress[0], 'and', use_level_stress[1], ', the mean life is', round(self.mean_life, 5))
 
@@ -2532,13 +2543,15 @@ class Fit_Lognormal_Power_Exponential:
                 Lognormal_probability_plot(failures=FAILURES, right_censored=RIGHT_CENSORED, __fitted_dist_params=fitted_dist_params, color=color_list[i], linestyle='--', label='')
             if use_level_stress is not None:
                 use_label_str = str(str(float(use_level_stress[0])) + ' , ' + str(float(use_level_stress[1])) + ' (use level)')
-                Lognormal_Distribution(mu=np.log(use_life), sigma=self.sigma).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
+                Lognormal_Distribution(mu=self.mu_at_use_stress, sigma=self.sigma).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
+                x_array = np.hstack([Lognormal_Distribution(mu=self.mu_at_use_stress, sigma=self.sigma).quantile(max(ALT_fit_1.y_array)), ALT_fit_1.x_array])
+            else:
+                x_array = ALT_fit_1.x_array
             plt.xlim(10 ** xmin, 10 ** xmax)
             leg = plt.legend(title='Thermal stress , Non-thermal stress')
             leg._legend_box.align = 'left'
             plt.title('Lognormal-Power-Exponential Model')
             probability_plot_xyticks()
-            x_array = np.hstack([Lognormal_Distribution(mu=np.log(use_life), sigma=self.sigma).quantile(max(ALT_fit_1.y_array)), ALT_fit_1.x_array])
             probability_plot_xylims(x=x_array, y=ALT_fit_1.y_array, dist='lognormal', spacing=0.1)
             plt.tight_layout()
 
@@ -2599,7 +2612,7 @@ class Fit_Normal_Exponential:
     sigma_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     mean_life - the mean life at the use_level_stress. Only calculated if use_level_stress is specified
-
+    mu_at_use_stress - the equivalent Normal mu parameter at the use level stress (only provided if use_level_stress is provided).
     '''
 
     def __init__(self, failures=None, failure_stress=None, right_censored=None, right_censored_stress=None, use_level_stress=None, show_plot=True, print_results=True, CI=0.95, initial_guess=None):
@@ -2634,12 +2647,10 @@ class Fit_Normal_Exponential:
         def __expon(stress, a, b):
             return b * np.exp(a / stress)
 
-        [a, b], _ = curve_fit(__expon, failure_stress, failures)
         if initial_guess is None:
-            initial_guess = [a, b]
+            initial_guess, _ = curve_fit(__expon, failure_stress, failures)
         if len(initial_guess) != 2:
-            error_str = str('initial_guess must have 2 elements: [a, b]. Default is: ' + str([a, b]))
-            raise ValueError(error_str)
+            raise ValueError('initial_guess must have 2 elements: [a, b]')
 
         # this gets the common shape for the initial guess using the functions already built into ALT_probability_plot_Normal
         ALT_fit = ALT_probability_plot_Normal(failures=failures, right_censored=right_censored, failure_stress=failure_stress, right_censored_stress=right_censored_stress, print_results=False, show_plot=False, common_shape_method='average')
@@ -2709,18 +2720,18 @@ class Fit_Normal_Exponential:
                 'Standard Error': [self.a_SE, self.b_SE, self.sigma_SE],
                 'Lower CI': [self.a_lower, self.b_lower, self.sigma_lower],
                 'Upper CI': [self.a_upper, self.b_upper, self.sigma_upper]}
-        df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
-        self.results = df.set_index('Parameter')
+        self.results = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
 
         if use_level_stress is not None:
-            use_life = self.b * np.exp(self.a / use_level_stress)
-            self.mean_life = Normal_Distribution(mu=use_life, sigma=self.sigma).mean
+            self.mu_at_use_stress = self.b * np.exp(self.a / use_level_stress)
+            self.mean_life = Normal_Distribution(mu=self.mu_at_use_stress, sigma=self.sigma).mean
 
         if print_results is True:
-            pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
-            pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
-            print(str('Results from Fit_Normal_Exponential (' + str(int(CI * 100)) + '% CI):'))
-            print(self.results)
+            CI_rounded = CI * 100
+            if CI_rounded % 1 == 0:
+                CI_rounded = int(CI * 100)
+            colorprint(str('Results from Fit_Normal_Exponential (' + str(CI_rounded) + '% CI):'), bold=True, underline=True)
+            print(self.results.to_string(index=False), '\n')
             print('If this model is being used for the Arrhenius Model, a = Ea/K_B ==> Ea =', round(self.a * 8.617333262145 * 10 ** -5, 5), 'eV')
             if use_level_stress is not None:
                 print('At the use level stress of', use_level_stress, ', the mean life is', round(self.mean_life, 5))
@@ -2769,12 +2780,14 @@ class Fit_Normal_Exponential:
                 Normal_probability_plot(failures=FAILURES, right_censored=RIGHT_CENSORED, __fitted_dist_params=fitted_dist_params, color=color_list[i], linestyle='--', label='')
             if use_level_stress is not None:
                 use_label_str = str(str(use_level_stress) + ' (use level)')
-                Normal_Distribution(mu=use_life, sigma=self.sigma).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
+                Normal_Distribution(mu=self.mu_at_use_stress, sigma=self.sigma).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
+                x_array = np.hstack([Normal_Distribution(mu=self.mu_at_use_stress, sigma=self.sigma).quantile(max(ALT_fit.y_array)), ALT_fit.x_array])
+            else:
+                x_array = ALT_fit.x_array
             plt.xlim(xmin, xmax)
             plt.legend(title='Stress')
             plt.title('Normal-Exponential Model')
             probability_plot_xyticks()
-            x_array = np.hstack([Normal_Distribution(mu=use_life, sigma=self.sigma).quantile(max(ALT_fit.y_array)), ALT_fit.x_array])
             probability_plot_xylims(x=x_array, y=ALT_fit.y_array, dist='normal', spacing=0.1)
             plt.tight_layout()
 
@@ -2834,7 +2847,7 @@ class Fit_Normal_Eyring:
     sigma_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     mean_life - the mean life at the use_level_stress. Only calculated if use_level_stress is specified
-
+    mu_at_use_stress - the equivalent Normal mu parameter at the use level stress (only provided if use_level_stress is provided).
     '''
 
     def __init__(self, failures=None, failure_stress=None, right_censored=None, right_censored_stress=None, use_level_stress=None, show_plot=True, print_results=True, CI=0.95, initial_guess=None):
@@ -2869,12 +2882,10 @@ class Fit_Normal_Eyring:
         def __eyring(stress, a, c):
             return 1 / stress * np.exp(-(c - a / stress))
 
-        [a, c], _ = curve_fit(__eyring, failure_stress, failures)
         if initial_guess is None:
-            initial_guess = [a, c]
+            initial_guess, _ = curve_fit(__eyring, failure_stress, failures)
         if len(initial_guess) != 2:
-            error_str = str('initial_guess must have 2 elements: [a, c]. Default is: ' + str([a, c]))
-            raise ValueError(error_str)
+            raise ValueError('initial_guess must have 2 elements: [a, c]')
 
         # this gets the common sigma for the initial guess using the functions already built into ALT_probability_plot_Normal
         ALT_fit = ALT_probability_plot_Normal(failures=failures, right_censored=right_censored, failure_stress=failure_stress, right_censored_stress=right_censored_stress, print_results=False, show_plot=False, common_shape_method='average')
@@ -2944,18 +2955,18 @@ class Fit_Normal_Eyring:
                 'Standard Error': [self.a_SE, self.c_SE, self.sigma_SE],
                 'Lower CI': [self.a_lower, self.c_lower, self.sigma_lower],
                 'Upper CI': [self.a_upper, self.c_upper, self.sigma_upper]}
-        df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
-        self.results = df.set_index('Parameter')
+        self.results = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
 
         if use_level_stress is not None:
-            use_life = 1 / use_level_stress * np.exp(-(self.c - self.a / use_level_stress))
-            self.mean_life = Normal_Distribution(mu=use_life, sigma=self.sigma).mean
+            self.mu_at_use_stress = 1 / use_level_stress * np.exp(-(self.c - self.a / use_level_stress))
+            self.mean_life = Normal_Distribution(mu=self.mu_at_use_stress, sigma=self.sigma).mean
 
         if print_results is True:
-            pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
-            pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
-            print(str('Results from Fit_Normal_Eyring (' + str(int(CI * 100)) + '% CI):'))
-            print(self.results)
+            CI_rounded = CI * 100
+            if CI_rounded % 1 == 0:
+                CI_rounded = int(CI * 100)
+            colorprint(str('Results from Fit_Normal_Eyring (' + str(CI_rounded) + '% CI):'), bold=True, underline=True)
+            print(self.results.to_string(index=False), '\n')
             if use_level_stress is not None:
                 print('At the use level stress of', use_level_stress, ', the mean life is', round(self.mean_life, 5))
 
@@ -3003,12 +3014,14 @@ class Fit_Normal_Eyring:
                 Normal_probability_plot(failures=FAILURES, right_censored=RIGHT_CENSORED, __fitted_dist_params=fitted_dist_params, color=color_list[i], linestyle='--', label='')
             if use_level_stress is not None:
                 use_label_str = str(str(use_level_stress) + ' (use level)')
-                Normal_Distribution(mu=use_life, sigma=self.sigma).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
+                Normal_Distribution(mu=self.mu_at_use_stress, sigma=self.sigma).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
+                x_array = np.hstack([Normal_Distribution(mu=self.mu_at_use_stress, sigma=self.sigma).quantile(max(ALT_fit.y_array)), ALT_fit.x_array])
+            else:
+                x_array = ALT_fit.x_array
             plt.xlim(xmin, xmax)
             plt.legend(title='Stress')
             plt.title('Normal-Eyring Model')
             probability_plot_xyticks()
-            x_array = np.hstack([Normal_Distribution(mu=use_life, sigma=self.sigma).quantile(max(ALT_fit.y_array)), ALT_fit.x_array])
             probability_plot_xylims(x=x_array, y=ALT_fit.y_array, dist='normal', spacing=0.1)
             plt.tight_layout()
 
@@ -3068,7 +3081,7 @@ class Fit_Normal_Power:
     sigma_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     mean_life - the mean life at the use_level_stress. Only calculated if use_level_stress is specified
-
+    mu_at_use_stress - the equivalent Normal mu parameter at the use level stress (only provided if use_level_stress is provided).
     '''
 
     def __init__(self, failures=None, failure_stress=None, right_censored=None, right_censored_stress=None, use_level_stress=None, show_plot=True, print_results=True, CI=0.95, initial_guess=None):
@@ -3103,12 +3116,10 @@ class Fit_Normal_Power:
         def __power(stress, a, n):
             return a * stress ** n
 
-        [a, n], _ = curve_fit(__power, failure_stress, failures)
         if initial_guess is None:
-            initial_guess = [a, n]
+            initial_guess, _ = curve_fit(__power, failure_stress, failures)
         if len(initial_guess) != 2:
-            error_str = str('initial_guess must have 2 elements: [a, n]. Default is: ' + str([a, n]))
-            raise ValueError(error_str)
+            raise ValueError('initial_guess must have 2 elements: [a, n].')
 
         # this gets the common sigma for the initial guess using the functions already built into ALT_probability_plot_Normal
         ALT_fit = ALT_probability_plot_Normal(failures=failures, right_censored=right_censored, failure_stress=failure_stress, right_censored_stress=right_censored_stress, print_results=False, show_plot=False, common_shape_method='average')
@@ -3178,18 +3189,18 @@ class Fit_Normal_Power:
                 'Standard Error': [self.a_SE, self.n_SE, self.sigma_SE],
                 'Lower CI': [self.a_lower, self.n_lower, self.sigma_lower],
                 'Upper CI': [self.a_upper, self.n_upper, self.sigma_upper]}
-        df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
-        self.results = df.set_index('Parameter')
+        self.results = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
 
         if use_level_stress is not None:
-            use_life = self.a * use_level_stress ** self.n
-            self.mean_life = Normal_Distribution(mu=use_life, sigma=self.sigma).mean
+            self.mu_at_use_stress = self.a * use_level_stress ** self.n
+            self.mean_life = Normal_Distribution(mu=self.mu_at_use_stress, sigma=self.sigma).mean
 
         if print_results is True:
-            pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
-            pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
-            print(str('Results from Fit_Normal_Power (' + str(int(CI * 100)) + '% CI):'))
-            print(self.results)
+            CI_rounded = CI * 100
+            if CI_rounded % 1 == 0:
+                CI_rounded = int(CI * 100)
+            colorprint(str('Results from Fit_Normal_Power (' + str(CI_rounded) + '% CI):'), bold=True, underline=True)
+            print(self.results.to_string(index=False), '\n')
             if use_level_stress is not None:
                 print('At the use level stress of', use_level_stress, ', the mean life is', round(self.mean_life, 5))
 
@@ -3237,12 +3248,14 @@ class Fit_Normal_Power:
                 Normal_probability_plot(failures=FAILURES, right_censored=RIGHT_CENSORED, __fitted_dist_params=fitted_dist_params, color=color_list[i], linestyle='--', label='')
             if use_level_stress is not None:
                 use_label_str = str(str(use_level_stress) + ' (use level)')
-                Normal_Distribution(mu=use_life, sigma=self.sigma).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
+                Normal_Distribution(mu=self.mu_at_use_stress, sigma=self.sigma).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
+                x_array = np.hstack([Normal_Distribution(mu=self.mu_at_use_stress, sigma=self.sigma).quantile(max(ALT_fit.y_array)), ALT_fit.x_array])
+            else:
+                x_array = ALT_fit.x_array
             plt.xlim(xmin, xmax)
             plt.legend(title='Stress')
             plt.title('Normal-Power Model')
             probability_plot_xyticks()
-            x_array = np.hstack([Normal_Distribution(mu=use_life, sigma=self.sigma).quantile(max(ALT_fit.y_array)), ALT_fit.x_array])
             probability_plot_xylims(x=x_array, y=ALT_fit.y_array, dist='normal', spacing=0.1)
             plt.tight_layout()
 
@@ -3308,6 +3321,7 @@ class Fit_Normal_Dual_Exponential:
     sigma_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     mean_life - the mean life at the use_level_stress. Only calculated if use_level_stress is specified
+    mu_at_use_stress - the equivalent Normal mu parameter at the use level stress (only provided if use_level_stress is provided).
     '''
 
     def __init__(self, failures=None, failure_stress_1=None, failure_stress_2=None, right_censored=None, right_censored_stress_1=None, right_censored_stress_2=None, use_level_stress=None, show_plot=True, print_results=True, CI=0.95, initial_guess=None):
@@ -3360,12 +3374,10 @@ class Fit_Normal_Dual_Exponential:
             return c * np.exp(a / T + b / H)
 
         xdata = np.array(list(zip(failure_stress_1, failure_stress_2))).T
-        [a, b, c], _ = curve_fit(__dual_expon, xdata, failures)
         if initial_guess is None:
-            initial_guess = [a, b, c]
+            initial_guess, _ = curve_fit(__dual_expon, xdata, failures)
         if len(initial_guess) != 3:
-            error_str = str('initial_guess must have 3 elements: [a, b, c]. Default is: ' + str([a, b, c]))
-            raise ValueError(error_str)
+            raise ValueError('initial_guess must have 3 elements: [a, b, c].')
 
         # this gets the common sigma for the initial guess using the functions already built into ALT_probability_plot_Normal
         ALT_fit_1 = ALT_probability_plot_Normal(failures=failures, right_censored=right_censored, failure_stress=failure_stress_1, right_censored_stress=right_censored_stress_1, print_results=False, show_plot=False, common_shape_method='average')
@@ -3443,18 +3455,18 @@ class Fit_Normal_Dual_Exponential:
                 'Standard Error': [self.a_SE, self.b_SE, self.c_SE, self.sigma_SE],
                 'Lower CI': [self.a_lower, self.b_lower, self.c_lower, self.sigma_lower],
                 'Upper CI': [self.a_upper, self.b_upper, self.c_upper, self.sigma_upper]}
-        df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
-        self.results = df.set_index('Parameter')
+        self.results = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
 
         if use_level_stress is not None:
-            use_life = self.c * np.exp(self.a / use_level_stress[0] + self.b / use_level_stress[1])
-            self.mean_life = Normal_Distribution(mu=use_life, sigma=self.sigma).mean
+            self.mu_at_use_stress = self.c * np.exp(self.a / use_level_stress[0] + self.b / use_level_stress[1])
+            self.mean_life = Normal_Distribution(mu=self.mu_at_use_stress, sigma=self.sigma).mean
 
         if print_results is True:
-            pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
-            pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
-            print(str('Results from Fit_Normal_Dual_Exponential (' + str(int(CI * 100)) + '% CI):'))
-            print(self.results)
+            CI_rounded = CI * 100
+            if CI_rounded % 1 == 0:
+                CI_rounded = int(CI * 100)
+            colorprint(str('Results from Fit_Normal_Dual_Exponential (' + str(CI_rounded) + '% CI):'), bold=True, underline=True)
+            print(self.results.to_string(index=False), '\n')
             if use_level_stress is not None:
                 print('At the use level stresses of', use_level_stress[0], 'and', use_level_stress[1], ', the mean life is', round(self.mean_life, 5))
 
@@ -3507,13 +3519,15 @@ class Fit_Normal_Dual_Exponential:
                 Normal_probability_plot(failures=FAILURES, right_censored=RIGHT_CENSORED, __fitted_dist_params=fitted_dist_params, color=color_list[i], linestyle='--', label='')
             if use_level_stress is not None:
                 use_label_str = str(str(float(use_level_stress[0])) + ' , ' + str(float(use_level_stress[1])) + ' (use level)')
-                Normal_Distribution(mu=use_life, sigma=self.sigma).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
+                Normal_Distribution(mu=self.mu_at_use_stress, sigma=self.sigma).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
+                x_array = np.hstack([Normal_Distribution(mu=self.mu_at_use_stress, sigma=self.sigma).quantile(max(ALT_fit_1.y_array)), ALT_fit_1.x_array])
+            else:
+                x_array = ALT_fit_1.x_array
             plt.xlim(xmin, xmax)
             leg = plt.legend(title='     Stress 1 , Stress 2')
             leg._legend_box.align = 'left'
             plt.title('Normal-Dual-Exponential Model')
             probability_plot_xyticks()
-            x_array = np.hstack([Normal_Distribution(mu=use_life, sigma=self.sigma).quantile(max(ALT_fit_1.y_array)), ALT_fit_1.x_array])
             probability_plot_xylims(x=x_array, y=ALT_fit_1.y_array, dist='normal', spacing=0.1)
             plt.tight_layout()
 
@@ -3580,6 +3594,7 @@ class Fit_Normal_Power_Exponential:
     sigma_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     mean_life - the mean life at the use_level_stress. Only calculated if use_level_stress is specified
+    mu_at_use_stress - the equivalent Normal mu parameter at the use level stress (only provided if use_level_stress is provided).
     '''
 
     def __init__(self, failures=None, failure_stress_thermal=None, failure_stress_nonthermal=None, right_censored=None, right_censored_stress_thermal=None, right_censored_stress_nonthermal=None, use_level_stress=None, show_plot=True, print_results=True, CI=0.95, initial_guess=None):
@@ -3632,12 +3647,10 @@ class Fit_Normal_Power_Exponential:
             return c * S ** n * np.exp(a / T)
 
         xdata = np.array(list(zip(failure_stress_thermal, failure_stress_nonthermal))).T
-        [a, c, n], _ = curve_fit(__power_expon, xdata, failures)
         if initial_guess is None:
-            initial_guess = [a, c, n]
+            initial_guess, _ = curve_fit(__power_expon, xdata, failures)
         if len(initial_guess) != 3:
-            error_str = str('initial_guess must have 3 elements: [a, c, n]. Default is: ' + str([a, c, n]))
-            raise ValueError(error_str)
+            raise ValueError('initial_guess must have 3 elements: [a, c, n].')
 
         # this gets the common sigma for the initial guess using the functions already built into ALT_probability_plot_Normal
         ALT_fit_1 = ALT_probability_plot_Normal(failures=failures, right_censored=right_censored, failure_stress=failure_stress_thermal, right_censored_stress=right_censored_stress_thermal, print_results=False, show_plot=False, common_shape_method='average')
@@ -3715,18 +3728,18 @@ class Fit_Normal_Power_Exponential:
                 'Standard Error': [self.a_SE, self.c_SE, self.n_SE, self.sigma_SE],
                 'Lower CI': [self.a_lower, self.c_lower, self.n_lower, self.sigma_lower],
                 'Upper CI': [self.a_upper, self.c_upper, self.n_upper, self.sigma_upper]}
-        df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
-        self.results = df.set_index('Parameter')
+        self.results = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
 
         if use_level_stress is not None:
-            use_life = self.c * (use_level_stress[1]) ** self.n * np.exp(self.a / use_level_stress[0])
-            self.mean_life = Normal_Distribution(mu=use_life, sigma=self.sigma).mean
+            self.mu_at_use_stress = self.c * (use_level_stress[1]) ** self.n * np.exp(self.a / use_level_stress[0])
+            self.mean_life = Normal_Distribution(mu=self.mu_at_use_stress, sigma=self.sigma).mean
 
         if print_results is True:
-            pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
-            pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
-            print(str('Results from Fit_Normal_Power_Exponential (' + str(int(CI * 100)) + '% CI):'))
-            print(self.results)
+            CI_rounded = CI * 100
+            if CI_rounded % 1 == 0:
+                CI_rounded = int(CI * 100)
+            colorprint(str('Results from Fit_Normal_Power_Exponential (' + str(CI_rounded) + '% CI):'), bold=True, underline=True)
+            print(self.results.to_string(index=False), '\n')
             if use_level_stress is not None:
                 print('At the use level stresses of', use_level_stress[0], 'and', use_level_stress[1], ', the mean life is', round(self.mean_life, 5))
 
@@ -3779,13 +3792,15 @@ class Fit_Normal_Power_Exponential:
                 Normal_probability_plot(failures=FAILURES, right_censored=RIGHT_CENSORED, __fitted_dist_params=fitted_dist_params, color=color_list[i], linestyle='--', label='')
             if use_level_stress is not None:
                 use_label_str = str(str(float(use_level_stress[0])) + ' , ' + str(float(use_level_stress[1])) + ' (use level)')
-                Normal_Distribution(mu=use_life, sigma=self.sigma).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
+                Normal_Distribution(mu=self.mu_at_use_stress, sigma=self.sigma).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
+                x_array = np.hstack([Normal_Distribution(mu=self.mu_at_use_stress, sigma=self.sigma).quantile(max(ALT_fit_1.y_array)), ALT_fit_1.x_array])
+            else:
+                x_array = ALT_fit_1.x_array
             plt.xlim(xmin, xmax)
             leg = plt.legend(title='Thermal stress , Non-thermal stress')
             leg._legend_box.align = 'left'
             plt.title('Normal-Power-Exponential Model')
             probability_plot_xyticks()
-            x_array = np.hstack([Normal_Distribution(mu=use_life, sigma=self.sigma).quantile(max(ALT_fit_1.y_array)), ALT_fit_1.x_array])
             probability_plot_xylims(x=x_array, y=ALT_fit_1.y_array, dist='normal', spacing=0.1)
             plt.tight_layout()
 
@@ -3842,7 +3857,7 @@ class Fit_Exponential_Exponential:
     b_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     mean_life - the mean life at the use_level_stress. Only calculated if use_level_stress is specified
-
+    Lambda_at_use_stress - the equivalent Exponential Lambda parameter at the use level stress (only provided if use_level_stress is provided).
     '''
 
     def __init__(self, failures=None, failure_stress=None, right_censored=None, right_censored_stress=None, use_level_stress=None, show_plot=True, print_results=True, CI=0.95, initial_guess=None):
@@ -3877,12 +3892,10 @@ class Fit_Exponential_Exponential:
         def __expon(stress, a, b):
             return b * np.exp(a / stress)
 
-        [a, b], _ = curve_fit(__expon, failure_stress, failures)
         if initial_guess is None:
-            initial_guess = [a, b]
+            initial_guess, _ = curve_fit(__expon, failure_stress, failures)
         if len(initial_guess) != 2:
-            error_str = str('initial_guess must have 2 elements: [a, b]. Default is: ' + str([a, b]))
-            raise ValueError(error_str)
+            raise ValueError('initial_guess must have 2 elements: [a, b].')
 
         guess = [initial_guess[0], initial_guess[1]]
         all_data = np.hstack([failures, right_censored])
@@ -3943,18 +3956,19 @@ class Fit_Exponential_Exponential:
                 'Standard Error': [self.a_SE, self.b_SE],
                 'Lower CI': [self.a_lower, self.b_lower],
                 'Upper CI': [self.a_upper, self.b_upper]}
-        df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
-        self.results = df.set_index('Parameter')
+        self.results = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
 
         if use_level_stress is not None:
             use_life = self.b * np.exp(self.a / use_level_stress)
-            self.mean_life = Exponential_Distribution(Lambda=1 / use_life).mean
+            self.Lambda_at_use_stress = 1 / use_life
+            self.mean_life = Exponential_Distribution(Lambda=self.Lambda_at_use_stress).mean
 
         if print_results is True:
-            pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
-            pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
-            print(str('Results from Fit_Exponential_Exponential (' + str(int(CI * 100)) + '% CI):'))
-            print(self.results)
+            CI_rounded = CI * 100
+            if CI_rounded % 1 == 0:
+                CI_rounded = int(CI * 100)
+            colorprint(str('Results from Fit_Exponential_Exponential (' + str(CI_rounded) + '% CI):'), bold=True, underline=True)
+            print(self.results.to_string(index=False), '\n')
             print('If this model is being used for the Arrhenius Model, a = Ea/K_B ==> Ea =', round(self.a * 8.617333262145 * 10 ** -5, 5), 'eV')
             if use_level_stress is not None:
                 print('At the use level stress of', use_level_stress, ', the mean life is', round(self.mean_life, 5))
@@ -4004,12 +4018,14 @@ class Fit_Exponential_Exponential:
                 Exponential_probability_plot_Weibull_Scale(failures=FAILURES, right_censored=RIGHT_CENSORED, __fitted_dist_params=fitted_dist_params, color=color_list[i], linestyle='--', label='')
             if use_level_stress is not None:
                 use_label_str = str(str(use_level_stress) + ' (use level)')
-                Exponential_Distribution(Lambda=1 / use_life).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
+                Exponential_Distribution(Lambda=self.Lambda_at_use_stress).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
+                x_array = np.hstack([Exponential_Distribution(Lambda=self.Lambda_at_use_stress).quantile(max(ALT_fit.y_array)), ALT_fit.x_array])
+            else:
+                x_array = ALT_fit.x_array
             plt.xlim(10 ** xmin, 10 ** xmax)
             plt.legend(title='Stress')
             plt.title('Exponential-Exponential Model')
             probability_plot_xyticks()
-            x_array = np.hstack([Exponential_Distribution(Lambda=1 / use_life).quantile(max(ALT_fit.y_array)), ALT_fit.x_array])
             probability_plot_xylims(x=x_array, y=ALT_fit.y_array, dist='weibull', spacing=0.1)
             plt.tight_layout()
 
@@ -4065,7 +4081,7 @@ class Fit_Exponential_Eyring:
     c_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     mean_life - the mean life at the use_level_stress. Only calculated if use_level_stress is specified
-
+    Lambda_at_use_stress - the equivalent Exponential Lambda parameter at the use level stress (only provided if use_level_stress is provided).
     '''
 
     def __init__(self, failures=None, failure_stress=None, right_censored=None, right_censored_stress=None, use_level_stress=None, show_plot=True, print_results=True, CI=0.95, initial_guess=None):
@@ -4100,12 +4116,10 @@ class Fit_Exponential_Eyring:
         def __eyring(stress, a, c):
             return 1 / stress * np.exp(-(c - a / stress))
 
-        [a, c], _ = curve_fit(__eyring, failure_stress, failures)
         if initial_guess is None:
-            initial_guess = [a, c]
+            initial_guess, _ = curve_fit(__eyring, failure_stress, failures)
         if len(initial_guess) != 2:
-            error_str = str('initial_guess must have 2 elements: [a, c]. Default is: ' + str([a, c]))
-            raise ValueError(error_str)
+            raise ValueError('initial_guess must have 2 elements: [a, c].')
 
         guess = [initial_guess[0], initial_guess[1]]
         all_data = np.hstack([failures, right_censored])
@@ -4166,18 +4180,19 @@ class Fit_Exponential_Eyring:
                 'Standard Error': [self.a_SE, self.c_SE],
                 'Lower CI': [self.a_lower, self.c_lower],
                 'Upper CI': [self.a_upper, self.c_upper]}
-        df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
-        self.results = df.set_index('Parameter')
+        self.results = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
 
         if use_level_stress is not None:
             use_life = 1 / use_level_stress * np.exp(-(self.c - self.a / use_level_stress))
-            self.mean_life = Exponential_Distribution(Lambda=1 / use_life).mean
+            self.Lambda_at_use_stress = 1 / use_life
+            self.mean_life = Exponential_Distribution(Lambda=self.Lambda_at_use_stress).mean
 
         if print_results is True:
-            pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
-            pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
-            print(str('Results from Fit_Exponential_Eyring (' + str(int(CI * 100)) + '% CI):'))
-            print(self.results)
+            CI_rounded = CI * 100
+            if CI_rounded % 1 == 0:
+                CI_rounded = int(CI * 100)
+            colorprint(str('Results from Fit_Exponential_Eyring (' + str(CI_rounded) + '% CI):'), bold=True, underline=True)
+            print(self.results.to_string(index=False), '\n')
             if use_level_stress is not None:
                 print('At the use level stress of', use_level_stress, ', the mean life is', round(self.mean_life, 5))
 
@@ -4226,12 +4241,14 @@ class Fit_Exponential_Eyring:
                 Exponential_probability_plot_Weibull_Scale(failures=FAILURES, right_censored=RIGHT_CENSORED, __fitted_dist_params=fitted_dist_params, color=color_list[i], linestyle='--', label='')
             if use_level_stress is not None:
                 use_label_str = str(str(use_level_stress) + ' (use level)')
-                Exponential_Distribution(Lambda=1 / use_life).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
+                Exponential_Distribution(Lambda=self.Lambda_at_use_stress).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
+                x_array = np.hstack([Exponential_Distribution(Lambda=self.Lambda_at_use_stress).quantile(max(ALT_fit.y_array)), ALT_fit.x_array])
+            else:
+                x_array = ALT_fit.x_array
             plt.xlim(10 ** xmin, 10 ** xmax)
             plt.legend(title='Stress')
             plt.title('Exponential-Eyring Model')
             probability_plot_xyticks()
-            x_array = np.hstack([Exponential_Distribution(Lambda=1 / use_life).quantile(max(ALT_fit.y_array)), ALT_fit.x_array])
             probability_plot_xylims(x=x_array, y=ALT_fit.y_array, dist='weibull', spacing=0.1)
             plt.tight_layout()
 
@@ -4287,7 +4304,7 @@ class Fit_Exponential_Power:
     n_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     mean_life - the mean life at the use_level_stress. Only calculated if use_level_stress is specified
-
+    Lambda_at_use_stress - the equivalent Exponential Lambda parameter at the use level stress (only provided if use_level_stress is provided).
     '''
 
     def __init__(self, failures=None, failure_stress=None, right_censored=None, right_censored_stress=None, use_level_stress=None, show_plot=True, print_results=True, CI=0.95, initial_guess=None):
@@ -4322,12 +4339,10 @@ class Fit_Exponential_Power:
         def __power(stress, a, n):
             return a * stress ** n
 
-        [a, n], _ = curve_fit(__power, failure_stress, failures)
         if initial_guess is None:
-            initial_guess = [a, n]
+            initial_guess, _ = curve_fit(__power, failure_stress, failures)
         if len(initial_guess) != 2:
-            error_str = str('initial_guess must have 2 elements: [a, n]. Default is: ' + str([a, n]))
-            raise ValueError(error_str)
+            raise ValueError('initial_guess must have 2 elements: [a, n].')
 
         guess = [initial_guess[0], initial_guess[1]]
         all_data = np.hstack([failures, right_censored])
@@ -4388,18 +4403,19 @@ class Fit_Exponential_Power:
                 'Standard Error': [self.a_SE, self.n_SE],
                 'Lower CI': [self.a_lower, self.n_lower],
                 'Upper CI': [self.a_upper, self.n_upper]}
-        df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
-        self.results = df.set_index('Parameter')
+        self.results = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
 
         if use_level_stress is not None:
             use_life = self.a * use_level_stress ** self.n
-            self.mean_life = Exponential_Distribution(Lambda=1 / use_life).mean
+            self.Lambda_at_use_stress = 1 / use_life
+            self.mean_life = Exponential_Distribution(Lambda=self.Lambda_at_use_stress).mean
 
         if print_results is True:
-            pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
-            pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
-            print(str('Results from Fit_Exponential_Power (' + str(int(CI * 100)) + '% CI):'))
-            print(self.results)
+            CI_rounded = CI * 100
+            if CI_rounded % 1 == 0:
+                CI_rounded = int(CI * 100)
+            colorprint(str('Results from Fit_Exponential_Power (' + str(CI_rounded) + '% CI):'), bold=True, underline=True)
+            print(self.results.to_string(index=False), '\n')
             if use_level_stress is not None:
                 print('At the use level stress of', use_level_stress, ', the mean life is', round(self.mean_life, 5))
 
@@ -4448,12 +4464,14 @@ class Fit_Exponential_Power:
                 Exponential_probability_plot_Weibull_Scale(failures=FAILURES, right_censored=RIGHT_CENSORED, __fitted_dist_params=fitted_dist_params, color=color_list[i], linestyle='--', label='')
             if use_level_stress is not None:
                 use_label_str = str(str(use_level_stress) + ' (use level)')
-                Exponential_Distribution(Lambda=1 / use_life).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
+                Exponential_Distribution(Lambda=self.Lambda_at_use_stress).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
+                x_array = np.hstack([Exponential_Distribution(Lambda=self.Lambda_at_use_stress).quantile(max(ALT_fit.y_array)), ALT_fit.x_array])
+            else:
+                x_array = ALT_fit.x_array
             plt.xlim(10 ** xmin, 10 ** xmax)
             plt.legend(title='Stress')
             plt.title('Exponential-Power Model')
             probability_plot_xyticks()
-            x_array = np.hstack([Exponential_Distribution(Lambda=1 / use_life).quantile(max(ALT_fit.y_array)), ALT_fit.x_array])
             probability_plot_xylims(x=x_array, y=ALT_fit.y_array, dist='weibull', spacing=0.1)
             plt.tight_layout()
 
@@ -4515,6 +4533,7 @@ class Fit_Exponential_Dual_Exponential:
     c_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     mean_life - the mean life at the use_level_stress. Only calculated if use_level_stress is specified
+    Lambda_at_use_stress - the equivalent Exponential Lambda parameter at the use level stress (only provided if use_level_stress is provided).
     '''
 
     def __init__(self, failures=None, failure_stress_1=None, failure_stress_2=None, right_censored=None, right_censored_stress_1=None, right_censored_stress_2=None, use_level_stress=None, show_plot=True, print_results=True, CI=0.95, initial_guess=None):
@@ -4567,12 +4586,10 @@ class Fit_Exponential_Dual_Exponential:
             return c * np.exp(a / T + b / H)
 
         xdata = np.array(list(zip(failure_stress_1, failure_stress_2))).T
-        [a, b, c], _ = curve_fit(__dual_expon, xdata, failures)
         if initial_guess is None:
-            initial_guess = [a, b, c]
+            initial_guess, _ = curve_fit(__dual_expon, xdata, failures)
         if len(initial_guess) != 3:
-            error_str = str('initial_guess must have 3 elements: [a, b, c]. Default is: ' + str([a, b, c]))
-            raise ValueError(error_str)
+            raise ValueError('initial_guess must have 3 elements: [a, b, c].')
 
         guess = [initial_guess[0], initial_guess[1], initial_guess[2]]
         all_data = np.hstack([failures, right_censored])
@@ -4638,18 +4655,19 @@ class Fit_Exponential_Dual_Exponential:
                 'Standard Error': [self.a_SE, self.b_SE, self.c_SE],
                 'Lower CI': [self.a_lower, self.b_lower, self.c_lower],
                 'Upper CI': [self.a_upper, self.b_upper, self.c_upper]}
-        df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
-        self.results = df.set_index('Parameter')
+        self.results = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
 
         if use_level_stress is not None:
             use_life = self.c * np.exp(self.a / use_level_stress[0] + self.b / use_level_stress[1])
-            self.mean_life = Exponential_Distribution(Lambda=1 / use_life).mean
+            self.Lambda_at_use_stress = 1 / use_life
+            self.mean_life = Exponential_Distribution(Lambda=self.Lambda_at_use_stress).mean
 
         if print_results is True:
-            pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
-            pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
-            print(str('Results from Fit_Exponential_Dual_Exponential (' + str(int(CI * 100)) + '% CI):'))
-            print(self.results)
+            CI_rounded = CI * 100
+            if CI_rounded % 1 == 0:
+                CI_rounded = int(CI * 100)
+            colorprint(str('Results from Fit_Exponential_Dual_Exponential (' + str(CI_rounded) + '% CI):'), bold=True, underline=True)
+            print(self.results.to_string(index=False), '\n')
             if use_level_stress is not None:
                 print('At the use level stresses of', use_level_stress[0], 'and', use_level_stress[1], ', the mean life is', round(self.mean_life, 5))
 
@@ -4703,13 +4721,15 @@ class Fit_Exponential_Dual_Exponential:
                 Exponential_probability_plot_Weibull_Scale(failures=FAILURES, right_censored=RIGHT_CENSORED, __fitted_dist_params=fitted_dist_params, color=color_list[i], linestyle='--', label='')
             if use_level_stress is not None:
                 use_label_str = str(str(float(use_level_stress[0])) + ' , ' + str(float(use_level_stress[1])) + ' (use level)')
-                Exponential_Distribution(Lambda=1 / use_life).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
+                Exponential_Distribution(Lambda=self.Lambda_at_use_stress).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
+                x_array = np.hstack([Exponential_Distribution(Lambda=self.Lambda_at_use_stress).quantile(max(ALT_fit_1.y_array)), ALT_fit_1.x_array])
+            else:
+                x_array = ALT_fit_1.x_array
             plt.xlim(10 ** xmin, 10 ** xmax)
             leg = plt.legend(title='     Stress 1 , Stress 2')
             leg._legend_box.align = 'left'
             plt.title('Exponential-Dual-Exponential Model')
             probability_plot_xyticks()
-            x_array = np.hstack([Exponential_Distribution(Lambda=1 / use_life).quantile(max(ALT_fit_1.y_array)), ALT_fit_1.x_array])
             probability_plot_xylims(x=x_array, y=ALT_fit_1.y_array, dist='weibull', spacing=0.1)
             plt.tight_layout()
 
@@ -4772,6 +4792,7 @@ class Fit_Exponential_Power_Exponential:
     n_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     mean_life - the mean life at the use_level_stress. Only calculated if use_level_stress is specified
+    Lambda_at_use_stress - the equivalent Exponential Lambda parameter at the use level stress (only provided if use_level_stress is provided).
     '''
 
     def __init__(self, failures=None, failure_stress_thermal=None, failure_stress_nonthermal=None, right_censored=None, right_censored_stress_thermal=None, right_censored_stress_nonthermal=None, use_level_stress=None, show_plot=True, print_results=True, CI=0.95, initial_guess=None):
@@ -4824,12 +4845,10 @@ class Fit_Exponential_Power_Exponential:
             return c * S ** n * np.exp(a / T)
 
         xdata = np.array(list(zip(failure_stress_thermal, failure_stress_nonthermal))).T
-        [a, c, n], _ = curve_fit(__power_expon, xdata, failures)
         if initial_guess is None:
-            initial_guess = [a, c, n]
+            initial_guess, _ = curve_fit(__power_expon, xdata, failures)
         if len(initial_guess) != 3:
-            error_str = str('initial_guess must have 3 elements: [a, c, n]. Default is: ' + str([a, c, n]))
-            raise ValueError(error_str)
+            raise ValueError('initial_guess must have 3 elements: [a, c, n].')
 
         guess = [initial_guess[0], initial_guess[1], initial_guess[2]]
         all_data = np.hstack([failures, right_censored])
@@ -4895,18 +4914,19 @@ class Fit_Exponential_Power_Exponential:
                 'Standard Error': [self.a_SE, self.c_SE, self.n_SE],
                 'Lower CI': [self.a_lower, self.c_lower, self.n_lower],
                 'Upper CI': [self.a_upper, self.c_upper, self.n_upper]}
-        df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
-        self.results = df.set_index('Parameter')
+        self.results = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
 
         if use_level_stress is not None:
             use_life = self.c * (use_level_stress[1]) ** self.n * np.exp(self.a / use_level_stress[0])
-            self.mean_life = Exponential_Distribution(Lambda=1 / use_life).mean
+            self.Lambda_at_use_stress = 1 / use_life
+            self.mean_life = Exponential_Distribution(Lambda=self.Lambda_at_use_stress).mean
 
         if print_results is True:
-            pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
-            pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
-            print(str('Results from Fit_Exponential_Power_Exponential (' + str(int(CI * 100)) + '% CI):'))
-            print(self.results)
+            CI_rounded = CI * 100
+            if CI_rounded % 1 == 0:
+                CI_rounded = int(CI * 100)
+            colorprint(str('Results from Fit_Exponential_Power_Exponential (' + str(CI_rounded) + '% CI):'), bold=True, underline=True)
+            print(self.results.to_string(index=False), '\n')
             if use_level_stress is not None:
                 print('At the use level stresses of', use_level_stress[0], 'and', use_level_stress[1], ', the mean life is', round(self.mean_life, 5))
 
@@ -4960,13 +4980,15 @@ class Fit_Exponential_Power_Exponential:
                 Exponential_probability_plot_Weibull_Scale(failures=FAILURES, right_censored=RIGHT_CENSORED, __fitted_dist_params=fitted_dist_params, color=color_list[i], linestyle='--', label='')
             if use_level_stress is not None:
                 use_label_str = str(str(float(use_level_stress[0])) + ' , ' + str(float(use_level_stress[1])) + ' (use level)')
-                Exponential_Distribution(Lambda=1 / use_life).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
+                Exponential_Distribution(Lambda=self.Lambda_at_use_stress).CDF(label=use_label_str, color=color_list[i + 1], linestyle='--')
+                x_array = np.hstack([Exponential_Distribution(Lambda=self.Lambda_at_use_stress).quantile(max(ALT_fit_1.y_array)), ALT_fit_1.x_array])
+            else:
+                x_array = ALT_fit_1.x_array
             plt.xlim(10 ** xmin, 10 ** xmax)
             leg = plt.legend(title='Thermal stress , Non-thermal stress')
             leg._legend_box.align = 'left'
             plt.title('Exponential-Power-Exponential Model')
             probability_plot_xyticks()
-            x_array = np.hstack([Exponential_Distribution(Lambda=1 / use_life).quantile(max(ALT_fit_1.y_array)), ALT_fit_1.x_array])
             probability_plot_xylims(x=x_array, y=ALT_fit_1.y_array, dist='weibull', spacing=0.1)
             plt.tight_layout()
 

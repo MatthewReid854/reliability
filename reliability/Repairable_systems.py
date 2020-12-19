@@ -119,7 +119,7 @@ class optimal_replacement_time:
         if cost_PM > cost_CM:
             raise ValueError('Cost_PM must be less than Cost_CM otherwise preventative maintenance should not be conducted.')
         if weibull_beta < 1:
-            colorprint('WARNING: weibull_beta is < 1 so the hazard rate is decreasing, therefore preventative maintenance should not be conducted.',text_color='red')
+            colorprint('WARNING: weibull_beta is < 1 so the hazard rate is decreasing, therefore preventative maintenance should not be conducted.', text_color='red')
 
         if q == 1:  # as good as old
             alpha_multiple = 4  # just used for plot limits
@@ -482,11 +482,11 @@ class MCF_nonparametric:
 
         # format output as dataframe
         data = {'state': states_sorted, 'time': times_sorted, 'MCF_lower': MCF_lower_array, 'MCF': MCF_array, 'MCF_upper': MCF_upper_array, 'variance': Var_array}
-        df_results1 = pd.DataFrame(data, columns=['state', 'time', 'MCF_lower', 'MCF', 'MCF_upper', 'variance'])
-        printable_results = df_results1.set_index('state')
+        printable_results = pd.DataFrame(data, columns=['state', 'time', 'MCF_lower', 'MCF', 'MCF_upper', 'variance'])
         self.results = printable_results
 
-        plotting_results = printable_results.drop('C', axis=0)
+        indices_to_drop = printable_results[printable_results['state'] == 'C'].index
+        plotting_results = printable_results.drop(indices_to_drop, inplace=False)
         RESULTS_time = plotting_results.time.values
         RESULTS_MCF = plotting_results.MCF.values
         RESULTS_variance = plotting_results.variance.values
@@ -499,11 +499,15 @@ class MCF_nonparametric:
         self.upper = list(RESULTS_upper)
         self.variance = list(RESULTS_variance)
 
+        CI_rounded = CI * 100
+        if CI_rounded % 1 == 0:
+            CI_rounded = int(CI * 100)
+
         if print_results is True:
             pd.set_option('display.width', 200)  # prevents wrapping after default 80 characters
             pd.set_option('display.max_columns', 9)  # shows the dataframe without ... truncation
-            print(str('Mean Cumulative Function results (' + str(CI * 100) + '% CI)'))
-            print(printable_results)
+            colorprint(str('Mean Cumulative Function results (' + str(CI_rounded) + '% CI)'), bold=True, underline=True)
+            print(self.results.to_string(index=False), '\n')
 
         if show_plot is True:
             x_MCF = [0, RESULTS_time[0]]
@@ -536,10 +540,6 @@ class MCF_nonparametric:
                 col = 'steelblue'
             if plot_CI is True:
                 plt.fill_between(x_MCF, y_lower, y_upper, color=col, alpha=0.3, linewidth=0)
-                if CI * 100 % 1 == 0:  # format the text for the CI in the title
-                    CI_rounded = int(CI * 100)
-                else:
-                    CI_rounded = round(CI * 100, 1)
                 title_str = str(title_str + '\nwith ' + str(CI_rounded) + '% one-sided confidence interval bounds')
             plt.plot(x_MCF, y_MCF, color=col, **kwargs)
             plt.xlabel('Time')
@@ -648,17 +648,15 @@ class MCF_parametric:
                 'Standard Error': [self.alpha_SE, self.beta_SE],
                 'Lower CI': [self.alpha_lower, self.beta_lower],
                 'Upper CI': [self.alpha_upper, self.beta_upper]}
-        df = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
-        self.results = df.set_index('Parameter')
+        self.results = pd.DataFrame(Data, columns=['Parameter', 'Point Estimate', 'Standard Error', 'Lower CI', 'Upper CI'])
 
         if print_results is True:
-            if CI * 100 % 1 == 0:
+            CI_rounded = CI * 100
+            if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            else:
-                CI_rounded = CI * 100
-            print(str('Mean Cumulative Function Parametric Model (' + str(CI_rounded) + '% CI):'))
+            colorprint(str('Mean Cumulative Function Parametric Model (' + str(CI_rounded) + '% CI):'), bold=True, underline=True)
             print('MCF = (t/α)^β')
-            print(self.results)
+            print(self.results.to_string(index=False), '\n')
             if self.beta_upper <= 1:
                 print('Since Beta is less than 1, the system repair rate is IMPROVING over time.')
             elif self.beta_lower < 1 and self.beta_upper > 1:
