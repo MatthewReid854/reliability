@@ -2,7 +2,7 @@
 
 -------------------------------------
 
-|pypi| |docs| |build| |code quality| |LOC| |downloads| |license| |DOI| |donate| |survey|
+|pypi| |docs| |build and test| |code quality| |LOC| |downloads| |license| |DOI| |donate| |survey|
 
 *reliability* is a Python library for `reliability engineering <https://en.wikipedia.org/wiki/Reliability_engineering>`_ and `survival analysis <https://en.wikipedia.org/wiki/Survival_analysis>`_. It significantly extends the functionality of scipy.stats and also includes many specialist tools that are otherwise only available in proprietary software.
 
@@ -131,10 +131,10 @@ Contents:
     :scale: 100%
     :target: https://reliability.readthedocs.io/en/latest/
 
-.. |build| image:: https://img.shields.io/travis/MatthewReid854/reliability/master?logo=travis&label=Travis%20CI
-    :alt: build
+.. |build and test| image:: https://github.com/MatthewReid854/reliability/workflows/Build%20and%20Test/badge.svg
+    :alt: Build and Test
     :scale: 100%
-    :target: https://travis-ci.com/github/MatthewReid854/reliability
+    :target: https://github.com/MatthewReid854/reliability/actions
 
 .. |code quality| image:: https://img.shields.io/lgtm/grade/python/g/MatthewReid854/reliability.svg?logo=lgtm&logoWidth=18
     :alt: code quality: python
