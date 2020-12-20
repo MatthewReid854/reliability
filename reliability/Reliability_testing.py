@@ -20,7 +20,7 @@ import pandas as pd
 import math
 import time
 from reliability.Distributions import Normal_Distribution, Weibull_Distribution, Lognormal_Distribution, Exponential_Distribution, Gamma_Distribution, Beta_Distribution, Loglogistic_Distribution, Gumbel_Distribution
-from reliability.Utils import colorprint, round_to_decimals
+from reliability.Utils import colorprint
 
 
 def one_sample_proportion(trials=None, successes=None, CI=0.95, print_results=True):

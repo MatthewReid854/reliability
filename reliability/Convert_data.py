@@ -25,6 +25,7 @@ FR format may just be F if there is no right censored data
 FNRN may be just FN if there is no right censored data. FNRN may not be just F as this is the same as F from FR format.
 XCN may be just XC if there are no grouped values (ie. every event is assumed to have a quantity of 1). XCN may not be just X as this is the same as F from FR format.
 '''
+
 import numpy as np
 import pandas as pd
 from reliability.Utils import colorprint, write_df_to_xlsx, removeNaNs
@@ -60,6 +61,7 @@ class xlsx_to_XCN:
     Note that the function is expecting the xlsx file to have columns in XCN format.
     If they are in another format (FR, FNRN) then you will need to use the appropriate function for that format.
     A reduced form (XC) is accepted and all values will be assumed to have a quantity (N) of 1.
+
     '''
 
     def __init__(self, path, censor_code_in_xlsx=None, failure_code_in_xlsx=None, censor_code_in_XCN='C', failure_code_in_XCN='F', **kwargs):
@@ -147,6 +149,7 @@ class xlsx_to_FR:
     Note that the function is expecting the xlsx file to have columns in FR format.
     If they are in another format (XCN, FNRN) then you will need to use the appropriate function for that format.
     A reduced form (F) is accepted and all values will be assumed to be failures.
+
     '''
 
     def __init__(self, path, **kwargs):
@@ -207,6 +210,7 @@ class xlsx_to_FNRN:
     Note that the function is expecting the xlsx file to have columns in FNRN format.
     If they are in another format (FR, XCN) then you will need to use the appropriate function for that format.
     A reduced form (FN) is accepted and all values will be assumed to be failures.
+
     '''
 
     def __init__(self, path, **kwargs):
@@ -302,6 +306,7 @@ class XCN_to_FNRN:
                   1                   1               7                         3
                   2                   2               8                         2
                   3                   2               9                         1
+
     '''
 
     def __init__(self, X, C, N=None, censor_code=None, failure_code=None):
@@ -372,6 +377,7 @@ class XCN_to_FR:
                   3               8
                   3               8
                                   9
+
     '''
 
     def __init__(self, X, C, N=None, censor_code=None, failure_code=None):
@@ -480,6 +486,7 @@ class FR_to_XCN:
                     7           C                 1
                     8           C                 2
                     9           C                 4
+
     '''
 
     def __init__(self, failures, right_censored=None, censor_code='C', failure_code='F'):
@@ -554,6 +561,7 @@ class FNRN_to_XCN:
                     7           C                 1
                     8           C                 2
                     9           C                 3
+
     '''
 
     def __init__(self, failures, num_failures, right_censored=None, num_right_censored=None, censor_code='C', failure_code='F'):
@@ -636,6 +644,7 @@ class FR_to_FNRN:
                   1                   2               7                         1
                   2                   2               8                         2
                   3                   1               9                         4
+
     '''
 
     def __init__(self, failures, right_censored=None):
@@ -714,6 +723,7 @@ class FNRN_to_FR:
                                    7
                                    7
                                    7
+
     '''
 
     def __init__(self, failures, num_failures, right_censored=None, num_right_censored=None):

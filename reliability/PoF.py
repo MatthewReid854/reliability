@@ -126,7 +126,7 @@ def SN_diagram(stress, cycles, stress_runout=None, cycles_runout=None, xscale='l
     if 'label' in kwargs:
         label = kwargs.pop('label')
     else:
-        label = str('$σ_a = ' + str(round(c, 3)) + ' - ' + str(round(m * -1, 3)) + r'\times log_{10}(N_f)$')
+        label = str(r'$σ_a = ' + str(round(c, 3)) + ' - ' + str(round(m * -1, 3)) + r'\times log_{10}(N_f)$')
     if 'color' in kwargs:
         color = kwargs.pop('color')
     else:
@@ -165,8 +165,8 @@ def SN_diagram(stress, cycles, stress_runout=None, cycles_runout=None, xscale='l
 
     # set the plot limits and plot the runout data (the position for the runout data depends on the plotting limits)
     plt.gca().set_xscale(xscale)
-    plt.xlabel('Number of cycles $(N_f)$')
-    plt.ylabel('Stress $(σ_a)$')
+    plt.xlabel(r'Number of cycles $(N_f)$')
+    plt.ylabel(r'Stress $(σ_a)$')
     plt.title('S-N diagram')
     if xscale == 'log':
         plt.xlim([cycles_min_log, cycles_max_log])
@@ -263,8 +263,8 @@ class stress_strain_life_parameters_from_data:
             strain_array = stress_array / E + (stress_array / self.K) ** (1 / self.n)
             plt.plot(strain_array, stress_array, color='red', label=str(r'$\epsilon_{tot} = \frac{\sigma}{' + str(round(E, 4)) + r'} + (\frac{\sigma}{' + str(round(self.K, 4)) + r'})^{\frac{1}{' + str(round(self.n, 4)) + '}}$'))
             plt.scatter(strain, stress, marker='.', color='k', label='Stress-Strain data')
-            plt.xlabel('Strain $(\epsilon_{tot})$')
-            plt.ylabel('Stress $(\sigma)$')
+            plt.xlabel(r'Strain $(\epsilon_{tot})$')
+            plt.ylabel(r'Stress $(\sigma)$')
             plt.title('Stress-Strain diagram')
             xmax = max(strain) * 1.2
             ymax = max(stress) * 1.2
@@ -301,14 +301,14 @@ class stress_strain_life_parameters_from_data:
                 elastic_strain_line = self.sigma_f / E * cycles_2Nf_array ** self.b
                 plt.plot(cycles_2Nf_array, plastic_strain_line, 'orange', alpha=0.7, label='plastic strain')
                 plt.plot(cycles_2Nf_array, elastic_strain_line, 'steelblue', alpha=0.8, label='elastic strain')
-                plt.xlabel('Reversals to failure $(2N_f)$')
-                plt.ylabel('Strain amplitude $(\epsilon_a)$')
+                plt.xlabel(r'Reversals to failure $(2N_f)$')
+                plt.ylabel(r'Strain amplitude $(\epsilon_a)$')
                 plt.title('Strain-Life diagram')
                 cycles_min_log = 10 ** (int(np.floor(np.log10(min(cycles_2Nf)))) - 1)
                 cycles_max_log = 10 ** (int(np.ceil(np.log10(max(cycles_2Nf)))) + 1)
                 strain_min_log = 10 ** (int(np.floor(np.log10(min(strain)))) - 1)
                 strain_max_log = 10 ** (int(np.ceil(np.log10(max(strain)))) + 1)
-                plt.text(cycles_2Nt, strain_min_log, str('$2N_t = $' + str(int(cycles_2Nt))), verticalalignment='bottom')
+                plt.text(cycles_2Nt, strain_min_log, str(r'$2N_t = $' + str(int(cycles_2Nt))), verticalalignment='bottom')
                 plt.xlim(cycles_min_log, cycles_max_log)
                 plt.ylim(strain_min_log, strain_max_log)
                 plt.grid(True)
@@ -471,8 +471,8 @@ class stress_strain_diagram:
             self.max_stress = max(stress_array2)
             self.min_stress = min(stress_array1)
 
-        plt.xlabel('Strain $(\epsilon_{tot})$')
-        plt.ylabel('Stress $(\sigma)$')
+        plt.xlabel(r'Strain $(\epsilon_{tot})$')
+        plt.ylabel(r'Stress $(\sigma)$')
         plt.title('Stress-Strain diagram')
         xmax = self.max_strain * 2
         ymax = self.max_stress * 1.4
@@ -635,8 +635,8 @@ class strain_life_diagram:
                 plt.plot([cycles_2Nt, cycles_2Nt], [10 ** -6, epsilon_total_at_cycles_2Nt], 'red', linestyle='--', alpha=0.5)
                 plt.plot(cycles_2Nf_array, plastic_strain_line, 'orange', alpha=0.7, label='plastic strain')
                 plt.plot(cycles_2Nf_array, elastic_strain_line, 'steelblue', alpha=0.8, label='elastic strain')
-                plt.xlabel('Reversals to failure $(2N_f)$')
-                plt.ylabel('Strain amplitude $(\epsilon_a)$')
+                plt.xlabel(r'Reversals to failure $(2N_f)$')
+                plt.ylabel(r'Strain amplitude $(\epsilon_a)$')
                 plt.title('Strain-Life diagram')
                 plt.xlim(min(cycles_2Nf_array), max(cycles_2Nf_array))
                 strain_min_log = 10 ** (int(np.floor(np.log10(min(plastic_strain_line)))))
@@ -645,12 +645,12 @@ class strain_life_diagram:
                 plt.scatter([self.cycles_to_failure * 2], [strain_amplitude], marker='o', color='k')
                 plt.plot([1, self.cycles_to_failure * 2, self.cycles_to_failure * 2], [strain_amplitude, strain_amplitude, 0], linewidth=1, linestyle='--', color='k')
                 if self.cycles_to_failure * 2 < cycles_2Nt:
-                    plt.text(cycles_2Nt, strain_min_log, str(' $2N_t = $' + str(int(cycles_2Nt)) + ' reversals'), verticalalignment='bottom', ha='left')
+                    plt.text(cycles_2Nt, strain_min_log, str(r' $2N_t = $' + str(int(cycles_2Nt)) + ' reversals'), verticalalignment='bottom', ha='left')
                     plt.text(self.cycles_to_failure * 2, strain_min_log, str('Life = ' + str(int(np.floor(self.cycles_to_failure * 2))) + ' reversals '), ha='right', va='bottom')
                 else:
-                    plt.text(cycles_2Nt, strain_min_log, str('$2N_t = $' + str(int(cycles_2Nt)) + ' reversals'), verticalalignment='bottom', ha='right')
+                    plt.text(cycles_2Nt, strain_min_log, str(r'$2N_t = $' + str(int(cycles_2Nt)) + ' reversals'), verticalalignment='bottom', ha='right')
                     plt.text(self.cycles_to_failure * 2, strain_min_log, str(' Life = ' + str(int(np.floor(self.cycles_to_failure * 2))) + ' reversals '), ha='left', va='bottom')
-                plt.text(10, strain_amplitude, str(' $\epsilon_a$ = ' + str(strain_amplitude)), va='bottom', ha='left')
+                plt.text(10, strain_amplitude, str(r' $\epsilon_a$ = ' + str(strain_amplitude)), va='bottom', ha='left')
                 plt.grid(True)
                 leg2 = plt.legend(loc='upper right')
                 legend_texts2 = leg2.get_texts()  # this is to make the first legend entry (the equation) bigger
@@ -669,14 +669,14 @@ class strain_life_diagram:
                 elastic_strain_line = self.sigma_f / E * cycles_2Nf_array ** self.b
                 plt.plot(cycles_2Nf_array, plastic_strain_line, 'orange', alpha=0.7, label='plastic strain')
                 plt.plot(cycles_2Nf_array, elastic_strain_line, 'steelblue', alpha=0.8, label='elastic strain')
-                plt.xlabel('Reversals to failure $(2N_f)$')
-                plt.ylabel('Strain amplitude $(\epsilon_a)$')
+                plt.xlabel(r'Reversals to failure $(2N_f)$')
+                plt.ylabel(r'Strain amplitude $(\epsilon_a)$')
                 plt.title('Strain-Life diagram')
                 strain_min_log = 10 ** (int(np.floor(np.log10(min(plastic_strain_line)))))
                 strain_max_log = 10 ** (int(np.ceil(np.log10(max(epsilon_total)))))
                 plt.ylim(strain_min_log, strain_max_log)
                 plt.xlim(min(cycles_2Nf_array), max(cycles_2Nf_array))
-                plt.text(cycles_2Nt, strain_min_log, str('$2N_t = $' + str(int(cycles_2Nt))), verticalalignment='bottom')
+                plt.text(cycles_2Nt, strain_min_log, str(r'$2N_t = $' + str(int(cycles_2Nt))), verticalalignment='bottom')
                 plt.grid(True)
                 leg2 = plt.legend()
                 # this is to make the first legend entry (the equation) bigger

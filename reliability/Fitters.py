@@ -30,9 +30,8 @@ Generally the fit achieved by autograd is highly successful, and whenever it fai
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-from scipy.optimize import minimize, curve_fit
+from scipy.optimize import minimize
 import scipy.stats as ss
-import warnings
 from reliability.Distributions import Weibull_Distribution, Gamma_Distribution, Beta_Distribution, Exponential_Distribution, Normal_Distribution, Lognormal_Distribution, Loglogistic_Distribution, Gumbel_Distribution, Mixture_Model, Competing_Risks_Model
 from reliability.Nonparametric import KaplanMeier
 from reliability.Probability_plotting import plotting_positions
@@ -102,9 +101,9 @@ class Fit_Everything:
     print('Weibull Alpha =',output.Weibull_2P_alpha,'\nWeibull Beta =',output.Weibull_2P_beta)
     '''
 
-    def __init__(self, failures=None, right_censored=None, exclude=None, sort_by='BIC', method='MLE',optimizer='L-BFGS-B', print_results=True, show_histogram_plot=True, show_PP_plot=True, show_probability_plot=True):
+    def __init__(self, failures=None, right_censored=None, exclude=None, sort_by='BIC', method='MLE', optimizer='L-BFGS-B', print_results=True, show_histogram_plot=True, show_PP_plot=True, show_probability_plot=True):
 
-        inputs = fitters_input_checking(dist='Everything', failures=failures, right_censored=right_censored, method=method,optimizer=optimizer)
+        inputs = fitters_input_checking(dist='Everything', failures=failures, right_censored=right_censored, method=method, optimizer=optimizer)
         failures = inputs.failures
         right_censored = inputs.right_censored
         method = inputs.method
@@ -181,10 +180,10 @@ class Fit_Everything:
         self.excluded_distributions = excluded_distributions
 
         # create an empty dataframe to append the data from the fitted distributions
-        df = pd.DataFrame(columns=['Distribution', 'Alpha', 'Beta', 'Gamma', 'Mu', 'Sigma', 'Lambda', 'Log-likelihood','AICc', 'BIC', 'AD'])
+        df = pd.DataFrame(columns=['Distribution', 'Alpha', 'Beta', 'Gamma', 'Mu', 'Sigma', 'Lambda', 'Log-likelihood', 'AICc', 'BIC', 'AD'])
         # Fit the parametric models and extract the fitted parameters
         if 'Weibull_3P' not in self.excluded_distributions:
-            self.__Weibull_3P_params = Fit_Weibull_3P(failures=failures, right_censored=right_censored, method=method,optimizer=optimizer, show_probability_plot=False, print_results=False)
+            self.__Weibull_3P_params = Fit_Weibull_3P(failures=failures, right_censored=right_censored, method=method, optimizer=optimizer, show_probability_plot=False, print_results=False)
             self.Weibull_3P_alpha = self.__Weibull_3P_params.alpha
             self.Weibull_3P_beta = self.__Weibull_3P_params.beta
             self.Weibull_3P_gamma = self.__Weibull_3P_params.gamma
@@ -193,10 +192,10 @@ class Fit_Everything:
             self.Weibull_3P_AICc = self.__Weibull_3P_params.AICc
             self.Weibull_3P_AD = self.__Weibull_3P_params.AD
             self._parametric_CDF_Weibull_3P = self.__Weibull_3P_params.distribution.CDF(xvals=d, show_plot=False)
-            df = df.append({'Distribution': 'Weibull_3P', 'Alpha': self.Weibull_3P_alpha, 'Beta': self.Weibull_3P_beta, 'Gamma': self.Weibull_3P_gamma, 'Mu': '', 'Sigma': '', 'Lambda': '','Log-likelihood': self.Weibull_3P_loglik, 'AICc': self.Weibull_3P_AICc, 'BIC': self.Weibull_3P_BIC, 'AD': self.Weibull_3P_AD}, ignore_index=True)
+            df = df.append({'Distribution': 'Weibull_3P', 'Alpha': self.Weibull_3P_alpha, 'Beta': self.Weibull_3P_beta, 'Gamma': self.Weibull_3P_gamma, 'Mu': '', 'Sigma': '', 'Lambda': '', 'Log-likelihood': self.Weibull_3P_loglik, 'AICc': self.Weibull_3P_AICc, 'BIC': self.Weibull_3P_BIC, 'AD': self.Weibull_3P_AD}, ignore_index=True)
 
         if 'Gamma_3P' not in self.excluded_distributions:
-            self.__Gamma_3P_params = Fit_Gamma_3P(failures=failures, right_censored=right_censored, method=method,optimizer=optimizer, show_probability_plot=False, print_results=False)
+            self.__Gamma_3P_params = Fit_Gamma_3P(failures=failures, right_censored=right_censored, method=method, optimizer=optimizer, show_probability_plot=False, print_results=False)
             self.Gamma_3P_alpha = self.__Gamma_3P_params.alpha
             self.Gamma_3P_beta = self.__Gamma_3P_params.beta
             self.Gamma_3P_gamma = self.__Gamma_3P_params.gamma
@@ -205,10 +204,10 @@ class Fit_Everything:
             self.Gamma_3P_AICc = self.__Gamma_3P_params.AICc
             self.Gamma_3P_AD = self.__Gamma_3P_params.AD
             self._parametric_CDF_Gamma_3P = self.__Gamma_3P_params.distribution.CDF(xvals=d, show_plot=False)
-            df = df.append({'Distribution': 'Gamma_3P', 'Alpha': self.Gamma_3P_alpha, 'Beta': self.Gamma_3P_beta, 'Gamma': self.Gamma_3P_gamma, 'Mu': '', 'Sigma': '', 'Lambda': '','Log-likelihood': self.Gamma_3P_loglik, 'AICc': self.Gamma_3P_AICc, 'BIC': self.Gamma_3P_BIC, 'AD': self.Gamma_3P_AD}, ignore_index=True)
+            df = df.append({'Distribution': 'Gamma_3P', 'Alpha': self.Gamma_3P_alpha, 'Beta': self.Gamma_3P_beta, 'Gamma': self.Gamma_3P_gamma, 'Mu': '', 'Sigma': '', 'Lambda': '', 'Log-likelihood': self.Gamma_3P_loglik, 'AICc': self.Gamma_3P_AICc, 'BIC': self.Gamma_3P_BIC, 'AD': self.Gamma_3P_AD}, ignore_index=True)
 
         if 'Exponential_2P' not in self.excluded_distributions:
-            self.__Exponential_2P_params = Fit_Exponential_2P(failures=failures, right_censored=right_censored, method=method,optimizer=optimizer, show_probability_plot=False, print_results=False)
+            self.__Exponential_2P_params = Fit_Exponential_2P(failures=failures, right_censored=right_censored, method=method, optimizer=optimizer, show_probability_plot=False, print_results=False)
             self.Exponential_2P_lambda = self.__Exponential_2P_params.Lambda
             self.Exponential_2P_gamma = self.__Exponential_2P_params.gamma
             self.Exponential_2P_loglik = self.__Exponential_2P_params.loglik
@@ -216,10 +215,10 @@ class Fit_Everything:
             self.Exponential_2P_AICc = self.__Exponential_2P_params.AICc
             self.Exponential_2P_AD = self.__Exponential_2P_params.AD
             self._parametric_CDF_Exponential_2P = self.__Exponential_2P_params.distribution.CDF(xvals=d, show_plot=False)
-            df = df.append({'Distribution': 'Exponential_2P', 'Alpha': '', 'Beta': '', 'Gamma': self.Exponential_2P_gamma, 'Mu': '', 'Sigma': '', 'Lambda': self.Exponential_2P_lambda,'Log-likelihood': self.Exponential_2P_loglik, 'AICc': self.Exponential_2P_AICc, 'BIC': self.Exponential_2P_BIC, 'AD': self.Exponential_2P_AD}, ignore_index=True)
+            df = df.append({'Distribution': 'Exponential_2P', 'Alpha': '', 'Beta': '', 'Gamma': self.Exponential_2P_gamma, 'Mu': '', 'Sigma': '', 'Lambda': self.Exponential_2P_lambda, 'Log-likelihood': self.Exponential_2P_loglik, 'AICc': self.Exponential_2P_AICc, 'BIC': self.Exponential_2P_BIC, 'AD': self.Exponential_2P_AD}, ignore_index=True)
 
         if 'Lognormal_3P' not in self.excluded_distributions:
-            self.__Lognormal_3P_params = Fit_Lognormal_3P(failures=failures, right_censored=right_censored, method=method,optimizer=optimizer, show_probability_plot=False, print_results=False)
+            self.__Lognormal_3P_params = Fit_Lognormal_3P(failures=failures, right_censored=right_censored, method=method, optimizer=optimizer, show_probability_plot=False, print_results=False)
             self.Lognormal_3P_mu = self.__Lognormal_3P_params.mu
             self.Lognormal_3P_sigma = self.__Lognormal_3P_params.sigma
             self.Lognormal_3P_gamma = self.__Lognormal_3P_params.gamma
@@ -228,10 +227,10 @@ class Fit_Everything:
             self.Lognormal_3P_AICc = self.__Lognormal_3P_params.AICc
             self.Lognormal_3P_AD = self.__Lognormal_3P_params.AD
             self._parametric_CDF_Lognormal_3P = self.__Lognormal_3P_params.distribution.CDF(xvals=d, show_plot=False)
-            df = df.append({'Distribution': 'Lognormal_3P', 'Alpha': '', 'Beta': '', 'Gamma': self.Lognormal_3P_gamma, 'Mu': self.Lognormal_3P_mu, 'Sigma': self.Lognormal_3P_sigma, 'Lambda': '','Log-likelihood': self.Lognormal_3P_loglik, 'AICc': self.Lognormal_3P_AICc, 'BIC': self.Lognormal_3P_BIC, 'AD': self.Lognormal_3P_AD}, ignore_index=True)
+            df = df.append({'Distribution': 'Lognormal_3P', 'Alpha': '', 'Beta': '', 'Gamma': self.Lognormal_3P_gamma, 'Mu': self.Lognormal_3P_mu, 'Sigma': self.Lognormal_3P_sigma, 'Lambda': '', 'Log-likelihood': self.Lognormal_3P_loglik, 'AICc': self.Lognormal_3P_AICc, 'BIC': self.Lognormal_3P_BIC, 'AD': self.Lognormal_3P_AD}, ignore_index=True)
 
         if 'Normal_2P' not in self.excluded_distributions:
-            self.__Normal_2P_params = Fit_Normal_2P(failures=failures, right_censored=right_censored, method=method,optimizer=optimizer, show_probability_plot=False, print_results=False)
+            self.__Normal_2P_params = Fit_Normal_2P(failures=failures, right_censored=right_censored, method=method, optimizer=optimizer, show_probability_plot=False, print_results=False)
             self.Normal_2P_mu = self.__Normal_2P_params.mu
             self.Normal_2P_sigma = self.__Normal_2P_params.sigma
             self.Normal_2P_loglik = self.__Normal_2P_params.loglik
@@ -239,10 +238,10 @@ class Fit_Everything:
             self.Normal_2P_AICc = self.__Normal_2P_params.AICc
             self.Normal_2P_AD = self.__Normal_2P_params.AD
             self._parametric_CDF_Normal_2P = self.__Normal_2P_params.distribution.CDF(xvals=d, show_plot=False)
-            df = df.append({'Distribution': 'Normal_2P', 'Alpha': '', 'Beta': '', 'Gamma': '', 'Mu': self.Normal_2P_mu, 'Sigma': self.Normal_2P_sigma, 'Lambda': '','Log-likelihood': self.Normal_2P_loglik, 'AICc': self.Normal_2P_AICc, 'BIC': self.Normal_2P_BIC, 'AD': self.Normal_2P_AD}, ignore_index=True)
+            df = df.append({'Distribution': 'Normal_2P', 'Alpha': '', 'Beta': '', 'Gamma': '', 'Mu': self.Normal_2P_mu, 'Sigma': self.Normal_2P_sigma, 'Lambda': '', 'Log-likelihood': self.Normal_2P_loglik, 'AICc': self.Normal_2P_AICc, 'BIC': self.Normal_2P_BIC, 'AD': self.Normal_2P_AD}, ignore_index=True)
 
         if 'Lognormal_2P' not in self.excluded_distributions:
-            self.__Lognormal_2P_params = Fit_Lognormal_2P(failures=failures, right_censored=right_censored, method=method,optimizer=optimizer, show_probability_plot=False, print_results=False)
+            self.__Lognormal_2P_params = Fit_Lognormal_2P(failures=failures, right_censored=right_censored, method=method, optimizer=optimizer, show_probability_plot=False, print_results=False)
             self.Lognormal_2P_mu = self.__Lognormal_2P_params.mu
             self.Lognormal_2P_sigma = self.__Lognormal_2P_params.sigma
             self.Lognormal_2P_loglik = self.__Lognormal_2P_params.loglik
@@ -250,10 +249,10 @@ class Fit_Everything:
             self.Lognormal_2P_AICc = self.__Lognormal_2P_params.AICc
             self.Lognormal_2P_AD = self.__Lognormal_2P_params.AD
             self._parametric_CDF_Lognormal_2P = self.__Lognormal_2P_params.distribution.CDF(xvals=d, show_plot=False)
-            df = df.append({'Distribution': 'Lognormal_2P', 'Alpha': '', 'Beta': '', 'Gamma': '', 'Mu': self.Lognormal_2P_mu, 'Sigma': self.Lognormal_2P_sigma, 'Lambda': '','Log-likelihood': self.Lognormal_2P_loglik, 'AICc': self.Lognormal_2P_AICc, 'BIC': self.Lognormal_2P_BIC, 'AD': self.Lognormal_2P_AD}, ignore_index=True)
+            df = df.append({'Distribution': 'Lognormal_2P', 'Alpha': '', 'Beta': '', 'Gamma': '', 'Mu': self.Lognormal_2P_mu, 'Sigma': self.Lognormal_2P_sigma, 'Lambda': '', 'Log-likelihood': self.Lognormal_2P_loglik, 'AICc': self.Lognormal_2P_AICc, 'BIC': self.Lognormal_2P_BIC, 'AD': self.Lognormal_2P_AD}, ignore_index=True)
 
         if 'Gumbel_2P' not in self.excluded_distributions:
-            self.__Gumbel_2P_params = Fit_Gumbel_2P(failures=failures, right_censored=right_censored, method=method,optimizer=optimizer, show_probability_plot=False, print_results=False)
+            self.__Gumbel_2P_params = Fit_Gumbel_2P(failures=failures, right_censored=right_censored, method=method, optimizer=optimizer, show_probability_plot=False, print_results=False)
             self.Gumbel_2P_mu = self.__Gumbel_2P_params.mu
             self.Gumbel_2P_sigma = self.__Gumbel_2P_params.sigma
             self.Gumbel_2P_loglik = self.__Gumbel_2P_params.loglik
@@ -261,10 +260,10 @@ class Fit_Everything:
             self.Gumbel_2P_AICc = self.__Gumbel_2P_params.AICc
             self.Gumbel_2P_AD = self.__Gumbel_2P_params.AD
             self._parametric_CDF_Gumbel_2P = self.__Gumbel_2P_params.distribution.CDF(xvals=d, show_plot=False)
-            df = df.append({'Distribution': 'Gumbel_2P', 'Alpha': '', 'Beta': '', 'Gamma': '', 'Mu': self.Gumbel_2P_mu, 'Sigma': self.Gumbel_2P_sigma, 'Lambda': '','Log-likelihood': self.Gumbel_2P_loglik, 'AICc': self.Gumbel_2P_AICc, 'BIC': self.Gumbel_2P_BIC, 'AD': self.Gumbel_2P_AD}, ignore_index=True)
+            df = df.append({'Distribution': 'Gumbel_2P', 'Alpha': '', 'Beta': '', 'Gamma': '', 'Mu': self.Gumbel_2P_mu, 'Sigma': self.Gumbel_2P_sigma, 'Lambda': '', 'Log-likelihood': self.Gumbel_2P_loglik, 'AICc': self.Gumbel_2P_AICc, 'BIC': self.Gumbel_2P_BIC, 'AD': self.Gumbel_2P_AD}, ignore_index=True)
 
         if 'Weibull_2P' not in self.excluded_distributions:
-            self.__Weibull_2P_params = Fit_Weibull_2P(failures=failures, right_censored=right_censored, method=method,optimizer=optimizer, show_probability_plot=False, print_results=False)
+            self.__Weibull_2P_params = Fit_Weibull_2P(failures=failures, right_censored=right_censored, method=method, optimizer=optimizer, show_probability_plot=False, print_results=False)
             self.Weibull_2P_alpha = self.__Weibull_2P_params.alpha
             self.Weibull_2P_beta = self.__Weibull_2P_params.beta
             self.Weibull_2P_loglik = self.__Weibull_2P_params.loglik
@@ -272,10 +271,10 @@ class Fit_Everything:
             self.Weibull_2P_AICc = self.__Weibull_2P_params.AICc
             self.Weibull_2P_AD = self.__Weibull_2P_params.AD
             self._parametric_CDF_Weibull_2P = self.__Weibull_2P_params.distribution.CDF(xvals=d, show_plot=False)
-            df = df.append({'Distribution': 'Weibull_2P', 'Alpha': self.Weibull_2P_alpha, 'Beta': self.Weibull_2P_beta, 'Gamma': '', 'Mu': '', 'Sigma': '', 'Lambda': '','Log-likelihood': self.Weibull_2P_loglik, 'AICc': self.Weibull_2P_AICc, 'BIC': self.Weibull_2P_BIC, 'AD': self.Weibull_2P_AD}, ignore_index=True)
+            df = df.append({'Distribution': 'Weibull_2P', 'Alpha': self.Weibull_2P_alpha, 'Beta': self.Weibull_2P_beta, 'Gamma': '', 'Mu': '', 'Sigma': '', 'Lambda': '', 'Log-likelihood': self.Weibull_2P_loglik, 'AICc': self.Weibull_2P_AICc, 'BIC': self.Weibull_2P_BIC, 'AD': self.Weibull_2P_AD}, ignore_index=True)
 
         if 'Gamma_2P' not in self.excluded_distributions:
-            self.__Gamma_2P_params = Fit_Gamma_2P(failures=failures, right_censored=right_censored, method=method,optimizer=optimizer, show_probability_plot=False, print_results=False)
+            self.__Gamma_2P_params = Fit_Gamma_2P(failures=failures, right_censored=right_censored, method=method, optimizer=optimizer, show_probability_plot=False, print_results=False)
             self.Gamma_2P_alpha = self.__Gamma_2P_params.alpha
             self.Gamma_2P_beta = self.__Gamma_2P_params.beta
             self.Gamma_2P_loglik = self.__Gamma_2P_params.loglik
@@ -283,20 +282,20 @@ class Fit_Everything:
             self.Gamma_2P_AICc = self.__Gamma_2P_params.AICc
             self.Gamma_2P_AD = self.__Gamma_2P_params.AD
             self._parametric_CDF_Gamma_2P = self.__Gamma_2P_params.distribution.CDF(xvals=d, show_plot=False)
-            df = df.append({'Distribution': 'Gamma_2P', 'Alpha': self.Gamma_2P_alpha, 'Beta': self.Gamma_2P_beta, 'Gamma': '', 'Mu': '', 'Sigma': '', 'Lambda': '','Log-likelihood': self.Gamma_2P_loglik, 'AICc': self.Gamma_2P_AICc, 'BIC': self.Gamma_2P_BIC, 'AD': self.Gamma_2P_AD}, ignore_index=True)
+            df = df.append({'Distribution': 'Gamma_2P', 'Alpha': self.Gamma_2P_alpha, 'Beta': self.Gamma_2P_beta, 'Gamma': '', 'Mu': '', 'Sigma': '', 'Lambda': '', 'Log-likelihood': self.Gamma_2P_loglik, 'AICc': self.Gamma_2P_AICc, 'BIC': self.Gamma_2P_BIC, 'AD': self.Gamma_2P_AD}, ignore_index=True)
 
         if 'Exponential_1P' not in self.excluded_distributions:
-            self.__Exponential_1P_params = Fit_Exponential_1P(failures=failures, right_censored=right_censored, method=method,optimizer=optimizer, show_probability_plot=False, print_results=False)
+            self.__Exponential_1P_params = Fit_Exponential_1P(failures=failures, right_censored=right_censored, method=method, optimizer=optimizer, show_probability_plot=False, print_results=False)
             self.Exponential_1P_lambda = self.__Exponential_1P_params.Lambda
             self.Exponential_1P_loglik = self.__Exponential_1P_params.loglik
             self.Exponential_1P_BIC = self.__Exponential_1P_params.BIC
             self.Exponential_1P_AICc = self.__Exponential_1P_params.AICc
             self.Exponential_1P_AD = self.__Exponential_1P_params.AD
             self._parametric_CDF_Exponential_1P = self.__Exponential_1P_params.distribution.CDF(xvals=d, show_plot=False)
-            df = df.append({'Distribution': 'Exponential_1P', 'Alpha': '', 'Beta': '', 'Gamma': '', 'Mu': '', 'Sigma': '', 'Lambda': self.Exponential_1P_lambda,'Log-likelihood': self.Exponential_1P_loglik, 'AICc': self.Exponential_1P_AICc, 'BIC': self.Exponential_1P_BIC, 'AD': self.Exponential_1P_AD}, ignore_index=True)
+            df = df.append({'Distribution': 'Exponential_1P', 'Alpha': '', 'Beta': '', 'Gamma': '', 'Mu': '', 'Sigma': '', 'Lambda': self.Exponential_1P_lambda, 'Log-likelihood': self.Exponential_1P_loglik, 'AICc': self.Exponential_1P_AICc, 'BIC': self.Exponential_1P_BIC, 'AD': self.Exponential_1P_AD}, ignore_index=True)
 
         if 'Loglogistic_2P' not in self.excluded_distributions:
-            self.__Loglogistic_2P_params = Fit_Loglogistic_2P(failures=failures, right_censored=right_censored, method=method,optimizer=optimizer, show_probability_plot=False, print_results=False)
+            self.__Loglogistic_2P_params = Fit_Loglogistic_2P(failures=failures, right_censored=right_censored, method=method, optimizer=optimizer, show_probability_plot=False, print_results=False)
             self.Loglogistic_2P_alpha = self.__Loglogistic_2P_params.alpha
             self.Loglogistic_2P_beta = self.__Loglogistic_2P_params.beta
             self.Loglogistic_2P_loglik = self.__Loglogistic_2P_params.loglik
@@ -304,10 +303,10 @@ class Fit_Everything:
             self.Loglogistic_2P_AICc = self.__Loglogistic_2P_params.AICc
             self.Loglogistic_2P_AD = self.__Loglogistic_2P_params.AD
             self._parametric_CDF_Loglogistic_2P = self.__Loglogistic_2P_params.distribution.CDF(xvals=d, show_plot=False)
-            df = df.append({'Distribution': 'Loglogistic_2P', 'Alpha': self.Loglogistic_2P_alpha, 'Beta': self.Loglogistic_2P_beta, 'Gamma': '', 'Mu': '', 'Sigma': '', 'Lambda': '','Log-likelihood': self.Loglogistic_2P_loglik, 'AICc': self.Loglogistic_2P_AICc, 'BIC': self.Loglogistic_2P_BIC, 'AD': self.Loglogistic_2P_AD}, ignore_index=True)
+            df = df.append({'Distribution': 'Loglogistic_2P', 'Alpha': self.Loglogistic_2P_alpha, 'Beta': self.Loglogistic_2P_beta, 'Gamma': '', 'Mu': '', 'Sigma': '', 'Lambda': '', 'Log-likelihood': self.Loglogistic_2P_loglik, 'AICc': self.Loglogistic_2P_AICc, 'BIC': self.Loglogistic_2P_BIC, 'AD': self.Loglogistic_2P_AD}, ignore_index=True)
 
         if 'Loglogistic_3P' not in self.excluded_distributions:
-            self.__Loglogistic_3P_params = Fit_Loglogistic_3P(failures=failures, right_censored=right_censored, method=method,optimizer=optimizer, show_probability_plot=False, print_results=False)
+            self.__Loglogistic_3P_params = Fit_Loglogistic_3P(failures=failures, right_censored=right_censored, method=method, optimizer=optimizer, show_probability_plot=False, print_results=False)
             self.Loglogistic_3P_alpha = self.__Loglogistic_3P_params.alpha
             self.Loglogistic_3P_beta = self.__Loglogistic_3P_params.beta
             self.Loglogistic_3P_gamma = self.__Loglogistic_3P_params.gamma
@@ -316,10 +315,10 @@ class Fit_Everything:
             self.Loglogistic_3P_AICc = self.__Loglogistic_3P_params.AICc
             self.Loglogistic_3P_AD = self.__Loglogistic_3P_params.AD
             self._parametric_CDF_Loglogistic_3P = self.__Loglogistic_3P_params.distribution.CDF(xvals=d, show_plot=False)
-            df = df.append({'Distribution': 'Loglogistic_3P', 'Alpha': self.Loglogistic_3P_alpha, 'Beta': self.Loglogistic_3P_beta, 'Gamma': self.Loglogistic_3P_gamma, 'Mu': '', 'Sigma': '', 'Lambda': '','Log-likelihood': self.Loglogistic_3P_loglik, 'AICc': self.Loglogistic_3P_AICc, 'BIC': self.Loglogistic_3P_BIC, 'AD': self.Loglogistic_3P_AD}, ignore_index=True)
+            df = df.append({'Distribution': 'Loglogistic_3P', 'Alpha': self.Loglogistic_3P_alpha, 'Beta': self.Loglogistic_3P_beta, 'Gamma': self.Loglogistic_3P_gamma, 'Mu': '', 'Sigma': '', 'Lambda': '', 'Log-likelihood': self.Loglogistic_3P_loglik, 'AICc': self.Loglogistic_3P_AICc, 'BIC': self.Loglogistic_3P_BIC, 'AD': self.Loglogistic_3P_AD}, ignore_index=True)
 
         if 'Beta_2P' not in self.excluded_distributions:
-            self.__Beta_2P_params = Fit_Beta_2P(failures=failures, right_censored=right_censored, method=method,optimizer=optimizer, show_probability_plot=False, print_results=False)
+            self.__Beta_2P_params = Fit_Beta_2P(failures=failures, right_censored=right_censored, method=method, optimizer=optimizer, show_probability_plot=False, print_results=False)
             self.Beta_2P_alpha = self.__Beta_2P_params.alpha
             self.Beta_2P_beta = self.__Beta_2P_params.beta
             self.Beta_2P_loglik = self.__Beta_2P_params.loglik
@@ -327,7 +326,7 @@ class Fit_Everything:
             self.Beta_2P_AICc = self.__Beta_2P_params.AICc
             self.Beta_2P_AD = self.__Beta_2P_params.AD
             self._parametric_CDF_Beta_2P = self.__Beta_2P_params.distribution.CDF(xvals=d, show_plot=False)
-            df = df.append({'Distribution': 'Beta_2P', 'Alpha': self.Beta_2P_alpha, 'Beta': self.Beta_2P_beta, 'Gamma': '', 'Mu': '', 'Sigma': '', 'Lambda': '','Log-likelihood': self.Beta_2P_loglik, 'AICc': self.Beta_2P_AICc, 'BIC': self.Beta_2P_BIC, 'AD': self.Beta_2P_AD}, ignore_index=True)
+            df = df.append({'Distribution': 'Beta_2P', 'Alpha': self.Beta_2P_alpha, 'Beta': self.Beta_2P_beta, 'Gamma': '', 'Mu': '', 'Sigma': '', 'Lambda': '', 'Log-likelihood': self.Beta_2P_loglik, 'AICc': self.Beta_2P_AICc, 'BIC': self.Beta_2P_BIC, 'AD': self.Beta_2P_AD}, ignore_index=True)
 
         # change to sorting by BIC if there is insifficient data to get the AICc for everything that was fitted
         if sort_by in ['AIC', 'aic', 'aicc', 'AICc'] and 'Insufficient data' in df['AICc'].values:
@@ -341,7 +340,7 @@ class Fit_Everything:
             df2 = df.reindex(df.AICc.sort_values().index)
         elif sort_by.upper() == 'AD':
             df2 = df.reindex(df.AD.sort_values().index)
-        elif sort_by.upper() in ['LOGLIK','LOG LIK', 'LOG-LIKELIHOOD','LL','LOGLIKELIHOOD','LOG LIKELIHOOD']:
+        elif sort_by.upper() in ['LOGLIK', 'LOG LIK', 'LOG-LIKELIHOOD', 'LL', 'LOGLIKELIHOOD', 'LOG LIKELIHOOD']:
             df2 = df.reindex(abs(df['Log-likelihood']).sort_values().index)
         else:
             raise ValueError("Invalid input to sort_by. Options are 'BIC', 'AICc', 'AD', or 'Log-likelihood'. Default is 'BIC'.")
@@ -1871,7 +1870,7 @@ class Fit_Exponential_1P:
 
         if percentiles is not None:
             point_estimate = self.distribution.quantile(q=percentiles / 100)
-            lower_estimate, upper_estimate = distribution_confidence_intervals.exponential_CI(self=self.distribution, func='CDF', CI_type='time', CI=CI, q=1 - (percentiles / 100))
+            lower_estimate, upper_estimate = distribution_confidence_intervals.exponential_CI(self=self.distribution, func='CDF', CI=CI, q=1 - (percentiles / 100))
             percentile_data = {'Percentile': percentiles,
                                'Lower Estimate': lower_estimate,
                                'Point Estimate': point_estimate,
@@ -2049,7 +2048,7 @@ class Fit_Exponential_2P:
 
         if percentiles is not None:
             point_estimate = self.distribution.quantile(q=percentiles / 100)
-            lower_estimate, upper_estimate = distribution_confidence_intervals.exponential_CI(self=self.distribution, func='CDF', CI_type='time', CI=CI, q=1 - (percentiles / 100))
+            lower_estimate, upper_estimate = distribution_confidence_intervals.exponential_CI(self=self.distribution, func='CDF', CI=CI, q=1 - (percentiles / 100))
             percentile_data = {'Percentile': percentiles,
                                'Lower Estimate': lower_estimate,
                                'Point Estimate': point_estimate,
