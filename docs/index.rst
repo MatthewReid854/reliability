@@ -161,7 +161,7 @@ Contents:
     :scale: 100%
     :target: https://doi.org/10.5281/zenodo.3937999
 
-.. |donate| image:: https://img.shields.io/badge/Donate-grey.svg?logo=paypal
+.. |donate| image:: https://img.shields.io/badge/Become$20a$20sponsor-grey.svg?logo=Github$sponsors
     :alt: donate
     :scale: 100%
     :target: https://reliability.readthedocs.io/en/latest/How%20to%20donate%20to%20the%20project.html
