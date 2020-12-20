@@ -2,7 +2,7 @@
 
 [![PyPI version](https://img.shields.io/pypi/v/reliability?color=brightgreen&logo=Python&logoColor=white&label=PyPI%20package)](https://pypi.org/project/reliability/)
 [![Documentation Status](https://img.shields.io/readthedocs/reliability/latest.svg?logo=read%20the%20docs&logoColor=white&label=Docs&version=latest)](http://reliability.readthedocs.io/?badge=latest)
-[![Build Status](https://github.com/MatthewReid854/reliability/workflows/run_tests_on_linux/badge.svg)](https://github.com/MatthewReid854/reliability/actions?query=workflow%3Arun_tests_on_linux)
+[![Build Status](https://github.com/MatthewReid854/reliability/workflows/run_tests_on_linux/badge.svg)](https://github.com/MatthewReid854/reliability/actions?query=workflow%3Abuild)
 [![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/MatthewReid854/reliability.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/MatthewReid854/reliability/context:python)
 [![Scc Count Badge](https://sloc.xyz/github/MatthewReid854/reliability/?category=code)](https://github.com/MatthewReid854/reliability/)
 [![Downloads](https://img.shields.io/pypi/dm/reliability?color=brightgreen&logo=Docusign&logoColor=white&label=PyPI%20downloads)](https://pypistats.org/packages/reliability)
