@@ -1365,6 +1365,7 @@ class Fit_Weibull_Mixture:
     right_censored - an array or list of right censored data
     print_results - True/False. This will print results to console. Default is True
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
+    optimizer - 'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
     show_probability_plot - True/False. This will show the probability plot with the fitted mixture CDF. Default is True.
 
     Outputs:
@@ -1398,14 +1399,15 @@ class Fit_Weibull_Mixture:
     goodness_of_fit - a dataframe of the goodness of fit values (Log-likelihood, AICc, BIC, AD).
     '''
 
-    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95):
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, optimizer='L-BFGS-B'):
 
-        inputs = fitters_input_checking(dist='Weibull_Mixture', failures=failures, right_censored=right_censored, CI=CI)
+        inputs = fitters_input_checking(dist='Weibull_Mixture', failures=failures, right_censored=right_censored, CI=CI, optimizer=optimizer)
         failures = inputs.failures
         right_censored = inputs.right_censored
         CI = inputs.CI
+        optimizer = inputs.optimizer
 
-        all_data = np.hstack([failures, right_censored])
+        n = len(failures) + len(right_censored)
         _, y = plotting_positions(failures=failures, right_censored=right_censored)  # this is only used to find AD
 
         # find the division line. This is to assign data to each group
@@ -1452,31 +1454,28 @@ class Fit_Weibull_Mixture:
                 GROUP_2_right_cens.append(item)
 
         # get inputs for the guess by fitting a weibull to each of the groups with their respective censored data
-        group_1_estimates = Fit_Weibull_2P(failures=GROUP_1_failures, right_censored=GROUP_1_right_cens, show_probability_plot=False, print_results=False)
-        group_2_estimates = Fit_Weibull_2P(failures=GROUP_2_failures, right_censored=GROUP_2_right_cens, show_probability_plot=False, print_results=False)
-        p_guess = (len(GROUP_1_failures) + len(GROUP_1_right_cens)) / len(all_data)  # proportion guess
+        group_1_estimates = Fit_Weibull_2P(failures=GROUP_1_failures, right_censored=GROUP_1_right_cens, show_probability_plot=False, print_results=False, optimizer=optimizer)
+        group_2_estimates = Fit_Weibull_2P(failures=GROUP_2_failures, right_censored=GROUP_2_right_cens, show_probability_plot=False, print_results=False, optimizer=optimizer)
+        p_guess = (len(GROUP_1_failures) + len(GROUP_1_right_cens)) / n  # proportion guess
         guess = [group_1_estimates.alpha, group_1_estimates.beta, group_2_estimates.alpha, group_2_estimates.beta, p_guess]  # A1,B1,A2,B2,P
 
         # solve it
-        bnds = [(0.0001, None), (0.0001, None), (0.0001, None), (0.0001, None), (0.0001, 0.9999)]  # bounds of solution
-        result = minimize(value_and_grad(Fit_Weibull_Mixture.LL), guess, args=(failures, right_censored), jac=True, bounds=bnds, tol=1e-6)
-        params = result.x
-        self.alpha_1 = params[0]
-        self.beta_1 = params[1]
-        self.alpha_2 = params[2]
-        self.beta_2 = params[3]
-        self.proportion_1 = params[4]
-        self.proportion_2 = 1 - params[4]
+        MLE_results = MLE_optimisation(func_name='Weibull_mixture', LL_func=Fit_Weibull_Mixture.LL, initial_guess=guess, failures=failures, right_censored=right_censored, optimizer=optimizer)
+        self.alpha_1 = MLE_results.alpha_1
+        self.beta_1 = MLE_results.beta_1
+        self.alpha_2 = MLE_results.alpha_2
+        self.beta_2 = MLE_results.beta_2
+        self.proportion_1 = MLE_results.proportion_1
+        self.proportion_2 = MLE_results.proportion_2
         dist_1 = Weibull_Distribution(alpha=self.alpha_1, beta=self.beta_1)
         dist_2 = Weibull_Distribution(alpha=self.alpha_2, beta=self.beta_2)
         self.distribution = Mixture_Model(distributions=[dist_1, dist_2], proportions=[self.proportion_1, self.proportion_2])
 
         params = [self.alpha_1, self.beta_1, self.alpha_2, self.beta_2, self.proportion_1]
-        k = len(params)
-        n = len(all_data)
         LL2 = 2 * Fit_Weibull_Mixture.LL(params, failures, right_censored)
         self.loglik2 = LL2
         self.loglik = LL2 * -0.5
+        k=5
         if n - k - 1 > 0:
             self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
         else:
@@ -1580,6 +1579,7 @@ class Fit_Weibull_CR:
     right_censored - an array or list of right censored data
     print_results - True/False. This will print results to console. Default is True.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
+    optimizer - 'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
     show_probability_plot - True/False. This will show the probability plot with the fitted Weibull_CR CDF. Default is True.
 
     Outputs:
@@ -1608,14 +1608,15 @@ class Fit_Weibull_CR:
     goodness_of_fit - a dataframe of the goodness of fit values (Log-likelihood, AICc, BIC, AD).
     '''
 
-    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95):
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, optimizer='L-BFGS-B'):
 
-        inputs = fitters_input_checking(dist='Weibull_CR', failures=failures, right_censored=right_censored, CI=CI)
+        inputs = fitters_input_checking(dist='Weibull_CR', failures=failures, right_censored=right_censored, CI=CI, optimizer=optimizer)
         failures = inputs.failures
         right_censored = inputs.right_censored
         CI = inputs.CI
+        optimizer = inputs.optimizer
 
-        all_data = np.hstack([failures, right_censored])
+        n = len(failures) + len(right_censored)
         _, y = plotting_positions(failures=failures, right_censored=right_censored)  # this is only used to find AD
         # find the division line. This is to assign data to each group
         h = np.histogram(failures, bins=50, density=True)
@@ -1666,20 +1667,17 @@ class Fit_Weibull_CR:
         guess = [group_1_estimates.alpha, group_1_estimates.beta, group_2_estimates.alpha, group_2_estimates.beta]  # A1,B1,A2,B2
 
         # solve it
-        bnds = [(0.0001, None), (0.0001, None), (0.0001, None), (0.0001, None)]  # bounds of solution
-        result = minimize(value_and_grad(Fit_Weibull_CR.LL), guess, args=(failures, right_censored), jac=True, bounds=bnds, tol=1e-6)
-        params = result.x
-        self.alpha_1 = params[0]
-        self.beta_1 = params[1]
-        self.alpha_2 = params[2]
-        self.beta_2 = params[3]
+        MLE_results = MLE_optimisation(func_name='Weibull_CR', LL_func=Fit_Weibull_CR.LL, initial_guess=guess, failures=failures, right_censored=right_censored, optimizer=optimizer)
+        self.alpha_1 = MLE_results.alpha_1
+        self.beta_1 = MLE_results.beta_1
+        self.alpha_2 = MLE_results.alpha_2
+        self.beta_2 = MLE_results.beta_2
         dist_1 = Weibull_Distribution(alpha=self.alpha_1, beta=self.beta_1)
         dist_2 = Weibull_Distribution(alpha=self.alpha_2, beta=self.beta_2)
         self.distribution = Competing_Risks_Model(distributions=[dist_1, dist_2])
 
         params = [self.alpha_1, self.beta_1, self.alpha_2, self.beta_2]
-        k = len(params)
-        n = len(all_data)
+        k = 4
         LL2 = 2 * Fit_Weibull_CR.LL(params, failures, right_censored)
         self.loglik2 = LL2
         self.loglik = LL2 * -0.5

@@ -872,8 +872,8 @@ class fitters_input_checking:
             raise ValueError('failures must be a list or array of failure data')
         if type(right_censored) not in [list, np.ndarray]:
             raise ValueError('right_censored must be a list or array of right_censored failure data')
-        failures = np.asarray(failures)
-        right_censored = np.asarray(right_censored)
+        failures = np.asarray(failures).astype(np.float)
+        right_censored = np.asarray(right_censored).astype(np.float)
 
         # check failures and right_censored are in the right range for the distribution
         if dist not in ['Normal_2P', 'Gumbel_2P']:
@@ -2266,6 +2266,10 @@ class MLE_optimisation:
             bounds = [(0, None)]
         elif func_name == 'Exponential_2P':
             bounds = [(0, None), (0, gamma0)]
+        elif func_name == 'Weibull_mixture':
+            bounds = [(0.0001, None), (0.0001, None), (0.0001, None), (0.0001, None), (0.0001, 0.9999)]
+        elif func_name == 'Weibull_CR':
+            bounds = [(0.0001, None), (0.0001, None), (0.0001, None), (0.0001, None)]
         else:
             raise ValueError('func_name is not recognised. Use the correct name e.g. "Weibull_2P"')
 
@@ -2273,7 +2277,7 @@ class MLE_optimisation:
         delta_BIC = 1
         BIC_array = [1000000]
         runs = 0
-        guess = initial_guess  # use least squares and the initial guess for MLE
+        guess = initial_guess  # set the current guess as the initial guess and then update the current guess each iteration
         if force_shape is None:
             k = len(bounds)
             while delta_BIC > 0.001 and runs < 5:  # exits after BIC convergence or 5 iterations
@@ -2286,10 +2290,14 @@ class MLE_optimisation:
                     guess = [params[0], params[1]]
                 elif func_name in ['Weibull_3P', 'Gamma_3P', 'Loglogistic_3P', 'Lognormal_3P']:
                     guess = [params[0], params[1], params[2]]
+                elif func_name == 'Weibull_mixture':
+                    guess = [params[0], params[1], params[2], params[3], params[4]]
+                elif func_name == 'Weibull_CR':
+                    guess = [params[0], params[1], params[2], params[3]]
                 LL2 = 2 * LL_func(guess, failures, right_censored)
                 BIC_array.append(np.log(n) * k + LL2)
                 delta_BIC = abs(BIC_array[-1] - BIC_array[-2])
-        else:  # this will only be run for Weibull_2P, Normal_2P, and Lognormal_2P so the guess is sturctured with this in mind
+        else:  # this will only be run for Weibull_2P, Normal_2P, and Lognormal_2P so the guess is structured with this in mind
             bounds = [bounds[0]]  # bounds on the solution. Helps a lot with stability
             guess = [guess[0]]
             k = 1
@@ -2305,27 +2313,19 @@ class MLE_optimisation:
         if result.success is True:
             params = result.x
             self.success = True
-            if force_shape is None:
-                self.scale = params[0]  # alpha, mu, Lambda
-                if func_name not in ['Exponential_1P', 'Exponential_2P']:
-                    self.shape = params[1]  # beta, sigma
-                else:
-                    if func_name == 'Exponential_2P':
-                        self.gamma = params[1]  # gamma for Exponential_2P
-                if func_name in ['Weibull_3P', 'Gamma_3P', 'Loglogistic_3P', 'Lognormal_3P']:
-                    self.gamma = params[2]  # gamma for Weibull_3P, Gamma_3P, Loglogistic_3P, Lognormal_3P
-            else:  # this will only be reached for Weibull_2P, Normal_2P and Lognormal_2P so the scale and shape extraction is fine for these
-                self.scale = params[0]
-                self.shape = force_shape
-        else:  # if the bounded optimizer (L-BFGS-B, TNC, powell) fails then we have a second attempt using the slower but slightly more reliable nelder-mead optimizer.
-            if force_shape is None:
-                guess = initial_guess
-                result = minimize(value_and_grad(LL_func), guess, args=(failures, right_censored), jac=True, tol=1e-4, method='nelder-mead')
+            if func_name == 'Weibull_mixture':
+                self.alpha_1 = params[0]
+                self.beta_1 = params[1]
+                self.alpha_2 = params[2]
+                self.beta_2 = params[3]
+                self.proportion_1 = params[4]
+                self.proportion_2 = 1 - params[4]
+            elif func_name == 'Weibull_CR':
+                self.alpha_1 = params[0]
+                self.beta_1 = params[1]
+                self.alpha_2 = params[2]
+                self.beta_2 = params[3]
             else:
-                guess = [initial_guess[0]]
-                result = minimize(value_and_grad(LL_func_force), guess, args=(failures, right_censored, force_shape), jac=True, tol=1e-4, method='nelder-mead')
-            if result.success is True:
-                params = result.x
                 if force_shape is None:
                     self.scale = params[0]  # alpha, mu, Lambda
                     if func_name not in ['Exponential_1P', 'Exponential_2P']:
@@ -2338,20 +2338,69 @@ class MLE_optimisation:
                 else:  # this will only be reached for Weibull_2P, Normal_2P and Lognormal_2P so the scale and shape extraction is fine for these
                     self.scale = params[0]
                     self.shape = force_shape
+        else:  # if the bounded optimizer (L-BFGS-B, TNC, powell) fails then we have a second attempt using the slower but slightly more reliable nelder-mead optimizer.
+            if force_shape is None:
+                guess = initial_guess
+                result = minimize(value_and_grad(LL_func), guess, args=(failures, right_censored), jac=True, tol=1e-4, method='nelder-mead')
             else:
-                colorprint(str('WARNING: MLE estimates failed for ' + func_name + '. The least squares estimates have been returned. These results may not be as accurate as MLE.'), text_color='red')
-                if force_shape is None:
-                    self.scale = initial_guess[0]  # alpha, mu, Lambda
-                    if func_name not in ['Exponential_1P', 'Exponential_2P']:
-                        self.shape = initial_guess[1]  # beta, sigma
-                    else:
-                        if func_name == 'Exponential_2P':
-                            self.gamma = initial_guess[1]  # gamma for Exponential_2P
-                    if func_name in ['Weibull_3P', 'Gamma_3P', 'Loglogistic_3P', 'Lognormal_3P']:
-                        self.gamma = initial_guess[2]  # gamma for Weibull_3P, Gamma_3P, Loglogistic_3P, Lognormal_3P
-                else:  # this will only be reached for Weibull_2P, Normal_2P and Lognormal_2P so the scale and shape extraction is fine for these
-                    self.scale = initial_guess[0]
-                    self.shape = force_shape
+                guess = [initial_guess[0]]
+                result = minimize(value_and_grad(LL_func_force), guess, args=(failures, right_censored, force_shape), jac=True, tol=1e-4, method='nelder-mead')
+            if result.success is True:
+                params = result.x
+                if func_name == 'Weibull_mixture':
+                    self.alpha_1 = params[0]
+                    self.beta_1 = params[1]
+                    self.alpha_2 = params[2]
+                    self.beta_2 = params[3]
+                    self.proportion_1 = params[4]
+                    self.proportion_2 = 1 - params[4]
+                elif func_name == 'Weibull_CR':
+                    self.alpha_1 = params[0]
+                    self.beta_1 = params[1]
+                    self.alpha_2 = params[2]
+                    self.beta_2 = params[3]
+                else:
+                    if force_shape is None:
+                        self.scale = params[0]  # alpha, mu, Lambda
+                        if func_name not in ['Exponential_1P', 'Exponential_2P']:
+                            self.shape = params[1]  # beta, sigma
+                        else:
+                            if func_name == 'Exponential_2P':
+                                self.gamma = params[1]  # gamma for Exponential_2P
+                        if func_name in ['Weibull_3P', 'Gamma_3P', 'Loglogistic_3P', 'Lognormal_3P']:
+                            self.gamma = params[2]  # gamma for Weibull_3P, Gamma_3P, Loglogistic_3P, Lognormal_3P
+                    else:  # this will only be reached for Weibull_2P, Normal_2P and Lognormal_2P so the scale and shape extraction is fine for these
+                        self.scale = params[0]
+                        self.shape = force_shape
+            else:
+                if func_name == 'Weibull_mixture':
+                    colorprint('WARNING: MLE estimates failed for Weibull_mixture. The initial estimates have been returned. These results may not be as accurate as MLE.', text_color='red')
+                    self.alpha_1 = initial_guess[0]
+                    self.beta_1 = initial_guess[1]
+                    self.alpha_2 = initial_guess[2]
+                    self.beta_2 = initial_guess[3]
+                    self.proportion_1 = initial_guess[4]
+                    self.proportion_2 = 1 - initial_guess[4]
+                elif func_name == 'Weibull_CR':
+                    colorprint('WARNING: MLE estimates failed for Weibull_CR. The initial estimates have been returned. These results may not be as accurate as MLE.', text_color='red')
+                    self.alpha_1 = initial_guess[0]
+                    self.beta_1 = initial_guess[1]
+                    self.alpha_2 = initial_guess[2]
+                    self.beta_2 = initial_guess[3]
+                else:
+                    colorprint(str('WARNING: MLE estimates failed for ' + func_name + '. The least squares estimates have been returned. These results may not be as accurate as MLE.'), text_color='red')
+                    if force_shape is None:
+                        self.scale = initial_guess[0]  # alpha, mu, Lambda
+                        if func_name not in ['Exponential_1P', 'Exponential_2P']:
+                            self.shape = initial_guess[1]  # beta, sigma
+                        else:
+                            if func_name == 'Exponential_2P':
+                                self.gamma = initial_guess[1]  # gamma for Exponential_2P
+                        if func_name in ['Weibull_3P', 'Gamma_3P', 'Loglogistic_3P', 'Lognormal_3P']:
+                            self.gamma = initial_guess[2]  # gamma for Weibull_3P, Gamma_3P, Loglogistic_3P, Lognormal_3P
+                    else:  # this will only be reached for Weibull_2P, Normal_2P and Lognormal_2P so the scale and shape extraction is fine for these
+                        self.scale = initial_guess[0]
+                        self.shape = force_shape
 
 
 def write_df_to_xlsx(df, path, **kwargs):
