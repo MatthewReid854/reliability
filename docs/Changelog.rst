@@ -62,7 +62,7 @@ Changelog
 
 **New features**
 
--    Confidence intervals added for Normal, Lognormal, Loglogistic, and Gumbel Distributions. *Confidence intervals for the Gamma and Beta Distributions will be part of 0.5.5 in Feb 2021*
+-    Confidence intervals added for Normal, Lognormal, Loglogistic, and Gumbel Distributions. *Confidence intervals for the Gamma and Beta Distributions will be part of 0.5.6 in Feb/Mar 2021*
 -    Added Gumbel_Distribution to Distributions
 -    Added Gumbel_Distribution to Other_functions.distribution_explorer
 -    Added Fit_Gumbel_2P to Fitters
