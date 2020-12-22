@@ -5,7 +5,7 @@
 Changelog
 ---------
 
-**Version: 0.5.5 --- Currently unreleased --- due for release around mid-February**
+**Version: 0.5.5 --- Currently unreleased --- due for release around mid-January**
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 **New features**
@@ -14,7 +14,7 @@ Changelog
 
      -    Least Squares estimation is now available. Previously the fit was solely achieved using MLE. MLE remains the default.
      -    For the least squares estimation, users may select RRX, RRY, LS. RRX and RRY are rank regression on X and rank regression on Y respectively. LS will perform both RRX and RRY and use the one with the best log-likelihood.
-     -    There are 3 optimisers to choose from for all of the standard fitters. These are L-BFGS-B, TNC, powell. Previously there was only an option for some of the fitters and the optimiser was not standardized.
+     -    There are 3 optimisers to choose from for all of the standard fitters. These are L-BFGS-B, TNC, powell. Previously there was only an option for some of the fitters and the optimiser was not standardized. L-BFGS-B is default if there is less than 97% censored data, otherwise TNC is the default optimizer above 97% censored data.
      -    Removal of scipy as the method to obtain the initial guess for MLE. With the inclusion of least squares estimation, the MLE method is much faster since it is not reliant on scipy to provide an initial guess (which failed to account for right censored data and often gave a poor guess).
 
 -    Addition of a new module for converting data between different formats. The module reliability.Convert_data allows for conversion between FR (failures, right censored), FNRN (failures, number of failures, right censored, number of right censored), and XCN (event time, censoring code, number of events). It also provides a streamlined process for importing data from xlsx files, for exporting data to xlsx files, and for printing the dataset in a dataframe for easy visualisation.
@@ -22,7 +22,9 @@ Changelog
 **API Changes**
 
 -    All of the standard fitters now include method and optimizer arguments.
+-    The non-standard fitters (FIt_Everything, Fit_Weibull_Mixture and Fit_Weibull_CR) now include optimizer argument.
 -    Fitters.Fit_Weibull_2P, Fitters.Fit_Weibull_3P, Fitters.Fit_Weibull_2P_grouped have had some changes to their input arguments so that they all include method and optimizer. The initial_guess_method option is gone as it has been replaced by least squares estimation.
+-    The function Other_functions.Convert_dataframe_to_grouped lists is now deprecated. The functionality is captured within the new Convert_data module.
 -    The entire Stress_strength module has been deprecated. This is because there were (and likely only ever would be) two functions in this module which is not enough to justify a separate module. The two function have been moved into Other_functions and renamed. Full deprecation will occur in March 2021 (in version 0.5.6), and until then a DeprecationWarning will be printed and the old functions will still work. The renaming is as follows:
 
      -    reliability.Stress_strength.Probability_of_failure :math:`\Rightarrow` reliability.Other_functions.stress_strength
@@ -31,16 +33,29 @@ Changelog
 **Bug Fixes**
 
 -    fixed a bug in Reliability_testing.reliability_test_duration in which certain inputs resulted in 1 failure and the plot limits caused a crash when left=right limit.
+-    fixed a bug in ALT_Fitters where the CI string in the results title would be rounded to an integer. This would cause 0.975 to appear as 97% rather than 97.5%.
+-    fixed a bug in Fit_Weibull_Mixture and Fit_Weibull_CR. When given input as a list of integers, it failed to convert these to floats and then crashed due to an error with type conversion error between int32 and float64
+-    probability_plot_xylims had a bug when there is only 1 datapoint as xlower=xupper and ylower=yupper. Cases with only 1 datapoint are now handled appropriately.
+-    Fitters had a bug where force_beta or force_sigma needed to be a float. It would crash if an int was supplied.
+-    Fixed a bug in all the ALT fitters where a crash would occur when use level stress was not provided. This was due to the use life being referenced in all cases rather than just in cases where the use level stress was specified.
 
 **Other**
 
 -    Utils has 2 new functions (linear_regression and least_squares). These are now used by Fitters to obtain the least squares estimates.
--    The format of all the printed fitters outputs has been improved. More detail is provided and the formatting is better.
--    Dataframes from fitters are formatted better to retain the index but not display it.
--    Text output for sample_size_no_failures
--    Text output for one_sample_proportion
--    Text output for two_proportion_test
+-    The format of all the printed fitters outputs has been improved. More detail is provided, goodness of fit parameters are provided and the formatting is better.
+-    Dataframes everywhere are formatted better to retain the index but not display it.
+-    Text output for sample_size_no_failures.
+-    Text output for one_sample_proportion.
+-    Text output for two_proportion_test.
 -    one_sample_proportion will now return 0 or 1 for the lower and upper reliability estimates instead of NaN in cases when there are all failures or all successes.
+-    ALT_Fitters has 2 new results: alpha_at_use_stress (mu for Lognormal and Normal, Lambda for Exponential) and distribution_at_use_stress. These are provided for convenience and were able to be calculated from the previous results.
+-    Title added to all nonparametric results printed.
+-    Bold and underline enhancements to results titles in all ALT_fitters and in MCF_parametric and MCF_nonparametric.
+-    Changed Build and Test from Travis CI to GitHub Actions.
+-    Reformatted all code using `Black <https://black.readthedocs.io/en/stable/>`_. This resulted in a significant increase in the lines of code (LOC) count but in actual fact there was not that many new lines added.
+-    Added another standard dataset called "mixture" and an ALT dataset called "ALT_temperature4".
+-    In all the ALT fitters, the initial guess process is now bypassed if an initial guess is specified by the user. Previously the initial guess was always obtained by curve_fit but not used if a user specified initial guess was given. This change enhances speed and enables a failure of curve_fit to be bypassed through specifying an accurate initial guess.
+-    Documentation updates to reflect version 0.5.5 API changes and results printed.
 
 **Version: 0.5.4 --- Released: 7 November 2020**
 ''''''''''''''''''''''''''''''''''''''''''''''''
