@@ -136,8 +136,9 @@ class Fit_Weibull_Exponential:
     beta_upper - the upper CI estimate of the parameter
     beta_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
-    mean_life - the mean life at the use_level_stress. Only calculated if use_level_stress is specified
+    mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided).
     alpha_at_use_stress - the equivalent Weibull alpha parameter at the use level stress (only provided if use_level_stress is provided).
+    distribution_at_use_stress - the Weibull distribution at the use level stress (only provided if use_level_stress is provided).
     """
 
     def __init__(
@@ -314,9 +315,10 @@ class Fit_Weibull_Exponential:
 
         if use_level_stress is not None:
             self.alpha_at_use_stress = self.b * np.exp(self.a / use_level_stress)
-            self.mean_life = Weibull_Distribution(
+            self.distribution_at_use_stress = Weibull_Distribution(
                 alpha=self.alpha_at_use_stress, beta=self.beta
-            ).mean
+            )
+            self.mean_life = self.distribution_at_use_stress.mean
 
         if print_results is True:
 
@@ -501,8 +503,9 @@ class Fit_Weibull_Eyring:
     beta_upper - the upper CI estimate of the parameter
     beta_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
-    mean_life - the mean life at the use_level_stress. Only calculated if use_level_stress is specified
-    alpha_at_use_stress - the equivalent Weibull alpha parameter at the use level stress (only provided if use_level_stress is provided).        alpha_at_use_stress - the equivalent Weibull alpha parameter at the use level stress (only provided if use_level_stress is provided).
+    mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided).
+    alpha_at_use_stress - the equivalent Weibull alpha parameter at the use level stress (only provided if use_level_stress is provided).
+    distribution_at_use_stress - the Weibull distribution at the use level stress (only provided if use_level_stress is provided).
     """
 
     def __init__(
@@ -681,9 +684,10 @@ class Fit_Weibull_Eyring:
             self.alpha_at_use_stress = (
                 1 / use_level_stress * np.exp(-(self.c - self.a / use_level_stress))
             )
-            self.mean_life = Weibull_Distribution(
+            self.distribution_at_use_stress = Weibull_Distribution(
                 alpha=self.alpha_at_use_stress, beta=self.beta
-            ).mean
+            )
+            self.mean_life = self.distribution_at_use_stress.mean
 
         if print_results is True:
             CI_rounded = CI * 100
@@ -858,8 +862,9 @@ class Fit_Weibull_Power:
     beta_upper - the upper CI estimate of the parameter
     beta_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
-    mean_life - the mean life at the use_level_stress. Only calculated if use_level_stress is specified
+    mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided).
     alpha_at_use_stress - the equivalent Weibull alpha parameter at the use level stress (only provided if use_level_stress is provided).
+    distribution_at_use_stress - the Weibull distribution at the use level stress (only provided if use_level_stress is provided).
     """
 
     def __init__(
@@ -1036,9 +1041,10 @@ class Fit_Weibull_Power:
 
         if use_level_stress is not None:
             self.alpha_at_use_stress = self.a * use_level_stress ** self.n
-            self.mean_life = Weibull_Distribution(
+            self.distribution_at_use_stress = Weibull_Distribution(
                 alpha=self.alpha_at_use_stress, beta=self.beta
-            ).mean
+            )
+            self.mean_life = self.distribution_at_use_stress.mean
 
         if print_results is True:
             CI_rounded = CI * 100
@@ -1219,8 +1225,9 @@ class Fit_Weibull_Dual_Exponential:
     beta_upper - the upper CI estimate of the parameter
     beta_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
-    mean_life - the mean life at the use_level_stress. Only calculated if use_level_stress is specified
+    mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided).
     alpha_at_use_stress - the equivalent Weibull alpha parameter at the use level stress (only provided if use_level_stress is provided).
+    distribution_at_use_stress - the Weibull distribution at the use level stress (only provided if use_level_stress is provided).
     """
 
     def __init__(
@@ -1460,9 +1467,10 @@ class Fit_Weibull_Dual_Exponential:
             self.alpha_at_use_stress = self.c * np.exp(
                 self.a / use_level_stress[0] + self.b / use_level_stress[1]
             )
-            self.mean_life = Weibull_Distribution(
+            self.distribution_at_use_stress = Weibull_Distribution(
                 alpha=self.alpha_at_use_stress, beta=self.beta
-            ).mean
+            )
+            self.mean_life = self.distribution_at_use_stress.mean
 
         if print_results is True:
             CI_rounded = CI * 100
@@ -1677,8 +1685,9 @@ class Fit_Weibull_Power_Exponential:
     beta_upper - the upper CI estimate of the parameter
     beta_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
-    mean_life - the mean life at the use_level_stress. Only calculated if use_level_stress is specified
+    mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided).
     alpha_at_use_stress - the equivalent Weibull alpha parameter at the use level stress (only provided if use_level_stress is provided).
+    distribution_at_use_stress - the Weibull distribution at the use level stress (only provided if use_level_stress is provided).
     """
 
     def __init__(
@@ -1922,9 +1931,10 @@ class Fit_Weibull_Power_Exponential:
                 * (use_level_stress[1]) ** self.n
                 * np.exp(self.a / use_level_stress[0])
             )
-            self.mean_life = Weibull_Distribution(
+            self.distribution_at_use_stress = Weibull_Distribution(
                 alpha=self.alpha_at_use_stress, beta=self.beta
-            ).mean
+            )
+            self.mean_life = self.distribution_at_use_stress.mean
 
         if print_results is True:
             CI_rounded = CI * 100
@@ -2137,8 +2147,9 @@ class Fit_Lognormal_Exponential:
     sigma_upper - the upper CI estimate of the parameter
     sigma_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
-    mean_life - the mean life at the use_level_stress. Only calculated if use_level_stress is specified
+    mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided).
     mu_at_use_stress - the equivalent Lognormal mu parameter at the use level stress (only provided if use_level_stress is provided).
+    distribution_at_use_stress - the Lognormal distribution at the use level stress (only provided if use_level_stress is provided).
     """
 
     def __init__(
@@ -2316,9 +2327,10 @@ class Fit_Lognormal_Exponential:
         if use_level_stress is not None:
             use_life = self.b * np.exp(self.a / use_level_stress)
             self.mu_at_use_stress = np.log(use_life)
-            self.mean_life = Lognormal_Distribution(
+            self.distribution_at_use_stress = Lognormal_Distribution(
                 mu=self.mu_at_use_stress, sigma=self.sigma
-            ).mean
+            )
+            self.mean_life = self.distribution_at_use_stress.mean
 
         if print_results is True:
             CI_rounded = CI * 100
@@ -2502,8 +2514,9 @@ class Fit_Lognormal_Eyring:
     sigma_upper - the upper CI estimate of the parameter
     sigma_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
-    mean_life - the mean life at the use_level_stress. Only calculated if use_level_stress is specified
+    mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided).
     mu_at_use_stress - the equivalent Lognormal mu parameter at the use level stress (only provided if use_level_stress is provided).
+    distribution_at_use_stress - the Lognormal distribution at the use level stress (only provided if use_level_stress is provided).
     """
 
     def __init__(
@@ -2683,9 +2696,10 @@ class Fit_Lognormal_Eyring:
                 1 / use_level_stress * np.exp(-(self.c - self.a / use_level_stress))
             )
             self.mu_at_use_stress = np.log(use_life)
-            self.mean_life = Lognormal_Distribution(
+            self.distribution_at_use_stress = Lognormal_Distribution(
                 mu=self.mu_at_use_stress, sigma=self.sigma
-            ).mean
+            )
+            self.mean_life = self.distribution_at_use_stress.mean
 
         if print_results is True:
             CI_rounded = CI * 100
@@ -2860,8 +2874,9 @@ class Fit_Lognormal_Power:
     sigma_upper - the upper CI estimate of the parameter
     sigma_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
-    mean_life - the mean life at the use_level_stress. Only calculated if use_level_stress is specified
+    mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided).
     mu_at_use_stress - the equivalent Lognormal mu parameter at the use level stress (only provided if use_level_stress is provided).
+    distribution_at_use_stress - the Lognormal distribution at the use level stress (only provided if use_level_stress is provided).
     """
 
     def __init__(
@@ -3039,9 +3054,10 @@ class Fit_Lognormal_Power:
         if use_level_stress is not None:
             use_life = self.a * use_level_stress ** self.n
             self.mu_at_use_stress = np.log(use_life)
-            self.mean_life = Lognormal_Distribution(
+            self.distribution_at_use_stress = Lognormal_Distribution(
                 mu=self.mu_at_use_stress, sigma=self.sigma
-            ).mean
+            )
+            self.mean_life = self.distribution_at_use_stress.mean
 
         if print_results is True:
             CI_rounded = CI * 100
@@ -3222,8 +3238,9 @@ class Fit_Lognormal_Dual_Exponential:
     sigma_upper - the upper CI estimate of the parameter
     sigma_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
-    mean_life - the mean life at the use_level_stress. Only calculated if use_level_stress is specified
+    mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided).
     mu_at_use_stress - the equivalent Lognormal mu parameter at the use level stress (only provided if use_level_stress is provided).
+    distribution_at_use_stress - the Lognormal distribution at the use level stress (only provided if use_level_stress is provided).
     """
 
     def __init__(
@@ -3464,9 +3481,10 @@ class Fit_Lognormal_Dual_Exponential:
                 self.a / use_level_stress[0] + self.b / use_level_stress[1]
             )
             self.mu_at_use_stress = np.log(use_life)
-            self.mean_life = Lognormal_Distribution(
+            self.distribution_at_use_stress = Lognormal_Distribution(
                 mu=self.mu_at_use_stress, sigma=self.sigma
-            ).mean
+            )
+            self.mean_life = self.distribution_at_use_stress.mean
 
         if print_results is True:
             CI_rounded = CI * 100
@@ -3678,8 +3696,9 @@ class Fit_Lognormal_Power_Exponential:
     sigma_upper - the upper CI estimate of the parameter
     sigma_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
-    mean_life - the mean life at the use_level_stress. Only calculated if use_level_stress is specified
+    mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided).
     mu_at_use_stress - the equivalent Lognormal mu parameter at the use level stress (only provided if use_level_stress is provided).
+    distribution_at_use_stress - the Lognormal distribution at the use level stress (only provided if use_level_stress is provided).
     """
 
     def __init__(
@@ -3924,9 +3943,10 @@ class Fit_Lognormal_Power_Exponential:
                 * np.exp(self.a / use_level_stress[0])
             )
             self.mu_at_use_stress = np.log(use_life)
-            self.mean_life = Lognormal_Distribution(
+            self.distribution_at_use_stress = Lognormal_Distribution(
                 mu=self.mu_at_use_stress, sigma=self.sigma
-            ).mean
+            )
+            self.mean_life = self.distribution_at_use_stress.mean
 
         if print_results is True:
             CI_rounded = CI * 100
@@ -4136,8 +4156,9 @@ class Fit_Normal_Exponential:
     sigma_upper - the upper CI estimate of the parameter
     sigma_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
-    mean_life - the mean life at the use_level_stress. Only calculated if use_level_stress is specified
+    mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided).
     mu_at_use_stress - the equivalent Normal mu parameter at the use level stress (only provided if use_level_stress is provided).
+    distribution_at_use_stress - the Normal distribution at the use level stress (only provided if use_level_stress is provided).
     """
 
     def __init__(
@@ -4315,9 +4336,10 @@ class Fit_Normal_Exponential:
 
         if use_level_stress is not None:
             self.mu_at_use_stress = self.b * np.exp(self.a / use_level_stress)
-            self.mean_life = Normal_Distribution(
+            self.distribution_at_use_stress = Normal_Distribution(
                 mu=self.mu_at_use_stress, sigma=self.sigma
-            ).mean
+            )
+            self.mean_life = self.distribution_at_use_stress.mean
 
         if print_results is True:
             CI_rounded = CI * 100
@@ -4495,8 +4517,9 @@ class Fit_Normal_Eyring:
     sigma_upper - the upper CI estimate of the parameter
     sigma_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
-    mean_life - the mean life at the use_level_stress. Only calculated if use_level_stress is specified
+    mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided).
     mu_at_use_stress - the equivalent Normal mu parameter at the use level stress (only provided if use_level_stress is provided).
+    distribution_at_use_stress - the Normal distribution at the use level stress (only provided if use_level_stress is provided).
     """
 
     def __init__(
@@ -4676,9 +4699,10 @@ class Fit_Normal_Eyring:
             self.mu_at_use_stress = (
                 1 / use_level_stress * np.exp(-(self.c - self.a / use_level_stress))
             )
-            self.mean_life = Normal_Distribution(
+            self.distribution_at_use_stress = Normal_Distribution(
                 mu=self.mu_at_use_stress, sigma=self.sigma
-            ).mean
+            )
+            self.mean_life = self.distribution_at_use_stress.mean
 
         if print_results is True:
             CI_rounded = CI * 100
@@ -4849,8 +4873,9 @@ class Fit_Normal_Power:
     sigma_upper - the upper CI estimate of the parameter
     sigma_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
-    mean_life - the mean life at the use_level_stress. Only calculated if use_level_stress is specified
+    mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided).
     mu_at_use_stress - the equivalent Normal mu parameter at the use level stress (only provided if use_level_stress is provided).
+    distribution_at_use_stress - the Normal distribution at the use level stress (only provided if use_level_stress is provided).
     """
 
     def __init__(
@@ -5028,9 +5053,10 @@ class Fit_Normal_Power:
 
         if use_level_stress is not None:
             self.mu_at_use_stress = self.a * use_level_stress ** self.n
-            self.mean_life = Normal_Distribution(
+            self.distribution_at_use_stress = Normal_Distribution(
                 mu=self.mu_at_use_stress, sigma=self.sigma
-            ).mean
+            )
+            self.mean_life = self.distribution_at_use_stress.mean
 
         if print_results is True:
             CI_rounded = CI * 100
@@ -5207,8 +5233,9 @@ class Fit_Normal_Dual_Exponential:
     sigma_upper - the upper CI estimate of the parameter
     sigma_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
-    mean_life - the mean life at the use_level_stress. Only calculated if use_level_stress is specified
+    mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided).
     mu_at_use_stress - the equivalent Normal mu parameter at the use level stress (only provided if use_level_stress is provided).
+    distribution_at_use_stress - the Normal distribution at the use level stress (only provided if use_level_stress is provided).
     """
 
     def __init__(
@@ -5449,9 +5476,10 @@ class Fit_Normal_Dual_Exponential:
             self.mu_at_use_stress = self.c * np.exp(
                 self.a / use_level_stress[0] + self.b / use_level_stress[1]
             )
-            self.mean_life = Normal_Distribution(
+            self.distribution_at_use_stress = Normal_Distribution(
                 mu=self.mu_at_use_stress, sigma=self.sigma
-            ).mean
+            )
+            self.mean_life = self.distribution_at_use_stress.mean
 
         if print_results is True:
             CI_rounded = CI * 100
@@ -5659,8 +5687,9 @@ class Fit_Normal_Power_Exponential:
     sigma_upper - the upper CI estimate of the parameter
     sigma_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
-    mean_life - the mean life at the use_level_stress. Only calculated if use_level_stress is specified
+    mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided).
     mu_at_use_stress - the equivalent Normal mu parameter at the use level stress (only provided if use_level_stress is provided).
+    distribution_at_use_stress - the Normal distribution at the use level stress (only provided if use_level_stress is provided).
     """
 
     def __init__(
@@ -5905,9 +5934,10 @@ class Fit_Normal_Power_Exponential:
                 * (use_level_stress[1]) ** self.n
                 * np.exp(self.a / use_level_stress[0])
             )
-            self.mean_life = Normal_Distribution(
+            self.distribution_at_use_stress = Normal_Distribution(
                 mu=self.mu_at_use_stress, sigma=self.sigma
-            ).mean
+            )
+            self.mean_life = self.distribution_at_use_stress.mean
 
         if print_results is True:
             CI_rounded = CI * 100
@@ -6109,8 +6139,9 @@ class Fit_Exponential_Exponential:
     b_upper - the upper CI estimate of the parameter
     b_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
-    mean_life - the mean life at the use_level_stress. Only calculated if use_level_stress is specified
+    mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided).
     Lambda_at_use_stress - the equivalent Exponential Lambda parameter at the use level stress (only provided if use_level_stress is provided).
+    distribution_at_use_stress - the Exponential distribution at the use level stress (only provided if use_level_stress is provided).
     """
 
     def __init__(
@@ -6270,9 +6301,10 @@ class Fit_Exponential_Exponential:
         if use_level_stress is not None:
             use_life = self.b * np.exp(self.a / use_level_stress)
             self.Lambda_at_use_stress = 1 / use_life
-            self.mean_life = Exponential_Distribution(
+            self.distribution_at_use_stress = Exponential_Distribution(
                 Lambda=self.Lambda_at_use_stress
-            ).mean
+            )
+            self.mean_life = self.distribution_at_use_stress.mean
 
         if print_results is True:
             CI_rounded = CI * 100
@@ -6445,8 +6477,9 @@ class Fit_Exponential_Eyring:
     c_upper - the upper CI estimate of the parameter
     c_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
-    mean_life - the mean life at the use_level_stress. Only calculated if use_level_stress is specified
+    mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided).
     Lambda_at_use_stress - the equivalent Exponential Lambda parameter at the use level stress (only provided if use_level_stress is provided).
+    distribution_at_use_stress - the Exponential distribution at the use level stress (only provided if use_level_stress is provided).
     """
 
     def __init__(
@@ -6608,9 +6641,10 @@ class Fit_Exponential_Eyring:
                 1 / use_level_stress * np.exp(-(self.c - self.a / use_level_stress))
             )
             self.Lambda_at_use_stress = 1 / use_life
-            self.mean_life = Exponential_Distribution(
+            self.distribution_at_use_stress = Exponential_Distribution(
                 Lambda=self.Lambda_at_use_stress
-            ).mean
+            )
+            self.mean_life = self.distribution_at_use_stress.mean
 
         if print_results is True:
             CI_rounded = CI * 100
@@ -6776,8 +6810,9 @@ class Fit_Exponential_Power:
     n_upper - the upper CI estimate of the parameter
     n_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
-    mean_life - the mean life at the use_level_stress. Only calculated if use_level_stress is specified
+    mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided).
     Lambda_at_use_stress - the equivalent Exponential Lambda parameter at the use level stress (only provided if use_level_stress is provided).
+    distribution_at_use_stress - the Exponential distribution at the use level stress (only provided if use_level_stress is provided).
     """
 
     def __init__(
@@ -6937,9 +6972,10 @@ class Fit_Exponential_Power:
         if use_level_stress is not None:
             use_life = self.a * use_level_stress ** self.n
             self.Lambda_at_use_stress = 1 / use_life
-            self.mean_life = Exponential_Distribution(
+            self.distribution_at_use_stress = Exponential_Distribution(
                 Lambda=self.Lambda_at_use_stress
-            ).mean
+            )
+            self.mean_life = self.distribution_at_use_stress.mean
 
         if print_results is True:
             CI_rounded = CI * 100
@@ -7111,8 +7147,9 @@ class Fit_Exponential_Dual_Exponential:
     c_upper - the upper CI estimate of the parameter
     c_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
-    mean_life - the mean life at the use_level_stress. Only calculated if use_level_stress is specified
+    mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided).
     Lambda_at_use_stress - the equivalent Exponential Lambda parameter at the use level stress (only provided if use_level_stress is provided).
+    distribution_at_use_stress - the Exponential distribution at the use level stress (only provided if use_level_stress is provided).
     """
 
     def __init__(
@@ -7324,9 +7361,10 @@ class Fit_Exponential_Dual_Exponential:
                 self.a / use_level_stress[0] + self.b / use_level_stress[1]
             )
             self.Lambda_at_use_stress = 1 / use_life
-            self.mean_life = Exponential_Distribution(
+            self.distribution_at_use_stress = Exponential_Distribution(
                 Lambda=self.Lambda_at_use_stress
-            ).mean
+            )
+            self.mean_life = self.distribution_at_use_stress.mean
 
         if print_results is True:
             CI_rounded = CI * 100
@@ -7530,8 +7568,9 @@ class Fit_Exponential_Power_Exponential:
     n_upper - the upper CI estimate of the parameter
     n_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
-    mean_life - the mean life at the use_level_stress. Only calculated if use_level_stress is specified
+    mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided).
     Lambda_at_use_stress - the equivalent Exponential Lambda parameter at the use level stress (only provided if use_level_stress is provided).
+    distribution_at_use_stress - the Exponential distribution at the use level stress (only provided if use_level_stress is provided).
     """
 
     def __init__(
@@ -7747,9 +7786,10 @@ class Fit_Exponential_Power_Exponential:
                 * np.exp(self.a / use_level_stress[0])
             )
             self.Lambda_at_use_stress = 1 / use_life
-            self.mean_life = Exponential_Distribution(
+            self.distribution_at_use_stress = Exponential_Distribution(
                 Lambda=self.Lambda_at_use_stress
-            ).mean
+            )
+            self.mean_life = self.distribution_at_use_stress.mean
 
         if print_results is True:
             CI_rounded = CI * 100

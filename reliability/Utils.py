@@ -916,9 +916,14 @@ class fitters_input_checking:
             raise ValueError('CI must be between 0 and 1. Default is 0.95 for 95% Confidence interval.')
 
         # error checking for optimizer
-        if optimizer is not None:
-            if optimizer.upper() not in ['L-BFGS-B', 'TNC', 'POWELL']:
-                raise ValueError('optimizer must be either "L-BFGS-B", "TNC", or "powell". Default is "L-BFGS-B".')
+        if optimizer is None:
+            frac_cens = len(right_censored) / (len(failures) + len(right_censored))
+            if frac_cens > 0.97:
+                optimizer = 'TNC'  # default optimizer above 97% right censored data
+            else:
+                optimizer = 'L-BFGS-B'  # default optimizer below 97% right censored data
+        elif optimizer.upper() not in ['L-BFGS-B', 'TNC', 'POWELL']:
+            raise ValueError('optimizer must be either "L-BFGS-B", "TNC", or "powell". Default is "L-BFGS-B" below 97% censored data and "TNC" above 97% censored data.')
 
         # error checking for method
         if method is not None:

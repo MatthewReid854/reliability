@@ -101,7 +101,7 @@ class Fit_Everything:
     print('Weibull Alpha =',output.Weibull_2P_alpha,'\nWeibull Beta =',output.Weibull_2P_beta)
     '''
 
-    def __init__(self, failures=None, right_censored=None, exclude=None, sort_by='BIC', method='MLE', optimizer='L-BFGS-B', print_results=True, show_histogram_plot=True, show_PP_plot=True, show_probability_plot=True):
+    def __init__(self, failures=None, right_censored=None, exclude=None, sort_by='BIC', method='MLE', optimizer=None, print_results=True, show_histogram_plot=True, show_PP_plot=True, show_probability_plot=True):
 
         inputs = fitters_input_checking(dist='Everything', failures=failures, right_censored=right_censored, method=method, optimizer=optimizer)
         failures = inputs.failures
@@ -381,7 +381,7 @@ class Fit_Everything:
         # print the results
         if print_results is True:  # printing occurs by default
             frac_cens = self._frac_cens * 100
-            if frac_cens % 1 == 0:
+            if frac_cens % 1 < 1e-10:
                 frac_cens = int(frac_cens)
             colorprint('Results from Fit_Everything:', bold=True, underline=True)
             print('Analysis method:', method)
@@ -675,7 +675,7 @@ class Fit_Weibull_2P:
     percentiles - a dataframe of the percentiles with bounds on time. This is only produced if percentiles is 'auto' or a list or array. Since percentiles defaults to None, this output is not normally produced.
     '''
 
-    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, percentiles=None, CI_type='time', method='MLE', optimizer='L-BFGS-B', force_beta=None, **kwargs):
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, percentiles=None, CI_type='time', method='MLE', optimizer=None, force_beta=None, **kwargs):
 
         inputs = fitters_input_checking(dist='Weibull_2P', failures=failures, right_censored=right_censored, method=method, optimizer=optimizer, CI=CI, percentiles=percentiles, force_beta=force_beta, CI_type=CI_type)
         failures = inputs.failures
@@ -776,7 +776,7 @@ class Fit_Weibull_2P:
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
             frac_censored = round_to_decimals(len(right_censored) / n * 100)
-            if frac_censored % 1 == 0:
+            if frac_censored % 1 < 1e-10:
                 frac_censored = int(frac_censored)
             colorprint(str('Results from Fit_Weibull_2P (' + str(CI_rounded) + '% CI):'), bold=True, underline=True)
             print('Analysis method:', self.method)
@@ -888,7 +888,7 @@ class Fit_Weibull_2P_grouped:
     Fit_Weibull_2P_grouped(dataframe=df)
     '''
 
-    def __init__(self, dataframe=None, show_probability_plot=True, print_results=True, CI=0.95, force_beta=None, percentiles=None, method='MLE', optimizer='L-BFGS-B', CI_type='time', **kwargs):
+    def __init__(self, dataframe=None, show_probability_plot=True, print_results=True, CI=0.95, force_beta=None, percentiles=None, method='MLE', optimizer=None, CI_type='time', **kwargs):
 
         if dataframe is None or type(dataframe) is not pd.core.frame.DataFrame:
             raise ValueError('dataframe must be a pandas dataframe with the columns "category" (F for failure or C for censored), "time" (the failure times), and "quantity" (the number of events at each time)')
@@ -1098,7 +1098,7 @@ class Fit_Weibull_2P_grouped:
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
             frac_censored = round_to_decimals(sum(right_censored_qty) / n * 100)
-            if frac_censored % 1 == 0:
+            if frac_censored % 1 < 1e-10:
                 frac_censored = int(frac_censored)
             colorprint(str('Results from Fit_Weibull_2P_grouped (' + str(CI_rounded) + '% CI):'), bold=True, underline=True)
             print('Analysis method:', self.method)
@@ -1187,7 +1187,7 @@ class Fit_Weibull_3P:
     percentiles - a dataframe of the percentiles with bounds on time. This is only produced if percentiles is 'auto' or a list or array. Since percentiles defaults to None, this output is not normally produced.
     '''
 
-    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, percentiles=None, CI_type='time', optimizer='L-BFGS-B', method='MLE', **kwargs):
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, percentiles=None, CI_type='time', optimizer=None, method='MLE', **kwargs):
 
         inputs = fitters_input_checking(dist='Weibull_3P', failures=failures, right_censored=right_censored, method=method, optimizer=optimizer, CI=CI, percentiles=percentiles, CI_type=CI_type)
         failures = inputs.failures
@@ -1299,7 +1299,7 @@ class Fit_Weibull_3P:
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
             frac_censored = round_to_decimals(len(right_censored) / n * 100)
-            if frac_censored % 1 == 0:
+            if frac_censored % 1 < 1e-10:
                 frac_censored = int(frac_censored)
             colorprint(str('Results from Fit_Weibull_3P (' + str(CI_rounded) + '% CI):'), bold=True, underline=True)
             print('Analysis method:', self.method)
@@ -1399,7 +1399,7 @@ class Fit_Weibull_Mixture:
     goodness_of_fit - a dataframe of the goodness of fit values (Log-likelihood, AICc, BIC, AD).
     '''
 
-    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, optimizer='L-BFGS-B'):
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, optimizer=None):
 
         inputs = fitters_input_checking(dist='Weibull_Mixture', failures=failures, right_censored=right_censored, CI=CI, optimizer=optimizer)
         failures = inputs.failures
@@ -1475,7 +1475,7 @@ class Fit_Weibull_Mixture:
         LL2 = 2 * Fit_Weibull_Mixture.LL(params, failures, right_censored)
         self.loglik2 = LL2
         self.loglik = LL2 * -0.5
-        k=5
+        k = 5
         if n - k - 1 > 0:
             self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
         else:
@@ -1520,7 +1520,7 @@ class Fit_Weibull_Mixture:
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
             frac_censored = round_to_decimals(len(right_censored) / n * 100)
-            if frac_censored % 1 == 0:
+            if frac_censored % 1 < 1e-10:
                 frac_censored = int(frac_censored)
             colorprint(str('Results from Fit_Weibull_Mixture (' + str(CI_rounded) + '% CI):'), bold=True, underline=True)
             print('Analysis method: MLE')
@@ -1608,7 +1608,7 @@ class Fit_Weibull_CR:
     goodness_of_fit - a dataframe of the goodness of fit values (Log-likelihood, AICc, BIC, AD).
     '''
 
-    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, optimizer='L-BFGS-B'):
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, optimizer=None):
 
         inputs = fitters_input_checking(dist='Weibull_CR', failures=failures, right_censored=right_censored, CI=CI, optimizer=optimizer)
         failures = inputs.failures
@@ -1722,7 +1722,7 @@ class Fit_Weibull_CR:
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
             frac_censored = round_to_decimals(len(right_censored) / n * 100)
-            if frac_censored % 1 == 0:
+            if frac_censored % 1 < 1e-10:
                 frac_censored = int(frac_censored)
             colorprint(str('Results from Fit_Weibull_CR (' + str(CI_rounded) + '% CI):'), bold=True, underline=True)
             print('Analysis method: MLE')
@@ -1819,7 +1819,7 @@ class Fit_Exponential_1P:
     *Note that this is a 1 parameter distribution but Lambda_inv is also provided as some programs (such as Minitab and scipy.stats) use this instead of Lambda
     '''
 
-    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, percentiles=None, method='MLE', optimizer='L-BFGS-B', **kwargs):
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, percentiles=None, method='MLE', optimizer=None, **kwargs):
 
         inputs = fitters_input_checking(dist='Exponential_1P', failures=failures, right_censored=right_censored, method=method, optimizer=optimizer, CI=CI, percentiles=percentiles)
         failures = inputs.failures
@@ -1898,7 +1898,7 @@ class Fit_Exponential_1P:
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
             frac_censored = round_to_decimals(len(right_censored) / n * 100)
-            if frac_censored % 1 == 0:
+            if frac_censored % 1 < 1e-10:
                 frac_censored = int(frac_censored)
             colorprint(str('Results from Fit_Exponential_1P (' + str(CI_rounded) + '% CI):'), bold=True, underline=True)
             print('Analysis method:', self.method)
@@ -1979,7 +1979,7 @@ class Fit_Exponential_2P:
     *Note that this is a 2 parameter distribution but Lambda_inv is also provided as some programs (such as Minitab and scipy.stats) use this instead of Lambda
     '''
 
-    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, percentiles=None, method='MLE', optimizer='L-BFGS-B', **kwargs):
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, percentiles=None, method='MLE', optimizer=None, **kwargs):
         # To obtain the confidence intervals of the parameters, the gamma parameter is estimated by optimizing the log-likelihood function but
         # it is assumed as fixed because the variance-covariance matrix of the estimated parameters cannot be determined numerically. By assuming
         # the standard error in gamma is zero, we can use Exponential_1P to obtain the confidence intervals for Lambda. This is the same procedure
@@ -2076,7 +2076,7 @@ class Fit_Exponential_2P:
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
             frac_censored = round_to_decimals(len(right_censored) / n * 100)
-            if frac_censored % 1 == 0:
+            if frac_censored % 1 < 1e-10:
                 frac_censored = int(frac_censored)
             colorprint(str('Results from Fit_Exponential_2P (' + str(CI_rounded) + '% CI):'), bold=True, underline=True)
             print('Analysis method:', self.method)
@@ -2162,7 +2162,7 @@ class Fit_Normal_2P:
     percentiles - a dataframe of the percentiles with bounds on time. This is only produced if percentiles is 'auto' or a list or array. Since percentiles defaults to None, this output is not normally produced.
     '''
 
-    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, percentiles=None, optimizer='L-BFGS-B', CI_type='time', method='MLE', force_sigma=None, **kwargs):
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, percentiles=None, optimizer=None, CI_type='time', method='MLE', force_sigma=None, **kwargs):
 
         inputs = fitters_input_checking(dist='Normal_2P', failures=failures, right_censored=right_censored, method=method, optimizer=optimizer, CI=CI, percentiles=percentiles, force_sigma=force_sigma, CI_type=CI_type)
         failures = inputs.failures
@@ -2262,7 +2262,7 @@ class Fit_Normal_2P:
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
             frac_censored = round_to_decimals(len(right_censored) / n * 100)
-            if frac_censored % 1 == 0:
+            if frac_censored % 1 < 1e-10:
                 frac_censored = int(frac_censored)
             colorprint(str('Results from Fit_Normal_2P (' + str(CI_rounded) + '% CI):'), bold=True, underline=True)
             print('Analysis method:', self.method)
@@ -2346,7 +2346,7 @@ class Fit_Gumbel_2P:
     percentiles - a dataframe of the percentiles with bounds on time. This is only produced if percentiles is 'auto' or a list or array. Since percentiles defaults to None, this output is not normally produced.
     '''
 
-    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, percentiles=None, CI_type='time', method='MLE', optimizer='L-BFGS-B', **kwargs):
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, percentiles=None, CI_type='time', method='MLE', optimizer=None, **kwargs):
 
         inputs = fitters_input_checking(dist='Gumbel_2P', failures=failures, right_censored=right_censored, method=method, optimizer=optimizer, CI=CI, percentiles=percentiles, CI_type=CI_type)
         failures = inputs.failures
@@ -2430,7 +2430,7 @@ class Fit_Gumbel_2P:
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
             frac_censored = round_to_decimals(len(right_censored) / n * 100)
-            if frac_censored % 1 == 0:
+            if frac_censored % 1 < 1e-10:
                 frac_censored = int(frac_censored)
             colorprint(str('Results from Fit_Gumbel_2P (' + str(CI_rounded) + '% CI):'), bold=True, underline=True)
             print('Analysis method:', self.method)
@@ -2506,7 +2506,7 @@ class Fit_Lognormal_2P:
 
     '''
 
-    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, percentiles=None, optimizer='L-BFGS-B', CI_type='time', method='MLE', force_sigma=None, **kwargs):
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, percentiles=None, optimizer=None, CI_type='time', method='MLE', force_sigma=None, **kwargs):
 
         inputs = fitters_input_checking(dist='Lognormal_2P', failures=failures, right_censored=right_censored, method=method, optimizer=optimizer, CI=CI, percentiles=percentiles, force_sigma=force_sigma, CI_type=CI_type)
         failures = inputs.failures
@@ -2607,7 +2607,7 @@ class Fit_Lognormal_2P:
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
             frac_censored = round_to_decimals(len(right_censored) / n * 100)
-            if frac_censored % 1 == 0:
+            if frac_censored % 1 < 1e-10:
                 frac_censored = int(frac_censored)
             colorprint(str('Results from Fit_Lognormal_2P (' + str(CI_rounded) + '% CI):'), bold=True, underline=True)
             print('Analysis method:', self.method)
@@ -2693,7 +2693,7 @@ class Fit_Lognormal_3P:
     percentiles - a dataframe of the percentiles with bounds on time. This is only produced if percentiles is 'auto' or a list or array. Since percentiles defaults to None, this output is not normally produced.
     '''
 
-    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, percentiles=None, CI_type='time', optimizer='L-BFGS-B', method='MLE', **kwargs):
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, percentiles=None, CI_type='time', optimizer=None, method='MLE', **kwargs):
 
         inputs = fitters_input_checking(dist='Lognormal_3P', failures=failures, right_censored=right_censored, method=method, optimizer=optimizer, CI=CI, percentiles=percentiles, CI_type=CI_type)
         failures = inputs.failures
@@ -2805,7 +2805,7 @@ class Fit_Lognormal_3P:
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
             frac_censored = round_to_decimals(len(right_censored) / n * 100)
-            if frac_censored % 1 == 0:
+            if frac_censored % 1 < 1e-10:
                 frac_censored = int(frac_censored)
             colorprint(str('Results from Fit_Lognormal_3P (' + str(CI_rounded) + '% CI):'), bold=True, underline=True)
             print('Analysis method:', self.method)
@@ -2882,7 +2882,7 @@ class Fit_Gamma_2P:
     percentiles - a dataframe of the percentiles with bounds on time. This is only produced if percentiles is 'auto' or a list or array. Since percentiles defaults to None, this output is not normally produced.
     '''
 
-    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, method='MLE', optimizer='L-BFGS-B', **kwargs):
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, method='MLE', optimizer=None, **kwargs):
 
         inputs = fitters_input_checking(dist='Gamma_2P', failures=failures, right_censored=right_censored, method=method, optimizer=optimizer, CI=CI)
         failures = inputs.failures
@@ -2964,7 +2964,7 @@ class Fit_Gamma_2P:
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
             frac_censored = round_to_decimals(len(right_censored) / n * 100)
-            if frac_censored % 1 == 0:
+            if frac_censored % 1 < 1e-10:
                 frac_censored = int(frac_censored)
             colorprint(str('Results from Fit_Gamma_2P (' + str(CI_rounded) + '% CI):'), bold=True, underline=True)
             print('Analysis method:', self.method)
@@ -3043,7 +3043,7 @@ class Fit_Gamma_3P:
     percentiles - a dataframe of the percentiles with bounds on time. This is only produced if percentiles is 'auto' or a list or array. Since percentiles defaults to None, this output is not normally produced.
     '''
 
-    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, optimizer='L-BFGS-B', method='MLE', **kwargs):
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, optimizer=None, method='MLE', **kwargs):
 
         inputs = fitters_input_checking(dist='Gamma_3P', failures=failures, right_censored=right_censored, method=method, optimizer=optimizer, CI=CI)
         failures = inputs.failures
@@ -3155,7 +3155,7 @@ class Fit_Gamma_3P:
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
             frac_censored = round_to_decimals(len(right_censored) / n * 100)
-            if frac_censored % 1 == 0:
+            if frac_censored % 1 < 1e-10:
                 frac_censored = int(frac_censored)
             colorprint(str('Results from Fit_Gamma_3P (' + str(CI_rounded) + '% CI):'), bold=True, underline=True)
             print('Analysis method:', self.method)
@@ -3234,7 +3234,7 @@ class Fit_Beta_2P:
     percentiles - a dataframe of the percentiles with bounds on time. This is only produced if percentiles is 'auto' or a list or array. Since percentiles defaults to None, this output is not normally produced.
     '''
 
-    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, method='MLE', optimizer='L-BFGS-B', **kwargs):
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, method='MLE', optimizer=None, **kwargs):
 
         inputs = fitters_input_checking(dist='Beta_2P', failures=failures, right_censored=right_censored, method=method, optimizer=optimizer, CI=CI)
         failures = inputs.failures
@@ -3319,7 +3319,7 @@ class Fit_Beta_2P:
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
             frac_censored = round_to_decimals(len(right_censored) / n * 100)
-            if frac_censored % 1 == 0:
+            if frac_censored % 1 < 1e-10:
                 frac_censored = int(frac_censored)
             colorprint(str('Results from Fit_Beta_2P (' + str(CI_rounded) + '% CI):'), bold=True, underline=True)
             print('Analysis method:', self.method)
@@ -3396,7 +3396,7 @@ class Fit_Loglogistic_2P:
     percentiles - a dataframe of the percentiles with bounds on time. This is only produced if percentiles is 'auto' or a list or array. Since percentiles defaults to None, this output is not normally produced.
     '''
 
-    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, percentiles=None, CI_type='time', method='MLE', optimizer='L-BFGS-B', **kwargs):
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, percentiles=None, CI_type='time', method='MLE', optimizer=None, **kwargs):
 
         inputs = fitters_input_checking(dist='Loglogistic_2P', failures=failures, right_censored=right_censored, method=method, optimizer=optimizer, CI=CI, percentiles=percentiles, CI_type=CI_type)
         failures = inputs.failures
@@ -3481,7 +3481,7 @@ class Fit_Loglogistic_2P:
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
             frac_censored = round_to_decimals(len(right_censored) / n * 100)
-            if frac_censored % 1 == 0:
+            if frac_censored % 1 < 1e-10:
                 frac_censored = int(frac_censored)
             colorprint(str('Results from Fit_Loglogistic_2P (' + str(CI_rounded) + '% CI):'), bold=True, underline=True)
             print('Analysis method:', self.method)
@@ -3561,7 +3561,7 @@ class Fit_Loglogistic_3P:
     percentiles - a dataframe of the percentiles with bounds on time. This is only produced if percentiles is 'auto' or a list or array. Since percentiles defaults to None, this output is not normally produced.
     '''
 
-    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, CI_type='time', optimizer='L-BFGS-B', method='MLE', percentiles=None, **kwargs):
+    def __init__(self, failures=None, right_censored=None, show_probability_plot=True, print_results=True, CI=0.95, CI_type='time', optimizer=None, method='MLE', percentiles=None, **kwargs):
 
         inputs = fitters_input_checking(dist='Loglogistic_3P', failures=failures, right_censored=right_censored, method=method, optimizer=optimizer, CI=CI, percentiles=percentiles, CI_type=CI_type)
         failures = inputs.failures
@@ -3672,7 +3672,7 @@ class Fit_Loglogistic_3P:
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
             frac_censored = round_to_decimals(len(right_censored) / n * 100)
-            if frac_censored % 1 == 0:
+            if frac_censored % 1 < 1e-10:
                 frac_censored = int(frac_censored)
             colorprint(str('Results from Fit_Loglogistic_3P (' + str(CI_rounded) + '% CI):'), bold=True, underline=True)
             print('Analysis method:', self.method)
