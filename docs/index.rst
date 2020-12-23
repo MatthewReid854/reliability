@@ -50,13 +50,6 @@ Contents:
 
 .. toctree::
   :maxdepth: 1
-  :caption: Stress-Strength Interference
-  
-  Stress-Strength interference for any distributions
-  Stress-Strength interference for normal distributions
-
-.. toctree::
-  :maxdepth: 1
   :caption: Repairable systems
   
   Reliability growth
@@ -85,14 +78,23 @@ Contents:
 
 .. toctree::
   :maxdepth: 1
-  :caption: Other functions and data
+  :caption: Other functions
   
+  Stress-Strength interference for any distributions
+  Stress-Strength interference for normal distributions
   Similar Distributions
-  Convert dataframe to grouped lists
+  Make right censored data
   Crosshairs
   Distribution explorer
   Histogram
-  Make right censored data
+
+.. toctree::
+  :maxdepth: 1
+  :caption: Importing and converting data
+ 
+  Importing data from Excel
+  Converting data between different formats
+  Convert dataframe to grouped lists
   Datasets
 
 .. toctree::
