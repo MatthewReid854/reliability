@@ -1,4 +1,4 @@
-'''
+"""
 Convert_data
 
 This module contains converters to easily convert data between multiple formats
@@ -24,7 +24,7 @@ For example:
 FR format may just be F if there is no right censored data
 FNRN may be just FN if there is no right censored data. FNRN may not be just F as this is the same as F from FR format.
 XCN may be just XC if there are no grouped values (ie. every event is assumed to have a quantity of 1). XCN may not be just X as this is the same as F from FR format.
-'''
+"""
 
 import numpy as np
 import pandas as pd
@@ -32,7 +32,7 @@ from reliability.Utils import colorprint, write_df_to_xlsx, removeNaNs
 
 
 class xlsx_to_XCN:
-    '''
+    """
     xlsx_to_XCN data format converter
 
     Inputs:
@@ -62,9 +62,17 @@ class xlsx_to_XCN:
     If they are in another format (FR, FNRN) then you will need to use the appropriate function for that format.
     A reduced form (XC) is accepted and all values will be assumed to have a quantity (N) of 1.
 
-    '''
+    """
 
-    def __init__(self, path, censor_code_in_xlsx=None, failure_code_in_xlsx=None, censor_code_in_XCN='C', failure_code_in_XCN='F', **kwargs):
+    def __init__(
+        self,
+        path,
+        censor_code_in_xlsx=None,
+        failure_code_in_xlsx=None,
+        censor_code_in_XCN="C",
+        failure_code_in_XCN="F",
+        **kwargs
+    ):
         df = pd.read_excel(io=path, **kwargs)
         cols = df.columns
         X = df[cols[0]].to_numpy()
@@ -79,10 +87,18 @@ class xlsx_to_XCN:
                 C_upper.append(item)  # for numbers
         C_unique = np.unique(C_upper)
         if len(C_unique) > 2:
-            error_str = str('xlsx_to_XCN assumes the second column is C (censoring code). A maximum of 2 unique censoring codes are allowed. Within this column there were ' + str(len(C_unique)) + ' unique values: ' + str(C_unique))
+            error_str = str(
+                "xlsx_to_XCN assumes the second column is C (censoring code). A maximum of 2 unique censoring codes are allowed. Within this column there were "
+                + str(len(C_unique))
+                + " unique values: "
+                + str(C_unique)
+            )
             raise ValueError(error_str)
         C_out = []
-        if type(failure_code_in_xlsx) in [str, np.str_]:  # need to upper() the input since we are comparing with C_upper
+        if type(failure_code_in_xlsx) in [
+            str,
+            np.str_,
+        ]:  # need to upper() the input since we are comparing with C_upper
             failure_code_in_xlsx = failure_code_in_xlsx.upper()
         if type(censor_code_in_xlsx) in [str, np.str_]:
             censor_code_in_xlsx = censor_code_in_xlsx.upper()
@@ -92,12 +108,34 @@ class xlsx_to_XCN:
                 C_out.append(failure_code_in_XCN)
             elif item == censor_code_in_xlsx:
                 C_out.append(censor_code_in_XCN)
-            elif item in ['F', 'FAIL', 'FAILED', 0]:
+            elif item in ["F", "FAIL", "FAILED", 0]:
                 C_out.append(failure_code_in_XCN)
-            elif item in ['R', 'RC', 'RIGHT CENS', 'RIGHT CENSORED', 'C', 'CENSORED', 'CENS', 'S', 'SUSP', 'SUSPENSION', 'SUSPENDED', 'UF', 'UNFAILED', 'UNFAIL', 'NF', 'NO FAIL', 'NO FAILURE', 'NOT FAILED', 1]:
+            elif item in [
+                "R",
+                "RC",
+                "RIGHT CENS",
+                "RIGHT CENSORED",
+                "C",
+                "CENSORED",
+                "CENS",
+                "S",
+                "SUSP",
+                "SUSPENSION",
+                "SUSPENDED",
+                "UF",
+                "UNFAILED",
+                "UNFAIL",
+                "NF",
+                "NO FAIL",
+                "NO FAILURE",
+                "NOT FAILED",
+                1,
+            ]:
                 C_out.append(censor_code_in_XCN)
             else:
-                raise ValueError('Unrecognised value in the second column of the xlsx file. xlsx_to_XCN assumes the second column is C (censoring code). Common values are used as defaults but the xlsx file contained unrecognised values. You can fix this by specifying the arguments censor_code_in_xlsx  and failure_code_in_xlsx.')
+                raise ValueError(
+                    "Unrecognised value in the second column of the xlsx file. xlsx_to_XCN assumes the second column is C (censoring code). Common values are used as defaults but the xlsx file contained unrecognised values. You can fix this by specifying the arguments censor_code_in_xlsx  and failure_code_in_xlsx."
+                )
         C = np.array(C_out)
 
         if len(cols) > 2:
@@ -106,28 +144,37 @@ class xlsx_to_XCN:
         else:
             N = np.ones_like(X)  # if N is missing then it is assumed as all ones
         if len(cols) > 3:
-            colorprint("WARNING: xlsx_to_XCN assumes the first three columns in the excel file are being used for 'X' (event times), 'C' (censoring codes), 'N' (number of items at each event time). All other columns have been ignored", text_color='red')
+            colorprint(
+                "WARNING: xlsx_to_XCN assumes the first three columns in the excel file are being used for 'X' (event times), 'C' (censoring codes), 'N' (number of items at each event time). All other columns have been ignored",
+                text_color="red",
+            )
         if len(X) != len(C) or len(X) != len(N):
-            raise ValueError('The lengths of the first 3 columns in the xlsx file do not match. This may be because some data is missing.')
+            raise ValueError(
+                "The lengths of the first 3 columns in the xlsx file do not match. This may be because some data is missing."
+            )
 
-        FR = XCN_to_FR(X=X, C=C, N=N)  # we do this seeming redundant conversion to combine any duplicates from FNRN which were not correctly summarized in the input data
+        FR = XCN_to_FR(
+            X=X, C=C, N=N
+        )  # we do this seeming redundant conversion to combine any duplicates from FNRN which were not correctly summarized in the input data
         XCN = FR_to_XCN(failures=FR.failures, right_censored=FR.right_censored)
         self.X = XCN.X
         self.C = XCN.C
         self.N = XCN.N
-        Data = {'event time': self.X, 'censor code': self.C, 'number of events': self.N}
-        self.__df = pd.DataFrame(data=Data, columns=['event time', 'censor code', 'number of events'])
+        Data = {"event time": self.X, "censor code": self.C, "number of events": self.N}
+        self.__df = pd.DataFrame(
+            data=Data, columns=["event time", "censor code", "number of events"]
+        )
 
     def print(self):
-        colorprint('Data (XCN format)', bold=True, underline=True)
-        print(self.__df.to_string(index=False), '\n')
+        colorprint("Data (XCN format)", bold=True, underline=True)
+        print(self.__df.to_string(index=False), "\n")
 
     def write_to_xlsx(self, path, **kwargs):
         write_df_to_xlsx(df=self.__df, path=path, **kwargs)
 
 
 class xlsx_to_FR:
-    '''
+    """
     xlsx_to_FR data format converter
 
     Inputs:
@@ -150,7 +197,7 @@ class xlsx_to_FR:
     If they are in another format (XCN, FNRN) then you will need to use the appropriate function for that format.
     A reduced form (F) is accepted and all values will be assumed to be failures.
 
-    '''
+    """
 
     def __init__(self, path, **kwargs):
         df = pd.read_excel(io=path, **kwargs)
@@ -164,29 +211,32 @@ class xlsx_to_FR:
             len_f, len_rc = len(f), len(rc)
             max_len = max(len_f, len_rc)
             if not max_len == len_f:
-                f.extend([''] * (max_len - len_f))
+                f.extend([""] * (max_len - len_f))
             if not max_len == len_rc:
-                rc.extend([''] * (max_len - len_rc))
-            Data = {'failures': f, 'right censored': rc}
-            self.__df = pd.DataFrame(Data, columns=['failures', 'right censored'])
+                rc.extend([""] * (max_len - len_rc))
+            Data = {"failures": f, "right censored": rc}
+            self.__df = pd.DataFrame(Data, columns=["failures", "right censored"])
         else:
             self.right_censored = None
-            Data = {'failures': self.failures}
-            self.__df = pd.DataFrame(Data, columns=['failures'])
+            Data = {"failures": self.failures}
+            self.__df = pd.DataFrame(Data, columns=["failures"])
 
         if len(cols) > 2:
-            colorprint("WARNING: xlsx_to_FR assumes the first two columns in the excel file are 'failures' and 'right censored'. All other columns have been ignored", text_color='red')
+            colorprint(
+                "WARNING: xlsx_to_FR assumes the first two columns in the excel file are 'failures' and 'right censored'. All other columns have been ignored",
+                text_color="red",
+            )
 
     def print(self):
-        colorprint('Data (FR format)', bold=True, underline=True)
-        print(self.__df.to_string(index=False), '\n')
+        colorprint("Data (FR format)", bold=True, underline=True)
+        print(self.__df.to_string(index=False), "\n")
 
     def write_to_xlsx(self, path, **kwargs):
         write_df_to_xlsx(df=self.__df, path=path, **kwargs)
 
 
 class xlsx_to_FNRN:
-    '''
+    """
     xlsx_to_FNRN data format converter
 
     Inputs:
@@ -211,7 +261,7 @@ class xlsx_to_FNRN:
     If they are in another format (FR, XCN) then you will need to use the appropriate function for that format.
     A reduced form (FN) is accepted and all values will be assumed to be failures.
 
-    '''
+    """
 
     def __init__(self, path, **kwargs):
         df = pd.read_excel(io=path, **kwargs)
@@ -221,7 +271,9 @@ class xlsx_to_FNRN:
         failures = removeNaNs(failures)
         num_failures = removeNaNs(num_failures)
         if len(failures) != len(num_failures):
-            raise ValueError("xlsx_to_FNRN assumes the first and second columns in the excel file are 'failures' and 'number of failures'. These must be the same length.")
+            raise ValueError(
+                "xlsx_to_FNRN assumes the first and second columns in the excel file are 'failures' and 'number of failures'. These must be the same length."
+            )
         if len(cols) == 2:
             right_censored = None
             num_right_censored = None
@@ -231,12 +283,24 @@ class xlsx_to_FNRN:
             right_censored = removeNaNs(right_censored)
             num_right_censored = removeNaNs(num_right_censored)
             if len(right_censored) != len(num_right_censored):
-                raise ValueError("xlsx_to_FNRN assumes the third and fourth columns in the excel file are 'right censored' and 'number of right censored'. These must be the same length.")
+                raise ValueError(
+                    "xlsx_to_FNRN assumes the third and fourth columns in the excel file are 'right censored' and 'number of right censored'. These must be the same length."
+                )
         if len(cols) > 4:
-            colorprint("WARNING: xlsx_to_FNRN assumes the first four columns in the excel file are 'failures', 'number of failures', 'right censored', 'number of right censored'. All other columns have been ignored", text_color='red')
+            colorprint(
+                "WARNING: xlsx_to_FNRN assumes the first four columns in the excel file are 'failures', 'number of failures', 'right censored', 'number of right censored'. All other columns have been ignored",
+                text_color="red",
+            )
 
-        FR = FNRN_to_FR(failures=failures, num_failures=num_failures, right_censored=right_censored, num_right_censored=num_right_censored)
-        FNRN = FR_to_FNRN(failures=FR.failures, right_censored=FR.right_censored)  # we do this seeming redundant conversion to combine any duplicates from FNRN which were not correctly summarized in the input data
+        FR = FNRN_to_FR(
+            failures=failures,
+            num_failures=num_failures,
+            right_censored=right_censored,
+            num_right_censored=num_right_censored,
+        )
+        FNRN = FR_to_FNRN(
+            failures=FR.failures, right_censored=FR.right_censored
+        )  # we do this seeming redundant conversion to combine any duplicates from FNRN which were not correctly summarized in the input data
         self.failures = FNRN.failures
         self.num_failures = FNRN.num_failures
         self.right_censored = FNRN.right_censored
@@ -244,31 +308,49 @@ class xlsx_to_FNRN:
 
         # make the dataframe for printing and writing to excel
         if self.right_censored is not None:
-            f, nf, rc, nrc = list(self.failures), list(self.num_failures), list(self.right_censored), list(self.num_right_censored)
+            f, nf, rc, nrc = (
+                list(self.failures),
+                list(self.num_failures),
+                list(self.right_censored),
+                list(self.num_right_censored),
+            )
             len_f, len_rc = len(f), len(rc)
             max_len = max(len_f, len_rc)
             if not max_len == len_f:
-                f.extend([''] * (max_len - len_f))
-                nf.extend([''] * (max_len - len_f))
+                f.extend([""] * (max_len - len_f))
+                nf.extend([""] * (max_len - len_f))
             if not max_len == len_rc:
-                rc.extend([''] * (max_len - len_rc))
-                nrc.extend([''] * (max_len - len_rc))
-            Data = {'failures': f, 'number of failures': nf, 'right censored': rc, 'number of right censored': nrc}
-            self.__df = pd.DataFrame(Data, columns=['failures', 'number of failures', 'right censored', 'number of right censored'])
+                rc.extend([""] * (max_len - len_rc))
+                nrc.extend([""] * (max_len - len_rc))
+            Data = {
+                "failures": f,
+                "number of failures": nf,
+                "right censored": rc,
+                "number of right censored": nrc,
+            }
+            self.__df = pd.DataFrame(
+                Data,
+                columns=[
+                    "failures",
+                    "number of failures",
+                    "right censored",
+                    "number of right censored",
+                ],
+            )
         else:
-            Data = {'failures': self.failures, 'number of failures': self.num_failures}
-            self.__df = pd.DataFrame(Data, columns=['failures', 'number of failures'])
+            Data = {"failures": self.failures, "number of failures": self.num_failures}
+            self.__df = pd.DataFrame(Data, columns=["failures", "number of failures"])
 
     def print(self):
-        colorprint('Data (FNRN format)', bold=True, underline=True)
-        print(self.__df.to_string(index=False), '\n')
+        colorprint("Data (FNRN format)", bold=True, underline=True)
+        print(self.__df.to_string(index=False), "\n")
 
     def write_to_xlsx(self, path, **kwargs):
         write_df_to_xlsx(df=self.__df, path=path, **kwargs)
 
 
 class XCN_to_FNRN:
-    '''
+    """
     XCN_to_FNRN data format converter
 
     Inputs:
@@ -307,10 +389,12 @@ class XCN_to_FNRN:
                   2                   2               8                         2
                   3                   2               9                         1
 
-    '''
+    """
 
     def __init__(self, X, C, N=None, censor_code=None, failure_code=None):
-        FR = XCN_to_FR(X=X, C=C, N=N, censor_code=censor_code, failure_code=failure_code)
+        FR = XCN_to_FR(
+            X=X, C=C, N=N, censor_code=censor_code, failure_code=failure_code
+        )
         FNRN = FR_to_FNRN(failures=FR.failures, right_censored=FR.right_censored)
         self.failures = FNRN.failures
         self.num_failures = FNRN.num_failures
@@ -318,31 +402,49 @@ class XCN_to_FNRN:
         self.num_right_censored = FNRN.num_right_censored
         # make the dataframe for printing and writing to excel
         if self.right_censored is not None:
-            f, nf, rc, nrc = list(self.failures), list(self.num_failures), list(self.right_censored), list(self.num_right_censored)
+            f, nf, rc, nrc = (
+                list(self.failures),
+                list(self.num_failures),
+                list(self.right_censored),
+                list(self.num_right_censored),
+            )
             len_f, len_rc = len(f), len(rc)
             max_len = max(len_f, len_rc)
             if not max_len == len_f:
-                f.extend([''] * (max_len - len_f))
-                nf.extend([''] * (max_len - len_f))
+                f.extend([""] * (max_len - len_f))
+                nf.extend([""] * (max_len - len_f))
             if not max_len == len_rc:
-                rc.extend([''] * (max_len - len_rc))
-                nrc.extend([''] * (max_len - len_rc))
-            Data = {'failures': f, 'number of failures': nf, 'right censored': rc, 'number of right censored': nrc}
-            self.__df = pd.DataFrame(Data, columns=['failures', 'number of failures', 'right censored', 'number of right censored'])
+                rc.extend([""] * (max_len - len_rc))
+                nrc.extend([""] * (max_len - len_rc))
+            Data = {
+                "failures": f,
+                "number of failures": nf,
+                "right censored": rc,
+                "number of right censored": nrc,
+            }
+            self.__df = pd.DataFrame(
+                Data,
+                columns=[
+                    "failures",
+                    "number of failures",
+                    "right censored",
+                    "number of right censored",
+                ],
+            )
         else:
-            Data = {'failures': self.failures, 'number of failures': self.num_failures}
-            self.__df = pd.DataFrame(Data, columns=['failures', 'number of failures'])
+            Data = {"failures": self.failures, "number of failures": self.num_failures}
+            self.__df = pd.DataFrame(Data, columns=["failures", "number of failures"])
 
     def print(self):
-        colorprint('Data (FNRN format)', bold=True, underline=True)
-        print(self.__df.to_string(index=False), '\n')
+        colorprint("Data (FNRN format)", bold=True, underline=True)
+        print(self.__df.to_string(index=False), "\n")
 
     def write_to_xlsx(self, path, **kwargs):
         write_df_to_xlsx(df=self.__df, path=path, **kwargs)
 
 
 class XCN_to_FR:
-    '''
+    """
     XCN_to_FR data format converter
 
     Inputs:
@@ -378,21 +480,21 @@ class XCN_to_FR:
                   3               8
                                   9
 
-    '''
+    """
 
     def __init__(self, X, C, N=None, censor_code=None, failure_code=None):
         if type(N) == type(None):
             N = np.ones_like(X)  # assume a quantity of 1 if not specified
         if type(X) not in [list, np.ndarray]:
-            raise ValueError('X must be a list or array.')
+            raise ValueError("X must be a list or array.")
         if type(C) not in [list, np.ndarray]:
-            raise ValueError('C must be a list or array.')
+            raise ValueError("C must be a list or array.")
         if type(N) not in [list, np.ndarray]:
-            raise ValueError('N must be a list or array.')
+            raise ValueError("N must be a list or array.")
         if len(X) != len(C):
-            raise ValueError('The length of X and C must match.')
+            raise ValueError("The length of X and C must match.")
         if len(X) != len(N):
-            raise ValueError('The length of X, C and N must match.')
+            raise ValueError("The length of X, C and N must match.")
 
         C_upper = []
         for item in C:
@@ -402,10 +504,18 @@ class XCN_to_FR:
                 C_upper.append(item)  # for numbers
         C_unique = np.unique(C_upper)
         if len(C_unique) > 2:
-            error_str = str('A maximum of 2 unique censoring codes are allowed. Within C there were ' + str(len(C_unique)) + ' unique values: ' + str(C_unique))
+            error_str = str(
+                "A maximum of 2 unique censoring codes are allowed. Within C there were "
+                + str(len(C_unique))
+                + " unique values: "
+                + str(C_unique)
+            )
             raise ValueError(error_str)
 
-        if type(failure_code) in [str, np.str_]:  # need to upper() the input since we are comparing with C_upper
+        if type(failure_code) in [
+            str,
+            np.str_,
+        ]:  # need to upper() the input since we are comparing with C_upper
             failure_code = failure_code.upper()
         if type(censor_code) in [str, np.str_]:
             censor_code = censor_code.upper()
@@ -417,12 +527,34 @@ class XCN_to_FR:
                 failures = np.append(failures, np.ones(int(N[i])) * X[i])
             elif c == censor_code:
                 right_censored = np.append(right_censored, np.ones(int(N[i])) * X[i])
-            elif c in ['F', 'FAIL', 'FAILED', 0]:
+            elif c in ["F", "FAIL", "FAILED", 0]:
                 failures = np.append(failures, np.ones(int(N[i])) * X[i])
-            elif c in ['R', 'RC', 'RIGHT CENS', 'RIGHT CENSORED', 'C', 'CENSORED', 'CENS', 'S', 'SUSP', 'SUSPENSION', 'SUSPENDED', 'UF', 'UNFAILED', 'UNFAIL', 'NF', 'NO FAIL', 'NO FAILURE', 'NOT FAILED', 1]:
+            elif c in [
+                "R",
+                "RC",
+                "RIGHT CENS",
+                "RIGHT CENSORED",
+                "C",
+                "CENSORED",
+                "CENS",
+                "S",
+                "SUSP",
+                "SUSPENSION",
+                "SUSPENDED",
+                "UF",
+                "UNFAILED",
+                "UNFAIL",
+                "NF",
+                "NO FAIL",
+                "NO FAILURE",
+                "NOT FAILED",
+                1,
+            ]:
                 right_censored = np.append(right_censored, np.ones(int(N[i])) * X[i])
             else:
-                raise ValueError('Unrecognised value in C. Common values are used as defaults but C contained an unrecognised values. You can fix this by specifying the arguments censor_code and failure_code.')
+                raise ValueError(
+                    "Unrecognised value in C. Common values are used as defaults but C contained an unrecognised values. You can fix this by specifying the arguments censor_code and failure_code."
+                )
         if len(right_censored) == 0:
             right_censored = None
         self.failures = failures
@@ -433,25 +565,25 @@ class XCN_to_FR:
             len_f, len_rc = len(f), len(rc)
             max_len = max(len_f, len_rc)
             if not max_len == len_f:
-                f.extend([''] * (max_len - len_f))
+                f.extend([""] * (max_len - len_f))
             if not max_len == len_rc:
-                rc.extend([''] * (max_len - len_rc))
-            Data = {'failures': f, 'right censored': rc}
-            self.__df = pd.DataFrame(Data, columns=['failures', 'right censored'])
+                rc.extend([""] * (max_len - len_rc))
+            Data = {"failures": f, "right censored": rc}
+            self.__df = pd.DataFrame(Data, columns=["failures", "right censored"])
         else:
-            Data = {'failures': self.failures}
-            self.__df = pd.DataFrame(Data, columns=['failures'])
+            Data = {"failures": self.failures}
+            self.__df = pd.DataFrame(Data, columns=["failures"])
 
     def print(self):
-        colorprint('Data (FR format)', bold=True, underline=True)
-        print(self.__df.to_string(index=False), '\n')
+        colorprint("Data (FR format)", bold=True, underline=True)
+        print(self.__df.to_string(index=False), "\n")
 
     def write_to_xlsx(self, path, **kwargs):
         write_df_to_xlsx(df=self.__df, path=path, **kwargs)
 
 
 class FR_to_XCN:
-    '''
+    """
     FR_to_XCN data format converter
 
     Inputs:
@@ -487,21 +619,27 @@ class FR_to_XCN:
                     8           C                 2
                     9           C                 4
 
-    '''
+    """
 
-    def __init__(self, failures, right_censored=None, censor_code='C', failure_code='F'):
+    def __init__(
+        self, failures, right_censored=None, censor_code="C", failure_code="F"
+    ):
         if type(failures) not in [list, np.ndarray]:
-            raise ValueError('failures must be a list or array.')
+            raise ValueError("failures must be a list or array.")
         if right_censored is not None:
             if type(right_censored) not in [list, np.ndarray]:
-                raise ValueError('right_censored must be a list or array.')
+                raise ValueError("right_censored must be a list or array.")
             FNRN = FR_to_FNRN(failures=failures, right_censored=right_censored)
             self.X = np.hstack([FNRN.failures, FNRN.right_censored])
             self.N = np.hstack([FNRN.num_failures, FNRN.num_right_censored])
             if type(failure_code) not in [str, float, int, np.float64]:
-                raise ValueError("failure_code must be a string or number. Default is 'F'")
+                raise ValueError(
+                    "failure_code must be a string or number. Default is 'F'"
+                )
             if type(censor_code) not in [str, float, int, np.float64]:
-                raise ValueError("censor_code must be a string or number. Default is 'C'")
+                raise ValueError(
+                    "censor_code must be a string or number. Default is 'C'"
+                )
             F_cens = [failure_code] * len(FNRN.failures)
             C_cens = [censor_code] * len(FNRN.right_censored)
             self.C = np.hstack([F_cens, C_cens])
@@ -510,21 +648,25 @@ class FR_to_XCN:
             self.X = FNRN.failures
             self.N = FNRN.num_failures
             if type(failure_code) not in [str, float, int, np.float64]:
-                raise ValueError("failure_code must be a string or number. Default is 'F'")
+                raise ValueError(
+                    "failure_code must be a string or number. Default is 'F'"
+                )
             self.C = np.array([failure_code] * len(FNRN.failures))
-        Data = {'event time': self.X, 'censor code': self.C, 'number of events': self.N}
-        self.__df = pd.DataFrame(data=Data, columns=['event time', 'censor code', 'number of events'])
+        Data = {"event time": self.X, "censor code": self.C, "number of events": self.N}
+        self.__df = pd.DataFrame(
+            data=Data, columns=["event time", "censor code", "number of events"]
+        )
 
     def print(self):
-        colorprint('Data (XCN format)', bold=True, underline=True)
-        print(self.__df.to_string(index=False), '\n')
+        colorprint("Data (XCN format)", bold=True, underline=True)
+        print(self.__df.to_string(index=False), "\n")
 
     def write_to_xlsx(self, path, **kwargs):
         write_df_to_xlsx(df=self.__df, path=path, **kwargs)
 
 
 class FNRN_to_XCN:
-    '''
+    """
     FNRN_to_XCN data format converter
 
     Inputs:
@@ -562,56 +704,83 @@ class FNRN_to_XCN:
                     8           C                 2
                     9           C                 3
 
-    '''
+    """
 
-    def __init__(self, failures, num_failures, right_censored=None, num_right_censored=None, censor_code='C', failure_code='F'):
+    def __init__(
+        self,
+        failures,
+        num_failures,
+        right_censored=None,
+        num_right_censored=None,
+        censor_code="C",
+        failure_code="F",
+    ):
         if type(failures) not in [list, np.ndarray]:
-            raise ValueError('failures must be a list or array.')
+            raise ValueError("failures must be a list or array.")
         if type(num_failures) not in [list, np.ndarray]:
-            raise ValueError('num_failures must be a list or array.')
+            raise ValueError("num_failures must be a list or array.")
         if len(failures) != len(num_failures):
-            raise ValueError('failures and num_failures must be the same length.')
+            raise ValueError("failures and num_failures must be the same length.")
 
         if right_censored is not None:
             if type(right_censored) not in [list, np.ndarray]:
-                raise ValueError('right_censored must be a list or array.')
+                raise ValueError("right_censored must be a list or array.")
             if type(num_right_censored) not in [list, np.ndarray]:
-                raise ValueError('num_right_censored must be a list or array.')
+                raise ValueError("num_right_censored must be a list or array.")
             if len(right_censored) != len(num_right_censored):
-                raise ValueError('right_censored and num_right_censored must be the same length.')
-            FR = FNRN_to_FR(failures=failures, num_failures=num_failures, right_censored=right_censored, num_right_censored=num_right_censored)
-            FNRN = FR_to_FNRN(failures=FR.failures, right_censored=FR.right_censored)  # we do this seeming redundant conversion to combine any duplicates from FNRN which were not correctly summarized in the input data
+                raise ValueError(
+                    "right_censored and num_right_censored must be the same length."
+                )
+            FR = FNRN_to_FR(
+                failures=failures,
+                num_failures=num_failures,
+                right_censored=right_censored,
+                num_right_censored=num_right_censored,
+            )
+            FNRN = FR_to_FNRN(
+                failures=FR.failures, right_censored=FR.right_censored
+            )  # we do this seeming redundant conversion to combine any duplicates from FNRN which were not correctly summarized in the input data
             self.X = np.hstack([FNRN.failures, FNRN.right_censored])
             self.N = np.hstack([FNRN.num_failures, FNRN.num_right_censored])
             if type(failure_code) not in [str, float, int, np.float64]:
-                raise ValueError("failure_code must be a string or number. Default is 'F'")
+                raise ValueError(
+                    "failure_code must be a string or number. Default is 'F'"
+                )
             if type(censor_code) not in [str, float, int, np.float64]:
-                raise ValueError("censor_code must be a string or number. Default is 'C'")
+                raise ValueError(
+                    "censor_code must be a string or number. Default is 'C'"
+                )
             F_cens = [failure_code] * len(FNRN.failures)
             C_cens = [censor_code] * len(FNRN.right_censored)
             self.C = np.hstack([F_cens, C_cens])
         else:
             FR = FNRN_to_FR(failures=failures, num_failures=num_failures)
-            FNRN = FR_to_FNRN(failures=FR.failures)  # we do this seeming redundant conversion to combine any duplicates from FNRN which were not correctly summarized in the input data
+            FNRN = FR_to_FNRN(
+                failures=FR.failures
+            )  # we do this seeming redundant conversion to combine any duplicates from FNRN which were not correctly summarized in the input data
             self.X = FNRN.failures
             self.N = FNRN.num_failures
             if type(failure_code) not in [str, float, int, np.float64]:
-                raise ValueError("failure_code must be a string or number. Default is 'F'")
+                raise ValueError(
+                    "failure_code must be a string or number. Default is 'F'"
+                )
             self.C = np.array([failure_code] * len(FNRN.failures))
         # make the dataframe for printing and writing to excel
-        Data = {'event time': self.X, 'censor code': self.C, 'number of events': self.N}
-        self.__df = pd.DataFrame(data=Data, columns=['event time', 'censor code', 'number of events'])
+        Data = {"event time": self.X, "censor code": self.C, "number of events": self.N}
+        self.__df = pd.DataFrame(
+            data=Data, columns=["event time", "censor code", "number of events"]
+        )
 
     def print(self):
-        colorprint('Data (XCN format)', bold=True, underline=True)
-        print(self.__df.to_string(index=False), '\n')
+        colorprint("Data (XCN format)", bold=True, underline=True)
+        print(self.__df.to_string(index=False), "\n")
 
     def write_to_xlsx(self, path, **kwargs):
         write_df_to_xlsx(df=self.__df, path=path, **kwargs)
 
 
 class FR_to_FNRN:
-    '''
+    """
     FR_to_FNRN data format converter
 
     Inputs:
@@ -645,46 +814,66 @@ class FR_to_FNRN:
                   2                   2               8                         2
                   3                   1               9                         4
 
-    '''
+    """
 
     def __init__(self, failures, right_censored=None):
         if type(failures) not in [list, np.ndarray]:
-            raise ValueError('failures must be a list or array.')
+            raise ValueError("failures must be a list or array.")
         self.failures, self.num_failures = np.unique(failures, return_counts=True)
         if right_censored is not None:
             if type(right_censored) not in [list, np.ndarray]:
-                raise ValueError('right_censored must be a list or array.')
-            self.right_censored, self.num_right_censored = np.unique(right_censored, return_counts=True)
+                raise ValueError("right_censored must be a list or array.")
+            self.right_censored, self.num_right_censored = np.unique(
+                right_censored, return_counts=True
+            )
         else:
             self.right_censored = None
             self.num_right_censored = None
         # make the dataframe for printing and writing to excel
         if self.right_censored is not None:
-            f, nf, rc, nrc = list(self.failures), list(self.num_failures), list(self.right_censored), list(self.num_right_censored)
+            f, nf, rc, nrc = (
+                list(self.failures),
+                list(self.num_failures),
+                list(self.right_censored),
+                list(self.num_right_censored),
+            )
             len_f, len_rc = len(f), len(rc)
             max_len = max(len_f, len_rc)
             if not max_len == len_f:
-                f.extend([''] * (max_len - len_f))
-                nf.extend([''] * (max_len - len_f))
+                f.extend([""] * (max_len - len_f))
+                nf.extend([""] * (max_len - len_f))
             if not max_len == len_rc:
-                rc.extend([''] * (max_len - len_rc))
-                nrc.extend([''] * (max_len - len_rc))
-            Data = {'failures': f, 'number of failures': nf, 'right censored': rc, 'number of right censored': nrc}
-            self.__df = pd.DataFrame(Data, columns=['failures', 'number of failures', 'right censored', 'number of right censored'])
+                rc.extend([""] * (max_len - len_rc))
+                nrc.extend([""] * (max_len - len_rc))
+            Data = {
+                "failures": f,
+                "number of failures": nf,
+                "right censored": rc,
+                "number of right censored": nrc,
+            }
+            self.__df = pd.DataFrame(
+                Data,
+                columns=[
+                    "failures",
+                    "number of failures",
+                    "right censored",
+                    "number of right censored",
+                ],
+            )
         else:
-            Data = {'failures': self.failures, 'number of failures': self.num_failures}
-            self.__df = pd.DataFrame(Data, columns=['failures', 'number of failures'])
+            Data = {"failures": self.failures, "number of failures": self.num_failures}
+            self.__df = pd.DataFrame(Data, columns=["failures", "number of failures"])
 
     def print(self):
-        colorprint('Data (FNRN format)', bold=True, underline=True)
-        print(self.__df.to_string(index=False), '\n')
+        colorprint("Data (FNRN format)", bold=True, underline=True)
+        print(self.__df.to_string(index=False), "\n")
 
     def write_to_xlsx(self, path, **kwargs):
         write_df_to_xlsx(df=self.__df, path=path, **kwargs)
 
 
 class FNRN_to_FR:
-    '''
+    """
     FNRN_to_FR data format converter
 
     Inputs:
@@ -724,15 +913,17 @@ class FNRN_to_FR:
                                    7
                                    7
 
-    '''
+    """
 
-    def __init__(self, failures, num_failures, right_censored=None, num_right_censored=None):
+    def __init__(
+        self, failures, num_failures, right_censored=None, num_right_censored=None
+    ):
         if type(failures) not in [list, np.ndarray]:
-            raise ValueError('failures must be a list or array.')
+            raise ValueError("failures must be a list or array.")
         if type(num_failures) not in [list, np.ndarray]:
-            raise ValueError('num_failures must be a list or array.')
+            raise ValueError("num_failures must be a list or array.")
         if len(failures) != len(num_failures):
-            raise ValueError('failures and num_failures must be the same length.')
+            raise ValueError("failures and num_failures must be the same length.")
 
         failures_out = np.array([])
         for i, f in enumerate(failures):
@@ -741,33 +932,37 @@ class FNRN_to_FR:
 
         if right_censored is not None:
             if type(right_censored) not in [list, np.ndarray]:
-                raise ValueError('right_censored must be a list or array.')
+                raise ValueError("right_censored must be a list or array.")
             if type(num_right_censored) not in [list, np.ndarray]:
-                raise ValueError('num_right_censored must be a list or array.')
+                raise ValueError("num_right_censored must be a list or array.")
             if len(right_censored) != len(num_right_censored):
-                raise ValueError('right_censored and num_right_censored must be the same length.')
+                raise ValueError(
+                    "right_censored and num_right_censored must be the same length."
+                )
             right_censored_out = np.array([])
             for i, rc in enumerate(right_censored):
-                right_censored_out = np.append(right_censored_out, np.ones(int(num_right_censored[i])) * rc)
+                right_censored_out = np.append(
+                    right_censored_out, np.ones(int(num_right_censored[i])) * rc
+                )
             self.right_censored = right_censored_out
 
             f, rc = list(self.failures), list(self.right_censored)
             len_f, len_rc = len(f), len(rc)
             max_len = max(len_f, len_rc)
             if not max_len == len_f:
-                f.extend([''] * (max_len - len_f))
+                f.extend([""] * (max_len - len_f))
             if not max_len == len_rc:
-                rc.extend([''] * (max_len - len_rc))
-            Data = {'failures': f, 'right censored': rc}
-            self.__df = pd.DataFrame(Data, columns=['failures', 'right censored'])
+                rc.extend([""] * (max_len - len_rc))
+            Data = {"failures": f, "right censored": rc}
+            self.__df = pd.DataFrame(Data, columns=["failures", "right censored"])
         else:
             self.right_censored = None
-            Data = {'failures': self.failures}
-            self.__df = pd.DataFrame(Data, columns=['failures'])
+            Data = {"failures": self.failures}
+            self.__df = pd.DataFrame(Data, columns=["failures"])
 
     def print(self):
-        colorprint('Data (FR format)', bold=True, underline=True)
-        print(self.__df.to_string(index=False), '\n')
+        colorprint("Data (FR format)", bold=True, underline=True)
+        print(self.__df.to_string(index=False), "\n")
 
     def write_to_xlsx(self, path, **kwargs):
         write_df_to_xlsx(df=self.__df, path=path, **kwargs)
