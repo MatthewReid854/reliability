@@ -71,6 +71,9 @@ Outputs (the following example outputs are for the Fit_Weibull_2P distribution b
 -   percentiles - a dataframe of the percentiles.
 -   success - True/False. Indicated whether the solution was found by autograd. If success is False a warning will be printed indicating that the initial guess was used as autograd failed. This fit will not be accurate if there is censored data. Failure of autograd to find the solution should be rare and if it occurs, it is likely that the distribution is an extremely bad fit for the data. Try scaling your data, removing extreme values, or using another distribution.
 
+Example 1
+---------
+
 To learn how we can fit a distribution, we will start by using a simple example with 30 failure times. These times were generated from a Weibull distribution with α=50, β=3. Note that the output also provides the confidence intervals and standard error of the parameter estimates. The probability plot is generated be default (you will need to specify plt.show() to show it). See the section on `probability plotting <https://reliability.readthedocs.io/en/latest/Probability%20plots.html#what-does-a-probability-plot-show-me>`_ to learn how to interpret this plot.
 
 .. code:: python
@@ -102,6 +105,11 @@ For the function plot_points the inputs are:
 -   a - this is the plotting heuristic. Default is 0.3. See `probability plotting <https://reliability.readthedocs.io/en/latest/Probability%20plots.html>`_ and `Wikipedia <https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics>`_ for more details.
 -   keywords for the scatter plot are also accepted.
 
+Example 2
+---------
+
+This example shows how to use the plot_points function.
+
 .. code:: python
 
     from reliability.Distributions import Weibull_Distribution
@@ -117,6 +125,9 @@ For the function plot_points the inputs are:
     plt.show()
 
 .. image:: images/plot_points_V3.png
+
+Example 3
+---------
 
 It is beneficial to see the effectiveness of the fitted distribution in comparison to the original distribution. In this second example, we are creating 500 samples from a Weibull distribution and then we will right censor all of the data above our chosen threshold. Then we are fitting a Weibull_3P distribution to the data. Note that we need to specify "show_probability_plot=False, print_results=False" in the Fit_Weibull_3P to prevent the normal outputs of the fitting function from being displayed.
 
@@ -153,6 +164,9 @@ It is beneficial to see the effectiveness of the fitted distribution in comparis
     '''
 
 .. image:: images/Fit_Weibull_3P_right_cens_V5.png
+
+Example 4
+---------
 
 As another example, we will fit a Gamma_2P distribution to some partially right censored data. To provide a comparison of the fitting accuracy as the number of samples increases, we will do the same experiment with varying sample sizes. The results highlight that the accuracy of the fit is proportional to the amount of samples, so you should always try to obtain more data if possible.
 
@@ -206,6 +220,9 @@ As another example, we will fit a Gamma_2P distribution to some partially right 
     '''
     
 .. image:: images/Fit_Gamma_2P_right_cens_V4.png
+
+Example 5
+---------
 
 To obtain details of the percentiles (lower estimate, point estimate, upper estimate), we can use the percentiles input for each Fitter. In this example, we will create some data and fit a Weibull_2P distribution. When percentiles are requested the results printed includes both the table of results and the table of percentiles. Setting percentiles as True will use a default list of percentiles (as shown in the first output). Alternatively we can specify the exact percentiles to use (as shown in the second output). The use of the `crosshairs <https://reliability.readthedocs.io/en/latest/Crosshairs.html>`_ function is also shown which was used to annotate the plot manually. Note that the percentiles provided are the percentiles of the confidence intervals on time. Percentiles for the confidence intervals on reliability are not implemented, but can be accessed manually from the plots using the crosshairs function when confidence intervals on reliability have been plotted.
 
@@ -281,6 +298,9 @@ The function Fit_Weibull_2P_grouped is effectively the same as Fit_Weibull_2P, e
 - initial_guess_method - 'scipy' OR 'least squares'. Default is 'least squares'. Both do not take into account censored data but scipy uses MLE, and least squares is least squares regression of the plotting positions. Least squares proved more accurate during testing.
 - optimizer - 'L-BFGS-B' or 'TNC'. These are both bound-constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see the `scipy documentation <https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize>`_.
 - dataframe - a pandas dataframe of the appropriate format. The requirements of the input dataframe are: The column titles MUST be 'category', 'time', 'quantity'. The category values MUST be 'F' for failure or 'C' for censored (right censored). The time values are the failure or right censored times. The quantity is the number of items at that time. The quantity must be specified for all values even if the quantity is 1.
+
+Example 6
+---------
 
 The following example shows how we can use Fit_Weibull_2P_grouped to fit a Weibull_2P distribution to grouped data from a spreadsheet (shown below) on the Windows desktop. We change the optimiser from the default (L-BFGS-B) to TNC as it is more successful for this dataset. In almost all cases the L-BFGS-B optimizer is better than TNC but it is worth trying both if the first does not look good. You may also want to try changing the initial_guess_method as the results from the optimizers can be sensitive to their initial guess for problems in which there are local minima or insufficient gradients to find the global minima. If you would like to access this data, it is available in reliability.Datasets.electronics and includes both the failures and right_censored format as well as the dataframe format. An example of this is provided in the code below (option 2).
 
