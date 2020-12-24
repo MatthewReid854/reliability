@@ -40,7 +40,7 @@ class xlsx_to_XCN:
     censor_code_in_xlsx - specify the censor code you have used if it does not appear in the defaults (see below).
         *default censor codes that will be recognised (not case sensitive): 'R', 'RC', 'RIGHT CENS', 'RIGHT CENSORED', 'C', 'CENSORED', 'CENS', 'S', 'SUSP', 'SUSPENSION', 'SUSPENDED', 'UF', 'UNFAILED', 'UNFAIL', 'NF', 'NO FAIL', 'NO FAILURE', 'NOT FAILED', 1
     failure_code_in_xlsx - specify the failure code you have used if it does not appear in the defaults (see below).
-        *default failure codes that will be recognised (not case sensitive): 'F', 'FAIL', 'FAILED', 0
+        *default failure codes that will be recognised (not case sensitive): 'F', 'FAIL', 'FAILED', 'FAILURE', 0
     censor_code_in_XCN - specify the censor code to be used in XCN format. Default is 'C'
     failure_code_in_XCN - specify the failure code to be used in XCN format. Default is 'F'
 
@@ -77,7 +77,8 @@ class xlsx_to_XCN:
         cols = df.columns
         X = df[cols[0]].to_numpy()
         X = np.array(removeNaNs(list(X)))
-        C0 = df[cols[1]].to_numpy()
+        # C0 needs to be to_list not to_numpy in case of mixtures of strings and numbers which numpy would convert all to strings
+        C0 = df[cols[1]].to_list()
         C0 = removeNaNs(C0)
         C_upper = []
         for item in C0:
@@ -95,10 +96,8 @@ class xlsx_to_XCN:
             )
             raise ValueError(error_str)
         C_out = []
-        if type(failure_code_in_xlsx) in [
-            str,
-            np.str_,
-        ]:  # need to upper() the input since we are comparing with C_upper
+        # need to upper() the input since we are comparing with C_upper
+        if type(failure_code_in_xlsx) in [str, np.str_]:
             failure_code_in_xlsx = failure_code_in_xlsx.upper()
         if type(censor_code_in_xlsx) in [str, np.str_]:
             censor_code_in_xlsx = censor_code_in_xlsx.upper()
@@ -108,7 +107,7 @@ class xlsx_to_XCN:
                 C_out.append(failure_code_in_XCN)
             elif item == censor_code_in_xlsx:
                 C_out.append(censor_code_in_XCN)
-            elif item in ["F", "FAIL", "FAILED", 0]:
+            elif item in ["F", "FAIL", "FAILED", "FAILURE", 0]:
                 C_out.append(failure_code_in_XCN)
             elif item in [
                 "R",
@@ -156,7 +155,7 @@ class xlsx_to_XCN:
         FR = XCN_to_FR(
             X=X, C=C, N=N
         )  # we do this seeming redundant conversion to combine any duplicates from FNRN which were not correctly summarized in the input data
-        XCN = FR_to_XCN(failures=FR.failures, right_censored=FR.right_censored)
+        XCN = FR_to_XCN(failures=FR.failures, right_censored=FR.right_censored,failure_code=failure_code_in_XCN,censor_code=censor_code_in_XCN)
         self.X = XCN.X
         self.C = XCN.C
         self.N = XCN.N
@@ -360,7 +359,7 @@ class XCN_to_FNRN:
     censor_code - specify the censor code you have used if it does not appear in the defaults (see below). Optional input.
         * default censor codes that will be recognised (not case sensitive): 'R', 'RC', 'RIGHT CENS', 'RIGHT CENSORED', 'C', 'CENSORED', 'CENS', 'S', 'SUSP', 'SUSPENSION', 'SUSPENDED', 'UF', 'UNFAILED', 'UNFAIL', 'NF', 'NO FAIL', 'NO FAILURE', 'NOT FAILED', 1
     failure_code - specify the failure code you have used if it does not appear in the defaults (see below). Optional Input.
-        * default failure codes that will be recognised (not case sensitive): 'F', 'FAIL', 'FAILED', 0
+        * default failure codes that will be recognised (not case sensitive): 'F', 'FAIL', 'FAILED', 'FAILURE', 0
 
     Output:
     failures
@@ -454,7 +453,7 @@ class XCN_to_FR:
     censor_code - specify the censor code you have used if it does not appear in the defaults (see below). Optional input.
         * default censor codes that will be recognised (not case sensitive): 'R', 'RC', 'RIGHT CENS', 'RIGHT CENSORED', 'C', 'CENSORED', 'CENS', 'S', 'SUSP', 'SUSPENSION', 'SUSPENDED', 'UF', 'UNFAILED', 'UNFAIL', 'NF', 'NO FAIL', 'NO FAILURE', 'NOT FAILED', 1
     failure_code - specify the failure code you have used if it does not appear in the defaults (see below). Optional Input.
-        * default failure codes that will be recognised (not case sensitive): 'F', 'FAIL', 'FAILED', 0
+        * default failure codes that will be recognised (not case sensitive): 'F', 'FAIL', 'FAILED', 'FAILURE', 0
 
     Output:
     failures
@@ -527,7 +526,7 @@ class XCN_to_FR:
                 failures = np.append(failures, np.ones(int(N[i])) * X[i])
             elif c == censor_code:
                 right_censored = np.append(right_censored, np.ones(int(N[i])) * X[i])
-            elif c in ["F", "FAIL", "FAILED", 0]:
+            elif c in ["F", "FAIL", "FAILED", "FAILURE", 0]:
                 failures = np.append(failures, np.ones(int(N[i])) * X[i])
             elif c in [
                 "R",
