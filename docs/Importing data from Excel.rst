@@ -7,11 +7,11 @@ Importing data from Excel
 
 The module Convert_data contains three functions for importing data from Microsoft Excel (.xlsx files) into Python and converting that data into the structure of a Python object for further use. These functions are:
 
-- Convert_data.xlsx_to_XCN
-- Convert_data.xlsx_to_FNRN
-- Convert_data.xlsx_to_FR
+- xlsx_to_XCN
+- xlsx_to_FNRN
+- xlsx_to_FR
 
-These three functions should be used only for data in their respective format (XCN, FNRN, FR). This means that the columns of the xlsx file should be in the same order as the name of the data format. For example, xlsx_to_XCN is expecting to receive an xlsx file with 3 columns corresponding to X, C, and N. If these are in a different order they may be misinterpreted or trigger an error.
+These three functions should be used only for data in their respective format (XCN, FNRN, FR). This means that the columns of the xlsx file should be in the same order as the name of the data format. For example, xlsx_to_XCN is expecting to receive an xlsx file with 3 columns corresponding to X, C, and N. If these are in a different order they may be misinterpreted or trigger an error. You should correct the column order in the xlsx file before importing into Python.
 
 Each of the three data formats has an acceptable reduced form as follows:
 
@@ -32,6 +32,7 @@ Inputs:
 -   failure_code_in_xlsx - specify the failure code you have used if it does not appear in the defaults. Default failure codes that will be recognised (not case sensitive): 'F', 'FAIL', 'FAILED', 'FAILURE', 0
 -   censor_code_in_XCN - specify the censor code to be used in XCN format. Default is 'C'
 -   failure_code_in_XCN - specify the failure code to be used in XCN format. Default is 'F'
+-   kwargs are accepted and passed to `pandas.read_excel <https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_excel.html>`_ as args.
  
 Outputs:
 
@@ -51,6 +52,7 @@ This format is not used as a data entry format for `reliability` or any commerci
 Inputs:
 
 -   path - the filepath for the xlsx file. Note that you must prefix this with r to specify it as raw text. eg. path=r'C:\Users\Current User\Desktop\FNRN.xlsx' 
+-   kwargs are accepted and passed to `pandas.read_excel <https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_excel.html>`_ as args.
 
 Outputs:
 
@@ -71,6 +73,7 @@ This is the standard data entry format for `reliability`. The FR format is the m
 Inputs:
 
 -   path - the filepath for the xlsx file. Note that you must prefix this with r to specify it as raw text. eg. path=r'C:\Users\Current User\Desktop\FR.xlsx' 
+-   kwargs are accepted and passed to `pandas.read_excel <https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_excel.html>`_ as args.
 
 Outputs:
 
@@ -85,7 +88,7 @@ Methods:
 Example 1
 ---------
 
-In the example below, a screenshot of the data from Excel is shown along with the import process and an example of the print method. The censoring codes are automatically recognised. See Example 3 for how to modify the censor code recognition process.
+In the example below, a screenshot of the data from Excel is shown along with the import process and an example of the print method. The censoring codes are automatically recognised. See `Example 3 <https://reliability.readthedocs.io/en/latest/Importing%20data%20from%20Excel.html#example-3>`_ for how to modify the censor code recognition process.
 
 .. image:: images/excel_XCN_1.png
 
