@@ -39,6 +39,9 @@ Outputs:
 
 Other plotting keywords (such as color, label, linestyle, etc.) are accepted and used on the point estimate line. The color of the confidence intervals is matched automatically to the point estimate line, but no other keywords are carried across to the confidence interval plot as it is only a shaded region.
 
+Example 1
+---------
+
 In this first example, we will see how Rank Adjustment compares with Kaplan-Meier and Nelson-Aalen for a large censored dataset. The plots show these three methods arrive at a similar result, with Kaplan-Meier giving the lowest estimate of the survival function, followed by Nelson-Aalen, and finally Rank-Adjustment. Note that this is when the median ranks are used in the rank adjustment heuristic. As sample size is increased, the differences between the three methods reduces.
 
 .. code:: python
@@ -67,6 +70,9 @@ In this first example, we will see how Rank Adjustment compares with Kaplan-Meie
     plt.show()
     
 .. image:: images/KM_NA_RA.png
+
+Example 2
+---------
 
 In this second example we will look at the effect of the plotting heuristic "a". The default heuristic used is 0.3 which gives the median ranks, but there are many `other heuristics <https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics>`_ available by varying a from 0 to 1. Here we will look at the effect of setting "a" to be 0, 0.3, and 1. The effect is fairly minimal, though there is a difference which leads to the use of different heuristics. The median ranks (a=0.3) is most popular and is the default in Minitab for obtaining plotting positions.
 
