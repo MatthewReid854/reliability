@@ -127,17 +127,17 @@ Outputs:
 All of the six conversion functions contain the following methods:
 
 -   print() - this will print a dataframe of the data in the output format to the console
--   write_to_xlsx() - this will export the data in the output format to an xlsx file at the specified path. Ensure you specify the path string preceeded by r to indicate raw text. For example write_to_xlsx(path=r'C:\Users\Current User\Desktop\mydata.xlsx')
+-   write_to_xlsx() - this will export the data in the output format to an xlsx file at the specified path. Ensure you specify the path string preceeded by r to indicate raw text. For example: write_to_xlsx(path=r'C:/Users/Current User/Desktop/mydata.xlsx')
 
 Example 1
 ---------
 
-In the example below we use FR_to_FNRN to convert between the formats and then print each of the available outputs. Using the print() method generates a dataframe printed to the console.
+In the example below we convert from FR to FNRN format and then print each of the available outputs. Using the print() method generates a dataframe printed to the console.
 
 .. code:: python
 
     from reliability.Convert_data import FR_to_FNRN
-    FNRN = FR_to_FNRN(failures=[8,15,15,20,25,30,30,30,30,32,32,32],right_censored=[17,17,50,50,50,50,78,78,78,78,90])
+    FNRN = FR_to_FNRN(failures=[8,15,15,20,25,30,30,30,30,32,32,32], right_censored=[17,17,50,50,50,50,78,78,78,78,90])
     print(FNRN.failures)
     print(FNRN.num_failures)
     print(FNRN.right_censored)
