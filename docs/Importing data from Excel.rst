@@ -50,7 +50,7 @@ This format is not used as a data entry format for `reliability` or any commerci
 
 Inputs:
 
--   path - the filepath for the xlsx file. Note that you must prefix this with r to specify it as raw text. eg. path=r'C:\Users\Current User\Desktop\FNRN.xlsx' 
+-   path - the filepath for the xlsx file. Note that you must prefix this with r to specify it as raw text. eg. path=r'C:\...\Desktop\FNRN.xlsx' 
 
 Outputs:
 
@@ -70,7 +70,7 @@ This is the standard data entry format for `reliability`. The FR format is the m
 
 Inputs:
 
--   path - the filepath for the xlsx file. Note that you must prefix this with r to specify it as raw text. eg. path=r'C:\Users\Current User\Desktop\FR.xlsx' 
+-   path - the filepath for the xlsx file. Note that you must prefix this with r to specify it as raw text. eg. path=r'C:\Users\...\Desktop\FR.xlsx' 
 
 Outputs:
 
