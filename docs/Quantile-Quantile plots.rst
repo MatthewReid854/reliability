@@ -24,6 +24,9 @@ Outputs:
 -   The QQ_plot will always be output. Use plt.show() to show it.
 -   [m,m1,c1] - these are the values for the lines of best fit. m is used in Y=mX, and m1 and c1 are used in Y=m1X+c1
 
+Example 1
+---------
+
 In the example below, we have determined that the field failures follow a Weibull distribution (α=350, β=2.01) with time represented in months. By using an accelerated life test we have replicated the failure mode and Weibull shape parameter reasonably closely and the Lab failures follow a Weibull distribution (α=128, β=2.11) with time measured in hours. We would like to obtain a simple Field-to-Lab conversion for time so we know how much lab time is required to simulate 10 years of field time. The QQ plot will automatically provide the equations for the lines of best fit. If we use the Y=mX equation we see that Field(months)=2.757×Lab(hours). Therefore, to simulate 10 years of field time (120 months) we need to run the accelerated life test for approximately 43.5 hours in the Lab.
 
 .. code:: python
@@ -58,6 +61,9 @@ Outputs:
 -   The QQ_plot will always be output. Use plt.show() to show it.
 -   [m,m1,c1] - these are the values for the lines of best fit. m is used in Y=mX, and m1 and c1 are used in Y=m1X+c1
 
+Example 2
+---------
+
 In the example below, we generate 100 random samples from a Normal distribution. We then fit a Weibull_2P distribution to this data and using QQ_plot_semiparametric we compare the actual quantile (the original data) with the theoretical quantiles (from the fitted distribution). The lines of best fit are automatically provided and the Y=0.992X shows the relationship is very close to perfect with only some deviation around the tails of the distribution. The final example on this page compares a QQ_plot_semiparametric with a PP_plot_semiparametric for the same dataset to show the differences between the two.
 
 .. code:: python
@@ -76,7 +82,12 @@ In the example below, we generate 100 random samples from a Normal distribution.
 Comparing PP plots with QQ plots
 --------------------------------
 
-In this example we compare a QQ_plot_parametric with a PP_plot_parametric for the same pair of distributions. Normally, it is not practical to compare the output of the two plots as they are so vastly different and are used for different purposes, but the comparison is provided for the reader's understanding. The differences between these plots are so significant because one is the time at which the fraction has failed (the Quantile) and the other is the fraction failing (the CDF). Parametric PP plots are not very common as their only use is in providing a graphical understanding of the differences between the CDFs of two distributions, such as how one lags or leads the other at various times. See `Probability-Probability plots <https://reliability.readthedocs.io/en/latest/Probability-Probability%20plots.html#parametric-probability-probability-plot>`_ for more detail on the uses of parametric PP plots.
+Normally, it is not practical to compare the output of the two plots as they are so vastly different and are used for different purposes, but the comparison below is provided for the reader's understanding. The differences between these plots are so significant because one is the time at which the fraction has failed (the Quantile) and the other is the fraction failing (the CDF). Parametric PP plots are not very common as their only use is in providing a graphical understanding of the differences between the CDFs of two distributions, such as how one lags or leads the other at various times. See `Probability-Probability plots <https://reliability.readthedocs.io/en/latest/Probability-Probability%20plots.html#parametric-probability-probability-plot>`_ for more detail on the uses of parametric PP plots.
+
+Example 3
+---------
+
+In this example we compare a QQ_plot_parametric with a PP_plot_parametric for the same pair of distributions.
 
 .. code:: python
 
@@ -93,6 +104,9 @@ In this example we compare a QQ_plot_parametric with a PP_plot_parametric for th
     plt.show()
 
 .. image:: images/PPvsQQparametric.png
+
+Example 4
+---------
 
 In this example we compare a QQ_plot_semiparametric with a PP_plot_semiparametric for the same dataset. Both plots are intended to be used as graphical goodness of fit tests. In a PP plot we get a lot of resolution in the center of the distributions, but less at the tails, whereas the QQ plot gives very good resolution at the tails, but less in the center. Because most data analysts are more concerned about the extremes (tails) of a distribution, QQ plots are the more commonly used plot between the two.
 
