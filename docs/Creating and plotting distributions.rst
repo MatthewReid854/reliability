@@ -19,6 +19,9 @@ There are 8 standard probability `distributions <https://reliability.readthedocs
 In all of the distributions which use γ, the γ parameter is used to location shift the distribution to the right. If used, the γ parameter must be greater than or equal to 0.
 The Beta distribution is only defined in the range  0 to 1. All distributions except the Normal and Gumbel distributions are defined in the positive domain only (x>0).
 
+Example 1
+---------
+
 Understanding how to create and plot distributions is easiest with an example. In this first example, we will create a Weibull Distribution with parameters alpha = 50 and beta = 2. We will then plot the PDF of the distribution.
 
 .. code:: python
@@ -31,6 +34,9 @@ Understanding how to create and plot distributions is easiest with an example. I
     plt.show()
 
 .. image:: images/weibull_plot1.png
+
+Example 2
+---------
 
 Just as easily as we plotted the PDF in the above example, we can plot any of the 5 characteristic functions (PDF, CDF, SF, HF, CHF). If you would like to view all of these functions together, you can use the plot() method. In this second example, we will create a Lognormal Distribution with parameters mu=2 and sigma=0.5. From this distribution, we will use the plot() method to visualise the five functions and also provide a summary of the descriptive statistics.
 
@@ -79,6 +85,9 @@ For all of the individual plotting functions (PDF, CDF, SF, HF, CHF), all standa
 
 Note that .plot() does not require plt.show() to be used as it will automatically show, however the other 5 plotting functions will not be displayed until plt.show() is used. This is to allow the user to overlay multiple plots on the figure or change titles, labels, and legends as required. The plot can be turned off by specifying show_plot=False.
 
+Example 3
+---------
+
 Each of the 5 functions (PDF, CDF, SF, HF, CHF) will always return the y-values for a given set of x-values (xvals). In this example, we want to know the value of the Survival Function at x=20.
 
 .. code:: python
@@ -92,6 +101,9 @@ Each of the 5 functions (PDF, CDF, SF, HF, CHF) will always return the y-values 
     '''
     The value of the SF at 20 is 85.21 %
     '''
+
+Example 4
+---------
 
 As a final example, we will create a bathtub curve by creating and layering several distributions. The bathtub curve is only for the Hazard function as it shows how a variety of failure modes throughout the life of a population can shape the hazard into a bathtub shape. The three distinct regions are infant mortality, random failures, and wear out. In this example, the returned y-values are added together to produce the 'combined' array which is then plotted using matplotlib against the xvals. By specifying xvals in each HF we can ensure that the xvals used will all align. Leaving xvals unspecified would not be appropriate in this example as the default xvals will depend on the shape of the plot.
 
