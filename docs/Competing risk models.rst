@@ -71,6 +71,9 @@ Methods:
 -   stats() - prints all the descriptive statistics. Same as the statistics shown using .plot() but printed to console.
 -   random_samples() - draws random samples from the distribution to which it is applied.
 
+Example 1
+---------
+
 The following example shows how the Competing_Risks_Model object can be created, visualised and used.
 
 .. code:: python
@@ -147,7 +150,10 @@ Outputs:
 -   AD - Anderson-Darling goodness of fit statistic
 -   results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
 
-In this first example, we will create some data using a competing risks model from two Weibull distributions. We will then fit the Weibull mixture model to the data and will print the results and show the plot.
+Example 2
+---------
+
+In this example, we will create some data using a competing risks model from two Weibull distributions. We will then fit the Weibull mixture model to the data and will print the results and show the plot.
 
 .. code:: python
 
@@ -192,7 +198,10 @@ In this first example, we will create some data using a competing risks model fr
 
 .. image:: images/CR_fit_hist1.png
 
-In this second example, we will compare the mixture model to the competing risks model. The data is generated from a competing risks model so we expect the Weibull competing risks model to be more appropriate than the Mixture model. Through comparison of the AICc or BIC, we can see which model is more appropriate. Since the AICc and BIC penalise the goodness of fit criterion based on the number of parameters and the mixture model has 5 parameters compared to the competing risk model's 4 parameters, we expect the competing risks model to have a lower (closer to zero) goodness of fit than the Mixture model, and this is what we observe in the results. Notice how the log-likelihood and AD statistics of the mixture model indicates a better fit (because the value is closer to zero), but this does not take into account the number of parameters in the model.
+Example 3
+---------
+
+In this example, we will compare the mixture model to the competing risks model. The data is generated from a competing risks model so we expect the Weibull competing risks model to be more appropriate than the Mixture model. Through comparison of the AICc or BIC, we can see which model is more appropriate. Since the AICc and BIC penalise the goodness of fit criterion based on the number of parameters and the mixture model has 5 parameters compared to the competing risk model's 4 parameters, we expect the competing risks model to have a lower (closer to zero) goodness of fit than the Mixture model, and this is what we observe in the results. Notice how the log-likelihood and AD statistics of the mixture model indicates a better fit (because the value is closer to zero), but this does not take into account the number of parameters in the model.
 
 .. code:: python
 
