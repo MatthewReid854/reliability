@@ -11,38 +11,46 @@ The module Convert_data contains three functions for importing data from Microso
 - Convert_data.xlsx_to_FNRN
 - Convert_data.xlsx_to_FR
 
-These three functions should be use for data in their respective format (XCN, FNRN, FR). Note that the columns of the xlsx file should be in the same order as the name of the data format. For example, xlsx_to_XCN is expecting to receive an xlsx file with 3 columns corresponding to X, C, and N. If these are in a different order they may be misinterpreted or trigger an error. Each of the three data formats has a reduced form as follows:
+These three functions should be used only for data in their respective format (XCN, FNRN, FR). This means that the columns of the xlsx file should be in the same order as the name of the data format. For example, xlsx_to_XCN is expecting to receive an xlsx file with 3 columns corresponding to X, C, and N. If these are in a different order they may be misinterpreted or trigger an error.
+
+Each of the three data formats has an acceptable reduced form as follows:
 
 - XCN reduced form is XC and all rows are assumed to have a quantity of 1
 - FNRN reduced form is FN and it is assumed that there is no right censored data
 - FR reduced form is F and it is assumed that there is no right censored data
 
-For more information on data formats with examples, please see .....
+For more information on these three data formats as well as how to convert data between the different formats, please see the section on `Converting data between different formats <https://reliability.readthedocs.io/en/latest/Converting%20data%20between%20different%20formats.html>`_.
 
 **xlsx_to_XCN**
 
+This format is the default in most commercial software including Reliasoft and Minitab. The sequence of XCN and the names may change between different software, but the format is essentially the same. Within `reliability` the XCN format may be reduced to XC (and all items are assumed to have quantity of 1). Some other software accepts the further reduced form of X (where there are no censored items and all items have a quantity of 1). If you have only failure data that is not grouped, then you should use the FR format as FR has a reduced form of F which is equivalent to X from XCN.
+
 Inputs:
 
--   path - the filepath for the xlsx file. Note that you MUST prefix this with r to specify it is raw text. eg. path=r'C:/documents/myfile.xlsx'
+-   path - the filepath for the xlsx file. Note that you MUST prefix this with r to specify it is raw text. eg. path=r'C:\Users\Current User\Desktop\XCN.xlsx'
 -   censor_code_in_xlsx - specify the censor code you have used if it does not appear in the defaults. Default censor codes that will be recognised (not case sensitive): 'R', 'RC', 'RIGHT CENS', 'RIGHT CENSORED', 'C', 'CENSORED', 'CENS', 'S', 'SUSP', 'SUSPENSION', 'SUSPENDED', 'UF', 'UNFAILED', 'UNFAIL', 'NF', 'NO FAIL', 'NO FAILURE', 'NOT FAILED', 1
--   failure_code_in_xlsx - specify the failure code you have used if it does not appear in the defaults. Default failure codes that will be recognised (not case sensitive): 'F', 'FAIL', 'FAILED', 0
+-   failure_code_in_xlsx - specify the failure code you have used if it does not appear in the defaults. Default failure codes that will be recognised (not case sensitive): 'F', 'FAIL', 'FAILED', 'FAILURE', 0
 -   censor_code_in_XCN - specify the censor code to be used in XCN format. Default is 'C'
 -   failure_code_in_XCN - specify the failure code to be used in XCN format. Default is 'F'
  
 Outputs:
+
 -   X - event time
 -   C - censor code
 -   N - number of events at each event time
 
 Methods:
+
 -   print() - this will print a dataframe of the data in XCN format to the console
 -   write_to_xlsx() - this will export the data in XCN format to an xlsx file at the specified path.
 
 **xlsx_to_FNRN**
 
+This format is not used as a data entry format for `reliability` or any commercial software (that the author has used), but is still a valid format which combines aspects of the XCN and FR formats together. FNRN is used internally within reliability as part of the MLE algorithms.
+
 Inputs:
 
--   path - the filepath for the xlsx file. Note that you must prefix this with r to specify it as raw text. eg. path=r'C:/documents/myfile.xlsx' 
+-   path - the filepath for the xlsx file. Note that you must prefix this with r to specify it as raw text. eg. path=r'C:\Users\Current User\Desktop\FNRN.xlsx' 
 
 Outputs:
 
@@ -58,9 +66,11 @@ Methods:
 
 **xlsx_to_FR**
 
+This is the standard data entry format for `reliability`. The FR format is the most simple, but for data with many repeated values it is not as efficient at representing the data in a table as FNRN or XCN. Python has no problems with long arrays so the FR format is chosen as the data entry format for its simplicity.
+
 Inputs:
 
--   path - the filepath for the xlsx file. Note that you must prefix this with r to specify it as raw text. eg. path=r'C:/documents/myfile.xlsx' 
+-   path - the filepath for the xlsx file. Note that you must prefix this with r to specify it as raw text. eg. path=r'C:\Users\Current User\Desktop\FR.xlsx' 
 
 Outputs:
 
@@ -73,16 +83,16 @@ Methods:
 -   write_to_xlsx() - this will export the data in FR format to an xlsx file at the specified path.
 
 Example 1
----------
+^^^^^^^^^
 
-In the example below, a screenshot of the data from Excel is shown along with the import process and an example of the print method.
+In the example below, a screenshot of the data from Excel is shown along with the import process and an example of the print method. The censoring codes are automatically recognised. See Example 3 for how to modify the censor code recognition process.
 
-.. image:: images/excel_XCN.png
+.. image:: images/excel_XCN_1.png
 
 .. code:: python
 
     from reliability.Convert_data import xlsx_to_XCN
-    data = xlsx_to_XCN(path=r'C:\Users\Matthew Reid\Desktop\XCN.xlsx')
+    data = xlsx_to_XCN(path=r'C:\Users\Current User\Desktop\XCN.xlsx')
     print(data.X)
     print(data.C)
     print(data.N)
@@ -100,4 +110,61 @@ In the example below, a screenshot of the data from Excel is shown along with th
             89           C                 4
            102           C                 1
            105           C                 2 
+    '''
+
+Example 2
+^^^^^^^^^
+
+The use of xlsx_to_FNRN and xlsx_to_FR are very similar to that shown above. This example shows the use of xlsx_to_FR.
+
+.. image:: images/excel_FR.png
+
+.. code:: python
+
+    from reliability.Convert_data import xlsx_to_FR
+    data = xlsx_to_FR(path=r'C:\Users\Current User\Desktop\FR.xlsx')
+    print(data.failures)
+    print(data.right_censored)
+    data.print()
+    
+    '''
+    [ 37.  67. 120.]
+    [200 200 200 300 300]
+    Data (FR format)
+    failures  right censored
+          37             200
+          67             200
+         120             200
+                         300
+                         300 
+    '''
+
+Example 3
+^^^^^^^^^
+
+In this example we will again use xlsx_to_XCN, however this time the censoring codes need customizing. The xlsx file uses 1 in the second column for failures (note that the defaults recognise 0 as failure and 1 as right censored) and 'still alive' for the right censored items ('still alive' is not part of the recognised defaults). If we do not specify these custom cesoring codes, the failures will be misinterpreted as right censored items and the 'still alive' items will return an error as this code is not recognised. To resolve this we must set the censor_code_in_xlsx and failure_code_in_xlsx arguments. Furthermore we want the XCN data object in python to use 'S' instead of 'C' for the censored items. We do this by setting the censor_code_in_XCN argument. If we wanted to change the failure code from 'F' to something else we could similarly use the argument failure_code_in_XCN.
+
+.. image:: images/excel_XCN_special.png
+
+.. code:: python
+    
+    from reliability.Convert_data import xlsx_to_XCN
+    data = xlsx_to_XCN(path=r'C:\Users\Current User\Desktop\XCN.xlsx', censor_code_in_xlsx='still alive', failure_code_in_xlsx=1, censor_code_in_XCN='S')
+    print(data.X)
+    print(data.C)
+    print(data.N)
+    data.print()
+    
+    '''
+    [ 13.  45.  78.  89. 102. 105.]
+    ['F' 'F' 'F' 'S' 'S' 'S']
+    [2 3 1 4 1 2]
+    Data (XCN format)
+    event time censor code  number of events
+            13           F                 2
+            45           F                 3
+            78           F                 1
+            89           S                 4
+           102           S                 1
+           105           S                 2
     '''
