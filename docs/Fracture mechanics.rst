@@ -47,6 +47,9 @@ Outputs:
 - epsilon_mean
 - cycles_to_failure
 
+Example 1
+---------
+
 In the following example we will provide the function with the appropriate inputs for our problem (taken from Example 2.8 in Probabilistic Physics of Failure Approach to Reliability (2017)). The mean_stress_correction_method is changed to 'SWT' and the results will be printed to the console.
 
 .. code:: python
@@ -102,6 +105,9 @@ Outputs:
 - Nf_total_iterative
 - final_crack_length_iterative
 - transition_length_iterative
+
+Example 2
+---------
 
 In the following example, a crack of 1mm is grown to failure. The function determines that the notch (described by Kt and D) causes a local stress concentration which initially slows the propogation of the crack until the crack reaches the transition length. Once past the transition length, the crack grows much faster and results in brittle fracture of the material. This change in crack growth rate is evident on the plot from the iterative method. The reason for the different transition lengths between the simplified and iterative methods is that the simplified method uses 1.12 for the geometry factor whereas the iterative method finds the geometry factor using the local geometry (using W and D).
 
