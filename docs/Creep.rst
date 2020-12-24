@@ -21,6 +21,9 @@ Outputs:
 
 -   The plot is the only output. Use plt.show() to show it.
 
+Example 1
+---------
+
 In the following example (taken from example 2.16 of Probabilistic Physics of Failure Approach to Reliability (2017)), we provide creep data in the form of temperatures, stresses, and times to failure in order to obtain the creep rupture curves. We also are interested in the time to failure of a component at a stress of 70 and a temperature of 1100.
 
 .. code:: python
@@ -49,6 +52,9 @@ Outputs:
 
 -   The time to failure at the higher temperature.
 -   If print_results is True, the output will also be printed to the console.
+
+Example 2
+---------
 
 In the following example (which follows on from the previous example), we will use the Larson-Miller relation to find the time to failure due to creep at 1100°F for a component which we know fails at 9878 hours when subjected to the same stress at 900°F.
 
