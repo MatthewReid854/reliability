@@ -37,6 +37,9 @@ Outputs:
 -   lower - this is the MCF_lower column from results. Blank lines for censored values are removed
 -   upper - this is the MCF_upper column from results. Blank lines for censored values are removed
 
+Example 1
+---------
+
 The following example is taken from an `example <http://reliawiki.org/index.php/Recurrent_Event_Data_Analysis>`_ provided by Reliasoft. The failure times and retirement times (retirement time is indicated by +) of 5 systems are:
 
 .. image:: images/MCF_data.png
@@ -113,6 +116,9 @@ Outputs:
 -   beta_lower - the lower CI estimate of the parameter
 -   results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
 
+Example 2
+---------
+
 The following example uses the same data as the MCF_nonparametric example provided above. From the output we can clearly see that the system is degrading over time as repairs are needed more frequently.
 
 .. code:: python
@@ -134,6 +140,9 @@ The following example uses the same data as the MCF_nonparametric example provid
     '''
 
 .. image:: images/MCF_parametric.png
+
+Example 3
+---------
 
 The parametric model that is fitted to the MCF is not always an appropriate model. The example below shows data from a collection of systems, some of which are improving and some are worsening. The net effect is an S-shaped MCF. The power model used by MCF_parametric is not able to accurately follow an S-shaped dataset. In this case, the MCF_nonparametric model is more appropriate, though there are some other parametric models (discussed in the first paragraph) which may be useful to model this dataset.
 
