@@ -132,17 +132,56 @@ All of the six conversion functions contain the following methods:
 Example 1
 ---------
 
-In the example below...
+In the example below we use FR_to_FNRN to convert between the formats and then print each of the available outputs. Using the print() method generates a dataframe printed to the console.
 
 .. code:: python
 
-    from reliability
+    from reliability.Convert_data import FR_to_FNRN
+    FNRN = FR_to_FNRN(failures=[8,15,15,20,25,30,30,30,30,32,32,32],right_censored=[17,17,50,50,50,50,78,78,78,78,90])
+    print(FNRN.failures)
+    print(FNRN.num_failures)
+    print(FNRN.right_censored)
+    print(FNRN.num_right_censored)
+    FNRN.print()
+    '''
+    [ 8 15 20 25 30 32]
+    [1 2 1 1 4 3]
+    [17 50 78 90]
+    [2 4 4 1]
+    Data (FNRN format)
+    failures  number of failures right censored number of right censored
+           8                   1             17                        2
+          15                   2             50                        4
+          20                   1             78                        4
+          25                   1             90                        1
+          30                   4                                        
+          32                   3                                         
+    '''
 
 Example 2
 ---------
 
-In the example below...
+In the example below we are converting XCN to FR format. The XCN data uses censor code 1 for failures and 0 for right censored. Within `reliability` the default censor code for failures is 0 and for right censored is 1. If we do not correct this, the converter will interpret the censor codes the wrong way around. This is resolved by specifying the arguments censor_code and failure_code.
 
 .. code:: python
 
-    from reliability
+    from reliability.Convert_data import XCN_to_FR
+    FR = XCN_to_FR(X=[12,15,18,32,35,38,60], C=[1,1,1,0,0,0,0], N=[1,1,1,2,2,1,3], failure_code=1, censor_code=0)
+    print(FR.failures)
+    print(FR.right_censored)
+    FR.print()
+    
+    '''
+    [12. 15. 18.]
+    [32. 32. 35. 35. 38. 60. 60. 60.]
+    Data (FR format)
+    failures  right censored
+          12              32
+          15              32
+          18              35
+                          35
+                          38
+                          60
+                          60
+                          60 
+    '''
