@@ -39,6 +39,9 @@ Outputs:
 
 - The plot is the only output. Use plt.show() to show it.
 
+Example 1
+---------
+
 In the example below we generate some samples from a Normal Distribution and provide these to the probability plotting function. It is also possible to overlay other plots of the CDF as is shown by the dashed line.
 
 .. code:: python
@@ -55,6 +58,9 @@ In the example below we generate some samples from a Normal Distribution and pro
     plt.show()
     
 .. image:: images/Normal_probability_plotV2.png
+
+Example 2
+---------
 
 In this second example, we will fit an Exponential distribution to some right censored data. To create this data, we will draw it from an Exponential distribution that has a location shift of 12. Once again, the true CDF has also been plotted to provide the comparison. Note that the x-axis is time-gamma as it is necessary to subtract gamma from the x-plotting positions if we want the plot to appear linear.
 
@@ -74,6 +80,9 @@ In this second example, we will fit an Exponential distribution to some right ce
     plt.show()
 
 .. image:: images/Exponential_probability_plot_V5.png
+
+Example 3
+---------
 
 In this third example, we will see how probability plotting can be used to highlight the importance of getting as much data as possible. This code performs a loop in which increasing numbers of samples are used for fitting a Weibull distribution and the accuracy of the results (shown both in the legend and by comparison with the True CDF) increases with the number of samples.
 
@@ -95,6 +104,9 @@ In this third example, we will see how probability plotting can be used to highl
     plt.show()
  
 .. image:: images/Weibull_probability_plot_multi_V4.png
+
+Example 4
+---------
 
 In this fourth example, we will take a look at the special case of the Exponential probability plot using the Weibull Scale. This plot is essentially a Weibull probability plot, but the fitting and plotting functions are Exponential. The reason for plotting an Exponential distribution on Weibull probability paper is to achieve parallel lines for different Lambda parameters rather than having the lines radiating from the origin as we see in the Exponential probability plot on Exponential probability paper. This has applications in ALT probability plotting and is the default plot provided from Fit_Exponential_1P and Fit_Exponential_2P. An example of the differences between the plots are shown below. Remember that the alpha parameter from the Weibull distribution is equivalent to 1/Lambda from the Exponential distribution and a Weibull distribution with Beta = 1 is the same as an Exponential distribution.
 
@@ -120,6 +132,9 @@ In this fourth example, we will take a look at the special case of the Exponenti
     plt.show()
 
 .. image:: images/expon_weibull_scale_V4.png
+
+Example 5
+---------
 
 In this final example, we take a look at how a probability plot can show us that there's something wrong with our assumption of a single distribution. To generate the data, the random samples are drawn from two different distributions which are shown in the left image. In the right image, the scatterplot of failure times is clearly non-linear. The green line is the attempt to fit a single Weibull_2P distribution and this will do a poor job of modelling the data. Also note that the points of the scatterplot do not fall on the True CDF of each distribution. This is because the median rank method of obtaining the plotting positions does not work well if the failure times come from more than one distribution. If you see a pattern like this, try a `mixture model <https://reliability.readthedocs.io/en/latest/Mixture%20models.html>`_ or a `competing risks model <https://reliability.readthedocs.io/en/latest/Competing%20risk%20models.html>`_. Always remember that cusps, corners, and doglegs indicate a mixture of failure modes.
 
@@ -155,6 +170,9 @@ What does a probability plot show me?
 -------------------------------------
 
 A probability plot shows how well your data is modelled by a particular distribution. By scaling the axes in such a way that the fitted distribution's CDF appears to be a straight line, we can judge whether the empirical CDF of the failure data (the black dots) are in agreement with the CDF of the fitted distribution. Ideally we would see that all of the black dots would lie on the straight line but most of the time this is not the case. A bad fit is evident when the line or curve formed by the black dots is deviating significantly from the straight line. We can usually tolerate a little bit of deviation at the tails of the distribution but the majority of the black dots should follow the line. A historically popular test was the `'fat pencil test' <https://support.minitab.com/en-us/minitab/18/help-and-how-to/statistics/basic-statistics/supporting-topics/normality/normal-probability-plots-and-the-fat-pencil-test/>`_ which suggested that if a fat pencil could cover the majority of the data points then the fit was probably suitable. Such a method makes no mention of the size of the plot window which could easily affect the result so it is best to use your own judgement and experience. This approach is not a substitute for statistical inference so it is often preferred to use quantitative measures for goodness of fit such as AICc and BIC. Despite being an imprecise measure, probability plots remain popular among reliability engineers and in reliability engineering software.
+
+Example 6
+---------
 
 .. code:: python
 
