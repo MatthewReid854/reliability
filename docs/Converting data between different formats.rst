@@ -7,12 +7,12 @@ Converting data between different formats
 
 The module Convert_data contains six functions for converting data between the three formats (XCN, FNRN, FR). These functions are:
 
-- Convert_data.XCN_to_FNRN
-- Convert_data.XCN_to_FR
-- Convert_data.FNRN_to_XCN
-- Convert_data.FNRN_to_FR
-- Convert_data.FR_to_XCN
-- Convert_data.FR_to_FNRN
+- XCN_to_FNRN
+- XCN_to_FR
+- FNRN_to_XCN
+- FNRN_to_FR
+- FR_to_XCN
+- FR_to_FNRN
 
 The three data formats are different ways of representing the same information. The following image shows the same data expressed in each format.
 
