@@ -25,6 +25,9 @@ Outputs:
 
 -    The plot is the only output. All calculated values are shown on the plot.
 
+Example 1
+---------
+
 In this first example, we use the data for stress and cycles to produce an S-N diagram. We will not provide any runout data here so the endurance limit will not be calculated.
 
 .. code:: python
@@ -37,6 +40,9 @@ In this first example, we use the data for stress and cycles to produce an S-N d
     plt.show()
 
 .. image:: images/Fatigue_1.png
+
+Example 2
+---------
 
 In this second example, we will use the same data as above, but also supply runout data so that the endurance limit will be calculated. We will also adjust the method_for_bounds to be 'residual'. We are also going to find the life (in cycles) at a stress of 260 by using stress_trace, and the stress required to achieve a life of 5x10^5 cycles using cycles_trace.
 
