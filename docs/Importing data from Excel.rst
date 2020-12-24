@@ -27,7 +27,7 @@ This format is the default in most commercial software including Reliasoft and M
 
 Inputs:
 
--   path - the filepath for the xlsx file. Note that you MUST prefix this with r to specify it is raw text. eg. path=r'C:\Users\Current User\Desktop\XCN.xlsx'
+-   path - the filepath for the xlsx file. Note that you MUST prefix this with r to specify it is raw text. eg. path=r'C:/Users/Current User/Desktop/XCN.xlsx'
 -   censor_code_in_xlsx - specify the censor code you have used if it does not appear in the defaults. Default censor codes that will be recognised (not case sensitive): 'R', 'RC', 'RIGHT CENS', 'RIGHT CENSORED', 'C', 'CENSORED', 'CENS', 'S', 'SUSP', 'SUSPENSION', 'SUSPENDED', 'UF', 'UNFAILED', 'UNFAIL', 'NF', 'NO FAIL', 'NO FAILURE', 'NOT FAILED', 1
 -   failure_code_in_xlsx - specify the failure code you have used if it does not appear in the defaults. Default failure codes that will be recognised (not case sensitive): 'F', 'FAIL', 'FAILED', 'FAILURE', 0
 -   censor_code_in_XCN - specify the censor code to be used in XCN format. Default is 'C'
@@ -50,7 +50,7 @@ This format is not used as a data entry format for `reliability` or any commerci
 
 Inputs:
 
--   path - the filepath for the xlsx file. Note that you must prefix this with r to specify it as raw text. eg. path=r'C:\...\Desktop\FNRN.xlsx' 
+-   path - the filepath for the xlsx file. Note that you must prefix this with r to specify it as raw text. eg. path=r'C:/Users/Current User/Desktop/FNRN.xlsx' 
 
 Outputs:
 
@@ -70,13 +70,7 @@ This is the standard data entry format for `reliability`. The FR format is the m
 
 Inputs:
 
--   path - the filepath for the xlsx file. Note that you must prefix this with r to specify it as raw text. eg. path=r'C:\Users\...\Desktop\FR.xlsx'
--   path - the filepath for the xlsx file. Note that you must prefix this with r to specify it as raw text. eg. path=r'C:\\Users\\Desktop\\FR.xlsx' 
--   path - the filepath for the xlsx file. Note that you must prefix this with r to specify it as raw text. eg. path=r'C:/Users/Desktop/FR.xlsx' 
--   path - the filepath for the xlsx file. Note that you must prefix this with r to specify it as raw text. eg. path=r'C://Users//Desktop//FR.xlsx'
--   path - the filepath for the xlsx file. Note that you must prefix this with r to specify it as raw text. eg. path=r'C: \ Users \ Desktop \ FR.xlsx'
--   path - the filepath for the xlsx file. Note that you must prefix this with r to specify it as raw text. eg. path=r ' C: \ Users \ Desktop \ FR.xlsx'
--   path - the filepath for the xlsx file. Note that you must prefix this with r to specify it as raw text. eg. path=r 'C: \ Users \ Desktop \ FR.xlsx' 
+-   path - the filepath for the xlsx file. Note that you must prefix this with r to specify it as raw text. eg. path=r'C:/Users/Current User/Desktop/FR.xlsx' 
 
 Outputs:
 
