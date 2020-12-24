@@ -67,6 +67,9 @@ Methods:
 -    stats() - prints all the descriptive statistics. Same as the statistics shown using .plot() but printed to console.
 -    random_samples() - draws random samples from the distribution to which it is applied.
 
+Example 1
+---------
+
 The following example shows how the Mixture_Model object can be created, visualised and used.
 
 .. code:: python
@@ -149,7 +152,10 @@ Outputs:
 -   AD - Anderson-Darling goodness of fit statistic
 -   results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
 
-In this first example, we will create some data using two Weibull distributions and then combine the data using np.hstack. We will then fit the Weibull mixture model to the combined data and will print the results and show the plot. As the input data is made up of 40% from the first group, we expect the proportion to be around 0.4.
+Example 2
+---------
+
+In this example, we will create some data using two Weibull distributions and then combine the data using np.hstack. We will then fit the Weibull mixture model to the combined data and will print the results and show the plot. As the input data is made up of 40% from the first group, we expect the proportion to be around 0.4.
 
 .. code:: python
 
@@ -193,7 +199,10 @@ In this first example, we will create some data using two Weibull distributions 
 
 .. image:: images/Weibull_Mixture_histV2.png
 
-In this second example, we will compare how well the Weibull Mixture performs vs a single Weibull_2P. Firstly, we generate some data from two Weibull distributions, combine the data, and right censor it above our chosen threshold. Next, we will fit the Mixture and Weibull_2P distributions. Then we will visualise the histogram and PDF of the fitted mixture model and Weibull_2P distributions. The goodness of fit measure is used to check whether the mixture model is really a much better fit than a single Weibull_2P distribution (which it is due to the lower BIC).
+Example 3
+---------
+
+In this example, we will compare how well the Weibull Mixture performs vs a single Weibull_2P. Firstly, we generate some data from two Weibull distributions, combine the data, and right censor it above our chosen threshold. Next, we will fit the Mixture and Weibull_2P distributions. Then we will visualise the histogram and PDF of the fitted mixture model and Weibull_2P distributions. The goodness of fit measure is used to check whether the mixture model is really a much better fit than a single Weibull_2P distribution (which it is due to the lower BIC).
 
 .. code:: python
   
