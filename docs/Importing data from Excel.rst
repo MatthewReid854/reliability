@@ -113,7 +113,7 @@ In the example below, a screenshot of the data from Excel is shown along with th
     '''
 
 Example 2
-^^^^^^^^^
+---------
 
 The use of xlsx_to_FNRN and xlsx_to_FR are very similar to that shown above. This example shows the use of xlsx_to_FR.
 
@@ -140,7 +140,7 @@ The use of xlsx_to_FNRN and xlsx_to_FR are very similar to that shown above. Thi
     '''
 
 Example 3
-^^^^^^^^^
+=========
 
 In this example we will again use xlsx_to_XCN, however this time the censoring codes need customizing. The xlsx file uses 1 in the second column for failures (note that the defaults recognise 0 as failure and 1 as right censored) and 'still alive' for the right censored items ('still alive' is not part of the recognised defaults). If we do not specify these custom cesoring codes, the failures will be misinterpreted as right censored items and the 'still alive' items will return an error as this code is not recognised. To resolve this we must set the censor_code_in_xlsx and failure_code_in_xlsx arguments. Furthermore we want the XCN data object in python to use 'S' instead of 'C' for the censored items. We do this by setting the censor_code_in_XCN argument. If we wanted to change the failure code from 'F' to something else we could similarly use the argument failure_code_in_XCN.
 
