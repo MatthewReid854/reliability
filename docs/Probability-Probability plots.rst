@@ -24,6 +24,9 @@ Outputs:
 
 -   The PP_plot is the only output. Use plt.show() to show it.
 
+Example 1
+---------
+
 In the example below, we generate two parametric distributions and compare them using a PP plot. We are interested in the differences at specific quantiles so these are specified and the plot traces them across to the opposing distribution.
 
 .. code:: python
@@ -54,6 +57,9 @@ Inputs:
 Outputs:
 
 -   The PP_plot is the only output. Use plt.show() to show it.
+
+Example 2
+---------
 
 In the example below, we create 100 random samples from a Weibull distribution. We hypothesise that a Normal distribution may fit this data well so we fit the Normal distribution and then plot the CDF of the fitted distribution against the empirical CDF (obtained using the Kaplan-Meier estimate). We see that the plot follows the 45 degree diagonal quite well so we may consider that the fitted Normal distribution is reasonably good at describing this data. Ideally, this comparison should be made against other distributions as well and the graphical results are often hard to tell apart which is why we often use quantitative goodness of fit measures like AICc and BIC.
 
