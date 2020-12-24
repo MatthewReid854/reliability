@@ -30,6 +30,9 @@ Outputs:
 
 Confidence intervals are shown on the plots but they are not reported for each of the fitted parameters as this would be a large number of outputs. If you need the confidence intervals for the fitted parameters you can repeat the fitting using just a specific distribution and the results will include the confidence intervals.
 
+Example 1
+---------
+
 In this first example, we will use *Fit_Everything* on some data and will return only the dataframe of results. Note that we are actively supressing the 3 plots that would normally be shown to provide graphical goodness of fit indications.
 
 .. code:: python
@@ -53,6 +56,9 @@ In this first example, we will use *Fit_Everything* on some data and will return
     Gamma_3P         3.49645  0.781773    0.9999                               125.942453  129.222968  3.798788
     Exponential_1P                                                   0.267857  141.180947  142.439287  4.710926
     '''
+
+Example 2
+---------
 
 In this second example, we will create some right censored data and use *Fit_Everything*. All outputs are shown, and the best fitting distribution is accessed and printed.
 
