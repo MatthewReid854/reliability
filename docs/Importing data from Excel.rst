@@ -40,11 +40,6 @@ Outputs:
 -   C - censor code
 -   N - number of events at each event time
 
-Methods:
-
--   print() - this will print a dataframe of the data in XCN format to the console
--   write_to_xlsx() - this will export the data in XCN format to an xlsx file at the specified path.
-
 **xlsx_to_FNRN**
 
 This format is not used as a data entry format for `reliability` or any commercial software (that the author has used), but is still a valid format which combines aspects of the XCN and FR formats together. FNRN is used internally within reliability as part of the MLE algorithms.
@@ -61,11 +56,6 @@ Outputs:
 -   right_censored
 -   num_right_censored
 
-Methods:
-
--   print() - this will print a dataframe of the data in FNRN format to the console
--   write_to_xlsx() - this will export the data in FNRN format to an xlsx file at the specified path.
-
 **xlsx_to_FR**
 
 This is the standard data entry format for `reliability`. The FR format is the most simple, but for data with many repeated values it is not as efficient at representing the data in a table as FNRN or XCN. Python has no problems with long arrays so the FR format is chosen as the data entry format for its simplicity.
@@ -80,10 +70,10 @@ Outputs:
 -   failures
 -   right_censored
 
-Methods:
+All of the three conversion functions contain the following methods:
 
--   print() - this will print a dataframe of the data in FR format to the console
--   write_to_xlsx() - this will export the data in FR format to an xlsx file at the specified path.
+-   print() - this will print a dataframe of the data in the output format to the console
+-   write_to_xlsx() - this will export the data in the output format to an xlsx file at the specified path. Ensure you specify the path string preceeded by r to indicate raw text. For example: write_to_xlsx(path=r'C:/Users/Current User/Desktop/mydata.xlsx'). If the file already exists in the destination folder, the user will be asked (Y/N) whether they want to overwrite the existing file. If they input N then specified filename will have (new) added to the end.
 
 Example 1
 ---------
