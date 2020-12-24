@@ -83,6 +83,9 @@ Outputs:
 -   results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
 -   mean_life - the mean life at the use_level_stress. Only calculated if use_level_stress is specified
 
+Example 1
+---------
+
 In the following example, we will fit the Weibull-Power model to an ALT dataset obtained from a fatigue test. This dataset can be found in ``reliability.Datasets``. We want to know the mean life at the use level of 60 so the parameter use_level_stress is specified. All other values are left as defaults and the results and plot are shown.
 
 .. code:: python
@@ -105,6 +108,9 @@ In the following example, we will fit the Weibull-Power model to an ALT dataset 
     '''
     
 .. image:: images/Weibull_powerV3.png
+
+Example 2
+---------
 
 In this second example, we will fit a dual stress model to a dual stress data set. The data set contains temperature and voltage data so it is most appropriate to model this dataset using a Power-Exponential model. A few differences to note with the dual stress models is that each stress requires a separate input, so if you also have censored data then this will require 6 inputs. If using the Power Exponential model it is essential that the thermal and non-thermal stresses go in their named inputs or the model will likely fail to fit the data. In this example we want to know the life at a use level stress of 325K and 0.5V which the output tells us is 4673 hours.
 
