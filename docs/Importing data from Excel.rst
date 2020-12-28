@@ -5,6 +5,8 @@
 Importing data from Excel
 '''''''''''''''''''''''''
 
+.. note:: This module is part of version 0.5.5 which is currently unreleased.
+
 The module Convert_data contains three functions for importing data from Microsoft Excel (.xlsx files) into Python and converting that data into the structure of a Python object for further use. These functions are:
 
 - xlsx_to_XCN
@@ -161,3 +163,5 @@ In this example we will again use xlsx_to_XCN, however this time the censoring c
            102           S                 1
            105           S                 2
     '''
+
+.. note:: This module is part of version 0.5.5 which is currently unreleased.
