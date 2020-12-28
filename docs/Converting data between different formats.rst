@@ -5,6 +5,8 @@
 Converting data between different formats
 '''''''''''''''''''''''''''''''''''''''''
 
+.. note:: This module is part of version 0.5.5 which is currently unreleased.
+
 The module Convert_data contains six functions for converting data between the three formats (XCN, FNRN, FR). These functions are:
 
 - XCN_to_FNRN
@@ -186,3 +188,5 @@ In the example below we are converting XCN to FR format. The XCN data uses censo
                           60
                           60 
     '''
+
+.. note:: This module is part of version 0.5.5 which is currently unreleased.
