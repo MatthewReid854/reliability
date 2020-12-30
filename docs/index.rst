@@ -122,6 +122,7 @@ Contents:
   How to donate to the project
   About the author
   Credits to those who helped
+  Logo
 
 .. |pypi| image:: https://img.shields.io/pypi/v/reliability?color=brightgreen&logo=Python&logoColor=white&label=PyPI%20package
     :alt: PyPI package
