@@ -40,7 +40,7 @@ Confidence intervals are shown on the plots but they are not reported for each o
 Example 1
 ---------
 
-In this first example, we will use `Fit_Everything` on some data and will return only the dataframe of results. Note that we are actively supressing the 3 plots that would normally be shown to provide graphical goodness of fit indications.
+In this first example, we will use `Fit_Everything` on some data and will return only the dataframe of results. Note that we are actively supressing the 3 plots that would normally be shown to provide graphical goodness of fit indications. The table of results has been ranked by BIC to show us that Weibull_2P was the best fitting distribution for this dataset. This is what we expected since the data was generated using Weibull_Distribution(alpha=5,beta=2).
 
 .. code:: python
 
@@ -49,25 +49,29 @@ In this first example, we will use `Fit_Everything` on some data and will return
     Fit_Everything(failures=data, show_histogram_plot=False, show_probability_plot=False, show_PP_plot=False)
 
     '''
-                       Alpha      Beta     Gamma       Mu     Sigma    Lambda        AICc         BIC        AD
-    Distribution                                                                                               
-    Weibull_2P       4.21932   2.43761                                         117.696224  120.054175  1.048046
-    Gamma_2P        0.816685   4.57132                                         118.404666  120.762616  1.065917
-    Normal_2P                                     3.73333   1.65193            119.697592  122.055543  1.185387
-    Lognormal_2P                                  1.20395  0.503621            120.662122  123.020072  1.198573
-    Lognormal_3P                               0  1.20395  0.503621            123.140754  123.020072  1.198573
-    Weibull_3P       3.61252   2.02388  0.530239                               119.766821  123.047337  1.049479
-    Loglogistic_2P   3.45096   3.48793                                         121.089046  123.446996  1.056100
-    Loglogistic_3P   3.45096   3.48793         0                               123.567678  126.848194  1.056100
-    Exponential_2P                         0.999                      0.36572  124.797704  127.155654  2.899050
-    Gamma_3P         3.49645  0.781773    0.9999                               125.942453  129.222968  3.798788
-    Exponential_1P                                                   0.267857  141.180947  142.439287  4.710926
+    Results from Fit_Everything:
+    Analysis method: MLE
+    Failures / Right censored: 30/0 (0% right censored) 
+
+       Distribution    Alpha    Beta   Gamma      Mu    Sigma   Lambda  Log-likelihood    AICc     BIC      AD
+         Weibull_2P  4.21932 2.43761                                          -56.6259 117.696 120.054 1.04805
+           Gamma_2P 0.816684 4.57133                                          -56.9801 118.405 120.763 1.06592
+          Normal_2P                          3.73333  1.65193                 -57.6266 119.698 122.056 1.18539
+       Lognormal_2P                          1.20392 0.503628                 -58.1088 120.662  123.02 1.19881
+         Weibull_3P  3.61252 2.02388 0.53024                                  -56.4219 119.767 123.047 1.04948
+     Loglogistic_2P  3.45096 3.48793                                          -58.3223 121.089 123.447  1.0561
+           Gamma_3P 0.816684 4.57133       0                                  -56.9801 120.883 124.164 1.06592
+       Lognormal_3P                        0 1.20392 0.503628                 -58.1088 123.141 126.421 1.19881
+     Loglogistic_3P  3.45096 3.48793       0                                  -58.3223 123.568 126.848  1.0561
+     Exponential_2P                   0.9999                   0.36584        -60.1668 124.778 127.136 3.11235
+          Gumbel_2P                          4.58389  1.65599                 -60.5408 125.526 127.884 1.57958
+     Exponential_1P                                           0.299846        -69.7173 141.578 142.836 5.89119 
     '''
 
 Example 2
 ---------
 
-In this second example, we will create some right censored data and use *Fit_Everything*. All outputs are shown, and the best fitting distribution is accessed and printed.
+In this second example, we will create some right censored data and use `Fit_Everything`. All outputs are shown, and the best fitting distribution is accessed and printed.
 
 .. code:: python
 
@@ -81,20 +85,24 @@ In this second example, we will create some right censored data and use *Fit_Eve
     print('The best fitting distribution was', results.best_distribution_name, 'which had parameters', results.best_distribution.parameters)
     
     '''
-                      Alpha     Beta     Gamma       Mu     Sigma     Lambda        AICc         BIC         AD
-    Distribution                                                                                               
-    Weibull_2P      11.2773  3.30301                                          488.041154  493.127783  44.945028
-    Normal_2P                                   10.1194   3.37466             489.082213  494.168842  44.909765
-    Gamma_2P        1.42315  7.21352                                          490.593729  495.680358  45.281749
-    Loglogistic_2P  9.86245  4.48433                                          491.300512  496.387141  45.200181
-    Weibull_3P      10.0786  2.85825   1.15083                                489.807329  497.372839  44.992658
-    Gamma_3P        1.42315  7.21352         0                                492.720018  500.285528  45.281749
-    Lognormal_2P                                2.26524  0.406436             495.693518  500.780147  45.687381
-    Lognormal_3P                      0.883941  2.16125  0.465752             500.938298  500.780147  45.687381
-    Loglogistic_3P  9.86245  4.48433         0                                493.426801  500.992311  45.200181
-    Exponential_2P                     2.82802                      0.121869  538.150905  543.237534  51.777617
-    Exponential_1P                                                 0.0870022  594.033742  596.598095  56.866106
-    
+    Results from Fit_Everything:
+    Analysis method: MLE
+    Failures / Right censored: 86/14 (14% right censored) 
+
+       Distribution   Alpha    Beta   Gamma      Mu    Sigma    Lambda  Log-likelihood    AICc     BIC      AD
+         Weibull_2P 11.2773 3.30301                                           -241.959 488.041 493.128  44.945
+          Normal_2P                         10.1194  3.37466                  -242.479 489.082 494.169 44.9098
+           Gamma_2P 1.42314 7.21352                                           -243.235 490.594  495.68 45.2817
+     Loglogistic_2P 9.86245 4.48433                                           -243.588 491.301 496.387 45.2002
+         Weibull_3P 10.0786 2.85824 1.15085                                   -241.779 489.807 497.373 44.9927
+           Gamma_3P 1.42314 7.21352       0                                   -243.235  492.72 500.286 45.2817
+       Lognormal_2P                         2.26524 0.406436                  -245.785 495.694  500.78 45.6874
+     Loglogistic_3P 9.86245 4.48433       0                                   -243.588 493.427 500.992 45.2002
+       Lognormal_3P                       0 2.26524 0.406436                  -245.785  497.82 505.385 45.6874
+          Gumbel_2P                         11.5926  2.94944                  -248.348 500.819 505.906 45.4624
+     Exponential_2P                 2.82892                   0.121884        -267.003 538.129 543.216 51.7851
+     Exponential_1P                                          0.0870024        -295.996 594.034 596.598 56.8662 
+
     The best fitting distribution was Weibull_2P which had parameters [11.27730642  3.30300716  0.        ]
     '''
 
