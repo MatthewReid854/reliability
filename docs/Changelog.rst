@@ -56,6 +56,7 @@ Changelog
 -    Added another standard dataset called "mixture" and an ALT dataset called "ALT_temperature4".
 -    In all the ALT fitters, the initial guess process is now bypassed if an initial guess is specified by the user. Previously the initial guess was always obtained by curve_fit but not used if a user specified initial guess was given. This change enhances speed and enables a failure of curve_fit to be bypassed through specifying an accurate initial guess.
 -    Documentation updates to reflect version 0.5.5 API changes and results printed.
+-    Updated the Logo for `reliability` and provided the `code <https://reliability.readthedocs.io/en/latest/Logo.html>`_ for generating the new logo.
 
 **Version: 0.5.4 --- Released: 7 November 2020**
 ''''''''''''''''''''''''''''''''''''''''''''''''
