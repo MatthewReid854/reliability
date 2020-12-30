@@ -84,7 +84,7 @@ class Fit_Everything:
     Inputs:
     failures - an array or list of the failure times (this does not need to be sorted).
     right_censored - an array or list of the right failure times (this does not need to be sorted).
-    sort_by - goodness of fit test to sort results by. Must be 'BIC','AICc','AD', or 'Log-likilihood'. Default is BIC.
+    sort_by - goodness of fit test to sort results by. Must be 'BIC','AICc','AD', or 'Log-likelihood'. Default is BIC.
     method - 'LS' (least squares) or 'MLE' (maximum likelihood estimation). Default is 'MLE'.
     optimizer - 'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
     print_results - True/False. Defaults to True. Will show the results of the fitted parameters and the goodness of fit
@@ -104,13 +104,14 @@ class Fit_Everything:
         distributions.
     best_distribution - a distribution object created based on the parameters of the best fitting distribution
     best_distribution_name - the name of the best fitting distribution. E.g. 'Weibull_3P'
-    parameters and goodness of fit tests for each fitted distribution. For example, the Weibull_3P distribution values are:
+    parameters and goodness of fit results for each fitted distribution. For example, the Weibull_3P distribution values are:
         Weibull_3P_alpha
         Weibull_3P_beta
         Weibull_3P_gamma
         Weibull_3P_BIC
         Weibull_3P_AICc
         Weibull_3P_AD
+        Weibull_3P_loglik
     All parametric models have the number of parameters in the name. For example, Weibull_2P used alpha and beta, whereas Weibull_3P
     uses alpha, beta, and gamma. This is applied even for Normal_2P for consistency in naming conventions.
     From the results, the distributions are sorted based on their goodness of fit test results, where the smaller the goodness of fit
@@ -739,7 +740,7 @@ class Fit_Everything:
                 ignore_index=True,
             )
 
-        # change to sorting by BIC if there is insifficient data to get the AICc for everything that was fitted
+        # change to sorting by BIC if there is insufficient data to get the AICc for everything that was fitted
         if (
             sort_by in ["AIC", "aic", "aicc", "AICc"]
             and "Insufficient data" in df["AICc"].values
@@ -1375,7 +1376,6 @@ class Fit_Weibull_2P:
     kwargs are accepted for the probability plot (eg. linestyle, label, color)
 
     outputs:
-    success - Whether the solution was found by autograd (True/False). If False then the value returned will be the initial guess from Least Squares Estimation.
     alpha - the fitted Weibull_2P alpha parameter
     beta - the fitted Weibull_2P beta parameter
     loglik - Log Likelihood (as used in Minitab and Reliasoft)
@@ -1685,7 +1685,6 @@ class Fit_Weibull_2P_grouped:
     kwargs are accepted for the probability plot (eg. linestyle, label, color)
 
     Outputs:
-    success - Whether the solution was found by autograd (True/False). If False then the value returned will be the initial guess from Least Squares Estimation.
     alpha - the fitted Weibull_2P alpha parameter
     beta - the fitted Weibull_2P beta parameter
     loglik - Log Likelihood (as used in Minitab and Reliasoft)
@@ -1973,7 +1972,6 @@ class Fit_Weibull_2P_grouped:
 
             if result.success is True:
                 params = result.x
-                self.success = True
                 if force_beta is None:
                     self.alpha = params[0]
                     self.beta = params[1]
@@ -2014,7 +2012,6 @@ class Fit_Weibull_2P_grouped:
                     )
                 if result.success is True:
                     params = result.x
-                    self.success = True
                     if force_beta is None:
                         self.alpha = params[0]
                         self.beta = params[1]
@@ -2022,7 +2019,6 @@ class Fit_Weibull_2P_grouped:
                         self.alpha = params[0]
                         self.beta = force_beta
                 else:
-                    self.success = False
                     colorprint(
                         str(
                             "WARNING: MLE estimates failed for Weibull_2P_grouped. The least squares estimates have been returned. These results may not be as accurate as MLE."
@@ -2275,7 +2271,6 @@ class Fit_Weibull_3P:
     kwargs are accepted for the probability plot (eg. linestyle, label, color)
 
     Outputs:
-    success - Whether the solution was found by autograd (True/False). If False then the value returned will be the initial guess from Least Squares Estimation.
     alpha - the fitted Weibull_3P alpha parameter
     beta - the fitted Weibull_3P beta parameter
     gamma - the fitted Weibull_3P gamma parameter
@@ -3375,7 +3370,6 @@ class Fit_Exponential_1P:
     kwargs are accepted for the probability plot (eg. linestyle, label, color)
 
     Outputs:
-    success - Whether the solution was found by autograd (True/False). If False then the value returned will be the initial guess from Least Squares Estimation.
     Lambda - the fitted Exponential_1P lambda parameter
     loglik - Log Likelihood (as used in Minitab and Reliasoft)
     loglik2 - LogLikelihood*-2 (as used in JMP Pro)
@@ -3621,7 +3615,6 @@ class Fit_Exponential_2P:
     kwargs are accepted for the probability plot (eg. linestyle, label, color)
 
     Outputs:
-    success - Whether the solution was found by autograd (True/False). If False then the value returned will be the initial guess from Least Squares Estimation.
     Lambda - the fitted Exponential_2P lambda parameter
     Lambda_inv - the inverse of the Lambda parameter (1/Lambda)
     gamma - the fitted Exponential_2P gamma parameter
@@ -3922,7 +3915,6 @@ class Fit_Normal_2P:
     kwargs are accepted for the probability plot (eg. linestyle, label, color)
 
     Outputs:
-    success - Whether the solution was found by autograd (True/False). If False then the value returned will be the initial guess from Least Squares Estimation.
     mu - the fitted Normal_2P mu parameter
     sigma - the fitted Normal_2P sigma parameter
     loglik - Log Likelihood (as used in Minitab and Reliasoft)
@@ -4236,7 +4228,6 @@ class Fit_Gumbel_2P:
     kwargs are accepted for the probability plot (eg. linestyle, label, color)
 
     Outputs:
-    success - Whether the solution was found by autograd (True/False). If False then the value returned will be the initial guess from Least Squares Estimation.
     mu - the fitted Gumbel_2P mu parameter
     sigma - the fitted Gumbel_2P sigma parameter
     loglik - Log Likelihood (as used in Minitab and Reliasoft)
@@ -4504,7 +4495,6 @@ class Fit_Lognormal_2P:
     kwargs are accepted for the probability plot (eg. linestyle, label, color)
 
     Outputs:
-    success - Whether the solution was found by autograd (True/False). If False then the value returned will be the initial guess from Least Squares Estimation.
     mu - the fitted Lognormal_2P mu parameter
     sigma - the fitted Lognormal_2P sigma parameter
     loglik - Log Likelihood (as used in Minitab and Reliasoft)
@@ -4820,7 +4810,6 @@ class Fit_Lognormal_3P:
     kwargs are accepted for the probability plot (eg. linestyle, label, color)
 
     Outputs:
-    success - Whether the solution was found by autograd (True/False). If False then the value returned will be the initial guess from Least Squares Estimation.
     mu - the fitted Lognormal_3P mu parameter
     sigma - the fitted Lognormal_3P sigma parameter
     gamma - the fitted Lognormal_3P gamma parameter
@@ -5157,7 +5146,6 @@ class Fit_Gamma_2P:
     kwargs are accepted for the probability plot (eg. linestyle, label, color)
 
     Outputs:
-    success - Whether the solution was found by autograd (True/False). If False then the value returned will be the initial guess from Least Squares Estimation.
     alpha - the fitted Gamma_2P alpha parameter
     beta - the fitted Gamma_2P beta parameter
     loglik - Log Likelihood (as used in Minitab and Reliasoft)
@@ -5383,7 +5371,6 @@ class Fit_Gamma_3P:
     kwargs are accepted for the probability plot (eg. linestyle, label, color)
 
     Outputs:
-    success - Whether the solution was found by autograd (True/False). If False then the value returned will be the initial guess from Least Squares Estimation.
     alpha - the fitted Gamma_3P alpha parameter
     beta - the fitted Gamma_3P beta parameter
     gamma - the fitted Gamma_3P gamma parameter
@@ -5679,7 +5666,6 @@ class Fit_Beta_2P:
     kwargs are accepted for the probability plot (eg. linestyle, label, color)
 
     Outputs:
-    success - Whether the solution was found by autograd (True/False). If False then the value returned will be the initial guess from Least Squares Estimation.
     alpha - the fitted Beta_2P alpha parameter
     beta - the fitted Beta_2P beta parameter
     loglik - Log Likelihood (as used in Minitab and Reliasoft)
@@ -5909,7 +5895,6 @@ class Fit_Loglogistic_2P:
     kwargs are accepted for the probability plot (eg. linestyle, label, color)
 
     outputs:
-    success - Whether the solution was found by autograd (True/False). If False then the value returned will be the initial guess from Least Squares Estimation.
     alpha - the fitted Loglogistic_2P alpha parameter
     beta - the fitted Loglogistic_2P beta parameter
     loglik - Log Likelihood (as used in Minitab and Reliasoft)
@@ -6181,7 +6166,6 @@ class Fit_Loglogistic_3P:
     kwargs are accepted for the probability plot (eg. linestyle, label, color)
 
     Outputs:
-    success - Whether the solution was found by autograd (True/False). If False then the value returned will be the initial guess from Least Squares Estimation.
     alpha - the fitted Loglogistic_3P alpha parameter
     beta - the fitted Loglogistic_3P beta parameter
     gamma - the fitted Loglogistic_3P gamma parameter
