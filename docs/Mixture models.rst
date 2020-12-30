@@ -29,7 +29,7 @@ See also `competing risk models <https://reliability.readthedocs.io/en/latest/Co
 Creating a mixture model
 ========================
 
-Within *reliability.Distributions* is the Mixture_Model. This function accepts an array or list of distribution objects created using the *reliability.Distributions* module (available distributions are Exponential, Weibull, Gumbel, Normal, Lognormal, Loglogistic, Gamma, Beta). There is no limit to the number of components you can add to the mixture, but is is generally preferable to use as few as are required to fit the data appropriately (typically 2 or 3). In addition to the distributions, you can specify the proportions contributed by each distribution in the mixture. These proportions must sum to 1. If not specified the proportions will be set as equal for each component.
+Within `reliability.Distributions` is the Mixture_Model. This function accepts an array or list of standard distribution objects created using the `reliability.Distributions` module (available distributions are Exponential, Weibull, Gumbel, Normal, Lognormal, Loglogistic, Gamma, Beta). There is no limit to the number of components you can add to the mixture, but is is generally preferable to use as few as are required to fit the data appropriately (typically 2 or 3). In addition to the distributions, you can specify the proportions contributed by each distribution in the mixture. These proportions must sum to 1. If not specified the proportions will be set as equal for each component.
 
 As this process is additive for the survival function, and may accept many distributions of different types, the mathematical formulation quickly gets complex.
 For this reason, the algorithm combines the models numerically rather than empirically so there are no simple formulas for many of the descriptive statistics (mean, median, etc.). Also, the accuracy of the model is dependent on xvals. If the xvals array is small (<100 values) then the answer will be "blocky" and inaccurate. The variable xvals is only accepted for PDF, CDF, SF, HF, and CHF. The other methods (like random samples) use the default xvals for maximum accuracy. The default number of values generated when xvals is not given is 1000. Consider this carefully when specifying xvals in order to avoid inaccuracies in the results.
@@ -100,7 +100,7 @@ The following example shows how the Mixture_Model object can be created, visuali
     print('The mean of the distribution is:', mixture_model.mean)
     
     '''
-    The mean of the distribution is: 74.91674657035722
+    The mean of the distribution is: 74.91607709895453
     '''
 
 .. image:: images/Weibull_Mixture_distV1.png
@@ -110,7 +110,7 @@ The following example shows how the Mixture_Model object can be created, visuali
 Fitting a mixture model
 =======================
 
-Within *reliability.Fitters* is Fit_Weibull_Mixture. This function will fit a weibull mixture model consisting of 2 x Weibull_2P distributions (this does not fit the gamma parameter). Just as with all of the other distributions in *reliability.Fitters*, right censoring is supported, though care should be taken to ensure that there still appears to be two groups when plotting only the failure data. A second group cannot be made from a mostly or totally censored set of samples.
+Within `reliability.Fitters` is Fit_Weibull_Mixture. This function will fit a Weibull Mixture Model consisting of 2 x Weibull_2P distributions (this does not fit the gamma parameter). Just as with all of the other distributions in `reliability.Fitters`, right censoring is supported, though care should be taken to ensure that there still appears to be two groups when plotting only the failure data. A second group cannot be made from a mostly or totally censored set of samples.
 
 Whilst some failure modes may not be fitted as well by a Weibull distribution as they may be by another distribution, it is unlikely that a mixture of data from two distributions (particularly if they are overlapping) will be fitted noticeably better by other types of mixtures than would be achieved by a Weibull mixture. For this reason, other types of mixtures are not implemented.
  
@@ -120,6 +120,7 @@ Inputs:
 -   right_censored - an array or list of right censored failure data. Optional input.
 -   print_results - True/False. This will print results to console. Default is True
 -   CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
+-   optimizer - 'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see `scipy <https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize>`_.
 -   show_probability_plot - True/False. This will show the probability plot with the fitted mixture CDF. Default is True.
  
 Outputs:
@@ -151,6 +152,7 @@ Outputs:
 -   BIC - Bayesian Information Criterion
 -   AD - Anderson-Darling goodness of fit statistic
 -   results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
+-   goodness_of_fit - a dataframe of the goodness of fit values (Log-likelihood, AICc, BIC, AD).
 
 Example 2
 ---------
@@ -185,14 +187,21 @@ In this example, we will create some data using two Weibull distributions and th
 
     '''
     Results from Fit_Weibull_Mixture (95% CI):
-                  Point Estimate  Standard Error   Lower CI   Upper CI
-    Parameter                                                         
-    Alpha 1             8.654923        0.394078   7.916006   9.462815
-    Beta 1              3.910594        0.509724   3.028959   5.048845
-    Alpha 2            38.097040        1.411773  35.428112  40.967028
-    Beta 2              3.818227        0.421366   3.075574   4.740207
-    Proportion 1        0.388206        0.050264   0.295325   0.489987
-    Log-Likelihood: -375.9906311550037
+    Analysis method: MLE
+    Failures / Right censored: 100/0 (0% right censored) 
+
+        Parameter  Point Estimate  Standard Error  Lower CI  Upper CI
+          Alpha 1         8.65512        0.393835   7.91663   9.46249
+           Beta 1         3.91196        0.509775   3.03021   5.05029
+          Alpha 2         38.1103         1.41076   35.4432   40.9781
+           Beta 2         3.82192        0.421384   3.07917   4.74385
+     Proportion 1        0.388491       0.0502663  0.295595  0.490263 
+
+    Goodness of fit    Value
+     Log-likelihood -375.991
+               AICc  762.619
+                BIC  775.007
+                 AD 0.418645 
     '''
 
 .. image:: images/Weibull_Mixture_V6.png
@@ -232,8 +241,8 @@ In this example, we will compare how well the Weibull Mixture performs vs a sing
     plt.show()
 
     '''
-    Weibull_Mixture BIC: 6432.417425636481 
+    Weibull_Mixture BIC: 6431.578404093574 
     Weibull_2P BIC: 6511.51175959736
     '''
 
-.. image:: images/Weibull_mixture_vs_Weibull_2P_V4.png
+.. image:: images/Weibull_mixture_vs_Weibull_2P_V5.png
