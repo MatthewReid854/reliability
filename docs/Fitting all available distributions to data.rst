@@ -12,7 +12,9 @@ Inputs:
 -   failures - an array or list of the failure times.
 -   right_censored - an array or list of the right censored failure times.
 -   sort_by - goodness of fit test to sort results by. Must be either 'BIC','AIC', or 'AD'. Default is BIC.
--   exclude - list or array of strings specifying which distributions to exclude. Default is None. Options are Weibull_2P, Weibull_3P, Normal_2P, Gamma_2P, Loglogistic_2P, Gamma_3P, Lognormal_2P, Lognormal_3P, Loglogistic_3P, Gumbel_2P, Exponential_2P, Exponential_1P, Beta_2P
+-   method - 'LS' (least squares) or 'MLE' (maximum likelihood estimation). Default is 'MLE'.
+-   optimizer - 'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see `scipy <https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize>`_.
+-   exclude - list or array of strings specifying which distributions to exclude. Default is None. Options are 'Weibull_2P', 'Weibull_3P', 'Normal_2P', 'Gamma_2P', 'Loglogistic_2P', 'Gamma_3P', 'Lognormal_2P', 'Lognormal_3P', 'Loglogistic_3P', 'Gumbel_2P', 'Exponential_1P', 'Exponential_2P', 'Beta_2P'
 -   show_histogram_plot - True/False. Defaults to True. Will show the PDF and CDF of the fitted distributions along with a histogram of the failure data.
 -   show_PP_plot - True/False. Defaults to True. Provides a comparison of parametric vs non-parametric fit using a `semiparametric Probability-Probability (PP) plot <https://reliability.readthedocs.io/en/latest/Probability-Probability%20plots.html#semiparametric-probability-probability-plot>`_ for each fitted distribution.
 -   show_probability_plot - True/False. Defaults to True. Provides a `probability plot <https://reliability.readthedocs.io/en/latest/Probability%20plots.html>`_ of each of the fitted distributions.
@@ -20,20 +22,25 @@ Inputs:
 
 Outputs:
 
--   results - a dataframe of the fitted distributions and their parameters, along with the AICc, BIC and AD goodness of fit statistics. This is sorted automatically to provide the best fit first. Use the sort_by='BIC' to change the sort between AICc, BIC, and AD. Default sort is BIC. print_results controls whether this is printed. In displaying these results, the pandas dataframe is designed to use the common greek letter parametrisations rather than the scale, shape, location, threshold parametrisations which can become confusing for some distributions.
--   a plot of the PDF and CDF of each fitted distribution along with a histogram of the failure data. The legend is not in any particular order.
--   a probability plot of each of the fitted distributions.
--   a semi-parametric probability-probability plot of parametric vs non-parametric distribution (a better fit is will lie on the red diagonal).
+-   results - a dataframe of the fitted distributions and their parameters, along with the AICc, BIC, AD, and log-likelihood goodness of fit statistics. This is sorted automatically to provide the best fit first. Use the sort_by='BIC' to change the sort between AICc, BIC, AD, and LL. Default sort is BIC. print_results controls whether this is printed. In displaying these results, the pandas dataframe is designed to use the common greek letter parametrisations rather than the scale, shape, location, threshold parametrisations which can become confusing for some distributions.
 -   best_distribution - a distribution object created based on the parameters of the best fitting distribution. The best distribution is created as a distribution object that can be used like any of the other `distribution <https://reliability.readthedocs.io/en/latest/Creating%20and%20plotting%20distributions.html>`_ objects. See the examples below for how this can be used.
 -   best_distribution_name - the name of the best fitting distribution. E.g. 'Weibull_3P'
--   parameters and goodness of fit tests for each fitted distribution. For example, the Weibull_3P distribution values are: Weibull_3P_alpha, Weibull_3P_beta, Weibull_3P_gamma, Weibull_3P_BIC, Weibull_3P_AICc, Weibull_3P_AD.
+-   parameters and goodness of fit results for each fitted distribution. For example, the Weibull_3P distribution values are:
+
+    - Weibull_3P_alpha
+    - Weibull_3P_beta
+    - Weibull_3P_gamma
+    - Weibull_3P_BIC
+    - Weibull_3P_AICc
+    - Weibull_3P_AD
+    - Weibull_3P_loglik
 
 Confidence intervals are shown on the plots but they are not reported for each of the fitted parameters as this would be a large number of outputs. If you need the confidence intervals for the fitted parameters you can repeat the fitting using just a specific distribution and the results will include the confidence intervals.
 
 Example 1
 ---------
 
-In this first example, we will use *Fit_Everything* on some data and will return only the dataframe of results. Note that we are actively supressing the 3 plots that would normally be shown to provide graphical goodness of fit indications.
+In this first example, we will use `Fit_Everything` on some data and will return only the dataframe of results. Note that we are actively supressing the 3 plots that would normally be shown to provide graphical goodness of fit indications.
 
 .. code:: python
 
