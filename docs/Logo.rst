@@ -5,7 +5,7 @@
 Logo
 ''''
 
-The logo for `reliability` can be created using the code below. The logo was generated using matplotlib version 3.3.3. The image produced requires subsequent cropping to remove surrounding white space.
+The logo for `reliability` can be created using the code below. The logo was generated using matplotlib version 3.3.3 and reliability version 0.5.5. The image produced requires subsequent cropping to remove surrounding white space.
 
 .. code:: python
 
@@ -16,7 +16,7 @@ The logo for `reliability` can be created using the code below. The logo was gen
     plt.figure(figsize=(10, 4))
     
     # blue distribution
-    x_blue_fill = np.linspace(0, 19, 100)
+    x_blue_fill = np.linspace(0, 19, 1000)
     bluedist = Weibull_Distribution(alpha=5.5, beta=2, gamma=0.63)
     y_blue_fill = bluedist.PDF(linewidth=3, xvals=x_blue_fill, show_plot=False)
     plt.fill_between(
@@ -24,18 +24,19 @@ The logo for `reliability` can be created using the code below. The logo was gen
         y1=np.zeros_like(y_blue_fill),
         y2=y_blue_fill,
         color="steelblue",
+        linewidth=0,
         alpha=0.2,
     )
     bluedist.PDF(linewidth=3, xvals=np.linspace(1.5, 19, 100))
     
     # orange distribution
-    orange_dist = Weibull_Distribution(alpha=5, beta=3, gamma=9.5)
-    x_orange = np.linspace(0, 19, 100)
+    orange_dist = Weibull_Distribution(alpha=6, beta=3.3, gamma=8)
+    x_orange = np.linspace(0, 19, 1000)
     orange_dist.PDF(linewidth=3, xvals=x_orange)
-    plt.plot([-4, orange_dist.gamma + 0.1], [0, 0], linewidth=5.5, color="darkorange")
+    plt.plot([-4, orange_dist.gamma + 0.27], [0, 0], linewidth=5.5, color="darkorange")
     
     # orange histogram
-    samples = orange_dist.random_samples(5000, seed=3)
+    samples = orange_dist.random_samples(20000, seed=3)
     plt.hist(
         x=samples[samples < max(x_orange)],
         density=True,
