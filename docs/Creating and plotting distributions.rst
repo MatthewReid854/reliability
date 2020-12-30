@@ -5,7 +5,7 @@
 Creating and plotting distributions
 '''''''''''''''''''''''''''''''''''
 
-There are 8 standard probability `distributions <https://reliability.readthedocs.io/en/latest/Equations%20of%20supported%20distributions.html>`_ available in ``reliability.Distributions``. These are:
+There are 8 standard probability `distributions <https://reliability.readthedocs.io/en/latest/Equations%20of%20supported%20distributions.html>`_ available in `reliability.Distributions`. These are:
 
 -   Weibull Distribution (α, β, γ)
 -   Exponential Distribution (λ, γ)
@@ -17,7 +17,7 @@ There are 8 standard probability `distributions <https://reliability.readthedocs
 -   Beta Distribution (α, β)
 
 In all of the distributions which use γ, the γ parameter is used to location shift the distribution to the right. If used, the γ parameter must be greater than or equal to 0.
-The Beta distribution is only defined in the range  0 to 1. All distributions except the Normal and Gumbel distributions are defined in the positive domain only (x>0).
+The Beta distribution is only defined in the range 0 to 1. All distributions except the Normal and Gumbel distributions are defined in the positive domain only (x>0).
 
 Example 1
 ---------
@@ -119,10 +119,12 @@ As a final example, we will create a bathtub curve by creating and layering seve
     combined = infant_mortality+random_failures+wear_out
     plt.plot(xvals,combined,linestyle='--',label='Combined hazard rate')
     plt.legend()
-    plt.title('Example of how multiple failure modes at different stages of\nlife create a "Bathtub curve" for the total Hazard function')
+    plt.title('Example of how multiple failure modes at different stages of\nlife can create a "Bathtub curve" for the total Hazard function')
+    plt.xlim(0,1000)
+    plt.ylim(bottom=0)
     plt.show()
 
-.. image:: images/bathtub_curve.png
+.. image:: images/bathtub_curve2.png
 
 Further detail about all of the functions is available using the help function within Python. Simply type:
 
