@@ -146,4 +146,4 @@ In this second example, we will create some data from a Weibull distribution, an
     plt.subplots_adjust(left=0.07, right=0.95, top=0.92, wspace=0.25)  # format the plot layout
     plt.show()
 
-.. image:: images/KM_all3functions_V3.png
+.. image:: images/KM_all3functions_V4.png
