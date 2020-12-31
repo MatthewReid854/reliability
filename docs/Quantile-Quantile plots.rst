@@ -5,12 +5,12 @@
 Quantile-Quantile plots
 '''''''''''''''''''''''
 
-This section contains two different styles of quantile-quantile plots. These are the fully parametric quantile-quantile plot (``reliability.Probability_plotting.QQ_plot_parametric``) and the semi-parametric quantile-quantile plot (``reliability.Probability_plotting.QQ_plot_semiparametric``). These will be described separately below. A quantile-quantile (QQ) plot is made by plotting failure units vs failure units for shared quantiles. A quantile is the value of random variable (time, cycles, landings, etc.) which corresponds to a given fraction failing (that ranges from 0 to 1).
+This section contains two different styles of quantile-quantile plots. These are the fully parametric quantile-quantile plot (`reliability.Probability_plotting.QQ_plot_parametric`) and the semi-parametric quantile-quantile plot (`reliability.Probability_plotting.QQ_plot_semiparametric`). These will be described separately below. A quantile-quantile (QQ) plot is made by plotting time vs time for shared quantiles. A quantile is the time at which a given fraction (from 0 to 1) has failed. In other words we are asking what fraction has failed after a certain time and comparing that fraction for each distribution. If the two distributions are identical then the QQ plot would form a straight line at 45 degrees (assuming the axes are scaled identically). Anything other than a 45 degree line tells us that one distribution leads or lags the other in the fraction failing for a given period of time. Everywhere we say 'time' we may equivalently say any other life unit (e.g. cycles, miles, landings, rounds, etc.).
 
 Parametric Quantile-Quantile plot
 ---------------------------------
 
-To generate this plot we calculate the failure units (these may be units of time, strength, cycles, landings, rounds fired, etc.) at which a certain fraction has failed (0.01,0.02,0.03...0.99). We do this for each distribution so we have an array of failure units and then we plot these failure units against eachother. The time (or any other failure unit) at which a given fraction has failed is found using the inverse survival function. If the distributions are similar in shape, then the QQ plot should be a reasonably straight line (but not necessarily a 45 degree line). By plotting the failure times at equal quantiles for each distribution we can obtain a conversion between the two distributions. Such conversions are useful for accelerated life testing (ALT) to easily convert field time to test time.
+To generate this plot we calculate the failure units (these may be units of time, strength, cycles, landings, rounds fired, etc.) at which a certain fraction has failed (0.01,0.02,0.03...0.99). We do this for each distribution so we have an array of failure units and then we plot these failure units against each other. The time (or any other failure unit) at which a given fraction has failed is found using the inverse survival function. If the distributions are identical then the QQ plot will be a straight line at 45 degrees. If the distributions are similar in shape, then the QQ plot should be a reasonably straight line (but not necessarily a 45 degree line) indicating the failure rates are proportional but not identical. By plotting the failure times at equal quantiles for each distribution (and finding the gradient of the line) we can obtain a conversion between the two distributions. Such conversions are useful for accelerated life testing (ALT) to easily convert field time to test time.
 
 Inputs:
 
@@ -22,12 +22,12 @@ Inputs:
 Outputs:
 
 -   The QQ_plot will always be output. Use plt.show() to show it.
--   [m,m1,c1] - these are the values for the lines of best fit. m is used in Y=mX, and m1 and c1 are used in Y=m1X+c1
+-   [m,m1,c1] - these are the values for the lines of best fit. m is used in Y=m.X, and m1 and c1 are used in Y=m1.X+c1
 
 Example 1
 ---------
 
-In the example below, we have determined that the field failures follow a Weibull distribution (α=350, β=2.01) with time represented in months. By using an accelerated life test we have replicated the failure mode and Weibull shape parameter reasonably closely and the Lab failures follow a Weibull distribution (α=128, β=2.11) with time measured in hours. We would like to obtain a simple Field-to-Lab conversion for time so we know how much lab time is required to simulate 10 years of field time. The QQ plot will automatically provide the equations for the lines of best fit. If we use the Y=mX equation we see that Field(months)=2.757×Lab(hours). Therefore, to simulate 10 years of field time (120 months) we need to run the accelerated life test for approximately 43.5 hours in the Lab.
+In the example below, we have determined that the field failures follow a Weibull distribution (α=350, β=2.01) with time represented in months. By using an accelerated life test we have replicated the failure mode and Weibull shape parameter reasonably closely and the Lab failures follow a Weibull distribution (α=128, β=2.11) with time measured in hours. We would like to obtain a simple Field-to-Lab conversion for time so we know how much lab time is required to simulate 10 years of field time. The QQ plot will automatically provide the equations for the lines of best fit. If we use the Y=m.X equation we see that Field(months)=2.757×Lab(hours). Therefore, to simulate 10 years of field time (120 months) we need to run the accelerated life test for approximately 43.53 hours in the Lab.
 
 .. code:: python
 
@@ -39,7 +39,7 @@ In the example below, we have determined that the field failures follow a Weibul
     QQ_plot_parametric(X_dist=Lab, Y_dist=Field)
     plt.show()
     
-.. image:: images/QQparametric.png
+.. image:: images/QQparametric2.png
 
 Semiparametric Quantile-Quantile plot
 -------------------------------------
@@ -77,12 +77,12 @@ In the example below, we generate 100 random samples from a Normal distribution.
     QQ_plot_semiparametric(X_data_failures=data,Y_dist=fitted_dist)
     plt.show()
     
-.. image:: images/QQsemiparametric.png
+.. image:: images/QQsemiparametric2.png
 
 Comparing PP plots with QQ plots
 --------------------------------
 
-Normally, it is not practical to compare the output of the two plots as they are so vastly different and are used for different purposes, but the comparison below is provided for the reader's understanding. The differences between these plots are so significant because one is the time at which the fraction has failed (the Quantile) and the other is the fraction failing (the CDF). Parametric PP plots are not very common as their only use is in providing a graphical understanding of the differences between the CDFs of two distributions, such as how one lags or leads the other at various times. See `Probability-Probability plots <https://reliability.readthedocs.io/en/latest/Probability-Probability%20plots.html#parametric-probability-probability-plot>`_ for more detail on the uses of parametric PP plots.
+Normally, it is not practical to compare the output of the two plots as they are so vastly different and are used for different purposes, but the comparison below is provided for the reader's understanding. The differences between these plots are so significant because one is the time at which the fraction has failed (the Quantile) and the other is the fraction failing at a given time (the CDF). Parametric PP plots are not very common as their only use is in providing a graphical understanding of the differences between the CDFs of two distributions, such as how one lags or leads the other at various times. See `Probability-Probability plots <https://reliability.readthedocs.io/en/latest/Probability-Probability%20plots.html#parametric-probability-probability-plot>`_ for more detail on the uses of parametric PP plots.
 
 Example 3
 ---------
@@ -103,7 +103,7 @@ In this example we compare a QQ_plot_parametric with a PP_plot_parametric for th
     PP_plot_parametric(X_dist=Lab, Y_dist=Field,show_diagonal_line=True)
     plt.show()
 
-.. image:: images/PPvsQQparametric.png
+.. image:: images/PPvsQQparametric2.png
 
 Example 4
 ---------
@@ -125,4 +125,4 @@ In this example we compare a QQ_plot_semiparametric with a PP_plot_semiparametri
     PP_plot_semiparametric(X_data_failures=data,Y_dist=dist)
     plt.show()
 
-.. image:: images/PPvsQQsemiparametric.png
+.. image:: images/PPvsQQsemiparametric2.png
