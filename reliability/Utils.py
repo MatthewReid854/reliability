@@ -2935,7 +2935,6 @@ def least_squares(dist, failures, right_censored, method="RRX", force_shape=None
         ylin = -np.log(1 - y)
         slope, _ = linear_regression(xlin, ylin, x_intercept=0, RRX_or_RRY="RRX")
         LS_Lambda = slope
-
         # NLLS for Exponential_2P
         def __exponential_2P_CDF(t, Lambda, gamma):
             return 1 - np.exp(-Lambda * (t - gamma))
@@ -2952,7 +2951,7 @@ def least_squares(dist, failures, right_censored, method="RRX", force_shape=None
                 p0=[LS_Lambda, gamma0],
                 bounds=curve_fit_bounds,
                 jac="cs",
-                method="dogbox",
+                method="trf",
                 max_nfev=300 * len(failures),
             )
             NLLS_Lambda = popt[0]

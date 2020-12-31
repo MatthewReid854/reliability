@@ -149,7 +149,7 @@ def Weibull_probability_plot(
     a - the heuristic constant for plotting positions of the form (k-a)/(n+1-2a). Default is a=0.3 which is the median rank method (same as the default in Minitab).
         For more heuristics, see: https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics
     CI - the confidence interval for the bounds. Default is 0.95 for 95% CI.
-    CI_type - time, reliability, None. Default is time' This is the type of CI bounds. i.e. bounds on time or bounds on reliability. Use None to turn off the confidence intervals.
+    CI_type - time, reliability, None. Default is time. This is the type of CI bounds. i.e. bounds on time or bounds on reliability. Use None to turn off the confidence intervals.
     kwargs are accepted for the fitted line (eg. linestyle, label, color)
 
     Outputs:
@@ -325,7 +325,7 @@ def Loglogistic_probability_plot(
     a - the heuristic constant for plotting positions of the form (k-a)/(n+1-2a). Default is a=0.3 which is the median rank method (same as the default in Minitab).
         For more heuristics, see: https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics
     CI - the confidence interval for the bounds. Default is 0.95 for 95% CI.
-    CI_type - time, reliability, None. Default is time' This is the type of CI bounds. i.e. bounds on time or bounds on reliability. Use None to turn off the confidence intervals.
+    CI_type - time, reliability, None. Default is time. This is the type of CI bounds. i.e. bounds on time or bounds on reliability. Use None to turn off the confidence intervals.
     kwargs are accepted for the fitted line (eg. linestyle, label, color)
 
     Outputs:
@@ -501,11 +501,12 @@ def Exponential_probability_plot_Weibull_Scale(
     Inputs:
     failures - the array or list of failure times
     right_censored - the array or list of right censored failure times
-    fit_gamma - True/False. Default is False. Specify This as true in order to fit the Exponential_2P distribution and scale the x-axis to time - gamma.
-    show_fitted_distribution - True/False. If true, the fitted distribution will be plotted on the probability plot. Defaults to True
+    fit_gamma - True/False. Default is False. Specify this as True in order to fit the Exponential_2P distribution and scale the x-axis to time - gamma.
+    show_fitted_distribution - True/False. If True, the fitted distribution will be plotted on the probability plot. Defaults to True
     a - the heuristic constant for plotting positions of the form (k-a)/(n+1-2a). Default is a=0.3 which is the median rank method (same as the default in Minitab).
         For more heuristics, see: https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics
     CI - the confidence interval for the bounds. Default is 0.95 for 95% CI.
+    CI_type - time, reliability, None. Default is time. This is the type of CI bounds. i.e. bounds on time or bounds on reliability. Use None to turn off the confidence intervals.
     kwargs are accepted for the fitted line (eg. linestyle, label, color)
 
     Outputs:
@@ -655,9 +656,11 @@ def Gumbel_probability_plot(
     Inputs:
     failures - the array or list of failure times
     right_censored - the array or list of right censored failure times
-    show_fitted_distribution - True/False. If true, the fitted distribution will be plotted on the probability plot. Defaults to True
+    show_fitted_distribution - True/False. If True, the fitted distribution will be plotted on the probability plot. Defaults to True
     a - the heuristic constant for plotting positions of the form (k-a)/(n+1-2a). Default is a=0.3 which is the median rank method (same as the default in Minitab).
         For more heuristics, see: https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics
+    CI - the confidence interval for the bounds. Default is 0.95 for 95% CI.
+    CI_type - time, reliability, None. Default is time. This is the type of CI bounds. i.e. bounds on time or bounds on reliability. Use None to turn off the confidence intervals.
     kwargs are accepted for the fitted line (eg. linestyle, label, color)
 
     Outputs:
@@ -771,6 +774,8 @@ def Normal_probability_plot(
     show_fitted_distribution - True/False. If true, the fitted distribution will be plotted on the probability plot. Defaults to True
     a - the heuristic constant for plotting positions of the form (k-a)/(n+1-2a). Default is a=0.3 which is the median rank method (same as the default in Minitab).
         For more heuristics, see: https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics
+    CI - the confidence interval for the bounds. Default is 0.95 for 95% CI.
+    CI_type - time, reliability, None. Default is time. This is the type of CI bounds. i.e. bounds on time or bounds on reliability. Use None to turn off the confidence intervals.
     kwargs are accepted for the fitted line (eg. linestyle, label, color)
 
     Outputs:
@@ -882,10 +887,12 @@ def Lognormal_probability_plot(
     Inputs:
     failures - the array or list of failure times
     right_censored - the array or list of right censored failure times
-    fit_gamma - True/False. Default is False. Specify This as true in order to fit the Lognormal_3P distribution and scale the x-axis to time - gamma.
-    show_fitted_distribution - True/False. If true, the fitted distribution will be plotted on the probability plot. Defaults to True
+    fit_gamma - True/False. Default is False. Specify this as True in order to fit the Lognormal_3P distribution and scale the x-axis to time - gamma.
+    show_fitted_distribution - True/False. If True, the fitted distribution will be plotted on the probability plot. Defaults to True
     a - the heuristic constant for plotting positions of the form (k-a)/(n+1-2a). Default is a=0.3 which is the median rank method (same as the default in Minitab).
         For more heuristics, see: https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics
+    CI - the confidence interval for the bounds. Default is 0.95 for 95% CI.
+    CI_type - time, reliability, None. Default is time. This is the type of CI bounds. i.e. bounds on time or bounds on reliability. Use None to turn off the confidence intervals.
     kwargs are accepted for the fitted line (eg. linestyle, label, color)
 
     Outputs:
@@ -1050,7 +1057,7 @@ def Beta_probability_plot(
     Inputs:
     failures - the array or list of failure times
     right_censored - the array or list of right censored failure times
-    show_fitted_distribution - True/False. If true, the fitted distribution will be plotted on the probability plot. Defaults to True
+    show_fitted_distribution - True/False. If True, the fitted distribution will be plotted on the probability plot. Defaults to True
     a - the heuristic constant for plotting positions of the form (k-a)/(n+1-2a). Default is a=0.3 which is the median rank method (same as the default in Minitab).
         For more heuristics, see: https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics
     kwargs are accepted for the fitted line (eg. linestyle, label, color)

@@ -709,7 +709,7 @@ def histogram(
         color = "lightgrey"
 
     if "edgecolor" in kwargs:
-        edgecolor = kwargs.pop("egdecolor")
+        edgecolor = kwargs.pop("edgecolor")
     else:
         edgecolor = "k"
 
