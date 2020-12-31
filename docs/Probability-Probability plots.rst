@@ -5,7 +5,7 @@
 Probability-Probability plots
 '''''''''''''''''''''''''''''
 
-This section contains two different styles of probability-probability plots. These are the fully parametric probability-probability plot (``reliability.Probability_plotting.PP_plot_parametric``) and the semi-parametric probability-probability plot (``reliability.Probability_plotting.PP_plot_semiparametric``). These will be described separately below. A probability-probability (PP) plot is made by plotting the fraction failing (CDF) of one distribution vs the fraction failing (CDF) of another distribution. In the semiparametric form, when we only have the failure data and one hypothesised distribution, the CDF for the data can be obtained non-parametrically to generate an Empirical CDF.
+This section contains two different styles of probability-probability (PP) plots. These are the fully parametric probability-probability plot (`reliability.Probability_plotting.PP_plot_parametric`) and the semi-parametric probability-probability plot (`reliability.Probability_plotting.PP_plot_semiparametric`). These will be described separately below. A PP plot is made by plotting the fraction failing (CDF) of one distribution vs the fraction failing (CDF) of another distribution. In the semiparametric form, when we only have the failure data and one hypothesised distribution, the CDF for the data can be obtained non-parametrically to generate an empirical CDF.
 
 Parametric Probability-Probability plot
 ---------------------------------------
@@ -39,7 +39,7 @@ In the example below, we generate two parametric distributions and compare them 
     PP_plot_parametric(X_dist=Field, Y_dist=Lab, x_quantile_lines=[0.3, 0.6], y_quantile_lines=[0.1, 0.6])
     plt.show()
 
-.. image:: images/PPparametric.png
+.. image:: images/PPparametric2.png
 
 Semiparametric Probability-Probability plot
 -------------------------------------------
@@ -74,6 +74,6 @@ In the example below, we create 100 random samples from a Weibull distribution. 
     PP_plot_semiparametric(X_data_failures=data,Y_dist=dist)
     plt.show()
 
-.. image:: images/PPsemiparametric.png
+.. image:: images/PPsemiparametric2.png
 
 To see how semiparametric PP plots compare with semiparametric QQ plots as a graphical goodness of fit test, please see the second example in the section on `comparing PP plots with QQ plots <https://reliability.readthedocs.io/en/latest/Quantile-Quantile%20plots.html#comparing-pp-plots-with-qq-plots>`_.
