@@ -1390,7 +1390,7 @@ class fitters_input_checking:
         self.CI_type = CI_type
 
 
-def fill_no_autoscale(xlower, xupper, ylower, yupper, **kwargs):
+def fill_no_autoscale(xlower, xupper, ylower, yupper, plot_type='CDF', **kwargs):
     """
     creates a filled region (polygon) without adding it to the global list of autoscale objects.
     Use this when you want to plot something but not have it considered when autoscale sets the range
@@ -1424,15 +1424,16 @@ def fill_no_autoscale(xlower, xupper, ylower, yupper, **kwargs):
             text_color="red",
         )
     else:
-        # this trims the y arrays free of 1's since the probability plot can't handle 1 as it's equivalent to inf
-        if max(ylower) >= 1:
-            idx_ylower_1 = np.where(ylower >= 1)[0][0]
-            ylower = ylower[0:idx_ylower_1]
-            xlower = xlower[0:idx_ylower_1]
-        if max(yupper) >= 1:
-            idx_yupper_1 = np.where(yupper >= 1)[0][0]
-            yupper = yupper[0:idx_yupper_1]
-            xupper = xupper[0:idx_yupper_1]
+        # this trims the y arrays free of 1's since the probability plot can't handle 1 as it's equivalent to inf. This should not be applied for the CHF.
+        if plot_type.upper() in ['CDF','SF']:
+            if max(ylower) >= 1:
+                idx_ylower_1 = np.where(ylower >= 1)[0][0]
+                ylower = ylower[0:idx_ylower_1]
+                xlower = xlower[0:idx_ylower_1]
+            if max(yupper) >= 1:
+                idx_yupper_1 = np.where(yupper >= 1)[0][0]
+                yupper = yupper[0:idx_yupper_1]
+                xupper = xupper[0:idx_yupper_1]
 
         if (
             len(xlower) != len(xupper)
@@ -1596,6 +1597,7 @@ class distribution_confidence_intervals:
                     color=color,
                     alpha=0.3,
                     linewidth=0,
+                    plot_type=func,
                 )
                 line_no_autoscale(
                     x=t + self.gamma, y=yy_lower, color=color, linewidth=0
@@ -1735,6 +1737,7 @@ class distribution_confidence_intervals:
                         color=color,
                         alpha=0.3,
                         linewidth=0,
+                        plot_type=func,
                     )
                     line_no_autoscale(
                         x=t_lower, y=yy, color=color, linewidth=0
@@ -1771,7 +1774,7 @@ class distribution_confidence_intervals:
                 elif func == "SF":
                     yy_lower = Y_lower
                     yy_upper = Y_upper
-                else:  # CHF
+                elif func == "CHF":
                     yy_lower = -np.log(Y_lower)
                     yy_upper = -np.log(Y_upper)
 
@@ -1783,6 +1786,7 @@ class distribution_confidence_intervals:
                     color=color,
                     alpha=0.3,
                     linewidth=0,
+                    plot_type=func,
                 )
                 line_no_autoscale(
                     x=t + self.gamma, y=yy_lower, color=color, linewidth=0
@@ -1918,6 +1922,7 @@ class distribution_confidence_intervals:
                         color=color,
                         alpha=0.3,
                         linewidth=0,
+                        plot_type=func,
                     )
                     line_no_autoscale(
                         x=t_lower, y=yy, color=color, linewidth=0
@@ -1956,7 +1961,7 @@ class distribution_confidence_intervals:
                 elif func == "SF":
                     yy_lower = Y_lower
                     yy_upper = Y_upper
-                else:  # CHF
+                elif func == "CHF":
                     yy_lower = -np.log(Y_lower)
                     yy_upper = -np.log(Y_upper)
 
@@ -1968,6 +1973,7 @@ class distribution_confidence_intervals:
                     color=color,
                     alpha=0.3,
                     linewidth=0,
+                    plot_type=func,
                 )
                 line_no_autoscale(
                     x=t + self.gamma, y=yy_lower, color=color, linewidth=0
@@ -2101,6 +2107,7 @@ class distribution_confidence_intervals:
                         color=color,
                         alpha=0.3,
                         linewidth=0,
+                        plot_type=func,
                     )
                     line_no_autoscale(
                         x=t_lower, y=yy, color=color, linewidth=0
@@ -2131,7 +2138,7 @@ class distribution_confidence_intervals:
                 elif func == "SF":
                     yy_lower = Y_lower
                     yy_upper = Y_upper
-                else:  # CHF
+                elif func == "CHF":
                     yy_lower = -np.log(Y_lower)
                     yy_upper = -np.log(Y_upper)
 
@@ -2143,6 +2150,7 @@ class distribution_confidence_intervals:
                     color=color,
                     alpha=0.3,
                     linewidth=0,
+                    plot_type=func,
                 )
                 line_no_autoscale(
                     x=t, y=yy_lower, color=color, linewidth=0
@@ -2279,6 +2287,7 @@ class distribution_confidence_intervals:
                         color=color,
                         alpha=0.3,
                         linewidth=0,
+                        plot_type=func,
                     )
                     line_no_autoscale(
                         x=t_lower, y=yy, color=color, linewidth=0
@@ -2313,7 +2322,7 @@ class distribution_confidence_intervals:
                 elif func == "SF":
                     yy_lower = Y_lower
                     yy_upper = Y_upper
-                else:  # CHF
+                elif func == "CHF":
                     yy_lower = -np.log(Y_lower)
                     yy_upper = -np.log(Y_upper)
 
@@ -2325,6 +2334,7 @@ class distribution_confidence_intervals:
                     color=color,
                     alpha=0.3,
                     linewidth=0,
+                    plot_type=func,
                 )
                 line_no_autoscale(
                     x=t + self.gamma, y=yy_lower, color=color, linewidth=0
@@ -2462,6 +2472,7 @@ class distribution_confidence_intervals:
                         color=color,
                         alpha=0.3,
                         linewidth=0,
+                        plot_type=func,
                     )
                     line_no_autoscale(
                         x=t_lower, y=yy, color=color, linewidth=0
@@ -2498,7 +2509,7 @@ class distribution_confidence_intervals:
                 elif func == "SF":
                     yy_lower = Y_lower
                     yy_upper = Y_upper
-                else:  # CHF
+                elif func == "CHF":
                     yy_lower = -np.log(Y_lower)
                     yy_upper = -np.log(Y_upper)
 
@@ -2510,6 +2521,7 @@ class distribution_confidence_intervals:
                     color=color,
                     alpha=0.3,
                     linewidth=0,
+                    plot_type=func,
                 )
                 line_no_autoscale(
                     x=t + self.gamma, y=yy_lower, color=color, linewidth=0
@@ -2643,6 +2655,7 @@ class distribution_confidence_intervals:
                         color=color,
                         alpha=0.3,
                         linewidth=0,
+                        plot_type=func,
                     )
                     line_no_autoscale(
                         x=t_lower, y=yy, color=color, linewidth=0
@@ -2673,7 +2686,7 @@ class distribution_confidence_intervals:
                 elif func == "SF":
                     yy_lower = Y_lower
                     yy_upper = Y_upper
-                else:  # CHF
+                elif func == "CHF":
                     yy_lower = -np.log(Y_lower)
                     yy_upper = -np.log(Y_upper)
 
@@ -2685,6 +2698,7 @@ class distribution_confidence_intervals:
                     color=color,
                     alpha=0.3,
                     linewidth=0,
+                    plot_type=func,
                 )
                 line_no_autoscale(
                     x=t, y=yy_lower, color=color, linewidth=0
@@ -2934,6 +2948,7 @@ def least_squares(dist, failures, right_censored, method="RRX", force_shape=None
         xlin = x - gamma0
         ylin = -np.log(1 - y)
         slope, _ = linear_regression(xlin, ylin, x_intercept=0, RRX_or_RRY="RRX")
+        LS_Lambda = slope
         LS_Lambda = slope
         # NLLS for Exponential_2P
         def __exponential_2P_CDF(t, Lambda, gamma):
