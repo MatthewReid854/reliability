@@ -53,28 +53,29 @@ The following example is taken from an `example <http://reliawiki.org/index.php/
     plt.show()
 
     '''
-    Mean Cumulative Function results (95.0% CI)
-           time  MCF_lower      MCF MCF_upper  variance
-    state                                              
-    F         5  0.0459299      0.2  0.870893     0.032
-    F         6    0.14134      0.4   1.13202     0.064
-    F        10   0.256603      0.6   1.40294     0.096
-    F        12   0.383374      0.8   1.66939     0.128
-    F        13   0.517916        1   1.93081      0.16
-    F        13   0.658169      1.2   2.18789     0.192
-    F        15   0.802848      1.4   2.44131     0.224
-    F        15   0.951092      1.6   2.69164     0.256
-    F        16    1.10229      1.8   2.93935     0.288
-    F        17    1.25598        2   3.18478      0.32
-    C        17                                        
-    C        19                                        
-    F        20    1.49896  2.33333   3.63215  0.394074
-    F        22    1.74856  2.66667   4.06684  0.468148
-    C        24                                        
-    F        25    2.12259  3.16667   4.72431  0.593148
-    F        25     2.5071  3.66667   5.36255  0.718148
-    C        26                                        
-    C        28                                        
+    Mean Cumulative Function results (95% CI):
+    state  time MCF_lower     MCF MCF_upper variance
+        F     5 0.0459299     0.2  0.870893    0.032
+        F     6   0.14134     0.4   1.13202    0.064
+        F    10  0.256603     0.6   1.40294    0.096
+        F    12  0.383374     0.8   1.66939    0.128
+        F    13  0.517916       1   1.93081     0.16
+        F    13  0.658169     1.2   2.18789    0.192
+        F    15  0.802848     1.4   2.44131    0.224
+        F    15  0.951092     1.6   2.69164    0.256
+        F    16   1.10229     1.8   2.93935    0.288
+        F    17   1.25598       2   3.18478     0.32
+        C    17                                     
+        C    19                                     
+        F    20   1.49896 2.33333   3.63215 0.394074
+        F    22   1.74856 2.66667   4.06684 0.468148
+        C    24                                     
+        F    25   2.12259 3.16667   4.72431 0.593148
+        F    25    2.5071 3.66667   5.36255 0.718148
+        C    26                                     
+        C    28                                      
+
+                     
     '''
 
 .. image:: images/MCF_nonparametric.png
@@ -82,7 +83,7 @@ The following example is taken from an `example <http://reliawiki.org/index.php/
 Parametric MCF
 --------------
 
-The estimates of the parametric MCF are obtained using MCF_nonparametric as this is the procedure required to obtain the points for the plot. To these points a Non-Homogeneous Poisson Process (NHPP) parametric model is fitted of the form:
+The estimates of the parametric MCF are obtained using MCF_nonparametric as this is the procedure required to obtain the points for the plot. We use these points to fit a Non-Homogeneous Poisson Process (NHPP) parametric model of the form:
 
 :math:`MCF(t) = (\frac{t}{\alpha})^{\beta}`
 
@@ -90,7 +91,7 @@ You may notice that this looks identical to the `Weibull CHF <https://reliabilit
 
 The purpose of fitting a parametric model is to obtain the shape parameter (β) which indicates the long term health of the system/s. If the MCF is concave down (β<1) then the system is improving. A straight line (β=1) indicates it is staying the same. Concave up (β>1) shows the system is worsening as repairs are required more frequently as time progresses.
 
-Many methods exist for fitting the model to the data. Within reliability, scipy.optimize.curve_fit is used which returns the covariance matrix and allows for the confidence intervals to be calculated using the appropriate `formulas <https://support.minitab.com/en-us/minitab/18/help-and-how-to/modeling-statistics/reliability/how-to/parametric-growth-curve/methods-and-formulas/mean-cumulative-function-mcf-and-failure-rate-rocof/>`_.
+Many methods exist for fitting the model to the data. Within reliability, `scipy.optimize.curve_fit <https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.curve_fit.html>`_ is used which returns the covariance matrix and allows for the confidence intervals to be calculated using the appropriate `formulas <https://support.minitab.com/en-us/minitab/18/help-and-how-to/modeling-statistics/reliability/how-to/parametric-growth-curve/methods-and-formulas/mean-cumulative-function-mcf-and-failure-rate-rocof/>`_.
 
 Inputs:
 
@@ -132,10 +133,10 @@ The following example uses the same data as the MCF_nonparametric example provid
     '''
     Mean Cumulative Function Parametric Model (95% CI):
     MCF = (t/α)^β
-               Point Estimate  Standard Error   Lower CI   Upper CI
-    Parameter                                                      
-    Alpha           11.980590        0.401372  11.219187  12.793666
-    Beta             1.673622        0.094654   1.498017   1.869813
+    Parameter  Point Estimate  Standard Error  Lower CI  Upper CI
+        Alpha         11.9806        0.401372   11.2192   12.7937
+         Beta         1.67362       0.0946537   1.49802   1.86981 
+
     Since Beta is greater than 1, the system repair rate is WORSENING over time.
     '''
 
