@@ -13,20 +13,7 @@ Inputs:
 -   failure_times - these are the actual failure times.
    .. note::
        1. You can specify either times_between_failures OR failure_times but not both. Both options are provided for convenience so the conversion between the two is done automatically. failure_times should be the same as np.cumsum(times_between_failures).
-       2. The repair time is assumed to be negligible. If the repair times are not negligibly small then you will need to manually adjust your input (failure_times or times_between_failures) to factor in the repair times.
--   test_end - use this to specify the end of the test if the test did not end at the time of the last failure.
--   CI - the confidence interval for the Laplace test. Default is 0.95 for 95% CI.
--   show_plot - True/False. Default is True. Plotting keywords are also accepted (eg. color, linestyle).
--   print_results - True/False. Default is True
-
-Inputs:
-
--   times_between_failures - these are the failure interarrival times.
--   failure_times - these are the actual failure times.
-   .. note::
-       1. You can specify either times_between_failures OR failure_times but not both. Both options are provided for convenience so the conversion between the two is done automatically. failure_times should be the same as np.cumsum(times_between_failures).
-       
-       2. The repair time is assumed to be negligible. If the repair times are not negligibly small then you will need to manually adjust your input (failure_times or times_between_failures) to factor in the repair times.
+       2. The repair times are assumed to be negligible. If the repair times are not negligibly small then you will need to manually adjust your input (failure_times or times_between_failures) to factor in the actual repair times.
 -   test_end - use this to specify the end of the test if the test did not end at the time of the last failure.
 -   CI - the confidence interval for the Laplace test. Default is 0.95 for 95% CI.
 -   show_plot - True/False. Default is True. Plotting keywords are also accepted (eg. color, linestyle).
@@ -47,16 +34,17 @@ In the example below, we provide the failure interarrival times. The function wi
 
 .. code:: python
 
-    from reliability.Repairable_systems import ROCOF
-    import matplotlib.pyplot as plt
-    t = [104,131,1597,59,4,503,157,6,118,173,114,62,101,216,106,140,1,102,3,393,96,232,89,61,37,293,7,165,87,99]
-    ROCOF(times_between_failures=t)
-    plt.show()
+   from reliability.Repairable_systems import ROCOF
+   import matplotlib.pyplot as plt
+   t = [104,131,1597,59,4,503,157,6,118,173,114,62,101,216,106,140,1,102,3,393,96,232,89,61,37,293,7,165,87,99]
+   ROCOF(times_between_failures=t)
+   plt.show()
 
-    '''
-    Laplace test results: U = 2.409, z_crit = (-1.96,+1.96)
-    At 95 % confidence level the ROCOF is WORSENING. Assume NHPP.
-    ROCOF assuming NHPP has parameters: Beta_hat = 1.588 , Lambda_hat = 3.703e-05
-    '''
+   '''
+   Results from ROCOF analysis:
+   Laplace test results: U = 2.409, z_crit = (-1.96,+1.96)
+   At 95% confidence level the ROCOF is WORSENING. Assume NHPP.
+   ROCOF assuming NHPP has parameters: Beta_hat = 1.588 , Lambda_hat = 3.703e-05
+   '''
     
 .. image:: images/ROCOF.png
