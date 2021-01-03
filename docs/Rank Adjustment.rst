@@ -7,16 +7,16 @@ Rank Adjustment
 
 The Rank Adjustment estimator provides a method by which to estimate the survival function (reliability function) of a population without assuming that the data comes from a particular distribution. Due to the lack of parameters required in this model, it is a non-parametric method of obtaining the survival function. With a few simple transformations, the survival function (SF) can be used to obtain the cumulative hazard function (CHF) and the cumulative distribution function (CDF). It is not possible to obtain a useful version of the probability density function (PDF) or hazard function (HF) as this would require the differentiation of the CDF and CHF respectively, which results in a very spikey plot due to the non-continuous nature of these plots.
 
-The Rank Adjustment estimator is very similar in result (but quite different in method) to the `Kaplan-Meier estimator <https://reliability.readthedocs.io/en/latest/Kaplan-Meier.html>`_ and `Nelson-Aalen estimator <https://reliability.readthedocs.io/en/latest/Nelson-Aalen.html>`_. While none of the three has been proven to be more accurate than the others, the Kaplan-Meier estimator is generally more popular as a non-parametric means of estimating the SF. Confidence intervals are provided using the Greenwood method with Normal approximation.
+The Rank Adjustment estimator is very similar in result (but quite different in method) to the `Kaplan-Meier estimator <https://reliability.readthedocs.io/en/latest/Kaplan-Meier.html>`_ and `Nelson-Aalen estimator <https://reliability.readthedocs.io/en/latest/Nelson-Aalen.html>`_. While none of the three has been proven to be more accurate than the others, the Kaplan-Meier estimator is generally more popular as a non-parametric means of estimating the SF. Confidence intervals are provided using the `Greenwood method <https://support.minitab.com/en-us/minitab/18/help-and-how-to/modeling-statistics/reliability/how-to/nonparametric-distribution-analysis-right-censoring/methods-and-formulas/estimation-methods/#confidence-intervals>`_ with Normal approximation.
 
-The Rank Adjustment estimator can be used with both complete and right censored data. This function can be accessed from ``reliability.Nonparametric.RankAdjustment``. The Rank-adjustment algorithm is the same as is used in Probability_plotting.plotting_positions to obtain y-values for the scatter plot. As with plotting_positions, the heuristic constant "a" is accepted, with the default being 0.3 for median ranks.
+The Rank Adjustment estimator can be used with both complete and right censored data. This function can be accessed from `reliability.Nonparametric.RankAdjustment`. The Rank-adjustment algorithm is the same as is used in Probability_plotting.plotting_positions to obtain the y-values for the scatter plot. As with plotting_positions, the heuristic constant "a" is accepted, with the default being 0.3 for median ranks.
 
 Inputs:
 
 -   failures - an array or list of failure times. Sorting is automatic so times do not need to be provided in any order.
 -   right_censored - an array or list of right censored failure times. Defaults to None.
 -   show_plot - True/False. Default is True. Plots the CDF, SF, or CHF as specified by plot_type.
--   plot_type - SF, CDF, or CHF. Default is SF.
+-   plot_type - 'SF', 'CDF', or 'CHF'. Default is 'SF'.
 -   print_results - True/False. Default is True. Will display a pandas dataframe in the console.
 -   plot_CI - shades the upper and lower confidence interval
 -   CI - confidence interval between 0 and 1. Default is 0.95 for 95% CI.
@@ -42,7 +42,7 @@ Other plotting keywords (such as color, label, linestyle, etc.) are accepted and
 Example 1
 ---------
 
-In this first example, we will see how Rank Adjustment compares with Kaplan-Meier and Nelson-Aalen for a large censored dataset. The plots show these three methods arrive at a similar result, with Kaplan-Meier giving the lowest estimate of the survival function, followed by Nelson-Aalen, and finally Rank-Adjustment. Note that this is when the median ranks are used in the rank adjustment heuristic. As sample size is increased, the differences between the three methods reduces.
+In this first example, we will see how Rank Adjustment compares with Kaplan-Meier and Nelson-Aalen for a large censored dataset. The plots show these three methods arrive at a similar result, with Kaplan-Meier giving the lowest estimate of the survival function, followed by Nelson-Aalen, and finally Rank-Adjustment. Note that this is when the median ranks are used in the Rank Adjustment heuristic. As sample size is increased, the differences between the three methods reduces.
 
 .. code:: python
 
@@ -74,7 +74,7 @@ In this first example, we will see how Rank Adjustment compares with Kaplan-Meie
 Example 2
 ---------
 
-In this second example we will look at the effect of the plotting heuristic "a". The default heuristic used is 0.3 which gives the median ranks, but there are many `other heuristics <https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics>`_ available by varying a from 0 to 1. Here we will look at the effect of setting "a" to be 0, 0.3, and 1. The effect is fairly minimal, though there is a difference which leads to the use of different heuristics. The median ranks (a=0.3) is most popular and is the default in Minitab for obtaining plotting positions.
+In this second example we will look at the effect of the plotting heuristic "a". The default heuristic used is 0.3 which gives the median ranks, but there are many `other heuristics <https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics>`_ available by varying a from 0 to 1. Here we will look at the effect of setting "a" to be 0, 0.3, and 1. The effect is fairly minimal, though there is a small difference (which reduces as sample size increases) leading to the use of different heuristics. The median ranks (a=0.3) is most popular and is the default in most reliability engineering software for obtaining the plotting positions.
 
 .. code:: python
 
