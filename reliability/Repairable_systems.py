@@ -674,7 +674,7 @@ class MCF_nonparametric:
                 "display.max_columns", 9
             )  # shows the dataframe without ... truncation
             colorprint(
-                str("Mean Cumulative Function results (" + str(CI_rounded) + "% CI)"),
+                str("Mean Cumulative Function results (" + str(CI_rounded) + "% CI):"),
                 bold=True,
                 underline=True,
             )

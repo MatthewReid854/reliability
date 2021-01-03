@@ -50,12 +50,41 @@ Contents:
 
 .. toctree::
   :maxdepth: 1
+  :caption: Accelerated Life Testing
+
+  ALT probability plots
+  Fitting a model to ALT data
+
+.. toctree::
+  :maxdepth: 1
+  :caption: Importing and converting data
+ 
+  Importing data from Excel
+  Converting data between different formats
+  Convert dataframe to grouped lists
+  Datasets
+
+.. toctree::
+  :maxdepth: 1
   :caption: Repairable systems
   
   Reliability growth
   Optimal replacement time
   ROCOF
   Mean cumulative function
+
+.. toctree::
+  :maxdepth: 1
+  :caption: Reliability testing
+  
+  One sample proportion
+  Two proportion test
+  Sample size required for no failures
+  Sequential sampling chart
+  Reliability test planner
+  Reliability test duration
+  Chi-squared test
+  Kolmogorov-Smirnov test
 
 .. toctree::
   :maxdepth: 1
@@ -71,13 +100,6 @@ Contents:
 
 .. toctree::
   :maxdepth: 1
-  :caption: Accelerated Life Testing
-
-  ALT probability plots
-  Fitting a model to ALT data
-
-.. toctree::
-  :maxdepth: 1
   :caption: Other functions
   
   Stress-Strength interference for any distributions
@@ -87,28 +109,6 @@ Contents:
   Crosshairs
   Distribution explorer
   Histogram
-
-.. toctree::
-  :maxdepth: 1
-  :caption: Importing and converting data
- 
-  Importing data from Excel
-  Converting data between different formats
-  Convert dataframe to grouped lists
-  Datasets
-
-.. toctree::
-  :maxdepth: 1
-  :caption: Reliability testing
-  
-  One sample proportion
-  Two proportion test
-  Sample size required for no failures
-  Sequential sampling chart
-  Reliability test planner
-  Reliability test duration
-  Chi-squared test
-  Kolmogorov-Smirnov test
 
 .. toctree::
   :maxdepth: 1
