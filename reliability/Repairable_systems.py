@@ -16,7 +16,7 @@ from scipy import integrate
 import pandas as pd
 import scipy.stats as ss
 from scipy.optimize import curve_fit
-from reliability.Utils import colorprint
+from reliability.Utils import colorprint, round_to_decimals
 
 
 class reliability_growth:
@@ -33,7 +33,7 @@ class reliability_growth:
         Uses the Duane method to find the instantaneous MTBF and produce a reliability growth plot.
 
         Inputs:
-        times - array of list of failure times
+        times - array or list of failure times
         xmax - xlim to plot up to. Default is 1.5*max(times)
         target_MTBF - specify the target MTBF to obtain the total time on test required to reach it.
         show_plot - True/False. Defaults to true. Other keyword arguments are passed to the plot for style
@@ -83,9 +83,11 @@ class reliability_growth:
         self.Beta = beta
 
         if print_results is True:
-            print(
-                "Reliability growth model parameters:\nlambda:", Lambda, "\nbeta:", beta
+            colorprint(
+                "Reliability growth model parameters:", bold=True, underline=True
             )
+            print("lambda:", Lambda)
+            print("beta:", beta)
 
         if target_MTBF is not None:
             t_target = (target_MTBF * Lambda * beta) ** (1 / (1 - beta))
@@ -196,6 +198,9 @@ class optimal_replacement_time:
         ORT_rounded = round(ORT, 2)
 
         if print_results is True:
+            colorprint(
+                "Results from optimal_replacement_time:", bold=True, underline=True
+            )
             if q == 0:
                 print("Cost model assuming as good as new replacement (q=0):")
             else:
@@ -329,36 +334,15 @@ class ROCOF:
             + str(round(-z_crit, 2))
             + ")"
         )
-        if print_results is True:
-            print(results_str)
 
         x = np.arange(1, len(ti) + 1)
         if U < z_crit:
-            if print_results is True:
-                print(
-                    "At",
-                    int(CI * 100),
-                    "% confidence level the ROCOF is IMPROVING. Assume NHPP.",
-                )
             B = len(ti) / (sum(np.log(tn / np.array(tc))))
             L = len(ti) / (tn ** B)
             self.trend = "improving"
             self.Beta_hat = B
             self.Lambda_hat = L
-            self.ROCOF = "ROCOF is not provided when trend is not constant. Use Beta_hat and Lambda_hat to calculate."
-            if L < 1:
-                L_rounded = round(
-                    L, -int(np.floor(np.log10(abs(L)))) + 3
-                )  # this rounds to exactly 4 sigfigs no matter the number of preceding zeros
-            else:
-                L_rounded = round(L, 2)
-            if print_results is True:
-                print(
-                    "ROCOF assuming NHPP has parameters: Beta_hat =",
-                    round(B, 3),
-                    ", Lambda_hat =",
-                    L_rounded,
-                )
+            self.ROCOF = "ROCOF is not provided when trend is not constant. Use Beta_hat and Lambda_hat to calculate ROCOF at a given time t."
             _rocof = L * B * tc ** (B - 1)
             MTBF = np.ones_like(tc) / _rocof
             if test_end is not None:
@@ -366,31 +350,12 @@ class ROCOF:
             else:
                 x_to_plot = x[:-1]
         elif U > -z_crit:
-            if print_results is True:
-                print(
-                    "At",
-                    int(CI * 100),
-                    "% confidence level the ROCOF is WORSENING. Assume NHPP.",
-                )
             B = len(ti) / (sum(np.log(tn / np.array(tc))))
             L = len(ti) / (tn ** B)
             self.trend = "worsening"
             self.Beta_hat = B
             self.Lambda_hat = L
-            self.ROCOF = "ROCOF is not provided when trend is not constant. Use Beta_hat and Lambda_hat to calculate."
-            if L < 1:
-                L_rounded = round(
-                    L, -int(np.floor(np.log10(abs(L)))) + 3
-                )  # this rounds to exactly 4 sigfigs no matter the number of preceding zeros
-            else:
-                L_rounded = round(L, 2)
-            if print_results is True:
-                print(
-                    "ROCOF assuming NHPP has parameters: Beta_hat =",
-                    round(B, 3),
-                    ", Lambda_hat =",
-                    L_rounded,
-                )
+            self.ROCOF = "ROCOF is not provided when trend is not constant. Use Beta_hat and Lambda_hat to calculate ROCOF at a given time t."
             _rocof = L * B * tc ** (B - 1)
             MTBF = np.ones_like(tc) / _rocof
             if test_end is not None:
@@ -398,27 +363,62 @@ class ROCOF:
             else:
                 x_to_plot = x[:-1]
         else:
-            if print_results is True:
-                print(
-                    "At",
-                    int(CI * 100),
-                    "% confidence level the ROCOF is CONSTANT. Assume HPP.",
-                )
-            rocof = n / sum(ti)
+            rocof = (n + 1) / sum(ti)
             self.trend = "constant"
             self.ROCOF = rocof
             self.Beta_hat = "not calculated when trend is constant"
             self.Lambda_hat = "not calculated when trend is constant"
             x_to_plot = x
             MTBF = np.ones_like(x_to_plot) / rocof
-            if rocof < 1:
-                rocof_rounded = round(
-                    rocof, -int(np.floor(np.log10(abs(rocof)))) + 1
-                )  # this rounds to exactly 2 sigfigs no matter the number of preceding zeros
+
+        CI_rounded = CI * 100
+        if CI_rounded % 1 == 0:
+            CI_rounded = int(CI * 100)
+
+        if print_results is True:
+            colorprint("Results from ROCOF analysis:", bold=True, underline=True)
+            print(results_str)
+            if U < z_crit:
+                print(
+                    str(
+                        "At "
+                        + str(CI_rounded)
+                        + "% confidence level the ROCOF is IMPROVING. Assume NHPP."
+                    )
+                )
+                print(
+                    "ROCOF assuming NHPP has parameters: Beta_hat =",
+                    round_to_decimals(B, 3),
+                    ", Lambda_hat =",
+                    round_to_decimals(L, 4),
+                )
+            elif U > -z_crit:
+                print(
+                    str(
+                        "At "
+                        + str(CI_rounded)
+                        + "% confidence level the ROCOF is WORSENING. Assume NHPP."
+                    )
+                )
+                print(
+                    "ROCOF assuming NHPP has parameters: Beta_hat =",
+                    round_to_decimals(B, 3),
+                    ", Lambda_hat =",
+                    round_to_decimals(L, 4),
+                )
             else:
-                rocof_rounded = round(rocof, 2)
-            if print_results is True:
-                print("ROCOF assuming HPP is", rocof_rounded, "failures per unit time.")
+                print(
+                    str(
+                        "At "
+                        + str(CI_rounded)
+                        + "% confidence level the ROCOF is CONSTANT. Assume HPP."
+                    )
+                )
+                print(
+                    "ROCOF assuming HPP is",
+                    round_to_decimals(rocof, 4),
+                    "failures per unit time.",
+                )
 
         if show_plot is True:
             plt.plot(x_to_plot, MTBF, linestyle=ls, label="MTBF")
@@ -427,9 +427,9 @@ class ROCOF:
             plt.xlabel("Failure number")
             title_str = str(
                 "Failure interarrival times vs failure number\nAt "
-                + str(int(CI * 100))
+                + str(CI_rounded)
                 + "% confidence level the ROCOF is "
-                + self.trend
+                + self.trend.upper()
             )
             plt.title(title_str)
             plt.legend()
