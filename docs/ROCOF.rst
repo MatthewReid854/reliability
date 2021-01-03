@@ -30,7 +30,7 @@ Outputs:
 -   printed results. Only printed if print_results is True.
 -   plotted results. Only plotted if plot_results is True. Use plt.show() to display it.
 
-In the example below, we provide the failure interarrival times. The function will run the Laplace test using the default 95% confidence interval and then, when a trend is found, it will plot the MTBF based on the calculated NHPP Power Law model. MTBF = 1/ROCOF.
+In the example below, we provide the failure interarrival times. The function will run the Laplace test using the default 95% confidence interval and then, when a trend is found, it will plot the MTBF based on the calculated NHPP Power Law model. MTBF = 1/ROCOF. This example is based on Example 5.11 (p275) from Reliability Engineering and Risk analysis listed in the `recommended resources <https://reliability.readthedocs.io/en/latest/Recommended%20resources.html>`_.
 
 .. code:: python
 
