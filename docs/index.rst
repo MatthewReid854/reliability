@@ -59,10 +59,9 @@ Contents:
   :maxdepth: 1
   :caption: Importing and converting data
  
+  Datasets
   Importing data from Excel
   Converting data between different formats
-  Convert dataframe to grouped lists
-  Datasets
 
 .. toctree::
   :maxdepth: 1
