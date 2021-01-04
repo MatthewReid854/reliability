@@ -12,10 +12,11 @@ Inputs:
 -   trials - the number of trials which were conducted
 -   successes - the number of trials which were successful
 -   CI - the desired confidence interval. Defaults to 0.95 for 95% CI.
+-   print_results - True/False. This will print the results if True. Defaults to True.
 
 Outputs:
 
--   lower, upper - Confidence interval limits. Note that this will return nan for lower or upper if the one sided CI is calculated (ie. when successes=0 or successes=trials).
+-   (lower, upper) - Tuple of the confidence interval limits. Note that this will return 0 for lower or 1 for upper if the one sided CI is calculated (ie. when successes=0 or successes=trials)
 
 In this example, consider a scenario in which we have a large batch of items that we need to test for their reliability. The batch is large and testing is expensive so we will conduct the test on 30 samples. From those 30 samples, 29 passed the test. If the batch needs at least 85% reliability with a 95% confidence, then should we accept or reject the batch?
 
