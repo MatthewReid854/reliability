@@ -5,20 +5,22 @@
 Datasets
 ''''''''
 
-There are a few datasets that have been included with reliability that users may find useful for testing and experimenting. While this list is currently small, expect it to increase significantly over time. Within ``reliability.Datasets`` the following datasets are available:
+There are a few datasets that have been included with reliability that users may find useful for testing and experimenting. While this list is currently small, expect it to increase significantly over time. Within `reliability.Datasets` the following datasets are available:
 
 **Standard datasets**
 
 - automotive - 10 failures, 21 right censored. It is used in `this example <https://reliability.readthedocs.io/en/latest/Kaplan-Meier%20estimate%20of%20reliability.html>`_
-- defective_sample - 1350 failures, 12296 right censored. It exhibits the behavior of a defective sample (also known as Limited failure population or Defective subpopulation).
-- electronics - 10 failures, 4072 right censored. It is used in `this example <https://reliability.readthedocs.io/en/latest/Fitting%20a%20specific%20distribution%20to%20data.html#using-fit-weibull-2p-grouped-for-large-data-sets>`_.
 - mileage - 100 failures with no right censoring. It is used in the examples for `KStest <https://reliability.readthedocs.io/en/latest/Kolmogorov-Smirnov%20test.html>`_ and `chi2test <https://reliability.readthedocs.io/en/latest/Chi-squared%20test.html>`_.
+- defective_sample - 1350 failures, 12296 right censored. It exhibits the behavior of a defective sample (also known as Limited failure population or Defective subpopulation).
+- mixture - 71 failures, 3320 right censored. This is best modelled using a mixture model.
+- electronics - 10 failures, 4072 right censored. It is used in `this example <https://reliability.readthedocs.io/en/latest/Fitting%20a%20specific%20distribution%20to%20data.html#using-fit-weibull-2p-grouped-for-large-data-sets>`_.
 
 **ALT Datasets**
 
 - ALT_temperature - conducted at 3 temperatures. 35 failures, 102 right censored. For example usage of many of the ALT Datasets see the `examples here <https://reliability.readthedocs.io/en/latest/Fitting%20a%20model%20to%20ALT%20data.html>`_.
 - ALT_temperature2 - conducted at 4 temperatures. 40 failures, 20 right censored.
 - ALT_temperature3 - conducted at 3 temperatures. 30 failures, 0 right censored.
+- ALT_temperature4 - conducted at 3 temperatures. 20 failures, 0 right censored.
 - ALT_load - conducted at 3 loads. 20 failures, 0 censored.
 - ALT_load2 - conducted at 3 loads. 13 failures, 5 right censored.
 - ALT_temperature_voltage - conducted at 2 different temperatures and 2 different voltages. 12 failures, 0 right censored.
@@ -73,7 +75,7 @@ If you would like the statistics about a dataset you can access the info datafra
       Right Censored    12295 (90.11%)
     '''
 
-The following example shows how to import a dataset and use it. Note that we must use () before accessing the failures and right_censored values.
+The following example shows how to import a dataset and use it. Note that we must use brackets () to call the dataset (since it is a class) before accessing the failures and right_censored values.
 
 .. code:: python
 
@@ -83,11 +85,20 @@ The following example shows how to import a dataset and use it. Note that we mus
     
     '''
     Results from Fit_Weibull_2P (95% CI):
-               Point Estimate  Standard Error      Lower CI       Upper CI
-    Parameter                                                             
-    Alpha       140882.303527    49299.609699  70956.382925  279718.647273
-    Beta             1.132769        0.301468      0.672370       1.908422
-    Log-Likelihood: -128.98350896528038
+    Analysis method: Maximum Likelihood Estimation (MLE)
+    Failures / Right censored: 10/21 (67.74194% right censored) 
+
+    Parameter  Point Estimate  Standard Error  Lower CI  Upper CI
+        Alpha          134243         42371.1   72314.7    249204
+         Beta         1.15586        0.295842  0.699905   1.90884 
+
+    Goodness of fit    Value
+     Log-likelihood -128.974
+               AICc  262.376
+                BIC  264.816
+                 AD  35.6075 
     '''
 
 If you have an interesting dataset, please email me (alpha.reliability@gmail.com) and I may include it in this database.
+
+If you would like to use any of these datasets in you own work, you are permitted to do so under the `LGPLv3 <https://www.gnu.org/licenses/lgpl-3.0.txt>`_ license. Under this license you must `acknowledge the source <https://reliability.readthedocs.io/en/latest/Citing%20reliability%20in%20your%20work.html>`_ of the datasets.
