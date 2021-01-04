@@ -90,7 +90,7 @@ def stress_strength(
         and warn is True
     ):  # supress the warning by setting warn=False
         colorprint(
-            "WARNING: If strength and stress are both Normal distributions, it is more accurate to use the exact formula. The exact formula is supported in the function Probability_of_failure_normdist. To supress this warning set warn=False",
+            "WARNING: If strength and stress are both Normal distributions, it is more accurate to use the exact formula. The exact formula is supported in the function stress_strength_normal. To supress this warning set warn=False",
             text_color="red",
         )
     if stress.mean > strength.mean and warn == True:
@@ -353,14 +353,26 @@ class similar_distributions:
                 text_color="red",
             )
 
-        fitted_results = Fit_Everything(
-            failures=RVS_filtered,
-            print_results=False,
-            show_probability_plot=False,
-            show_histogram_plot=False,
-            show_PP_plot=False,
-        )  # fit all distributions to the filtered samples
-        ranked_distributions = list(fitted_results.results.index.values)
+        if include_location_shifted is False:
+            # fit all distributions excluding location shifted distributions to the filtered samples
+            fitted_results = Fit_Everything(
+                failures=RVS_filtered,
+                exclude=['Weibull_3P','Lognormal_3P','Exponential_2P','Gamma_3P','Loglogistic_3P'],
+                print_results=False,
+                show_probability_plot=False,
+                show_histogram_plot=False,
+                show_PP_plot=False,
+            )
+        else:
+            # fit all distributions to the filtered samples
+            fitted_results = Fit_Everything(
+                failures=RVS_filtered,
+                print_results=False,
+                show_probability_plot=False,
+                show_histogram_plot=False,
+                show_PP_plot=False,
+            )
+        ranked_distributions = list(fitted_results.results.Distribution.values)
         ranked_distributions.remove(
             distribution.name2
         )  # removes the fitted version of the original distribution
@@ -606,6 +618,7 @@ class similar_distributions:
         self.results = ranked_distributions_objects
         self.most_similar_distribution = ranked_distributions_objects[0]
         if print_results is True:
+            colorprint('Results from similar_distributions:',bold=True,underline=True)
             print("The input distribution was:")
             print(distribution.param_title_long)
             if number_of_distributions_fitted < number_of_distributions_to_show:

@@ -1679,7 +1679,6 @@ class fracture_mechanics_crack_growth:
         )
         Nf_tot = Nf_1 + Nf_2
         self.Nf_stage_1_simplified = Nf_1
-        print(Nf_1)
         self.Nf_stage_2_simplified = Nf_2
         self.Nf_total_simplified = Nf_tot
         self.final_crack_length_simplified = a_f * 1000 - d
