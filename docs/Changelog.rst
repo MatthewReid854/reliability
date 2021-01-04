@@ -38,6 +38,7 @@ Changelog
 -    probability_plot_xylims had a bug when there is only 1 datapoint as xlower=xupper and ylower=yupper. Cases with only 1 datapoint are now handled appropriately.
 -    Fitters had a bug where force_beta or force_sigma needed to be a float. It would crash if an int was supplied.
 -    Fixed a bug in all the ALT fitters where a crash would occur when use level stress was not provided. This was due to the use life being referenced in all cases rather than just in cases where the use level stress was specified.
+-    ROCOF had a bug that was only evident when the ROCOF was found to be constant. This was caused by a formula using n instead of n+1 for the sample size.
 
 **Other**
 
