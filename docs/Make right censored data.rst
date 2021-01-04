@@ -19,7 +19,10 @@ Outputs:
 -   failures - array of failure data
 -   right_censored - array of right_censored data
 
-In this first example we will look at the production of singly censored data. That is data which is all censored at the same value (defined by threshold).
+Example 1
+---------
+
+In this first example we will look at the production of **singly censored data**. That is data which is all censored at the same value (defined by threshold).
 
 .. code:: python
 
@@ -33,7 +36,10 @@ In this first example we will look at the production of singly censored data. Th
     Right Censored: [6 6 6 6] #the numbers 7 to 10 have been set equal to the threshold
     '''
 
-In this second example we will look at the production of multiply censored data. That is data which is censored at different values. The amount of data to be censored is governed by fraction_censored. If unspecified it will default to 0.5 resulting in 50% of the data being right censored. Note that there is some randomness to the censoring. For repeatability set the seed.
+Example 2
+---------
+
+In this second example we will look at the production of **multiply censored data**. That is data which is censored at different values. The amount of data to be censored is governed by fraction_censored. If unspecified it will default to 0.5 resulting in 50% of the data being right censored. Note that there is randomness to the censoring. For repeatability set the seed.
 
 .. code:: python
     
