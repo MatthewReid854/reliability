@@ -38,9 +38,9 @@ In the example below, we create a Weibull Distribution object using the reliabil
     Weibull Distribution (α=50,β=3.3)
 
     The top 3 most similar distributions are:
-    Weibull Distribution (α=49.2264,β=3.2573,γ=0.7235)
     Normal Distribution (μ=44.8471,σ=14.9226)
     Gamma Distribution (α=5.7607,β=7.785)
+    Loglogistic Distribution (α=43.465,β=4.7564)
     '''
     
 .. image:: images/similar_distributions_V5.png
