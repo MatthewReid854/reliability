@@ -22,11 +22,13 @@ In this example, consider a scenario in which we have a large batch of items tha
 .. code:: python
 
     from reliability.Reliability_testing import one_sample_proportion
-    result = one_sample_proportion(trials=30,successes=29)
-    print(result)
+    one_sample_proportion(trials=30,successes=29)
     
     '''
-    (0.8278305443665873, 0.9991564290733695)
+    Results from one_sample_proportion:
+    For a test with 30 trials of which there were 29 successes and 1 failures, the bounds on reliability are:
+    Lower 95% confidence bound: 0.8278305443665873
+    Upper 95% confidence bound: 0.9991564290733695
     '''
 
 The lower bound (with 95% confidence interval) on the reliability was 82.78%. Since this is below our requirement of 85%, then we should reject the batch.
