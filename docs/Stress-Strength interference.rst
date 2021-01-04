@@ -12,7 +12,7 @@ Stress-Strength Interference for two Normal Distributions
 
 The probability of failure for two Normal distributions is found using the equation:
 
-:math:`F=\Phi \left(\frac{\mu_{strength}-\mu_{stress}}{\sqrt{\sigma_{strength}^{2}+\sigma_{stress}^{2}}}\right)`
+:math:`\text{Probability of failure} =\Phi \left(\frac{\mu_{strength}-\mu_{stress}}{\sqrt{\sigma_{strength}^{2}+\sigma_{stress}^{2}}}\right)`
 
 Where :math:`\Phi` is the standard Normal CDF with :math:`\mu=0` and :math:`\sigma=1` 
 
@@ -61,7 +61,7 @@ If either the stress or strength distributions are not Normal Distributions, the
 
 The equation to find the probability of failure any two distributions is:
 
-:math:`F=\int^{\infty}_{0} f_{stress} \times F_{strength}`
+:math:`\text{Probability of failure} =\int^{\infty}_{0} \left( f_{stress} \times F_{strength} \right)`
 
 Where :math:`f` is the PDF and :math:`F` is the CDF. The above integral can be evaluated using the trapz function in numpy: ``F = np.trapz(stress.PDF(x) * strength.CDF(x), x)``
 
@@ -82,7 +82,7 @@ Outputs:
 Example 2
 *********
 
-In this example, we will create a Weibull stress distribution and a Gamma strength distribution, and leaving everything else as dafault, we will see the results printed and the distribution plot.
+In this example, we will create a Weibull stress distribution and a Gamma strength distribution, and leaving everything else as default, we will see the results printed and the distribution plot.
 
 .. code:: python
 
@@ -104,4 +104,4 @@ In this example, we will create a Weibull stress distribution and a Gamma streng
 
 .. image:: images/stress_strength_V4.png
 
-.. note:: Prior to version 0.5.5 these two functions were part of a module called Stress_strength and had the names Stress_strength.Probability_of_failure_normdist and Stress_strength.Probability_of_failure. Since these were the only two functions in the Stress_strength module, the decision was made to move these functions into the Other_functions module and rename them. The previous functions will still run and a deprecation warning will be shown, but the previous functions will be fully deprecated in mid-2021. See 0.5.5 release notes in the `Changelog <https://reliability.readthedocs.io/en/latest/Changelog.html>`_ for details.
+.. note:: Prior to version 0.5.5 these two functions were part of a module called Stress_strength and had the names Stress_strength.Probability_of_failure_normdist and Stress_strength.Probability_of_failure. Since these were the only two functions in the Stress_strength module, the decision was made to move these functions into the Other_functions module and rename them. The previous functions will still run and a DeprecationWarning will be shown, but the previous functions will be fully deprecated in mid-2021. See 0.5.5 release notes in the `Changelog <https://reliability.readthedocs.io/en/latest/Changelog.html>`_ for details.
