@@ -12,11 +12,11 @@ Most textbooks (including Probabilistic Physics of Failure Approach to Reliabili
 Crack initiation
 ----------------
 
-The function ``fracture_mechanics_crack_initiation`` uses the material properties, the local cross-sectional area, and force applied to the component to determine how many cycles until crack initiation (of a 1 mm crack). Units should always be in MPa (and mm^2 for area). This function may be used for an un-notched or notched component. If the component is un-notched, the parameters q and Kt may be left as their default values of 1.
+The function `fracture_mechanics_crack_initiation` uses the material properties, the local cross-sectional area, and force applied to the component to determine how many cycles until crack initiation (of a 1 mm crack). Units should always be in MPa (and mm^2 for area). This function may be used for an un-notched or notched component. If the component is un-notched, the parameters q and Kt may be left as their default values of 1.
 
 While there are formulas to find the parameters q and Kt, these formulas have not been included here so that the function is reasonably generic to different materials and geometries. Resources for finding some of these parameters if they are not given to you:
 
-q = 1/(1+a/r) Where r is the notch radius of curvature (in mm), and a is 0.025*(2070/Su). Su is the ultimate strength in MPa. This only applies to high strength steels where Su>550MPa.
+:math:`q = \frac{1}/{1+\frac{a}{r}}` Where r is the notch radius of curvature (in mm), and a is :math:`0.025\times\frac{2070}{S_{u}}`. :math:`S_{u}` is the ultimate strength in MPa. This only applies to high strength steels where :math:`S_{u}>550MPa`.
 
 Kt can be found from the `eFatigue website <https://www.efatigue.com/constantamplitude/stressconcentration/>`_ which has an online calculator that will provide you with the appropriate Kt for your notched geometry.
 
@@ -58,7 +58,8 @@ In the following example we will provide the function with the appropriate input
   fracture_mechanics_crack_initiation(P=0.15, A=5*80, Kt=2.41, q=0.9857, Sy=690, E=210000, K=1060, n=0.14, b=-0.081, c=-0.65, sigma_f=1160, epsilon_f=1.1,mean_stress_correction_method='SWT')
 
   '''
-  A crack of 1 mm will be formed after: 2919.91 cycles ( 5839.82 reversals )
+  Results from fracture_mechanics_crack_initiation:
+  A crack of 1 mm will be formed after: 2919.91 cycles (5839.82 reversals).
   Stresses in the component: Min = -506.7291 MPa , Max = 506.7291 MPa , Mean = -5.684341886080802e-14 MPa.
   Strains in the component: Min = -0.0075 , Max = 0.0075 , Mean = 8.673617379884035e-19
   Mean stress correction method used: SWT
@@ -67,7 +68,7 @@ In the following example we will provide the function with the appropriate input
 Crack growth
 ------------
 
-The function ``fracture_mechanics_crack_growth`` uses the principles of fracture mechanics to find the number of cycles required to grow a crack from an initial length until a final length.
+The function `fracture_mechanics_crack_growth` uses the principles of fracture mechanics to find the number of cycles required to grow a crack from an initial length until a final length.
 The final length (a_final) may be specified, but if not specified then a_final will be set as the critical crack length (a_crit) which causes failure due to rapid fracture.
 This function performs the same calculation using two methods: similified and iterative.
 The simplified method assumes that the geometry factor (f(g)), the stress (S_net), and the critical crack length (a_crit) are constant. This method is the way most textbooks show these problems solved as they can be done by hand in a few steps.
@@ -119,15 +120,16 @@ In the following example, a crack of 1mm is grown to failure. The function deter
   plt.show()
 
   '''
+  Results from fracture_mechanics_crack_growth:
   SIMPLIFIED METHOD (keeping f(g), S_max, and a_crit as constant):
-  Crack growth was found in two stages since the transition length ( 2.08 mm ) due to the notch, was greater than the initial crack length ( 1 mm ).
+  Crack growth was found in two stages since the transition length ( 2.08 mm ) due to the notch, was greater than the initial crack length ( 1.0 mm ).
   Stage 1 (a_initial to transition length): 6802 cycles
   Stage 2 (transition length to a_final): 1133 cycles
   Total cycles to failure: 7935 cycles.
   Critical crack length to cause failure was found to be: 7.86 mm.
 
   ITERATIVE METHOD (recalculating f(g), S_max, and a_crit for each cycle):
-  Crack growth was found in two stages since the transition length ( 2.45 mm ) due to the notch, was greater than the initial crack length ( 1 mm ).
+  Crack growth was found in two stages since the transition length ( 2.45 mm ) due to the notch, was greater than the initial crack length ( 1.0 mm ).
   Stage 1 (a_initial to transition length): 7576 cycles
   Stage 2 (transition length to a_final): 671 cycles
   Total cycles to failure: 8247 cycles.
