@@ -20,9 +20,9 @@ Outputs:
 
 -   Results will be printed to console if print_results is True
 -   AF - Acceleration Factor
--   T_acc - Accelerated temperature
--   T_use - Use temperature
--   Ea - Activation energy (in eV)
+-   T_acc - Accelerated temperature (°C)
+-   T_use - Use temperature (°C)
+-   Ea - Activation energy (eV)
  
 In the example below, the acceleration factor is found for an accelerated test at 100°C for a component that is normally run at 60°C and has an activation energy of 1.2 eV.
 
@@ -32,8 +32,9 @@ In the example below, the acceleration factor is found for an accelerated test a
     acceleration_factor(T_use=60,T_acc=100,Ea=1.2)
 
     '''
+    Results from acceleration_factor:
     Acceleration Factor: 88.29574588463338
     Use Temperature: 60 °C
     Accelerated Temperature: 100 °C
-    Activation Energy (eV): 1.2 eV
+    Activation Energy: 1.2 eV
     '''
