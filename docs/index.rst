@@ -102,8 +102,7 @@ Contents:
   :maxdepth: 1
   :caption: Other functions
   
-  Stress-Strength interference for any distributions
-  Stress-Strength interference for normal distributions
+  Stress-Strength interference
   Similar Distributions
   Make right censored data
   Crosshairs
