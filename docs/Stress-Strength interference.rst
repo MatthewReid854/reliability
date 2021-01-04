@@ -63,7 +63,7 @@ The equation to find the probability of failure any two distributions is:
 
 :math:`F=\int^{\infty}_{0} f_{stress} \times F_{strength}`
 
-This can be found using numpy: ``F = np.trapz(stress.PDF(x) * strength.CDF(x), x)``
+Where :math:`f` is the PDF and :math:`F` is the CDF. The above integral can be evaluated using the trapz function in numpy: ``F = np.trapz(stress.PDF(x) * strength.CDF(x), x)``
 
 Inputs:
 
