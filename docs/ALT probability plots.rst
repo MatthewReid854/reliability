@@ -11,7 +11,7 @@ Before reading this section, you should be familiar with what a probability plot
 
 - ALT_probability_plotting is the ALT (Accelerated Life Testing) equivalent of the `Probability_plotting` module. It uses the probability plotting method to determine whether your data can be modelled by a particular probability distribution (Weibull, Lognormal, Normal, Exponential). The results indicate how much the shape parameter at each stress needs to be changed to reach a common shape parameter. Too much change means the model is inappropriate. You can also judge the goodness of fit from the AICc, BIC, or Log-likelihood, though this is best for comparing different models. If all ALT models are inappropriate then you'll only notice it by the high change in the common shape parameter, not the relative goodness of fit criterions. The functions in ALT_probability_plotting do not provide a means of predicting the life at a lower stress. For this you need a life-stress relationship which is provided by ALT_fitters. ALT_probability_plotting also does not accept dual stresses as these require a life-stress model which is part of ALT_fitters.
 - ALT_fitters is the ALT equivalent of the `Fitters` module. It is used for fitting a life-stress model to ALT data. The functions within ALT_fitters use the functions within ALT_probability_plotting to perform their initial guess of the common shape parameter.
-- If you are trying to make predictions of the life at a lower stress level or you have dual stress data, then use ALT_fitters. If you are only looking to determine how appropriate the model is by seeing how much the common shape parameter needed to adjust the individual shape parameters at each stress, and you do not have dual stress data then you should use ALT_probability_plotting.
+- If you are trying to make predictions of the life at a lower stress level or you have dual stress data, then use ALT_fitters. If you are only looking to determine how appropriate the model is by seeing how much change in the individual shape parameters at each stress was required to reach the common shape parameter, and you do not have dual stress data, then you should use ALT_probability_plotting.
 
 The module `reliability.ALT_probability_plotting` contains four ALT probability plotting functions. These functions are:
 
@@ -46,7 +46,7 @@ Outputs:
 The time to run the function will be a few seconds if you have a large amount of data and the common_shape_method is set to 'BIC'. This is because the distributions need to be refitted for each iteration of the optimizer (which is usually around 20 to 30 iterations). With 100 datapoints this should take less than 5 seconds for the 'BIC' method, and less than 1 second for the 'average' and 'weighted_average' methods. The more data you have, the longer it will take, so please be patient as a lot of computation is required.
 
 Example 1
----------
+*********
 
 In the following example we will use a dataset from `reliability.Datasets` which contains failures and right_censored data for three stress levels. We will analyse this dataset using the Weibull and Lognormal ALT probability plots to determine which model is a better fit for the data. All other inputs are left to their default values which gives us the plot and the results dataframe. From the printed results we can see how well the model fits our data. The AICc and BIC values suggest that the Lognormal model is a slightly better fit overall for this dataset, but both models would be suitable. The fitted distributions with a common shape parameter still agree well with the majority of our data (except for the lower tail of the 40 degree data), and the amount of change to the shape parameter was within the acceptable limits. See the section `below <https://reliability.readthedocs.io/en/latest/ALT%20probability%20plots.html#what-does-an-alt-probability-plot-show-me>`_ for more details on what we are looking to get out of these plots.
 
@@ -84,7 +84,7 @@ In the following example we will use a dataset from `reliability.Datasets` which
 .. image:: images/ALT_probability_plot_1_V4.png
 
 Example 2
----------
+*********
 
 In this second example, we examine the difference between ALT_probability_plot_Weibull and ALT_probability_plot_Exponential. A dataset is generated from several Exponential distributions. Ideally, we want to fit a distribution to this data which does not overfit, such that it should have as few parameters as necessary. Both the Weibull and Exponential distributions could be used here, but we know the Exponential is a more appropriate distribution since it was the source of the data. Upon examination of the results, we see very little difference between the common shape (from Exponential) and common beta (from Weibull) and very little difference in the plots, but the AICc and BIC are both slightly lower for the Exponential model indicating that the Exponential distribution should be used preferrentially to the Weibull distribution (this result may change if the seed is changed to produce different data). Conveniently, the function ALT_probability_plot_Exponential also provides the AICc and BIC results from Weibull and will print a warning if it finds Weibull to be a more appropriate fit than Exponential based on the BIC.
 
@@ -137,7 +137,7 @@ Getting your input data in the right format
 Because the ALT probability plots need failures and right censored data from many stress levels, it was not practical to make an input for each stress level. Instead, the failure times are combined in a single input and the failure_stress input provides a list of the corresponding stresses at which each failure occurred. The same is true of the right_censored and right_censored_stress inputs.
 
 Example 3
----------
+*********
 
 To get your data in the correct format, ensure you have combined all your failure times into a single list or numpy array and there is a corresponding list or array of the same length that provides all of the stresses. The following example illustrates one method to do this if you do not have the list already imported from Excel or another source. This is done for failures only but if you have right_censored data then you would do the same thing, but keeping it seperate to the failure data. There is no need to sort the data in any particular order as this is all done automatically. The only requirement is that the length of failures matches the length of the failure_stress, and that there are no new stresses in right_censored_stress that are not present in failure_stress.
 
@@ -172,10 +172,10 @@ An ALT probability plot shows us how well our dataset can be modeled by the chos
 - Examine the AICc and BIC values when comparing multiple models. A lower value suggests a better fit.
 - Is the amount of change to the shape parameter within the acceptable limits (generally less than 50% for each distribution).
 
-The image provided above shows two distributions that fit well. If we apply the same data to the function ALT_probability_plot_Normal as shown in the example below, we get the image shown below. From this image we can see that the model does not fit well at the higher stress (80 degrees) and the amount of change to the shape parameter was up to 93%. Also note that the total AIC and total BIC for the Normal_2P model is higher (worse) than for the Weibull_2P and Lognormal_2P models shown in the first example. Based on these results, we would reject the Normal_2P model and try another model. If you find that none of the models work without large changes to the shape parameter at the higher stresses, then you can conclude that there must be a change in the failure mode for higher stresses and you may need to look at changing your accelerated test to keep the failure mode consistent across tests.
+The results provided in Example 1 show two distributions that fit well. Example 4 shows what happens if we apply the same data to the function ALT_probability_plot_Normal. From the results and associated probability plot, we can see that the model does not fit well at the higher stress (80 degrees) and the amount of change to the shape parameter was up to 93%. Also note that the total AIC and total BIC for the Normal_2P model is higher (worse) than for the Weibull_2P and Lognormal_2P models shown in Example 1. Based on these results, we would reject the Normal_2P model and try another model. If you find that none of the models work without large changes to the shape parameter at the higher stresses, then you can conclude that there must be a change in the failure mode for higher stresses and you may need to look at changing the design of your accelerated test to keep the failure mode consistent across tests.
 
 Example 4
----------
+*********
 
 .. code:: python
 
@@ -187,15 +187,15 @@ Example 4
     
     '''
     ALT Normal probability plot results:
-      stress  original mu  original sigma       new mu  common sigma sigma change
-          40  9098.952677     3203.855879  7764.809302    2258.04215      -29.52%
-          60  5174.454788     3021.349445  4756.980035    2258.04215      -25.26%
-          80  1600.177190     1169.695509  1638.730675    2258.04215      +93.05%
-    Total AICc: 709.5115334757447
-    Total BIC: 713.4159440639235
+      stress  original mu  original sigma  new mu  common sigma sigma change
+          40      9098.63         3203.17 7763.72       2258.05      -29.51%
+          60      5174.39         3021.22  4756.9       2258.05      -25.26%
+          80      1599.67         1170.07 1638.73       2258.05      +92.98%
+    Total AICc: 709.5115422517653
+    Total BIC: 713.4159528399441
     '''
 
-.. image:: images/ALT_probability_plot_Normal.png
+.. image:: images/ALT_probability_plot_NormalV2.png
 
 **References:**
 
