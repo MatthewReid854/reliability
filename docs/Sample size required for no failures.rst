@@ -4,7 +4,7 @@
 
 Sample size required for no failures
 ''''''''''''''''''''''''''''''''''''
-The function ``sample_size_no_failures`` is used to determine the minimum sample size required for a test in which no failures are expected, and the desired outcome is the lower bound on the reliability based on the sample size and desired confidence interval.
+The function `sample_size_no_failures` is used to determine the minimum sample size required for a test in which no failures are expected, and the desired outcome is the lower bound on the reliability based on the sample size and desired confidence interval.
     
 Inputs:
 
@@ -22,13 +22,17 @@ As an example, consider a scenario in which we want to be sure that a batch of L
 .. code:: python
 
     from reliability.Reliability_testing import sample_size_no_failures
-    result = sample_size_no_failures(reliability=0.999)
-    print(result)
+    sample_size_no_failures(reliability=0.999)
     
     '''
-    2995
+    Results from sample_size_no_failures:
+    To achieve the desired reliability of 0.999 with a 95% lower confidence bound, the required sample size to test is 2995 items.
+
+    This result is based on a specified weibull shape parameter of 1 and an equivalent test duration of 1 lifetime.
+    If there are any failures during this test, then the desired lower confidence bound will not be achieved.
+    If this occurs, use the function Reliability_testing.one_sample_proportion to determine the lower and upper bounds on reliability.
     '''
 
-Based on this result, we need to test 2995 items from the batch and not have a single failure in order to be 95% confident that the reliability of the batch meets or exceeds 99.9%. If we tested for more on/off cycles (lets say 3 million which is 3 lifetimes), then the number of successful results would only need to be 999. In this way, we can design our qualification test based on the desired reliability, CI, and lifetimes that are tested to.
+Based on this result, we need to test 2995 items from the batch and not have a single failure in order to be 95% confident that the reliability of the batch meets or exceeds 99.9%. If we tested each LED for more on/off cycles (lets say 3 million which is 3 lifetimes), then the number of successful results would only need to be 999. In this way, we can design our qualification test based on the desired reliability, confidence interval, and number of lifetimes that are tested to.
 
 In the event that we suffer a single failure during this test, then we will need to adjust the testing method, either by finishing the testing and calculating the lower bound on reliability using the `one_sample_proportion <https://reliability.readthedocs.io/en/latest/One%20sample%20proportion.html>`_ test, or by using a `sequential_sampling_chart <https://reliability.readthedocs.io/en/latest/Sequential%20sampling%20chart.html>`_.
