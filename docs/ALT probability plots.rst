@@ -7,14 +7,20 @@ ALT probability plots
 
 Before reading this section, you should be familiar with what a probability plot is and how to use it. For a detailed explaination, please see the section on `probability plots <https://reliability.readthedocs.io/en/latest/Probability%20plots.html>`_.
 
-The module ``reliability.ALT_probability_plotting`` contains four ALT probability plotting functions. These functions are:
+**Should I use ALT_probability_plotting or ALT_fitters?**
+
+- ALT_probability_plotting is the ALT (Accelerated Life Testing) equivalent of the `Probability_plotting` module. It uses the probability plotting method to determine whether your data can be modelled by a particular probability distribution (Weibull, Lognormal, Normal, Exponential). The results indicate how much the shape parameter at each stress needs to be changed to reach a common shape parameter. Too much change means the model is inappropriate. You can also judge the goodness of fit from the AICc, BIC, or Log-likelihood, though this is best for comparing different models. If all ALT models are inappropriate then you'll only notice it by the high change in the common shape parameter, not the relative goodness of fit criterions. The functions in ALT_probability_plotting do not provide a means of predicting the life at a lower stress. For this you need a life-stress relationship which is provided by ALT_fitters. ALT_probability_plotting also does not accept dual stresses as these require a life-stress model which is part of ALT_fitters.
+- ALT_fitters is the ALT equivalent of the `Fitters` module. It is used for fitting a life-stress model to ALT data. The functions within ALT_fitters use the functions within ALT_probability_plotting to perform their initial guess of the common shape parameter.
+- If you are trying to make predictions of the life at a lower stress level or you have dual stress data, then use ALT_fitters. If you are only looking to determine how appropriate the model is by seeing how much the common shape parameter needed to adjust the individual shape parameters at each stress, and you do not have dual stress data then you should use ALT_probability_plotting.
+
+The module `reliability.ALT_probability_plotting` contains four ALT probability plotting functions. These functions are:
 
 - ALT_probability_plot_Weibull
 - ALT_probability_plot_Lognormal
 - ALT_probability_plot_Normal
 - ALT_probability_plot_Exponential
 
-An ALT probability plot produces a multi-dataset probability plot which includes the probability plots for the data and the fitted distribution at each stress level, as well as a refitted distribution assuming a common shape parameter at each stress level. All of these functions perform in a similar way, with the main difference being the distribution that is fitted. The probability plots provided do not include the Beta distribution (because there are two shape parameters), the Gamma distribution (because changing the scale parameter will also change the slope of the line even when the shape parameter is constant) or any of the location shifted distributions (because these are not typically used for ALT probability plotting). The ALT_probability_plot_Exponential is a special case of the ALT_probability_plot_Weibull in which the common shape parameter is forced to be 1. An example of this is shown below.
+An ALT probability plot produces a multi-dataset probability plot which includes the probability plots for the data and the fitted distribution at each stress level, as well as a refitted distribution assuming a common shape parameter at each stress level. All of these functions work in a similar way, with the main difference being the distribution that is fitted. The ALT_probability_plot_Exponential is a special case of the ALT_probability_plot_Weibull in which the common shape parameter is forced to be 1. An example of this is shown below in Example 2.
 
 When producing the ALT probability plot, the function automates the following process; fit a distribution to the data for each unique stress level, find the common shape parameter (several methods are provided), refit the distribution to the data for each unique stress level whilst forcing the shape parameter to be equal to the common shape parameter, plot the data along with the original and new fitted distributions, calculate the change in the common shape parameter from the original shape parameter to see if the model is applicable to this dataset. Each of the ALT plotting functions listed above has the following inputs and outputs.
 
@@ -26,7 +32,7 @@ Inputs:
 - right_censored_stress - an array or list of the corresponding stresses (such as temperature) at which each right_censored datapoint was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
 - print_results - True/False. Default is True
 - show_plot - True/False. Default is True
-- common_shape_method - 'BIC', 'weighted_average', 'average'. Default is 'BIC'. This is the method used to obtain the common_shape (beta) parameter. 'BIC' will find the common_shape that gives lowest total BIC (equivalent to the best overall fit), 'weighted_average' will perform a weighted average based on the amount of data (failures and right censored) for each stress, 'average' is simply the average. Note for the Lognormal and Normal plots, this variable is named common_sigma_method as we are forcing sigma to be a common value.
+- common_shape_method - 'BIC', 'weighted_average', 'average'. Default is 'BIC'. This is the method used to obtain the common_shape parameter (beta for Weibull or sigma for Normal and Lognormal. Not required for Exponential as shape is always 1). 'BIC' will find the common_shape that gives lowest total BIC (equivalent to the best overall fit), 'weighted_average' will perform a weighted average based on the amount of data (failures and right censored) for each stress, 'average' is simply the average.
 
 Outputs:
 
@@ -42,7 +48,7 @@ The time to run the function will be a few seconds if you have a large amount of
 Example 1
 ---------
 
-In the following example we will use a dataset from ``reliability.Datasets`` which contains failures and right_censored data for three stress levels. We will analyse this dataset using the Weibull and Lognormal ALT probability plots to determine which model is a better fit for the data. All other inputs are left to their default values which gives us the plot and the results dataframe. From the printed results we can see how well the model fits our data. The AICc and BIC values suggest that the Lognormal model is a slightly better fit overall for this dataset, but both models would be suitable. The fitted distributions with a common shape parameter still agree well with the majority of our data (except for the lower tail of the 40 degree data), and the amount of change to the shape parameter was within the acceptable limits. See the section `below <https://reliability.readthedocs.io/en/latest/ALT%20probability%20plots.html#what-does-an-alt-probability-plot-show-me>`_ for more details on what we are looking to get out of these plots.
+In the following example we will use a dataset from `reliability.Datasets` which contains failures and right_censored data for three stress levels. We will analyse this dataset using the Weibull and Lognormal ALT probability plots to determine which model is a better fit for the data. All other inputs are left to their default values which gives us the plot and the results dataframe. From the printed results we can see how well the model fits our data. The AICc and BIC values suggest that the Lognormal model is a slightly better fit overall for this dataset, but both models would be suitable. The fitted distributions with a common shape parameter still agree well with the majority of our data (except for the lower tail of the 40 degree data), and the amount of change to the shape parameter was within the acceptable limits. See the section `below <https://reliability.readthedocs.io/en/latest/ALT%20probability%20plots.html#what-does-an-alt-probability-plot-show-me>`_ for more details on what we are looking to get out of these plots.
 
 .. code:: python
 
@@ -54,28 +60,28 @@ In the following example we will use a dataset from ``reliability.Datasets`` whi
     ALT_probability_plot_Weibull(failures=ALT_temperature().failures,failure_stress=ALT_temperature().failure_stresses,right_censored=ALT_temperature().right_censored,right_censored_stress=ALT_temperature().right_censored_stresses)
     plt.subplot(122)
     ALT_probability_plot_Lognormal(failures=ALT_temperature().failures,failure_stress=ALT_temperature().failure_stresses,right_censored=ALT_temperature().right_censored,right_censored_stress=ALT_temperature().right_censored_stresses)
-    plt.gcf().set_size_inches(15,7)
+    plt.gcf().set_size_inches(15,7) # resize the figure
     plt.show()
     
     '''
     ALT Weibull probability plot results:
-      stress  original alpha  original beta     new alpha  common beta beta change
-          40    21671.954375       1.625115  21671.954523     1.519015      -6.53%
-          60     6628.557163       1.315739   6628.557053     1.519015     +15.45%
-          80     1708.487268       1.397979   1831.456045     1.519015      +8.66%
-    Total AICc: 686.2426265268432
-    Total BIC: 690.1470371150222
-    
+      stress  original alpha  original beta  new alpha  common beta beta change
+          40           17890        1.83413    25130.5      1.52838     -16.67%
+          60         6628.56        1.31574    6741.96      1.52838     +16.16%
+          80         1708.49        1.39798    1834.43      1.52838      +9.33%
+    Total AICc: 686.6326772090943
+    Total BIC: 690.5370877972731
+
     ALT Lognormal probability plot results:
-      stress  original mu  original sigma    new mu  common sigma sigma change
-          40     9.814749        1.008337  9.717867      0.939793        -6.8%
-          60     8.644075        1.187552  8.507165      0.939793      -20.86%
-          80     7.141321        0.770355  7.147846      0.939793      +21.99%
-    Total AICc: 683.8113391548707
-    Total BIC: 687.7157497430494
+      stress  original mu  original sigma  new mu  common sigma sigma change
+          40      9.81475         1.00834 9.71787      0.939793        -6.8%
+          60      8.64407         1.18755 8.50717      0.939793      -20.86%
+          80      7.14132        0.770355 7.14785      0.939793      +21.99%
+    Total AICc: 683.8113391559212
+    Total BIC: 687.7157497441001
     '''
     
-.. image:: images/ALT_probability_plot_1_V3.png
+.. image:: images/ALT_probability_plot_1_V4.png
 
 Example 2
 ---------
@@ -106,24 +112,24 @@ In this second example, we examine the difference between ALT_probability_plot_W
     '''
     ALT Exponential probability plot results:
       stress  weibull alpha  weibull beta  new 1/Lambda  common shape shape change
-        30.0    3950.302619      0.775461   4154.505068           1.0      +28.96%
-        40.0     366.204477      1.066262    357.669530           1.0       -6.21%
-        50.0      73.371485      1.254340     68.352088           1.0      -20.28%
-    Total AICc: 864.1158725562174
-    Total BIC: 866.4364027102126
-    Total AICc (weibull): 864.3730503138722
-    Total BIC (weibull): 866.6935804678675
-    
+          30        3811.79      0.771682        4154.5             1      +29.59%
+          40        375.101       1.07223       357.669             1       -6.74%
+          50        73.3716       1.25434       68.2441             1      -20.28%
+    Total AICc: 864.1159226064017
+    Total BIC: 866.4364527603968
+    Total AICc (weibull): 864.2839993223001
+    Total BIC (weibull): 866.6045294762955
+
     ALT Weibull probability plot results:
-      stress  original alpha  original beta    new alpha  common beta beta change
-        30.0     3950.302619       0.775461  3950.303608     1.032021     +33.08%
-        40.0      366.204477       1.066262   361.817836     1.032021      -3.21%
-        50.0       73.371485       1.254340    68.996497     1.032021     -17.72%
-    Total AICc: 864.3730503138722
-    Total BIC: 866.6935804678675
+      stress  original alpha  original beta  new alpha  common beta beta change
+          30         3811.79       0.771682    4222.24      1.03275     +33.83%
+          40         375.101        1.07223    364.864      1.03275      -3.68%
+          50         73.3716        1.25434    69.0101      1.03275     -17.67%
+    Total AICc: 864.2839993223001
+    Total BIC: 866.6045294762955
     '''
 
-.. image:: images/ALT_expon_weib_probplot_V5.png
+.. image:: images/ALT_expon_weib_probplot_V6.png
 
 Getting your input data in the right format
 -------------------------------------------
