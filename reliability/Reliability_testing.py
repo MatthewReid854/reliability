@@ -31,6 +31,8 @@ from reliability.Distributions import (
 )
 from reliability.Utils import colorprint
 
+pd.set_option("display.max_rows", 200)  # prevents ... compression of rows
+
 
 def one_sample_proportion(trials=None, successes=None, CI=0.95, print_results=True):
     """
@@ -269,10 +271,19 @@ def sequential_samling_chart(
     max_samples=100,
 ):
     """
+    sequential_sampling_chart
+
     This function plots the accept/reject boundaries for a given set of quality and risk levels. If supplied, the test results are also
     plotted on the chart.
 
-    inputs:
+    A sequential sampling chart provides decision boundaries so that a success/failure test may be stopped as soon as there have been
+    enough successes or enough failures to exceed the decision boundary. The decision boundary is calculated based on four parameters;
+    producer's quality, consumer's quality, producer's risk, and consumer's risk. Producer's risk is the chance that the consumer rejects
+    a batch when they should have accepted it. Consumer's risk is the chance that the consumer accepts a batch when they should have
+    rejected it. We can also consider the producer's and consumer's quality to be the desired reliability of the sample, and the
+    producer's and consumer's risk to be 1-confidence interval that the sample test result matches the population test result.
+
+    Inputs:
     p1 - producer_quality. The acceptable failure rate for the producer (typical around 0.01)
     p2 - consumer_quality. The acceptable failure rate for the consumer (typical around 0.1)
     alpha - producer_risk. Producer's CI = 1-alpha (typically 0.05)
@@ -282,7 +293,7 @@ def sequential_samling_chart(
     print_results - True/False. Defaults to True.
     max_samples - the x_lim of the plot. optional input. Default=100.
 
-    outputs:
+    Outputs:
     The sequential sampling chart - A plot of sequential sampling chart with decision boundaries. test_results are only plotted on the chart
     if provided as an input.
     results - a dataframe of tabulated decision results.
@@ -333,19 +344,19 @@ def sequential_samling_chart(
     df = pd.DataFrame(
         data, columns=["Samples", "Failures to accept", "Failures to reject"]
     )
-    df.set_index("Samples", inplace=True)
     df.loc[df["Failures to accept"] < 0, "Failures to accept"] = "x"
     df.loc[df["Failures to reject"] < 0, "Failures to reject"] = "x"
 
     if print_results is True:
-        print(df)
+        colorprint("Results from sequential_sampling_chart:", bold=True, underline=True)
+        print(df.to_string(index=False), "\n")
 
     if show_plot is True:
         # plots the results of tests if they are specified
         if type(F) == np.ndarray:
             if all(F) not in [0, 1]:
                 raise ValueError(
-                    "test_results must be a binary array or list with 0 as failures and 1 as successes. eg. [0 0 0 1] for 3 successes and 1 failure."
+                    "test_results must be a binary array or list with 0 as failures and 1 as successes. eg. [0, 0, 0, 1] for 3 successes and 1 failure."
                 )
             nx = []
             ny = []
@@ -575,9 +586,9 @@ class reliability_test_planner:
         self.CI = CI
         if print_results is True:
             if time_terminated is True:
-                print("\nReliability Test Planner results for time-terminated test")
+                print("\nReliability Test Planner results for time-terminated test:")
             else:
-                print("\nReliability Test Planner results for failure-terminated test")
+                print("\nReliability Test Planner results for failure-terminated test:")
             if soln_type == "MTBF":
                 print("Solving for MTBF")
             elif soln_type == "failures":
@@ -696,9 +707,9 @@ def reliability_test_duration(
     duration_solution = duration_array[solution_index]
     if print_results is True:
         if time_terminated is True:
-            print("\nReliability Test Duration Solver for time-terminated test")
+            print("\nReliability Test Duration Solver for time-terminated test:")
         else:
-            print("\nReliability Test Duration Solver for failure-terminated test")
+            print("\nReliability Test Duration Solver for failure-terminated test:")
         print("Required test duration:", duration_solution)
         print("Specified consumer's risk:", consumer_risk)
         print("Specified producer's risk:", producer_risk)
@@ -873,6 +884,7 @@ class chi2test:
             self.hypothesis = "REJECT"
 
         if print_results is True:
+            colorprint("Results from Chi-squared test:", bold=True, underline=True)
             print("Chi-squared statistic:", self.chisquared_statistic)
             print("Chi-squared critical value:", self.chisquared_critical_value)
             print(
@@ -993,6 +1005,9 @@ class KStest:
             self.hypothesis = "REJECT"
 
         if print_results is True:
+            colorprint(
+                "Results from Kolmogorov-Smirnov test:", bold=True, underline=True
+            )
             print("Kolmogorov-Smirnov statistic:", self.KS_statistic)
             print("Kolmogorov-Smirnov critical value:", self.KS_critical_value)
             print(

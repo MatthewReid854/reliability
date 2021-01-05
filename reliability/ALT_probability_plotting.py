@@ -1182,7 +1182,7 @@ class ALT_probability_plot_Normal:
                 print_results=False,
                 force_sigma=common_shape,
             )
-            normal_fit_mu_array_common_shape.append(normal_fit_common_shape.mu[0])
+            normal_fit_mu_array_common_shape.append(normal_fit_common_shape.mu)
             if type(normal_fit_common_shape.AICc) == str:
                 AICc = False
             else:

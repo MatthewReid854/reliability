@@ -357,7 +357,13 @@ class similar_distributions:
             # fit all distributions excluding location shifted distributions to the filtered samples
             fitted_results = Fit_Everything(
                 failures=RVS_filtered,
-                exclude=['Weibull_3P','Lognormal_3P','Exponential_2P','Gamma_3P','Loglogistic_3P'],
+                exclude=[
+                    "Weibull_3P",
+                    "Lognormal_3P",
+                    "Exponential_2P",
+                    "Gamma_3P",
+                    "Loglogistic_3P",
+                ],
                 print_results=False,
                 show_probability_plot=False,
                 show_histogram_plot=False,
@@ -373,9 +379,10 @@ class similar_distributions:
                 show_PP_plot=False,
             )
         ranked_distributions = list(fitted_results.results.Distribution.values)
-        ranked_distributions.remove(
-            distribution.name2
-        )  # removes the fitted version of the original distribution
+
+        # removes the fitted version of the original distribution
+        if distribution.name2 in ranked_distributions:
+            ranked_distributions.remove(distribution.name2)
 
         ranked_distributions_objects = []
         ranked_distributions_labels = []
@@ -618,7 +625,7 @@ class similar_distributions:
         self.results = ranked_distributions_objects
         self.most_similar_distribution = ranked_distributions_objects[0]
         if print_results is True:
-            colorprint('Results from similar_distributions:',bold=True,underline=True)
+            colorprint("Results from similar_distributions:", bold=True, underline=True)
             print("The input distribution was:")
             print(distribution.param_title_long)
             if number_of_distributions_fitted < number_of_distributions_to_show:
