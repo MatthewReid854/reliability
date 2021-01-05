@@ -126,6 +126,10 @@ As a final example, we will create a bathtub curve by creating and layering seve
 
 .. image:: images/bathtub_curve2.png
 
+On the topic of the Bathtub curve generated in Example 4, it is important to understand that despite its well known name, the bathtub shape of the hazard function is actually much more uncommon than its reputation may suggest. A series of studies (United Airlines 1978, Broberg 1973, SSMD 1993, SUBMEPP 2001) have analysed the failure patterns of large numbers of components and found that there are six characteristic failure patterns (named A to F). Three of these (including the bathtub curve - pattern A) exhibit wear out, while the other three show no signs of wear out. Of all components analysed, just 4% (from the 1978 study) were found to exhibit a bathtub curve, and only 11% showed evidence of wear out (failure modes A,B,C). With 89% of components analysed showing no evidence of wear out it is surprising how many of our maintenance programs to this day still have maintenance policies based on wear out, and how ubiquitous the term "bathtub curve" has become in the maintenance community. Before assuming something is wearing out, we should let its data tell the story.
+
+.. image:: images/bathtub_not_so_common.png
+
 Further detail about all of the functions is available using the help function within Python. Simply type:
 
 .. code:: python
