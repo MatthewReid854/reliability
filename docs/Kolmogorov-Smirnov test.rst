@@ -36,6 +36,7 @@ In the example below we import a dataset called mileage which contains 100 value
     KStest(distribution=dist, data=data)
     
     '''
+    Results from Kolmogorov-Smirnov test:
     Kolmogorov-Smirnov statistic: 0.07162465859560846
     Kolmogorov-Smirnov critical value: 0.13402791648569978
     At the 0.05 significance level, we can ACCEPT the hypothesis that the data comes from a Normal Distribution (μ=30011,σ=10472)
