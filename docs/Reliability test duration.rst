@@ -29,7 +29,7 @@ Outputs:
 Example 1
 *********
 
-In the example below the consumer requires a vehicle to achieve an MTBF of 2500km and is willing to accept 20% risk that they accept a bad item when they should have rejected it. The producer has designed the vehicle to have an MTBF of 3000km and they are willing to accept 20% risk that the consumer rejects a good item when they should have accepted it. How many kilometres should the reliability test be?
+In the example below the consumer requires a vehicle to achieve an MTBF of 2500km and is willing to accept 20% risk that they accept a bad item when they should have rejected it. The producer has designed the vehicle to have an MTBF of 3000km and they are willing to accept 20% risk that the consumer rejects a good item when they should have accepted it. How many kilometres should the reliability test be? Using the function we find the test needs to be 231616 km. Note that this duration is the total time on test and may be split across several vehicles. See the discussion points below on whether to split the test duration up among multiple vehicles.
 
 .. code:: python
 
@@ -46,8 +46,6 @@ In the example below the consumer requires a vehicle to achieve an MTBF of 2500k
     Specified MTBF required by the consumer: 2500
     Specified MTBF designed to by the producer: 3000
     '''
-
-Using the function we find the test needs to be 231616 km. Note that this duration is the total time on test and may be split across several vehicles. See the discussion points below on whether to split the test duration up among multiple vehicles.
 
 .. image:: images/reliability_test_duration.png
 
