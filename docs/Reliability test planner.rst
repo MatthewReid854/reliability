@@ -40,7 +40,7 @@ Outputs:
 -   An output object is also returned with the same values as the inputs and the remaining value also calculated. This allows for any of the outputs to be called by name.
 
 Example 1
-*********
+---------
 
 In the example below, we have done a time-terminated reliability test for 19520 hours (units are not important here as it may be days, cycles, rounds, etc.). During the test there were 7 failures. We want to know the MTBF that was achieved during the test within an 80% confidence (two-sided). 
 
@@ -59,7 +59,7 @@ In the example below, we have done a time-terminated reliability test for 19520 
     '''
 
 Example 2
-*********
+---------
 
 In this second example we want to know the lower confidence bound on the MTBF for a reliability test that has just been conducted. During this test there were 6 failures observed over the 10000km test track and our desired confidence interval is 80%. Note that the output is supressed by setting print_results=False and then the MTBF is accessed by name from the output object.
 
@@ -74,7 +74,7 @@ In this second example we want to know the lower confidence bound on the MTBF fo
     '''
 
 One-sided vs two-sided confidence interval
-''''''''''''''''''''''''''''''''''''''''''
+------------------------------------------
 
 The below image illustrates the difference between one-sided and two-sided confidence interval. You can use either the one-sided or two-sided interval when you are seeking only the lower bound, but it is essential to understand that they will give very different results for the same CI. They will give equivalent results if the CI is set appropriately (eg. 90% one-sided is the same as 80% two-sided). If you are unsure which to use, the more conservative approach is to use the two-sided interval. If you want the point estimate, use the one-sided interval with a CI=0.5.
 
