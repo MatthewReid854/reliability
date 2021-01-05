@@ -7,7 +7,13 @@ Fitting a model to ALT data
 
 Before reading this section, you should be familiar with `ALT probability plots <https://reliability.readthedocs.io/en/latest/ALT%20probability%20plots.html>`_, and `Fitting distributions <https://reliability.readthedocs.io/en/latest/Fitting%20a%20specific%20distribution%20to%20data.html>`_ to non-ALT datasets.
 
-The module ``reliability.ALT_fitters`` contains fitting function for 20 different ALT life-stress models. Each model is a combination of the life model with the scale or location parameter replaced with a life-stress model. For example, the Weibull-Exponential model is found by replacing the :math:`\alpha` parameter with the equation for the exponential life-stress model as follows:
+**Should I use ALT_probability_plotting or ALT_fitters?**
+
+- ALT_probability_plotting is the ALT (Accelerated Life Testing) equivalent of the `Probability_plotting` module. It uses the probability plotting method to determine whether your data can be modelled by a particular probability distribution (Weibull, Lognormal, Normal, Exponential). The results indicate how much the shape parameter at each stress needs to be changed to reach a common shape parameter. Too much change means the model is inappropriate. You can also judge the goodness of fit from the AICc, BIC, or Log-likelihood, though this is best for comparing different models. If all ALT models are inappropriate then you'll only notice it by the high change in the common shape parameter, not the relative goodness of fit criterions. The functions in ALT_probability_plotting do not provide a means of predicting the life at a lower stress. For this you need a life-stress relationship which is provided by ALT_fitters. ALT_probability_plotting also does not accept dual stresses as these require a life-stress model which is part of ALT_fitters.
+- ALT_fitters is the ALT equivalent of the `Fitters` module. It is used for fitting a life-stress model to ALT data. The functions within ALT_fitters use the functions within ALT_probability_plotting to perform their initial guess of the common shape parameter.
+- If you are trying to make predictions of the life at a lower stress level or you have dual stress data, then use ALT_fitters. If you are only looking to determine how appropriate the model is by seeing how much change in the individual shape parameters at each stress was required to reach the common shape parameter, and you do not have dual stress data, then you should use ALT_probability_plotting.
+
+The module `reliability.ALT_fitters` contains fitting functions for 20 different ALT life-stress models. Each model is a combination of the life model (Weibull, Exponential, Lognormal, Normal) with the scale or location parameter replaced with a life-stress model (Exponential, Eyring, Power, Dual-Exponential, Power-Exponential). For example, the Weibull-Exponential model is found by replacing the :math:`\alpha` parameter with the equation for the exponential life-stress model as follows:
 
 :math:`\text{Weibull PDF:} \hspace{40mm} f(t) = \frac{\beta t^{ \beta - 1}}{ \alpha^ \beta} .exp \left(-(\frac{t}{\alpha })^ \beta \right)`
 
@@ -17,7 +23,7 @@ Replacing :math:`\alpha` with :math:`L(T)` gives the PDF of the Weibull-Exponent
 
 :math:`\text{Weibull-Exponential:} \hspace{25mm} f(t,T) = \frac{\beta t^{ \beta - 1}}{ \left(b.exp\left(\frac{a}{T} \right) \right)^ \beta} .exp \left(-\left(\frac{t}{\left(b.exp\left(\frac{a}{T} \right) \right) }\right)^ \beta \right)` 
 
-The correct substitutions for each type of model are:
+The correct substitutions for each type of model are as follows:
 
 :math:`\text{Weibull:} \hspace{12mm} \alpha = L(T)`
 
@@ -86,25 +92,25 @@ Outputs:
 Example 1
 ---------
 
-In the following example, we will fit the Weibull-Power model to an ALT dataset obtained from a fatigue test. This dataset can be found in ``reliability.Datasets``. We want to know the mean life at the use level of 60 so the parameter use_level_stress is specified. All other values are left as defaults and the results and plot are shown.
+In the following example, we will fit the Weibull-Power model to an ALT dataset obtained from a fatigue test. This dataset can be found in `reliability.Datasets`. We want to know the mean life at the use level stress of 60 so the parameter use_level_stress is specified. All other values are left as defaults and the results and plot are shown.
 
 .. code:: python
 
     from reliability.ALT_fitters import Fit_Weibull_Power
     from reliability.Datasets import ALT_load2
     import matplotlib.pyplot as plt
-    data = ALT_load2()
-    Fit_Weibull_Power(failures=data.failures,failure_stress=data.failure_stresses,right_censored=data.right_censored,right_censored_stress=data.right_censored_stresses,use_level_stress=60)
+
+    Fit_Weibull_Power(failures=ALT_load2().failures, failure_stress=ALT_load2().failure_stresses, right_censored=ALT_load2().right_censored, right_censored_stress=ALT_load2().right_censored_stresses, use_level_stress=60)
     plt.show()
     
     '''
     Results from Fit_Weibull_Power (95% CI):
-               Point Estimate  Standard Error       Lower CI      Upper CI
-    Parameter                                                             
-    a           398816.331485   519397.960450 -619184.964641  1.416818e+06
-    n               -1.417306        0.243944      -1.895428 -9.391834e-01
-    beta             3.017297        0.716426       1.894563  4.805374e+00
-    At the use level stress of 60 , the mean life is 1075.32845
+    Parameter  Point Estimate  Standard Error  Lower CI    Upper CI
+            a          398816          519397   -619184 1.41682e+06
+            n        -1.41731        0.243944  -1.89543   -0.939184
+         beta          3.0173        0.716426   1.89456     4.80537 
+
+    At the use level stress of 60 , the mean life is 1075.32846
     '''
     
 .. image:: images/Weibull_powerV3.png
@@ -112,7 +118,7 @@ In the following example, we will fit the Weibull-Power model to an ALT dataset 
 Example 2
 ---------
 
-In this second example, we will fit a dual stress model to a dual stress data set. The data set contains temperature and voltage data so it is most appropriate to model this dataset using a Power-Exponential model. A few differences to note with the dual stress models is that each stress requires a separate input, so if you also have censored data then this will require 6 inputs. If using the Power Exponential model it is essential that the thermal and non-thermal stresses go in their named inputs or the model will likely fail to fit the data. In this example we want to know the life at a use level stress of 325K and 0.5V which the output tells us is 4673 hours.
+In this second example, we will fit a dual stress model to a dual stress data set. The data set contains temperature and voltage data so it is most appropriate to model this dataset using a Power-Exponential model. A few differences to note with the dual stress models is that each stress requires a separate input, so if you also have censored data then this will require 6 inputs. If using the Power-Exponential model it is essential that the thermal and non-thermal stresses go in their named inputs or the model will likely fail to fit the data. In this example we want to know the life at a use level stress of 325K and 0.5V which the output tells us is 4673 hours.
 
 .. code:: python
 
@@ -125,13 +131,13 @@ In this second example, we will fit a dual stress model to a dual stress data se
 
     '''
     Results from Fit_Weibull_Power_Exponential (95% CI):
-               Point Estimate  Standard Error     Lower CI     Upper CI
-    Parameter                                                          
-    a             3404.485691      627.674716  2174.265854  4634.705528
-    c                0.087610        0.141217    -0.189170     0.364391
-    n               -0.713424        0.277561    -1.257434    -0.169414
-    beta             4.997527        1.173998     3.153512     7.919828
-    At the use level stresses of 325 and 0.5 , the mean life is 4673.15347
+    Parameter  Point Estimate  Standard Error  Lower CI  Upper CI
+            a         3404.49         627.667   2174.28   4634.69
+            c       0.0876103        0.141215 -0.189167  0.364387
+            n       -0.713424        0.277561  -1.25743 -0.169414
+         beta         4.99753           1.174   3.15351   7.91982 
+
+    At the use level stresses of 325 and 0.5 , the mean life is 4673.15225
     '''
 
 .. image:: images/power_expon_plotV3.png
