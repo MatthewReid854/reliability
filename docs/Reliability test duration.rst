@@ -5,7 +5,7 @@
 Reliability test duration
 '''''''''''''''''''''''''
 
-This function is an extension of the `reliability_test_planner <https://reliability.readthedocs.io/en/latest/Reliability%20test%20planner.html>`_ which allows users to calculate the required duration for a reliability test to achieve the specified producers and consumers risks. This is done based on the specified MTBF (mean time between failure) required and MTBF design.
+This function is an extension of the `reliability_test_planner <https://reliability.readthedocs.io/en/latest/Reliability%20test%20planner.html>`_ which allows users to calculate the required duration for a reliability test to achieve the specified producers and consumers risks. This is done based on the specified MTBF (mean time between failure) required and MTBF design (the MTBF that the manufacturer believes the system has been designed to).
 
 This type of determination must be made when organisations looking to test an item are uncertain of how much testing is required, but they know the amount of risk they are willing to accept as well as the MTBF required and the MTBF to which the item has been designed.
 
@@ -26,28 +26,47 @@ Outputs:
 -   If print_results is True, all the variables will be printed to the console.
 -   If show_plot is True a plot of producer's and consumer's risk Vs test duration will be generated. Use plt.show() to display it.
 
-In the example below the consumer requires a vehicle to achieve an MTBF of 2500km and is willing to accept 20% risk that they accept a bad item when they should have rejected it. The producer has designed the vehicle to have an MTBF of 3000km and they are willing to accept 20% risk that the consumer rejects a good item when they should have accepted it. How many kilometres should the reliability test be? Using the function we find the test needs to be 231616 km.
+Example 1
+*********
+
+In the example below the consumer requires a vehicle to achieve an MTBF of 2500km and is willing to accept 20% risk that they accept a bad item when they should have rejected it. The producer has designed the vehicle to have an MTBF of 3000km and they are willing to accept 20% risk that the consumer rejects a good item when they should have accepted it. How many kilometres should the reliability test be?
 
 .. code:: python
 
     from reliability.Reliability_testing import reliability_test_duration
     import matplotlib.pyplot as plt
-    
     reliability_test_duration(MTBF_required=2500, MTBF_design=3000, consumer_risk=0.2, producer_risk=0.2)
     plt.show()
     
     '''
-    Reliability Test Duration Solver for time-terminated test
-    Required test duration: 231615.79491309822 # Note that this duration is the total time on test and may be split across several vehicles.
+    Reliability Test Duration Solver for time-terminated test:
+    Required test duration: 231615.79491309822
     Specified consumer's risk: 0.2
     Specified producer's risk: 0.2
     Specified MTBF required by the consumer: 2500
     Specified MTBF designed to by the producer: 3000
     '''
 
+Using the function we find the test needs to be 231616 km. Note that this duration is the total time on test and may be split across several vehicles. See the discussion points below on whether to split the test duration up among multiple vehicles.
+
 .. image:: images/reliability_test_duration.png
 
-**How does the algorithm work?**
+Splitting the test up among several vehicles has both positives and negatives as follows:
+
+**Advantages of testing on only a few vehicles**
+
+- We can observe the failure behaviour later in life. If we tested 50 vehices to 4632km each then we are unlikely to observe failures that typically occur after 50000km.
+- It costs us less in vehicles since each vehicle has some of its life consumed during the testing.
+- We may not have many items available for testing, particularly if it is a prototype that is yet to enter full production.
+- We may not have many test facilities available so keeping the number of vehicles to a small number is often limited by the availability of the test facilities.
+
+**Advantages of splitting the testing up between many vehicles**
+
+- It is more representative of the population since all the testing on a single vehicle may not be accurate if that one vehicle is above or below average quality compared to the rest of the vehicles.
+- Testing can be done faster which also means less cost on testing facilities. Reliability testing is often something that Project managers will put pressure on to cut if the project is falling behind schedule so using more vehicles may be a way to get the same amount of reliability testing done faster.
+
+How does the algorithm work?
+****************************
 
 The underlying method is as follows:
 
