@@ -19,7 +19,7 @@ import numpy as np
 import warnings
 import scipy.stats as ss
 from scipy.optimize import fsolve
-from reliability.Utils import colorprint, round_to_decimals
+from reliability.Utils import colorprint
 
 
 def SN_diagram(
@@ -474,7 +474,11 @@ class stress_strain_life_parameters_from_data:
                 legend_texts2[0].set_size(13)
 
         if print_results is True:
-            colorprint("Results from stress_strain_life_parameters_from_data:",bold=True,underline=True)
+            colorprint(
+                "Results from stress_strain_life_parameters_from_data:",
+                bold=True,
+                underline=True,
+            )
             print("K (cyclic strength coefficient):", self.K)
             print("n (strain hardening exponent):", self.n)
             if cycles is not None:
@@ -584,9 +588,11 @@ class stress_strain_diagram:
         stress_array1 = []
         sigma = 10  # initial guess for fsolve which get updated once the first value is found
         for epsilon_1 in strain_array1:
+            eps1 = epsilon_1
             fun = lambda x: ramberg_osgood(
-                epsilon=epsilon_1, sigma=x, E=E, K=self.K, n=self.n
-            )  # lgtm [py/loop-variable-capture]
+                epsilon=eps1, sigma=x, E=E, K=self.K, n=self.n
+            )
+            # lgtm [py/loop-variable-capture]
             result = fsolve(fun, np.array(sigma))
             sigma = result[0]
             stress_array1.append(sigma)
@@ -601,9 +607,11 @@ class stress_strain_diagram:
         initial_stress = stress_array1[-1]
         delta_sigma = 10  # initial guess for fsolve which get updated once the first value is found
         for delta_epsilon_2 in strain_delta_array2:
+            delta_eps = delta_epsilon_2
             fun_delta = lambda x: ramberg_osgood_delta(
-                delta_epsilon=delta_epsilon_2, delta_sigma=x, E=E, K=self.K, n=self.n
-            )  # lgtm [py/loop-variable-capture]
+                delta_epsilon=delta_eps, delta_sigma=x, E=E, K=self.K, n=self.n
+            )
+            # lgtm [py/loop-variable-capture]
             result2 = fsolve(fun_delta, np.array(delta_sigma))
             delta_sigma = result2[0]
             if initial_load_direction == "tension":
@@ -621,9 +629,12 @@ class stress_strain_diagram:
         stress_array3 = []
         initial_stress = stress_array2[-1]
         for delta_epsilon_3 in strain_delta_array3:
+            delta_eps = delta_epsilon_3
             fun_delta = lambda x: ramberg_osgood_delta(
-                delta_epsilon=delta_epsilon_3, delta_sigma=x, E=E, K=self.K, n=self.n
-            )  # lgtm [py/loop-variable-capture]
+                delta_epsilon=delta_eps, delta_sigma=x, E=E, K=self.K, n=self.n
+            )
+
+            # lgtm [py/loop-variable-capture]
             result3 = fsolve(fun_delta, np.array(delta_sigma))
             delta_sigma = result3[0]
             if initial_load_direction == "tension":
@@ -658,14 +669,14 @@ class stress_strain_diagram:
             left_y,
             str("(" + str(round(left_x, 4)) + "," + str(round(left_y, 3)) + ")"),
             verticalalignment="top",
-            horizontalalignment="right",
+            horizontalalignment="center",
         )
         plt.text(
             right_x,
             right_y,
             str("(" + str(round(right_x, 4)) + "," + str(round(right_y, 3)) + ")"),
-            verticalalignment="top",
-            horizontalalignment="left",
+            verticalalignment="bottom",
+            horizontalalignment="center",
         )
 
         if initial_load_direction == "tension":
@@ -678,10 +689,10 @@ class stress_strain_diagram:
         plt.xlabel(r"Strain $(\epsilon_{tot})$")
         plt.ylabel(r"Stress $(\sigma)$")
         plt.title("Stress-Strain diagram")
-        xmax = self.max_strain * 2
-        ymax = self.max_stress * 1.4
-        xmin = self.min_strain * 2
-        ymin = self.min_stress * 1.4
+        xmax = max(abs(self.max_strain), abs(self.min_strain)) * 2
+        ymax = max(abs(self.max_stress), abs(self.min_stress)) * 1.4
+        xmin = -xmax
+        ymin = -ymax
         plt.xlim([xmin, xmax])
         plt.ylim([ymin, ymax])
         plt.grid(True)
@@ -691,7 +702,7 @@ class stress_strain_diagram:
         plt.gcf().set_size_inches(10, 7)
 
         if print_results is True:
-            colorprint("Results from stress_strain_diagram:",bold=True,underline=True)
+            colorprint("Results from stress_strain_diagram:", bold=True, underline=True)
             print("Max stress:", self.max_stress)
             print("Min stress:", self.min_stress)
             print("Max strain:", self.max_strain)
@@ -1056,7 +1067,9 @@ class strain_life_diagram:
             self.cycles_to_failure = use_cycles_2Nf[0] / 2
 
             if print_results is True:
-                colorprint("Results from strain_life_diagram:",underline=True,bold=True)
+                colorprint(
+                    "Results from strain_life_diagram:", underline=True, bold=True
+                )
                 if max_strain is not None:
                     print(
                         "Failure will occur in",
@@ -1299,7 +1312,7 @@ def palmgren_miner_linear_damage(rated_life, time_at_stress, stress):
     life_consumed_per_load_cycle = sum(life_frac)
     service_life = 1 / life_consumed_per_load_cycle
     damage_frac = service_life * np.array(life_frac)
-    colorprint("Palmgren-Miner Linear Damage Model results:",bold=True,underline=True)
+    colorprint("Palmgren-Miner Linear Damage Model results:", bold=True, underline=True)
     print(
         "Each load cycle uses",
         round(life_consumed_per_load_cycle * 100, 5),
@@ -1520,7 +1533,11 @@ class fracture_mechanics_crack_initiation:
         Nf = Nf2 / 2
         self.cycles_to_failure = Nf
         if print_results is True:
-            colorprint("Results from fracture_mechanics_crack_initiation:",bold=True,underline=True)
+            colorprint(
+                "Results from fracture_mechanics_crack_initiation:",
+                bold=True,
+                underline=True,
+            )
             print(
                 "A crack of 1 mm will be formed after:",
                 round(self.cycles_to_failure, 2),
@@ -1684,7 +1701,11 @@ class fracture_mechanics_crack_growth:
         self.final_crack_length_simplified = a_f * 1000 - d
         self.transition_length_simplified = lt * 1000
         if print_results is True:
-            colorprint("Results from fracture_mechanics_crack_growth:",bold=True,underline=True)
+            colorprint(
+                "Results from fracture_mechanics_crack_growth:",
+                bold=True,
+                underline=True,
+            )
             print("SIMPLIFIED METHOD (keeping f(g), S_max, and a_crit as constant):")
             if Nf_1 == 0:
                 print(
@@ -2010,7 +2031,7 @@ def creep_failure_time(temp_low, temp_high, time_low, C=20, print_results=True):
     )  # larson-miller parameter. 459.67 converts Fahrenheit to Rankine
     time_high = 10 ** (LMP / (temp_high + 459.67) - C)
     if print_results is True:
-        colorprint("Results from creep_failure_time:",bold=True,underline=True)
+        colorprint("Results from creep_failure_time:", bold=True, underline=True)
         print("The time to failure at a temperature of", temp_high, "°F is", time_high)
         print("The Larson-Miller parameter was found to be", LMP)
     return time_high
@@ -2081,7 +2102,7 @@ class acceleration_factor:
             self.T_use = T_use
 
         if print_results is True:
-            colorprint("Results from acceleration_factor:",bold=True,underline=True)
+            colorprint("Results from acceleration_factor:", bold=True, underline=True)
             print("Acceleration Factor:", self.AF)
             print("Use Temperature:", self.T_use, "°C")
             print("Accelerated Temperature:", self.T_acc, "°C")
