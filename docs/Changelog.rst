@@ -22,7 +22,7 @@ Changelog
 **API Changes**
 
 -    All of the standard fitters now include method and optimizer arguments.
--    The non-standard fitters (FIt_Everything, Fit_Weibull_Mixture and Fit_Weibull_CR) now include optimizer argument.
+-    The non-standard fitters (Fit_Everything, Fit_Weibull_Mixture and Fit_Weibull_CR) now include optimizer argument.
 -    Fitters.Fit_Weibull_2P, Fitters.Fit_Weibull_3P, Fitters.Fit_Weibull_2P_grouped have had some changes to their input arguments so that they all include method and optimizer. The initial_guess_method option is gone as it has been replaced by least squares estimation.
 -    The function Other_functions.Convert_dataframe_to_grouped lists is now deprecated. The functionality is captured within the new Convert_data module.
 -    The entire Stress_strength module has been deprecated. This is because there were (and likely only ever would be) two functions in this module which is not enough to justify a separate module. The two function have been moved into Other_functions and renamed. Full deprecation will occur in March 2021 (in version 0.5.6), and until then a DeprecationWarning will be printed and the old functions will still work. The renaming is as follows:
@@ -58,6 +58,7 @@ Changelog
 -    In all the ALT fitters, the initial guess process is now bypassed if an initial guess is specified by the user. Previously the initial guess was always obtained by curve_fit but not used if a user specified initial guess was given. This change enhances speed and enables a failure of curve_fit to be bypassed through specifying an accurate initial guess.
 -    Documentation updates to reflect version 0.5.5 API changes and results printed.
 -    Updated the Logo for `reliability` and provided the `code <https://reliability.readthedocs.io/en/latest/Logo.html>`_ for generating the new logo.
+-    Changed the structure of the README to put the link to the documentation up higher.
 
 **Version: 0.5.4 --- Released: 7 November 2020**
 ''''''''''''''''''''''''''''''''''''''''''''''''
