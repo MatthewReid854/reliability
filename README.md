@@ -15,6 +15,9 @@
 
 ![](https://raw.githubusercontent.com/MatthewReid854/reliability/master/docs/images/readme_image_V2.png)
 
+## Documentation
+Detailed documentation and examples are available at [readthedocs](https://reliability.readthedocs.io/en/latest/).
+
 ## Key features
 - Fitting probability distributions to data including right censored data
 - Fitting Weibull mixture models and Weibull Competing risks models
@@ -50,6 +53,5 @@ pip install --upgrade reliability
 
 If you would like to receive an email notification when a new release of *reliability* is uploaded to PyPI, [NewReleases.io](https://newreleases.io/) provides this service for free.
 
-## Documentation
-Check out [readthedocs](https://reliability.readthedocs.io/en/latest/) for detailed documentation and examples.
+## Contact
 If you find any errors, have any suggestions, or would like to request that something be added, please email alpha.reliability@gmail.com.
