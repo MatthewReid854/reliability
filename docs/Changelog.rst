@@ -16,6 +16,8 @@ Changelog
 
 **Other**
 
+-    Minor improvement to scaling and text positions in stress_strain_diagram
+
 **Version: 0.5.5 --- Released: 6 January 2021**
 '''''''''''''''''''''''''''''''''''''''''''''''
 
