@@ -88,6 +88,8 @@ Outputs:
 -   beta_lower - the lower CI estimate of the parameter
 -   results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
 -   mean_life - the mean life at the use_level_stress. Only calculated if use_level_stress is specified
+-   alpha_at_use_stress - the equivalent Weibull alpha parameter at the use level stress (only provided if use_level_stress is provided)
+-   distribution_at_use_stress - the Weibull distribution at the use level stress (only provided if use_level_stress is provided)
 
 Example 1
 ---------
