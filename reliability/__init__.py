@@ -16,4 +16,4 @@ from reliability import PoF
 from reliability import Utils
 from reliability import Convert_data
 
-__version__ = "0.5.5"  # Current version
+__version__ = "0.5.6"  # Current version
