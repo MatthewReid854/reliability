@@ -5,8 +5,6 @@
 Stress-Strength interference
 ''''''''''''''''''''''''''''
 
-.. note:: This documentation has been updated for version 0.5.5 which is currently unreleased. In version 0.5.4 and below, the stress-strength interference functions had a different location and different name. Please read the note at the bottom of this page if using this function prior to the release of version 0.5.5.
-
 Stress-Strength interference is a model to predict the probability of failure when the stress and strength probability distributions are known. Failure is defined as when stress > strength. If both the stress and strength distributions are Normal Distributions, then there exists a simple analytical solution which will give an exact result. To calculate stress-strength intereference between distributions other than Normal Distributons requires the evaluation of an integral. These two cases are shown below using the functions stress_strength_normal (for two Normal Distributions) and stress_strength (for any two distributions).
 
 Stress-Strength Interference for two Normal Distributions
