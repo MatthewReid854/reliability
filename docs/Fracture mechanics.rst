@@ -16,7 +16,7 @@ The function `fracture_mechanics_crack_initiation` uses the material properties,
 
 While there are formulas to find the parameters q and Kt, these formulas have not been included here so that the function is reasonably generic to different materials and geometries. Resources for finding some of these parameters if they are not given to you:
 
-:math:`q = \frac{1}/{1+\frac{a}{r}}` Where r is the notch radius of curvature (in mm), and a is :math:`0.025\times\frac{2070}{S_{u}}`. :math:`S_{u}` is the ultimate strength in MPa. This only applies to high strength steels where :math:`S_{u}>550MPa`.
+:math:`q = \frac{1}{1+\frac{a}{r}}` Where r is the notch radius of curvature (in mm), and a is :math:`0.025\times\frac{2070}{S_{u}}`. :math:`S_{u}` is the ultimate strength in MPa. This only applies to high strength steels where :math:`S_{u}>550MPa`.
 
 Kt can be found from the `eFatigue website <https://www.efatigue.com/constantamplitude/stressconcentration/>`_ which has an online calculator that will provide you with the appropriate Kt for your notched geometry.
 
