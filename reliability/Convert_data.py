@@ -36,7 +36,7 @@ class xlsx_to_XCN:
     xlsx_to_XCN data format converter
 
     Inputs:
-    path - the filepath for the xlsx file. Note that you must prefix this with r to specify it as raw text. eg. path=r'.../documents/myfile.xlsx'
+    path - the filepath for the xlsx file. Note that you must prefix this with r to specify it as raw text.
     censor_code_in_xlsx - specify the censor code you have used if it does not appear in the defaults (see below).
         *default censor codes that will be recognised (not case sensitive): 'R', 'RC', 'RIGHT CENS', 'RIGHT CENSORED', 'C', 'CENSORED', 'CENS', 'S', 'SUSP', 'SUSPENSION', 'SUSPENDED', 'UF', 'UNFAILED', 'UNFAIL', 'NF', 'NO FAIL', 'NO FAILURE', 'NOT FAILED', 1
     failure_code_in_xlsx - specify the failure code you have used if it does not appear in the defaults (see below).
@@ -53,14 +53,13 @@ class xlsx_to_XCN:
     print() - this will print a dataframe of the data in XCN format to the console
     write_to_xlsx() - this will export the data in XCN format to an xlsx file at the specified path.
 
-    Example usage:
-    XCN = xlsx_to_XCN(path=r'C:\...\Desktop\mydata.xlsx')
-
-    For further usage examples, see the examples provided for FR_to_XCN or FNRN_to_XCN
+    For example usage, please see the online documentation at: https://reliability.readthedocs.io/en/latest/Importing%20data%20from%20Excel.html
 
     Note that the function is expecting the xlsx file to have columns in XCN format.
     If they are in another format (FR, FNRN) then you will need to use the appropriate function for that format.
     A reduced form (XC) is accepted and all values will be assumed to have a quantity (N) of 1.
+
+
 
     """
 
@@ -155,7 +154,12 @@ class xlsx_to_XCN:
         FR = XCN_to_FR(
             X=X, C=C, N=N
         )  # we do this seeming redundant conversion to combine any duplicates from FNRN which were not correctly summarized in the input data
-        XCN = FR_to_XCN(failures=FR.failures, right_censored=FR.right_censored,failure_code=failure_code_in_XCN,censor_code=censor_code_in_XCN)
+        XCN = FR_to_XCN(
+            failures=FR.failures,
+            right_censored=FR.right_censored,
+            failure_code=failure_code_in_XCN,
+            censor_code=censor_code_in_XCN,
+        )
         self.X = XCN.X
         self.C = XCN.C
         self.N = XCN.N
@@ -177,7 +181,7 @@ class xlsx_to_FR:
     xlsx_to_FR data format converter
 
     Inputs:
-    path - the filepath for the xlsx file. Note that you must prefix this with r to specify it as raw text. eg. path=r'.../documents/myfile.xlsx'
+    path - the filepath for the xlsx file. Note that you must prefix this with r to specify it as raw text.
 
     Output:
     failures
@@ -187,10 +191,7 @@ class xlsx_to_FR:
     print() - this will print a dataframe of the data in FR format to the console
     write_to_xlsx() - this will export the data in FR format to an xlsx file at the specified path.
 
-    Example usage:
-    FR = xlsx_to_FR(path=r'C:\...\Desktop\mydata.xlsx')
-
-    For further usage examples, see the examples provided for XCN_to_FR or FNRN_to_FR
+    For example usage, please see the online documentation at: https://reliability.readthedocs.io/en/latest/Importing%20data%20from%20Excel.html
 
     Note that the function is expecting the xlsx file to have columns in FR format.
     If they are in another format (XCN, FNRN) then you will need to use the appropriate function for that format.
@@ -239,7 +240,7 @@ class xlsx_to_FNRN:
     xlsx_to_FNRN data format converter
 
     Inputs:
-    path - the filepath for the xlsx file. Note that you must prefix this with r to specify it as raw text. eg. path=r'.../documents/myfile.xlsx'
+    path - the filepath for the xlsx file. Note that you must prefix this with r to specify it as raw text.
 
     Output:
     failures
@@ -251,10 +252,7 @@ class xlsx_to_FNRN:
     print() - this will print a dataframe of the data in FNRN format to the console
     write_to_xlsx() - this will export the data in FNRN format to an xlsx file at the specified path.
 
-    Example usage:
-    FNRN = xlsx_to_FNRN(path=r'C:\...\Desktop\mydata.xlsx')
-
-    For further usage examples, see the examples provided for XCN_to_FNRN or FR_to_FNRN
+    For example usage, please see the online documentation at: https://reliability.readthedocs.io/en/latest/Importing%20data%20from%20Excel.html
 
     Note that the function is expecting the xlsx file to have columns in FNRN format.
     If they are in another format (FR, XCN) then you will need to use the appropriate function for that format.
@@ -357,7 +355,7 @@ class XCN_to_FNRN:
     C -  the censoring code for each X. This must be an array or list. Defaults are recognised from the lists shown below.
     N - the quantity for each X. This must be an array or list. Optional Input. If omitted all items are assumed to have quantity (N) of 1.
     censor_code - specify the censor code you have used if it does not appear in the defaults (see below). Optional input.
-        * default censor codes that will be recognised (not case sensitive): 'R', 'RC', 'RIGHT CENS', 'RIGHT CENSORED', 'C', 'CENSORED', 'CENS', 'S', 'SUSP', 'SUSPENSION', 'SUSPENDED', 'UF', 'UNFAILED', 'UNFAIL', 'NF', 'NO FAIL', 'NO FAILURE', 'NOT FAILED', 1
+        * default censor codes that will be recognised (not case sensitive): R, 'RC', 'RIGHT CENS', 'RIGHT CENSORED', 'C', 'CENSORED', 'CENS', 'S', 'SUSP', 'SUSPENSION', 'SUSPENDED', 'UF', 'UNFAILED', 'UNFAIL', 'NF', 'NO FAIL', 'NO FAILURE', 'NOT FAILED', 1
     failure_code - specify the failure code you have used if it does not appear in the defaults (see below). Optional Input.
         * default failure codes that will be recognised (not case sensitive): 'F', 'FAIL', 'FAILED', 'FAILURE', 0
 
@@ -451,7 +449,7 @@ class XCN_to_FR:
     C -  the censoring code for each X. This must be an array or list. Defaults are recognised from the lists shown below.
     N - the quantity for each X. This must be an array or list. Optional Input. If omitted all items are assumed to have quantity (N) of 1.
     censor_code - specify the censor code you have used if it does not appear in the defaults (see below). Optional input.
-        * default censor codes that will be recognised (not case sensitive): 'R', 'RC', 'RIGHT CENS', 'RIGHT CENSORED', 'C', 'CENSORED', 'CENS', 'S', 'SUSP', 'SUSPENSION', 'SUSPENDED', 'UF', 'UNFAILED', 'UNFAIL', 'NF', 'NO FAIL', 'NO FAILURE', 'NOT FAILED', 1
+        * default censor codes that will be recognised (not case sensitive): R, 'RC', 'RIGHT CENS', 'RIGHT CENSORED', 'C', 'CENSORED', 'CENS', 'S', 'SUSP', 'SUSPENSION', 'SUSPENDED', 'UF', 'UNFAILED', 'UNFAIL', 'NF', 'NO FAIL', 'NO FAILURE', 'NOT FAILED', 1
     failure_code - specify the failure code you have used if it does not appear in the defaults (see below). Optional Input.
         * default failure codes that will be recognised (not case sensitive): 'F', 'FAIL', 'FAILED', 'FAILURE', 0
 

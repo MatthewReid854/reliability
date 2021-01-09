@@ -515,7 +515,7 @@ class similar_distributions:
 
             if include_location_shifted is True:
                 if dist_name == "Weibull_3P":
-                    if fitted_results.Weibull_3P_gamma is not 0:
+                    if fitted_results.Weibull_3P_gamma != 0:
                         ranked_distributions_objects.append(
                             Weibull_Distribution(
                                 alpha=fitted_results.Weibull_3P_alpha,
@@ -535,7 +535,7 @@ class similar_distributions:
                             )
                         )
                 elif dist_name == "Gamma_3P":
-                    if fitted_results.Gamma_3P_gamma is not 0:
+                    if fitted_results.Gamma_3P_gamma != 0:
                         ranked_distributions_objects.append(
                             Gamma_Distribution(
                                 alpha=fitted_results.Gamma_3P_alpha,
@@ -555,7 +555,7 @@ class similar_distributions:
                             )
                         )
                 elif dist_name == "Lognormal_3P":
-                    if fitted_results.Lognormal_3P_gamma is not 0:
+                    if fitted_results.Lognormal_3P_gamma != 0:
                         ranked_distributions_objects.append(
                             Lognormal_Distribution(
                                 mu=fitted_results.Lognormal_3P_mu,
@@ -575,7 +575,7 @@ class similar_distributions:
                             )
                         )
                 elif dist_name == "Exponential_2P":
-                    if fitted_results.Exponential_2P_gamma is not 0:
+                    if fitted_results.Exponential_2P_gamma != 0:
                         ranked_distributions_objects.append(
                             Exponential_Distribution(
                                 Lambda=fitted_results.Exponential_1P_lambda,
@@ -596,7 +596,7 @@ class similar_distributions:
                             )
                         )
                 elif dist_name == "Loglogistic_3P":
-                    if fitted_results.Loglogistic_3P_gamma is not 0:
+                    if fitted_results.Loglogistic_3P_gamma != 0:
                         ranked_distributions_objects.append(
                             Loglogistic_Distribution(
                                 alpha=fitted_results.Loglogistic_3P_alpha,

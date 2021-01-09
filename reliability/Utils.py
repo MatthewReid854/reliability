@@ -306,7 +306,7 @@ def restore_axes_limits(limits, dist, func, X, Y, xvals=None, xmin=None, xmax=No
             xlim_lower = xmin
 
         if xmax is None:
-            if dist.name is "Beta":
+            if dist.name == "Beta":
                 xlim_upper = 1
             else:
                 xlim_upper = dist.quantile(0.999)
