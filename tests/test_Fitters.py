@@ -81,7 +81,7 @@ def test_Fit_Gamma_2P():
     assert_allclose(LS.BIC, 155.84456442643477, rtol=rtol, atol=atol)
     assert_allclose(LS.loglik, -74.92654993966339, rtol=rtol, atol=atol)
     assert_allclose(LS.AD, 38.01670664187149, rtol=rtol, atol=atol)
-    assert_allclose(LS.Cov_alpha_beta, 5.761109354575602, rtol=rtol, atol=atol)
+    assert_allclose(LS.Cov_alpha_beta, 5.761109354575602, rtol=1e-5, atol=1e-4) # needs bigger tolerance for Python 3.8 and 3.9
 
 
 def test_Fit_Gamma_3P():
@@ -91,7 +91,7 @@ def test_Fit_Gamma_3P():
 
     MLE = Fit_Gamma_3P(failures=data.failures, right_censored=data.right_censored, method='MLE', show_probability_plot=False, print_results=False)
     assert_allclose(MLE.alpha, 161.8637212853173, rtol=1e-6, atol=1e-4) # needs bigger tolerance for Python 3.8 and 3.9
-    assert_allclose(MLE.beta, 0.5429184966902371, rtol=rtol, atol=atol)
+    assert_allclose(MLE.beta, 0.5429184966902371, rtol=1e-6, atol=1e-6) # needs bigger tolerance for Python 3.8 and 3.9
     assert_allclose(MLE.gamma, 515.4451173341464, rtol=rtol, atol=atol)
     assert_allclose(MLE.AICc, 150.0135606540687, rtol=rtol, atol=atol)
     assert_allclose(MLE.BIC, 151.50075747473068, rtol=rtol, atol=atol)
@@ -324,7 +324,7 @@ def test_Fit_Beta_2P():
     assert_allclose(LS.BIC, 6.306746396502635, rtol=rtol, atol=atol)
     assert_allclose(LS.loglik, -0.1576409246973265, rtol=rtol, atol=atol)
     assert_allclose(LS.AD, 63.661784208694066, rtol=rtol, atol=atol)
-    assert_allclose(LS.Cov_alpha_beta, 8.194012965628652, rtol=rtol, atol=atol)
+    assert_allclose(LS.Cov_alpha_beta, 8.194012965628652, rtol=0.0002, atol=0.002) # needs bigger tolerance for Python 3.8 and 3.9
 
 
 def test_Fit_Weibull_Mixture():
