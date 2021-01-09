@@ -471,6 +471,7 @@ class Fit_Everything:
             )
             self.Lognormal_2P_mu = self.__Lognormal_2P_params.mu
             self.Lognormal_2P_sigma = self.__Lognormal_2P_params.sigma
+            self.Lognormal_2P_gamma = 0
             self.Lognormal_2P_loglik = self.__Lognormal_2P_params.loglik
             self.Lognormal_2P_BIC = self.__Lognormal_2P_params.BIC
             self.Lognormal_2P_AICc = self.__Lognormal_2P_params.AICc
@@ -541,6 +542,7 @@ class Fit_Everything:
             )
             self.Weibull_2P_alpha = self.__Weibull_2P_params.alpha
             self.Weibull_2P_beta = self.__Weibull_2P_params.beta
+            self.Weibull_2P_gamma = 0
             self.Weibull_2P_loglik = self.__Weibull_2P_params.loglik
             self.Weibull_2P_BIC = self.__Weibull_2P_params.BIC
             self.Weibull_2P_AICc = self.__Weibull_2P_params.AICc
@@ -576,6 +578,7 @@ class Fit_Everything:
             )
             self.Gamma_2P_alpha = self.__Gamma_2P_params.alpha
             self.Gamma_2P_beta = self.__Gamma_2P_params.beta
+            self.Gamma_2P_gamma = 0
             self.Gamma_2P_loglik = self.__Gamma_2P_params.loglik
             self.Gamma_2P_BIC = self.__Gamma_2P_params.BIC
             self.Gamma_2P_AICc = self.__Gamma_2P_params.AICc
@@ -610,6 +613,7 @@ class Fit_Everything:
                 print_results=False,
             )
             self.Exponential_1P_lambda = self.__Exponential_1P_params.Lambda
+            self.Exponential_1P_gamma = 0
             self.Exponential_1P_loglik = self.__Exponential_1P_params.loglik
             self.Exponential_1P_BIC = self.__Exponential_1P_params.BIC
             self.Exponential_1P_AICc = self.__Exponential_1P_params.AICc
@@ -645,6 +649,7 @@ class Fit_Everything:
             )
             self.Loglogistic_2P_alpha = self.__Loglogistic_2P_params.alpha
             self.Loglogistic_2P_beta = self.__Loglogistic_2P_params.beta
+            self.Loglogistic_2P_gamma = 0
             self.Loglogistic_2P_loglik = self.__Loglogistic_2P_params.loglik
             self.Loglogistic_2P_BIC = self.__Loglogistic_2P_params.BIC
             self.Loglogistic_2P_AICc = self.__Loglogistic_2P_params.AICc

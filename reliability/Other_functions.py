@@ -31,7 +31,6 @@ from reliability.Distributions import (
 from reliability.Fitters import Fit_Everything
 from reliability.Utils import colorprint, round_to_decimals
 from matplotlib.widgets import Slider, RadioButtons
-import random
 import scipy.stats as ss
 
 
@@ -838,9 +837,9 @@ class make_right_censored_data:
         # multiply censored
         if threshold is None:
             if seed is not None:
-                random.seed(seed)
+                np.random.seed(seed)
             data = list(data)
-            random.shuffle(
+            np.random.shuffle(
                 data
             )  # randomize the order of the data in case it was ordered
             # place a limit on the amount of the data that can be censored
