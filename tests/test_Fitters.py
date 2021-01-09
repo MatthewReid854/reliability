@@ -71,7 +71,7 @@ def test_Fit_Gamma_2P():
     assert_allclose(MLE.BIC, 155.61752924510233, rtol=rtol, atol=atol)
     assert_allclose(MLE.loglik, -74.81303234899717, rtol=rtol, atol=atol)
     assert_allclose(MLE.AD, 38.004356262808585, rtol=rtol, atol=atol)
-    assert_allclose(MLE.Cov_alpha_beta, 11.610946543514364, rtol=rtol, atol=atol)
+    assert_allclose(MLE.Cov_alpha_beta, 11.610946543514364, rtol=1e-5, atol=1e-4) # needs bigger tolerance for Python 3.8 and 3.9
 
     LS = Fit_Gamma_2P(failures=data.failures, right_censored=data.right_censored, method='LS', show_probability_plot=False, print_results=False)
     assert_allclose(LS.alpha, 25.803340662553182, rtol=rtol, atol=atol)
@@ -90,7 +90,7 @@ def test_Fit_Gamma_3P():
     data = make_right_censored_data(data=rawdata, threshold=dist.mean)
 
     MLE = Fit_Gamma_3P(failures=data.failures, right_censored=data.right_censored, method='MLE', show_probability_plot=False, print_results=False)
-    assert_allclose(MLE.alpha, 161.8637212853173, rtol=rtol, atol=atol)
+    assert_allclose(MLE.alpha, 161.8637212853173, rtol=1e-6, atol=1e-4) # needs bigger tolerance for Python 3.8 and 3.9
     assert_allclose(MLE.beta, 0.5429184966902371, rtol=rtol, atol=atol)
     assert_allclose(MLE.gamma, 515.4451173341464, rtol=rtol, atol=atol)
     assert_allclose(MLE.AICc, 150.0135606540687, rtol=rtol, atol=atol)
@@ -315,7 +315,7 @@ def test_Fit_Beta_2P():
     assert_allclose(MLE.BIC, 6.233418441403544, rtol=rtol, atol=atol)
     assert_allclose(MLE.loglik, -0.12097694714778129, rtol=rtol, atol=atol)
     assert_allclose(MLE.AD, 63.64510718930826, rtol=rtol, atol=atol)
-    assert_allclose(MLE.Cov_alpha_beta, 9.993273704064205, rtol=rtol, atol=atol)
+    assert_allclose(MLE.Cov_alpha_beta, 9.993273704064205, rtol=0.0002, atol=0.002) # needs bigger tolerance for Python 3.8 and 3.9
 
     LS = Fit_Beta_2P(failures=data.failures, right_censored=data.right_censored, method='LS', show_probability_plot=False, print_results=False)
     assert_allclose(LS.alpha, 6.699688942917093, rtol=rtol, atol=atol)
