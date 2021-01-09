@@ -97,17 +97,17 @@ def test_Fit_Gamma_3P():
     assert_allclose(MLE.BIC, 151.50075747473068, rtol=rtol, atol=atol)
     assert_allclose(MLE.loglik, -71.25678032703435, rtol=rtol, atol=atol)
     assert_allclose(MLE.AD, 38.63647775048046, rtol=rtol, atol=atol)
-    assert_allclose(MLE.Cov_alpha_beta, 11.302538880460721, rtol=rtol, atol=atol)
+    assert_allclose(MLE.Cov_alpha_beta, 11.302538880460721, rtol=1e-4, atol=0.0002) # needs bigger tolerance for Python 3.8 and 3.9
 
     LS = Fit_Gamma_3P(failures=data.failures, right_censored=data.right_censored, method='LS', show_probability_plot=False, print_results=False)
-    assert_allclose(LS.alpha, 67.82751726558604, rtol=rtol, atol=atol)
-    assert_allclose(LS.beta, 31.29226170989501, rtol=rtol, atol=atol)
+    assert_allclose(LS.alpha, 67.82751726558604, rtol=1e-6, atol=1e-4) # needs bigger tolerance for Python 3.8 and 3.9
+    assert_allclose(LS.beta, 31.29226170989501, rtol=1e-6, atol=1e-6) # needs bigger tolerance for Python 3.8 and 3.9
     assert_allclose(LS.gamma, 505.13533298746347, rtol=rtol, atol=atol)
     assert_allclose(LS.AICc, 2727.0287032370256, rtol=rtol, atol=atol)
     assert_allclose(LS.BIC, 2728.5159000576878, rtol=rtol, atol=atol)
     assert_allclose(LS.loglik, -1359.7643516185128, rtol=rtol, atol=atol)
     assert_allclose(LS.AD, 574.8571449781781, rtol=rtol, atol=atol)
-    assert_allclose(LS.Cov_alpha_beta, 2.4557691690459174, rtol=rtol, atol=atol)
+    assert_allclose(LS.Cov_alpha_beta, 2.4557691690459174, rtol=1e-4, atol=0.0002) # needs bigger tolerance for Python 3.8 and 3.9
 
 
 def test_Fit_Lognormal_2P():
