@@ -25,7 +25,7 @@ def test_similar_distributions():
     assert_allclose(results.results[0].beta, 3.2573154824967254, rtol=rtol, atol=atol)
     assert_allclose(results.results[0].gamma, 0.723515074225681, rtol=rtol, atol=atol)
     assert_allclose(results.results[1].mu, 44.84713832685586, rtol=rtol, atol=atol)
-    assert_allclose(results.results[1].sigma, 14.92261183810951, rtol=rtol, atol=atol)
+    assert_allclose(results.results[1].sigma, 14.922616880719513, rtol=rtol, atol=atol)
     assert_allclose(results.results[2].alpha, 5.760745623490939, rtol=rtol, atol=atol)
     assert_allclose(results.results[2].beta, 7.7849536438935685, rtol=rtol, atol=atol)
     assert_allclose(results.results[2].gamma, 0, rtol=rtol, atol=atol)

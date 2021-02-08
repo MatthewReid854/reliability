@@ -368,8 +368,8 @@ def test_Fit_Everything():
     dist = Beta_Distribution(alpha=5, beta=4)
     rawdata = dist.random_samples(200, seed=5)
     data = make_right_censored_data(data=rawdata, threshold=dist.mean)
-    MLE = Fit_Everything(failures=data.failures, right_censored=data.right_censored, method='MLE', show_probability_plot=False, show_histogram_plot=False, show_PP_plot=False, print_results=False)
-    LS = Fit_Everything(failures=data.failures, right_censored=data.right_censored, method='LS', show_probability_plot=False, show_histogram_plot=False, show_PP_plot=False, print_results=False)
+    MLE = Fit_Everything(failures=data.failures, right_censored=data.right_censored, method='MLE', show_probability_plot=False, show_histogram_plot=False, show_PP_plot=False, show_best_distribution_probability_plot=False, print_results=False)
+    LS = Fit_Everything(failures=data.failures, right_censored=data.right_censored, method='LS', show_probability_plot=False, show_histogram_plot=False, show_PP_plot=False, show_best_distribution_probability_plot=False, print_results=False)
 
     assert_allclose(MLE.best_distribution.alpha, 0.5796887225805948, rtol=rtol, atol=atol) # best fit here is a Beta distribution
     assert_allclose(MLE.best_distribution.beta, 4.205258710807067, rtol=rtol, atol=atol)
@@ -446,7 +446,7 @@ def test_Fit_Everything():
     assert_allclose(MLE.Normal_2P_AD, 543.3042437249142, rtol=rtol, atol=atol)
 
     assert_allclose(MLE.Gumbel_2P_mu, 0.5706624792367315, rtol=rtol, atol=atol)
-    assert_allclose(MLE.Gumbel_2P_sigma, 0.10182899077145853, rtol=rtol, atol=atol)
+    assert_allclose(MLE.Gumbel_2P_sigma, 0.10182903954122995, rtol=rtol, atol=atol)
     assert_allclose(MLE.Gumbel_2P_AICc, 26.09054970134011, rtol=rtol, atol=atol)
     assert_allclose(MLE.Gumbel_2P_BIC, 32.626270728852425, rtol=rtol, atol=atol)
     assert_allclose(MLE.Gumbel_2P_loglik, -11.014817997878176, rtol=rtol, atol=atol)
