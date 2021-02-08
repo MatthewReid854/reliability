@@ -8,6 +8,7 @@ stress_strength_normal - stress-strength interference two normal distributions (
 similar_distributions - finds the parameters of distributions that are similar to the input distribution and plots the results.
 convert_dataframe_to_grouped_lists - groups values in a 2-column dataframe based on the values in the left column and returns those groups in a list of lists
 make_right_censored_data - a simple tool to right censor a complete dataset based on a threshold. Primarily used for testing Fitters when some right censored data is needed.
+make_ALT_data - a tool to generate data for fitting ALT models. Primarily used for testing ALT_Fitters.
 histogram - generates a histogram with optimal bin width and has an option to shade some bins white above a chosen threshold.
 crosshairs - adds x,y crosshairs to plots based on mouse position
 distribution_explorer - generates an interactive window to explore probability distributions using sliders for their parameters
@@ -367,6 +368,7 @@ class similar_distributions:
                 show_probability_plot=False,
                 show_histogram_plot=False,
                 show_PP_plot=False,
+                show_best_distribution_probability_plot=False,
             )
         else:
             # fit all distributions to the filtered samples
@@ -376,6 +378,7 @@ class similar_distributions:
                 show_probability_plot=False,
                 show_histogram_plot=False,
                 show_PP_plot=False,
+                show_best_distribution_probability_plot=False,
             )
         ranked_distributions = list(fitted_results.results.Distribution.values)
 
@@ -867,6 +870,258 @@ class make_right_censored_data:
         else:
             self.failures = data[data <= threshold]
             self.right_censored = np.ones_like(data[data > threshold]) * threshold
+
+
+class make_ALT_data:
+    """
+    make_ALT_data
+
+    Generates Accelerated Life Test (ALT) data
+    Primarily used when testing the functions in ALT_fitters
+
+    Inputs:
+    distribution - "Weibull", "Exponential", "Lognormal", or "Normal"
+    life_stress_model - "Exponential", "Eyring", "Power", "Dual-Exponential", "Power-Exponential", "Dual-Power"
+    stress_1 - array or list of the stresses. eg. [100,50,10].
+    stress_2 - array or list of the stresses. eg. [0.8,0.6,0.4]. Required only if using a dual stress model. Must match the length of stress_1.
+    a - parameter from all models
+    b - parameter from Exponential and Dual-Exponential models
+    c - parameter from Eyring, Dual-Exponential, Power-Exponential, and Dual-Power models
+    n - parameter from Power, Power-Exponential, and Dual-Power models
+    m - parameter from Dual-Power model
+    beta - shape parameter for Weibull distributon
+    sigma - shape parameter for Normal or Lognormal distributions
+    use_level_stress - a number (if single stress) or list or array (if dual stress)
+    number_of_samples - the number of samples to generate for each stress. Default is 100. The total data points will be equal to the number of samples x number of stress levels
+    fraction_censored - 0 for no censoring or between 0 and 1 for right censoring. Censoring is "multiply censored" meaning that there is no threshold above which all the right censored values will occur.
+    seed - random seed for repeatability
+
+    Outputs:
+    If using a single stress model:
+    failures - list
+    failure_stresses - list
+    right_censored - list (only provided if fraction_censored > 0)
+    right_censored_stresses - list (only provided if fraction_censored > 0)
+
+    If using a dual stress model:
+    failures - list
+    failure_stresses_1 - list
+    failure_stresses_2 - list
+    right_censored - list (only provided if fraction_censored > 0)
+    right_censored_stresses_1 - list (only provided if fraction_censored > 0)
+    right_censored_stresses_2 - list (only provided if fraction_censored > 0)
+    mean_life_at_use_stress - float (only provided if use_level_stress is provided)
+    """
+
+    def __init__(
+        self,
+        distribution,
+        life_stress_model,
+        stress_1,
+        stress_2=None,
+        a=None,
+        b=None,
+        c=None,
+        n=None,
+        m=None,
+        beta=None,
+        sigma=None,
+        use_level_stress=None,
+        number_of_samples=100,
+        fraction_censored=0.5,
+        seed=None,
+    ):
+
+        # input error checking
+        life_stress_model = life_stress_model.title()
+        if life_stress_model in ["Exponential", "Eyring", "Power"]:
+            dual_stress = False
+        elif life_stress_model in [
+            "Dual-Exponential",
+            "Power-Exponential",
+            "Dual-Power",
+        ]:
+            dual_stress = True
+        else:
+            raise ValueError(
+                "life_stress_model must be one of Exponential, Eyring, Power, Dual-Exponential, Power-Exponential, Dual-Power"
+            )
+
+        if type(stress_1) not in [list, np.ndarray]:
+            raise ValueError("stress_1 must be a list or array of the stress levels")
+        stress_1 = np.asarray(stress_1)
+        num_stresses = len(stress_1)
+
+        if use_level_stress is not None:
+            if dual_stress is False:
+                stress_1 = np.append(stress_1, use_level_stress)
+            else:
+                stress_1 = np.append(stress_1, use_level_stress[0])
+
+        if dual_stress is True:
+            if type(stress_2) not in [list, np.ndarray]:
+                raise ValueError(
+                    "stress_2 must be a list or array of the stress levels"
+                )
+            stress_2 = np.asarray(stress_2)
+            if use_level_stress is not None:
+                if len(use_level_stress) != 2:
+                    raise ValueError(
+                        "use_level_stress must be a list or array with 2 elements if using a dual-stress model"
+                    )
+                stress_2 = np.append(stress_2, use_level_stress[1])
+
+            if len(stress_2) != len(stress_1):
+                raise ValueError("stress_1 and stress_2 must be the same length")
+
+        if fraction_censored < 0 or fraction_censored >= 1:
+            raise ValueError(
+                "fraction_censored must be 0 for no censoring or between 0 and 1 for right censoring"
+            )
+
+        # life stress model calculations
+        if life_stress_model == "Exponential":
+            if a is None or b is None:
+                raise ValueError(
+                    "a and b must be specified for the Exponential life-stress model"
+                )
+            if b <= 0:
+                raise ValueError("b must be positive")
+            life_model = b * np.exp(a / stress_1)
+        elif life_stress_model == "Eyring":
+            if a is None or c is None:
+                raise ValueError(
+                    "a and c must be specified for the Eyring life-stress model"
+                )
+            life_model = (1 / stress_1) * np.exp(-(c - a / stress_1))
+        elif life_stress_model == "Power":
+            if a is None or n is None:
+                raise ValueError(
+                    "a and n must be specified for the Power life-stress model"
+                )
+            if a <= 0:
+                raise ValueError("a must be positive")
+            life_model = a * stress_1 ** float(n)
+        elif life_stress_model == "Dual-Exponential":
+            if a is None or b is None or c is None:
+                raise ValueError(
+                    "a, b, and c must be specified for the Dual-Exponential life-stress model"
+                )
+            if c <= 0:
+                raise ValueError("c must be positive")
+            life_model = c * np.exp(a / stress_1 + b / stress_2)
+        elif life_stress_model == "Power-Exponential":
+            if a is None or c is None or n is None:
+                raise ValueError(
+                    "a, c, and n must be specified for the Power-Exponential life-stress model"
+                )
+            if c <= 0:
+                raise ValueError("c must be positive")
+            life_model = c * (stress_2 ** float(n)) * np.exp(a / stress_1)
+        elif life_stress_model == "Dual-Power":
+            if c is None or n is None or m is None:
+                raise ValueError(
+                    "c, n, and m must be specified for the Dual-Power life-stress model"
+                )
+            if c <= 0:
+                raise ValueError("c must be positive")
+            life_model = c * (stress_1 ** float(n)) * (stress_2 ** float(m))
+
+        # data sampling
+        failures = []
+        right_censored = []
+        failure_stresses_1 = []
+        right_censored_stresses_1 = []
+        failure_stresses_2 = []
+        right_censored_stresses_2 = []
+        np.random.seed(seed)
+        seeds = np.random.randint(
+            low=0, high=1000000, size=num_stresses
+        )  # need a seed for each stress or the points will be the same just shifted horizontally
+
+        def __make_dist(life):
+            if distribution == "Weibull":
+                if beta is None:
+                    raise ValueError(
+                        "beta must be specified for the Weibull distribution"
+                    )
+                dist = Weibull_Distribution(alpha=life, beta=beta)
+            elif distribution == "Lognormal":
+                if sigma is None:
+                    raise ValueError(
+                        "sigma must be specified for the Lognormal distribution"
+                    )
+                dist = Lognormal_Distribution(mu=np.log(life), sigma=sigma)
+            elif distribution == "Normal":
+                if sigma is None:
+                    raise ValueError(
+                        "sigma must be specified for the Normal distribution"
+                    )
+                dist = Normal_Distribution(mu=life, sigma=sigma)
+            elif distribution == "Exponential":
+                dist = Exponential_Distribution(Lambda=1 / life)
+            else:
+                raise ValueError(
+                    "distribution must be one of Weibull, Lognormal, Normal, Exponential"
+                )
+            return dist
+
+        for i in range(num_stresses):
+            dist = __make_dist(life=life_model[i])
+            raw_data = dist.random_samples(
+                number_of_samples=number_of_samples, seed=seeds[i]
+            )
+            if min(raw_data) <= 0:
+                raise ValueError(
+                    "The values entered for the ALT model will result in negative failure times.\n"
+                    "While this is acceptable for a pure Normal Distribution, it is not acceptable for an ALT model utilising the Normal Distribution.\n"
+                    "Please modify your input parameters to create a model that does not result in the generation of negative failure times."
+                )
+
+            if fraction_censored == 0:
+                failures.extend(raw_data)
+                failure_stresses_1.extend(list(np.ones_like(raw_data) * stress_1[i]))
+                if dual_stress is True:
+                    failure_stresses_2.extend(
+                        list(np.ones_like(raw_data) * stress_2[i])
+                    )
+            else:
+                data = make_right_censored_data(
+                    raw_data, fraction_censored=fraction_censored, seed=seeds[i]
+                )
+                failures.extend(data.failures)
+                right_censored.extend(data.right_censored)
+                failure_stresses_1.extend(
+                    list(np.ones_like(data.failures) * stress_1[i])
+                )
+                right_censored_stresses_1.extend(
+                    list(np.ones_like(data.right_censored) * stress_1[i])
+                )
+                if dual_stress is True:
+                    failure_stresses_2.extend(
+                        list(np.ones_like(data.failures) * stress_2[i])
+                    )
+                    right_censored_stresses_2.extend(
+                        list(np.ones_like(data.right_censored) * stress_2[i])
+                    )
+
+        if dual_stress is False:
+            self.failures = failures
+            self.failure_stresses = failure_stresses_1
+            if fraction_censored > 0:
+                self.right_censored = right_censored
+                self.right_censored_stresses = right_censored_stresses_1
+        else:
+            self.failures = failures
+            self.failure_stresses_1 = failure_stresses_1
+            self.failure_stresses_2 = failure_stresses_2
+            if fraction_censored > 0:
+                self.right_censored = right_censored
+                self.right_censored_stresses_1 = right_censored_stresses_1
+                self.right_censored_stresses_2 = right_censored_stresses_2
+        if use_level_stress is not None:
+            use_dist = __make_dist(life=life_model[-1])
+            self.mean_life_at_use_stress = use_dist.mean
 
 
 class crosshairs:

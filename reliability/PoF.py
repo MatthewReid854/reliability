@@ -592,7 +592,6 @@ class stress_strain_diagram:
             fun = lambda x: ramberg_osgood(
                 epsilon=eps1, sigma=x, E=E, K=self.K, n=self.n
             )
-            # lgtm [py/loop-variable-capture]
             result = fsolve(fun, np.array(sigma))
             sigma = result[0]
             stress_array1.append(sigma)
@@ -611,7 +610,6 @@ class stress_strain_diagram:
             fun_delta = lambda x: ramberg_osgood_delta(
                 delta_epsilon=delta_eps, delta_sigma=x, E=E, K=self.K, n=self.n
             )
-            # lgtm [py/loop-variable-capture]
             result2 = fsolve(fun_delta, np.array(delta_sigma))
             delta_sigma = result2[0]
             if initial_load_direction == "tension":
@@ -633,8 +631,6 @@ class stress_strain_diagram:
             fun_delta = lambda x: ramberg_osgood_delta(
                 delta_epsilon=delta_eps, delta_sigma=x, E=E, K=self.K, n=self.n
             )
-
-            # lgtm [py/loop-variable-capture]
             result3 = fsolve(fun_delta, np.array(delta_sigma))
             delta_sigma = result3[0]
             if initial_load_direction == "tension":

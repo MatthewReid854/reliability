@@ -30,7 +30,7 @@ import numpy as np
 import scipy.stats as ss
 import matplotlib.pyplot as plt
 from matplotlib.collections import PolyCollection, LineCollection
-from matplotlib import ticker
+from matplotlib import ticker, gridspec, colors
 from autograd import jacobian as jac
 from autograd_gamma import gammainccinv as agammainccinv
 from autograd_gamma import gammaincc as agammaincc
@@ -41,6 +41,7 @@ from scipy.optimize import curve_fit, minimize, OptimizeWarning
 from numpy.linalg import LinAlgError
 import warnings
 import os
+import pandas as pd
 
 warnings.filterwarnings(
     action="ignore", category=OptimizeWarning
@@ -699,6 +700,12 @@ def probability_plot_xylims(
     This function is called by probability_plotting
     """
 
+    # remove inf
+    x = np.asarray(x)
+    x = x[np.isfinite(x)]
+    y = np.asarray(y)
+    y = y[np.isfinite(y)]
+
     # x limits
     if dist in ["weibull", "lognormal", "loglogistic"]:
         min_x_log = np.log10(min(x))
@@ -1162,7 +1169,7 @@ class fitters_input_checking:
             raise ValueError("failures must be a list or array of failure data")
         if type(right_censored) not in [list, np.ndarray]:
             raise ValueError(
-                "right_censored must be a list or array of right_censored failure data"
+                "right_censored must be a list or array of right censored failure data"
             )
         failures = np.asarray(failures).astype(np.float)
         right_censored = np.asarray(right_censored).astype(np.float)
@@ -1390,7 +1397,386 @@ class fitters_input_checking:
         self.CI_type = CI_type
 
 
-def fill_no_autoscale(xlower, xupper, ylower, yupper, plot_type='CDF', **kwargs):
+class ALT_fitters_input_checking:
+    def __init__(
+        self,
+        dist,
+        life_stress_model,
+        failures,
+        failure_stress_1,
+        failure_stress_2=None,
+        right_censored=None,
+        right_censored_stress_1=None,
+        right_censored_stress_2=None,
+        CI=0.95,
+        use_level_stress=None,
+        optimizer=None,
+    ):
+
+        if dist not in ["Exponential", "Weibull", "Lognormal", "Normal"]:
+            raise ValueError(
+                "dist must be one of Exponential, Weibull, Lognormal, Normal."
+            )
+        if life_stress_model not in [
+            "Exponential",
+            "Eyring",
+            "Power",
+            "Dual-Exponential",
+            "Power-Exponential",
+            "Dual-Power",
+        ]:
+            raise ValueError(
+                "life_stess_model must be one of Exponential, Eyring, Power, Dual-Exponential, Power-Exponential, Dual-Power."
+            )
+        if life_stress_model in ["Dual-Exponential", "Power-Exponential", "Dual-Power"]:
+            is_dual_stress = True
+            min_failures_reqd = 4
+        else:
+            is_dual_stress = False
+            min_failures_reqd = 3
+
+        # failure checks
+        if is_dual_stress is True and (
+            failure_stress_1 is None or failure_stress_2 is None
+        ):
+            raise ValueError(
+                "failure_stress_1 and failure_stress_2 must be provided for dual stress models."
+            )
+        if is_dual_stress is False:
+            if failure_stress_1 is None:
+                raise ValueError("failure_stress_1 must be provided")
+            if failure_stress_2 is not None:
+                colorprint(
+                    str(
+                        "WARNING: failure_stress_2 is not being used as "
+                        + life_stress_model
+                        + " is a single stress model."
+                    ),
+                    text_color="red",
+                )
+            failure_stress_2 = []
+
+        # right_censored checks
+        if right_censored is None:
+            if right_censored_stress_1 is not None:
+                colorprint(
+                    "WARNING: right_censored_stress_1 is not being used as right_censored was not provided.",
+                    text_color="red",
+                )
+            if right_censored_stress_2 is not None:
+                colorprint(
+                    "WARNING: right_censored_stress_2 is not being used as right_censored was not provided.",
+                    text_color="red",
+                )
+            right_censored = []
+            right_censored_stress_1 = []
+            right_censored_stress_2 = []
+        else:
+            if is_dual_stress is True and (
+                right_censored_stress_1 is None or right_censored_stress_2 is None
+            ):
+                raise ValueError(
+                    "right_censored_stress_1 and right_censored_stress_2 must be provided for dual stress models."
+                )
+            if is_dual_stress is False:
+                if right_censored_stress_1 is None:
+                    raise ValueError("right_censored_stress_1 must be provided")
+                if right_censored_stress_2 is not None:
+                    colorprint(
+                        str(
+                            "WARNING: right_censored_stress_2 is not being used as "
+                            + life_stress_model
+                            + " is a single stress model."
+                        ),
+                        text_color="red",
+                    )
+                right_censored_stress_2 = []
+
+        # type checking and converting to arrays for failures and right_censored
+        if type(failures) not in [list, np.ndarray]:
+            raise ValueError("failures must be a list or array of failure data")
+        if type(failure_stress_1) not in [list, np.ndarray]:
+            raise ValueError(
+                "failure_stress_1 must be a list or array of failure stress data"
+            )
+        if type(failure_stress_2) not in [list, np.ndarray]:
+            raise ValueError(
+                "failure_stress_2 must be a list or array of failure stress data"
+            )
+
+        if type(right_censored) not in [list, np.ndarray]:
+            raise ValueError(
+                "right_censored must be a list or array of right censored failure data"
+            )
+        if type(right_censored_stress_1) not in [list, np.ndarray]:
+            raise ValueError(
+                "right_censored_stress_1 must be a list or array of right censored failure stress data"
+            )
+        if type(right_censored_stress_2) not in [list, np.ndarray]:
+            raise ValueError(
+                "right_censored_stress_2 must be a list or array of right censored failure stress data"
+            )
+
+        failures = np.asarray(failures).astype(np.float)
+        failure_stress_1 = np.asarray(failure_stress_1).astype(np.float)
+        failure_stress_2 = np.asarray(failure_stress_2).astype(np.float)
+        right_censored = np.asarray(right_censored).astype(np.float)
+        right_censored_stress_1 = np.asarray(right_censored_stress_1).astype(np.float)
+        right_censored_stress_2 = np.asarray(right_censored_stress_2).astype(np.float)
+
+        # check that list lengths match
+        if is_dual_stress is False:
+            if len(failures) != len(failure_stress_1):
+                raise ValueError(
+                    "failures must have the same number of elements as failure_stress_1"
+                )
+            if len(right_censored) != len(right_censored_stress_1):
+                raise ValueError(
+                    "right_censored must have the same number of elements as right_censored_stress_1"
+                )
+        else:
+            if len(failures) != len(failure_stress_1) or len(failures) != len(
+                failure_stress_2
+            ):
+                raise ValueError(
+                    "failures must have the same number of elements as failure_stress_1 and failure_stress_2"
+                )
+            if len(right_censored) != len(right_censored_stress_1) or len(
+                right_censored
+            ) != len(right_censored_stress_2):
+                raise ValueError(
+                    "right_censored must have the same number of elements as right_censored_stress_1 and right_censored_stress_2"
+                )
+
+        # raise an error for values <= 0. Not even the Normal Distribution is allowed to have failures at negative life.
+        if min(np.hstack([failures, right_censored])) <= 0:
+            raise ValueError(
+                "All failure and right censored values must be greater than zero."
+            )
+
+        # type and value checking for CI
+        if type(CI) not in [float, np.float64]:
+            raise ValueError(
+                "CI must be between 0 and 1. Default is 0.95 for 95% confidence interval."
+            )
+        if CI <= 0 or CI >= 1:
+            raise ValueError(
+                "CI must be between 0 and 1. Default is 0.95 for 95% confidence interval."
+            )
+
+        # error checking for optimizer
+        if optimizer is not None:
+            if optimizer.upper() not in ["L-BFGS-B", "TNC", "POWELL"]:
+                raise ValueError(
+                    'optimizer must be either "L-BFGS-B", "TNC", or "powell"'
+                )
+
+        # check the number of unique stresses
+        unique_stresses_1 = np.unique(failure_stress_1)
+        if len(unique_stresses_1) < 2:
+            raise ValueError("failure_stress_1 must have at least 2 unique stresses.")
+        if is_dual_stress is True:
+            unique_stresses_2 = np.unique(failure_stress_2)
+            if len(unique_stresses_2) < 2:
+                raise ValueError(
+                    "failure_stress_2 must have at least 2 unique stresses when using a dual stress model."
+                )
+
+        # group the failures into their failure_stresses and then check there are enough to fit the model
+        if is_dual_stress is False:
+            failure_df_ungrouped = pd.DataFrame(
+                data={"failures": failures, "failure_stress_1": failure_stress_1},
+                columns=["failures", "failure_stress_1"],
+            )
+            failure_groups = []
+            unique_failure_stresses = []
+            for key, items in failure_df_ungrouped.groupby(["failure_stress_1"]):
+                values = list(items.iloc[:, 0].values)
+                failure_groups.append(values)
+                unique_failure_stresses.append(key)
+            # Check that there are enough failures to fit the model.
+            # This does not mean 2 failures at each stress.
+            # All we need is as many failures as there are parameters in the model.
+            total_unique_failures = 0
+            for i, failure_group in enumerate(failure_groups):
+                total_unique_failures += len(np.unique(failure_group))
+            if total_unique_failures < min_failures_reqd:
+                raise ValueError(
+                    str(
+                        "There must be at least "
+                        + str(min_failures_reqd)
+                        + " unique failures for the "
+                        + dist
+                        + "-"
+                        + life_stress_model
+                        + " model to be fitted."
+                    )
+                )
+
+            if len(right_censored) > 0:
+                right_censored_df_ungrouped = pd.DataFrame(
+                    data={
+                        "right_censored": right_censored,
+                        "right_censored_stress_1": right_censored_stress_1,
+                    },
+                    columns=["right_censored", "right_censored_stress_1"],
+                )
+                right_censored_groups = []
+                unique_right_censored_stresses = []
+                for key, items in right_censored_df_ungrouped.groupby(
+                    ["right_censored_stress_1"]
+                ):
+                    values = list(items.iloc[:, 0].values)
+                    right_censored_groups.append(values)
+                    unique_right_censored_stresses.append(key)
+                    if key not in unique_failure_stresses:
+                        raise ValueError(
+                            str(
+                                "The right censored stress "
+                                + str(key)
+                                + " does not appear in failure stresses."
+                            )
+                        )
+
+                # add in empty lists for stresses which appear in failure_stress_1 but not in right_censored_stress_1
+                for i, stress in enumerate(unique_failure_stresses):
+                    if stress not in unique_right_censored_stresses:
+                        unique_right_censored_stresses.insert(i, stress)
+                        right_censored_groups.insert(i, [])
+
+            else:
+                right_censored_groups = None
+                unique_right_censored_stresses = None
+        else:  # This is for dual stress cases
+            # concatenate the stresses to deal with them as a pair
+            failure_stress_pairs = []
+            for i in range(len(failure_stress_1)):
+                failure_stress_pairs.append(
+                    str(failure_stress_1[i]) + "_" + str(failure_stress_2[i])
+                )
+
+            failure_df_ungrouped = pd.DataFrame(
+                data={
+                    "failures": failures,
+                    "failure_stress_pairs": failure_stress_pairs,
+                },
+                columns=["failures", "failure_stress_pairs"],
+            )
+            failure_groups = []
+            unique_failure_stresses_str = []
+            for key, items in failure_df_ungrouped.groupby(["failure_stress_pairs"]):
+                values = list(items.iloc[:, 0].values)
+                failure_groups.append(values)
+                unique_failure_stresses_str.append(key)
+            # Check that there are enough failures to fit the model.
+            # This does not mean 2 failures at each stress.
+            # All we need is as many failures as there are parameters in the model.
+            total_unique_failures = 0
+            for i, failure_group in enumerate(failure_groups):
+                total_unique_failures += len(np.unique(failure_group))
+                if total_unique_failures < min_failures_reqd:
+                    raise ValueError(
+                        str(
+                            "There must be at least "
+                            + str(min_failures_reqd)
+                            + " unique failures for the "
+                            + dist
+                            + "-"
+                            + life_stress_model
+                            + "model to be fitted."
+                        )
+                    )
+
+            # unpack the concatenated string for dual stresses ==> ['10.0_1000.0','20.0_2000.0','5.0_500.0'] should be [[10.0,1000.0],[20.0,2000.0],[5.0,500.0]]
+            unique_failure_stresses = []
+            for item in unique_failure_stresses_str:
+                stress_pair = [float(x) for x in list(item.split("_"))]
+                unique_failure_stresses.append(stress_pair)
+
+            if len(right_censored) > 0:
+                # concatenate the right censored stresses to deal with them as a pair
+                right_censored_stress_pairs = []
+                for i in range(len(right_censored_stress_1)):
+                    right_censored_stress_pairs.append(
+                        str(right_censored_stress_1[i])
+                        + "_"
+                        + str(right_censored_stress_2[i])
+                    )
+
+                right_censored_df_ungrouped = pd.DataFrame(
+                    data={
+                        "right_censored": right_censored,
+                        "right_censored_stress_pairs": right_censored_stress_pairs,
+                    },
+                    columns=["right_censored", "right_censored_stress_pairs"],
+                )
+                right_censored_groups = []
+                unique_right_censored_stresses_str = []
+                for key, items in right_censored_df_ungrouped.groupby(
+                    ["right_censored_stress_pairs"]
+                ):
+                    values = list(items.iloc[:, 0].values)
+                    right_censored_groups.append(values)
+                    unique_right_censored_stresses_str.append(key)
+                    if key not in unique_failure_stresses_str:
+                        raise ValueError(
+                            str(
+                                "The right censored stress pair "
+                                + str([float(x) for x in list(key.split("_"))])
+                                + " does not appear in failure stresses."
+                            )
+                        )
+
+                # add in empty lists for stresses which appear in failure_stress but not in right_censored_stress
+                for i, stress in enumerate(unique_failure_stresses_str):
+                    if stress not in unique_right_censored_stresses_str:
+                        unique_right_censored_stresses_str.insert(i, stress)
+                        right_censored_groups.insert(i, [])
+
+                # unpack the concatenated string for dual stresses ==> ['10.0_1000.0','20.0_2000.0','5.0_500.0'] should be [[10.0,1000.0],[20.0,2000.0],[5.0,500.0]]
+                unique_right_censored_stresses = []
+                for item in unique_right_censored_stresses_str:
+                    stress_pair = [float(x) for x in list(item.split("_"))]
+                    unique_right_censored_stresses.append(stress_pair)
+
+                if unique_right_censored_stresses != unique_failure_stresses:
+                    # this should never be reached but it's here as a check for now
+                    raise ValueError("something went wrong")
+            else:
+                right_censored_groups = None
+                unique_right_censored_stresses = None
+
+        # check that use level stress is the correct type
+        if is_dual_stress is False and use_level_stress is not None:
+            if type(use_level_stress) in [list, tuple, np.ndarray, str, bool, dict]:
+                raise ValueError("use_level_stress must be a number")
+            use_level_stress = float(use_level_stress)
+        if is_dual_stress is True and use_level_stress is not None:
+            if type(use_level_stress) not in [list, np.ndarray]:
+                raise ValueError(
+                    "use_level_stress must be an array or list of the use level stresses. eg. use_level_stress = [stress_1, stress_2]."
+                )
+            use_level_stress = np.asarray(use_level_stress)
+
+        # return everything
+        self.failures = failures
+        self.failure_stress_1 = failure_stress_1
+        self.failure_stress_2 = failure_stress_2
+        self.right_censored = right_censored
+        self.right_censored_stress_1 = right_censored_stress_1
+        self.right_censored_stress_2 = right_censored_stress_2
+        self.CI = CI
+        self.optimizer = optimizer
+        self.use_level_stress = use_level_stress
+        self.failure_groups = failure_groups[::-1]
+        if right_censored_groups is None:
+            self.right_censored_groups = right_censored_groups
+        else:
+            self.right_censored_groups = right_censored_groups[::-1]
+        self.stresses_for_groups = unique_failure_stresses[::-1]
+
+
+def fill_no_autoscale(xlower, xupper, ylower, yupper, plot_type="CDF", **kwargs):
     """
     creates a filled region (polygon) without adding it to the global list of autoscale objects.
     Use this when you want to plot something but not have it considered when autoscale sets the range
@@ -1425,7 +1811,7 @@ def fill_no_autoscale(xlower, xupper, ylower, yupper, plot_type='CDF', **kwargs)
         )
     else:
         # this trims the y arrays free of 1's since the probability plot can't handle 1 as it's equivalent to inf. This should not be applied for the CHF.
-        if plot_type.upper() in ['CDF','SF']:
+        if plot_type.upper() in ["CDF", "SF"]:
             if max(ylower) >= 1:
                 idx_ylower_1 = np.where(ylower >= 1)[0][0]
                 ylower = ylower[0:idx_ylower_1]
@@ -3276,6 +3662,69 @@ def least_squares(dist, failures, right_censored, method="RRX", force_shape=None
     return guess
 
 
+def ALT_least_squares(model, failures, stress_1_array, stress_2_array=None):
+    """
+    Uses least squares regression (with linear algebra) to fit the parameters of the ALT stress-life distribution to the time to failure data.
+    The output of this method may be used as the initial guess for the MLE method.
+
+    return the model's parameters in a list
+        Exponential - [a,b]
+        Eyring - [a,c]
+        Power - [a,n]
+        Dual-Exponential - [a,b,c]
+        Power-Exponential - [a,c,n]
+        Dual-Power - [c,n,m]
+    """
+
+    L = np.asarray(failures)
+    S1 = np.asarray(stress_1_array)
+    if stress_2_array is not None:
+        S2 = np.asarray(stress_2_array)
+    else:
+        S2 = None
+    if model == "Exponential":
+        m, c = linear_regression(x=1 / S1, y=np.log(L), RRX_or_RRY="RRY")
+        output = [m, np.exp(c)]  # a,b
+    elif model == "Eyring":
+        m, c = linear_regression(x=1 / S1, y=np.log(L) + np.log(S1), RRX_or_RRY="RRY")
+        output = [m, -c]  # a,c
+    elif model == "Power":
+        m, c = linear_regression(x=np.log(S1), y=np.log(L), RRX_or_RRY="RRY")
+        output = [np.exp(c), m]  # a,n
+    elif model == "Dual-Exponential":
+        X = 1 / S1
+        Y = 1 / S2
+        Z = np.log(L)
+        yy = Z.T
+        xx = np.array([np.ones_like(X), X, Y]).T
+        # linear regression formula for RRY
+        solution = np.linalg.inv(xx.T.dot(xx)).dot(xx.T).dot(yy)
+        output = [solution[1], solution[2], np.exp(solution[0])]  # a,b,c
+    elif model == "Power-Exponential":
+        X = 1 / S1
+        Y = np.log(S2)
+        Z = np.log(L)
+        yy = Z.T
+        xx = np.array([np.ones_like(X), X, Y]).T
+        # linear regression formula for RRY
+        solution = np.linalg.inv(xx.T.dot(xx)).dot(xx.T).dot(yy)
+        output = [solution[1], np.exp(solution[0]), solution[2]]  # a,c,n
+    elif model == "Dual-Power":
+        X = np.log(S1)
+        Y = np.log(S2)
+        Z = np.log(L)
+        yy = Z.T
+        xx = np.array([np.ones_like(X), X, Y]).T
+        # linear regression formula for RRY
+        solution = np.linalg.inv(xx.T.dot(xx)).dot(xx.T).dot(yy)
+        output = [np.exp(solution[0]), solution[1], solution[2]]  # c,n,m
+    else:
+        raise ValueError(
+            "model must be one of Exponential, Eyring, Power, Dual-Exponential, Power-Exponential, Dual-Power."
+        )
+    return output
+
+
 class LS_optimisation:
     def __init__(
         self,
@@ -3414,29 +3863,7 @@ class MLE_optimisation:
                     method=optimizer,
                     bounds=bounds,
                 )
-                params = result.x
-                if func_name == "Exponential_1P":
-                    guess = [params[0]]
-                elif func_name in [
-                    "Weibull_2P",
-                    "Gamma_2P",
-                    "Beta_2P",
-                    "Loglogistic_2P",
-                    "Lognormal_2P",
-                    "Exponential_2P",
-                ]:
-                    guess = [params[0], params[1]]
-                elif func_name in [
-                    "Weibull_3P",
-                    "Gamma_3P",
-                    "Loglogistic_3P",
-                    "Lognormal_3P",
-                ]:
-                    guess = [params[0], params[1], params[2]]
-                elif func_name == "Weibull_mixture":
-                    guess = [params[0], params[1], params[2], params[3], params[4]]
-                elif func_name == "Weibull_CR":
-                    guess = [params[0], params[1], params[2], params[3]]
+                guess = result.x
                 LL2 = 2 * LL_func(guess, failures, right_censored)
                 BIC_array.append(np.log(n) * k + LL2)
                 delta_BIC = abs(BIC_array[-1] - BIC_array[-2])
@@ -3456,8 +3883,7 @@ class MLE_optimisation:
                     method=optimizer,
                     bounds=bounds,
                 )
-                params = result.x
-                guess = [params[0]]
+                guess = result.x
                 LL2 = 2 * LL_func_force(guess, failures, right_censored, force_shape)
                 BIC_array.append(np.log(n) * k + LL2)
                 delta_BIC = abs(BIC_array[-1] - BIC_array[-2])
@@ -3605,6 +4031,419 @@ class MLE_optimisation:
                         self.shape = force_shape
 
 
+class ALT_MLE_optimisation:
+    """
+    This performs the MLE method to find the parameters
+    If the optimizer is None then multiple optimisers will be tried and the best result (lowest LL) will be returned
+    If the optimiser is specified then it will be used. If it fails then nelder-mead will be used. If nelder-mead fails then the initial guess and a warning will be returned.
+    """
+
+    def __init__(
+        self,
+        model,
+        dist,
+        LL_func,
+        initial_guess,
+        optimizer,
+        failures,
+        failure_stress_1,
+        failure_stress_2=None,
+        right_censored=None,
+        right_censored_stress_1=None,
+        right_censored_stress_2=None,
+    ):
+
+        if model == "Exponential":
+            bounds = [(None, None), (0, None), (0, None)]  # a, b, shape
+            dual_stress = False
+        elif model == "Eyring":
+            bounds = [(None, None), (None, None), (0, None)]  # a, c, shape
+            dual_stress = False
+        elif model == "Power":
+            bounds = [(0, None), (None, None), (0, None)]  # a, n, shape
+            dual_stress = False
+        elif model == "Dual-Exponential":
+            bounds = [
+                (None, None),
+                (None, None),
+                (0, None),
+                (0, None),
+            ]  # a, b, c, shape
+            dual_stress = True
+        elif model == "Power-Exponential":
+            bounds = [
+                (None, None),
+                (0, None),
+                (None, None),
+                (0, None),
+            ]  # a, c, n, shape
+            dual_stress = True
+        elif model == "Dual-Power":
+            bounds = [
+                (0, None),
+                (None, None),
+                (None, None),
+                (0, None),
+            ]  # c, n, m, shape
+            dual_stress = True
+        else:
+            raise ValueError(
+                "model must be one of Exponential, Eyring, Power, Dual-Exponential, Power-Exponential, Dual-Power"
+            )
+
+        if dist not in ["Weibull", "Exponential", "Lognormal", "Normal"]:
+            raise ValueError(
+                "dist must be one of Weibull, Exponential, Lognormal, Normal."
+            )
+
+        # remove the last bound as Exponential does not need a bounds for shape
+        if dist == "Exponential":
+            bounds = bounds[0:-1]
+
+        if right_censored is None:
+            right_censored = []
+            right_censored_stress_1 = []
+            right_censored_stress_2 = []
+
+        n = len(failures) + len(right_censored)
+        k = len(bounds)
+
+        def loglik_optimiser(
+            initial_guess,
+            dual_stress,
+            LL_func,
+            failures,
+            right_censored,
+            failure_stress_1,
+            failure_stress_2,
+            right_censored_stress_1,
+            right_censored_stress_2,
+            bounds,
+            optimizer,
+        ):
+            delta_LL = 1
+            LL_array = [1000000]
+            runs = 0
+            guess = initial_guess  # set the current guess as the initial guess and then update the current guess each iteration
+            while (
+                delta_LL > 0.001 and runs < 5
+            ):  # exits after BIC convergence or 5 iterations
+                runs += 1
+                if dual_stress is False:
+                    result = minimize(
+                        value_and_grad(LL_func),
+                        guess,
+                        args=(
+                            failures,
+                            right_censored,
+                            failure_stress_1,
+                            right_censored_stress_1,
+                        ),
+                        jac=True,
+                        method=optimizer,
+                        bounds=bounds,
+                    )
+                    LL2 = -LL_func(
+                        result.x,
+                        failures,
+                        right_censored,
+                        failure_stress_1,
+                        right_censored_stress_1,
+                    )
+                else:
+                    result = minimize(
+                        value_and_grad(LL_func),
+                        guess,
+                        args=(
+                            failures,
+                            right_censored,
+                            failure_stress_1,
+                            failure_stress_2,
+                            right_censored_stress_1,
+                            right_censored_stress_2,
+                        ),
+                        jac=True,
+                        method=optimizer,
+                        bounds=bounds,
+                    )
+                    LL2 = -LL_func(
+                        result.x,
+                        failures,
+                        right_censored,
+                        failure_stress_1,
+                        failure_stress_2,
+                        right_censored_stress_1,
+                        right_censored_stress_2,
+                    )
+                LL_array.append(np.abs(LL2))
+                delta_LL = abs(LL_array[-1] - LL_array[-2])
+                guess = result.x  # update the guess each iteration
+            return result.success, LL_array[-1], result.x
+
+        success = True  # this will be overwritten later if all optimizers failed
+        if optimizer is None:  # try TNC and L-BFGS-B
+            LL_optim_TNC = loglik_optimiser(
+                initial_guess,
+                dual_stress,
+                LL_func,
+                failures,
+                right_censored,
+                failure_stress_1,
+                failure_stress_2,
+                right_censored_stress_1,
+                right_censored_stress_2,
+                bounds,
+                optimizer="TNC",
+            )
+            LL_optim_LBFGSB = loglik_optimiser(
+                initial_guess,
+                dual_stress,
+                LL_func,
+                failures,
+                right_censored,
+                failure_stress_1,
+                failure_stress_2,
+                right_censored_stress_1,
+                right_censored_stress_2,
+                bounds,
+                optimizer="L-BFGS-B",
+            )
+            if LL_optim_TNC[0] is True and LL_optim_LBFGSB[0] is True:  # both worked
+                if LL_optim_TNC[1] < LL_optim_LBFGSB[1]:  # TNC wins
+                    params = LL_optim_TNC[2]
+                else:  # L-BFGS-B wins
+                    params = LL_optim_LBFGSB[2]
+            elif (
+                LL_optim_TNC[0] is True and LL_optim_LBFGSB[0] is False
+            ):  # only TNC worked
+                params = LL_optim_TNC[2]
+            elif (
+                LL_optim_TNC[0] is False and LL_optim_LBFGSB[0] is True
+            ):  # only L-BFGS-B worked
+                params = LL_optim_LBFGSB[2]
+            else:  # neither worked, try powell
+                LL_optim_powell = loglik_optimiser(
+                    initial_guess,
+                    dual_stress,
+                    LL_func,
+                    failures,
+                    right_censored,
+                    failure_stress_1,
+                    failure_stress_2,
+                    right_censored_stress_1,
+                    right_censored_stress_2,
+                    bounds,
+                    optimizer="powell",
+                )
+                if LL_optim_powell[0] is True:
+                    params = LL_optim_powell[2]  # powell worked
+                else:
+                    success = False  # powell failed. nelder-mead will be tried
+        elif optimizer == "L-BFGS-B":
+            LL_optim_LBFGSB = loglik_optimiser(
+                initial_guess,
+                dual_stress,
+                LL_func,
+                failures,
+                right_censored,
+                failure_stress_1,
+                failure_stress_2,
+                right_censored_stress_1,
+                right_censored_stress_2,
+                bounds,
+                optimizer="L-BFGS-B",
+            )
+            if LL_optim_LBFGSB[0] is True:
+                params = LL_optim_LBFGSB[2]
+            else:
+                success = False
+        elif optimizer == "TNC":
+            LL_optim_TNC = loglik_optimiser(
+                initial_guess,
+                dual_stress,
+                LL_func,
+                failures,
+                right_censored,
+                failure_stress_1,
+                failure_stress_2,
+                right_censored_stress_1,
+                right_censored_stress_2,
+                bounds,
+                optimizer="TNC",
+            )
+            if LL_optim_TNC[0] is True:
+                params = LL_optim_TNC[2]
+            else:
+                success = False
+        elif optimizer == "powell":
+            LL_optim_powell = loglik_optimiser(
+                initial_guess,
+                dual_stress,
+                LL_func,
+                failures,
+                right_censored,
+                failure_stress_1,
+                failure_stress_2,
+                right_censored_stress_1,
+                right_censored_stress_2,
+                bounds,
+                optimizer="powell",
+            )
+            if LL_optim_powell[0] is True:
+                params = LL_optim_powell[2]
+            else:
+                success = False
+
+        if success is True:
+            if model == "Exponential":
+                self.a = params[0]
+                self.b = params[1]
+            elif model == "Eyring":
+                self.a = params[0]
+                self.c = params[1]
+            elif model == "Power":
+                self.a = params[0]
+                self.n = params[1]
+            elif model == "Dual-Exponential":
+                self.a = params[0]
+                self.b = params[1]
+                self.c = params[2]
+            elif model == "Power-Exponential":
+                self.a = params[0]
+                self.c = params[1]
+                self.n = params[2]
+            elif model == "Dual-Power":
+                self.c = params[0]
+                self.n = params[1]
+                self.m = params[2]
+
+            if dual_stress is False:
+                if dist == "Weibull":
+                    self.beta = params[2]
+                elif dist in ["Lognormal", "Normal"]:
+                    self.sigma = params[2]
+            else:
+                if dist == "Weibull":
+                    self.beta = params[3]
+                elif dist in ["Lognormal", "Normal"]:
+                    self.sigma = params[3]
+
+        else:  # if the bounded optimizer (L-BFGS-B, TNC, powell) fails then we have a second attempt using the slower but slightly more reliable nelder-mead optimizer.
+            guess = initial_guess
+            if dual_stress is False:
+                result = minimize(
+                    value_and_grad(LL_func),
+                    guess,
+                    args=(
+                        failures,
+                        right_censored,
+                        failure_stress_1,
+                        right_censored_stress_1,
+                    ),
+                    jac=True,
+                    tol=1e-4,
+                    method="nelder-mead",
+                )
+            else:
+                result = minimize(
+                    value_and_grad(LL_func),
+                    guess,
+                    args=(
+                        failures,
+                        right_censored,
+                        failure_stress_1,
+                        failure_stress_2,
+                        right_censored_stress_1,
+                        right_censored_stress_2,
+                    ),
+                    jac=True,
+                    tol=1e-4,
+                    method="nelder-mead",
+                )
+
+            if result.success is True:
+                params = result.x
+                if model == "Exponential":
+                    self.a = params[0]
+                    self.b = params[1]
+                elif model == "Eyring":
+                    self.a = params[0]
+                    self.c = params[1]
+                elif model == "Power":
+                    self.a = params[0]
+                    self.n = params[1]
+                elif model == "Dual-Exponential":
+                    self.a = params[0]
+                    self.b = params[1]
+                    self.c = params[2]
+                elif model == "Power-Exponential":
+                    self.a = params[0]
+                    self.c = params[1]
+                    self.n = params[2]
+                elif model == "Dual-Power":
+                    self.c = params[0]
+                    self.n = params[1]
+                    self.m = params[2]
+
+                if dual_stress is False:
+                    if dist == "Weibull":
+                        self.beta = params[2]
+                    elif dist in ["Lognormal", "Normal"]:
+                        self.sigma = params[2]
+                else:
+                    if dist == "Weibull":
+                        self.beta = params[3]
+                    elif dist in ["Lognormal", "Normal"]:
+                        self.sigma = params[3]
+
+            else:
+                success = False  # everything failed
+                colorprint(
+                    str(
+                        "WARNING: MLE estimates failed for "
+                        + dist
+                        + " "
+                        + model
+                        + ". The least squares estimates have been returned. These results may not be as accurate as MLE."
+                    ),
+                    text_color="red",
+                )
+
+                if model == "Exponential":
+                    self.a = initial_guess[0]
+                    self.b = initial_guess[1]
+                elif model == "Eyring":
+                    self.a = initial_guess[0]
+                    self.c = initial_guess[1]
+                elif model == "Power":
+                    self.a = initial_guess[0]
+                    self.n = initial_guess[1]
+                elif model == "Dual-Exponential":
+                    self.a = initial_guess[0]
+                    self.b = initial_guess[1]
+                    self.c = initial_guess[2]
+                elif model == "Power-Exponential":
+                    self.a = initial_guess[0]
+                    self.c = initial_guess[1]
+                    self.n = initial_guess[2]
+                elif model == "Dual-Power":
+                    self.c = initial_guess[0]
+                    self.n = initial_guess[1]
+                    self.m = initial_guess[2]
+
+                if dual_stress is False:
+                    if dist == "Weibull":
+                        self.beta = initial_guess[2]
+                    elif dist in ["Lognormal", "Normal"]:
+                        self.sigma = initial_guess[2]
+                else:
+                    if dist == "Weibull":
+                        self.beta = initial_guess[3]
+                    elif dist in ["Lognormal", "Normal"]:
+                        self.sigma = initial_guess[3]
+        self.success = success
+
+
 def write_df_to_xlsx(df, path, **kwargs):
     """
     Writes a dataframe to an xlsx file
@@ -3682,3 +4521,392 @@ def removeNaNs(X):
     if arr_out is True:
         out = np.asarray(out)
     return out
+
+
+class make_fitted_dist_params_for_ALT_probplots:
+    """
+    creates a class structure for the ALT probability plots to give to Probability_plotting
+    """
+
+    def __init__(self, dist, params):
+        if dist == "Weibull":
+            self.alpha = params[0]
+            self.beta = params[1]
+            self.gamma = 0
+            self.alpha_SE = None
+            self.beta_SE = None
+            self.Cov_alpha_beta = None
+        elif dist == "Lognormal":
+            self.mu = np.log(params[0])
+            self.sigma = params[1]
+            self.gamma = 0
+            self.mu_SE = None
+            self.sigma_SE = None
+            self.Cov_mu_sigma = None
+        elif dist == "Normal":
+            self.mu = params[0]
+            self.sigma = params[1]
+            self.mu_SE = None
+            self.sigma_SE = None
+            self.Cov_mu_sigma = None
+        elif dist == "Exponential":
+            self.Lambda = 1 / params[0]
+            self.Lambda_SE = None
+            self.gamma = 0
+        else:
+            raise ValueError(
+                "dist must be one of Weibull, Normal, Lognormal, Exponential"
+            )
+
+
+def ALT_prob_plot(
+    dist,
+    model,
+    stresses_for_groups,
+    failure_groups,
+    right_censored_groups,
+    life_func,
+    shape,
+    scale_for_change_df,
+    shape_for_change_df,
+    use_level_stress,
+):
+
+    from reliability.Probability_plotting import plotting_positions
+
+    if dist == "Weibull":
+        from reliability.Probability_plotting import (
+            Weibull_probability_plot as probplot,
+        )
+        from reliability.Distributions import Weibull_Distribution as Distribution
+    elif dist == "Lognormal":
+        from reliability.Probability_plotting import (
+            Lognormal_probability_plot as probplot,
+        )
+        from reliability.Distributions import Lognormal_Distribution as Distribution
+    elif dist == "Normal":
+        from reliability.Probability_plotting import Normal_probability_plot as probplot
+        from reliability.Distributions import Normal_Distribution as Distribution
+    elif dist == "Exponential":
+        from reliability.Probability_plotting import (
+            Exponential_probability_plot_Weibull_Scale as probplot,
+        )
+        from reliability.Distributions import Exponential_Distribution as Distribution
+    else:
+        raise ValueError("dist must be either Weibull, Lognormal, Normal, Exponential")
+
+    if model in ["Dual-Exponential", "Power-Exponential", "Dual-Power"]:
+        dual_stress = True
+    elif model in ["Exponential", "Eyring", "Power"]:
+        dual_stress = False
+    else:
+        raise ValueError(
+            "model must be one of Exponential, Eyring, Power, Dual-Exponential, Power-Exponential, Dual-Power"
+        )
+
+    color_cycle = plt.rcParams["axes.prop_cycle"].by_key()[
+        "color"
+    ]  # gets the default color cycle
+    fig = plt.figure()
+    x_array = []
+    y_array = []
+    if dual_stress is True:
+        for i, stress in enumerate(stresses_for_groups):
+            f = failure_groups[i]
+            if right_censored_groups is None:
+                rc = None
+            else:
+                rc = right_censored_groups[i]
+            # get the plotting positions so they can be given to probability_plot_xylims for autoscaling
+            x, y = plotting_positions(failures=f, right_censored=rc)
+            x_array.extend(x)
+            y_array.extend(y)
+            # generate the probability plot and the line from the life-stress model
+            fitted_dist_params = make_fitted_dist_params_for_ALT_probplots(
+                dist=dist, params=[life_func(S1=stress[0], S2=stress[1]), shape]
+            )
+            probplot(
+                failures=f,
+                right_censored=rc,
+                __fitted_dist_params=fitted_dist_params,
+                color=color_cycle[i],
+                label=str(
+                    str(round_to_decimals(stress[0]))
+                    + ", "
+                    + str(round_to_decimals(stress[1]))
+                ),
+            )
+            # plot the original fitted line
+            if dist == "Exponential":
+                if scale_for_change_df[i] != "":
+                    Distribution(1 / scale_for_change_df[i]).CDF(
+                        linestyle="--", alpha=0.5, color=color_cycle[i]
+                    )
+            else:
+                if scale_for_change_df[i] != "":
+                    Distribution(scale_for_change_df[i], shape_for_change_df[i]).CDF(
+                        linestyle="--", alpha=0.5, color=color_cycle[i]
+                    )
+
+        if use_level_stress is not None:
+            if dist in ["Weibull", "Normal"]:
+                distribution_at_use_stress = Distribution(
+                    life_func(S1=use_level_stress[0], S2=use_level_stress[1]), shape
+                )
+            elif dist == "Lognormal":
+                distribution_at_use_stress = Distribution(
+                    np.log(life_func(S1=use_level_stress[0], S2=use_level_stress[1])),
+                    shape,
+                )
+            elif dist == "Exponential":
+                distribution_at_use_stress = Distribution(
+                    1 / life_func(S1=use_level_stress[0], S2=use_level_stress[1])
+                )
+            distribution_at_use_stress.CDF(
+                color=color_cycle[i + 1],
+                label=str(
+                    str(round_to_decimals(use_level_stress[0]))
+                    + ", "
+                    + str(round_to_decimals(use_level_stress[1]))
+                    + " (use stress)"
+                ),
+            )
+            x_array.extend(
+                [
+                    distribution_at_use_stress.quantile(min(y_array)),
+                    distribution_at_use_stress.quantile(max(y_array)),
+                ]
+            )  # this ensures the plot limits include the use stress distribution
+
+        plt.legend(title="     Stress 1, Stress 2")
+
+    else:
+        for i, stress in enumerate(stresses_for_groups):
+            f = failure_groups[i]
+            if right_censored_groups is None:
+                rc = None
+            else:
+                rc = right_censored_groups[i]
+            # get the plotting positions so they can be given to probability_plot_xylims for autoscaling
+            x, y = plotting_positions(failures=f, right_censored=rc)
+            x_array.extend(x)
+            y_array.extend(y)
+            # generate the probability plot and the line from the life-stress model
+            fitted_dist_params = make_fitted_dist_params_for_ALT_probplots(
+                dist=dist, params=[life_func(S1=stress), shape]
+            )
+            probplot(
+                failures=f,
+                right_censored=rc,
+                __fitted_dist_params=fitted_dist_params,
+                color=color_cycle[i],
+                label=round_to_decimals(stress),
+            )
+            # plot the original fitted line
+            if dist == "Exponential":
+                if scale_for_change_df[i] != "":
+                    Distribution(1 / scale_for_change_df[i]).CDF(
+                        linestyle="--", alpha=0.5, color=color_cycle[i]
+                    )
+            else:
+                if scale_for_change_df[i] != "":
+                    Distribution(scale_for_change_df[i], shape_for_change_df[i]).CDF(
+                        linestyle="--", alpha=0.5, color=color_cycle[i]
+                    )
+
+        if use_level_stress is not None:
+            if dist in ["Weibull", "Normal"]:
+                distribution_at_use_stress = Distribution(
+                    life_func(S1=use_level_stress), shape
+                )
+            elif dist == "Lognormal":
+                distribution_at_use_stress = Distribution(
+                    np.log(life_func(S1=use_level_stress)), shape
+                )
+            elif dist == "Exponential":
+                distribution_at_use_stress = Distribution(
+                    1 / life_func(S1=use_level_stress)
+                )
+            distribution_at_use_stress.CDF(
+                color=color_cycle[i + 1],
+                label=str(str(round_to_decimals(use_level_stress)) + " (use stress)"),
+            )
+            x_array.extend(
+                [
+                    distribution_at_use_stress.quantile(min(y_array)),
+                    distribution_at_use_stress.quantile(max(y_array)),
+                ]
+            )  # this ensures the plot limits include the use stress distribution
+
+        plt.legend(title="Stress")
+
+    probplot_type = dist.lower()
+    if dist == "Exponential":
+        probplot_type = "weibull"
+
+    probability_plot_xylims(x=x_array, y=y_array, dist=probplot_type, spacing=0.1)
+    probability_plot_xyticks()
+    plt.title("Probability plot\n" + dist + "-" + model + " Model")
+    plt.tight_layout()
+    return fig
+
+
+def life_stress_plot(
+    model, dist, life_func, failure_groups, stresses_for_groups, use_level_stress
+):
+    color_cycle = plt.rcParams["axes.prop_cycle"].by_key()[
+        "color"
+    ]  # gets the default color cycle
+    if model in ["Dual-Exponential", "Power-Exponential", "Dual-Power"]:
+        dual_stress = True
+    elif model in ["Exponential", "Eyring", "Power"]:
+        dual_stress = False
+    else:
+        raise ValueError(
+            "model must be one of Exponential, Eyring, Power, Dual-Exponential, Power-Exponential, Dual-Power"
+        )
+
+    if dist == "Weibull":
+        line_label = r"$\alpha$"
+    elif dist == "Lognormal":
+        line_label = r"$ln(\sigma)$"
+    elif dist == "Normal":
+        line_label = r"$\sigma$"
+    elif dist == "Exponential":
+        line_label = r"$1/\lambda$"
+    else:
+        raise ValueError("dist must be either Weibull, Lognormal, Normal, Exponential")
+
+    fig = plt.figure(figsize=(10, 8))
+    if dual_stress is True:
+        # gridspec allows the plot to be placed off centre. This is not possible with subplots since the 3d plot's subplot is more than half the canvas
+        gridspec.GridSpec(nrows=1, ncols=7, figure=fig)
+        ax = plt.subplot2grid(
+            shape=(1, 7), loc=(0, 1), rowspan=1, colspan=7, projection="3d"
+        )
+        # collect all the stresses so we can find their min and max
+        stress_1_array0 = []
+        stress_2_array0 = []
+        for stress in stresses_for_groups:
+            stress_1_array0.append(stress[0])
+            stress_2_array0.append(stress[1])
+        if use_level_stress is not None:
+            stress_1_array0.append(use_level_stress[0])
+            stress_2_array0.append(use_level_stress[1])
+        min_stress_1 = min(stress_1_array0)
+        max_stress_1 = max(stress_1_array0)
+        min_stress_2 = min(stress_2_array0)
+        max_stress_2 = max(stress_2_array0)
+        # find the upper and lower limits so we can generate the grid of points for the surface
+        stress_1_delta_log = np.log(max_stress_1) - np.log(min_stress_1)
+        stress_2_delta_log = np.log(max_stress_2) - np.log(min_stress_2)
+        stress_1_array_lower = np.exp(np.log(min_stress_1) - stress_1_delta_log * 0.2)
+        stress_2_array_lower = np.exp(np.log(min_stress_2) - stress_2_delta_log * 0.2)
+        stress_1_array_upper = np.exp(np.log(max_stress_1) + stress_1_delta_log * 0.2)
+        stress_2_array_upper = np.exp(np.log(max_stress_2) + stress_2_delta_log * 0.2)
+        stress_1_array = np.linspace(stress_1_array_lower, stress_1_array_upper, 50)
+        stress_2_array = np.linspace(stress_2_array_lower, stress_2_array_upper, 50)
+        X, Y = np.meshgrid(stress_1_array, stress_2_array)
+        Z = life_func(S1=X, S2=Y)
+        # plot the surface showing stress_1 and stress_2 vs life
+        normalized_colors = colors.LogNorm(vmin=Z.min(), vmax=Z.max())
+        ax.plot_surface(
+            X,
+            Y,
+            Z,
+            cmap="jet_r",
+            norm=normalized_colors,
+            linewidth=1,
+            antialiased=False,
+            alpha=0.5,
+        )
+        for i, stress in enumerate(stresses_for_groups):
+            # plot the failures as a scatter plot
+            ax.scatter(
+                stress[0],
+                stress[1],
+                failure_groups[i],
+                color=color_cycle[i],
+                s=30,
+                label=str(
+                    "Failures at stress of "
+                    + str(round_to_decimals(stress[0]))
+                    + ", "
+                    + str(round_to_decimals(stress[1]))
+                ),
+            )
+        if use_level_stress is not None:
+            # plot the use level stress
+            ax.scatter(
+                use_level_stress[0],
+                use_level_stress[1],
+                life_func(S1=use_level_stress[0], S2=use_level_stress[1]),
+                color=color_cycle[i + 1],
+                s=30,
+                label=str(
+                    "Use stress of "
+                    + str(round_to_decimals(use_level_stress[0]))
+                    + ", "
+                    + str(round_to_decimals(use_level_stress[1]))
+                ),
+                marker="^",
+            )
+        ax.set_zlabel("Life")
+        ax.set_zlim(bottom=0)
+        plt.xlabel("Stress 1")
+        plt.ylabel("Stress 2")
+        plt.xlim(min(stress_1_array), max(stress_1_array))
+        plt.ylim(min(stress_2_array), max(stress_2_array))
+        plt.legend(
+            bbox_to_anchor=(0.02, 1)
+        )  # the bbox argument places the legend outside of the plot
+        plt.title("Life-stress plot\n" + dist + "-" + model + " model")
+
+    else:  # single stress model
+        if use_level_stress is not None:
+            min_stress = min(min(stresses_for_groups), use_level_stress)
+        else:
+            min_stress = min(stresses_for_groups)
+        max_stress = max(stresses_for_groups)
+        stress_delta_log = np.log(max_stress) - np.log(min_stress)
+        # lower and upper lim
+        stress_array_lower = np.exp(np.log(min_stress) - stress_delta_log * 0.2)
+        stress_array_upper = np.exp(np.log(max_stress) + stress_delta_log * 0.2)
+        # array for the life-stress line
+        stress_array = np.linspace(1, stress_array_upper * 10, 1000)
+        life_array = life_func(S1=stress_array)
+        plt.plot(
+            stress_array,
+            life_array,
+            label=str("Characteristic life (" + line_label + ")"),
+            color="k",
+        )
+        plt.ylabel("Life")
+        plt.xlabel("Stress")
+        for i, stress in enumerate(stresses_for_groups):
+            failure_points = failure_groups[i]
+            stress_points = np.ones_like(failure_points) * stress
+            plt.scatter(
+                stress_points,
+                failure_points,
+                color=color_cycle[i],
+                alpha=0.7,
+                label=str("Failures at stress of " + str(round_to_decimals(stress))),
+            )
+        if use_level_stress is not None:
+            alpha_at_use_stress = life_func(S1=use_level_stress)
+            plt.plot(
+                [use_level_stress, use_level_stress, plt.xlim()[0]],
+                [-1e20, alpha_at_use_stress, alpha_at_use_stress],
+                label=str("Use stress of " + str(round_to_decimals(use_level_stress))),
+                color=color_cycle[i + 1],
+            )
+        plt.ylim(
+            0,
+            1.2 * max(life_func(S1=stress_array_lower), max(np.ravel(failure_groups))),
+        )
+        plt.xlim(stress_array_lower, stress_array_upper)
+        plt.legend(loc="upper right")
+        plt.title("Life-stress plot\n" + dist + "-" + model + " model")
+        plt.tight_layout()
+    return fig
