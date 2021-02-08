@@ -1171,8 +1171,8 @@ class fitters_input_checking:
             raise ValueError(
                 "right_censored must be a list or array of right censored failure data"
             )
-        failures = np.asarray(failures).astype(np.float)
-        right_censored = np.asarray(right_censored).astype(np.float)
+        failures = np.asarray(failures).astype(float)
+        right_censored = np.asarray(right_censored).astype(float)
 
         # check failures and right_censored are in the right range for the distribution
         if dist not in ["Normal_2P", "Gumbel_2P"]:
@@ -1517,12 +1517,12 @@ class ALT_fitters_input_checking:
                 "right_censored_stress_2 must be a list or array of right censored failure stress data"
             )
 
-        failures = np.asarray(failures).astype(np.float)
-        failure_stress_1 = np.asarray(failure_stress_1).astype(np.float)
-        failure_stress_2 = np.asarray(failure_stress_2).astype(np.float)
-        right_censored = np.asarray(right_censored).astype(np.float)
-        right_censored_stress_1 = np.asarray(right_censored_stress_1).astype(np.float)
-        right_censored_stress_2 = np.asarray(right_censored_stress_2).astype(np.float)
+        failures = np.asarray(failures).astype(float)
+        failure_stress_1 = np.asarray(failure_stress_1).astype(float)
+        failure_stress_2 = np.asarray(failure_stress_2).astype(float)
+        right_censored = np.asarray(right_censored).astype(float)
+        right_censored_stress_1 = np.asarray(right_censored_stress_1).astype(float)
+        right_censored_stress_2 = np.asarray(right_censored_stress_2).astype(float)
 
         # check that list lengths match
         if is_dual_stress is False:
