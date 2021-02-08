@@ -143,7 +143,7 @@ def test_Fit_Lognormal_3P():
 
     MLE = Fit_Lognormal_3P(failures=data.failures, right_censored=data.right_censored, method='MLE', show_probability_plot=False, print_results=False)
     assert_allclose(MLE.mu, 0.5608879850309877, rtol=1e-5, atol=1e-5) # needs bigger tolerance for Python 3.8 and 3.9
-    assert_allclose(MLE.sigma, 0.7396271168422542, rtol=rtol, atol=atol)
+    assert_allclose(MLE.sigma, 0.7396271168422542, rtol=1e-5, atol=1e-5) # needs bigger tolerance for Python 3.8 and 3.9
     assert_allclose(MLE.gamma, 500.79568888668746, rtol=rtol, atol=atol)
     assert_allclose(MLE.AICc, 52.067948767151364, rtol=rtol, atol=atol)
     assert_allclose(MLE.BIC, 53.555145587813335, rtol=rtol, atol=atol)
@@ -153,7 +153,7 @@ def test_Fit_Lognormal_3P():
 
     LS = Fit_Lognormal_3P(failures=data.failures, right_censored=data.right_censored, method='LS', show_probability_plot=False, print_results=False)
     assert_allclose(LS.mu, 0.976088004545536, rtol=1e-5, atol=1e-5) # needs bigger tolerance for Python 3.8 and 3.9
-    assert_allclose(LS.sigma, 0.4340076639560259, rtol=rtol, atol=atol)
+    assert_allclose(LS.sigma, 0.4340076639560259, rtol=1e-5, atol=1e-5) # needs bigger tolerance for Python 3.8 and 3.9
     assert_allclose(LS.gamma, 499.9229609896007, rtol=rtol, atol=atol)
     assert_allclose(LS.AICc, 52.60637160294965, rtol=rtol, atol=atol)
     assert_allclose(LS.BIC, 54.09356842361162, rtol=rtol, atol=atol)
