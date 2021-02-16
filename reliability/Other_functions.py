@@ -1025,7 +1025,7 @@ class make_ALT_data:
                 )
             if c <= 0:
                 raise ValueError("c must be positive")
-            life_model = c * (stress_1 ** float(n)) * (stress_2 ** float(m))
+            life_model = c * (stress_1 ** float(m)) * (stress_2 ** float(n))
 
         # data sampling
         failures = []

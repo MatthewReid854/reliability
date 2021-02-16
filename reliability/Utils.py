@@ -1421,14 +1421,14 @@ class ALT_fitters_input_checking:
             "Exponential",
             "Eyring",
             "Power",
-            "Dual-Exponential",
-            "Power-Exponential",
-            "Dual-Power",
+            "Dual_Exponential",
+            "Power_Exponential",
+            "Dual_Power",
         ]:
             raise ValueError(
-                "life_stess_model must be one of Exponential, Eyring, Power, Dual-Exponential, Power-Exponential, Dual-Power."
+                "life_stess_model must be one of Exponential, Eyring, Power, Dual_Exponential, Power_Exponential, Dual_Power."
             )
-        if life_stress_model in ["Dual-Exponential", "Power-Exponential", "Dual-Power"]:
+        if life_stress_model in ["Dual_Exponential", "Power_Exponential", "Dual_Power"]:
             is_dual_stress = True
             min_failures_reqd = 4
         else:
@@ -1641,12 +1641,10 @@ class ALT_fitters_input_checking:
                 # add in empty lists for stresses which appear in failure_stress_1 but not in right_censored_stress_1
                 for i, stress in enumerate(unique_failure_stresses):
                     if stress not in unique_right_censored_stresses:
-                        unique_right_censored_stresses.insert(i, stress)
                         right_censored_groups.insert(i, [])
 
             else:
                 right_censored_groups = None
-                unique_right_censored_stresses = None
         else:  # This is for dual stress cases
             # concatenate the stresses to deal with them as a pair
             failure_stress_pairs = []
@@ -1730,21 +1728,9 @@ class ALT_fitters_input_checking:
                 # add in empty lists for stresses which appear in failure_stress but not in right_censored_stress
                 for i, stress in enumerate(unique_failure_stresses_str):
                     if stress not in unique_right_censored_stresses_str:
-                        unique_right_censored_stresses_str.insert(i, stress)
                         right_censored_groups.insert(i, [])
-
-                # unpack the concatenated string for dual stresses ==> ['10.0_1000.0','20.0_2000.0','5.0_500.0'] should be [[10.0,1000.0],[20.0,2000.0],[5.0,500.0]]
-                unique_right_censored_stresses = []
-                for item in unique_right_censored_stresses_str:
-                    stress_pair = [float(x) for x in list(item.split("_"))]
-                    unique_right_censored_stresses.append(stress_pair)
-
-                if unique_right_censored_stresses != unique_failure_stresses:
-                    # this should never be reached but it's here as a check for now
-                    raise ValueError("something went wrong")
             else:
                 right_censored_groups = None
-                unique_right_censored_stresses = None
 
         # check that use level stress is the correct type
         if is_dual_stress is False and use_level_stress is not None:
@@ -3671,9 +3657,9 @@ def ALT_least_squares(model, failures, stress_1_array, stress_2_array=None):
         Exponential - [a,b]
         Eyring - [a,c]
         Power - [a,n]
-        Dual-Exponential - [a,b,c]
-        Power-Exponential - [a,c,n]
-        Dual-Power - [c,n,m]
+        Dual_Exponential - [a,b,c]
+        Power_Exponential - [a,c,n]
+        Dual_Power - [c,m,n]
     """
 
     L = np.asarray(failures)
@@ -3691,7 +3677,7 @@ def ALT_least_squares(model, failures, stress_1_array, stress_2_array=None):
     elif model == "Power":
         m, c = linear_regression(x=np.log(S1), y=np.log(L), RRX_or_RRY="RRY")
         output = [np.exp(c), m]  # a,n
-    elif model == "Dual-Exponential":
+    elif model == "Dual_Exponential":
         X = 1 / S1
         Y = 1 / S2
         Z = np.log(L)
@@ -3700,7 +3686,7 @@ def ALT_least_squares(model, failures, stress_1_array, stress_2_array=None):
         # linear regression formula for RRY
         solution = np.linalg.inv(xx.T.dot(xx)).dot(xx.T).dot(yy)
         output = [solution[1], solution[2], np.exp(solution[0])]  # a,b,c
-    elif model == "Power-Exponential":
+    elif model == "Power_Exponential":
         X = 1 / S1
         Y = np.log(S2)
         Z = np.log(L)
@@ -3709,7 +3695,7 @@ def ALT_least_squares(model, failures, stress_1_array, stress_2_array=None):
         # linear regression formula for RRY
         solution = np.linalg.inv(xx.T.dot(xx)).dot(xx.T).dot(yy)
         output = [solution[1], np.exp(solution[0]), solution[2]]  # a,c,n
-    elif model == "Dual-Power":
+    elif model == "Dual_Power":
         X = np.log(S1)
         Y = np.log(S2)
         Z = np.log(L)
@@ -3717,10 +3703,10 @@ def ALT_least_squares(model, failures, stress_1_array, stress_2_array=None):
         xx = np.array([np.ones_like(X), X, Y]).T
         # linear regression formula for RRY
         solution = np.linalg.inv(xx.T.dot(xx)).dot(xx.T).dot(yy)
-        output = [np.exp(solution[0]), solution[1], solution[2]]  # c,n,m
+        output = [np.exp(solution[0]), solution[1], solution[2]]  # c,m,n
     else:
         raise ValueError(
-            "model must be one of Exponential, Eyring, Power, Dual-Exponential, Power-Exponential, Dual-Power."
+            "model must be one of Exponential, Eyring, Power, Dual_Exponential, Power_Exponential, Dual_Power."
         )
     return output
 
@@ -4062,7 +4048,7 @@ class ALT_MLE_optimisation:
         elif model == "Power":
             bounds = [(0, None), (None, None), (0, None)]  # a, n, shape
             dual_stress = False
-        elif model == "Dual-Exponential":
+        elif model == "Dual_Exponential":
             bounds = [
                 (None, None),
                 (None, None),
@@ -4070,7 +4056,7 @@ class ALT_MLE_optimisation:
                 (0, None),
             ]  # a, b, c, shape
             dual_stress = True
-        elif model == "Power-Exponential":
+        elif model == "Power_Exponential":
             bounds = [
                 (None, None),
                 (0, None),
@@ -4078,17 +4064,17 @@ class ALT_MLE_optimisation:
                 (0, None),
             ]  # a, c, n, shape
             dual_stress = True
-        elif model == "Dual-Power":
+        elif model == "Dual_Power":
             bounds = [
                 (0, None),
                 (None, None),
                 (None, None),
                 (0, None),
-            ]  # c, n, m, shape
+            ]  # c, m, n, shape
             dual_stress = True
         else:
             raise ValueError(
-                "model must be one of Exponential, Eyring, Power, Dual-Exponential, Power-Exponential, Dual-Power"
+                "model must be one of Exponential, Eyring, Power, Dual_Exponential, Power_Exponential, Dual_Power"
             )
 
         if dist not in ["Weibull", "Exponential", "Lognormal", "Normal"]:
@@ -4104,9 +4090,6 @@ class ALT_MLE_optimisation:
             right_censored = []
             right_censored_stress_1 = []
             right_censored_stress_2 = []
-
-        n = len(failures) + len(right_censored)
-        k = len(bounds)
 
         def loglik_optimiser(
             initial_guess,
@@ -4304,18 +4287,18 @@ class ALT_MLE_optimisation:
             elif model == "Power":
                 self.a = params[0]
                 self.n = params[1]
-            elif model == "Dual-Exponential":
+            elif model == "Dual_Exponential":
                 self.a = params[0]
                 self.b = params[1]
                 self.c = params[2]
-            elif model == "Power-Exponential":
+            elif model == "Power_Exponential":
                 self.a = params[0]
                 self.c = params[1]
                 self.n = params[2]
-            elif model == "Dual-Power":
+            elif model == "Dual_Power":
                 self.c = params[0]
-                self.n = params[1]
-                self.m = params[2]
+                self.m = params[1]
+                self.n = params[2]
 
             if dual_stress is False:
                 if dist == "Weibull":
@@ -4372,18 +4355,18 @@ class ALT_MLE_optimisation:
                 elif model == "Power":
                     self.a = params[0]
                     self.n = params[1]
-                elif model == "Dual-Exponential":
+                elif model == "Dual_Exponential":
                     self.a = params[0]
                     self.b = params[1]
                     self.c = params[2]
-                elif model == "Power-Exponential":
+                elif model == "Power_Exponential":
                     self.a = params[0]
                     self.c = params[1]
                     self.n = params[2]
-                elif model == "Dual-Power":
+                elif model == "Dual_Power":
                     self.c = params[0]
-                    self.n = params[1]
-                    self.m = params[2]
+                    self.m = params[1]
+                    self.n = params[2]
 
                 if dual_stress is False:
                     if dist == "Weibull":
@@ -4418,18 +4401,18 @@ class ALT_MLE_optimisation:
                 elif model == "Power":
                     self.a = initial_guess[0]
                     self.n = initial_guess[1]
-                elif model == "Dual-Exponential":
+                elif model == "Dual_Exponential":
                     self.a = initial_guess[0]
                     self.b = initial_guess[1]
                     self.c = initial_guess[2]
-                elif model == "Power-Exponential":
+                elif model == "Power_Exponential":
                     self.a = initial_guess[0]
                     self.c = initial_guess[1]
                     self.n = initial_guess[2]
-                elif model == "Dual-Power":
+                elif model == "Dual_Power":
                     self.c = initial_guess[0]
-                    self.n = initial_guess[1]
-                    self.m = initial_guess[2]
+                    self.m = initial_guess[1]
+                    self.n = initial_guess[2]
 
                 if dual_stress is False:
                     if dist == "Weibull":
@@ -4595,19 +4578,18 @@ def ALT_prob_plot(
     else:
         raise ValueError("dist must be either Weibull, Lognormal, Normal, Exponential")
 
-    if model in ["Dual-Exponential", "Power-Exponential", "Dual-Power"]:
+    if model in ["Dual_Exponential", "Power_Exponential", "Dual_Power"]:
         dual_stress = True
     elif model in ["Exponential", "Eyring", "Power"]:
         dual_stress = False
     else:
         raise ValueError(
-            "model must be one of Exponential, Eyring, Power, Dual-Exponential, Power-Exponential, Dual-Power"
+            "model must be one of Exponential, Eyring, Power, Dual_Exponential, Power_Exponential, Dual_Power"
         )
 
     color_cycle = plt.rcParams["axes.prop_cycle"].by_key()[
         "color"
     ]  # gets the default color cycle
-    fig = plt.figure()
     x_array = []
     y_array = []
     if dual_stress is True:
@@ -4746,9 +4728,9 @@ def ALT_prob_plot(
 
     probability_plot_xylims(x=x_array, y=y_array, dist=probplot_type, spacing=0.1)
     probability_plot_xyticks()
-    plt.title("Probability plot\n" + dist + "-" + model + " Model")
+    plt.title("Probability plot\n" + dist + "_" + model + " Model")
     plt.tight_layout()
-    return fig
+    return plt.gcf()
 
 
 def life_stress_plot(
@@ -4757,13 +4739,13 @@ def life_stress_plot(
     color_cycle = plt.rcParams["axes.prop_cycle"].by_key()[
         "color"
     ]  # gets the default color cycle
-    if model in ["Dual-Exponential", "Power-Exponential", "Dual-Power"]:
+    if model in ["Dual_Exponential", "Power_Exponential", "Dual_Power"]:
         dual_stress = True
     elif model in ["Exponential", "Eyring", "Power"]:
         dual_stress = False
     else:
         raise ValueError(
-            "model must be one of Exponential, Eyring, Power, Dual-Exponential, Power-Exponential, Dual-Power"
+            "model must be one of Exponential, Eyring, Power, Dual_Exponential, Power_Exponential, Dual_Power"
         )
 
     if dist == "Weibull":
@@ -4860,7 +4842,7 @@ def life_stress_plot(
         plt.legend(
             bbox_to_anchor=(0.02, 1)
         )  # the bbox argument places the legend outside of the plot
-        plt.title("Life-stress plot\n" + dist + "-" + model + " model")
+        plt.title("Life-stress plot\n" + dist + "_" + model + " model")
 
     else:  # single stress model
         if use_level_stress is not None:

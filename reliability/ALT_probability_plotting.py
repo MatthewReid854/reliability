@@ -66,6 +66,13 @@ class ALT_probability_plot_Weibull:
         common_shape_method="BIC",
     ):
 
+        colorprint(
+            "Deprecation Warning: All functions within the ALT_probability_plotting module have been deprecated.\n"
+            "Their functionality has been merged with ALT_Fitters as part of a complete rewrite of all functions within ALT_Fitters.\n"
+            "Your function has still been run, however, all ALT_probability_plotting functions will be removed in July 2021.",
+            text_color="red",
+        )
+
         # input type checking and converting to arrays in preperation for creation of dataframe
         if common_shape_method not in ["BIC", "weighted_average", "average"]:
             raise ValueError(
@@ -393,6 +400,13 @@ class ALT_probability_plot_Exponential:
         show_plot=True,
     ):
 
+        colorprint(
+            "Deprecation Warning: All functions within the ALT_probability_plotting module have been deprecated.\n"
+            "Their functionality has been merged with ALT_Fitters as part of a complete rewrite of all functions within ALT_Fitters.\n"
+            "Your function has still been run, however, all ALT_probability_plotting functions will be removed in July 2021.",
+            text_color="red",
+        )
+
         # input type checking and converting to arrays in preperation for creation of dataframe
         if len(failures) != len(failure_stress):
             raise ValueError(
@@ -669,6 +683,13 @@ class ALT_probability_plot_Lognormal:
         show_plot=True,
         common_shape_method="BIC",
     ):
+
+        colorprint(
+            "Deprecation Warning: All functions within the ALT_probability_plotting module have been deprecated.\n"
+            "Their functionality has been merged with ALT_Fitters as part of a complete rewrite of all functions within ALT_Fitters.\n"
+            "Your function has still been run, however, all ALT_probability_plotting functions will be removed in July 2021.",
+            text_color="red",
+        )
 
         # input type checking and converting to arrays in preperation for creation of dataframe
         if common_shape_method not in ["BIC", "weighted_average", "average"]:
@@ -997,6 +1018,13 @@ class ALT_probability_plot_Normal:
         show_plot=True,
         common_shape_method="BIC",
     ):
+
+        colorprint(
+            "Deprecation Warning: All functions within the ALT_probability_plotting module have been deprecated.\n"
+            "Their functionality has been merged with ALT_Fitters as part of a complete rewrite of all functions within ALT_Fitters.\n"
+            "Your function has still been run, however, all ALT_probability_plotting functions will be removed in July 2021.",
+            text_color="red",
+        )
 
         # input type checking and converting to arrays in preperation for creation of dataframe
         if common_shape_method not in ["BIC", "weighted_average", "average"]:

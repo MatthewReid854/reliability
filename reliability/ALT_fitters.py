@@ -1,7 +1,7 @@
 import numpy as np
-import matplotlib.pyplot as plt
 import scipy.stats as ss
 import pandas as pd
+import matplotlib.pyplot as plt
 import autograd.numpy as anp
 from autograd.scipy.special import erf
 from autograd.differential_operators import hessian
@@ -25,6 +25,2454 @@ from reliability.Utils import (
 pd.set_option("display.width", 200)  # prevents wrapping after default 80 characters
 pd.set_option("display.max_columns", 9)  # shows the dataframe without ... truncation
 shape_change_threshold = 0.5
+
+
+class Fit_Everything_ALT:
+    """
+    Fit_Everything_ALT
+    This function will fit all available ALT models for the data you enter, which may include right censored data.
+
+    ALT models are either single stress (Exponential, Eyring, Power) or dual stress (Dual_Exponential, Power_Exponential, Dual_Power).
+    Depending on the data you enter (ie. whether failure_stress_2 is provided), the applicable set of ALT models will be fitted.
+
+    Inputs:
+    failures - an array or list of the failure times (this does not need to be sorted).
+    failure_stress_1 - an array or list of the corresponding stresses (such as temperature or voltage) at which each failure occurred.
+        This must match the length of failures as each failure is tied to a failure stress.
+    failure_stress_2 - an array or list of the corresponding stresses (such as temperature or voltage) at which each failure occurred.
+        This must match the length of failures as each failure is tied to a failure stress.
+        Optional input. Providing this will trigger the use of dual stress models.
+        Leaving this empty will trigger the use of single stress models.
+    right_censored - an array or list of the right failure times (this does not need to be sorted). Optional Input.
+    right_censored_stress_1 - an array or list of the corresponding stresses (such as temperature or voltage) at which each right_censored data point was obtained.
+        This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
+    right_censored_stress_2 - an array or list of the corresponding stresses (such as temperature or voltage) at which each right_censored data point was obtained.
+        This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
+        Conditionally optional input. This must be provided if failure_stress_2 is provided.
+    use_level_stress - The use level stress at which you want to know the mean life. Optional input.
+        This must be a list [stress_1,stress_2] if failure_stress_2 is provided.
+    print_results - True/False. Default is True
+    show_probability_plot - True/False. Default is True. Provides a probability plot of each of the fitted ALT model.
+    show_best_distribution_probability_plot - True/False. Defaults to True. Provides a probability plot in a new figure of the best ALT model.
+    CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
+    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the inital guess (using least squares) will be returned with a warning.
+    sort_by - goodness of fit test to sort results by. Must be 'BIC','AICc', or 'Log-likelihood'. Default is BIC.
+    exclude - list or array of strings specifying which distributions to exclude. Default is None. Options are:
+        Weibull_Exponential
+        Weibull_Eyring
+        Weibull_Power
+        Weibull_Dual_Exponential
+        Weibull_Power_Exponential
+        Weibull_Dual_Power
+        Lognormal_Exponential
+        Lognormal_Eyring
+        Lognormal_Power
+        Lognormal_Dual_Exponential
+        Lognormal_Power_Exponential
+        Lognormal_Dual_Power
+        Normal_Exponential
+        Normal_Eyring
+        Normal_Power
+        Normal_Dual_Exponential
+        Normal_Power_Exponential
+        Normal_Dual_Power
+        Exponential_Exponential
+        Exponential_Eyring
+        Exponential_Power
+        Exponential_Dual_Exponential
+        Exponential_Power_Exponential
+        Exponential_Dual_Power
+
+    Outputs:
+    results - the dataframe of results. Fitted parameters in this dataframe may be accessed by name. See below example.
+    best_model_name - the name of the best fitting ALT model. E.g. 'Weibull_Exponential'. See above list for exclude.
+    best_model_at_use_stress - a distribution object created based on the parameters of the best fitting ALT model at the use stress.
+        This is only provided if the use_level_stress is provided. This is because use_level_stress is required to find the scale parameter.
+    parameters and goodness of fit results for each fitted model. For example, the Weibull_Exponential model values are:
+        Weibull_Exponential_a
+        Weibull_Exponential_b
+        Weibull_Exponential_beta
+        Weibull_Exponential_BIC
+        Weibull_Exponential_AICc
+        Weibull_Exponential_loglik
+    excluded_models - a list of the models which were excluded. This will always include at least half the models since only single stress OR dual stress can be fitted depending on the data.
+
+    From the results, the models are sorted based on their goodness of fit test results, where the smaller the goodness of fit
+    value, the better the fit of the model to the data.
+
+    Example Usage:
+    failures = [619, 417, 173, 161, 1016, 512, 999, 1131, 1883, 2413, 3105, 2492]
+    failure_stresses = [500, 500, 500, 500, 400, 400, 400, 400, 350, 350, 350, 350]
+    right_censored = [29, 180, 1341]
+    right_censored_stresses = [500, 400, 350]
+    use_level_stress = 300
+    output = Fit_Everything_ALT(failures=failures,failure_stress_1=failure_stresses,right_censored=right_censored, right_censored_stress_1=right_censored_stresses, use_level_stress=use_level_stress)
+
+    To extract the parameters of the Weibull_Exponential model from the results dataframe, you may access the parameters by name:
+    print('Weibull Exponential beta =',output.Weibull_Exponential_beta)
+    >>> Weibull Exponential beta = 3.0807072337386123
+    """
+
+    def __init__(
+        self,
+        failures,
+        failure_stress_1,
+        failure_stress_2=None,
+        right_censored=None,
+        right_censored_stress_1=None,
+        right_censored_stress_2=None,
+        use_level_stress=None,
+        CI=0.95,
+        optimizer=None,
+        show_probability_plot=True,
+        show_best_distribution_probability_plot=True,
+        print_results=True,
+        exclude=None,
+        sort_by="BIC",
+    ):
+
+        # these are only here for code formatting reasons. They get redefined later
+        self._Fit_Everything_ALT__Weibull_Dual_Exponential_params = None
+        self._Fit_Everything_ALT__Weibull_Exponential_params = None
+        self._Fit_Everything_ALT__Weibull_Eyring_params = None
+        self._Fit_Everything_ALT__Weibull_Power_params = None
+        self._Fit_Everything_ALT__Lognormal_Exponential_params = None
+        self._Fit_Everything_ALT__Lognormal_Eyring_params = None
+        self._Fit_Everything_ALT__Lognormal_Power_params = None
+        self._Fit_Everything_ALT__Normal_Exponential_params = None
+        self._Fit_Everything_ALT__Normal_Eyring_params = None
+        self._Fit_Everything_ALT__Normal_Power_params = None
+        self._Fit_Everything_ALT__Exponential_Exponential_params = None
+        self._Fit_Everything_ALT__Exponential_Eyring_params = None
+        self._Fit_Everything_ALT__Exponential_Power_params = None
+        self._Fit_Everything_ALT__Weibull_Dual_Exponential_params = None
+        self._Fit_Everything_ALT__Weibull_Power_Exponential_params = None
+        self._Fit_Everything_ALT__Weibull_Dual_Power_params = None
+        self._Fit_Everything_ALT__Lognormal_Dual_Exponential_params = None
+        self._Fit_Everything_ALT__Lognormal_Power_Exponential_params = None
+        self._Fit_Everything_ALT__Lognormal_Dual_Power_params = None
+        self._Fit_Everything_ALT__Normal_Dual_Exponential_params = None
+        self._Fit_Everything_ALT__Normal_Power_Exponential_params = None
+        self._Fit_Everything_ALT__Normal_Dual_Power_params = None
+        self._Fit_Everything_ALT__Exponential_Dual_Exponential_params = None
+        self._Fit_Everything_ALT__Exponential_Power_Exponential_params = None
+        self._Fit_Everything_ALT__Exponential_Dual_Power_params = None
+
+        # for passing to the probability plot
+        self.__use_level_stress = use_level_stress
+
+        if print_results not in [True, False]:
+            raise ValueError(
+                "print_results must be either True or False. Defaults to True."
+            )
+        if show_probability_plot not in [True, False]:
+            raise ValueError(
+                "show_probability_plot must be either True or False. Defaults to True."
+            )
+        if show_best_distribution_probability_plot not in [True, False]:
+            raise ValueError(
+                "show_best_distribution_probability_plot must be either True or False. Defaults to True."
+            )
+
+        single_stress_ALT_models_list = [
+            "Weibull_Exponential",
+            "Weibull_Eyring",
+            "Weibull_Power",
+            "Lognormal_Exponential",
+            "Lognormal_Eyring",
+            "Lognormal_Power",
+            "Normal_Exponential",
+            "Normal_Eyring",
+            "Normal_Power",
+            "Exponential_Exponential",
+            "Exponential_Eyring",
+            "Exponential_Power",
+        ]
+
+        dual_stress_ALT_models_list = [
+            "Weibull_Dual_Exponential",
+            "Weibull_Power_Exponential",
+            "Weibull_Dual_Power",
+            "Lognormal_Dual_Exponential",
+            "Lognormal_Power_Exponential",
+            "Lognormal_Dual_Power",
+            "Normal_Dual_Exponential",
+            "Normal_Power_Exponential",
+            "Normal_Dual_Power",
+            "Exponential_Dual_Exponential",
+            "Exponential_Power_Exponential",
+            "Exponential_Dual_Power",
+        ]
+        all_ALT_models_list = (
+            single_stress_ALT_models_list + dual_stress_ALT_models_list
+        )
+
+        excluded_models = []
+        unknown_exclusions = []
+        if exclude is not None:
+            for item in exclude:
+                if item.title() in all_ALT_models_list:
+                    excluded_models.append(item.title)
+                else:
+                    unknown_exclusions.append(item)
+            if len(unknown_exclusions) > 0:
+                colorprint(
+                    str(
+                        "WARNING: The following items were not recognised ALT models to exclude: "
+                        + str(unknown_exclusions)
+                    ),
+                    text_color="red",
+                )
+                colorprint("Available ALT models to exclude are:", text_color="red")
+                for item in all_ALT_models_list:
+                    colorprint(item, text_color="red")
+
+        if failure_stress_2 is not None:
+            dual_stress = True
+            excluded_models.extend(single_stress_ALT_models_list)
+        else:
+            dual_stress = False
+            excluded_models.extend(dual_stress_ALT_models_list)
+        self.excluded_models = excluded_models
+
+        # create an empty dataframe to append the data from the fitted distributions
+        if dual_stress is True:
+            df = pd.DataFrame(
+                columns=[
+                    "ALT_model",
+                    "a",
+                    "b",
+                    "c",
+                    "m",
+                    "n",
+                    "beta",
+                    "sigma",
+                    "Log-likelihood",
+                    "AICc",
+                    "BIC",
+                ]
+            )
+        else:  # same df but without column m
+            df = pd.DataFrame(
+                columns=[
+                    "ALT_model",
+                    "a",
+                    "b",
+                    "c",
+                    "n",
+                    "beta",
+                    "sigma",
+                    "Log-likelihood",
+                    "AICc",
+                    "BIC",
+                ]
+            )
+
+        # Fit the parametric models and extract the fitted parameters
+        if "Weibull_Exponential" not in self.excluded_models:
+            self.__Weibull_Exponential_params = Fit_Weibull_Exponential(
+                failures=failures,
+                failure_stress=failure_stress_1,
+                right_censored=right_censored,
+                right_censored_stress=right_censored_stress_1,
+                use_level_stress=use_level_stress,
+                CI=CI,
+                optimizer=optimizer,
+                show_probability_plot=False,
+                show_life_stress_plot=False,
+                print_results=False,
+            )
+            self.Weibull_Exponential_a = self.__Weibull_Exponential_params.a
+            self.Weibull_Exponential_b = self.__Weibull_Exponential_params.b
+            self.Weibull_Exponential_beta = self.__Weibull_Exponential_params.beta
+            self.Weibull_Exponential_loglik = self.__Weibull_Exponential_params.loglik
+            self.Weibull_Exponential_BIC = self.__Weibull_Exponential_params.BIC
+            self.Weibull_Exponential_AICc = self.__Weibull_Exponential_params.AICc
+
+            df = df.append(
+                {
+                    "ALT_model": "Weibull_Exponential",
+                    "a": self.Weibull_Exponential_a,
+                    "b": self.Weibull_Exponential_b,
+                    "c": "",
+                    "n": "",
+                    "beta": self.Weibull_Exponential_beta,
+                    "sigma": "",
+                    "Log-likelihood": self.Weibull_Exponential_loglik,
+                    "AICc": self.Weibull_Exponential_AICc,
+                    "BIC": self.Weibull_Exponential_BIC,
+                },
+                ignore_index=True,
+            )
+
+        if "Weibull_Eyring" not in self.excluded_models:
+            self.__Weibull_Eyring_params = Fit_Weibull_Eyring(
+                failures=failures,
+                failure_stress=failure_stress_1,
+                right_censored=right_censored,
+                right_censored_stress=right_censored_stress_1,
+                use_level_stress=use_level_stress,
+                CI=CI,
+                optimizer=optimizer,
+                show_probability_plot=False,
+                show_life_stress_plot=False,
+                print_results=False,
+            )
+            self.Weibull_Eyring_a = self.__Weibull_Eyring_params.a
+            self.Weibull_Eyring_c = self.__Weibull_Eyring_params.c
+            self.Weibull_Eyring_beta = self.__Weibull_Eyring_params.beta
+            self.Weibull_Eyring_loglik = self.__Weibull_Eyring_params.loglik
+            self.Weibull_Eyring_BIC = self.__Weibull_Eyring_params.BIC
+            self.Weibull_Eyring_AICc = self.__Weibull_Eyring_params.AICc
+
+            df = df.append(
+                {
+                    "ALT_model": "Weibull_Eyring",
+                    "a": self.Weibull_Eyring_a,
+                    "b": "",
+                    "c": self.Weibull_Eyring_c,
+                    "n": "",
+                    "beta": self.Weibull_Eyring_beta,
+                    "sigma": "",
+                    "Log-likelihood": self.Weibull_Eyring_loglik,
+                    "AICc": self.Weibull_Eyring_AICc,
+                    "BIC": self.Weibull_Eyring_BIC,
+                },
+                ignore_index=True,
+            )
+
+        if "Weibull_Power" not in self.excluded_models:
+            self.__Weibull_Power_params = Fit_Weibull_Power(
+                failures=failures,
+                failure_stress=failure_stress_1,
+                right_censored=right_censored,
+                right_censored_stress=right_censored_stress_1,
+                use_level_stress=use_level_stress,
+                CI=CI,
+                optimizer=optimizer,
+                show_probability_plot=False,
+                show_life_stress_plot=False,
+                print_results=False,
+            )
+            self.Weibull_Power_a = self.__Weibull_Power_params.a
+            self.Weibull_Power_n = self.__Weibull_Power_params.n
+            self.Weibull_Power_beta = self.__Weibull_Power_params.beta
+            self.Weibull_Power_loglik = self.__Weibull_Power_params.loglik
+            self.Weibull_Power_BIC = self.__Weibull_Power_params.BIC
+            self.Weibull_Power_AICc = self.__Weibull_Power_params.AICc
+
+            df = df.append(
+                {
+                    "ALT_model": "Weibull_Power",
+                    "a": self.Weibull_Power_a,
+                    "b": "",
+                    "c": "",
+                    "n": self.Weibull_Power_n,
+                    "beta": self.Weibull_Power_beta,
+                    "sigma": "",
+                    "Log-likelihood": self.Weibull_Power_loglik,
+                    "AICc": self.Weibull_Power_AICc,
+                    "BIC": self.Weibull_Power_BIC,
+                },
+                ignore_index=True,
+            )
+
+        if "Lognormal_Exponential" not in self.excluded_models:
+            self.__Lognormal_Exponential_params = Fit_Lognormal_Exponential(
+                failures=failures,
+                failure_stress=failure_stress_1,
+                right_censored=right_censored,
+                right_censored_stress=right_censored_stress_1,
+                use_level_stress=use_level_stress,
+                CI=CI,
+                optimizer=optimizer,
+                show_probability_plot=False,
+                show_life_stress_plot=False,
+                print_results=False,
+            )
+            self.Lognormal_Exponential_a = self.__Lognormal_Exponential_params.a
+            self.Lognormal_Exponential_b = self.__Lognormal_Exponential_params.b
+            self.Lognormal_Exponential_sigma = self.__Lognormal_Exponential_params.sigma
+            self.Lognormal_Exponential_loglik = (
+                self.__Lognormal_Exponential_params.loglik
+            )
+            self.Lognormal_Exponential_BIC = self.__Lognormal_Exponential_params.BIC
+            self.Lognormal_Exponential_AICc = self.__Lognormal_Exponential_params.AICc
+
+            df = df.append(
+                {
+                    "ALT_model": "Lognormal_Exponential",
+                    "a": self.Lognormal_Exponential_a,
+                    "b": self.Lognormal_Exponential_b,
+                    "c": "",
+                    "n": "",
+                    "beta": "",
+                    "sigma": self.Lognormal_Exponential_sigma,
+                    "Log-likelihood": self.Lognormal_Exponential_loglik,
+                    "AICc": self.Lognormal_Exponential_AICc,
+                    "BIC": self.Lognormal_Exponential_BIC,
+                },
+                ignore_index=True,
+            )
+
+        if "Lognormal_Eyring" not in self.excluded_models:
+            self.__Lognormal_Eyring_params = Fit_Lognormal_Eyring(
+                failures=failures,
+                failure_stress=failure_stress_1,
+                right_censored=right_censored,
+                right_censored_stress=right_censored_stress_1,
+                use_level_stress=use_level_stress,
+                CI=CI,
+                optimizer=optimizer,
+                show_probability_plot=False,
+                show_life_stress_plot=False,
+                print_results=False,
+            )
+            self.Lognormal_Eyring_a = self.__Lognormal_Eyring_params.a
+            self.Lognormal_Eyring_c = self.__Lognormal_Eyring_params.c
+            self.Lognormal_Eyring_sigma = self.__Lognormal_Eyring_params.sigma
+            self.Lognormal_Eyring_loglik = self.__Lognormal_Eyring_params.loglik
+            self.Lognormal_Eyring_BIC = self.__Lognormal_Eyring_params.BIC
+            self.Lognormal_Eyring_AICc = self.__Lognormal_Eyring_params.AICc
+
+            df = df.append(
+                {
+                    "ALT_model": "Lognormal_Eyring",
+                    "a": self.Lognormal_Eyring_a,
+                    "b": "",
+                    "c": self.Lognormal_Eyring_c,
+                    "n": "",
+                    "beta": "",
+                    "sigma": self.Lognormal_Eyring_sigma,
+                    "Log-likelihood": self.Lognormal_Eyring_loglik,
+                    "AICc": self.Lognormal_Eyring_AICc,
+                    "BIC": self.Lognormal_Eyring_BIC,
+                },
+                ignore_index=True,
+            )
+
+        if "Lognormal_Power" not in self.excluded_models:
+            self.__Lognormal_Power_params = Fit_Lognormal_Power(
+                failures=failures,
+                failure_stress=failure_stress_1,
+                right_censored=right_censored,
+                right_censored_stress=right_censored_stress_1,
+                use_level_stress=use_level_stress,
+                CI=CI,
+                optimizer=optimizer,
+                show_probability_plot=False,
+                show_life_stress_plot=False,
+                print_results=False,
+            )
+            self.Lognormal_Power_a = self.__Lognormal_Power_params.a
+            self.Lognormal_Power_n = self.__Lognormal_Power_params.n
+            self.Lognormal_Power_sigma = self.__Lognormal_Power_params.sigma
+            self.Lognormal_Power_loglik = self.__Lognormal_Power_params.loglik
+            self.Lognormal_Power_BIC = self.__Lognormal_Power_params.BIC
+            self.Lognormal_Power_AICc = self.__Lognormal_Power_params.AICc
+
+            df = df.append(
+                {
+                    "ALT_model": "Lognormal_Power",
+                    "a": self.Lognormal_Power_a,
+                    "b": "",
+                    "c": "",
+                    "n": self.Lognormal_Power_n,
+                    "beta": "",
+                    "sigma": self.Lognormal_Power_sigma,
+                    "Log-likelihood": self.Lognormal_Power_loglik,
+                    "AICc": self.Lognormal_Power_AICc,
+                    "BIC": self.Lognormal_Power_BIC,
+                },
+                ignore_index=True,
+            )
+
+        if "Normal_Exponential" not in self.excluded_models:
+            self.__Normal_Exponential_params = Fit_Normal_Exponential(
+                failures=failures,
+                failure_stress=failure_stress_1,
+                right_censored=right_censored,
+                right_censored_stress=right_censored_stress_1,
+                use_level_stress=use_level_stress,
+                CI=CI,
+                optimizer=optimizer,
+                show_probability_plot=False,
+                show_life_stress_plot=False,
+                print_results=False,
+            )
+            self.Normal_Exponential_a = self.__Normal_Exponential_params.a
+            self.Normal_Exponential_b = self.__Normal_Exponential_params.b
+            self.Normal_Exponential_sigma = self.__Normal_Exponential_params.sigma
+            self.Normal_Exponential_loglik = self.__Normal_Exponential_params.loglik
+            self.Normal_Exponential_BIC = self.__Normal_Exponential_params.BIC
+            self.Normal_Exponential_AICc = self.__Normal_Exponential_params.AICc
+
+            df = df.append(
+                {
+                    "ALT_model": "Normal_Exponential",
+                    "a": self.Normal_Exponential_a,
+                    "b": self.Normal_Exponential_b,
+                    "c": "",
+                    "n": "",
+                    "beta": "",
+                    "sigma": self.Normal_Exponential_sigma,
+                    "Log-likelihood": self.Normal_Exponential_loglik,
+                    "AICc": self.Normal_Exponential_AICc,
+                    "BIC": self.Normal_Exponential_BIC,
+                },
+                ignore_index=True,
+            )
+
+        if "Normal_Eyring" not in self.excluded_models:
+            self.__Normal_Eyring_params = Fit_Normal_Eyring(
+                failures=failures,
+                failure_stress=failure_stress_1,
+                right_censored=right_censored,
+                right_censored_stress=right_censored_stress_1,
+                use_level_stress=use_level_stress,
+                CI=CI,
+                optimizer=optimizer,
+                show_probability_plot=False,
+                show_life_stress_plot=False,
+                print_results=False,
+            )
+            self.Normal_Eyring_a = self.__Normal_Eyring_params.a
+            self.Normal_Eyring_c = self.__Normal_Eyring_params.c
+            self.Normal_Eyring_sigma = self.__Normal_Eyring_params.sigma
+            self.Normal_Eyring_loglik = self.__Normal_Eyring_params.loglik
+            self.Normal_Eyring_BIC = self.__Normal_Eyring_params.BIC
+            self.Normal_Eyring_AICc = self.__Normal_Eyring_params.AICc
+
+            df = df.append(
+                {
+                    "ALT_model": "Normal_Eyring",
+                    "a": self.Normal_Eyring_a,
+                    "b": "",
+                    "c": self.Normal_Eyring_c,
+                    "n": "",
+                    "beta": "",
+                    "sigma": self.Normal_Eyring_sigma,
+                    "Log-likelihood": self.Normal_Eyring_loglik,
+                    "AICc": self.Normal_Eyring_AICc,
+                    "BIC": self.Normal_Eyring_BIC,
+                },
+                ignore_index=True,
+            )
+
+        if "Normal_Power" not in self.excluded_models:
+            self.__Normal_Power_params = Fit_Normal_Power(
+                failures=failures,
+                failure_stress=failure_stress_1,
+                right_censored=right_censored,
+                right_censored_stress=right_censored_stress_1,
+                use_level_stress=use_level_stress,
+                CI=CI,
+                optimizer=optimizer,
+                show_probability_plot=False,
+                show_life_stress_plot=False,
+                print_results=False,
+            )
+            self.Normal_Power_a = self.__Normal_Power_params.a
+            self.Normal_Power_n = self.__Normal_Power_params.n
+            self.Normal_Power_sigma = self.__Normal_Power_params.sigma
+            self.Normal_Power_loglik = self.__Normal_Power_params.loglik
+            self.Normal_Power_BIC = self.__Normal_Power_params.BIC
+            self.Normal_Power_AICc = self.__Normal_Power_params.AICc
+
+            df = df.append(
+                {
+                    "ALT_model": "Normal_Power",
+                    "a": self.Normal_Power_a,
+                    "b": "",
+                    "c": "",
+                    "n": self.Normal_Power_n,
+                    "beta": "",
+                    "sigma": self.Normal_Power_sigma,
+                    "Log-likelihood": self.Normal_Power_loglik,
+                    "AICc": self.Normal_Power_AICc,
+                    "BIC": self.Normal_Power_BIC,
+                },
+                ignore_index=True,
+            )
+
+        if "Exponential_Exponential" not in self.excluded_models:
+            self.__Exponential_Exponential_params = Fit_Exponential_Exponential(
+                failures=failures,
+                failure_stress=failure_stress_1,
+                right_censored=right_censored,
+                right_censored_stress=right_censored_stress_1,
+                use_level_stress=use_level_stress,
+                CI=CI,
+                optimizer=optimizer,
+                show_probability_plot=False,
+                show_life_stress_plot=False,
+                print_results=False,
+            )
+            self.Exponential_Exponential_a = self.__Exponential_Exponential_params.a
+            self.Exponential_Exponential_b = self.__Exponential_Exponential_params.b
+            self.Exponential_Exponential_loglik = (
+                self.__Exponential_Exponential_params.loglik
+            )
+            self.Exponential_Exponential_BIC = self.__Exponential_Exponential_params.BIC
+            self.Exponential_Exponential_AICc = (
+                self.__Exponential_Exponential_params.AICc
+            )
+
+            df = df.append(
+                {
+                    "ALT_model": "Exponential_Exponential",
+                    "a": self.Exponential_Exponential_a,
+                    "b": self.Exponential_Exponential_b,
+                    "c": "",
+                    "n": "",
+                    "beta": "",
+                    "sigma": "",
+                    "Log-likelihood": self.Exponential_Exponential_loglik,
+                    "AICc": self.Exponential_Exponential_AICc,
+                    "BIC": self.Exponential_Exponential_BIC,
+                },
+                ignore_index=True,
+            )
+
+        if "Exponential_Eyring" not in self.excluded_models:
+            self.__Exponential_Eyring_params = Fit_Exponential_Eyring(
+                failures=failures,
+                failure_stress=failure_stress_1,
+                right_censored=right_censored,
+                right_censored_stress=right_censored_stress_1,
+                use_level_stress=use_level_stress,
+                CI=CI,
+                optimizer=optimizer,
+                show_probability_plot=False,
+                show_life_stress_plot=False,
+                print_results=False,
+            )
+            self.Exponential_Eyring_a = self.__Exponential_Eyring_params.a
+            self.Exponential_Eyring_c = self.__Exponential_Eyring_params.c
+            self.Exponential_Eyring_loglik = self.__Exponential_Eyring_params.loglik
+            self.Exponential_Eyring_BIC = self.__Exponential_Eyring_params.BIC
+            self.Exponential_Eyring_AICc = self.__Exponential_Eyring_params.AICc
+
+            df = df.append(
+                {
+                    "ALT_model": "Exponential_Eyring",
+                    "a": self.Exponential_Eyring_a,
+                    "b": "",
+                    "c": self.Exponential_Eyring_c,
+                    "n": "",
+                    "beta": "",
+                    "sigma": "",
+                    "Log-likelihood": self.Exponential_Eyring_loglik,
+                    "AICc": self.Exponential_Eyring_AICc,
+                    "BIC": self.Exponential_Eyring_BIC,
+                },
+                ignore_index=True,
+            )
+
+        if "Exponential_Power" not in self.excluded_models:
+            self.__Exponential_Power_params = Fit_Exponential_Power(
+                failures=failures,
+                failure_stress=failure_stress_1,
+                right_censored=right_censored,
+                right_censored_stress=right_censored_stress_1,
+                use_level_stress=use_level_stress,
+                CI=CI,
+                optimizer=optimizer,
+                show_probability_plot=False,
+                show_life_stress_plot=False,
+                print_results=False,
+            )
+            self.Exponential_Power_a = self.__Exponential_Power_params.a
+            self.Exponential_Power_n = self.__Exponential_Power_params.n
+            self.Exponential_Power_loglik = self.__Exponential_Power_params.loglik
+            self.Exponential_Power_BIC = self.__Exponential_Power_params.BIC
+            self.Exponential_Power_AICc = self.__Exponential_Power_params.AICc
+
+            df = df.append(
+                {
+                    "ALT_model": "Exponential_Power",
+                    "a": self.Exponential_Power_a,
+                    "b": "",
+                    "c": "",
+                    "n": self.Exponential_Power_n,
+                    "beta": "",
+                    "sigma": "",
+                    "Log-likelihood": self.Exponential_Power_loglik,
+                    "AICc": self.Exponential_Power_AICc,
+                    "BIC": self.Exponential_Power_BIC,
+                },
+                ignore_index=True,
+            )
+
+        if "Weibull_Dual_Exponential" not in self.excluded_models:
+            self.__Weibull_Dual_Exponential_params = Fit_Weibull_Dual_Exponential(
+                failures=failures,
+                failure_stress_1=failure_stress_1,
+                failure_stress_2=failure_stress_2,
+                right_censored=right_censored,
+                right_censored_stress_1=right_censored_stress_1,
+                right_censored_stress_2=right_censored_stress_2,
+                use_level_stress=use_level_stress,
+                CI=CI,
+                optimizer=optimizer,
+                show_probability_plot=False,
+                show_life_stress_plot=False,
+                print_results=False,
+            )
+            self.Weibull_Dual_Exponential_a = self.__Weibull_Dual_Exponential_params.a
+            self.Weibull_Dual_Exponential_b = self.__Weibull_Dual_Exponential_params.b
+            self.Weibull_Dual_Exponential_c = self.__Weibull_Dual_Exponential_params.c
+            self.Weibull_Dual_Exponential_beta = (
+                self.__Weibull_Dual_Exponential_params.beta
+            )
+            self.Weibull_Dual_Exponential_loglik = (
+                self.__Weibull_Dual_Exponential_params.loglik
+            )
+            self.Weibull_Dual_Exponential_BIC = (
+                self.__Weibull_Dual_Exponential_params.BIC
+            )
+            self.Weibull_Dual_Exponential_AICc = (
+                self.__Weibull_Dual_Exponential_params.AICc
+            )
+
+            df = df.append(
+                {
+                    "ALT_model": "Weibull_Dual_Exponential",
+                    "a": self.Weibull_Dual_Exponential_a,
+                    "b": self.Weibull_Dual_Exponential_b,
+                    "c": self.Weibull_Dual_Exponential_c,
+                    "m": "",
+                    "n": "",
+                    "beta": self.Weibull_Dual_Exponential_beta,
+                    "sigma": "",
+                    "Log-likelihood": self.Weibull_Dual_Exponential_loglik,
+                    "AICc": self.Weibull_Dual_Exponential_AICc,
+                    "BIC": self.Weibull_Dual_Exponential_BIC,
+                },
+                ignore_index=True,
+            )
+
+        if "Weibull_Power_Exponential" not in self.excluded_models:
+            self.__Weibull_Power_Exponential_params = Fit_Weibull_Power_Exponential(
+                failures=failures,
+                failure_stress_1=failure_stress_1,
+                failure_stress_2=failure_stress_2,
+                right_censored=right_censored,
+                right_censored_stress_1=right_censored_stress_1,
+                right_censored_stress_2=right_censored_stress_2,
+                use_level_stress=use_level_stress,
+                CI=CI,
+                optimizer=optimizer,
+                show_probability_plot=False,
+                show_life_stress_plot=False,
+                print_results=False,
+            )
+            self.Weibull_Power_Exponential_a = self.__Weibull_Power_Exponential_params.a
+            self.Weibull_Power_Exponential_c = self.__Weibull_Power_Exponential_params.c
+            self.Weibull_Power_Exponential_n = self.__Weibull_Power_Exponential_params.n
+            self.Weibull_Power_Exponential_beta = (
+                self.__Weibull_Power_Exponential_params.beta
+            )
+            self.Weibull_Power_Exponential_loglik = (
+                self.__Weibull_Power_Exponential_params.loglik
+            )
+            self.Weibull_Power_Exponential_BIC = (
+                self.__Weibull_Power_Exponential_params.BIC
+            )
+            self.Weibull_Power_Exponential_AICc = (
+                self.__Weibull_Power_Exponential_params.AICc
+            )
+
+            df = df.append(
+                {
+                    "ALT_model": "Weibull_Power_Exponential",
+                    "a": self.Weibull_Power_Exponential_a,
+                    "b": "",
+                    "c": self.Weibull_Power_Exponential_c,
+                    "m": "",
+                    "n": self.Weibull_Power_Exponential_n,
+                    "beta": self.Weibull_Power_Exponential_beta,
+                    "sigma": "",
+                    "Log-likelihood": self.Weibull_Power_Exponential_loglik,
+                    "AICc": self.Weibull_Power_Exponential_AICc,
+                    "BIC": self.Weibull_Power_Exponential_BIC,
+                },
+                ignore_index=True,
+            )
+
+        if "Weibull_Dual_Power" not in self.excluded_models:
+            self.__Weibull_Dual_Power_params = Fit_Weibull_Dual_Power(
+                failures=failures,
+                failure_stress_1=failure_stress_1,
+                failure_stress_2=failure_stress_2,
+                right_censored=right_censored,
+                right_censored_stress_1=right_censored_stress_1,
+                right_censored_stress_2=right_censored_stress_2,
+                use_level_stress=use_level_stress,
+                CI=CI,
+                optimizer=optimizer,
+                show_probability_plot=False,
+                show_life_stress_plot=False,
+                print_results=False,
+            )
+            self.Weibull_Dual_Power_c = self.__Weibull_Dual_Power_params.c
+            self.Weibull_Dual_Power_m = self.__Weibull_Dual_Power_params.m
+            self.Weibull_Dual_Power_n = self.__Weibull_Dual_Power_params.n
+            self.Weibull_Dual_Power_beta = self.__Weibull_Dual_Power_params.beta
+            self.Weibull_Dual_Power_loglik = self.__Weibull_Dual_Power_params.loglik
+            self.Weibull_Dual_Power_BIC = self.__Weibull_Dual_Power_params.BIC
+            self.Weibull_Dual_Power_AICc = self.__Weibull_Dual_Power_params.AICc
+
+            df = df.append(
+                {
+                    "ALT_model": "Weibull_Dual_Power",
+                    "a": "",
+                    "b": "",
+                    "c": self.Weibull_Dual_Power_c,
+                    "m": self.Weibull_Dual_Power_m,
+                    "n": self.Weibull_Dual_Power_n,
+                    "beta": self.Weibull_Dual_Power_beta,
+                    "sigma": "",
+                    "Log-likelihood": self.Weibull_Dual_Power_loglik,
+                    "AICc": self.Weibull_Dual_Power_AICc,
+                    "BIC": self.Weibull_Dual_Power_BIC,
+                },
+                ignore_index=True,
+            )
+
+        if "Lognormal_Dual_Exponential" not in self.excluded_models:
+            self.__Lognormal_Dual_Exponential_params = Fit_Lognormal_Dual_Exponential(
+                failures=failures,
+                failure_stress_1=failure_stress_1,
+                failure_stress_2=failure_stress_2,
+                right_censored=right_censored,
+                right_censored_stress_1=right_censored_stress_1,
+                right_censored_stress_2=right_censored_stress_2,
+                use_level_stress=use_level_stress,
+                CI=CI,
+                optimizer=optimizer,
+                show_probability_plot=False,
+                show_life_stress_plot=False,
+                print_results=False,
+            )
+            self.Lognormal_Dual_Exponential_a = (
+                self.__Lognormal_Dual_Exponential_params.a
+            )
+            self.Lognormal_Dual_Exponential_b = (
+                self.__Lognormal_Dual_Exponential_params.b
+            )
+            self.Lognormal_Dual_Exponential_c = (
+                self.__Lognormal_Dual_Exponential_params.c
+            )
+            self.Lognormal_Dual_Exponential_sigma = (
+                self.__Lognormal_Dual_Exponential_params.sigma
+            )
+            self.Lognormal_Dual_Exponential_loglik = (
+                self.__Lognormal_Dual_Exponential_params.loglik
+            )
+            self.Lognormal_Dual_Exponential_BIC = (
+                self.__Lognormal_Dual_Exponential_params.BIC
+            )
+            self.Lognormal_Dual_Exponential_AICc = (
+                self.__Lognormal_Dual_Exponential_params.AICc
+            )
+
+            df = df.append(
+                {
+                    "ALT_model": "Lognormal_Dual_Exponential",
+                    "a": self.Lognormal_Dual_Exponential_a,
+                    "b": self.Lognormal_Dual_Exponential_b,
+                    "c": self.Lognormal_Dual_Exponential_c,
+                    "m": "",
+                    "n": "",
+                    "beta": "",
+                    "sigma": self.Lognormal_Dual_Exponential_sigma,
+                    "Log-likelihood": self.Lognormal_Dual_Exponential_loglik,
+                    "AICc": self.Lognormal_Dual_Exponential_AICc,
+                    "BIC": self.Lognormal_Dual_Exponential_BIC,
+                },
+                ignore_index=True,
+            )
+
+        if "Lognormal_Power_Exponential" not in self.excluded_models:
+            self.__Lognormal_Power_Exponential_params = Fit_Lognormal_Power_Exponential(
+                failures=failures,
+                failure_stress_1=failure_stress_1,
+                failure_stress_2=failure_stress_2,
+                right_censored=right_censored,
+                right_censored_stress_1=right_censored_stress_1,
+                right_censored_stress_2=right_censored_stress_2,
+                use_level_stress=use_level_stress,
+                CI=CI,
+                optimizer=optimizer,
+                show_probability_plot=False,
+                show_life_stress_plot=False,
+                print_results=False,
+            )
+            self.Lognormal_Power_Exponential_a = (
+                self.__Lognormal_Power_Exponential_params.a
+            )
+            self.Lognormal_Power_Exponential_c = (
+                self.__Lognormal_Power_Exponential_params.c
+            )
+            self.Lognormal_Power_Exponential_n = (
+                self.__Lognormal_Power_Exponential_params.n
+            )
+            self.Lognormal_Power_Exponential_sigma = (
+                self.__Lognormal_Power_Exponential_params.sigma
+            )
+            self.Lognormal_Power_Exponential_loglik = (
+                self.__Lognormal_Power_Exponential_params.loglik
+            )
+            self.Lognormal_Power_Exponential_BIC = (
+                self.__Lognormal_Power_Exponential_params.BIC
+            )
+            self.Lognormal_Power_Exponential_AICc = (
+                self.__Lognormal_Power_Exponential_params.AICc
+            )
+
+            df = df.append(
+                {
+                    "ALT_model": "Lognormal_Power_Exponential",
+                    "a": self.Lognormal_Power_Exponential_a,
+                    "b": "",
+                    "c": self.Lognormal_Power_Exponential_c,
+                    "m": "",
+                    "n": self.Lognormal_Power_Exponential_n,
+                    "beta": "",
+                    "sigma": self.Lognormal_Power_Exponential_sigma,
+                    "Log-likelihood": self.Lognormal_Power_Exponential_loglik,
+                    "AICc": self.Lognormal_Power_Exponential_AICc,
+                    "BIC": self.Lognormal_Power_Exponential_BIC,
+                },
+                ignore_index=True,
+            )
+
+        if "Lognormal_Dual_Power" not in self.excluded_models:
+            self.__Lognormal_Dual_Power_params = Fit_Lognormal_Dual_Power(
+                failures=failures,
+                failure_stress_1=failure_stress_1,
+                failure_stress_2=failure_stress_2,
+                right_censored=right_censored,
+                right_censored_stress_1=right_censored_stress_1,
+                right_censored_stress_2=right_censored_stress_2,
+                use_level_stress=use_level_stress,
+                CI=CI,
+                optimizer=optimizer,
+                show_probability_plot=False,
+                show_life_stress_plot=False,
+                print_results=False,
+            )
+            self.Lognormal_Dual_Power_c = self.__Lognormal_Dual_Power_params.c
+            self.Lognormal_Dual_Power_m = self.__Lognormal_Dual_Power_params.m
+            self.Lognormal_Dual_Power_n = self.__Lognormal_Dual_Power_params.n
+            self.Lognormal_Dual_Power_sigma = self.__Lognormal_Dual_Power_params.sigma
+            self.Lognormal_Dual_Power_loglik = self.__Lognormal_Dual_Power_params.loglik
+            self.Lognormal_Dual_Power_BIC = self.__Lognormal_Dual_Power_params.BIC
+            self.Lognormal_Dual_Power_AICc = self.__Lognormal_Dual_Power_params.AICc
+
+            df = df.append(
+                {
+                    "ALT_model": "Lognormal_Dual_Power",
+                    "a": "",
+                    "b": "",
+                    "c": self.Lognormal_Dual_Power_c,
+                    "m": self.Lognormal_Dual_Power_m,
+                    "n": self.Lognormal_Dual_Power_n,
+                    "beta": "",
+                    "sigma": self.Lognormal_Dual_Power_sigma,
+                    "Log-likelihood": self.Lognormal_Dual_Power_loglik,
+                    "AICc": self.Lognormal_Dual_Power_AICc,
+                    "BIC": self.Lognormal_Dual_Power_BIC,
+                },
+                ignore_index=True,
+            )
+
+        if "Normal_Dual_Exponential" not in self.excluded_models:
+            self.__Normal_Dual_Exponential_params = Fit_Normal_Dual_Exponential(
+                failures=failures,
+                failure_stress_1=failure_stress_1,
+                failure_stress_2=failure_stress_2,
+                right_censored=right_censored,
+                right_censored_stress_1=right_censored_stress_1,
+                right_censored_stress_2=right_censored_stress_2,
+                use_level_stress=use_level_stress,
+                CI=CI,
+                optimizer=optimizer,
+                show_probability_plot=False,
+                show_life_stress_plot=False,
+                print_results=False,
+            )
+            self.Normal_Dual_Exponential_a = self.__Normal_Dual_Exponential_params.a
+            self.Normal_Dual_Exponential_b = self.__Normal_Dual_Exponential_params.b
+            self.Normal_Dual_Exponential_c = self.__Normal_Dual_Exponential_params.c
+            self.Normal_Dual_Exponential_sigma = (
+                self.__Normal_Dual_Exponential_params.sigma
+            )
+            self.Normal_Dual_Exponential_loglik = (
+                self.__Normal_Dual_Exponential_params.loglik
+            )
+            self.Normal_Dual_Exponential_BIC = self.__Normal_Dual_Exponential_params.BIC
+            self.Normal_Dual_Exponential_AICc = (
+                self.__Normal_Dual_Exponential_params.AICc
+            )
+
+            df = df.append(
+                {
+                    "ALT_model": "Normal_Dual_Exponential",
+                    "a": self.Normal_Dual_Exponential_a,
+                    "b": self.Normal_Dual_Exponential_b,
+                    "c": self.Normal_Dual_Exponential_c,
+                    "m": "",
+                    "n": "",
+                    "beta": "",
+                    "sigma": self.Normal_Dual_Exponential_sigma,
+                    "Log-likelihood": self.Normal_Dual_Exponential_loglik,
+                    "AICc": self.Normal_Dual_Exponential_AICc,
+                    "BIC": self.Normal_Dual_Exponential_BIC,
+                },
+                ignore_index=True,
+            )
+
+        if "Normal_Power_Exponential" not in self.excluded_models:
+            self.__Normal_Power_Exponential_params = Fit_Normal_Power_Exponential(
+                failures=failures,
+                failure_stress_1=failure_stress_1,
+                failure_stress_2=failure_stress_2,
+                right_censored=right_censored,
+                right_censored_stress_1=right_censored_stress_1,
+                right_censored_stress_2=right_censored_stress_2,
+                use_level_stress=use_level_stress,
+                CI=CI,
+                optimizer=optimizer,
+                show_probability_plot=False,
+                show_life_stress_plot=False,
+                print_results=False,
+            )
+            self.Normal_Power_Exponential_a = self.__Normal_Power_Exponential_params.a
+            self.Normal_Power_Exponential_c = self.__Normal_Power_Exponential_params.c
+            self.Normal_Power_Exponential_n = self.__Normal_Power_Exponential_params.n
+            self.Normal_Power_Exponential_sigma = (
+                self.__Normal_Power_Exponential_params.sigma
+            )
+            self.Normal_Power_Exponential_loglik = (
+                self.__Normal_Power_Exponential_params.loglik
+            )
+            self.Normal_Power_Exponential_BIC = (
+                self.__Normal_Power_Exponential_params.BIC
+            )
+            self.Normal_Power_Exponential_AICc = (
+                self.__Normal_Power_Exponential_params.AICc
+            )
+
+            df = df.append(
+                {
+                    "ALT_model": "Normal_Power_Exponential",
+                    "a": self.Normal_Power_Exponential_a,
+                    "b": "",
+                    "c": self.Normal_Power_Exponential_c,
+                    "m": "",
+                    "n": self.Normal_Power_Exponential_n,
+                    "beta": "",
+                    "sigma": self.Normal_Power_Exponential_sigma,
+                    "Log-likelihood": self.Normal_Power_Exponential_loglik,
+                    "AICc": self.Normal_Power_Exponential_AICc,
+                    "BIC": self.Normal_Power_Exponential_BIC,
+                },
+                ignore_index=True,
+            )
+
+        if "Normal_Dual_Power" not in self.excluded_models:
+            self.__Normal_Dual_Power_params = Fit_Normal_Dual_Power(
+                failures=failures,
+                failure_stress_1=failure_stress_1,
+                failure_stress_2=failure_stress_2,
+                right_censored=right_censored,
+                right_censored_stress_1=right_censored_stress_1,
+                right_censored_stress_2=right_censored_stress_2,
+                use_level_stress=use_level_stress,
+                CI=CI,
+                optimizer=optimizer,
+                show_probability_plot=False,
+                show_life_stress_plot=False,
+                print_results=False,
+            )
+            self.Normal_Dual_Power_c = self.__Normal_Dual_Power_params.c
+            self.Normal_Dual_Power_m = self.__Normal_Dual_Power_params.m
+            self.Normal_Dual_Power_n = self.__Normal_Dual_Power_params.n
+            self.Normal_Dual_Power_sigma = self.__Normal_Dual_Power_params.sigma
+            self.Normal_Dual_Power_loglik = self.__Normal_Dual_Power_params.loglik
+            self.Normal_Dual_Power_BIC = self.__Normal_Dual_Power_params.BIC
+            self.Normal_Dual_Power_AICc = self.__Normal_Dual_Power_params.AICc
+
+            df = df.append(
+                {
+                    "ALT_model": "Normal_Dual_Power",
+                    "a": "",
+                    "b": "",
+                    "c": self.Normal_Dual_Power_c,
+                    "m": self.Normal_Dual_Power_m,
+                    "n": self.Normal_Dual_Power_n,
+                    "beta": "",
+                    "sigma": self.Normal_Dual_Power_sigma,
+                    "Log-likelihood": self.Normal_Dual_Power_loglik,
+                    "AICc": self.Normal_Dual_Power_AICc,
+                    "BIC": self.Normal_Dual_Power_BIC,
+                },
+                ignore_index=True,
+            )
+
+        if "Exponential_Dual_Exponential" not in self.excluded_models:
+            self.__Exponential_Dual_Exponential_params = (
+                Fit_Exponential_Dual_Exponential(
+                    failures=failures,
+                    failure_stress_1=failure_stress_1,
+                    failure_stress_2=failure_stress_2,
+                    right_censored=right_censored,
+                    right_censored_stress_1=right_censored_stress_1,
+                    right_censored_stress_2=right_censored_stress_2,
+                    use_level_stress=use_level_stress,
+                    CI=CI,
+                    optimizer=optimizer,
+                    show_probability_plot=False,
+                    show_life_stress_plot=False,
+                    print_results=False,
+                )
+            )
+            self.Exponential_Dual_Exponential_a = (
+                self.__Exponential_Dual_Exponential_params.a
+            )
+            self.Exponential_Dual_Exponential_b = (
+                self.__Exponential_Dual_Exponential_params.b
+            )
+            self.Exponential_Dual_Exponential_c = (
+                self.__Exponential_Dual_Exponential_params.c
+            )
+            self.Exponential_Dual_Exponential_loglik = (
+                self.__Exponential_Dual_Exponential_params.loglik
+            )
+            self.Exponential_Dual_Exponential_BIC = (
+                self.__Exponential_Dual_Exponential_params.BIC
+            )
+            self.Exponential_Dual_Exponential_AICc = (
+                self.__Exponential_Dual_Exponential_params.AICc
+            )
+
+            df = df.append(
+                {
+                    "ALT_model": "Exponential_Dual_Exponential",
+                    "a": self.Exponential_Dual_Exponential_a,
+                    "b": self.Exponential_Dual_Exponential_b,
+                    "c": self.Exponential_Dual_Exponential_c,
+                    "m": "",
+                    "n": "",
+                    "beta": "",
+                    "sigma": "",
+                    "Log-likelihood": self.Exponential_Dual_Exponential_loglik,
+                    "AICc": self.Exponential_Dual_Exponential_AICc,
+                    "BIC": self.Exponential_Dual_Exponential_BIC,
+                },
+                ignore_index=True,
+            )
+
+        if "Exponential_Power_Exponential" not in self.excluded_models:
+            self.__Exponential_Power_Exponential_params = (
+                Fit_Exponential_Power_Exponential(
+                    failures=failures,
+                    failure_stress_1=failure_stress_1,
+                    failure_stress_2=failure_stress_2,
+                    right_censored=right_censored,
+                    right_censored_stress_1=right_censored_stress_1,
+                    right_censored_stress_2=right_censored_stress_2,
+                    use_level_stress=use_level_stress,
+                    CI=CI,
+                    optimizer=optimizer,
+                    show_probability_plot=False,
+                    show_life_stress_plot=False,
+                    print_results=False,
+                )
+            )
+            self.Exponential_Power_Exponential_a = (
+                self.__Exponential_Power_Exponential_params.a
+            )
+            self.Exponential_Power_Exponential_c = (
+                self.__Exponential_Power_Exponential_params.c
+            )
+            self.Exponential_Power_Exponential_n = (
+                self.__Exponential_Power_Exponential_params.n
+            )
+            self.Exponential_Power_Exponential_loglik = (
+                self.__Exponential_Power_Exponential_params.loglik
+            )
+            self.Exponential_Power_Exponential_BIC = (
+                self.__Exponential_Power_Exponential_params.BIC
+            )
+            self.Exponential_Power_Exponential_AICc = (
+                self.__Exponential_Power_Exponential_params.AICc
+            )
+
+            df = df.append(
+                {
+                    "ALT_model": "Exponential_Power_Exponential",
+                    "a": self.Exponential_Power_Exponential_a,
+                    "b": "",
+                    "c": self.Exponential_Power_Exponential_c,
+                    "m": "",
+                    "n": self.Exponential_Power_Exponential_n,
+                    "beta": "",
+                    "sigma": "",
+                    "Log-likelihood": self.Exponential_Power_Exponential_loglik,
+                    "AICc": self.Exponential_Power_Exponential_AICc,
+                    "BIC": self.Exponential_Power_Exponential_BIC,
+                },
+                ignore_index=True,
+            )
+
+        if "Exponential_Dual_Power" not in self.excluded_models:
+            self.__Exponential_Dual_Power_params = Fit_Exponential_Dual_Power(
+                failures=failures,
+                failure_stress_1=failure_stress_1,
+                failure_stress_2=failure_stress_2,
+                right_censored=right_censored,
+                right_censored_stress_1=right_censored_stress_1,
+                right_censored_stress_2=right_censored_stress_2,
+                use_level_stress=use_level_stress,
+                CI=CI,
+                optimizer=optimizer,
+                show_probability_plot=False,
+                show_life_stress_plot=False,
+                print_results=False,
+            )
+            self.Exponential_Dual_Power_c = self.__Exponential_Dual_Power_params.c
+            self.Exponential_Dual_Power_m = self.__Exponential_Dual_Power_params.m
+            self.Exponential_Dual_Power_n = self.__Exponential_Dual_Power_params.n
+            self.Exponential_Dual_Power_loglik = (
+                self.__Exponential_Dual_Power_params.loglik
+            )
+            self.Exponential_Dual_Power_BIC = self.__Exponential_Dual_Power_params.BIC
+            self.Exponential_Dual_Power_AICc = self.__Exponential_Dual_Power_params.AICc
+
+            df = df.append(
+                {
+                    "ALT_model": "Exponential_Dual_Power",
+                    "a": "",
+                    "b": "",
+                    "c": self.Exponential_Dual_Power_c,
+                    "m": self.Exponential_Dual_Power_m,
+                    "n": self.Exponential_Dual_Power_n,
+                    "beta": "",
+                    "sigma": "",
+                    "Log-likelihood": self.Exponential_Dual_Power_loglik,
+                    "AICc": self.Exponential_Dual_Power_AICc,
+                    "BIC": self.Exponential_Dual_Power_BIC,
+                },
+                ignore_index=True,
+            )
+
+        # change to sorting by BIC if there is insufficient data to get the AICc for everything that was fitted
+        if (
+            sort_by.upper() in ["AIC", "AICC"]
+            and "Insufficient data" in df["AICc"].values
+        ):
+            sort_by = "BIC"
+        # sort the dataframe by BIC, AICc, or log-likelihood. Smallest AICc, BIC, log-likelihood is better fit
+        if type(sort_by) != str:
+            raise ValueError(
+                "Invalid input to sort_by. Options are 'BIC', 'AICc', or 'Log-likelihood'. Default is 'BIC'."
+            )
+        if sort_by.upper() == "BIC":
+            df2 = df.reindex(df.BIC.sort_values().index)
+        elif sort_by.upper() in ["AICC", "AIC"]:
+            df2 = df.reindex(df.AICc.sort_values().index)
+        elif sort_by.upper() in [
+            "LOGLIK",
+            "LOG LIK",
+            "LOG-LIKELIHOOD",
+            "LL",
+            "LOGLIKELIHOOD",
+            "LOG LIKELIHOOD",
+        ]:
+            df2 = df.reindex(abs(df["Log-likelihood"]).sort_values().index)
+        else:
+            raise ValueError(
+                "Invalid input to sort_by. Options are 'BIC', 'AICc', or 'Log-likelihood'. Default is 'BIC'."
+            )
+        if len(df2.index.values) == 0:
+            raise ValueError("You have excluded all available ALT models")
+        self.results = df2
+
+        # creates a distribution object of the best fitting distribution and assigns its name
+        best_model = self.results["ALT_model"].values[0]
+        self.best_model_name = best_model
+        if use_level_stress is not None:
+            if best_model == "Weibull_Exponential":
+                self.best_model_at_use_stress = Weibull_Distribution(
+                    alpha=self.Weibull_Exponential_b
+                    * np.exp(self.Weibull_Exponential_a / use_level_stress),
+                    beta=self.Weibull_Exponential_beta,
+                )
+            elif best_model == "Weibull_Eyring":
+                self.best_model_at_use_stress = Weibull_Distribution(
+                    alpha=(1 / use_level_stress)
+                    * np.exp(
+                        -(
+                            self.Weibull_Eyring_c
+                            - self.Weibull_Eyring_a / use_level_stress
+                        )
+                    ),
+                    beta=self.Weibull_Eyring_beta,
+                )
+            elif best_model == "Weibull_Power":
+                self.best_model_at_use_stress = Weibull_Distribution(
+                    alpha=self.Weibull_Power_a
+                    * use_level_stress ** self.Weibull_Power_n,
+                    beta=self.Weibull_Power_beta,
+                )
+            elif best_model == "Lognormal_Exponential":
+                self.best_model_at_use_stress = Lognormal_Distribution(
+                    mu=np.log(
+                        self.Lognormal_Exponential_b
+                        * np.exp(self.Lognormal_Exponential_a / use_level_stress)
+                    ),
+                    sigma=self.Lognormal_Exponential_sigma,
+                )
+            elif best_model == "Lognormal_Eyring":
+                self.best_model_at_use_stress = Lognormal_Distribution(
+                    mu=np.log(
+                        (1 / use_level_stress)
+                        * np.exp(
+                            -(
+                                self.Lognormal_Eyring_c
+                                - self.Lognormal_Eyring_a / use_level_stress
+                            )
+                        )
+                    ),
+                    sigma=self.Lognormal_Eyring_sigma,
+                )
+            elif best_model == "Lognormal_Power":
+                self.best_model_at_use_stress = Lognormal_Distribution(
+                    mu=np.log(
+                        self.Lognormal_Power_a
+                        * use_level_stress ** self.Lognormal_Power_n
+                    ),
+                    sigma=self.Lognormal_Power_sigma,
+                )
+            elif best_model == "Normal_Exponential":
+                self.best_model_at_use_stress = Normal_Distribution(
+                    mu=self.Normal_Exponential_b
+                    * np.exp(self.Normal_Exponential_a / use_level_stress),
+                    sigma=self.Normal_Exponential_sigma,
+                )
+            elif best_model == "Normal_Eyring":
+                self.best_model_at_use_stress = Normal_Distribution(
+                    mu=(1 / use_level_stress)
+                    * np.exp(
+                        -(
+                            self.Normal_Eyring_c
+                            - self.Normal_Eyring_a / use_level_stress
+                        )
+                    ),
+                    sigma=self.Normal_Eyring_sigma,
+                )
+            elif best_model == "Normal_Power":
+                self.best_model_at_use_stress = Normal_Distribution(
+                    mu=self.Normal_Power_a * use_level_stress ** self.Normal_Power_n,
+                    sigma=self.Normal_Power_sigma,
+                )
+            elif best_model == "Exponential_Exponential":
+                self.best_model_at_use_stress = Exponential_Distribution(
+                    Lambda=1
+                    / (
+                        self.Exponential_Exponential_b
+                        * np.exp(self.Exponential_Exponential_a / use_level_stress)
+                    )
+                )
+            elif best_model == "Exponential_Eyring":
+                self.best_model_at_use_stress = Exponential_Distribution(
+                    Lambda=1
+                    / (
+                        (1 / use_level_stress)
+                        * np.exp(
+                            -(
+                                self.Exponential_Eyring_c
+                                - self.Exponential_Eyring_a / use_level_stress
+                            )
+                        )
+                    )
+                )
+            elif best_model == "Exponential_Power":
+                self.best_model_at_use_stress = Exponential_Distribution(
+                    Lambda=1
+                    / (
+                        self.Exponential_Power_a
+                        * use_level_stress ** self.Exponential_Power_n
+                    )
+                )
+            elif best_model == "Weibull_Dual_Exponential":
+                self.best_model_at_use_stress = Weibull_Distribution(
+                    alpha=self.Weibull_Dual_Exponential_c
+                    * np.exp(
+                        self.Weibull_Dual_Exponential_a / use_level_stress[0]
+                        + self.Weibull_Dual_Exponential_b / use_level_stress[1]
+                    ),
+                    beta=self.Weibull_Dual_Exponential_beta,
+                )
+            elif best_model == "Weibull_Power_Exponential":
+                self.best_model_at_use_stress = Weibull_Distribution(
+                    alpha=self.Weibull_Power_Exponential_c
+                    * use_level_stress[1] ** self.Weibull_Power_Exponential_n
+                    * np.exp(self.Weibull_Power_Exponential_a / use_level_stress[0]),
+                    beta=self.Weibull_Power_Exponential_beta,
+                )
+            elif best_model == "Weibull_Dual_Power":
+                self.best_model_at_use_stress = Weibull_Distribution(
+                    alpha=self.Weibull_Dual_Power_c
+                    * use_level_stress[0] ** self.Weibull_Dual_Power_m
+                    * use_level_stress[1] ** self.Weibull_Dual_Power_n,
+                    beta=self.Weibull_Dual_Power_beta,
+                )
+            elif best_model == "Lognormal_Dual_Exponential":
+                self.best_model_at_use_stress = Lognormal_Distribution(
+                    mu=1
+                    / (
+                        self.Lognormal_Dual_Exponential_c
+                        * np.exp(
+                            self.Lognormal_Dual_Exponential_a / use_level_stress[0]
+                            + self.Lognormal_Dual_Exponential_b / use_level_stress[1]
+                        )
+                    ),
+                    sigma=self.Lognormal_Dual_Exponential_sigma,
+                )
+            elif best_model == "Lognormal_Power_Exponential":
+                self.best_model_at_use_stress = Lognormal_Distribution(
+                    mu=1
+                    / (
+                        self.Lognormal_Power_Exponential_c
+                        * use_level_stress[1] ** self.Lognormal_Power_Exponential_n
+                        * np.exp(
+                            self.Lognormal_Power_Exponential_a / use_level_stress[0]
+                        )
+                    ),
+                    sigma=self.Lognormal_Power_Exponential_sigma,
+                )
+            elif best_model == "Lognormal_Dual_Power":
+                self.best_model_at_use_stress = Lognormal_Distribution(
+                    mu=1
+                    / (
+                        self.Lognormal_Dual_Power_c
+                        * use_level_stress[0] ** self.Lognormal_Dual_Power_m
+                        * use_level_stress[1] ** self.Lognormal_Dual_Power_n
+                    ),
+                    sigma=self.Lognormal_Dual_Power_sigma,
+                )
+            elif best_model == "Normal_Dual_Exponential":
+                self.best_model_at_use_stress = Normal_Distribution(
+                    mu=self.Normal_Dual_Exponential_c
+                    * np.exp(
+                        self.Normal_Dual_Exponential_a / use_level_stress[0]
+                        + self.Normal_Dual_Exponential_b / use_level_stress[1]
+                    ),
+                    sigma=self.Normal_Dual_Exponential_sigma,
+                )
+            elif best_model == "Normal_Power_Exponential":
+                self.best_model_at_use_stress = Normal_Distribution(
+                    mu=self.Normal_Power_Exponential_c
+                    * use_level_stress[1] ** self.Normal_Power_Exponential_n
+                    * np.exp(self.Normal_Power_Exponential_a / use_level_stress[0]),
+                    sigma=self.Normal_Power_Exponential_sigma,
+                )
+            elif best_model == "Normal_Dual_Power":
+                self.best_model_at_use_stress = Normal_Distribution(
+                    mu=self.Normal_Dual_Power_c
+                    * use_level_stress[0] ** self.Normal_Dual_Power_m
+                    * use_level_stress[1] ** self.Normal_Dual_Power_n,
+                    sigma=self.Normal_Dual_Power_sigma,
+                )
+            elif best_model == "Exponential_Dual_Exponential":
+                self.best_model_at_use_stress = Exponential_Distribution(
+                    Lambda=self.Exponential_Dual_Exponential_c
+                    * np.exp(
+                        self.Exponential_Dual_Exponential_a / use_level_stress[0]
+                        + self.Exponential_Dual_Exponential_b / use_level_stress[1]
+                    )
+                )
+            elif best_model == "Exponential_Power_Exponential":
+                self.best_model_at_use_stress = Exponential_Distribution(
+                    Lambda=self.Exponential_Power_Exponential_c
+                    * use_level_stress[1] ** self.Exponential_Power_Exponential_n
+                    * np.exp(self.Exponential_Power_Exponential_a / use_level_stress[0])
+                )
+            elif best_model == "Exponential_Dual_Power":
+                self.best_model_at_use_stress = Exponential_Distribution(
+                    Lambda=self.Exponential_Dual_Power_c
+                    * use_level_stress[0] ** self.Exponential_Dual_Power_m
+                    * use_level_stress[1] ** self.Exponential_Dual_Power_n
+                )
+
+        # print the results
+        if print_results is True:  # printing occurs by default
+            if right_censored is not None:
+                frac_cens = (
+                    len(right_censored) / (len(failures) + len(right_censored))
+                ) * 100
+            else:
+                frac_cens = 0
+            if frac_cens % 1 < 1e-10:
+                frac_cens = int(frac_cens)
+            colorprint("Results from Fit_Everything_ALT:", bold=True, underline=True)
+            print("Analysis method: Maximum Likelihood Estimation (MLE)")
+            print(
+                "Failures / Right censored:",
+                str(str(len(failures)) + "/" + str(len(right_censored))),
+                str("(" + str(frac_cens) + "% right censored)"),
+                "\n",
+            )
+            print(self.results.to_string(index=False), "\n")
+
+            if use_level_stress is not None:
+                if type(use_level_stress) not in [list, np.ndarray]:
+                    use_level_stress_str = str(round_to_decimals(use_level_stress))
+                else:
+                    use_level_stress_str = str(
+                        str(round_to_decimals(use_level_stress[0]))
+                        + ", "
+                        + str(round_to_decimals(use_level_stress[1]))
+                    )
+                print(
+                    str(
+                        "At the use level stress of "
+                        + use_level_stress_str
+                        + ", the "
+                        + self.best_model_name
+                        + " model has a mean life of "
+                        + str(round_to_decimals(self.best_model_at_use_stress.mean))
+                    )
+                )
+
+        if show_probability_plot is True:
+            # plotting occurs by default
+            Fit_Everything_ALT.probability_plot(self)
+
+        if show_best_distribution_probability_plot is True:
+            # plotting occurs by default
+            Fit_Everything_ALT.probability_plot(self, best_only=True)
+
+        if (
+            show_probability_plot is True
+            or show_best_distribution_probability_plot is True
+        ):
+            plt.show()
+
+    def probplot_layout(self):
+        items = len(self.results.index.values)  # number of items that were fitted
+        if items in [10, 11, 12]:  # --- w , h
+            cols, rows, figsize = 4, 3, (15, 8)
+        elif items in [7, 8, 9]:
+            cols, rows, figsize = 3, 3, (12.5, 8)
+        elif items in [5, 6]:
+            cols, rows, figsize = 3, 2, (12.5, 6)
+        elif items == 4:
+            cols, rows, figsize = 2, 2, (10, 6)
+        elif items == 3:
+            cols, rows, figsize = 3, 1, (12.5, 5)
+        elif items == 2:
+            cols, rows, figsize = 2, 1, (10, 4)
+        elif items == 1:
+            cols, rows, figsize = 1, 1, (7.5, 4)
+        return cols, rows, figsize
+
+    def probability_plot(self, best_only=False):
+        from reliability.Utils import ALT_prob_plot
+
+        use_level_stress = self.__use_level_stress
+        plt.figure()
+        if best_only is False:
+            cols, rows, figsize = Fit_Everything_ALT.probplot_layout(self)
+            # this is the order to plot to match the results dataframe
+            plotting_order = self.results["ALT_model"].values
+            plt.suptitle("Probability plots of each fitted ALT model\n\n")
+            subplot_counter = 1
+        else:
+            # plots the best model only
+            plotting_order = [self.results["ALT_model"].values[0]]
+        for item in plotting_order:
+            if best_only is False:
+                plt.subplot(rows, cols, subplot_counter)
+            if item == "Weibull_Exponential":
+
+                def life_func(S1):
+                    return self.Weibull_Exponential_b * np.exp(
+                        self.Weibull_Exponential_a / S1
+                    )
+
+                stresses_for_groups = (
+                    self._Fit_Everything_ALT__Weibull_Exponential_params._Fit_Weibull_Exponential__stresses_for_groups
+                )
+                scale_for_change_df = (
+                    self._Fit_Everything_ALT__Weibull_Exponential_params._Fit_Weibull_Exponential__scale_for_change_df
+                )
+                shape_for_change_df = (
+                    self._Fit_Everything_ALT__Weibull_Exponential_params._Fit_Weibull_Exponential__shape_for_change_df
+                )
+                failure_groups = (
+                    self._Fit_Everything_ALT__Weibull_Exponential_params._Fit_Weibull_Exponential__failure_groups
+                )
+                right_censored_groups = (
+                    self._Fit_Everything_ALT__Weibull_Exponential_params._Fit_Weibull_Exponential__right_censored_groups
+                )
+                ALT_prob_plot(
+                    dist="Weibull",
+                    model="Exponential",
+                    stresses_for_groups=stresses_for_groups,
+                    failure_groups=failure_groups,
+                    right_censored_groups=right_censored_groups,
+                    life_func=life_func,
+                    shape=self.Weibull_Exponential_beta,
+                    scale_for_change_df=scale_for_change_df,
+                    shape_for_change_df=shape_for_change_df,
+                    use_level_stress=use_level_stress,
+                )
+            elif item == "Weibull_Eyring":
+
+                def life_func(S1):
+                    return (
+                        1
+                        / S1
+                        * np.exp(-(self.Weibull_Eyring_c - self.Weibull_Eyring_a / S1))
+                    )
+
+                stresses_for_groups = (
+                    self._Fit_Everything_ALT__Weibull_Eyring_params._Fit_Weibull_Eyring__stresses_for_groups
+                )
+                scale_for_change_df = (
+                    self._Fit_Everything_ALT__Weibull_Eyring_params._Fit_Weibull_Eyring__scale_for_change_df
+                )
+                shape_for_change_df = (
+                    self._Fit_Everything_ALT__Weibull_Eyring_params._Fit_Weibull_Eyring__shape_for_change_df
+                )
+                failure_groups = (
+                    self._Fit_Everything_ALT__Weibull_Eyring_params._Fit_Weibull_Eyring__failure_groups
+                )
+                right_censored_groups = (
+                    self._Fit_Everything_ALT__Weibull_Eyring_params._Fit_Weibull_Eyring__right_censored_groups
+                )
+                ALT_prob_plot(
+                    dist="Weibull",
+                    model="Eyring",
+                    stresses_for_groups=stresses_for_groups,
+                    failure_groups=failure_groups,
+                    right_censored_groups=right_censored_groups,
+                    life_func=life_func,
+                    shape=self.Weibull_Eyring_beta,
+                    scale_for_change_df=scale_for_change_df,
+                    shape_for_change_df=shape_for_change_df,
+                    use_level_stress=use_level_stress,
+                )
+            elif item == "Weibull_Power":
+
+                def life_func(S1):
+                    return self.Weibull_Power_a * S1 ** self.Weibull_Power_n
+
+                stresses_for_groups = (
+                    self._Fit_Everything_ALT__Weibull_Power_params._Fit_Weibull_Power__stresses_for_groups
+                )
+                scale_for_change_df = (
+                    self._Fit_Everything_ALT__Weibull_Power_params._Fit_Weibull_Power__scale_for_change_df
+                )
+                shape_for_change_df = (
+                    self._Fit_Everything_ALT__Weibull_Power_params._Fit_Weibull_Power__shape_for_change_df
+                )
+                failure_groups = (
+                    self._Fit_Everything_ALT__Weibull_Power_params._Fit_Weibull_Power__failure_groups
+                )
+                right_censored_groups = (
+                    self._Fit_Everything_ALT__Weibull_Power_params._Fit_Weibull_Power__right_censored_groups
+                )
+                ALT_prob_plot(
+                    dist="Weibull",
+                    model="Power",
+                    stresses_for_groups=stresses_for_groups,
+                    failure_groups=failure_groups,
+                    right_censored_groups=right_censored_groups,
+                    life_func=life_func,
+                    shape=self.Weibull_Power_beta,
+                    scale_for_change_df=scale_for_change_df,
+                    shape_for_change_df=shape_for_change_df,
+                    use_level_stress=use_level_stress,
+                )
+            elif item == "Lognormal_Exponential":
+
+                def life_func(S1):
+                    return self.Lognormal_Exponential_b * np.exp(
+                        self.Lognormal_Exponential_a / S1
+                    )
+
+                stresses_for_groups = (
+                    self._Fit_Everything_ALT__Lognormal_Exponential_params._Fit_Lognormal_Exponential__stresses_for_groups
+                )
+                scale_for_change_df = (
+                    self._Fit_Everything_ALT__Lognormal_Exponential_params._Fit_Lognormal_Exponential__scale_for_change_df
+                )
+                shape_for_change_df = (
+                    self._Fit_Everything_ALT__Lognormal_Exponential_params._Fit_Lognormal_Exponential__shape_for_change_df
+                )
+                failure_groups = (
+                    self._Fit_Everything_ALT__Lognormal_Exponential_params._Fit_Lognormal_Exponential__failure_groups
+                )
+                right_censored_groups = (
+                    self._Fit_Everything_ALT__Lognormal_Exponential_params._Fit_Lognormal_Exponential__right_censored_groups
+                )
+                ALT_prob_plot(
+                    dist="Lognormal",
+                    model="Exponential",
+                    stresses_for_groups=stresses_for_groups,
+                    failure_groups=failure_groups,
+                    right_censored_groups=right_censored_groups,
+                    life_func=life_func,
+                    shape=self.Lognormal_Exponential_sigma,
+                    scale_for_change_df=scale_for_change_df,
+                    shape_for_change_df=shape_for_change_df,
+                    use_level_stress=use_level_stress,
+                )
+            elif item == "Lognormal_Eyring":
+
+                def life_func(S1):
+                    return (
+                        1
+                        / S1
+                        * np.exp(
+                            -(self.Lognormal_Eyring_c - self.Lognormal_Eyring_a / S1)
+                        )
+                    )
+
+                stresses_for_groups = (
+                    self._Fit_Everything_ALT__Lognormal_Eyring_params._Fit_Lognormal_Eyring__stresses_for_groups
+                )
+                scale_for_change_df = (
+                    self._Fit_Everything_ALT__Lognormal_Eyring_params._Fit_Lognormal_Eyring__scale_for_change_df
+                )
+                shape_for_change_df = (
+                    self._Fit_Everything_ALT__Lognormal_Eyring_params._Fit_Lognormal_Eyring__shape_for_change_df
+                )
+                failure_groups = (
+                    self._Fit_Everything_ALT__Lognormal_Eyring_params._Fit_Lognormal_Eyring__failure_groups
+                )
+                right_censored_groups = (
+                    self._Fit_Everything_ALT__Lognormal_Eyring_params._Fit_Lognormal_Eyring__right_censored_groups
+                )
+                ALT_prob_plot(
+                    dist="Lognormal",
+                    model="Eyring",
+                    stresses_for_groups=stresses_for_groups,
+                    failure_groups=failure_groups,
+                    right_censored_groups=right_censored_groups,
+                    life_func=life_func,
+                    shape=self.Lognormal_Eyring_sigma,
+                    scale_for_change_df=scale_for_change_df,
+                    shape_for_change_df=shape_for_change_df,
+                    use_level_stress=use_level_stress,
+                )
+            elif item == "Lognormal_Power":
+
+                def life_func(S1):
+                    return self.Lognormal_Power_a * S1 ** self.Lognormal_Power_n
+
+                stresses_for_groups = (
+                    self._Fit_Everything_ALT__Lognormal_Power_params._Fit_Lognormal_Power__stresses_for_groups
+                )
+                scale_for_change_df = (
+                    self._Fit_Everything_ALT__Lognormal_Power_params._Fit_Lognormal_Power__scale_for_change_df
+                )
+                shape_for_change_df = (
+                    self._Fit_Everything_ALT__Lognormal_Power_params._Fit_Lognormal_Power__shape_for_change_df
+                )
+                failure_groups = (
+                    self._Fit_Everything_ALT__Lognormal_Power_params._Fit_Lognormal_Power__failure_groups
+                )
+                right_censored_groups = (
+                    self._Fit_Everything_ALT__Lognormal_Power_params._Fit_Lognormal_Power__right_censored_groups
+                )
+                ALT_prob_plot(
+                    dist="Lognormal",
+                    model="Power",
+                    stresses_for_groups=stresses_for_groups,
+                    failure_groups=failure_groups,
+                    right_censored_groups=right_censored_groups,
+                    life_func=life_func,
+                    shape=self.Lognormal_Power_sigma,
+                    scale_for_change_df=scale_for_change_df,
+                    shape_for_change_df=shape_for_change_df,
+                    use_level_stress=use_level_stress,
+                )
+            elif item == "Normal_Exponential":
+
+                def life_func(S1):
+                    return self.Normal_Exponential_b * np.exp(
+                        self.Normal_Exponential_a / S1
+                    )
+
+                stresses_for_groups = (
+                    self._Fit_Everything_ALT__Normal_Exponential_params._Fit_Normal_Exponential__stresses_for_groups
+                )
+                scale_for_change_df = (
+                    self._Fit_Everything_ALT__Normal_Exponential_params._Fit_Normal_Exponential__scale_for_change_df
+                )
+                shape_for_change_df = (
+                    self._Fit_Everything_ALT__Normal_Exponential_params._Fit_Normal_Exponential__shape_for_change_df
+                )
+                failure_groups = (
+                    self._Fit_Everything_ALT__Normal_Exponential_params._Fit_Normal_Exponential__failure_groups
+                )
+                right_censored_groups = (
+                    self._Fit_Everything_ALT__Normal_Exponential_params._Fit_Normal_Exponential__right_censored_groups
+                )
+                ALT_prob_plot(
+                    dist="Normal",
+                    model="Exponential",
+                    stresses_for_groups=stresses_for_groups,
+                    failure_groups=failure_groups,
+                    right_censored_groups=right_censored_groups,
+                    life_func=life_func,
+                    shape=self.Normal_Exponential_sigma,
+                    scale_for_change_df=scale_for_change_df,
+                    shape_for_change_df=shape_for_change_df,
+                    use_level_stress=use_level_stress,
+                )
+            elif item == "Normal_Eyring":
+
+                def life_func(S1):
+                    return (
+                        1
+                        / S1
+                        * np.exp(-(self.Normal_Eyring_c - self.Normal_Eyring_a / S1))
+                    )
+
+                stresses_for_groups = (
+                    self._Fit_Everything_ALT__Normal_Eyring_params._Fit_Normal_Eyring__stresses_for_groups
+                )
+                scale_for_change_df = (
+                    self._Fit_Everything_ALT__Normal_Eyring_params._Fit_Normal_Eyring__scale_for_change_df
+                )
+                shape_for_change_df = (
+                    self._Fit_Everything_ALT__Normal_Eyring_params._Fit_Normal_Eyring__shape_for_change_df
+                )
+                failure_groups = (
+                    self._Fit_Everything_ALT__Normal_Eyring_params._Fit_Normal_Eyring__failure_groups
+                )
+                right_censored_groups = (
+                    self._Fit_Everything_ALT__Normal_Eyring_params._Fit_Normal_Eyring__right_censored_groups
+                )
+                ALT_prob_plot(
+                    dist="Normal",
+                    model="Eyring",
+                    stresses_for_groups=stresses_for_groups,
+                    failure_groups=failure_groups,
+                    right_censored_groups=right_censored_groups,
+                    life_func=life_func,
+                    shape=self.Normal_Eyring_sigma,
+                    scale_for_change_df=scale_for_change_df,
+                    shape_for_change_df=shape_for_change_df,
+                    use_level_stress=use_level_stress,
+                )
+            elif item == "Normal_Power":
+
+                def life_func(S1):
+                    return self.Normal_Power_a * S1 ** self.Normal_Power_n
+
+                stresses_for_groups = (
+                    self._Fit_Everything_ALT__Normal_Power_params._Fit_Normal_Power__stresses_for_groups
+                )
+                scale_for_change_df = (
+                    self._Fit_Everything_ALT__Normal_Power_params._Fit_Normal_Power__scale_for_change_df
+                )
+                shape_for_change_df = (
+                    self._Fit_Everything_ALT__Normal_Power_params._Fit_Normal_Power__shape_for_change_df
+                )
+                failure_groups = (
+                    self._Fit_Everything_ALT__Normal_Power_params._Fit_Normal_Power__failure_groups
+                )
+                right_censored_groups = (
+                    self._Fit_Everything_ALT__Normal_Power_params._Fit_Normal_Power__right_censored_groups
+                )
+                ALT_prob_plot(
+                    dist="Normal",
+                    model="Power",
+                    stresses_for_groups=stresses_for_groups,
+                    failure_groups=failure_groups,
+                    right_censored_groups=right_censored_groups,
+                    life_func=life_func,
+                    shape=self.Normal_Power_sigma,
+                    scale_for_change_df=scale_for_change_df,
+                    shape_for_change_df=shape_for_change_df,
+                    use_level_stress=use_level_stress,
+                )
+            elif item == "Exponential_Exponential":
+
+                def life_func(S1):
+                    return self.Exponential_Exponential_b * np.exp(
+                        self.Exponential_Exponential_a / S1
+                    )
+
+                stresses_for_groups = (
+                    self._Fit_Everything_ALT__Exponential_Exponential_params._Fit_Exponential_Exponential__stresses_for_groups
+                )
+                scale_for_change_df = (
+                    self._Fit_Everything_ALT__Exponential_Exponential_params._Fit_Exponential_Exponential__scale_for_change_df
+                )
+                shape_for_change_df = (
+                    self._Fit_Everything_ALT__Exponential_Exponential_params._Fit_Exponential_Exponential__shape_for_change_df
+                )
+                failure_groups = (
+                    self._Fit_Everything_ALT__Exponential_Exponential_params._Fit_Exponential_Exponential__failure_groups
+                )
+                right_censored_groups = (
+                    self._Fit_Everything_ALT__Exponential_Exponential_params._Fit_Exponential_Exponential__right_censored_groups
+                )
+                ALT_prob_plot(
+                    dist="Exponential",
+                    model="Exponential",
+                    stresses_for_groups=stresses_for_groups,
+                    failure_groups=failure_groups,
+                    right_censored_groups=right_censored_groups,
+                    life_func=life_func,
+                    shape=None,
+                    scale_for_change_df=scale_for_change_df,
+                    shape_for_change_df=shape_for_change_df,
+                    use_level_stress=use_level_stress,
+                )
+            elif item == "Exponential_Eyring":
+
+                def life_func(S1):
+                    return (
+                        1
+                        / S1
+                        * np.exp(
+                            -(
+                                self.Exponential_Eyring_c
+                                - self.Exponential_Eyring_a / S1
+                            )
+                        )
+                    )
+
+                stresses_for_groups = (
+                    self._Fit_Everything_ALT__Exponential_Eyring_params._Fit_Exponential_Eyring__stresses_for_groups
+                )
+                scale_for_change_df = (
+                    self._Fit_Everything_ALT__Exponential_Eyring_params._Fit_Exponential_Eyring__scale_for_change_df
+                )
+                shape_for_change_df = (
+                    self._Fit_Everything_ALT__Exponential_Eyring_params._Fit_Exponential_Eyring__shape_for_change_df
+                )
+                failure_groups = (
+                    self._Fit_Everything_ALT__Exponential_Eyring_params._Fit_Exponential_Eyring__failure_groups
+                )
+                right_censored_groups = (
+                    self._Fit_Everything_ALT__Exponential_Eyring_params._Fit_Exponential_Eyring__right_censored_groups
+                )
+                ALT_prob_plot(
+                    dist="Exponential",
+                    model="Eyring",
+                    stresses_for_groups=stresses_for_groups,
+                    failure_groups=failure_groups,
+                    right_censored_groups=right_censored_groups,
+                    life_func=life_func,
+                    shape=None,
+                    scale_for_change_df=scale_for_change_df,
+                    shape_for_change_df=shape_for_change_df,
+                    use_level_stress=use_level_stress,
+                )
+            elif item == "Exponential_Power":
+
+                def life_func(S1):
+                    return self.Exponential_Power_a * S1 ** self.Exponential_Power_n
+
+                stresses_for_groups = (
+                    self._Fit_Everything_ALT__Exponential_Power_params._Fit_Exponential_Power__stresses_for_groups
+                )
+                scale_for_change_df = (
+                    self._Fit_Everything_ALT__Exponential_Power_params._Fit_Exponential_Power__scale_for_change_df
+                )
+                shape_for_change_df = (
+                    self._Fit_Everything_ALT__Exponential_Power_params._Fit_Exponential_Power__shape_for_change_df
+                )
+                failure_groups = (
+                    self._Fit_Everything_ALT__Exponential_Power_params._Fit_Exponential_Power__failure_groups
+                )
+                right_censored_groups = (
+                    self._Fit_Everything_ALT__Exponential_Power_params._Fit_Exponential_Power__right_censored_groups
+                )
+                ALT_prob_plot(
+                    dist="Exponential",
+                    model="Power",
+                    stresses_for_groups=stresses_for_groups,
+                    failure_groups=failure_groups,
+                    right_censored_groups=right_censored_groups,
+                    life_func=life_func,
+                    shape=None,
+                    scale_for_change_df=scale_for_change_df,
+                    shape_for_change_df=shape_for_change_df,
+                    use_level_stress=use_level_stress,
+                )
+
+            elif item == "Weibull_Dual_Exponential":
+
+                def life_func(S1, S2):
+                    return self.Weibull_Dual_Exponential_c * np.exp(
+                        self.Weibull_Dual_Exponential_a / S1
+                        + self.Weibull_Dual_Exponential_b / S2
+                    )
+
+                stresses_for_groups = (
+                    self._Fit_Everything_ALT__Weibull_Dual_Exponential_params._Fit_Weibull_Dual_Exponential__stresses_for_groups
+                )
+                scale_for_change_df = (
+                    self._Fit_Everything_ALT__Weibull_Dual_Exponential_params._Fit_Weibull_Dual_Exponential__scale_for_change_df
+                )
+                shape_for_change_df = (
+                    self._Fit_Everything_ALT__Weibull_Dual_Exponential_params._Fit_Weibull_Dual_Exponential__shape_for_change_df
+                )
+                failure_groups = (
+                    self._Fit_Everything_ALT__Weibull_Dual_Exponential_params._Fit_Weibull_Dual_Exponential__failure_groups
+                )
+                right_censored_groups = (
+                    self._Fit_Everything_ALT__Weibull_Dual_Exponential_params._Fit_Weibull_Dual_Exponential__right_censored_groups
+                )
+                ALT_prob_plot(
+                    dist="Weibull",
+                    model="Dual_Exponential",
+                    stresses_for_groups=stresses_for_groups,
+                    failure_groups=failure_groups,
+                    right_censored_groups=right_censored_groups,
+                    life_func=life_func,
+                    shape=self.Weibull_Dual_Exponential_beta,
+                    scale_for_change_df=scale_for_change_df,
+                    shape_for_change_df=shape_for_change_df,
+                    use_level_stress=use_level_stress,
+                )
+
+            elif item == "Weibull_Power_Exponential":
+
+                def life_func(S1, S2):
+                    return (
+                        self.Weibull_Power_Exponential_c
+                        * (S2 ** self.Weibull_Power_Exponential_n)
+                        * np.exp(self.Weibull_Power_Exponential_a / S1)
+                    )
+
+                stresses_for_groups = (
+                    self._Fit_Everything_ALT__Weibull_Power_Exponential_params._Fit_Weibull_Power_Exponential__stresses_for_groups
+                )
+                scale_for_change_df = (
+                    self._Fit_Everything_ALT__Weibull_Power_Exponential_params._Fit_Weibull_Power_Exponential__scale_for_change_df
+                )
+                shape_for_change_df = (
+                    self._Fit_Everything_ALT__Weibull_Power_Exponential_params._Fit_Weibull_Power_Exponential__shape_for_change_df
+                )
+                failure_groups = (
+                    self._Fit_Everything_ALT__Weibull_Power_Exponential_params._Fit_Weibull_Power_Exponential__failure_groups
+                )
+                right_censored_groups = (
+                    self._Fit_Everything_ALT__Weibull_Power_Exponential_params._Fit_Weibull_Power_Exponential__right_censored_groups
+                )
+                ALT_prob_plot(
+                    dist="Weibull",
+                    model="Power_Exponential",
+                    stresses_for_groups=stresses_for_groups,
+                    failure_groups=failure_groups,
+                    right_censored_groups=right_censored_groups,
+                    life_func=life_func,
+                    shape=self.Weibull_Power_Exponential_beta,
+                    scale_for_change_df=scale_for_change_df,
+                    shape_for_change_df=shape_for_change_df,
+                    use_level_stress=use_level_stress,
+                )
+
+            elif item == "Weibull_Dual_Power":
+
+                def life_func(S1, S2):
+                    return (
+                        self.Weibull_Dual_Power_c
+                        * (S1 ** self.Weibull_Dual_Power_m)
+                        * (S2 ** self.Weibull_Dual_Power_n)
+                    )
+
+                stresses_for_groups = (
+                    self._Fit_Everything_ALT__Weibull_Dual_Power_params._Fit_Weibull_Dual_Power__stresses_for_groups
+                )
+                scale_for_change_df = (
+                    self._Fit_Everything_ALT__Weibull_Dual_Power_params._Fit_Weibull_Dual_Power__scale_for_change_df
+                )
+                shape_for_change_df = (
+                    self._Fit_Everything_ALT__Weibull_Dual_Power_params._Fit_Weibull_Dual_Power__shape_for_change_df
+                )
+                failure_groups = (
+                    self._Fit_Everything_ALT__Weibull_Dual_Power_params._Fit_Weibull_Dual_Power__failure_groups
+                )
+                right_censored_groups = (
+                    self._Fit_Everything_ALT__Weibull_Dual_Power_params._Fit_Weibull_Dual_Power__right_censored_groups
+                )
+                ALT_prob_plot(
+                    dist="Weibull",
+                    model="Dual_Power",
+                    stresses_for_groups=stresses_for_groups,
+                    failure_groups=failure_groups,
+                    right_censored_groups=right_censored_groups,
+                    life_func=life_func,
+                    shape=self.Weibull_Dual_Power_beta,
+                    scale_for_change_df=scale_for_change_df,
+                    shape_for_change_df=shape_for_change_df,
+                    use_level_stress=use_level_stress,
+                )
+
+            elif item == "Lognormal_Dual_Exponential":
+
+                def life_func(S1, S2):
+                    return self.Lognormal_Dual_Exponential_c * np.exp(
+                        self.Lognormal_Dual_Exponential_a / S1
+                        + self.Lognormal_Dual_Exponential_b / S2
+                    )
+
+                stresses_for_groups = (
+                    self._Fit_Everything_ALT__Lognormal_Dual_Exponential_params._Fit_Lognormal_Dual_Exponential__stresses_for_groups
+                )
+                scale_for_change_df = (
+                    self._Fit_Everything_ALT__Lognormal_Dual_Exponential_params._Fit_Lognormal_Dual_Exponential__scale_for_change_df
+                )
+                shape_for_change_df = (
+                    self._Fit_Everything_ALT__Lognormal_Dual_Exponential_params._Fit_Lognormal_Dual_Exponential__shape_for_change_df
+                )
+                failure_groups = (
+                    self._Fit_Everything_ALT__Lognormal_Dual_Exponential_params._Fit_Lognormal_Dual_Exponential__failure_groups
+                )
+                right_censored_groups = (
+                    self._Fit_Everything_ALT__Lognormal_Dual_Exponential_params._Fit_Lognormal_Dual_Exponential__right_censored_groups
+                )
+                ALT_prob_plot(
+                    dist="Lognormal",
+                    model="Dual_Exponential",
+                    stresses_for_groups=stresses_for_groups,
+                    failure_groups=failure_groups,
+                    right_censored_groups=right_censored_groups,
+                    life_func=life_func,
+                    shape=self.Lognormal_Dual_Exponential_sigma,
+                    scale_for_change_df=scale_for_change_df,
+                    shape_for_change_df=shape_for_change_df,
+                    use_level_stress=use_level_stress,
+                )
+
+            elif item == "Lognormal_Power_Exponential":
+
+                def life_func(S1, S2):
+                    return (
+                        self.Lognormal_Power_Exponential_c
+                        * (S2 ** self.Lognormal_Power_Exponential_n)
+                        * np.exp(self.Lognormal_Power_Exponential_a / S1)
+                    )
+
+                stresses_for_groups = (
+                    self._Fit_Everything_ALT__Lognormal_Power_Exponential_params._Fit_Lognormal_Power_Exponential__stresses_for_groups
+                )
+                scale_for_change_df = (
+                    self._Fit_Everything_ALT__Lognormal_Power_Exponential_params._Fit_Lognormal_Power_Exponential__scale_for_change_df
+                )
+                shape_for_change_df = (
+                    self._Fit_Everything_ALT__Lognormal_Power_Exponential_params._Fit_Lognormal_Power_Exponential__shape_for_change_df
+                )
+                failure_groups = (
+                    self._Fit_Everything_ALT__Lognormal_Power_Exponential_params._Fit_Lognormal_Power_Exponential__failure_groups
+                )
+                right_censored_groups = (
+                    self._Fit_Everything_ALT__Lognormal_Power_Exponential_params._Fit_Lognormal_Power_Exponential__right_censored_groups
+                )
+                ALT_prob_plot(
+                    dist="Lognormal",
+                    model="Power_Exponential",
+                    stresses_for_groups=stresses_for_groups,
+                    failure_groups=failure_groups,
+                    right_censored_groups=right_censored_groups,
+                    life_func=life_func,
+                    shape=self.Lognormal_Power_Exponential_sigma,
+                    scale_for_change_df=scale_for_change_df,
+                    shape_for_change_df=shape_for_change_df,
+                    use_level_stress=use_level_stress,
+                )
+
+            elif item == "Lognormal_Dual_Power":
+
+                def life_func(S1, S2):
+                    return (
+                        self.Lognormal_Dual_Power_c
+                        * (S1 ** self.Lognormal_Dual_Power_m)
+                        * (S2 ** self.Lognormal_Dual_Power_n)
+                    )
+
+                stresses_for_groups = (
+                    self._Fit_Everything_ALT__Lognormal_Dual_Power_params._Fit_Lognormal_Dual_Power__stresses_for_groups
+                )
+                scale_for_change_df = (
+                    self._Fit_Everything_ALT__Lognormal_Dual_Power_params._Fit_Lognormal_Dual_Power__scale_for_change_df
+                )
+                shape_for_change_df = (
+                    self._Fit_Everything_ALT__Lognormal_Dual_Power_params._Fit_Lognormal_Dual_Power__shape_for_change_df
+                )
+                failure_groups = (
+                    self._Fit_Everything_ALT__Lognormal_Dual_Power_params._Fit_Lognormal_Dual_Power__failure_groups
+                )
+                right_censored_groups = (
+                    self._Fit_Everything_ALT__Lognormal_Dual_Power_params._Fit_Lognormal_Dual_Power__right_censored_groups
+                )
+                ALT_prob_plot(
+                    dist="Lognormal",
+                    model="Dual_Power",
+                    stresses_for_groups=stresses_for_groups,
+                    failure_groups=failure_groups,
+                    right_censored_groups=right_censored_groups,
+                    life_func=life_func,
+                    shape=self.Lognormal_Dual_Power_sigma,
+                    scale_for_change_df=scale_for_change_df,
+                    shape_for_change_df=shape_for_change_df,
+                    use_level_stress=use_level_stress,
+                )
+
+            elif item == "Normal_Dual_Exponential":
+
+                def life_func(S1, S2):
+                    return self.Normal_Dual_Exponential_c * np.exp(
+                        self.Normal_Dual_Exponential_a / S1
+                        + self.Normal_Dual_Exponential_b / S2
+                    )
+
+                stresses_for_groups = (
+                    self._Fit_Everything_ALT__Normal_Dual_Exponential_params._Fit_Normal_Dual_Exponential__stresses_for_groups
+                )
+                scale_for_change_df = (
+                    self._Fit_Everything_ALT__Normal_Dual_Exponential_params._Fit_Normal_Dual_Exponential__scale_for_change_df
+                )
+                shape_for_change_df = (
+                    self._Fit_Everything_ALT__Normal_Dual_Exponential_params._Fit_Normal_Dual_Exponential__shape_for_change_df
+                )
+                failure_groups = (
+                    self._Fit_Everything_ALT__Normal_Dual_Exponential_params._Fit_Normal_Dual_Exponential__failure_groups
+                )
+                right_censored_groups = (
+                    self._Fit_Everything_ALT__Normal_Dual_Exponential_params._Fit_Normal_Dual_Exponential__right_censored_groups
+                )
+                ALT_prob_plot(
+                    dist="Normal",
+                    model="Dual_Exponential",
+                    stresses_for_groups=stresses_for_groups,
+                    failure_groups=failure_groups,
+                    right_censored_groups=right_censored_groups,
+                    life_func=life_func,
+                    shape=self.Normal_Dual_Exponential_sigma,
+                    scale_for_change_df=scale_for_change_df,
+                    shape_for_change_df=shape_for_change_df,
+                    use_level_stress=use_level_stress,
+                )
+
+            elif item == "Normal_Power_Exponential":
+
+                def life_func(S1, S2):
+                    return (
+                        self.Normal_Power_Exponential_c
+                        * (S2 ** self.Normal_Power_Exponential_n)
+                        * np.exp(self.Normal_Power_Exponential_a / S1)
+                    )
+
+                stresses_for_groups = (
+                    self._Fit_Everything_ALT__Normal_Power_Exponential_params._Fit_Normal_Power_Exponential__stresses_for_groups
+                )
+                scale_for_change_df = (
+                    self._Fit_Everything_ALT__Normal_Power_Exponential_params._Fit_Normal_Power_Exponential__scale_for_change_df
+                )
+                shape_for_change_df = (
+                    self._Fit_Everything_ALT__Normal_Power_Exponential_params._Fit_Normal_Power_Exponential__shape_for_change_df
+                )
+                failure_groups = (
+                    self._Fit_Everything_ALT__Normal_Power_Exponential_params._Fit_Normal_Power_Exponential__failure_groups
+                )
+                right_censored_groups = (
+                    self._Fit_Everything_ALT__Normal_Power_Exponential_params._Fit_Normal_Power_Exponential__right_censored_groups
+                )
+                ALT_prob_plot(
+                    dist="Normal",
+                    model="Power_Exponential",
+                    stresses_for_groups=stresses_for_groups,
+                    failure_groups=failure_groups,
+                    right_censored_groups=right_censored_groups,
+                    life_func=life_func,
+                    shape=self.Normal_Power_Exponential_sigma,
+                    scale_for_change_df=scale_for_change_df,
+                    shape_for_change_df=shape_for_change_df,
+                    use_level_stress=use_level_stress,
+                )
+
+            elif item == "Normal_Dual_Power":
+
+                def life_func(S1, S2):
+                    return (
+                        self.Normal_Dual_Power_c
+                        * (S1 ** self.Normal_Dual_Power_m)
+                        * (S2 ** self.Normal_Dual_Power_n)
+                    )
+
+                stresses_for_groups = (
+                    self._Fit_Everything_ALT__Normal_Dual_Power_params._Fit_Normal_Dual_Power__stresses_for_groups
+                )
+                scale_for_change_df = (
+                    self._Fit_Everything_ALT__Normal_Dual_Power_params._Fit_Normal_Dual_Power__scale_for_change_df
+                )
+                shape_for_change_df = (
+                    self._Fit_Everything_ALT__Normal_Dual_Power_params._Fit_Normal_Dual_Power__shape_for_change_df
+                )
+                failure_groups = (
+                    self._Fit_Everything_ALT__Normal_Dual_Power_params._Fit_Normal_Dual_Power__failure_groups
+                )
+                right_censored_groups = (
+                    self._Fit_Everything_ALT__Normal_Dual_Power_params._Fit_Normal_Dual_Power__right_censored_groups
+                )
+                ALT_prob_plot(
+                    dist="Normal",
+                    model="Dual_Power",
+                    stresses_for_groups=stresses_for_groups,
+                    failure_groups=failure_groups,
+                    right_censored_groups=right_censored_groups,
+                    life_func=life_func,
+                    shape=self.Normal_Dual_Power_sigma,
+                    scale_for_change_df=scale_for_change_df,
+                    shape_for_change_df=shape_for_change_df,
+                    use_level_stress=use_level_stress,
+                )
+
+            elif item == "Exponential_Dual_Exponential":
+
+                def life_func(S1, S2):
+                    return self.Exponential_Dual_Exponential_c * np.exp(
+                        self.Exponential_Dual_Exponential_a / S1
+                        + self.Exponential_Dual_Exponential_b / S2
+                    )
+
+                stresses_for_groups = (
+                    self._Fit_Everything_ALT__Exponential_Dual_Exponential_params._Fit_Exponential_Dual_Exponential__stresses_for_groups
+                )
+                scale_for_change_df = (
+                    self._Fit_Everything_ALT__Exponential_Dual_Exponential_params._Fit_Exponential_Dual_Exponential__scale_for_change_df
+                )
+                shape_for_change_df = (
+                    self._Fit_Everything_ALT__Exponential_Dual_Exponential_params._Fit_Exponential_Dual_Exponential__shape_for_change_df
+                )
+                failure_groups = (
+                    self._Fit_Everything_ALT__Exponential_Dual_Exponential_params._Fit_Exponential_Dual_Exponential__failure_groups
+                )
+                right_censored_groups = (
+                    self._Fit_Everything_ALT__Exponential_Dual_Exponential_params._Fit_Exponential_Dual_Exponential__right_censored_groups
+                )
+                ALT_prob_plot(
+                    dist="Exponential",
+                    model="Dual_Exponential",
+                    stresses_for_groups=stresses_for_groups,
+                    failure_groups=failure_groups,
+                    right_censored_groups=right_censored_groups,
+                    life_func=life_func,
+                    shape=None,
+                    scale_for_change_df=scale_for_change_df,
+                    shape_for_change_df=shape_for_change_df,
+                    use_level_stress=use_level_stress,
+                )
+
+            elif item == "Exponential_Power_Exponential":
+
+                def life_func(S1, S2):
+                    return (
+                        self.Exponential_Power_Exponential_c
+                        * (S2 ** self.Exponential_Power_Exponential_n)
+                        * np.exp(self.Exponential_Power_Exponential_a / S1)
+                    )
+
+                stresses_for_groups = (
+                    self._Fit_Everything_ALT__Exponential_Power_Exponential_params._Fit_Exponential_Power_Exponential__stresses_for_groups
+                )
+                scale_for_change_df = (
+                    self._Fit_Everything_ALT__Exponential_Power_Exponential_params._Fit_Exponential_Power_Exponential__scale_for_change_df
+                )
+                shape_for_change_df = (
+                    self._Fit_Everything_ALT__Exponential_Power_Exponential_params._Fit_Exponential_Power_Exponential__shape_for_change_df
+                )
+                failure_groups = (
+                    self._Fit_Everything_ALT__Exponential_Power_Exponential_params._Fit_Exponential_Power_Exponential__failure_groups
+                )
+                right_censored_groups = (
+                    self._Fit_Everything_ALT__Exponential_Power_Exponential_params._Fit_Exponential_Power_Exponential__right_censored_groups
+                )
+                ALT_prob_plot(
+                    dist="Exponential",
+                    model="Power_Exponential",
+                    stresses_for_groups=stresses_for_groups,
+                    failure_groups=failure_groups,
+                    right_censored_groups=right_censored_groups,
+                    life_func=life_func,
+                    shape=None,
+                    scale_for_change_df=scale_for_change_df,
+                    shape_for_change_df=shape_for_change_df,
+                    use_level_stress=use_level_stress,
+                )
+
+            elif item == "Exponential_Dual_Power":
+
+                def life_func(S1, S2):
+                    return (
+                        self.Exponential_Dual_Power_c
+                        * (S1 ** self.Exponential_Dual_Power_m)
+                        * (S2 ** self.Exponential_Dual_Power_n)
+                    )
+
+                stresses_for_groups = (
+                    self._Fit_Everything_ALT__Exponential_Dual_Power_params._Fit_Exponential_Dual_Power__stresses_for_groups
+                )
+                scale_for_change_df = (
+                    self._Fit_Everything_ALT__Exponential_Dual_Power_params._Fit_Exponential_Dual_Power__scale_for_change_df
+                )
+                shape_for_change_df = (
+                    self._Fit_Everything_ALT__Exponential_Dual_Power_params._Fit_Exponential_Dual_Power__shape_for_change_df
+                )
+                failure_groups = (
+                    self._Fit_Everything_ALT__Exponential_Dual_Power_params._Fit_Exponential_Dual_Power__failure_groups
+                )
+                right_censored_groups = (
+                    self._Fit_Everything_ALT__Exponential_Dual_Power_params._Fit_Exponential_Dual_Power__right_censored_groups
+                )
+                ALT_prob_plot(
+                    dist="Exponential",
+                    model="Dual_Power",
+                    stresses_for_groups=stresses_for_groups,
+                    failure_groups=failure_groups,
+                    right_censored_groups=right_censored_groups,
+                    life_func=life_func,
+                    shape=None,
+                    scale_for_change_df=scale_for_change_df,
+                    shape_for_change_df=shape_for_change_df,
+                    use_level_stress=use_level_stress,
+                )
+
+            else:
+                raise ValueError("unknown item was fitted")
+
+            if best_only is False:
+                plt.title(item)
+                ax = plt.gca()
+                ax.set_yticklabels([], minor=False)
+                ax.set_xticklabels([], minor=False)
+                ax.set_yticklabels([], minor=True)
+                ax.set_xticklabels([], minor=True)
+                ax.set_ylabel("")
+                ax.set_xlabel("")
+                ax.get_legend().remove()
+                subplot_counter += 1
+            else:
+                plt.title("Probability plot of best model\n" + item)
+        if best_only is False:
+            plt.tight_layout()
+            plt.gcf().set_size_inches(figsize)
 
 
 class Fit_Weibull_Exponential:
@@ -110,6 +2558,9 @@ class Fit_Weibull_Exponential:
         right_censored_groups = inputs.right_censored_groups
         stresses_for_groups = inputs.stresses_for_groups
         LL_func = Fit_Weibull_Exponential.LL
+        self.__failure_groups = inputs.failure_groups
+        self.__right_censored_groups = inputs.right_censored_groups
+        self.__stresses_for_groups = inputs.stresses_for_groups
 
         # obtain the initial guess for the life stress model and the life distribution
         life_stress_guess = ALT_least_squares(
@@ -266,6 +2717,8 @@ class Fit_Weibull_Exponential:
                     )
                 else:
                     beta_differences.append(str(str(round(beta_diff * 100, 2)) + "%"))
+        self.__scale_for_change_df = alphas_for_change_df
+        self.__shape_for_change_df = betas_for_change_df
 
         if use_level_stress is not None:
             change_of_parameters_data = {
@@ -347,6 +2800,7 @@ class Fit_Weibull_Exponential:
                 )
 
         if show_probability_plot is True:
+            plt.figure()
             self.probability_plot = ALT_prob_plot(
                 dist="Weibull",
                 model="Exponential",
@@ -479,6 +2933,9 @@ class Fit_Weibull_Eyring:
         right_censored_groups = inputs.right_censored_groups
         stresses_for_groups = inputs.stresses_for_groups
         LL_func = Fit_Weibull_Eyring.LL
+        self.__failure_groups = inputs.failure_groups
+        self.__right_censored_groups = inputs.right_censored_groups
+        self.__stresses_for_groups = inputs.stresses_for_groups
 
         # obtain the initial guess for the life stress model and the life distribution
         life_stress_guess = ALT_least_squares(
@@ -635,6 +3092,8 @@ class Fit_Weibull_Eyring:
                     )
                 else:
                     beta_differences.append(str(str(round(beta_diff * 100, 2)) + "%"))
+        self.__scale_for_change_df = alphas_for_change_df
+        self.__shape_for_change_df = betas_for_change_df
 
         if use_level_stress is not None:
             change_of_parameters_data = {
@@ -707,6 +3166,7 @@ class Fit_Weibull_Eyring:
                 )
 
         if show_probability_plot is True:
+            plt.figure()
             self.probability_plot = ALT_prob_plot(
                 dist="Weibull",
                 model="Eyring",
@@ -837,6 +3297,9 @@ class Fit_Weibull_Power:
         right_censored_groups = inputs.right_censored_groups
         stresses_for_groups = inputs.stresses_for_groups
         LL_func = Fit_Weibull_Power.LL
+        self.__failure_groups = inputs.failure_groups
+        self.__right_censored_groups = inputs.right_censored_groups
+        self.__stresses_for_groups = inputs.stresses_for_groups
 
         # obtain the initial guess for the life stress model and the life distribution
         life_stress_guess = ALT_least_squares(
@@ -993,6 +3456,8 @@ class Fit_Weibull_Power:
                     )
                 else:
                     beta_differences.append(str(str(round(beta_diff * 100, 2)) + "%"))
+        self.__scale_for_change_df = alphas_for_change_df
+        self.__shape_for_change_df = betas_for_change_df
 
         if use_level_stress is not None:
             change_of_parameters_data = {
@@ -1065,6 +3530,7 @@ class Fit_Weibull_Power:
                 )
 
         if show_probability_plot is True:
+            plt.figure()
             self.probability_plot = ALT_prob_plot(
                 dist="Weibull",
                 model="Power",
@@ -1117,7 +3583,7 @@ class Fit_Weibull_Dual_Exponential:
     """
     Fit_Weibull_Dual_Exponential
 
-    This function will Fit the Weibull-Dual-Exponential life-stress model to the data provided. Please see the online documentation for the equations of this model.
+    This function will Fit the Weibull_Dual_Exponential life-stress model to the data provided. Please see the online documentation for the equations of this model.
     This model is most appropriate to model a life-stress relationship with temperature-humidity. It is recommended that you ensure your temperature data are in Kelvin and humidity data range from 0 to 1.
 
     Inputs:
@@ -1135,9 +3601,9 @@ class Fit_Weibull_Dual_Exponential:
     optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the inital guess (using least squares) will be returned with a warning.
 
     Outputs:
-    a - fitted parameter from the Dual-Exponential model
-    b - fitted parameter from the Dual-Exponential model
-    c - fitted parameter from the Dual-Exponential model
+    a - fitted parameter from the Dual_Exponential model
+    b - fitted parameter from the Dual_Exponential model
+    c - fitted parameter from the Dual_Exponential model
     beta - the fitted Weibull_2P beta
     loglik2 - Log Likelihood*-2 (as used in JMP Pro)
     loglik - Log Likelihood (as used in Minitab and Reliasoft)
@@ -1183,7 +3649,7 @@ class Fit_Weibull_Dual_Exponential:
 
         inputs = ALT_fitters_input_checking(
             dist="Weibull",
-            life_stress_model="Dual-Exponential",
+            life_stress_model="Dual_Exponential",
             failures=failures,
             failure_stress_1=failure_stress_1,
             failure_stress_2=failure_stress_2,
@@ -1207,10 +3673,13 @@ class Fit_Weibull_Dual_Exponential:
         right_censored_groups = inputs.right_censored_groups
         stresses_for_groups = inputs.stresses_for_groups
         LL_func = Fit_Weibull_Dual_Exponential.LL
+        self.__failure_groups = inputs.failure_groups
+        self.__right_censored_groups = inputs.right_censored_groups
+        self.__stresses_for_groups = inputs.stresses_for_groups
 
         # obtain the initial guess for the life stress model and the life distribution
         life_stress_guess = ALT_least_squares(
-            model="Dual-Exponential",
+            model="Dual_Exponential",
             failures=failures,
             stress_1_array=failure_stress_1,
             stress_2_array=failure_stress_2,
@@ -1255,7 +3724,7 @@ class Fit_Weibull_Dual_Exponential:
 
         # fit the model using the MLE method
         MLE_results = ALT_MLE_optimisation(
-            model="Dual-Exponential",
+            model="Dual_Exponential",
             dist="Weibull",
             LL_func=LL_func,
             initial_guess=guess,
@@ -1399,6 +3868,8 @@ class Fit_Weibull_Dual_Exponential:
                     )
                 else:
                     beta_differences.append(str(str(round(beta_diff * 100, 2)) + "%"))
+        self.__scale_for_change_df = alphas_for_change_df
+        self.__shape_for_change_df = betas_for_change_df
 
         if use_level_stress is not None:
             change_of_parameters_data = {
@@ -1477,9 +3948,10 @@ class Fit_Weibull_Dual_Exponential:
                 )
 
         if show_probability_plot is True:
+            plt.figure()
             self.probability_plot = ALT_prob_plot(
                 dist="Weibull",
-                model="Dual-Exponential",
+                model="Dual_Exponential",
                 stresses_for_groups=stresses_for_groups,
                 failure_groups=failure_groups,
                 right_censored_groups=right_censored_groups,
@@ -1493,7 +3965,7 @@ class Fit_Weibull_Dual_Exponential:
         if show_life_stress_plot is True:
             self.life_stress_plot = life_stress_plot(
                 dist="Weibull",
-                model="Dual-Exponential",
+                model="Dual_Exponential",
                 life_func=life_func,
                 failure_groups=failure_groups,
                 stresses_for_groups=stresses_for_groups,
@@ -1531,7 +4003,7 @@ class Fit_Weibull_Power_Exponential:
     """
     Fit_Weibull_Power_Exponential
 
-    This function will Fit the Weibull-Power-Exponential life-stress model to the data provided. Please see the online documentation for the equations of this model.
+    This function will Fit the Weibull_Power_Exponential life-stress model to the data provided. Please see the online documentation for the equations of this model.
     This model is most appropriate to model a life-stress relationship with thermal and non-thermal stresses. It is essential that you ensure your thermal stress is stress_thermal and your non-thermal stress is stress_nonthermal.
     Also ensure that your temperature data are in Kelvin.
 
@@ -1550,9 +4022,9 @@ class Fit_Weibull_Power_Exponential:
     optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the inital guess (using least squares) will be returned with a warning.
 
     Outputs:
-    a - fitted parameter from the Power-Exponential model
-    c - fitted parameter from the Power-Exponential model
-    n - fitted parameter from the Power-Exponential model
+    a - fitted parameter from the Power_Exponential model
+    c - fitted parameter from the Power_Exponential model
+    n - fitted parameter from the Power_Exponential model
     beta - the fitted Weibull_2P beta
     loglik2 - Log Likelihood*-2 (as used in JMP Pro)
     loglik - Log Likelihood (as used in Minitab and Reliasoft)
@@ -1576,6 +4048,8 @@ class Fit_Weibull_Power_Exponential:
     mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided).
     alpha_at_use_stress - the equivalent Weibull alpha parameter at the use level stress (only provided if use_level_stress is provided).
     distribution_at_use_stress - the Weibull distribution at the use level stress (only provided if use_level_stress is provided).
+    probability_plot - the figure object from the probability plot (only provided if show_probability_plot is True)
+    life_stress_plot - the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
     """
 
     def __init__(
@@ -1596,7 +4070,7 @@ class Fit_Weibull_Power_Exponential:
 
         inputs = ALT_fitters_input_checking(
             dist="Weibull",
-            life_stress_model="Power-Exponential",
+            life_stress_model="Power_Exponential",
             failures=failures,
             failure_stress_1=failure_stress_1,
             failure_stress_2=failure_stress_2,
@@ -1620,10 +4094,13 @@ class Fit_Weibull_Power_Exponential:
         right_censored_groups = inputs.right_censored_groups
         stresses_for_groups = inputs.stresses_for_groups
         LL_func = Fit_Weibull_Power_Exponential.LL
+        self.__failure_groups = inputs.failure_groups
+        self.__right_censored_groups = inputs.right_censored_groups
+        self.__stresses_for_groups = inputs.stresses_for_groups
 
         # obtain the initial guess for the life stress model and the life distribution
         life_stress_guess = ALT_least_squares(
-            model="Power-Exponential",
+            model="Power_Exponential",
             failures=failures,
             stress_1_array=failure_stress_1,
             stress_2_array=failure_stress_2,
@@ -1668,7 +4145,7 @@ class Fit_Weibull_Power_Exponential:
 
         # fit the model using the MLE method
         MLE_results = ALT_MLE_optimisation(
-            model="Power-Exponential",
+            model="Power_Exponential",
             dist="Weibull",
             LL_func=LL_func,
             initial_guess=guess,
@@ -1812,6 +4289,8 @@ class Fit_Weibull_Power_Exponential:
                     )
                 else:
                     beta_differences.append(str(str(round(beta_diff * 100, 2)) + "%"))
+        self.__scale_for_change_df = alphas_for_change_df
+        self.__shape_for_change_df = betas_for_change_df
 
         if use_level_stress is not None:
             change_of_parameters_data = {
@@ -1890,9 +4369,10 @@ class Fit_Weibull_Power_Exponential:
                 )
 
         if show_probability_plot is True:
+            plt.figure()
             self.probability_plot = ALT_prob_plot(
                 dist="Weibull",
-                model="Power-Exponential",
+                model="Power_Exponential",
                 stresses_for_groups=stresses_for_groups,
                 failure_groups=failure_groups,
                 right_censored_groups=right_censored_groups,
@@ -1906,7 +4386,7 @@ class Fit_Weibull_Power_Exponential:
         if show_life_stress_plot is True:
             self.life_stress_plot = life_stress_plot(
                 dist="Weibull",
-                model="Power-Exponential",
+                model="Power_Exponential",
                 life_func=life_func,
                 failure_groups=failure_groups,
                 stresses_for_groups=stresses_for_groups,
@@ -1942,7 +4422,7 @@ class Fit_Weibull_Dual_Power:
     """
     Fit_Weibull_Dual_Power
 
-    This function will Fit the Weibull-Dual-Power life-stress model to the data provided. Please see the online documentation for the equations of this model.
+    This function will Fit the Weibull_Dual_Power life-stress model to the data provided. Please see the online documentation for the equations of this model.
     This model is most appropriate to model a life-stress relationship with two non-thermal stresses such as voltage and load.
 
     Inputs:
@@ -1960,24 +4440,24 @@ class Fit_Weibull_Dual_Power:
     optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the inital guess (using least squares) will be returned with a warning.
 
     Outputs:
-    c - fitted parameter from the Dual-Power model
-    n - fitted parameter from the Dual-Power model
-    m - fitted parameter from the Dual-Power model
+    c - fitted parameter from the Dual_Power model
+    n - fitted parameter from the Dual_Power model
+    m - fitted parameter from the Dual_Power model
     beta - the fitted Weibull_2P beta
     loglik2 - Log Likelihood*-2 (as used in JMP Pro)
     loglik - Log Likelihood (as used in Minitab and Reliasoft)
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
-    a_SE - the standard error (sqrt(variance)) of the parameter
-    b_SE - the standard error (sqrt(variance)) of the parameter
     c_SE - the standard error (sqrt(variance)) of the parameter
+    m_SE - the standard error (sqrt(variance)) of the parameter
+    n_SE - the standard error (sqrt(variance)) of the parameter
     beta_SE - the standard error (sqrt(variance)) of the parameter
-    a_upper - the upper CI estimate of the parameter
-    a_lower - the lower CI estimate of the parameter
-    b_upper - the upper CI estimate of the parameter
-    b_lower - the lower CI estimate of the parameter
     c_upper - the upper CI estimate of the parameter
     c_lower - the lower CI estimate of the parameter
+    m_upper - the upper CI estimate of the parameter
+    m_lower - the lower CI estimate of the parameter
+    n_upper - the upper CI estimate of the parameter
+    n_lower - the lower CI estimate of the parameter
     beta_upper - the upper CI estimate of the parameter
     beta_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
@@ -2008,7 +4488,7 @@ class Fit_Weibull_Dual_Power:
 
         inputs = ALT_fitters_input_checking(
             dist="Weibull",
-            life_stress_model="Dual-Power",
+            life_stress_model="Dual_Power",
             failures=failures,
             failure_stress_1=failure_stress_1,
             failure_stress_2=failure_stress_2,
@@ -2032,10 +4512,13 @@ class Fit_Weibull_Dual_Power:
         right_censored_groups = inputs.right_censored_groups
         stresses_for_groups = inputs.stresses_for_groups
         LL_func = Fit_Weibull_Dual_Power.LL
+        self.__failure_groups = inputs.failure_groups
+        self.__right_censored_groups = inputs.right_censored_groups
+        self.__stresses_for_groups = inputs.stresses_for_groups
 
         # obtain the initial guess for the life stress model and the life distribution
         life_stress_guess = ALT_least_squares(
-            model="Dual-Power",
+            model="Dual_Power",
             failures=failures,
             stress_1_array=failure_stress_1,
             stress_2_array=failure_stress_2,
@@ -2076,11 +4559,11 @@ class Fit_Weibull_Dual_Power:
             life_stress_guess[1],
             life_stress_guess[2],
             common_beta,
-        ]  # c, n, m, beta
+        ]  # c, m, n, beta
 
         # fit the model using the MLE method
         MLE_results = ALT_MLE_optimisation(
-            model="Dual-Power",
+            model="Dual_Power",
             dist="Weibull",
             LL_func=LL_func,
             initial_guess=guess,
@@ -2093,14 +4576,14 @@ class Fit_Weibull_Dual_Power:
             right_censored_stress_2=right_censored_stress_2,
         )
         self.c = MLE_results.c
-        self.n = MLE_results.n
         self.m = MLE_results.m
+        self.n = MLE_results.n
         self.beta = MLE_results.beta
         self.success = MLE_results.success
 
         # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
-        params = [self.c, self.n, self.m, self.beta]
+        params = [self.c, self.m, self.n, self.beta]
         hessian_matrix = hessian(LL_func)(
             np.array(tuple(params)),
             np.array(tuple(failures)),
@@ -2112,29 +4595,29 @@ class Fit_Weibull_Dual_Power:
         )
         covariance_matrix = np.linalg.inv(hessian_matrix)
         self.c_SE = abs(covariance_matrix[0][0]) ** 0.5
-        self.n_SE = abs(covariance_matrix[1][1]) ** 0.5
-        self.m_SE = abs(covariance_matrix[2][2]) ** 0.5
+        self.m_SE = abs(covariance_matrix[1][1]) ** 0.5
+        self.n_SE = abs(covariance_matrix[2][2]) ** 0.5
         self.beta_SE = abs(covariance_matrix[3][3]) ** 0.5
         # c is strictly positive
         self.c_upper = self.c * (np.exp(Z * (self.c_SE / self.c)))
         self.c_lower = self.c * (np.exp(-Z * (self.c_SE / self.c)))
-        # n can be positive or negative
-        self.n_upper = self.n + (Z * self.n_SE)
-        self.n_lower = self.n + (-Z * self.n_SE)
         # m can be positive or negative
         self.m_upper = self.m + (Z * self.m_SE)
         self.m_lower = self.m + (-Z * self.m_SE)
+        # n can be positive or negative
+        self.n_upper = self.n + (Z * self.n_SE)
+        self.n_lower = self.n + (-Z * self.n_SE)
         # beta is strictly positive
         self.beta_upper = self.beta * (np.exp(Z * (self.beta_SE / self.beta)))
         self.beta_lower = self.beta * (np.exp(-Z * (self.beta_SE / self.beta)))
 
         # results dataframe
         results_data = {
-            "Parameter": ["c", "n", "m", "beta"],
-            "Point Estimate": [self.c, self.n, self.m, self.beta],
-            "Standard Error": [self.c_SE, self.n_SE, self.m_SE, self.beta_SE],
-            "Lower CI": [self.c_lower, self.n_lower, self.m_lower, self.beta_lower],
-            "Upper CI": [self.c_upper, self.n_upper, self.m_upper, self.beta_upper],
+            "Parameter": ["c", "m", "n", "beta"],
+            "Point Estimate": [self.c, self.m, self.n, self.beta],
+            "Standard Error": [self.c_SE, self.m_SE, self.n_SE, self.beta_SE],
+            "Lower CI": [self.c_lower, self.m_lower, self.n_lower, self.beta_lower],
+            "Upper CI": [self.c_upper, self.m_upper, self.n_upper, self.beta_upper],
         }
         self.results = pd.DataFrame(
             data=results_data,
@@ -2175,7 +4658,7 @@ class Fit_Weibull_Dual_Power:
         )
 
         def life_func(S1, S2):
-            return self.c * (S1 ** self.n) * (S2 ** self.m)
+            return self.c * (S1 ** self.m) * (S2 ** self.n)
 
         # use level stress calculations
         if use_level_stress is not None:
@@ -2224,6 +4707,8 @@ class Fit_Weibull_Dual_Power:
                     )
                 else:
                     beta_differences.append(str(str(round(beta_diff * 100, 2)) + "%"))
+        self.__scale_for_change_df = alphas_for_change_df
+        self.__shape_for_change_df = betas_for_change_df
 
         if use_level_stress is not None:
             change_of_parameters_data = {
@@ -2300,9 +4785,10 @@ class Fit_Weibull_Dual_Power:
                 )
 
         if show_probability_plot is True:
+            plt.figure()
             self.probability_plot = ALT_prob_plot(
                 dist="Weibull",
-                model="Dual-Power",
+                model="Dual_Power",
                 stresses_for_groups=stresses_for_groups,
                 failure_groups=failure_groups,
                 right_censored_groups=right_censored_groups,
@@ -2316,7 +4802,7 @@ class Fit_Weibull_Dual_Power:
         if show_life_stress_plot is True:
             self.life_stress_plot = life_stress_plot(
                 dist="Weibull",
-                model="Dual-Power",
+                model="Dual_Power",
                 life_func=life_func,
                 failure_groups=failure_groups,
                 stresses_for_groups=stresses_for_groups,
@@ -2324,15 +4810,15 @@ class Fit_Weibull_Dual_Power:
             )
 
     @staticmethod
-    def logf(t, S1, S2, c, n, m, beta):  # Log PDF
-        life = c * (S1 ** n) * (S2 ** m)
+    def logf(t, S1, S2, c, m, n, beta):  # Log PDF
+        life = c * (S1 ** m) * (S2 ** n)
         return (
             (beta - 1) * anp.log(t / life) + anp.log(beta / life) - (t / life) ** beta
         )
 
     @staticmethod
-    def logR(t, S1, S2, c, n, m, beta):  # Log SF
-        life = c * (S1 ** n) * (S2 ** m)
+    def logR(t, S1, S2, c, m, n, beta):  # Log SF
+        life = c * (S1 ** m) * (S2 ** n)
         return -((t / life) ** beta)
 
     @staticmethod
@@ -2433,6 +4919,9 @@ class Fit_Lognormal_Exponential:
         right_censored_groups = inputs.right_censored_groups
         stresses_for_groups = inputs.stresses_for_groups
         LL_func = Fit_Lognormal_Exponential.LL
+        self.__failure_groups = inputs.failure_groups
+        self.__right_censored_groups = inputs.right_censored_groups
+        self.__stresses_for_groups = inputs.stresses_for_groups
 
         # obtain the initial guess for the life stress model and the life distribution
         life_stress_guess = ALT_least_squares(
@@ -2593,6 +5082,8 @@ class Fit_Lognormal_Exponential:
                     )
                 else:
                     sigma_differences.append(str(str(round(sigma_diff * 100, 2)) + "%"))
+        self.__scale_for_change_df = mus_for_change_df
+        self.__shape_for_change_df = sigmas_for_change_df
 
         if use_level_stress is not None:
             change_of_parameters_data = {
@@ -2674,6 +5165,7 @@ class Fit_Lognormal_Exponential:
                 )
 
         if show_probability_plot is True:
+            plt.figure()
             self.probability_plot = ALT_prob_plot(
                 dist="Lognormal",
                 model="Exponential",
@@ -2809,6 +5301,9 @@ class Fit_Lognormal_Eyring:
         right_censored_groups = inputs.right_censored_groups
         stresses_for_groups = inputs.stresses_for_groups
         LL_func = Fit_Lognormal_Eyring.LL
+        self.__failure_groups = inputs.failure_groups
+        self.__right_censored_groups = inputs.right_censored_groups
+        self.__stresses_for_groups = inputs.stresses_for_groups
 
         # obtain the initial guess for the life stress model and the life distribution
         life_stress_guess = ALT_least_squares(
@@ -2969,6 +5464,8 @@ class Fit_Lognormal_Eyring:
                     )
                 else:
                     sigma_differences.append(str(str(round(sigma_diff * 100, 2)) + "%"))
+        self.__scale_for_change_df = mus_for_change_df
+        self.__shape_for_change_df = sigmas_for_change_df
 
         if use_level_stress is not None:
             change_of_parameters_data = {
@@ -3041,6 +5538,7 @@ class Fit_Lognormal_Eyring:
                 )
 
         if show_probability_plot is True:
+            plt.figure()
             self.probability_plot = ALT_prob_plot(
                 dist="Lognormal",
                 model="Eyring",
@@ -3176,6 +5674,9 @@ class Fit_Lognormal_Power:
         right_censored_groups = inputs.right_censored_groups
         stresses_for_groups = inputs.stresses_for_groups
         LL_func = Fit_Lognormal_Power.LL
+        self.__failure_groups = inputs.failure_groups
+        self.__right_censored_groups = inputs.right_censored_groups
+        self.__stresses_for_groups = inputs.stresses_for_groups
 
         # obtain the initial guess for the life stress model and the life distribution
         life_stress_guess = ALT_least_squares(
@@ -3336,6 +5837,8 @@ class Fit_Lognormal_Power:
                     )
                 else:
                     sigma_differences.append(str(str(round(sigma_diff * 100, 2)) + "%"))
+        self.__scale_for_change_df = mus_for_change_df
+        self.__shape_for_change_df = sigmas_for_change_df
 
         if use_level_stress is not None:
             change_of_parameters_data = {
@@ -3408,6 +5911,7 @@ class Fit_Lognormal_Power:
                 )
 
         if show_probability_plot is True:
+            plt.figure()
             self.probability_plot = ALT_prob_plot(
                 dist="Lognormal",
                 model="Power",
@@ -3465,7 +5969,7 @@ class Fit_Lognormal_Dual_Exponential:
     """
     Fit_Lognormal_Dual_Exponential
 
-    This function will Fit the Lognormal-Dual-Exponential life-stress model to the data provided. Please see the online documentation for the equations of this model.
+    This function will Fit the Lognormal_Dual_Exponential life-stress model to the data provided. Please see the online documentation for the equations of this model.
     This model is most appropriate to model a life-stress relationship with temperature-humidity. It is recommended that you ensure your temperature data are in Kelvin and humidity data range from 0 to 1.
 
     Inputs:
@@ -3483,9 +5987,9 @@ class Fit_Lognormal_Dual_Exponential:
     optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the inital guess (using least squares) will be returned with a warning.
 
     Outputs:
-    a - fitted parameter from the Dual-Exponential model
-    b - fitted parameter from the Dual-Exponential model
-    c - fitted parameter from the Dual-Exponential model
+    a - fitted parameter from the Dual_Exponential model
+    b - fitted parameter from the Dual_Exponential model
+    c - fitted parameter from the Dual_Exponential model
     sigma - the fitted Lognormal_2P sigma
     loglik2 - Log Likelihood*-2 (as used in JMP Pro)
     loglik - Log Likelihood (as used in Minitab and Reliasoft)
@@ -3531,7 +6035,7 @@ class Fit_Lognormal_Dual_Exponential:
 
         inputs = ALT_fitters_input_checking(
             dist="Lognormal",
-            life_stress_model="Dual-Exponential",
+            life_stress_model="Dual_Exponential",
             failures=failures,
             failure_stress_1=failure_stress_1,
             failure_stress_2=failure_stress_2,
@@ -3555,10 +6059,13 @@ class Fit_Lognormal_Dual_Exponential:
         right_censored_groups = inputs.right_censored_groups
         stresses_for_groups = inputs.stresses_for_groups
         LL_func = Fit_Lognormal_Dual_Exponential.LL
+        self.__failure_groups = inputs.failure_groups
+        self.__right_censored_groups = inputs.right_censored_groups
+        self.__stresses_for_groups = inputs.stresses_for_groups
 
         # obtain the initial guess for the life stress model and the life distribution
         life_stress_guess = ALT_least_squares(
-            model="Dual-Exponential",
+            model="Dual_Exponential",
             failures=failures,
             stress_1_array=failure_stress_1,
             stress_2_array=failure_stress_2,
@@ -3603,7 +6110,7 @@ class Fit_Lognormal_Dual_Exponential:
 
         # fit the model using the MLE method
         MLE_results = ALT_MLE_optimisation(
-            model="Dual-Exponential",
+            model="Dual_Exponential",
             dist="Lognormal",
             LL_func=LL_func,
             initial_guess=guess,
@@ -3747,6 +6254,8 @@ class Fit_Lognormal_Dual_Exponential:
                     )
                 else:
                     sigma_differences.append(str(str(round(sigma_diff * 100, 2)) + "%"))
+        self.__scale_for_change_df = mus_for_change_df
+        self.__shape_for_change_df = sigmas_for_change_df
 
         if use_level_stress is not None:
             change_of_parameters_data = {
@@ -3825,9 +6334,10 @@ class Fit_Lognormal_Dual_Exponential:
                 )
 
         if show_probability_plot is True:
+            plt.figure()
             self.probability_plot = ALT_prob_plot(
                 dist="Lognormal",
-                model="Dual-Exponential",
+                model="Dual_Exponential",
                 stresses_for_groups=stresses_for_groups,
                 failure_groups=failure_groups,
                 right_censored_groups=right_censored_groups,
@@ -3841,7 +6351,7 @@ class Fit_Lognormal_Dual_Exponential:
         if show_life_stress_plot is True:
             self.life_stress_plot = life_stress_plot(
                 dist="Lognormal",
-                model="Dual-Exponential",
+                model="Dual_Exponential",
                 life_func=life_func,
                 failure_groups=failure_groups,
                 stresses_for_groups=stresses_for_groups,
@@ -3880,7 +6390,7 @@ class Fit_Lognormal_Power_Exponential:
     """
     Fit_Lognormal_Power_Exponential
 
-    This function will Fit the Lognormal-Power-Exponential life-stress model to the data provided. Please see the online documentation for the equations of this model.
+    This function will Fit the Lognormal_Power_Exponential life-stress model to the data provided. Please see the online documentation for the equations of this model.
     This model is most appropriate to model a life-stress relationship with thermal and non-thermal stresses. It is essential that you ensure your thermal stress is stress_thermal and your non-thermal stress is stress_nonthermal.
     Also ensure that your temperature data are in Kelvin.
 
@@ -3899,9 +6409,9 @@ class Fit_Lognormal_Power_Exponential:
     optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the inital guess (using least squares) will be returned with a warning.
 
     Outputs:
-    a - fitted parameter from the Power-Exponential model
-    c - fitted parameter from the Power-Exponential model
-    n - fitted parameter from the Power-Exponential model
+    a - fitted parameter from the Power_Exponential model
+    c - fitted parameter from the Power_Exponential model
+    n - fitted parameter from the Power_Exponential model
     sigma - the fitted Lognormal_2P sigma
     loglik2 - Log Likelihood*-2 (as used in JMP Pro)
     loglik - Log Likelihood (as used in Minitab and Reliasoft)
@@ -3925,6 +6435,8 @@ class Fit_Lognormal_Power_Exponential:
     mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided).
     mu_at_use_stress - the equivalent Lognormal mu parameter at the use level stress (only provided if use_level_stress is provided).
     distribution_at_use_stress - the Lognormal distribution at the use level stress (only provided if use_level_stress is provided).
+    probability_plot - the figure object from the probability plot (only provided if show_probability_plot is True)
+    life_stress_plot - the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
     """
 
     def __init__(
@@ -3945,7 +6457,7 @@ class Fit_Lognormal_Power_Exponential:
 
         inputs = ALT_fitters_input_checking(
             dist="Lognormal",
-            life_stress_model="Power-Exponential",
+            life_stress_model="Power_Exponential",
             failures=failures,
             failure_stress_1=failure_stress_1,
             failure_stress_2=failure_stress_2,
@@ -3969,10 +6481,13 @@ class Fit_Lognormal_Power_Exponential:
         right_censored_groups = inputs.right_censored_groups
         stresses_for_groups = inputs.stresses_for_groups
         LL_func = Fit_Lognormal_Power_Exponential.LL
+        self.__failure_groups = inputs.failure_groups
+        self.__right_censored_groups = inputs.right_censored_groups
+        self.__stresses_for_groups = inputs.stresses_for_groups
 
         # obtain the initial guess for the life stress model and the life distribution
         life_stress_guess = ALT_least_squares(
-            model="Power-Exponential",
+            model="Power_Exponential",
             failures=failures,
             stress_1_array=failure_stress_1,
             stress_2_array=failure_stress_2,
@@ -4017,7 +6532,7 @@ class Fit_Lognormal_Power_Exponential:
 
         # fit the model using the MLE method
         MLE_results = ALT_MLE_optimisation(
-            model="Power-Exponential",
+            model="Power_Exponential",
             dist="Lognormal",
             LL_func=LL_func,
             initial_guess=guess,
@@ -4161,6 +6676,8 @@ class Fit_Lognormal_Power_Exponential:
                     )
                 else:
                     sigma_differences.append(str(str(round(sigma_diff * 100, 2)) + "%"))
+        self.__scale_for_change_df = mus_for_change_df
+        self.__shape_for_change_df = sigmas_for_change_df
 
         if use_level_stress is not None:
             change_of_parameters_data = {
@@ -4239,9 +6756,10 @@ class Fit_Lognormal_Power_Exponential:
                 )
 
         if show_probability_plot is True:
+            plt.figure()
             self.probability_plot = ALT_prob_plot(
                 dist="Lognormal",
-                model="Power-Exponential",
+                model="Power_Exponential",
                 stresses_for_groups=stresses_for_groups,
                 failure_groups=failure_groups,
                 right_censored_groups=right_censored_groups,
@@ -4255,7 +6773,7 @@ class Fit_Lognormal_Power_Exponential:
         if show_life_stress_plot is True:
             self.life_stress_plot = life_stress_plot(
                 dist="Lognormal",
-                model="Power-Exponential",
+                model="Power_Exponential",
                 life_func=life_func,
                 failure_groups=failure_groups,
                 stresses_for_groups=stresses_for_groups,
@@ -4294,7 +6812,7 @@ class Fit_Lognormal_Dual_Power:
     """
     Fit_Lognormal_Dual_Power
 
-    This function will Fit the Lognormal-Dual-Power life-stress model to the data provided. Please see the online documentation for the equations of this model.
+    This function will Fit the Lognormal_Dual_Power life-stress model to the data provided. Please see the online documentation for the equations of this model.
     This model is most appropriate to model a life-stress relationship with two non-thermal stresses such as voltage and load.
 
     Inputs:
@@ -4312,24 +6830,24 @@ class Fit_Lognormal_Dual_Power:
     optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the inital guess (using least squares) will be returned with a warning.
 
     Outputs:
-    c - fitted parameter from the Dual-Power model
-    n - fitted parameter from the Dual-Power model
-    m - fitted parameter from the Dual-Power model
+    c - fitted parameter from the Dual_Power model
+    m - fitted parameter from the Dual_Power model
+    n - fitted parameter from the Dual_Power model
     sigma - the fitted Lognormal_2P sigma
     loglik2 - Log Likelihood*-2 (as used in JMP Pro)
     loglik - Log Likelihood (as used in Minitab and Reliasoft)
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
-    a_SE - the standard error (sqrt(variance)) of the parameter
-    b_SE - the standard error (sqrt(variance)) of the parameter
     c_SE - the standard error (sqrt(variance)) of the parameter
+    m_SE - the standard error (sqrt(variance)) of the parameter
+    n_SE - the standard error (sqrt(variance)) of the parameter
     sigma_SE - the standard error (sqrt(variance)) of the parameter
-    a_upper - the upper CI estimate of the parameter
-    a_lower - the lower CI estimate of the parameter
-    b_upper - the upper CI estimate of the parameter
-    b_lower - the lower CI estimate of the parameter
     c_upper - the upper CI estimate of the parameter
     c_lower - the lower CI estimate of the parameter
+    m_upper - the upper CI estimate of the parameter
+    m_lower - the lower CI estimate of the parameter
+    n_upper - the upper CI estimate of the parameter
+    n_lower - the lower CI estimate of the parameter
     sigma_upper - the upper CI estimate of the parameter
     sigma_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
@@ -4360,7 +6878,7 @@ class Fit_Lognormal_Dual_Power:
 
         inputs = ALT_fitters_input_checking(
             dist="Lognormal",
-            life_stress_model="Dual-Power",
+            life_stress_model="Dual_Power",
             failures=failures,
             failure_stress_1=failure_stress_1,
             failure_stress_2=failure_stress_2,
@@ -4384,10 +6902,13 @@ class Fit_Lognormal_Dual_Power:
         right_censored_groups = inputs.right_censored_groups
         stresses_for_groups = inputs.stresses_for_groups
         LL_func = Fit_Lognormal_Dual_Power.LL
+        self.__failure_groups = inputs.failure_groups
+        self.__right_censored_groups = inputs.right_censored_groups
+        self.__stresses_for_groups = inputs.stresses_for_groups
 
         # obtain the initial guess for the life stress model and the life distribution
         life_stress_guess = ALT_least_squares(
-            model="Dual-Power",
+            model="Dual_Power",
             failures=failures,
             stress_1_array=failure_stress_1,
             stress_2_array=failure_stress_2,
@@ -4428,11 +6949,11 @@ class Fit_Lognormal_Dual_Power:
             life_stress_guess[1],
             life_stress_guess[2],
             common_sigma,
-        ]  # c, n, m, sigma
+        ]  # c, m, n, sigma
 
         # fit the model using the MLE method
         MLE_results = ALT_MLE_optimisation(
-            model="Dual-Power",
+            model="Dual_Power",
             dist="Lognormal",
             LL_func=LL_func,
             initial_guess=guess,
@@ -4445,14 +6966,14 @@ class Fit_Lognormal_Dual_Power:
             right_censored_stress_2=right_censored_stress_2,
         )
         self.c = MLE_results.c
-        self.n = MLE_results.n
         self.m = MLE_results.m
+        self.n = MLE_results.n
         self.sigma = MLE_results.sigma
         self.success = MLE_results.success
 
         # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
-        params = [self.c, self.n, self.m, self.sigma]
+        params = [self.c, self.m, self.n, self.sigma]
         hessian_matrix = hessian(LL_func)(
             np.array(tuple(params)),
             np.array(tuple(failures)),
@@ -4464,29 +6985,29 @@ class Fit_Lognormal_Dual_Power:
         )
         covariance_matrix = np.linalg.inv(hessian_matrix)
         self.c_SE = abs(covariance_matrix[0][0]) ** 0.5
-        self.n_SE = abs(covariance_matrix[1][1]) ** 0.5
-        self.m_SE = abs(covariance_matrix[2][2]) ** 0.5
+        self.m_SE = abs(covariance_matrix[1][1]) ** 0.5
+        self.n_SE = abs(covariance_matrix[2][2]) ** 0.5
         self.sigma_SE = abs(covariance_matrix[3][3]) ** 0.5
         # c is strictly positive
         self.c_upper = self.c * (np.exp(Z * (self.c_SE / self.c)))
         self.c_lower = self.c * (np.exp(-Z * (self.c_SE / self.c)))
-        # n can be positive or negative
-        self.n_upper = self.n + (Z * self.n_SE)
-        self.n_lower = self.n + (-Z * self.n_SE)
         # m can be positive or negative
         self.m_upper = self.m + (Z * self.m_SE)
         self.m_lower = self.m + (-Z * self.m_SE)
+        # n can be positive or negative
+        self.n_upper = self.n + (Z * self.n_SE)
+        self.n_lower = self.n + (-Z * self.n_SE)
         # sigma is strictly positive
         self.sigma_upper = self.sigma * (np.exp(Z * (self.sigma_SE / self.sigma)))
         self.sigma_lower = self.sigma * (np.exp(-Z * (self.sigma_SE / self.sigma)))
 
         # results dataframe
         results_data = {
-            "Parameter": ["c", "n", "m", "sigma"],
-            "Point Estimate": [self.c, self.n, self.m, self.sigma],
-            "Standard Error": [self.c_SE, self.n_SE, self.m_SE, self.sigma_SE],
-            "Lower CI": [self.c_lower, self.n_lower, self.m_lower, self.sigma_lower],
-            "Upper CI": [self.c_upper, self.n_upper, self.m_upper, self.sigma_upper],
+            "Parameter": ["c", "m", "n", "sigma"],
+            "Point Estimate": [self.c, self.m, self.n, self.sigma],
+            "Standard Error": [self.c_SE, self.m_SE, self.n_SE, self.sigma_SE],
+            "Lower CI": [self.c_lower, self.m_lower, self.n_lower, self.sigma_lower],
+            "Upper CI": [self.c_upper, self.m_upper, self.n_upper, self.sigma_upper],
         }
         self.results = pd.DataFrame(
             data=results_data,
@@ -4527,7 +7048,7 @@ class Fit_Lognormal_Dual_Power:
         )
 
         def life_func(S1, S2):
-            return self.c * (S1 ** self.n) * (S2 ** self.m)
+            return self.c * (S1 ** self.m) * (S2 ** self.n)
 
         # use level stress calculations
         if use_level_stress is not None:
@@ -4576,6 +7097,8 @@ class Fit_Lognormal_Dual_Power:
                     )
                 else:
                     sigma_differences.append(str(str(round(sigma_diff * 100, 2)) + "%"))
+        self.__scale_for_change_df = mus_for_change_df
+        self.__shape_for_change_df = sigmas_for_change_df
 
         if use_level_stress is not None:
             change_of_parameters_data = {
@@ -4654,9 +7177,10 @@ class Fit_Lognormal_Dual_Power:
                 )
 
         if show_probability_plot is True:
+            plt.figure()
             self.probability_plot = ALT_prob_plot(
                 dist="Lognormal",
-                model="Dual-Power",
+                model="Dual_Power",
                 stresses_for_groups=stresses_for_groups,
                 failure_groups=failure_groups,
                 right_censored_groups=right_censored_groups,
@@ -4670,7 +7194,7 @@ class Fit_Lognormal_Dual_Power:
         if show_life_stress_plot is True:
             self.life_stress_plot = life_stress_plot(
                 dist="Lognormal",
-                model="Dual-Power",
+                model="Dual_Power",
                 life_func=life_func,
                 failure_groups=failure_groups,
                 stresses_for_groups=stresses_for_groups,
@@ -4678,16 +7202,16 @@ class Fit_Lognormal_Dual_Power:
             )
 
     @staticmethod
-    def logf(t, S1, S2, c, n, m, sigma):  # Log PDF
-        life = c * (S1 ** n) * (S2 ** m)
+    def logf(t, S1, S2, c, m, n, sigma):  # Log PDF
+        life = c * (S1 ** m) * (S2 ** n)
         return anp.log(
             anp.exp(-0.5 * (((anp.log(t) - anp.log(life)) / sigma) ** 2))
             / (t * sigma * (2 * anp.pi) ** 0.5)
         )
 
     @staticmethod
-    def logR(t, S1, S2, c, n, m, sigma):  # Log SF
-        life = c * (S1 ** n) * (S2 ** m)
+    def logR(t, S1, S2, c, m, n, sigma):  # Log SF
+        life = c * (S1 ** m) * (S2 ** n)
         return anp.log(
             0.5 - 0.5 * erf((anp.log(t) - anp.log(life)) / (sigma * 2 ** 0.5))
         )
@@ -4791,6 +7315,9 @@ class Fit_Normal_Exponential:
         right_censored_groups = inputs.right_censored_groups
         stresses_for_groups = inputs.stresses_for_groups
         LL_func = Fit_Normal_Exponential.LL
+        self.__failure_groups = inputs.failure_groups
+        self.__right_censored_groups = inputs.right_censored_groups
+        self.__stresses_for_groups = inputs.stresses_for_groups
 
         # obtain the initial guess for the life stress model and the life distribution
         life_stress_guess = ALT_least_squares(
@@ -4951,6 +7478,8 @@ class Fit_Normal_Exponential:
                     )
                 else:
                     sigma_differences.append(str(str(round(sigma_diff * 100, 2)) + "%"))
+        self.__scale_for_change_df = mus_for_change_df
+        self.__shape_for_change_df = sigmas_for_change_df
 
         if use_level_stress is not None:
             change_of_parameters_data = {
@@ -5030,6 +7559,7 @@ class Fit_Normal_Exponential:
                 )
 
         if show_probability_plot is True:
+            plt.figure()
             self.probability_plot = ALT_prob_plot(
                 dist="Normal",
                 model="Exponential",
@@ -5162,6 +7692,9 @@ class Fit_Normal_Eyring:
         right_censored_groups = inputs.right_censored_groups
         stresses_for_groups = inputs.stresses_for_groups
         LL_func = Fit_Normal_Eyring.LL
+        self.__failure_groups = inputs.failure_groups
+        self.__right_censored_groups = inputs.right_censored_groups
+        self.__stresses_for_groups = inputs.stresses_for_groups
 
         # obtain the initial guess for the life stress model and the life distribution
         life_stress_guess = ALT_least_squares(
@@ -5322,6 +7855,8 @@ class Fit_Normal_Eyring:
                     )
                 else:
                     sigma_differences.append(str(str(round(sigma_diff * 100, 2)) + "%"))
+        self.__scale_for_change_df = mus_for_change_df
+        self.__shape_for_change_df = sigmas_for_change_df
 
         if use_level_stress is not None:
             change_of_parameters_data = {
@@ -5394,6 +7929,7 @@ class Fit_Normal_Eyring:
                 )
 
         if show_probability_plot is True:
+            plt.figure()
             self.probability_plot = ALT_prob_plot(
                 dist="Normal",
                 model="Eyring",
@@ -5524,6 +8060,9 @@ class Fit_Normal_Power:
         right_censored_groups = inputs.right_censored_groups
         stresses_for_groups = inputs.stresses_for_groups
         LL_func = Fit_Normal_Power.LL
+        self.__failure_groups = inputs.failure_groups
+        self.__right_censored_groups = inputs.right_censored_groups
+        self.__stresses_for_groups = inputs.stresses_for_groups
 
         # obtain the initial guess for the life stress model and the life distribution
         life_stress_guess = ALT_least_squares(
@@ -5684,6 +8223,8 @@ class Fit_Normal_Power:
                     )
                 else:
                     sigma_differences.append(str(str(round(sigma_diff * 100, 2)) + "%"))
+        self.__scale_for_change_df = mus_for_change_df
+        self.__shape_for_change_df = sigmas_for_change_df
 
         if use_level_stress is not None:
             change_of_parameters_data = {
@@ -5756,6 +8297,7 @@ class Fit_Normal_Power:
                 )
 
         if show_probability_plot is True:
+            plt.figure()
             self.probability_plot = ALT_prob_plot(
                 dist="Normal",
                 model="Power",
@@ -5808,7 +8350,7 @@ class Fit_Normal_Dual_Exponential:
     """
     Fit_Normal_Dual_Exponential
 
-    This function will Fit the Normal-Dual-Exponential life-stress model to the data provided. Please see the online documentation for the equations of this model.
+    This function will Fit the Normal_Dual_Exponential life-stress model to the data provided. Please see the online documentation for the equations of this model.
     This model is most appropriate to model a life-stress relationship with temperature-humidity. It is recommended that you ensure your temperature data are in Kelvin and humidity data range from 0 to 1.
 
     Inputs:
@@ -5826,9 +8368,9 @@ class Fit_Normal_Dual_Exponential:
     optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the inital guess (using least squares) will be returned with a warning.
 
     Outputs:
-    a - fitted parameter from the Dual-Exponential model
-    b - fitted parameter from the Dual-Exponential model
-    c - fitted parameter from the Dual-Exponential model
+    a - fitted parameter from the Dual_Exponential model
+    b - fitted parameter from the Dual_Exponential model
+    c - fitted parameter from the Dual_Exponential model
     sigma - the fitted Normal_2P sigma
     loglik2 - Log Likelihood*-2 (as used in JMP Pro)
     loglik - Log Likelihood (as used in Minitab and Reliasoft)
@@ -5874,7 +8416,7 @@ class Fit_Normal_Dual_Exponential:
 
         inputs = ALT_fitters_input_checking(
             dist="Normal",
-            life_stress_model="Dual-Exponential",
+            life_stress_model="Dual_Exponential",
             failures=failures,
             failure_stress_1=failure_stress_1,
             failure_stress_2=failure_stress_2,
@@ -5898,10 +8440,13 @@ class Fit_Normal_Dual_Exponential:
         right_censored_groups = inputs.right_censored_groups
         stresses_for_groups = inputs.stresses_for_groups
         LL_func = Fit_Normal_Dual_Exponential.LL
+        self.__failure_groups = inputs.failure_groups
+        self.__right_censored_groups = inputs.right_censored_groups
+        self.__stresses_for_groups = inputs.stresses_for_groups
 
         # obtain the initial guess for the life stress model and the life distribution
         life_stress_guess = ALT_least_squares(
-            model="Dual-Exponential",
+            model="Dual_Exponential",
             failures=failures,
             stress_1_array=failure_stress_1,
             stress_2_array=failure_stress_2,
@@ -5946,7 +8491,7 @@ class Fit_Normal_Dual_Exponential:
 
         # fit the model using the MLE method
         MLE_results = ALT_MLE_optimisation(
-            model="Dual-Exponential",
+            model="Dual_Exponential",
             dist="Normal",
             LL_func=LL_func,
             initial_guess=guess,
@@ -6090,6 +8635,8 @@ class Fit_Normal_Dual_Exponential:
                     )
                 else:
                     sigma_differences.append(str(str(round(sigma_diff * 100, 2)) + "%"))
+        self.__scale_for_change_df = mus_for_change_df
+        self.__shape_for_change_df = sigmas_for_change_df
 
         if use_level_stress is not None:
             change_of_parameters_data = {
@@ -6168,9 +8715,10 @@ class Fit_Normal_Dual_Exponential:
                 )
 
         if show_probability_plot is True:
+            plt.figure()
             self.probability_plot = ALT_prob_plot(
                 dist="Normal",
-                model="Dual-Exponential",
+                model="Dual_Exponential",
                 stresses_for_groups=stresses_for_groups,
                 failure_groups=failure_groups,
                 right_censored_groups=right_censored_groups,
@@ -6184,7 +8732,7 @@ class Fit_Normal_Dual_Exponential:
         if show_life_stress_plot is True:
             self.life_stress_plot = life_stress_plot(
                 dist="Normal",
-                model="Dual-Exponential",
+                model="Dual_Exponential",
                 life_func=life_func,
                 failure_groups=failure_groups,
                 stresses_for_groups=stresses_for_groups,
@@ -6222,7 +8770,7 @@ class Fit_Normal_Power_Exponential:
     """
     Fit_Normal_Power_Exponential
 
-    This function will Fit the Normal-Power-Exponential life-stress model to the data provided. Please see the online documentation for the equations of this model.
+    This function will Fit the Normal_Power_Exponential life-stress model to the data provided. Please see the online documentation for the equations of this model.
     This model is most appropriate to model a life-stress relationship with thermal and non-thermal stresses. It is essential that you ensure your thermal stress is stress_thermal and your non-thermal stress is stress_nonthermal.
     Also ensure that your temperature data are in Kelvin.
 
@@ -6241,9 +8789,9 @@ class Fit_Normal_Power_Exponential:
     optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the inital guess (using least squares) will be returned with a warning.
 
     Outputs:
-    a - fitted parameter from the Power-Exponential model
-    c - fitted parameter from the Power-Exponential model
-    n - fitted parameter from the Power-Exponential model
+    a - fitted parameter from the Power_Exponential model
+    c - fitted parameter from the Power_Exponential model
+    n - fitted parameter from the Power_Exponential model
     sigma - the fitted Normal_2P sigma
     loglik2 - Log Likelihood*-2 (as used in JMP Pro)
     loglik - Log Likelihood (as used in Minitab and Reliasoft)
@@ -6267,6 +8815,8 @@ class Fit_Normal_Power_Exponential:
     mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided).
     mu_at_use_stress - the equivalent Normal mu parameter at the use level stress (only provided if use_level_stress is provided).
     distribution_at_use_stress - the Normal distribution at the use level stress (only provided if use_level_stress is provided).
+    probability_plot - the figure object from the probability plot (only provided if show_probability_plot is True)
+    life_stress_plot - the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
     """
 
     def __init__(
@@ -6287,7 +8837,7 @@ class Fit_Normal_Power_Exponential:
 
         inputs = ALT_fitters_input_checking(
             dist="Normal",
-            life_stress_model="Power-Exponential",
+            life_stress_model="Power_Exponential",
             failures=failures,
             failure_stress_1=failure_stress_1,
             failure_stress_2=failure_stress_2,
@@ -6311,10 +8861,13 @@ class Fit_Normal_Power_Exponential:
         right_censored_groups = inputs.right_censored_groups
         stresses_for_groups = inputs.stresses_for_groups
         LL_func = Fit_Normal_Power_Exponential.LL
+        self.__failure_groups = inputs.failure_groups
+        self.__right_censored_groups = inputs.right_censored_groups
+        self.__stresses_for_groups = inputs.stresses_for_groups
 
         # obtain the initial guess for the life stress model and the life distribution
         life_stress_guess = ALT_least_squares(
-            model="Power-Exponential",
+            model="Power_Exponential",
             failures=failures,
             stress_1_array=failure_stress_1,
             stress_2_array=failure_stress_2,
@@ -6359,7 +8912,7 @@ class Fit_Normal_Power_Exponential:
 
         # fit the model using the MLE method
         MLE_results = ALT_MLE_optimisation(
-            model="Power-Exponential",
+            model="Power_Exponential",
             dist="Normal",
             LL_func=LL_func,
             initial_guess=guess,
@@ -6503,6 +9056,8 @@ class Fit_Normal_Power_Exponential:
                     )
                 else:
                     sigma_differences.append(str(str(round(sigma_diff * 100, 2)) + "%"))
+        self.__scale_for_change_df = mus_for_change_df
+        self.__shape_for_change_df = sigmas_for_change_df
 
         if use_level_stress is not None:
             change_of_parameters_data = {
@@ -6581,9 +9136,10 @@ class Fit_Normal_Power_Exponential:
                 )
 
         if show_probability_plot is True:
+            plt.figure()
             self.probability_plot = ALT_prob_plot(
                 dist="Normal",
-                model="Power-Exponential",
+                model="Power_Exponential",
                 stresses_for_groups=stresses_for_groups,
                 failure_groups=failure_groups,
                 right_censored_groups=right_censored_groups,
@@ -6597,7 +9153,7 @@ class Fit_Normal_Power_Exponential:
         if show_life_stress_plot is True:
             self.life_stress_plot = life_stress_plot(
                 dist="Normal",
-                model="Power-Exponential",
+                model="Power_Exponential",
                 life_func=life_func,
                 failure_groups=failure_groups,
                 stresses_for_groups=stresses_for_groups,
@@ -6635,7 +9191,7 @@ class Fit_Normal_Dual_Power:
     """
     Fit_Normal_Dual_Power
 
-    This function will Fit the Normal-Dual-Power life-stress model to the data provided. Please see the online documentation for the equations of this model.
+    This function will Fit the Normal_Dual_Power life-stress model to the data provided. Please see the online documentation for the equations of this model.
     This model is most appropriate to model a life-stress relationship with two non-thermal stresses such as voltage and load.
 
     Inputs:
@@ -6653,24 +9209,24 @@ class Fit_Normal_Dual_Power:
     optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the inital guess (using least squares) will be returned with a warning.
 
     Outputs:
-    c - fitted parameter from the Dual-Power model
-    n - fitted parameter from the Dual-Power model
-    m - fitted parameter from the Dual-Power model
+    c - fitted parameter from the Dual_Power model
+    m - fitted parameter from the Dual_Power model
+    n - fitted parameter from the Dual_Power model
     sigma - the fitted Normal_2P sigma
     loglik2 - Log Likelihood*-2 (as used in JMP Pro)
     loglik - Log Likelihood (as used in Minitab and Reliasoft)
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
-    a_SE - the standard error (sqrt(variance)) of the parameter
-    b_SE - the standard error (sqrt(variance)) of the parameter
     c_SE - the standard error (sqrt(variance)) of the parameter
+    m_SE - the standard error (sqrt(variance)) of the parameter
+    n_SE - the standard error (sqrt(variance)) of the parameter
     sigma_SE - the standard error (sqrt(variance)) of the parameter
-    a_upper - the upper CI estimate of the parameter
-    a_lower - the lower CI estimate of the parameter
-    b_upper - the upper CI estimate of the parameter
-    b_lower - the lower CI estimate of the parameter
     c_upper - the upper CI estimate of the parameter
     c_lower - the lower CI estimate of the parameter
+    m_upper - the upper CI estimate of the parameter
+    m_lower - the lower CI estimate of the parameter
+    n_upper - the upper CI estimate of the parameter
+    n_lower - the lower CI estimate of the parameter
     sigma_upper - the upper CI estimate of the parameter
     sigma_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
@@ -6701,7 +9257,7 @@ class Fit_Normal_Dual_Power:
 
         inputs = ALT_fitters_input_checking(
             dist="Normal",
-            life_stress_model="Dual-Power",
+            life_stress_model="Dual_Power",
             failures=failures,
             failure_stress_1=failure_stress_1,
             failure_stress_2=failure_stress_2,
@@ -6725,10 +9281,13 @@ class Fit_Normal_Dual_Power:
         right_censored_groups = inputs.right_censored_groups
         stresses_for_groups = inputs.stresses_for_groups
         LL_func = Fit_Normal_Dual_Power.LL
+        self.__failure_groups = inputs.failure_groups
+        self.__right_censored_groups = inputs.right_censored_groups
+        self.__stresses_for_groups = inputs.stresses_for_groups
 
         # obtain the initial guess for the life stress model and the life distribution
         life_stress_guess = ALT_least_squares(
-            model="Dual-Power",
+            model="Dual_Power",
             failures=failures,
             stress_1_array=failure_stress_1,
             stress_2_array=failure_stress_2,
@@ -6769,11 +9328,11 @@ class Fit_Normal_Dual_Power:
             life_stress_guess[1],
             life_stress_guess[2],
             common_sigma,
-        ]  # c, n, m, sigma
+        ]  # c, m, n, sigma
 
         # fit the model using the MLE method
         MLE_results = ALT_MLE_optimisation(
-            model="Dual-Power",
+            model="Dual_Power",
             dist="Normal",
             LL_func=LL_func,
             initial_guess=guess,
@@ -6786,14 +9345,14 @@ class Fit_Normal_Dual_Power:
             right_censored_stress_2=right_censored_stress_2,
         )
         self.c = MLE_results.c
-        self.n = MLE_results.n
         self.m = MLE_results.m
+        self.n = MLE_results.n
         self.sigma = MLE_results.sigma
         self.success = MLE_results.success
 
         # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
-        params = [self.c, self.n, self.m, self.sigma]
+        params = [self.c, self.m, self.n, self.sigma]
         hessian_matrix = hessian(LL_func)(
             np.array(tuple(params)),
             np.array(tuple(failures)),
@@ -6805,29 +9364,29 @@ class Fit_Normal_Dual_Power:
         )
         covariance_matrix = np.linalg.inv(hessian_matrix)
         self.c_SE = abs(covariance_matrix[0][0]) ** 0.5
-        self.n_SE = abs(covariance_matrix[1][1]) ** 0.5
-        self.m_SE = abs(covariance_matrix[2][2]) ** 0.5
+        self.m_SE = abs(covariance_matrix[1][1]) ** 0.5
+        self.n_SE = abs(covariance_matrix[2][2]) ** 0.5
         self.sigma_SE = abs(covariance_matrix[3][3]) ** 0.5
         # c is strictly positive
         self.c_upper = self.c * (np.exp(Z * (self.c_SE / self.c)))
         self.c_lower = self.c * (np.exp(-Z * (self.c_SE / self.c)))
-        # n can be positive or negative
-        self.n_upper = self.n + (Z * self.n_SE)
-        self.n_lower = self.n + (-Z * self.n_SE)
         # m can be positive or negative
         self.m_upper = self.m + (Z * self.m_SE)
         self.m_lower = self.m + (-Z * self.m_SE)
+        # n can be positive or negative
+        self.n_upper = self.n + (Z * self.n_SE)
+        self.n_lower = self.n + (-Z * self.n_SE)
         # sigma is strictly positive
         self.sigma_upper = self.sigma * (np.exp(Z * (self.sigma_SE / self.sigma)))
         self.sigma_lower = self.sigma * (np.exp(-Z * (self.sigma_SE / self.sigma)))
 
         # results dataframe
         results_data = {
-            "Parameter": ["c", "n", "m", "sigma"],
-            "Point Estimate": [self.c, self.n, self.m, self.sigma],
-            "Standard Error": [self.c_SE, self.n_SE, self.m_SE, self.sigma_SE],
-            "Lower CI": [self.c_lower, self.n_lower, self.m_lower, self.sigma_lower],
-            "Upper CI": [self.c_upper, self.n_upper, self.m_upper, self.sigma_upper],
+            "Parameter": ["c", "m", "n", "sigma"],
+            "Point Estimate": [self.c, self.m, self.n, self.sigma],
+            "Standard Error": [self.c_SE, self.m_SE, self.n_SE, self.sigma_SE],
+            "Lower CI": [self.c_lower, self.m_lower, self.n_lower, self.sigma_lower],
+            "Upper CI": [self.c_upper, self.m_upper, self.n_upper, self.sigma_upper],
         }
         self.results = pd.DataFrame(
             data=results_data,
@@ -6868,7 +9427,7 @@ class Fit_Normal_Dual_Power:
         )
 
         def life_func(S1, S2):
-            return self.c * (S1 ** self.n) * (S2 ** self.m)
+            return self.c * (S1 ** self.m) * (S2 ** self.n)
 
         # use level stress calculations
         if use_level_stress is not None:
@@ -6917,6 +9476,8 @@ class Fit_Normal_Dual_Power:
                     )
                 else:
                     sigma_differences.append(str(str(round(sigma_diff * 100, 2)) + "%"))
+        self.__scale_for_change_df = mus_for_change_df
+        self.__shape_for_change_df = sigmas_for_change_df
 
         if use_level_stress is not None:
             change_of_parameters_data = {
@@ -6993,9 +9554,10 @@ class Fit_Normal_Dual_Power:
                 )
 
         if show_probability_plot is True:
+            plt.figure()
             self.probability_plot = ALT_prob_plot(
                 dist="Normal",
-                model="Dual-Power",
+                model="Dual_Power",
                 stresses_for_groups=stresses_for_groups,
                 failure_groups=failure_groups,
                 right_censored_groups=right_censored_groups,
@@ -7009,7 +9571,7 @@ class Fit_Normal_Dual_Power:
         if show_life_stress_plot is True:
             self.life_stress_plot = life_stress_plot(
                 dist="Normal",
-                model="Dual-Power",
+                model="Dual_Power",
                 life_func=life_func,
                 failure_groups=failure_groups,
                 stresses_for_groups=stresses_for_groups,
@@ -7017,15 +9579,15 @@ class Fit_Normal_Dual_Power:
             )
 
     @staticmethod
-    def logf(t, S1, S2, c, n, m, sigma):  # Log PDF
-        life = c * (S1 ** n) * (S2 ** m)
+    def logf(t, S1, S2, c, m, n, sigma):  # Log PDF
+        life = c * (S1 ** m) * (S2 ** n)
         return anp.log(anp.exp(-0.5 * (((t - life) / sigma) ** 2))) - anp.log(
             (sigma * (2 * anp.pi) ** 0.5)
         )
 
     @staticmethod
-    def logR(t, S1, S2, c, n, m, sigma):  # Log SF
-        life = c * (S1 ** n) * (S2 ** m)
+    def logR(t, S1, S2, c, m, n, sigma):  # Log SF
+        life = c * (S1 ** m) * (S2 ** n)
         return anp.log((1 + erf(((life - t) / sigma) / 2 ** 0.5)) / 2)
 
     @staticmethod
@@ -7121,6 +9683,9 @@ class Fit_Exponential_Exponential:
         right_censored_groups = inputs.right_censored_groups
         stresses_for_groups = inputs.stresses_for_groups
         LL_func = Fit_Exponential_Exponential.LL
+        self.__failure_groups = inputs.failure_groups
+        self.__right_censored_groups = inputs.right_censored_groups
+        self.__stresses_for_groups = inputs.stresses_for_groups
 
         # obtain the initial guess for the life stress model and the life distribution
         life_stress_guess = ALT_least_squares(
@@ -7268,6 +9833,8 @@ class Fit_Exponential_Exponential:
                     )
                 else:
                     beta_differences.append(str(str(round(beta_diff * 100, 2)) + "%"))
+        self.__scale_for_change_df = alphas_for_change_df
+        self.__shape_for_change_df = betas_for_change_df
 
         if use_level_stress is not None:
             change_of_parameters_data = {
@@ -7349,6 +9916,7 @@ class Fit_Exponential_Exponential:
                 )
 
         if show_probability_plot is True:
+            plt.figure()
             self.probability_plot = ALT_prob_plot(
                 dist="Exponential",
                 model="Exponential",
@@ -7473,6 +10041,9 @@ class Fit_Exponential_Eyring:
         right_censored_groups = inputs.right_censored_groups
         stresses_for_groups = inputs.stresses_for_groups
         LL_func = Fit_Exponential_Eyring.LL
+        self.__failure_groups = inputs.failure_groups
+        self.__right_censored_groups = inputs.right_censored_groups
+        self.__stresses_for_groups = inputs.stresses_for_groups
 
         # obtain the initial guess for the life stress model and the life distribution
         life_stress_guess = ALT_least_squares(
@@ -7620,6 +10191,8 @@ class Fit_Exponential_Eyring:
                     )
                 else:
                     beta_differences.append(str(str(round(beta_diff * 100, 2)) + "%"))
+        self.__scale_for_change_df = alphas_for_change_df
+        self.__shape_for_change_df = betas_for_change_df
 
         if use_level_stress is not None:
             change_of_parameters_data = {
@@ -7694,6 +10267,7 @@ class Fit_Exponential_Eyring:
                 )
 
         if show_probability_plot is True:
+            plt.figure()
             self.probability_plot = ALT_prob_plot(
                 dist="Exponential",
                 model="Eyring",
@@ -7816,6 +10390,9 @@ class Fit_Exponential_Power:
         right_censored_groups = inputs.right_censored_groups
         stresses_for_groups = inputs.stresses_for_groups
         LL_func = Fit_Exponential_Power.LL
+        self.__failure_groups = inputs.failure_groups
+        self.__right_censored_groups = inputs.right_censored_groups
+        self.__stresses_for_groups = inputs.stresses_for_groups
 
         # obtain the initial guess for the life stress model and the life distribution
         life_stress_guess = ALT_least_squares(
@@ -7963,6 +10540,8 @@ class Fit_Exponential_Power:
                     )
                 else:
                     beta_differences.append(str(str(round(beta_diff * 100, 2)) + "%"))
+        self.__scale_for_change_df = alphas_for_change_df
+        self.__shape_for_change_df = betas_for_change_df
 
         if use_level_stress is not None:
             change_of_parameters_data = {
@@ -8037,6 +10616,7 @@ class Fit_Exponential_Power:
                 )
 
         if show_probability_plot is True:
+            plt.figure()
             self.probability_plot = ALT_prob_plot(
                 dist="Exponential",
                 model="Power",
@@ -8085,7 +10665,7 @@ class Fit_Exponential_Dual_Exponential:
     """
     Fit_Exponential_Dual_Exponential
 
-    This function will Fit the Exponential-Dual-Exponential life-stress model to the data provided. Please see the online documentation for the equations of this model.
+    This function will Fit the Exponential_Dual_Exponential life-stress model to the data provided. Please see the online documentation for the equations of this model.
     This model is most appropriate to model a life-stress relationship with temperature-humidity. It is recommended that you ensure your temperature data are in Kelvin and humidity data range from 0 to 1.
 
     Inputs:
@@ -8103,9 +10683,9 @@ class Fit_Exponential_Dual_Exponential:
     optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the inital guess (using least squares) will be returned with a warning.
 
     Outputs:
-    a - fitted parameter from the Dual-Exponential model
-    b - fitted parameter from the Dual-Exponential model
-    c - fitted parameter from the Dual-Exponential model
+    a - fitted parameter from the Dual_Exponential model
+    b - fitted parameter from the Dual_Exponential model
+    c - fitted parameter from the Dual_Exponential model
     loglik2 - Log Likelihood*-2 (as used in JMP Pro)
     loglik - Log Likelihood (as used in Minitab and Reliasoft)
     AICc - Akaike Information Criterion
@@ -8147,7 +10727,7 @@ class Fit_Exponential_Dual_Exponential:
 
         inputs = ALT_fitters_input_checking(
             dist="Exponential",
-            life_stress_model="Dual-Exponential",
+            life_stress_model="Dual_Exponential",
             failures=failures,
             failure_stress_1=failure_stress_1,
             failure_stress_2=failure_stress_2,
@@ -8171,10 +10751,13 @@ class Fit_Exponential_Dual_Exponential:
         right_censored_groups = inputs.right_censored_groups
         stresses_for_groups = inputs.stresses_for_groups
         LL_func = Fit_Exponential_Dual_Exponential.LL
+        self.__failure_groups = inputs.failure_groups
+        self.__right_censored_groups = inputs.right_censored_groups
+        self.__stresses_for_groups = inputs.stresses_for_groups
 
         # obtain the initial guess for the life stress model and the life distribution
         life_stress_guess = ALT_least_squares(
-            model="Dual-Exponential",
+            model="Dual_Exponential",
             failures=failures,
             stress_1_array=failure_stress_1,
             stress_2_array=failure_stress_2,
@@ -8214,7 +10797,7 @@ class Fit_Exponential_Dual_Exponential:
 
         # fit the model using the MLE method
         MLE_results = ALT_MLE_optimisation(
-            model="Dual-Exponential",
+            model="Dual_Exponential",
             dist="Exponential",
             LL_func=LL_func,
             initial_guess=guess,
@@ -8353,6 +10936,8 @@ class Fit_Exponential_Dual_Exponential:
                     )
                 else:
                     beta_differences.append(str(str(round(beta_diff * 100, 2)) + "%"))
+        self.__scale_for_change_df = alphas_for_change_df
+        self.__shape_for_change_df = betas_for_change_df
 
         if use_level_stress is not None:
             change_of_parameters_data = {
@@ -8431,9 +11016,10 @@ class Fit_Exponential_Dual_Exponential:
                 )
 
         if show_probability_plot is True:
+            plt.figure()
             self.probability_plot = ALT_prob_plot(
                 dist="Exponential",
-                model="Dual-Exponential",
+                model="Dual_Exponential",
                 stresses_for_groups=stresses_for_groups,
                 failure_groups=failure_groups,
                 right_censored_groups=right_censored_groups,
@@ -8447,7 +11033,7 @@ class Fit_Exponential_Dual_Exponential:
         if show_life_stress_plot is True:
             self.life_stress_plot = life_stress_plot(
                 dist="Exponential",
-                model="Dual-Exponential",
+                model="Dual_Exponential",
                 life_func=life_func,
                 failure_groups=failure_groups,
                 stresses_for_groups=stresses_for_groups,
@@ -8483,7 +11069,7 @@ class Fit_Exponential_Power_Exponential:
     """
     Fit_Exponential_Power_Exponential
 
-    This function will Fit the Exponential-Power-Exponential life-stress model to the data provided. Please see the online documentation for the equations of this model.
+    This function will Fit the Exponential_Power_Exponential life-stress model to the data provided. Please see the online documentation for the equations of this model.
     This model is most appropriate to model a life-stress relationship with thermal and non-thermal stresses. It is essential that you ensure your thermal stress is stress_thermal and your non-thermal stress is stress_nonthermal.
     Also ensure that your temperature data are in Kelvin.
 
@@ -8502,9 +11088,9 @@ class Fit_Exponential_Power_Exponential:
     optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the inital guess (using least squares) will be returned with a warning.
 
     Outputs:
-    a - fitted parameter from the Power-Exponential model
-    c - fitted parameter from the Power-Exponential model
-    n - fitted parameter from the Power-Exponential model
+    a - fitted parameter from the Power_Exponential model
+    c - fitted parameter from the Power_Exponential model
+    n - fitted parameter from the Power_Exponential model
     loglik2 - Log Likelihood*-2 (as used in JMP Pro)
     loglik - Log Likelihood (as used in Minitab and Reliasoft)
     AICc - Akaike Information Criterion
@@ -8524,6 +11110,8 @@ class Fit_Exponential_Power_Exponential:
     mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided).
     Lambda_at_use_stress - the equivalent Exponential Lambda parameter at the use level stress (only provided if use_level_stress is provided).
     distribution_at_use_stress - the Exponential distribution at the use level stress (only provided if use_level_stress is provided).
+    probability_plot - the figure object from the probability plot (only provided if show_probability_plot is True)
+    life_stress_plot - the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
     """
 
     def __init__(
@@ -8544,7 +11132,7 @@ class Fit_Exponential_Power_Exponential:
 
         inputs = ALT_fitters_input_checking(
             dist="Exponential",
-            life_stress_model="Power-Exponential",
+            life_stress_model="Power_Exponential",
             failures=failures,
             failure_stress_1=failure_stress_1,
             failure_stress_2=failure_stress_2,
@@ -8568,10 +11156,13 @@ class Fit_Exponential_Power_Exponential:
         right_censored_groups = inputs.right_censored_groups
         stresses_for_groups = inputs.stresses_for_groups
         LL_func = Fit_Exponential_Power_Exponential.LL
+        self.__failure_groups = inputs.failure_groups
+        self.__right_censored_groups = inputs.right_censored_groups
+        self.__stresses_for_groups = inputs.stresses_for_groups
 
         # obtain the initial guess for the life stress model and the life distribution
         life_stress_guess = ALT_least_squares(
-            model="Power-Exponential",
+            model="Power_Exponential",
             failures=failures,
             stress_1_array=failure_stress_1,
             stress_2_array=failure_stress_2,
@@ -8611,7 +11202,7 @@ class Fit_Exponential_Power_Exponential:
 
         # fit the model using the MLE method
         MLE_results = ALT_MLE_optimisation(
-            model="Power-Exponential",
+            model="Power_Exponential",
             dist="Exponential",
             LL_func=LL_func,
             initial_guess=guess,
@@ -8750,6 +11341,8 @@ class Fit_Exponential_Power_Exponential:
                     )
                 else:
                     beta_differences.append(str(str(round(beta_diff * 100, 2)) + "%"))
+        self.__scale_for_change_df = alphas_for_change_df
+        self.__shape_for_change_df = betas_for_change_df
 
         if use_level_stress is not None:
             change_of_parameters_data = {
@@ -8828,9 +11421,10 @@ class Fit_Exponential_Power_Exponential:
                 )
 
         if show_probability_plot is True:
+            plt.figure()
             self.probability_plot = ALT_prob_plot(
                 dist="Exponential",
-                model="Power-Exponential",
+                model="Power_Exponential",
                 stresses_for_groups=stresses_for_groups,
                 failure_groups=failure_groups,
                 right_censored_groups=right_censored_groups,
@@ -8844,7 +11438,7 @@ class Fit_Exponential_Power_Exponential:
         if show_life_stress_plot is True:
             self.life_stress_plot = life_stress_plot(
                 dist="Exponential",
-                model="Power-Exponential",
+                model="Power_Exponential",
                 life_func=life_func,
                 failure_groups=failure_groups,
                 stresses_for_groups=stresses_for_groups,
@@ -8880,7 +11474,7 @@ class Fit_Exponential_Dual_Power:
     """
     Fit_Exponential_Dual_Power
 
-    This function will Fit the Exponential-Dual-Power life-stress model to the data provided. Please see the online documentation for the equations of this model.
+    This function will Fit the Exponential_Dual_Power life-stress model to the data provided. Please see the online documentation for the equations of this model.
     This model is most appropriate to model a life-stress relationship with two non-thermal stresses such as voltage and load.
 
     Inputs:
@@ -8898,22 +11492,22 @@ class Fit_Exponential_Dual_Power:
     optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the inital guess (using least squares) will be returned with a warning.
 
     Outputs:
-    c - fitted parameter from the Dual-Power model
-    n - fitted parameter from the Dual-Power model
-    m - fitted parameter from the Dual-Power model
+    c - fitted parameter from the Dual_Power model
+    m - fitted parameter from the Dual_Power model
+    n - fitted parameter from the Dual_Power model
     loglik2 - Log Likelihood*-2 (as used in JMP Pro)
     loglik - Log Likelihood (as used in Minitab and Reliasoft)
     AICc - Akaike Information Criterion
     BIC - Bayesian Information Criterion
-    a_SE - the standard error (sqrt(variance)) of the parameter
-    b_SE - the standard error (sqrt(variance)) of the parameter
     c_SE - the standard error (sqrt(variance)) of the parameter
-    a_upper - the upper CI estimate of the parameter
-    a_lower - the lower CI estimate of the parameter
-    b_upper - the upper CI estimate of the parameter
-    b_lower - the lower CI estimate of the parameter
+    m_SE - the standard error (sqrt(variance)) of the parameter
+    n_SE - the standard error (sqrt(variance)) of the parameter
     c_upper - the upper CI estimate of the parameter
     c_lower - the lower CI estimate of the parameter
+    m_upper - the upper CI estimate of the parameter
+    m_lower - the lower CI estimate of the parameter
+    n_upper - the upper CI estimate of the parameter
+    n_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     goodness_of_fit - a dataframe of the goodness of fit criterion (Log-likelihood, AICc, BIC)
     change_of_parameters - a dataframe showing the change of the parameters at each stress level
@@ -8942,7 +11536,7 @@ class Fit_Exponential_Dual_Power:
 
         inputs = ALT_fitters_input_checking(
             dist="Exponential",
-            life_stress_model="Dual-Power",
+            life_stress_model="Dual_Power",
             failures=failures,
             failure_stress_1=failure_stress_1,
             failure_stress_2=failure_stress_2,
@@ -8966,10 +11560,13 @@ class Fit_Exponential_Dual_Power:
         right_censored_groups = inputs.right_censored_groups
         stresses_for_groups = inputs.stresses_for_groups
         LL_func = Fit_Exponential_Dual_Power.LL
+        self.__failure_groups = inputs.failure_groups
+        self.__right_censored_groups = inputs.right_censored_groups
+        self.__stresses_for_groups = inputs.stresses_for_groups
 
         # obtain the initial guess for the life stress model and the life distribution
         life_stress_guess = ALT_least_squares(
-            model="Dual-Power",
+            model="Dual_Power",
             failures=failures,
             stress_1_array=failure_stress_1,
             stress_2_array=failure_stress_2,
@@ -9005,11 +11602,11 @@ class Fit_Exponential_Dual_Power:
             life_stress_guess[0],
             life_stress_guess[1],
             life_stress_guess[2],
-        ]  # c, n, m
+        ]  # c, m, n
 
         # fit the model using the MLE method
         MLE_results = ALT_MLE_optimisation(
-            model="Dual-Power",
+            model="Dual_Power",
             dist="Exponential",
             LL_func=LL_func,
             initial_guess=guess,
@@ -9022,13 +11619,13 @@ class Fit_Exponential_Dual_Power:
             right_censored_stress_2=right_censored_stress_2,
         )
         self.c = MLE_results.c
-        self.n = MLE_results.n
         self.m = MLE_results.m
+        self.n = MLE_results.n
         self.success = MLE_results.success
 
         # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
-        params = [self.c, self.n, self.m]
+        params = [self.c, self.m, self.n]
         hessian_matrix = hessian(LL_func)(
             np.array(tuple(params)),
             np.array(tuple(failures)),
@@ -9040,25 +11637,25 @@ class Fit_Exponential_Dual_Power:
         )
         covariance_matrix = np.linalg.inv(hessian_matrix)
         self.c_SE = abs(covariance_matrix[0][0]) ** 0.5
-        self.n_SE = abs(covariance_matrix[1][1]) ** 0.5
-        self.m_SE = abs(covariance_matrix[2][2]) ** 0.5
+        self.m_SE = abs(covariance_matrix[1][1]) ** 0.5
+        self.n_SE = abs(covariance_matrix[2][2]) ** 0.5
         # c is strictly positive
         self.c_upper = self.c * (np.exp(Z * (self.c_SE / self.c)))
         self.c_lower = self.c * (np.exp(-Z * (self.c_SE / self.c)))
-        # n can be positive or negative
-        self.n_upper = self.n + (Z * self.n_SE)
-        self.n_lower = self.n + (-Z * self.n_SE)
         # m can be positive or negative
         self.m_upper = self.m + (Z * self.m_SE)
         self.m_lower = self.m + (-Z * self.m_SE)
+        # n can be positive or negative
+        self.n_upper = self.n + (Z * self.n_SE)
+        self.n_lower = self.n + (-Z * self.n_SE)
 
         # results dataframe
         results_data = {
-            "Parameter": ["c", "n", "m"],
-            "Point Estimate": [self.c, self.n, self.m],
-            "Standard Error": [self.c_SE, self.n_SE, self.m_SE],
-            "Lower CI": [self.c_lower, self.n_lower, self.m_lower],
-            "Upper CI": [self.c_upper, self.n_upper, self.m_upper],
+            "Parameter": ["c", "m", "n"],
+            "Point Estimate": [self.c, self.m, self.n],
+            "Standard Error": [self.c_SE, self.m_SE, self.n_SE],
+            "Lower CI": [self.c_lower, self.m_lower, self.n_lower],
+            "Upper CI": [self.c_upper, self.m_upper, self.n_upper],
         }
         self.results = pd.DataFrame(
             data=results_data,
@@ -9099,7 +11696,7 @@ class Fit_Exponential_Dual_Power:
         )
 
         def life_func(S1, S2):
-            return self.c * (S1 ** self.n) * (S2 ** self.m)
+            return self.c * (S1 ** self.m) * (S2 ** self.n)
 
         # use level stress calculations
         if use_level_stress is not None:
@@ -9148,6 +11745,8 @@ class Fit_Exponential_Dual_Power:
                     )
                 else:
                     beta_differences.append(str(str(round(beta_diff * 100, 2)) + "%"))
+        self.__scale_for_change_df = alphas_for_change_df
+        self.__shape_for_change_df = betas_for_change_df
 
         if use_level_stress is not None:
             change_of_parameters_data = {
@@ -9226,9 +11825,10 @@ class Fit_Exponential_Dual_Power:
                 )
 
         if show_probability_plot is True:
+            plt.figure()
             self.probability_plot = ALT_prob_plot(
                 dist="Exponential",
-                model="Dual-Power",
+                model="Dual_Power",
                 stresses_for_groups=stresses_for_groups,
                 failure_groups=failure_groups,
                 right_censored_groups=right_censored_groups,
@@ -9242,7 +11842,7 @@ class Fit_Exponential_Dual_Power:
         if show_life_stress_plot is True:
             self.life_stress_plot = life_stress_plot(
                 dist="Exponential",
-                model="Dual-Power",
+                model="Dual_Power",
                 life_func=life_func,
                 failure_groups=failure_groups,
                 stresses_for_groups=stresses_for_groups,
@@ -9250,13 +11850,13 @@ class Fit_Exponential_Dual_Power:
             )
 
     @staticmethod
-    def logf(t, S1, S2, c, n, m):  # Log PDF
-        life = c * (S1 ** n) * (S2 ** m)
+    def logf(t, S1, S2, c, m, n):  # Log PDF
+        life = c * (S1 ** m) * (S2 ** n)
         return anp.log(1 / life) - 1 / life * t
 
     @staticmethod
-    def logR(t, S1, S2, c, n, m):  # Log SF
-        life = c * (S1 ** n) * (S2 ** m)
+    def logR(t, S1, S2, c, m, n):  # Log SF
+        life = c * (S1 ** m) * (S2 ** n)
         return -(1 / life * t)
 
     @staticmethod

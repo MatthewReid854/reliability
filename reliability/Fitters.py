@@ -865,18 +865,20 @@ class Fit_Everything:
             print(self.results.to_string(index=False), "\n")
 
         if show_histogram_plot is True:
-            Fit_Everything.histogram_plot(self)  # plotting occurs by default
+            # plotting occurs by default
+            Fit_Everything.histogram_plot(self)
 
         if show_PP_plot is True:
-            Fit_Everything.P_P_plot(self)  # plotting occurs by default
+            # plotting occurs by default
+            Fit_Everything.P_P_plot(self)
 
         if show_probability_plot is True:
-            Fit_Everything.probability_plot(self)  # plotting occurs by default
+            # plotting occurs by default
+            Fit_Everything.probability_plot(self)
 
-        if (
-            show_best_distribution_probability_plot is True
-        ):  # plotting occurs by default
-            Fit_Everything.best_distribution_probability_plot(self)
+        if show_best_distribution_probability_plot is True:
+            # plotting occurs by default
+            Fit_Everything.probability_plot(self, best_only=True)
 
         if (
             show_histogram_plot is True
@@ -885,123 +887,6 @@ class Fit_Everything:
             or show_best_distribution_probability_plot is True
         ):
             plt.show()
-
-    def best_distribution_probability_plot(self):
-        plt.figure()
-        if self.best_distribution_name == "Weibull_2P":
-            from reliability.Probability_plotting import Weibull_probability_plot
-
-            Weibull_probability_plot(
-                failures=self.failures,
-                right_censored=self.right_censored,
-                __fitted_dist_params=self._Fit_Everything__Weibull_2P_params,
-            )
-        elif self.best_distribution_name == "Weibull_3P":
-            from reliability.Probability_plotting import Weibull_probability_plot
-
-            Weibull_probability_plot(
-                failures=self.failures,
-                right_censored=self.right_censored,
-                __fitted_dist_params=self._Fit_Everything__Weibull_3P_params,
-            )
-        elif self.best_distribution_name == "Gamma_2P":
-            from reliability.Probability_plotting import Gamma_probability_plot
-
-            Gamma_probability_plot(
-                failures=self.failures,
-                right_censored=self.right_censored,
-                __fitted_dist_params=self._Fit_Everything__Gamma_2P_params,
-            )
-        elif self.best_distribution_name == "Gamma_3P":
-            from reliability.Probability_plotting import Gamma_probability_plot
-
-            Gamma_probability_plot(
-                failures=self.failures,
-                right_censored=self.right_censored,
-                __fitted_dist_params=self._Fit_Everything__Gamma_3P_params,
-            )
-        elif self.best_distribution_name == "Lognormal_2P":
-            from reliability.Probability_plotting import Lognormal_probability_plot
-
-            Lognormal_probability_plot(
-                failures=self.failures,
-                right_censored=self.right_censored,
-                __fitted_dist_params=self._Fit_Everything__Lognormal_2P_params,
-            )
-        elif self.best_distribution_name == "Lognormal_3P":
-            from reliability.Probability_plotting import Lognormal_probability_plot
-
-            Lognormal_probability_plot(
-                failures=self.failures,
-                right_censored=self.right_censored,
-                __fitted_dist_params=self._Fit_Everything__Lognormal_3P_params,
-            )
-        elif self.best_distribution_name == "Loglogistic_2P":
-            from reliability.Probability_plotting import Loglogistic_probability_plot
-
-            Loglogistic_probability_plot(
-                failures=self.failures,
-                right_censored=self.right_censored,
-                __fitted_dist_params=self._Fit_Everything__Loglogistic_2P_params,
-            )
-        elif self.best_distribution_name == "Loglogistic_3P":
-            from reliability.Probability_plotting import Loglogistic_probability_plot
-
-            Loglogistic_probability_plot(
-                failures=self.failures,
-                right_censored=self.right_censored,
-                __fitted_dist_params=self._Fit_Everything__Loglogistic_3P_params,
-            )
-        elif self.best_distribution_name == "Normal_2P":
-            from reliability.Probability_plotting import Normal_probability_plot
-
-            Normal_probability_plot(
-                failures=self.failures,
-                right_censored=self.right_censored,
-                __fitted_dist_params=self._Fit_Everything__Normal_2P_params,
-            )
-        elif self.best_distribution_name == "Gumbel_2P":
-            from reliability.Probability_plotting import Gumbel_probability_plot
-
-            Gumbel_probability_plot(
-                failures=self.failures,
-                right_censored=self.right_censored,
-                __fitted_dist_params=self._Fit_Everything__Gumbel_2P_params,
-            )
-        elif self.best_distribution_name == "Beta_2P":
-            from reliability.Probability_plotting import Beta_probability_plot
-
-            Beta_probability_plot(
-                failures=self.failures,
-                right_censored=self.right_censored,
-                __fitted_dist_params=self._Fit_Everything__Beta_2P_params,
-            )
-        elif self.best_distribution_name == "Exponential_1P":
-            from reliability.Probability_plotting import (
-                Exponential_probability_plot_Weibull_Scale,
-            )
-
-            Exponential_probability_plot_Weibull_Scale(
-                failures=self.failures,
-                right_censored=self.right_censored,
-                __fitted_dist_params=self._Fit_Everything__Exponential_1P_params,
-            )
-        elif self.best_distribution_name == "Exponential_2P":
-            from reliability.Probability_plotting import (
-                Exponential_probability_plot_Weibull_Scale,
-            )
-
-            Exponential_probability_plot_Weibull_Scale(
-                failures=self.failures,
-                right_censored=self.right_censored,
-                __fitted_dist_params=self._Fit_Everything__Exponential_2P_params,
-            )
-        plt.title(
-            str(
-                "Probability plot of best distribution\n"
-                + self.best_distribution.param_title_long
-            )
-        )
 
     def probplot_layout(self):
         items = len(self.results.index.values)  # number of items that were fitted
@@ -1373,7 +1258,7 @@ class Fit_Everything:
             subplot_counter += 1
         plt.tight_layout()
 
-    def probability_plot(self):
+    def probability_plot(self, best_only=False):
         from reliability.Probability_plotting import (
             Weibull_probability_plot,
             Normal_probability_plot,
@@ -1386,16 +1271,19 @@ class Fit_Everything:
             Gumbel_probability_plot,
         )
 
-        cols, rows, figsize, _ = Fit_Everything.probplot_layout(self)
-        plotting_order = self.results[
-            "Distribution"
-        ].values  # this is the order to plot things which matches the results dataframe
-
         plt.figure()
-        plt.suptitle("Probability plots of each fitted distribution\n\n")
-        subplot_counter = 1
+        if best_only is False:
+            cols, rows, figsize, _ = Fit_Everything.probplot_layout(self)
+            # this is the order to plot to match the results dataframe
+            plotting_order = self.results["Distribution"].values
+            plt.suptitle("Probability plots of each fitted distribution\n\n")
+            subplot_counter = 1
+        else:
+            plotting_order = [self.results["Distribution"].values[0]]
+
         for item in plotting_order:
-            plt.subplot(rows, cols, subplot_counter)
+            if best_only is False:
+                plt.subplot(rows, cols, subplot_counter)
             if item == "Exponential_1P":
                 Exponential_probability_plot_Weibull_Scale(
                     failures=self.failures,
@@ -1476,18 +1364,27 @@ class Fit_Everything:
                 )
             else:
                 raise ValueError("unknown item was fitted")
-            plt.title(item)
-            ax = plt.gca()
-            ax.set_yticklabels([], minor=False)
-            ax.set_xticklabels([], minor=False)
-            ax.set_yticklabels([], minor=True)
-            ax.set_xticklabels([], minor=True)
-            ax.set_ylabel("")
-            ax.set_xlabel("")
-            ax.get_legend().remove()
-            subplot_counter += 1
-        plt.tight_layout()
-        plt.gcf().set_size_inches(figsize)
+            if best_only is False:
+                plt.title(item)
+                ax = plt.gca()
+                ax.set_yticklabels([], minor=False)
+                ax.set_xticklabels([], minor=False)
+                ax.set_yticklabels([], minor=True)
+                ax.set_xticklabels([], minor=True)
+                ax.set_ylabel("")
+                ax.set_xlabel("")
+                ax.get_legend().remove()
+                subplot_counter += 1
+            else:
+                plt.title(
+                    str(
+                        "Probability plot of best distribution\n"
+                        + self.best_distribution.param_title_long
+                    )
+                )
+        if best_only is False:
+            plt.tight_layout()
+            plt.gcf().set_size_inches(figsize)
 
 
 class Fit_Weibull_2P:
