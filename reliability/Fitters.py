@@ -244,7 +244,7 @@ class Fit_Everything:
                 excluded_distributions.append("Normal_2P")
             elif item.upper() in ["GUMBEL_2P", "GUMBEL2P", "GUMBEL2"]:
                 excluded_distributions.append("Gumbel_2P")
-            elif item.upper() in ["LOGLOGISITC_2P", "LOGLOGISTIC2P", "LOGLOGISTIC2"]:
+            elif item.upper() in ["LOGLOGISTIC_2P", "LOGLOGISTIC2P", "LOGLOGISTIC2"]:
                 excluded_distributions.append("Loglogistic_2P")
             elif item.upper() in ["LOGLOGISTIC_3P", "LOGLOGISTIC3P", "LOGLOGISTIC3"]:
                 excluded_distributions.append("Loglogistic_3P")
