@@ -26,6 +26,7 @@ Contents:
   :caption: Parametric Models
 
   Equations of supported distributions
+  What is censored data
   Creating and plotting distributions
   Fitting a specific distribution to data
   Fitting all available distributions to data
@@ -133,18 +134,18 @@ Contents:
   :caption: API reference
 
   Distributions
-  Fitters
-  Probability_plotting
-  Nonparametric
-  Reliability_testing
-  Repairable_systems
-  Stress_strength
-  ALT_fitters
-  ALT_probability_plotting
-  Convert_data
-  Datasets
-  Other_functions
-  PoF
+  API/Fitters
+  API/Probability_plotting
+  API/Nonparametric
+  API/Reliability_testing
+  API/Repairable_systems
+  API/Stress_strength
+  API/ALT_fitters
+  API/ALT_probability_plotting
+  API/Convert_data
+  API/Datasets
+  API/Other_functions
+  API/PoF
 
 .. |pypi| image:: https://img.shields.io/pypi/v/reliability?color=brightgreen&logo=Python&logoColor=white&label=PyPI%20package
     :alt: PyPI package
