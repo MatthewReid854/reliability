@@ -130,22 +130,13 @@ Contents:
   Logo
 
 .. toctree::
-  :maxdepth: 3
+  :maxdepth: 1
   :caption: API reference
 
-  Distributions
-  API/Fitters
-  API/Probability_plotting
-  API/Nonparametric
-  API/Reliability_testing
-  API/Repairable_systems
-  API/Stress_strength
-  API/ALT_fitters
-  API/ALT_probability_plotting
-  API/Convert_data
-  API/Datasets
-  API/Other_functions
-  API/PoF
+  Distributions.rst
+  API/Distributions1.rst
+  /API/Distributions2.rst
+  API/*
 
 .. |pypi| image:: https://img.shields.io/pypi/v/reliability?color=brightgreen&logo=Python&logoColor=white&label=PyPI%20package
     :alt: PyPI package
