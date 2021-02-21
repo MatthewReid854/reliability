@@ -52,8 +52,14 @@ Contents:
   :maxdepth: 1
   :caption: Accelerated Life Testing
 
-  ALT probability plots
-  Fitting a model to ALT data
+  What is Accelerated Life Testing
+  Equations of ALT models
+  Fitting a single stress model to ALT data
+  Fitting a dual stress model to ALT data
+  Fitting all available models to ALT data
+  Fitting a model to ALT data (deprecated)
+  ALT probability plots (deprecated)
+
 
 .. toctree::
   :maxdepth: 1
@@ -121,6 +127,24 @@ Contents:
   About the author
   Credits to those who helped
   Logo
+
+.. toctree::
+  :maxdepth: 3
+  :caption: API reference
+
+  Distributions
+  Fitters
+  Probability_plotting
+  Nonparametric
+  Reliability_testing
+  Repairable_systems
+  Stress_strength
+  ALT_fitters
+  ALT_probability_plotting
+  Convert_data
+  Datasets
+  Other_functions
+  PoF
 
 .. |pypi| image:: https://img.shields.io/pypi/v/reliability?color=brightgreen&logo=Python&logoColor=white&label=PyPI%20package
     :alt: PyPI package

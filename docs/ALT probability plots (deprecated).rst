@@ -2,8 +2,8 @@
 
 -------------------------------------
 
-ALT probability plots
-'''''''''''''''''''''
+ALT probability plots (deprecated)
+''''''''''''''''''''''''''''''''''
 
 Before reading this section, you should be familiar with what a probability plot is and how to use it. For a detailed explaination, please see the section on `probability plots <https://reliability.readthedocs.io/en/latest/Probability%20plots.html>`_.
 

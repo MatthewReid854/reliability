@@ -2,8 +2,8 @@
 
 -------------------------------------
 
-Fitting a model to ALT data
-'''''''''''''''''''''''''''
+Fitting a model to ALT data (deprecated)
+''''''''''''''''''''''''''''''''''''''''
 
 Before reading this section, you should be familiar with `ALT probability plots <https://reliability.readthedocs.io/en/latest/ALT%20probability%20plots.html>`_, and `Fitting distributions <https://reliability.readthedocs.io/en/latest/Fitting%20a%20specific%20distribution%20to%20data.html>`_ to non-ALT datasets.
 
