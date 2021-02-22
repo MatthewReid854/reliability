@@ -16,11 +16,11 @@ ALT tests may either be single stress or dual stress. In dual stress models, the
 Types of ALT
 """"""""""""
 
-The way an ALT test is performed depends on the stress profile. There are two popular methods to perform an ALT test; using a constant stress profile, and using a step stress profile. In a constant stress profile, each item under test only ever experiences a single stress level. In a step stress profile each item begins at the lowest stress which is held for a period of time before being stepped up to higher and higher levels. Constant stress profiles are mathematically easier to fit and understand and therefore are more popular. Step stress profiles are useful when you only have a limited number of items and you do not know at what stress you should test them. Selecting a stress that is too low may result in no failures so the opportunity to use the same components (which have not yet failed) from the first test in subsequent tests at higher levels is advantageous. Within `reliability` only the constant stress profile test is currently implemented. Users seeking to fit a step stress profile may want to consider using Reliasoft's `ALTA <http://reliawiki.com/index.php/Time-Varying_Stress_Models>`.
+The way an ALT test is performed depends on the stress profile. There are two popular methods to perform an ALT test; using a constant stress profile, and using a step stress profile. In a constant stress profile, each item under test only ever experiences a single stress level. In a step stress profile each item begins at the lowest stress which is held for a period of time before being stepped up to higher and higher levels. Constant stress profiles are mathematically easier to fit and understand and therefore are more popular. Step stress profiles are useful when you only have a limited number of items and you do not know at what stress you should test them. Selecting a stress that is too low may result in no failures so the opportunity to use the same components (which have not yet failed) from the first test in subsequent tests at higher levels is advantageous. Within `reliability` only the constant stress profile test is currently implemented. Users seeking to fit a step stress profile may want to consider using Reliasoft's `ALTA <http://reliawiki.com/index.php/Time-Varying_Stress_Models>`_.
 
 .. image:: images/ALT_stress_profiles.png
 
-ALT models are explained further in the section on `models <https://reliability.readthedocs.io/en/latest/Equations%20of%20ALT%20models.html>`.
+ALT models are explained further in the section on `models <https://reliability.readthedocs.io/en/latest/Equations%20of%20ALT%20models.html>`_.
 
 Highly Accelerated Life Testing
 """""""""""""""""""""""""""""""
@@ -30,4 +30,4 @@ Highly Accelerated Life Testing is when we want to know how things fail, rather 
 Further reading
 """""""""""""""
 
-Reliasoft's `Accelerated Life Testing Data Analysis Reference <http://reliawiki.com/index.php/Accelerated_Life_Testing_Data_Analysis_Reference >` provides a great deal more information on ALT.
+Reliasoft's `Accelerated Life Testing Data Analysis Reference <http://reliawiki.com/index.php/Accelerated_Life_Testing_Data_Analysis_Reference >`_ provides a great deal more information on ALT.
