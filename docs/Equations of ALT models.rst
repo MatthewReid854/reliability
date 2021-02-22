@@ -32,3 +32,54 @@ In the above example we saw that :math:`\alpha` was replaced with the life model
 
 :math:`\text{Exponential:} \hspace{3mm} \lambda = \frac{1}{L(S)}`
 
+The life-stress models available are:
+
+:math:`\text{Exponential (also known as Arrhenius model):} \hspace{29mm} L(S) = b.exp \left(\frac{a}{S} \right)`
+
+:math:`\text{Eyring:} \hspace{108mm} L(S) = \frac{1}{S} .exp \left( - \left( c - \frac{a}{S} \right) \right)`
+
+:math:`\text{Power (also known as inverse power):} \hspace{48mm} L(S) = a.S^n`
+
+:math:`\text{Dual_Exponential (also known as Temperature-Humidity):} \hspace{7mm} L(S_1,S_2) = c.exp \left(\frac{a}{S_1} + \frac{b}{S_2} \right)`
+
+:math:`\text{Dual_Power (also known as Non-Thermal-Non-Thermal):} \hspace{4mm} L(S1,S2)=c.{S_1}^m.{S_2}^n`
+
+:math:`\text{Power_Exponential (also known as Thermal-Non-Thermal):} \hspace{4mm} L(S1,S2) = c.exp \left(\frac{a}{S1} \right).S_2^n`
+
+Note that while this model is named "Power_Exponential" (keeping in line with academic literature), it would be more appropriate to call it the Exponential_Power model since the stresses are modelled in the "Thermal-Non-Thermal" stress order. This means that the first stress (S1) is modelled by the Exponential model (typically used for thermal stresses) and the second stress (S2) is modelled by the Power model (typically used for non-thermal stresses). The model may perform differently if given S1 and S2 in the opposite order.
+
+Weibull ALT models
+""""""""""""""""""
+
+to be written
+
+Lognormal ALT models
+""""""""""""""""""""
+
+To be written
+
+Normal ALT models
+"""""""""""""""""
+
+To be written
+
+Exponential ALT models
+""""""""""""""""""""""
+
+To be written
+
+Acceleration factor
+"""""""""""""""""""
+
+The acceleration factor is a value used to show by how much the life is being accelerated. The acceleration factor is given by the equation:
+
+:math:`AF = \frac{Life_use}{Life_accelerated}`
+
+:math:`AF = \frac{{Life}_{use}}{{Life}_{accelerated}}`
+
+This simple expression is applicable to all models so the "correct substitutions" for the scale parameter are not required to find the acceleration factor.
+
+Further reading
+"""""""""""""""
+
+Reliasoft's `Accelerated Life Testing Data Analysis Reference <http://reliawiki.com/index.php/Accelerated_Life_Testing_Data_Analysis_Reference>`_ provides many more equations, including the equations for confidence intervals (which are not implemented within `reliability`).
