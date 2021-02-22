@@ -134,7 +134,7 @@ Contents:
   :caption: API reference
 
   API/Distributions.rst
-  API/Datasets.rst
+  API/Datasets
 
 .. |pypi| image:: https://img.shields.io/pypi/v/reliability?color=brightgreen&logo=Python&logoColor=white&label=PyPI%20package
     :alt: PyPI package
