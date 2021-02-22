@@ -20,7 +20,7 @@ The way an ALT test is performed depends on the stress profile. There are two po
 
 .. image:: images/ALT_stress_profiles.png
 
-Within `reliability` there are 24 constant stress ALT models currently implemented. Step stress models are not yet implemented within `reliability` though this feature is planned for a future release. Users seeking to fit a step stress profile may want to consider using Reliasoft's `ALTA <http://reliawiki.com/index.php/Time-Varying_Stress_Models>`_.
+Within `reliability` there are 24 constant stress ALT models currently implemented (12 single stress and 12 dual stress). Step stress models are not yet implemented within `reliability` though this feature is planned for a future release. Users seeking to fit a step stress profile may want to consider using Reliasoft's `ALTA <http://reliawiki.com/index.php/Time-Varying_Stress_Models>`_.
 
 The mathematical formulation of ALT models is explained further in the section on `Equations of ALT models <https://reliability.readthedocs.io/en/latest/Equations%20of%20ALT%20models.html>`_.
 
