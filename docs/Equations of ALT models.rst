@@ -20,7 +20,7 @@ Replacing :math:`\alpha` with :math:`L(S)` gives the PDF of the Weibull-Exponent
 
 By replacing the scale parameter with a stress dependent model, the scale parameter of the distribution can be varied as the stress varies. The shape parameter (:math:`\beta` in the above example) is kept constant. On a probability plot (which is scaled appropriately such that the distribution appears as a straight line), the process of changing the scale parameter has the effect of moving the line to the left or right.
 
-ALT models can use any probability distribution which does not scale the axes based on the shape or scale parameters. The Gamma and Beta distributions do scale their axes based on their parameters (which is why you'll never find gamma or beta probability paper) so these probability distributions could not be used for ALT models. Within `reliability` the Weibull, Exponential, Lognormal, and Normal distributions are used.
+ALT models can use any probability distribution which does not scale the axes based on the shape or scale parameters. The Gamma and Beta distributions do scale their axes based on their parameters (which is why you'll never find gamma or beta probability paper) so these probability distributions could not be used for ALT models. Within `reliability` the Weibull_2P, Exponential_1P, Lognormal_2P, and Normal_2P `distributions <https://reliability.readthedocs.io/en/latest/Equations%20of%20supported%20distributions.html>`_ are used.
 
 In the above example we saw that :math:`\alpha` was replaced with the life model L(S). A direct substitution is not always the case. The correct substitutions for each of the four models used in `reliability` are as follows:
 
@@ -31,13 +31,6 @@ In the above example we saw that :math:`\alpha` was replaced with the life model
 :math:`\text{Lognormal:} \hspace{5mm} \mu = ln \left( L(S) \right)`
 
 :math:`\text{Exponential:} \hspace{3mm} \lambda = \frac{1}{L(S)}`
-
-The `life models <https://reliability.readthedocs.io/en/latest/Equations%20of%20supported%20distributions.html>`_ available are:
-
-- Weibull_2P
-- Normal_2P
-- Lognormal_2P
-- Expon_1P
 
 The life-stress models available are:
 
@@ -62,13 +55,16 @@ exponential
 
 \left(b.exp\left(\frac{a}{S} \right) \right)
 
+
 eyring
 
 \left( \frac{1}{S} .exp \left( - \left( c - \frac{a}{S} \right) \right) \right)
 
+
 power
 
 \left( a.S^n \right)
+
 
 dual exponential
 
@@ -78,6 +74,7 @@ dual exponential
 dual power
 
 \left( c.{S_1}^m.{S_2}^n \right)
+
 
 power exponential
 
