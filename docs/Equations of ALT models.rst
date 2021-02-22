@@ -34,6 +34,11 @@ In the above example we saw that :math:`\alpha` was replaced with the life model
 
 The life-stress models available within `reliability` are:
 
+:math:`\text{Exponential (also known as Arrhenius model):} \hspace{29mm} L(S) = b.exp \left(\frac{a}{S} \right)`
+
+:math:`\text{Eyring:} \hspace{108mm} L(S) = \frac{1}{S} .exp \left( - \left( c - \frac{a}{S} \right) \right)`
+
+:math:`\text{Power (also known as inverse power):} \hspace{48mm} L(S) = a.S^n`
 
 fault finding latex errors here
 
