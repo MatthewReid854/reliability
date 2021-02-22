@@ -1,4 +1,6 @@
-![Logo](https://raw.githubusercontent.com/MatthewReid854/reliability/master/docs/images/logo.png)
+.. image:: https://raw.githubusercontent.com/MatthewReid854/reliability/master/docs/images/logo.png
+
+https://raw.githubusercontent.com/MatthewReid854/reliability/master/docs/images/logo.png
 
 -------------------------------------
 

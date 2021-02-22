@@ -1,10 +1,10 @@
-Distributions
+Nonparametric
 #############
 
 .. toctree::
     :maxdepth: 2
     :glob:
 
-    API/Distributions/*
+    API/Nonparametric/*
 
 
