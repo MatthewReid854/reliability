@@ -42,6 +42,9 @@ The life-stress models available within `reliability` are:
 
 :math:`\text{Dual_Exponential (also known as Temperature-Humidity):} \hspace{7mm} L(S_1,S_2) = c.exp \left(\frac{a}{S_1} + \frac{b}{S_2} \right)`
 
+:math:`\text{Power_Exponential (also known as Thermal-Nonthermal):} \hspace{4mm} L(S_1,S_2) = c.exp \left(\frac{a}{S_1} \right).{S_2}^n`
+
+
 fault finding here
 
 
