@@ -54,6 +54,9 @@ Contents:
   :caption: Accelerated Life Testing
 
   What is Accelerated Life Testing
+  Fitting a single stress model to ALT data
+  Fitting a dual stress model to ALT data
+  Fitting all available models to ALT data
   Fitting a model to ALT data (deprecated)
   ALT probability plots (deprecated)
 
