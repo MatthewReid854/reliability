@@ -20,7 +20,7 @@ The way an ALT test is performed depends on the stress profile. There are two po
 
 .. image:: images/ALT_stress_profiles.png
 
-ALT models are explained further in the section on `models <https://reliability.readthedocs.io/en/latest/Equations%20of%20ALT%20models.html>`_.
+ALT models are explained further in the section on `Equations of ALT models <https://reliability.readthedocs.io/en/latest/Equations%20of%20ALT%20models.html>`_.
 
 Highly Accelerated Life Testing
 """""""""""""""""""""""""""""""
@@ -30,4 +30,4 @@ Highly Accelerated Life Testing is when we want to know how things fail, rather 
 Further reading
 """""""""""""""
 
-Reliasoft's `Accelerated Life Testing Data Analysis Reference <http://reliawiki.com/index.php/Accelerated_Life_Testing_Data_Analysis_Reference >`_ provides a great deal more information on ALT.
+Reliasoft's `Accelerated Life Testing Data Analysis Reference <http://reliawiki.com/index.php/Accelerated_Life_Testing_Data_Analysis_Reference>`_ provides a great deal more information on ALT.
