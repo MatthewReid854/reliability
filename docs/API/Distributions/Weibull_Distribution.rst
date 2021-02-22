@@ -2,7 +2,6 @@
 
 -------------------------------------
 
-
 Weibull_Distribution
 ''''''''''''''''''''
 
@@ -45,8 +44,3 @@ methods:
 -    mean_residual_life() - Average residual lifetime of an item given that the item has survived up to a given time. Effectively the mean of the remaining amount (right side) of a distribution at a given time.
 -    stats() - prints all the descriptive statistics. Same as the statistics shown using .plot() but printed to console.
 -    random_samples() - draws random samples from the distribution to which it is applied. Same as rvs in scipy.stats.
-
-
-
-
-Creates an Exponential Distribution object.

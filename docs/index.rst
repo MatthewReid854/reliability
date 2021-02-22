@@ -136,6 +136,12 @@ Contents:
   API/Datasets
   API/Distributionsfolder/Weibull_Distribution
 
+.. toctree::
+  :maxdepth: 3
+  :caption: API reference
+
+  API reference
+
 .. |pypi| image:: https://img.shields.io/pypi/v/reliability?color=brightgreen&logo=Python&logoColor=white&label=PyPI%20package
     :alt: PyPI package
     :scale: 100%
