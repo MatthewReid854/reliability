@@ -45,12 +45,12 @@ We could consider all censored data to be interval censored data, with the follo
 
 .. image:: images/Interval_censored_data.png
 
-singly censored data
+Singly censored data
 """"""""""""""""""""
 
 This is not a type of censored data, but it used to describe how censored data is grouped. In singly censored data, all censoring times are the same. As an example we may have the following failures and right censored times (right censored represented by +): 50, 56, 78, 89, 100+, 100+, 100+. We can say this is "singly censored" as all the censoring occurs at a single point. This is often the case in a test where the end of the test is used as the same censoring time for all unfailed items.
 
-multiply censored data
+Multiply censored data
 """"""""""""""""""""""
 
 This is not a type of censored data, but it used to describe how censored data is grouped. In multiply censored data, the censoring times occur at many different times. As an example we may have the following failures and right censored times (right censored represented by +): 50, 55+, 56, 72+, 74+, 78, 89, 98+. We can say this is "multiply censored" as the censoring times occur at multiple points. This is frequently seen when items have different start times or different amounts of usage so their times in service are not aligned. While the end of the observation period may be the same (in terms of the calendar date), the accumulated life will be different between items so their censoring times do not necessarily align.
