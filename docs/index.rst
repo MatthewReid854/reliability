@@ -61,7 +61,6 @@ Contents:
   Fitting a model to ALT data (deprecated)
   ALT probability plots (deprecated)
 
-
 .. toctree::
   :maxdepth: 1
   :caption: Importing and converting data
@@ -133,8 +132,9 @@ Contents:
   :maxdepth: 3
   :caption: API reference
 
-  API/Distributions.rst
+  API/Distributions
   API/Datasets
+  API/Distributionsfolder/Weibull_Distribution
 
 .. |pypi| image:: https://img.shields.io/pypi/v/reliability?color=brightgreen&logo=Python&logoColor=white&label=PyPI%20package
     :alt: PyPI package

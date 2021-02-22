@@ -2,11 +2,9 @@
 
 -------------------------------------
 
-Distributions
-'''''''''''''
 
 Weibull_Distribution
---------------------
+''''''''''''''''''''
 
 Creates a Weibull Distribution object.
 
@@ -48,7 +46,7 @@ methods:
 -    stats() - prints all the descriptive statistics. Same as the statistics shown using .plot() but printed to console.
 -    random_samples() - draws random samples from the distribution to which it is applied. Same as rvs in scipy.stats.
 
-Exponential_Distribution
---------------------
+
+
 
 Creates an Exponential Distribution object.
