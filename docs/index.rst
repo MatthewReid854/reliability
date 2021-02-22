@@ -130,13 +130,11 @@ Contents:
   Logo
 
 .. toctree::
-  :maxdepth: 1
+  :maxdepth: 3
   :caption: API reference
 
-  Distributions.rst
-  API/Distributions1.rst
-  /API/Distributions2.rst
-  API/*
+  API/Distributions.rst
+  API/Datasets.rst
 
 .. |pypi| image:: https://img.shields.io/pypi/v/reliability?color=brightgreen&logo=Python&logoColor=white&label=PyPI%20package
     :alt: PyPI package
