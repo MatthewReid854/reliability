@@ -24,10 +24,10 @@ Within `reliability` there are 24 constant stress ALT models currently implement
 
 The mathematical formulation of ALT models is explained further in the section on `Equations of ALT models <https://reliability.readthedocs.io/en/latest/Equations%20of%20ALT%20models.html>`_.
 
-Highly Accelerated Life Testing
-"""""""""""""""""""""""""""""""
+ALT vs HALT
+"""""""""""
 
-Highly Accelerated Life Testing is when we want to know how things fail, rather than when things will fail. HALT has no survivors as the goal is to record the way in which items fail (their failure mode) so that design improvements can be made to make the design more resistant to those failure modes. HALT is mostly qualitative while ALT is quantitative. Since HALT is qualitative, there are no models required for fitting failure data.
+Highly Accelerated Life Testing (HALT) is a type of testing to determine how things fail, rather than when things will fail. HALT has no survivors as the primary goal is to record the way in which items fail (their failure mode) so that design improvements can be made to make the design more resistant to those failure modes. HALT is mostly qualitative while ALT is quantitative. Since HALT is qualitative, there are no models required for fitting failure data.
 
 Further reading
 """""""""""""""
