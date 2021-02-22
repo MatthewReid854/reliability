@@ -54,6 +54,7 @@ Contents:
   :caption: Accelerated Life Testing
 
   What is Accelerated Life Testing
+  Equations of ALT models
   Fitting a single stress model to ALT data
   Fitting a dual stress model to ALT data
   Fitting all available models to ALT data
