@@ -55,7 +55,7 @@ Weibull ALT models
 
 :math:`\text{Weibull-Exponential:} \hspace{18mm} f(t,S) = \frac{\beta t^{ \beta - 1}}{ \left(b.exp\left(\frac{a}{S} \right) \right)^ \beta} .exp \left(-\left(\frac{t}{\left(b.exp\left(\frac{a}{S} \right) \right) }\right)^ \beta \right)` 
 
-:math:`\text{Weibull-Eyring:} \hspace{28mm} f(t,S) =\frac{\beta t^{ \beta - 1}}{ \left( \frac{1}{S} .exp \left( - \left( c - \frac{a}{S} \right) \right) \right)^ \beta} {\rm e}^{-\left(\frac{t}{\left( \frac{1}{S} .exp \left( - \left( c - \frac{a}{S} \right) \right) \right) }\right)^ \beta }` 
+:math:`\text{Weibull-Eyring:} \hspace{28mm} f(t,S) = \frac{\beta t^{ \beta - 1}}{ \left(\frac{1}{S} .exp \left( - \left( c - \frac{a}{S} \right) \right) \right)^ \beta} .exp \left(-\left(\frac{t}{\left(\frac{1}{S} .exp \left( - \left( c - \frac{a}{S} \right) \right) \right) }\right)^ \beta \right)` 
 
 :math:`\text{Weibull-Power:} \hspace{29mm} f(t,S) = \frac{\beta t^{ \beta - 1}}{ \left( a.S^n \right)^ \beta}. exp\left(-\left(\frac{t}{\left( a.S^n \right) }\right)^ \beta \right)` 
 
@@ -68,7 +68,7 @@ Weibull ALT models
 Lognormal ALT models
 """"""""""""""""""""
 
-To be written
+These are placeholders to be written soon. Please do not trust this section yet.
 
 :math:`\text{Lognormal-Exponential:} \hspace{11mm} f(t) = \frac{1}{\sigma t \sqrt{2\pi}} . exp \left(-\frac{1}{2} \left(\frac{{\rm ln}(t)-\mu}{\sigma}\right)^2\right)`
 
@@ -86,7 +86,7 @@ To be written
 Normal ALT models
 """""""""""""""""
 
-To be written
+These are placeholders to be written soon. Please do not trust this section yet.
 
 :math:`\text{Normal-Exponential:} \hspace{11mm} f(t) = \frac{1}{\sigma \sqrt{2 \pi}}. exp\left(-\frac{1}{2}\left(\frac{t - \mu}{\sigma}\right)^2\right)`
 
@@ -103,7 +103,7 @@ To be written
 Exponential ALT models
 """"""""""""""""""""""
 
-To be written
+These are placeholders to be written soon. Please do not trust this section yet.
 
 :math:`\text{Exponential-Exponential:} \hspace{11mm} f(t) = \lambda . exp\left(-\lambda t \right)`
 
