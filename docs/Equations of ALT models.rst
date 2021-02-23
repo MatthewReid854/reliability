@@ -34,11 +34,11 @@ In the above example we saw that :math:`\alpha` was replaced with the life model
 
 The life-stress models available within `reliability` are:
 
-:math:`\text{Exponential (also known as Arrhenius):} \hspace{41mm} L(S) = b.exp \left(\frac{a}{S} \right)`
+:math:`\text{Exponential (also known as Arrhenius):} \hspace{39mm} L(S) = b.exp \left(\frac{a}{S} \right)`
 
-:math:`\text{Eyring:} \hspace{105mm} L(S) = \frac{1}{S} .exp \left( - \left( c - \frac{a}{S} \right) \right)`
+:math:`\text{Eyring:} \hspace{103mm} L(S) = \frac{1}{S} .exp \left( - \left( c - \frac{a}{S} \right) \right)`
 
-:math:`\text{Power (also known as Inverse Power):} \hspace{44mm} L(S) = a.S^n`
+:math:`\text{Power (also known as Inverse Power):} \hspace{42mm} L(S) = a.S^n`
 
 :math:`\text{Dual-Exponential (also known as Temperature-Humidity):} \hspace{4mm} L({S_1},{S_2}) = c.exp \left(\frac{a}{S_1} + \frac{b}{S_2} \right)`
 
@@ -57,34 +57,34 @@ Weibull ALT models
 
 :math:`\text{Weibull-Eyring:} \hspace{28mm} f(t,S) =\frac{\beta t^{ \beta - 1}}{ \left( \frac{1}{S} .exp \left( - \left( c - \frac{a}{S} \right) \right) \right)^ \beta} {\rm e}^{-\left(\frac{t}{\left( \frac{1}{S} .exp \left( - \left( c - \frac{a}{S} \right) \right) \right) }\right)^ \beta }` 
 
-:math:`\text{Weibull-Power:} \hspace{29mm} f(t,S) = \frac{\beta t^{ \beta - 1}}{ \left( a.S^n \right)^ \beta} {\rm e}^{-\left(\frac{t}{\left( a.S^n \right) }\right)^ \beta }` 
+:math:`\text{Weibull-Power:} \hspace{29mm} f(t,S) = \frac{\beta t^{ \beta - 1}}{ \left( a.S^n \right)^ \beta}. exp\left(-\left(\frac{t}{\left( a.S^n \right) }\right)^ \beta \right)` 
 
-:math:`\text{Weibull-Dual-Exponential:} \hspace{5mm} f(t,S_1,S_2) = \frac{\beta t^{ \beta - 1}}{ \left( c.exp \left(\frac{a}{S_1} + \frac{b}{S_2} \right) \right)^ \beta} {\rm e}^{-\left(\frac{t}{\left( c.exp \left(\frac{a}{S_1} + \frac{b}{S_2} \right) \right) }\right)^ \beta }` 
+:math:`\text{Weibull-Dual-Exponential:} \hspace{5mm} f(t,S_1,S_2) = \frac{\beta t^{ \beta - 1}}{ \left( c.exp \left(\frac{a}{S_1} + \frac{b}{S_2} \right) \right)^ \beta}. exp\left(-\left(\frac{t}{\left( c.exp \left(\frac{a}{S_1} + \frac{b}{S_2} \right) \right) }\right)^ \beta \right)` 
 
-:math:`\text{Weibull-Dual-Power:} \hspace{17mm} f(t,S_1,S_2) = \frac{\beta t^{ \beta - 1}}{ \left( c.S_1^m.S_2^n \right)^ \beta} {\rm e}^{-\left(\frac{t}{\left( c.S_1^m.S_2^n \right) }\right)^ \beta }` 
+:math:`\text{Weibull-Dual-Power:} \hspace{17mm} f(t,S_1,S_2) = \frac{\beta t^{ \beta - 1}}{ \left( c.S_1^m.S_2^n \right)^ \beta} .exp\left(-\left(\frac{t}{\left( c.S_1^m.S_2^n \right) }\right)^ \beta \right)` 
 
-:math:`\text{Weibull-Power-Exponential:} \hspace{4mm} f(t,S_1,S_2) = \frac{\beta t^{ \beta - 1}}{ \left( c.S_1^n.exp \left(\frac{a}{S_2} \right) \right)^ \beta} {\rm e}^{-\left(\frac{t}{\left( c.S_1^n.exp \left(\frac{a}{S_2} \right) \right) }\right)^ \beta }` 
+:math:`\text{Weibull-Power-Exponential:} \hspace{4mm} f(t,S_1,S_2) = \frac{\beta t^{ \beta - 1}}{ \left( c.S_1^n.exp \left(\frac{a}{S_2} \right) \right)^ \beta} .exp\left(-\left(\frac{t}{\left( c.S_1^n.exp \left(\frac{a}{S_2} \right) \right) }\right)^ \beta \right)` 
  
 Lognormal ALT models
 """"""""""""""""""""
 
 To be written
 
-:math:`\text{PDF:} \hspace{11mm} f(t) = \frac{1}{\sigma t \sqrt{2\pi}} {\rm exp} \left[-\frac{1}{2} \left(\frac{{\rm ln}(t)-\mu}{\sigma}\right)^2\right]`
+:math:`\text{Lognormal-Exponential:} \hspace{11mm} f(t) = \frac{1}{\sigma t \sqrt{2\pi}} . exp \left(-\frac{1}{2} \left(\frac{{\rm ln}(t)-\mu}{\sigma}\right)^2\right)`
 
 Normal ALT models
 """""""""""""""""
 
 To be written
 
-:math:`\text{PDF:} \hspace{11mm} f(t) = \frac{1}{\sigma \sqrt{2 \pi}}{\rm exp}\left[-\frac{1}{2}\left(\frac{t - \mu}{\sigma}\right)^2\right]
+:math:`\text{Normal-Exponential:} \hspace{11mm} f(t) = \frac{1}{\sigma \sqrt{2 \pi}}. exp\left(-\frac{1}{2}\left(\frac{t - \mu}{\sigma}\right)^2\right)`
 
 Exponential ALT models
 """"""""""""""""""""""
 
 To be written
 
-:math:`\text{PDF:} \hspace{11mm} f(t) = \lambda {\rm e}^{-\lambda t}`
+:math:`\text{Exponential-Exponential:} \hspace{11mm} f(t) = \lambda . exp\left(-\lambda t \right)`
 
 Acceleration factor
 """""""""""""""""""
