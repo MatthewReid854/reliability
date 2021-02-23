@@ -40,12 +40,11 @@ The life-stress models available within `reliability` are:
 
 :math:`\text{Power (also known as Inverse Power):} \hspace{6mm} L(S) = a.S^n`
 
-:math:`\text{Test1-power (also known as Inverse Power):} \hspace{6mm} L(S_1,S_2) = c.S_1^m.S_2^n`
+:math:`\text{Dual-Exponential (also known as Temperature-Humidity):} \hspace{7mm} L({S_1},{S_2}) = c.exp \left(\frac{a}{S_1} + \frac{b}{S_2} \right)`
 
-:math:`\text{Test2-power (also known as Inverse Power):} \hspace{6mm} L(S_1,S_2) = c.S_1^m.S_2^n`
+:math:`\text{Dual-Power:} \hspace{20mm} L(S_1,S_2) = c.S_1^m.S_2^n`
 
-
-I'm doing fault finding here....
+:math:`\text{Power-Exponential (also known as Thermal-Nonthermal):} \hspace{4mm} L(S_1,S_2) = c.exp \left(\frac{a}{S_1} \right).S_2^n`
 
 Note that while this model is named "Power-Exponential" (keeping in line with academic literature), it would be more appropriate to call it the Exponential-Power model since the stresses are modelled in the "Thermal-Nonthermal" stress order. This means that the first stress (S1) is modelled by the Exponential model (typically used for thermal stresses) and the second stress (S2) is modelled by the Power model (typically used for nonthermal stresses). The model may perform differently if given S1 and S2 in the opposite order.
 
