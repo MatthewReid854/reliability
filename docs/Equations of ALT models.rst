@@ -38,11 +38,9 @@ The life-stress models available within `reliability` are:
 
 :math:`\text{Eyring:} \hspace{70mm} L(S) = \frac{1}{S} .exp \left( - \left( c - \frac{a}{S} \right) \right)`
 
+:math:`\text{Dual_Power:} \hspace{55mm} L(S_1,S_2) = c.S_1^m.S_2^n`
+
 :math:`\text{Power (also known as Inverse Power):} \hspace{9mm} L(S) = a.S^n`
-
-:math:`\text{Dual_Power:} \hspace{55mm} L(S_1,S_2) = c.S_1^m.S_2^n`
-
-:math:`\text{Dual_Power:} \hspace{55mm} L(S_1,S_2) = c.S_1^m.S_2^n`
 
 I'm doing fault finding here
 
