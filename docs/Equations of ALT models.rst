@@ -16,7 +16,7 @@ ALT models are probability distributions with a stress dependent model replacing
 
 Replacing :math:`\alpha` with :math:`L(S)` gives the PDF of the Weibull-Exponential model:
 
-:math:`\text{Weibull_Exponential:} \hspace{25mm} f(t,S) = \frac{\beta t^{ \beta - 1}}{ \left(b.exp\left(\frac{a}{S} \right) \right)^ \beta} .exp \left(-\left(\frac{t}{\left(b.exp\left(\frac{a}{S} \right) \right) }\right)^ \beta \right)`
+:math:`\text{Weibull_Exponential:} \hspace{25mm} f(t,S) = \frac{\beta t^{ \beta - 1}}{ \left(b.exp\left(\frac{a}{S} \right) \right)^ \beta} .exp \left(-\left(\frac{t}{b.exp\left(\frac{a}{S} \right)}\right)^ \beta \right)`
 
 By replacing the scale parameter with a stress dependent model, the scale parameter of the distribution can be varied as the stress varies. The shape parameter (:math:`\beta` in the above example) is kept constant. On a probability plot (which is scaled appropriately such that the distribution appears as a straight line), the process of changing the scale parameter has the effect of moving the line to the left or right.
 
@@ -36,17 +36,15 @@ The life-stress models available within `reliability` are:
 
 :math:`\text{Exponential (also known as Arrhenius):} \hspace{4mm} L(S) = b.exp \left(\frac{a}{S} \right)`
 
-:math:`\text{Eyring:} \hspace{70mm} L(S) = \frac{1}{S} .exp \left( - \left( c - \frac{a}{S} \right) \right)`
+:math:`\text{Eyring:} \hspace{67mm} L(S) = \frac{1}{S} .exp \left( - \left( c - \frac{a}{S} \right) \right)`
 
-:math:`\text{Power (also known as Inverse Power):} \hspace{9mm} L(S) = a.S^n`
-
-:math:`\text{Dual_Power:} \hspace{55mm} L(S_1,S_2) = c.S_1^m.S_2^n`
+:math:`\text{Power (also known as Inverse Power):} \hspace{6mm} L(S) = a.S^n`
 
 :math:`\text{Exponential (also known as Arrhenius):} \hspace{4mm} L(S) = b.exp \left(\frac{a}{S} \right)`
 
-:math:`\text{Eyring:} \hspace{70mm} L(S) = \frac{1}{S} .exp \left( - \left( c - \frac{a}{S} \right) \right)`
+:math:`\text{Eyring:} \hspace{67mm} L(S) = \frac{1}{S} .exp \left( - \left( c - \frac{a}{S} \right) \right)`
 
-:math:`\text{Power (also known as Inverse Power):} \hspace{9mm} L(S) = a.S^n`
+:math:`\text{Power (also known as Inverse Power):} \hspace{6mm} L(S) = a.S^n`
 
 I'm doing fault finding here.
 
