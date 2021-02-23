@@ -36,9 +36,19 @@ The life-stress models available within `reliability` are:
 
 :math:`\text{Exponential (also known as Arrhenius):} \hspace{41mm} L(S) = b.{\rm exp} \left(\frac{a}{S} \right)`
 
-:math:`\hspace{120mm} (0 < a < \infty)\hspace{3mm} (b > 0)`
+:math:`\hspace{120mm} (-\infty < a < \infty)\hspace{3mm} (b > 0)`
 
 :math:`\text{Eyring:} \hspace{105mm} L(S) = \frac{1}{S} .{\rm exp} \left( - \left( c - \frac{a}{S} \right) \right)`
+
+Testing here
+
+:math:`\hspace{120mm} (-\infty < a < \infty)\hspace{3mm} (-\infty < c < \infty)`
+
+:math:`\hspace{120mm} (-\infty < a < \infty \hspace{2mm},\hspace{2mm} -\infty < c < \infty)`
+
+:math:`\hspace{120mm} -\infty < a < \infty \hspace{2mm},\hspace{2mm} -\infty < c < \infty`
+
+:math:`\hspace{120mm} -\infty < a < \infty , -\infty < c < \infty`
 
 :math:`\text{Power (also known as Inverse Power):} \hspace{44mm} L(S) = a.S^n`
 
