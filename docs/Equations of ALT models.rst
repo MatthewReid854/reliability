@@ -40,9 +40,7 @@ The life-stress models available within `reliability` are:
 
 :math:`\text{Power (also known as Inverse Power):} \hspace{48mm} L(S) = a.S^n`
 
-:math:`\text{Dual_Exponential (also known as Temperature-Humidity):} \hspace{7mm} L(S1,S2) = c.exp \left(\frac{a}{S1} + \frac{b}{S2} \right)`
-
-:math:`\text{Dual_Power:} \hspace{4mm} L(S1,S2) = c.{S1}^m.{S2}^n`
+:math:`\text{Dual_Power:} \hspace{92mm} L(S1,S2) = c.{S1}^m.{S2}^n`
 
 I'm doing fault finding here
 
