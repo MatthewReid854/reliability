@@ -40,9 +40,9 @@ The life-stress models available within `reliability` are:
 
 :math:`\text{Power (also known as Inverse Power):} \hspace{6mm} L(S) = a.S^n`
 
-:math:`\text{Power (also known as Inverse Power):} \hspace{6mm} L(S) = a.S^n`
+:math:`\text{Dual_Power:} \hspace{6mm} L(S) = b.S^m`
 
-:math:`\text{Power (also known as Inverse Power):} \hspace{6mm} L(S) = a.S^n`
+:math:`\text{Dual_Exponential:} \hspace{6mm} L(S) = c.S^p`
 
 I'm doing fault finding here....
 
