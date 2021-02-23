@@ -40,7 +40,11 @@ The life-stress models available within `reliability` are:
 
 :math:`\text{Power (also known as Inverse Power):} \hspace{48mm} L(S) = a.S^n`
 
+need to fault find LaTex errors
+
 :math:`\text{Dual_Exponential (also known as Temperature-Humidity):} \hspace{7mm} L(S1,S2) = c.exp \left(\frac{a}{S1} + \frac{b}{S2} \right)`
+
+More fault finding is being done.
 
 :math:`\text{Dual_Power:} \hspace{92mm} L(S1,S2) = c.{S1}^m.{S2}^n`
 
