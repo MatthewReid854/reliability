@@ -42,6 +42,8 @@ The life-stress models available within `reliability` are:
 
 :math:`\text{Dual_Power:} \hspace{20mm} L(S_1,S_2) = c.S_1^m.S_2^n`
 
+:math:`\text{Dual_Power:} \hspace{20mm} L(S_1,S_2) = c.S_1^m.S_2^n`
+
 :math:`\text{Exponential (also known as Arrhenius):} \hspace{4mm} L(S) = b.exp \left(\frac{a}{S} \right)`
 
 :math:`\text{Eyring:} \hspace{67mm} L(S) = \frac{1}{S} .exp \left( - \left( c - \frac{a}{S} \right) \right)`
