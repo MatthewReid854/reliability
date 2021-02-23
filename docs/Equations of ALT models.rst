@@ -42,6 +42,8 @@ The life-stress models available within `reliability` are:
 
 :math:`\text{Dual_Power:} \hspace{20mm} L(S1,S2) = c.S1^m.S2^n`
 
+:math:`\text{Dual_Power:} \hspace{20mm} L(X) = c.X^m`
+
 I'm doing fault finding here....
 
 Note that while this model is named "Power_Exponential" (keeping in line with academic literature), it would be more appropriate to call it the Exponential_Power model since the stresses are modelled in the "Thermal-Non-Thermal" stress order. This means that the first stress (S1) is modelled by the Exponential model (typically used for thermal stresses) and the second stress (S2) is modelled by the Power model (typically used for non-thermal stresses). The model may perform differently if given S1 and S2 in the opposite order.
