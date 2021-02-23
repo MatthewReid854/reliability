@@ -42,8 +42,6 @@ The life-stress models available within `reliability` are:
 
 :math:`\text{Dual_Power:} \hspace{20mm} L(S_1,S_2) = c.S_1^m.S_2^n`
 
-:math:`\text{Dual_Power:} \hspace{20mm} L(S_1,S_2) = c.S_1^m.S_2^n`
-
 :math:`\text{Exponential (also known as Arrhenius):} \hspace{4mm} L(S) = b.exp \left(\frac{a}{S} \right)`
 
 :math:`\text{Eyring:} \hspace{67mm} L(S) = \frac{1}{S} .exp \left( - \left( c - \frac{a}{S} \right) \right)`
@@ -74,6 +72,14 @@ This is a test. Here is an equation:
     \frac{1}{r^2 \sin \theta} \frac{\partial f}{\partial \theta}
     \left( \sin \theta \, \frac{\partial f}{\partial \theta} \right) +
     \frac{1}{r^2 \sin^2\theta} \frac{\partial^2 f}{\partial \phi^2}
+
+
+.. math::
+
+    L(S_1,S_2) = c.S_1^m.S_2^n`
+
+
+
 
 Lognormal ALT models
 """"""""""""""""""""
