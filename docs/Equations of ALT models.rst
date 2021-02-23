@@ -76,8 +76,11 @@ This is a test. Here is an equation:
 
 .. math::
 
-    L(S_1,S_2) = c.S_1^m.S_2^n`
+    L(S_1,S_2) = c.S_1^m.S_2^n
 
+.. math::
+
+    L(S_1,S_2) = c.S_1^m.S_2^n
 
 
 
