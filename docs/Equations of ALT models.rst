@@ -34,17 +34,17 @@ In the above example we saw that :math:`\alpha` was replaced with the life model
 
 The life-stress models available within `reliability` are:
 
-:math:`\text{Exponential (also known as Arrhenius):} \hspace{4mm} L(S) = b.exp \left(\frac{a}{S} \right)`
+:math:`\text{Exponential (also known as Arrhenius):} \hspace{34mm} L(S) = b.exp \left(\frac{a}{S} \right)`
 
-:math:`\text{Eyring:} \hspace{67mm} L(S) = \frac{1}{S} .exp \left( - \left( c - \frac{a}{S} \right) \right)`
+:math:`\text{Eyring:} \hspace{97mm} L(S) = \frac{1}{S} .exp \left( - \left( c - \frac{a}{S} \right) \right)`
 
-:math:`\text{Power (also known as Inverse Power):} \hspace{6mm} L(S) = a.S^n`
+:math:`\text{Power (also known as Inverse Power):} \hspace{36mm} L(S) = a.S^n`
 
 :math:`\text{Dual-Exponential (also known as Temperature-Humidity):} \hspace{7mm} L({S_1},{S_2}) = c.exp \left(\frac{a}{S_1} + \frac{b}{S_2} \right)`
 
-:math:`\text{Dual-Power:} \hspace{20mm} L(S_1,S_2) = c.S_1^m.S_2^n`
+:math:`\text{Dual-Power:} \hspace{80mm} L(S_1,S_2) = c.S_1^m.S_2^n`
 
-:math:`\text{Power-Exponential (also known as Thermal-Nonthermal):} \hspace{4mm} L(S_1,S_2) = c.exp \left(\frac{a}{S_1} \right).S_2^n`
+:math:`\text{Power-Exponential (also known as Thermal-Nonthermal):} \hspace{8mm} L(S_1,S_2) = c.exp \left(\frac{a}{S_1} \right).S_2^n`
 
 Note that while this model is named "Power-Exponential" (keeping in line with academic literature), it would be more appropriate to call it the Exponential-Power model since the stresses are modelled in the "Thermal-Nonthermal" stress order. This means that the first stress (S1) is modelled by the Exponential model (typically used for thermal stresses) and the second stress (S2) is modelled by the Power model (typically used for nonthermal stresses). The model may perform differently if given S1 and S2 in the opposite order.
 
@@ -53,7 +53,17 @@ Since each ALT model is a combination of a life model (Weibull, Exponential, Log
 Weibull ALT models
 """"""""""""""""""
 
-to be written
+:math:`\text{Weibull-Exponential:} \hspace{25mm} f(t,S) = \frac{\beta t^{ \beta - 1}}{ \left(b.exp\left(\frac{a}{S} \right) \right)^ \beta} .exp \left(-\left(\frac{t}{\left(b.exp\left(\frac{a}{S} \right) \right) }\right)^ \beta \right)` 
+
+:math:`\text{Weibull-Eyring:} \hspace{25mm} f(t,S) =\frac{\beta t^{ \beta - 1}}{ \left( \frac{1}{S} .exp \left( - \left( c - \frac{a}{S} \right) \right) \right)^ \beta} {\rm e}^{-(\frac{t}{\left( \frac{1}{S} .exp \left( - \left( c - \frac{a}{S} \right) \right) \right) })^ \beta }` 
+
+:math:`\text{Weibull-Power:} \hspace{25mm} f(t,S) = \frac{\beta t^{ \beta - 1}}{ \left( a.S^n \right)^ \beta} {\rm e}^{-(\frac{t}{\left( a.S^n \right) })^ \beta }` 
+
+:math:`\text{Weibull-Dual-Exponential:} \hspace{25mm} f(t,S_1,S_2) = \frac{\beta t^{ \beta - 1}}{ \left( c.exp \left(\frac{a}{S_1} + \frac{b}{S_2} \right) \right)^ \beta} {\rm e}^{-(\frac{t}{\left( c.exp \left(\frac{a}{S_1} + \frac{b}{S_2} \right) \right) })^ \beta }` 
+
+:math:`\text{Weibull-Dual-Power:} \hspace{25mm} f(t,S_1,S_2) = \frac{\beta t^{ \beta - 1}}{ \left( c.S_1^m.S_2^n \right)^ \beta} {\rm e}^{-(\frac{t}{\left( c.S_1^m.S_2^n \right) })^ \beta }` 
+
+:math:`\text{Weibull-Power-Exponential:} \hspace{25mm} f(t,S_1,S_2) = \frac{\beta t^{ \beta - 1}}{ \left( c.S_1^n.exp \left(\frac{a}{S_2} \right) \right)^ \beta} {\rm e}^{-(\frac{t}{\left( c.S_1^n.exp \left(\frac{a}{S_2} \right) \right) })^ \beta }` 
  
 Lognormal ALT models
 """"""""""""""""""""
