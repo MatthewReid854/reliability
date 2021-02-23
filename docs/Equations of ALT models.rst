@@ -64,17 +64,23 @@ Math
 
 This is a test. Here is an equation:
 
-\begin{align}
+.. math::
+
+    L(S_1,S_2) = c.S_1^m.S_2^n
 
 .. math::
 
-    &L(S_1,S_2) = c.S_1^m.S_2^n
+    \begin{align*} 
+    2x - 5y &=  8 \\ 
+    3x + 9y &=  -12
+    \end{align*}
 
 .. math::
 
-    &ABCL(S_1,S_2) = c.S_1^m.S_2^n
-    
-\end{align}
+    \begin{align} 
+    2x - 5y &=  8 \\ 
+    3x + 9y &=  -12
+    \end{align}
 
 
 
