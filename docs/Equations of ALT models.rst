@@ -42,12 +42,6 @@ The life-stress models available within `reliability` are:
 
 :math:`\text{Dual_Power:} \hspace{20mm} L(S_1,S_2) = c.S_1^m.S_2^n`
 
-:math:`\text{Exponential (also known as Arrhenius):} \hspace{4mm} L(S) = b.exp \left(\frac{a}{S} \right)`
-
-:math:`\text{Eyring:} \hspace{67mm} L(S) = \frac{1}{S} .exp \left( - \left( c - \frac{a}{S} \right) \right)`
-
-:math:`\text{Power (also known as Inverse Power):} \hspace{6mm} L(S) = a.S^n`
-
 I'm doing fault finding here....
 
 Note that while this model is named "Power_Exponential" (keeping in line with academic literature), it would be more appropriate to call it the Exponential_Power model since the stresses are modelled in the "Thermal-Non-Thermal" stress order. This means that the first stress (S1) is modelled by the Exponential model (typically used for thermal stresses) and the second stress (S2) is modelled by the Power model (typically used for non-thermal stresses). The model may perform differently if given S1 and S2 in the opposite order.
@@ -59,64 +53,14 @@ Weibull ALT models
 
 to be written
 
-Math
-====
-
-This is a test. Here is an equation:
-
-
-.. math::
-
-    L(S_1,S_2) = c.S_1^m.S_2^n
-
-.. math::
-
-    \shoveleft
-    L(S_1,S_2) = c.S_1^m.S_2^n
-
-.. math::
-
-    \shoveleft {L(S_1,S_2) = c.S_1^m.S_2^n}
-
-.. math::
-
-    \begin{align} 
-    2x - 5y &=  8 \\ 
-    3x + 9y &=  -12
-    \end{align}
-
-.. math::
-
-    \begin{align} 
-    \text{Dual_Power:} \hspace{20mm} 2x - 5y &=  8 \\
-    \\
-    \text{Exponential_Power:} \hspace{20mm}3x + 9y &=  -12
-    \end{align}
-
-.. math::
-
-    \begin{align}
-    x&=y           &  w &=z              &  a&=b+c\\
-    2x&=-y         &  3w&=\frac{1}{2}z   &  a&=b\\
-    -4 + 5x&=2+y   &  w+2&=-1+w          &  ab&=cb
-    \end{align}
-
-.. math::
-
-    \begin{equation} \label{eq1}
-    \begin{split}
-    A & = \frac{\pi r^2}{2} \\
-     & = \frac{1}{2} \pi r^2
-    \end{split}
-    \end{equation}
-
-
-    
-
+:math:`\text{Dual_Power:} \hspace{20mm} L(S_1,S_2) = c.S_1^m.S_2^n`
+  
 Lognormal ALT models
 """"""""""""""""""""
 
 To be written
+
+:math:`\text{Dual_Power:} \hspace{20mm} L(S1,S2) = c.S1^m.S2^n`
 
 Normal ALT models
 """""""""""""""""
