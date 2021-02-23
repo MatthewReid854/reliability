@@ -65,13 +65,14 @@ Math
 This is a test. Here is an equation:
 
 .. math::
-    \begin{flalign*}
+
+    \begin{flalign}
     L(S_1,S_2) = c.S_1^m.S_2^n
-    \end{flalign*}
+    \end{flalign}
 
 .. math::
 
-    L(S_1,S_2) = c.S_1^m.S_2^n
+    \begin{flalign} L(S_1,S_2) = c.S_1^m.S_2^n \end{flalign}
 
 Lognormal ALT models
 """"""""""""""""""""
