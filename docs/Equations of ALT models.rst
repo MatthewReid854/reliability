@@ -34,15 +34,15 @@ In the above example we saw that :math:`\alpha` was replaced with the life model
 
 The life-stress models available within `reliability` are:
 
-:math:`\text{Exponential (also known as Arrhenius):} \hspace{39mm} L(S) = b.exp \left(\frac{a}{S} \right)`
+:math:`\text{Exponential (also known as Arrhenius):} \hspace{41mm} L(S) = b.exp \left(\frac{a}{S} \right)`
 
-:math:`\text{Eyring:} \hspace{103mm} L(S) = \frac{1}{S} .exp \left( - \left( c - \frac{a}{S} \right) \right)`
+:math:`\text{Eyring:} \hspace{105mm} L(S) = \frac{1}{S} .exp \left( - \left( c - \frac{a}{S} \right) \right)`
 
-:math:`\text{Power (also known as Inverse Power):} \hspace{42mm} L(S) = a.S^n`
+:math:`\text{Power (also known as Inverse Power):} \hspace{44mm} L(S) = a.S^n`
 
 :math:`\text{Dual-Exponential (also known as Temperature-Humidity):} \hspace{4mm} L({S_1},{S_2}) = c.exp \left(\frac{a}{S_1} + \frac{b}{S_2} \right)`
 
-:math:`\text{Dual-Power:} \hspace{96mm} L(S_1,S_2) = c.S_1^m.S_2^n`
+:math:`\text{Dual-Power:} \hspace{95mm} L(S_1,S_2) = c.S_1^m.S_2^n`
 
 :math:`\text{Power-Exponential (also known as Thermal-Nonthermal):} \hspace{5mm} L(S_1,S_2) = c.exp \left(\frac{a}{S_1} \right).S_2^n`
 
@@ -63,7 +63,7 @@ Weibull ALT models
 
 :math:`\text{Weibull-Dual-Power:} \hspace{17mm} f(t,S_1,S_2) = \frac{\beta t^{ \beta - 1}}{ \left( c.S_1^m.S_2^n \right)^ \beta} .exp\left(-\left(\frac{t}{\left( c.S_1^m.S_2^n \right) }\right)^ \beta \right)` 
 
-:math:`\text{Weibull-Power-Exponential:} \hspace{4mm} f(t,S_1,S_2) = \frac{\beta t^{ \beta - 1}}{ \left( c.S_1^n.exp \left(\frac{a}{S_2} \right) \right)^ \beta} .exp\left(-\left(\frac{t}{\left( c.S_1^n.exp \left(\frac{a}{S_2} \right) \right) }\right)^ \beta \right)` 
+:math:`\text{Weibull-Power-Exponential:} \hspace{4mm} f(t,S_1,S_2) = \frac{\beta t^{ \beta - 1}}{ \left( c.exp \left(\frac{a}{S_2} \right).S_1^n \right)^ \beta} .exp\left(-\left(\frac{t}{\left( c.exp \left(\frac{a}{S_2} \right).S_1^n \right) }\right)^ \beta \right)` 
  
 Lognormal ALT models
 """"""""""""""""""""
@@ -72,12 +72,33 @@ To be written
 
 :math:`\text{Lognormal-Exponential:} \hspace{11mm} f(t) = \frac{1}{\sigma t \sqrt{2\pi}} . exp \left(-\frac{1}{2} \left(\frac{{\rm ln}(t)-\mu}{\sigma}\right)^2\right)`
 
+:math:`\text{Lognormal-Eyring:} \hspace{11mm} f(t) = \frac{1}{\sigma t \sqrt{2\pi}} . exp \left(-\frac{1}{2} \left(\frac{{\rm ln}(t)-\mu}{\sigma}\right)^2\right)`
+
+:math:`\text{Lognormal-Power:} \hspace{11mm} f(t) = \frac{1}{\sigma t \sqrt{2\pi}} . exp \left(-\frac{1}{2} \left(\frac{{\rm ln}(t)-\mu}{\sigma}\right)^2\right)`
+
+:math:`\text{Lognormal-Dual-Exponential:} \hspace{11mm} f(t) = \frac{1}{\sigma t \sqrt{2\pi}} . exp \left(-\frac{1}{2} \left(\frac{{\rm ln}(t)-\mu}{\sigma}\right)^2\right)`
+
+:math:`\text{Lognormal-Dual-Power:} \hspace{11mm} f(t) = \frac{1}{\sigma t \sqrt{2\pi}} . exp \left(-\frac{1}{2} \left(\frac{{\rm ln}(t)-\mu}{\sigma}\right)^2\right)`
+
+:math:`\text{Lognormal-Power-Exponential:} \hspace{11mm} f(t) = \frac{1}{\sigma t \sqrt{2\pi}} . exp \left(-\frac{1}{2} \left(\frac{{\rm ln}(t)-\mu}{\sigma}\right)^2\right)`
+
+
 Normal ALT models
 """""""""""""""""
 
 To be written
 
 :math:`\text{Normal-Exponential:} \hspace{11mm} f(t) = \frac{1}{\sigma \sqrt{2 \pi}}. exp\left(-\frac{1}{2}\left(\frac{t - \mu}{\sigma}\right)^2\right)`
+
+:math:`\text{Normal-Eyring:} \hspace{11mm} f(t) = \frac{1}{\sigma \sqrt{2 \pi}}. exp\left(-\frac{1}{2}\left(\frac{t - \mu}{\sigma}\right)^2\right)`
+
+:math:`\text{Normal-Power:} \hspace{11mm} f(t) = \frac{1}{\sigma \sqrt{2 \pi}}. exp\left(-\frac{1}{2}\left(\frac{t - \mu}{\sigma}\right)^2\right)`
+
+:math:`\text{Normal-Dual-Exponential:} \hspace{11mm} f(t) = \frac{1}{\sigma \sqrt{2 \pi}}. exp\left(-\frac{1}{2}\left(\frac{t - \mu}{\sigma}\right)^2\right)`
+
+:math:`\text{Normal-Dual-Power:} \hspace{11mm} f(t) = \frac{1}{\sigma \sqrt{2 \pi}}. exp\left(-\frac{1}{2}\left(\frac{t - \mu}{\sigma}\right)^2\right)`
+
+:math:`\text{Normal-Power-Exponential:} \hspace{11mm} f(t) = \frac{1}{\sigma \sqrt{2 \pi}}. exp\left(-\frac{1}{2}\left(\frac{t - \mu}{\sigma}\right)^2\right)`
 
 Exponential ALT models
 """"""""""""""""""""""
@@ -86,14 +107,22 @@ To be written
 
 :math:`\text{Exponential-Exponential:} \hspace{11mm} f(t) = \lambda . exp\left(-\lambda t \right)`
 
+:math:`\text{Exponential-Eyring:} \hspace{11mm} f(t) = \lambda . exp\left(-\lambda t \right)`
+
+:math:`\text{Exponential-Power:} \hspace{11mm} f(t) = \lambda . exp\left(-\lambda t \right)`
+
+:math:`\text{Exponential-Dual-Exponential:} \hspace{11mm} f(t) = \lambda . exp\left(-\lambda t \right)`
+
+:math:`\text{Exponential-Dual-Power:} \hspace{11mm} f(t) = \lambda . exp\left(-\lambda t \right)`
+
+:math:`\text{Exponential-Power-Exponential:} \hspace{11mm} f(t) = \lambda . exp\left(-\lambda t \right)`
+
 Acceleration factor
 """""""""""""""""""
 
 The acceleration factor is a value used to show by how much the life is being accelerated. The acceleration factor is given by the equation:
 
 :math:`AF = \frac{L_{USE}}{L_{ACCELERATED}}`
-
-This simple expression is applicable to all models so the "correct substitutions" for the scale parameter are not required to find the acceleration factor.
 
 Further reading
 """""""""""""""
