@@ -34,13 +34,13 @@ In the above example we saw that :math:`\alpha` was replaced with the life model
 
 The life-stress models available within `reliability` are:
 
-:math:`\text{Exponential (also known as Arrhenius):} \hspace{29mm} L(S) = b.exp \left(\frac{a}{S} \right)`
+:math:`\text{Exponential (also known as Arrhenius):} \hspace{4mm} L(S) = b.exp \left(\frac{a}{S} \right)`
 
-:math:`\text{Eyring:} \hspace{108mm} L(S) = \frac{1}{S} .exp \left( - \left( c - \frac{a}{S} \right) \right)`
+:math:`\text{Eyring:} \hspace{80mm} L(S) = \frac{1}{S} .exp \left( - \left( c - \frac{a}{S} \right) \right)`
 
-:math:`\text{Power (also known as Inverse Power):} \hspace{48mm} L(S) = a.S^n`
+:math:`\text{Power (also known as Inverse Power):} \hspace{12mm} L(S) = a.S^n`
 
-:math:`\text{Dual_Power:} \hspace{92mm} L(S1,S2) = c.{S1}^m.{S2}^n`
+:math:`\text{Dual_Power:} \hspace{70mm} L(S_1,S_2) = c.{S_1}^m.{S_2}^n`
 
 I'm doing fault finding here
 
