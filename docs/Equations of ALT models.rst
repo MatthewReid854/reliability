@@ -64,16 +64,14 @@ Math
 
 This is a test. Here is an equation:
 
+MathJax.Hub.Config({
+    jax: ["input/TeX","output/HTML-CSS"],
+    displayAlign: "left"
+});
+
 .. math::
 
     L(S_1,S_2) = c.S_1^m.S_2^n
-
-.. math::
-
-    \begin{align*} 
-    2x - 5y &=  8 \\ 
-    3x + 9y &=  -12
-    \end{align*}
 
 .. math::
 
@@ -82,9 +80,35 @@ This is a test. Here is an equation:
     3x + 9y &=  -12
     \end{align}
 
+.. math::
 
+    \begin{align} 
+    2x - 5y &=  8 \\
+    \\
+    3x + 9y &=  -12
+    \end{align}
 
+.. math::
 
+    \begin{align}
+    x&=y           &  w &=z              &  a&=b+c\\
+    2x&=-y         &  3w&=\frac{1}{2}z   &  a&=b\\
+    -4 + 5x&=2+y   &  w+2&=-1+w          &  ab&=cb
+    \end{align}
+
+.. math::
+
+    \begin{equation} \label{eq1}
+    \begin{split}
+    A & = \frac{\pi r^2}{2} \\
+     & = \frac{1}{2} \pi r^2
+    \end{split}
+    \end{equation}
+
+:math:
+
+    `A=5x+2`
+    
 
 Lognormal ALT models
 """"""""""""""""""""
