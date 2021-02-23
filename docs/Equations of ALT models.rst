@@ -64,17 +64,21 @@ Math
 
 This is a test. Here is an equation:
 
-.. math::
-
-    \begin{align*}
-    L(S_1,S_2) = c.S_1^m.S_2^n
-    \end{align*}
+\begin{align}
 
 .. math::
 
-    \begin{align*}
-    L(S_1,S_2) = c.S_1^m.S_2^n
-    \end{align*}
+    &L(S_1,S_2) = c.S_1^m.S_2^n
+
+.. math::
+
+    &ABCL(S_1,S_2) = c.S_1^m.S_2^n
+    
+\end{align}
+
+
+
+
 
 Lognormal ALT models
 """"""""""""""""""""
