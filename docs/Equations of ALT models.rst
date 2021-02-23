@@ -64,14 +64,19 @@ Math
 
 This is a test. Here is an equation:
 
-MathJax.Hub.Config({
-    jax: ["input/TeX","output/HTML-CSS"],
-    displayAlign: "left"
-});
 
 .. math::
 
     L(S_1,S_2) = c.S_1^m.S_2^n
+
+.. math::
+
+    \shoveleft
+    L(S_1,S_2) = c.S_1^m.S_2^n
+
+.. math::
+
+    \shoveleft {L(S_1,S_2) = c.S_1^m.S_2^n}
 
 .. math::
 
@@ -83,9 +88,9 @@ MathJax.Hub.Config({
 .. math::
 
     \begin{align} 
-    2x - 5y &=  8 \\
+    \text{Dual_Power:} \hspace{20mm} 2x - 5y &=  8 \\
     \\
-    3x + 9y &=  -12
+    \text{Exponential_Power:} \hspace{20mm}3x + 9y &=  -12
     \end{align}
 
 .. math::
@@ -105,9 +110,7 @@ MathJax.Hub.Config({
     \end{split}
     \end{equation}
 
-:math:
 
-    `A=5x+2`
     
 
 Lognormal ALT models
