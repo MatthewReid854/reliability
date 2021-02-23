@@ -10,7 +10,7 @@ Constructing an ALT model
 
 ALT models are probability distributions with a stress dependent model replacing their scale (or rate) parameter. For example, the Weibull-Exponential model is obtained by replacing the :math:`\alpha` parameter with the equation for the exponential life-stress model as follows:
 
-:math:`\text{Weibull PDF:} \hspace{40mm} f(t) = \frac{\beta t^{ \beta - 1}}{ \alpha^ \beta} .exp \left( -(\frac{t}{\alpha })^ \beta \right)`
+:math:`\text{Weibull PDF:} \hspace{40mm} f(t) = \frac{\beta t^{ \beta - 1}}{ \alpha^ \beta} .{\rm exp} \left( -\left(\frac{t}{\alpha }\right)^ \beta \right)`
 
 :math:`\text{Exponential Life-Stress model:} \hspace{5mm} L(S) = b.{\rm exp} \left( \frac{a}{S} \right)`
 
@@ -72,15 +72,15 @@ These are placeholders to be written soon. Please do not trust this section yet.
 
 :math:`\text{Lognormal-Exponential:} \hspace{11mm} f(t) = \frac{1}{\sigma t \sqrt{2\pi}} . {\rm exp} \left(-\frac{1}{2} \left(\frac{{\rm ln}(t)-{\rm ln}\left(b.{\rm exp}\left(\frac{a}{S} \right) \right)}{\sigma}\right)^2\right)`
 
-:math:`\text{Lognormal-Eyring:} \hspace{11mm} f(t) = \frac{1}{\sigma t \sqrt{2\pi}} . {\rm exp} \left(-\frac{1}{2} \left(\frac{{\rm ln}(t)-\mu}{\sigma}\right)^2\right)`
+:math:`\text{Lognormal-Eyring:} \hspace{11mm} f(t) = \frac{1}{\sigma t \sqrt{2\pi}} . {\rm exp} \left(-\frac{1}{2} \left(\frac{{\rm ln}(t)-{\rm ln}\left( \frac{1}{S} .{\rm exp} \left( - \left( c - \frac{a}{S} \right) \right) \right)}{\sigma}\right)^2\right)`
 
-:math:`\text{Lognormal-Power:} \hspace{11mm} f(t) = \frac{1}{\sigma t \sqrt{2\pi}} . {\rm exp} \left(-\frac{1}{2} \left(\frac{{\rm ln}(t)-\mu}{\sigma}\right)^2\right)`
+:math:`\text{Lognormal-Power:} \hspace{11mm} f(t) = \frac{1}{\sigma t \sqrt{2\pi}} . {\rm exp} \left(-\frac{1}{2} \left(\frac{{\rm ln}(t)-{\rm ln}\left( a.S^n \right)}{\sigma}\right)^2\right)`
 
-:math:`\text{Lognormal-Dual-Exponential:} \hspace{11mm} f(t) = \frac{1}{\sigma t \sqrt{2\pi}} . {\rm exp} \left(-\frac{1}{2} \left(\frac{{\rm ln}(t)-\mu}{\sigma}\right)^2\right)`
+:math:`\text{Lognormal-Dual-Exponential:} \hspace{11mm} f(t) = \frac{1}{\sigma t \sqrt{2\pi}} . {\rm exp} \left(-\frac{1}{2} \left(\frac{{\rm ln}(t)-{\rm ln}\left( c.{\rm exp} \left(\frac{a}{S_1} + \frac{b}{S_2} \right) \right)}{\sigma}\right)^2\right)`
 
-:math:`\text{Lognormal-Dual-Power:} \hspace{11mm} f(t) = \frac{1}{\sigma t \sqrt{2\pi}} . {\rm exp} \left(-\frac{1}{2} \left(\frac{{\rm ln}(t)-\mu}{\sigma}\right)^2\right)`
+:math:`\text{Lognormal-Dual-Power:} \hspace{11mm} f(t) = \frac{1}{\sigma t \sqrt{2\pi}} . {\rm exp} \left(-\frac{1}{2} \left(\frac{{\rm ln}(t)-{\rm ln}\left( c.{S_1}^m.{S_2}^n \right)}{\sigma}\right)^2\right)`
 
-:math:`\text{Lognormal-Power-Exponential:} \hspace{11mm} f(t) = \frac{1}{\sigma t \sqrt{2\pi}} . {\rm exp} \left(-\frac{1}{2} \left(\frac{{\rm ln}(t)-\mu}{\sigma}\right)^2\right)`
+:math:`\text{Lognormal-Power-Exponential:} \hspace{11mm} f(t) = \frac{1}{\sigma t \sqrt{2\pi}} . {\rm exp} \left(-\frac{1}{2} \left(\frac{{\rm ln}(t)-{\rm ln}\left( c.{S_1}^n.{\rm exp} \left(\frac{a}{S_2} \right) \right)}{\sigma}\right)^2\right)`
 
 
 Normal ALT models
@@ -90,32 +90,32 @@ These are placeholders to be written soon. Please do not trust this section yet.
 
 :math:`\text{Normal-Exponential:} \hspace{11mm} f(t) = \frac{1}{\sigma \sqrt{2 \pi}}. {\rm exp}\left(-\frac{1}{2}\left(\frac{t - \left(b.{\rm exp}\left(\frac{a}{S} \right) \right)}{\sigma}\right)^2\right)`
 
-:math:`\text{Normal-Eyring:} \hspace{11mm} f(t) = \frac{1}{\sigma \sqrt{2 \pi}}. {\rm exp}\left(-\frac{1}{2}\left(\frac{t - \mu}{\sigma}\right)^2\right)`
+:math:`\text{Normal-Eyring:} \hspace{11mm} f(t) = \frac{1}{\sigma \sqrt{2 \pi}}. {\rm exp}\left(-\frac{1}{2}\left(\frac{t - \left( \frac{1}{S} .{\rm exp} \left( - \left( c - \frac{a}{S} \right) \right) \right)}{\sigma}\right)^2\right)`
 
-:math:`\text{Normal-Power:} \hspace{11mm} f(t) = \frac{1}{\sigma \sqrt{2 \pi}}. {\rm exp}\left(-\frac{1}{2}\left(\frac{t - \mu}{\sigma}\right)^2\right)`
+:math:`\text{Normal-Power:} \hspace{11mm} f(t) = \frac{1}{\sigma \sqrt{2 \pi}}. {\rm exp}\left(-\frac{1}{2}\left(\frac{t - \left( a.S^n \right)}{\sigma}\right)^2\right)`
 
-:math:`\text{Normal-Dual-Exponential:} \hspace{11mm} f(t) = \frac{1}{\sigma \sqrt{2 \pi}}. {\rm exp}\left(-\frac{1}{2}\left(\frac{t - \mu}{\sigma}\right)^2\right)`
+:math:`\text{Normal-Dual-Exponential:} \hspace{11mm} f(t) = \frac{1}{\sigma \sqrt{2 \pi}}. {\rm exp}\left(-\frac{1}{2}\left(\frac{t - \left( c.{\rm exp} \left(\frac{a}{S_1} + \frac{b}{S_2} \right) \right)}{\sigma}\right)^2\right)`
 
-:math:`\text{Normal-Dual-Power:} \hspace{11mm} f(t) = \frac{1}{\sigma \sqrt{2 \pi}}. {\rm exp}\left(-\frac{1}{2}\left(\frac{t - \mu}{\sigma}\right)^2\right)`
+:math:`\text{Normal-Dual-Power:} \hspace{11mm} f(t) = \frac{1}{\sigma \sqrt{2 \pi}}. {\rm exp}\left(-\frac{1}{2}\left(\frac{t - \left( c.{S_1}^m.{S_2}^n \right)}{\sigma}\right)^2\right)`
 
-:math:`\text{Normal-Power-Exponential:} \hspace{11mm} f(t) = \frac{1}{\sigma \sqrt{2 \pi}}. {\rm exp}\left(-\frac{1}{2}\left(\frac{t - \mu}{\sigma}\right)^2\right)`
+:math:`\text{Normal-Power-Exponential:} \hspace{11mm} f(t) = \frac{1}{\sigma \sqrt{2 \pi}}. {\rm exp}\left(-\frac{1}{2}\left(\frac{t - \left( c.{S_1}^n.{\rm exp} \left(\frac{a}{S_2} \right) \right)}{\sigma}\right)^2\right)`
 
 Exponential ALT models
 """"""""""""""""""""""
 
 These are placeholders to be written soon. Please do not trust this section yet.
 
-:math:`\text{Exponential-Exponential:} \hspace{11mm} f(t) = \lambda . {\rm exp}\left(-\frac{t}{b.{\rm exp}\left(\frac{a}{S} \right)} \right)`
+:math:`\text{Exponential-Exponential:} \hspace{11mm} f(t) = \left(b.{\rm exp}\left(\frac{a}{S} \right) \right) . {\rm exp}\left(\frac{-t}{b.{\rm exp}\left(\frac{a}{S} \right)} \right)`
 
-:math:`\text{Exponential-Eyring:} \hspace{11mm} f(t) = \lambda . {\rm exp}\left(-\lambda t \right)`
+:math:`\text{Exponential-Eyring:} \hspace{11mm} f(t) = \left( \frac{1}{S} .{\rm exp} \left( - \left( c - \frac{a}{S} \right) \right) \right) . {\rm exp}\left(\frac{-t}{\frac{1}{S} .{\rm exp} \left( - \left( c - \frac{a}{S} \right) \right)} \right)`
 
-:math:`\text{Exponential-Power:} \hspace{11mm} f(t) = \lambda . {\rm exp}\left(-\lambda t \right)`
+:math:`\text{Exponential-Power:} \hspace{11mm} f(t) = \left( a.S^n \right) . {\rm exp}\left(\frac{-t}{a.S^n} \right)`
 
-:math:`\text{Exponential-Dual-Exponential:} \hspace{11mm} f(t) = \lambda . {\rm exp}\left(-\lambda t \right)`
+:math:`\text{Exponential-Dual-Exponential:} \hspace{11mm} f(t) = \left( c.{\rm exp} \left(\frac{a}{S_1} + \frac{b}{S_2} \right) \right) . {\rm exp}\left(\frac{-t}{c.{\rm exp} \left(\frac{a}{S_1} + \frac{b}{S_2} \right)} \right)`
 
-:math:`\text{Exponential-Dual-Power:} \hspace{11mm} f(t) = \lambda . {\rm exp}\left(-\lambda t \right)`
+:math:`\text{Exponential-Dual-Power:} \hspace{11mm} f(t) = \left( c.{S_1}^m.{S_2}^n \right) . {\rm exp}\left(\frac{-t}{c.{S_1}^m.{S_2}^n} \right)`
 
-:math:`\text{Exponential-Power-Exponential:} \hspace{11mm} f(t) = \lambda . {\rm exp}\left(-\lambda t \right)`
+:math:`\text{Exponential-Power-Exponential:} \hspace{11mm} f(t) = \left( c.{S_1}^n.{\rm exp} \left(\frac{a}{S_2} \right) \right) . {\rm exp}\left(\frac{-t}{c.{S_1}^n.{\rm exp} \left(\frac{a}{S_2} \right)} \right)`
 
 Acceleration factor
 """""""""""""""""""
