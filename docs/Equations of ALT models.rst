@@ -16,7 +16,7 @@ ALT models are probability distributions with a stress dependent model replacing
 
 Replacing :math:`\alpha` with :math:`L(S)` gives the PDF of the Weibull-Exponential model:
 
-:math:`\text{Weibull_Exponential:} \hspace{25mm} f(t,S) = \frac{\beta t^{ \beta - 1}}{ \left(b.exp\left(\frac{a}{S} \right) \right)^ \beta} .exp \left(-\left(\frac{t}{b.exp\left(\frac{a}{S} \right)}\right)^ \beta \right)`
+:math:`\text{Weibull-Exponential:} \hspace{25mm} f(t,S) = \frac{\beta t^{ \beta - 1}}{ \left(b.exp\left(\frac{a}{S} \right) \right)^ \beta} .exp \left(-\left(\frac{t}{b.exp\left(\frac{a}{S} \right)}\right)^ \beta \right)`
 
 By replacing the scale parameter with a stress dependent model, the scale parameter of the distribution can be varied as the stress varies. The shape parameter (:math:`\beta` in the above example) is kept constant. On a probability plot (which is scaled appropriately such that the distribution appears as a straight line), the process of changing the scale parameter has the effect of moving the line to the left or right.
 
@@ -40,16 +40,16 @@ The life-stress models available within `reliability` are:
 
 :math:`\text{Power (also known as Inverse Power):} \hspace{6mm} L(S) = a.S^n`
 
-:math:`\text{Test1_power (also known as Inverse Power):} \hspace{6mm} L(S_1,S_2) = c.S_1^m.S_2^n`
+:math:`\text{Test1-power (also known as Inverse Power):} \hspace{6mm} L(S_1,S_2) = c.S_1^m.S_2^n`
 
-:math:`\text{Test2_power (also known as Inverse Power):} \hspace{6mm} L(S_1,S_2) = c.S_1^m.S_2^n`
+:math:`\text{Test2-power (also known as Inverse Power):} \hspace{6mm} L(S_1,S_2) = c.S_1^m.S_2^n`
 
 
 I'm doing fault finding here....
 
-Note that while this model is named "Power_Exponential" (keeping in line with academic literature), it would be more appropriate to call it the Exponential_Power model since the stresses are modelled in the "Thermal-Non-Thermal" stress order. This means that the first stress (S1) is modelled by the Exponential model (typically used for thermal stresses) and the second stress (S2) is modelled by the Power model (typically used for non-thermal stresses). The model may perform differently if given S1 and S2 in the opposite order.
+Note that while this model is named "Power-Exponential" (keeping in line with academic literature), it would be more appropriate to call it the Exponential-Power model since the stresses are modelled in the "Thermal-Nonthermal" stress order. This means that the first stress (S1) is modelled by the Exponential model (typically used for thermal stresses) and the second stress (S2) is modelled by the Power model (typically used for nonthermal stresses). The model may perform differently if given S1 and S2 in the opposite order.
 
-Since each ALT model is a combination of a life model (Weibull, Exponential, Lognormal, Normal) and a life-stress model (Exponential, Eyring, Power, Dual_Exponential, Dual_Power, Power_Exponential), there are 24 possible models, 12 for single stress and 12 for dual stress.
+Since each ALT model is a combination of a life model (Weibull, Exponential, Lognormal, Normal) and a life-stress model (Exponential, Eyring, Power, Dual-Exponential, Dual-Power, Power-Exponential), there are 24 possible models (12 for single stress and 12 for dual stress).
 
 Weibull ALT models
 """"""""""""""""""
