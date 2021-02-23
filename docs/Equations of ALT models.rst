@@ -36,29 +36,29 @@ The life-stress models available within `reliability` are:
 
 :math:`\text{Exponential (also known as Arrhenius):} \hspace{41mm} L(S) = b.{\rm exp} \left(\frac{a}{S} \right)`
 
-:math:`\hspace{120mm} (-\infty < a < \infty)\hspace{3mm} (b > 0)`
+:math:`\hspace{120mm} \text{limits:}(-\infty < a < \infty)\hspace{1mm},\hspace{1mm} (b > 0)`
 
 :math:`\text{Eyring:} \hspace{105mm} L(S) = \frac{1}{S} .{\rm exp} \left( - \left( c - \frac{a}{S} \right) \right)`
 
-Testing here
-
-:math:`\hspace{120mm} (-\infty < a < \infty)\hspace{3mm} (-\infty < c < \infty)`
-
-:math:`\hspace{120mm} (-\infty < a < \infty \hspace{2mm},\hspace{2mm} -\infty < c < \infty)`
-
-:math:`\hspace{120mm} -\infty < a < \infty \hspace{2mm},\hspace{2mm} -\infty < c < \infty`
-
-:math:`\hspace{120mm} -\infty < a < \infty , -\infty < c < \infty`
+:math:`\hspace{120mm} \text{limits:}(-\infty < a < \infty)\hspace{1mm},\hspace{1mm} (-\infty < c < \infty)`
 
 :math:`\text{Power (also known as Inverse Power):} \hspace{44mm} L(S) = a.S^n`
 
+:math:`\hspace{120mm} \text{limits:}(a > 0)\hspace{1mm},\hspace{1mm} (-\infty < n < \infty)`
+
 :math:`\text{Dual-Exponential (also known as Temperature-Humidity):} \hspace{4mm} L({S_1},{S_2}) = c.{\rm exp} \left(\frac{a}{S_1} + \frac{b}{S_2} \right)`
+
+:math:`\hspace{120mm} \text{limits:}(-\infty < a < \infty)\hspace{1mm},\hspace{1mm} (-\infty < b < \infty)\hspace{1mm},\hspace{1mm}(c > 0)`
 
 :math:`\text{Dual-Power:} \hspace{95mm} L(S_1,S_2) = c.S_1^m.S_2^n`
 
+:math:`\hspace{120mm} \text{limits:}(c > 0)\hspace{1mm},\hspace{1mm} (-\infty < m < \infty)\hspace{1mm},\hspace{1mm}(-\infty < n < \infty)`
+
 :math:`\text{Power-Exponential (also known as Thermal-Nonthermal):} \hspace{5mm} L(S_1,S_2) = c.{\rm exp} \left(\frac{a}{S_1} \right).S_2^n`
 
-Note that while this model is named "Power-Exponential" (keeping in line with academic literature), it would be more appropriate to call it the Exponential-Power model since the stresses are modelled in the "Thermal-Nonthermal" stress order. This means that the first stress (:math:`S_1`) is modelled by the Exponential model (typically used for thermal stresses) and the second stress (:math:`S_2`) is modelled by the Power model (typically used for nonthermal stresses). The model may perform differently if given :math:`S_1` and :math:`S_2` in the opposite order.
+:math:`\hspace{120mm} \text{limits:}(-\infty < a < \infty)\hspace{1mm},\hspace{1mm} (c>0)\hspace{1mm},\hspace{1mm}(-\infty < n < \infty)`
+
+Note that while this last model is named "Power-Exponential" (keeping in line with academic literature), it would be more appropriate to call it the Exponential-Power model since the stresses are modelled in the "Thermal-Nonthermal" stress order. This means that the first stress (:math:`S_1`) is modelled by the Exponential model (typically used for thermal stresses) and the second stress (:math:`S_2`) is modelled by the Power model (typically used for nonthermal stresses). The model may perform quite differently if given :math:`S_1` and :math:`S_2` in the opposite order.
 
 Since each ALT model is a combination of a life model (Weibull, Exponential, Lognormal, Normal) and a life-stress model (Exponential, Eyring, Power, Dual-Exponential, Dual-Power, Power-Exponential), there are 24 possible models (12 for single stress and 12 for dual stress).
 
