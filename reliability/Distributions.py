@@ -84,14 +84,14 @@ class Weibull_Distribution:
 
     Creates a Distribution object.
 
-    inputs:
+    Inputs:
     alpha - scale parameter
     beta - shape parameter
     gamma - threshold (offset) parameter. Default = 0
 
-    methods:
+    Methods:
     name - 'Weibull'
-    name2 = 'Weibull_2P' or 'Weibull_3P' depending on the value of the gamma parameter
+    name2 - 'Weibull_2P' or 'Weibull_3P' depending on the value of the gamma parameter
     param_title_long - Useful in plot titles, legends and in printing strings. eg. 'Weibull Distribution (α=5,β=2)'
     param_title - Useful in plot titles, legends and in printing strings. eg. 'α=5,β=2'
     parameters - [alpha,beta,gamma]
@@ -816,13 +816,13 @@ class Normal_Distribution:
 
     Creates a Distribution object.
 
-    inputs:
+    Inputs:
     mu - location parameter (mean)
     sigma - scale parameter (standard deviation)
 
-    methods:
+    Methods:
     name - 'Normal'
-    name2 = 'Normal_2P'
+    name2 - 'Normal_2P'
     param_title_long - Useful in plot titles, legends and in printing strings. eg. 'Normal Distribution (μ=5,σ=2)'
     param_title - Useful in plot titles, legends and in printing strings. eg. 'μ=5,σ=2'
     parameters - [mu,sigma]
@@ -1489,14 +1489,14 @@ class Lognormal_Distribution:
 
     Creates a Distribution object.
 
-    inputs:
+    Inputs:
     mu - location parameter
     sigma - scale parameter
     gamma - threshold (offset) parameter. Default = 0
 
-    methods:
+    Methods:
     name - 'Lognormal'
-    name2 = 'Lognormal_2P' or 'Lognormal_3P' depending on the value of the gamma parameter
+    name2 - 'Lognormal_2P' or 'Lognormal_3P' depending on the value of the gamma parameter
     param_title_long - Useful in plot titles, legends and in printing strings. eg. 'Lognormal Distribution (μ=5,σ=2)'
     param_title - Useful in plot titles, legends and in printing strings. eg. 'μ=5,σ=2'
     parameters - [mu,sigma,gamma]
@@ -2215,9 +2215,9 @@ class Exponential_Distribution:
     Lambda - scale (rate) parameter
     gamma - threshold (offset) parameter. Default = 0
 
-    methods:
+    Methods:
     name - 'Exponential'
-    name2 = 'Exponential_1P' or 'Exponential_2P' depending on the value of the gamma parameter
+    name2 - 'Exponential_1P' or 'Exponential_2P' depending on the value of the gamma parameter
     param_title_long - Useful in plot titles, legends and in printing strings. eg. 'Exponential Distribution (λ=5)'
     param_title - Useful in plot titles, legends and in printing strings. eg. 'λ=5'
     parameters - [Lambda,gamma]
@@ -2896,14 +2896,14 @@ class Gamma_Distribution:
 
     Creates a Distribution object.
 
-    inputs:
+    Inputs:
     alpha - scale parameter
     beta - shape parameter
     gamma - threshold (offset) parameter. Default = 0
 
-    methods:
+    Methods:
     name - 'Gamma'
-    name2 = 'Gamma_2P' or 'Gamma_3P' depending on the value of the gamma parameter
+    name2 - 'Gamma_2P' or 'Gamma_3P' depending on the value of the gamma parameter
     param_title_long - Useful in plot titles, legends and in printing strings. eg. 'Gamma Distribution (α=5,β=2)'
     param_title - Useful in plot titles, legends and in printing strings. eg. 'α=5,β=2'
     parameters - [alpha,beta,gamma]
@@ -3569,13 +3569,13 @@ class Beta_Distribution:
 
     Creates a Distribution object in the range 0-1.
 
-    inputs:
+    Inputs:
     alpha - shape parameter 1
     beta - shape parameter 2
 
-    methods:
+    Methods:
     name - 'Beta'
-    name2 = 'Beta_2P'
+    name2 - 'Beta_2P'
     param_title_long - Useful in plot titles, legends and in printing strings. eg. 'Beta Distribution (α=5,β=2)'
     param_title - Useful in plot titles, legends and in printing strings. eg. 'α=5,β=2'
     parameters - [alpha,beta]
@@ -4177,14 +4177,14 @@ class Loglogistic_Distribution:
 
     Creates a Distribution object.
 
-    inputs:
+    Inputs:
     alpha - scale parameter
     beta - shape parameter
     gamma - threshold (offset) parameter. Default = 0
 
-    methods:
+    Methods:
     name - 'Loglogistic'
-    name2 = 'Loglogistic_2P' or 'Loglogistic_3P' depending on the value of the gamma parameter
+    name2 - 'Loglogistic_2P' or 'Loglogistic_3P' depending on the value of the gamma parameter
     param_title_long - Useful in plot titles, legends and in printing strings. eg. 'Loglogistic Distribution (α=5,β=2)'
     param_title - Useful in plot titles, legends and in printing strings. eg. 'α=5,β=2'
     parameters - [alpha,beta,gamma]
@@ -4966,7 +4966,7 @@ class Gumbel_Distribution:
 
     Methods:
     name - 'Gumbel'
-    name2 = 'Gumbel_2P'
+    name2 - 'Gumbel_2P'
     param_title_long - Useful in plot titles, legends and in printing strings. eg. 'Gumbel Distribution (μ=5,σ=2)'
     param_title - Useful in plot titles, legends and in printing strings. eg. 'μ=5,σ=2'
     parameters - [mu,sigma]
@@ -5648,7 +5648,7 @@ class Competing_Risks_Model:
     the variable xvals is only accepted for PDF, CDF, SF, HF, CHF. The other methods (like random samples) use the default xvals for maximum accuracy.
     The default number of values generated when xvals is not given is 1000. Consider this carefully when specifying xvals in order to avoid inaccuracies in the results.
 
-    The API is similar to the other probability distributions (Weibull, Normal, etc.) and has the following inputs and methods:
+    The API is similar to the other probability distributions (Weibull, Normal, etc.) and has the following Inputs and Methods:
 
     Inputs:
     distributions - a list or array of probability distributions used to construct the model
@@ -6424,7 +6424,7 @@ class Mixture_Model:
     the variable xvals is only accepted for PDF, CDF, SF, HF, CHF. The other methods (like random samples) use the default xvals for maximum accuracy.
     The default number of values generated when xvals is not given is 1000. Consider this carefully when specifying xvals in order to avoid inaccuracies in the results.
 
-    The API is similar to the other probability distributions (Weibull, Normal, etc.) and has the following inputs and methods:
+    The API is similar to the other probability distributions (Weibull, Normal, etc.) and has the following Inputs and Methods:
 
     Inputs:
     distributions - a list or array of probability distributions used to construct the model

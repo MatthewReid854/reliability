@@ -3236,7 +3236,7 @@ def least_squares(dist, failures, right_censored, method="RRX", force_shape=None
             "force_shape can only be applied to Weibull_2P, Normal_2P, and Lognormal_2P"
         )
     if method not in ["RRX", "RRY"]:
-        raise ValueError('method muct be either "RRX" or "RRY". Default is RRX.')
+        raise ValueError('method must be either "RRX" or "RRY". Default is RRX.')
 
     from reliability.Probability_plotting import (
         plotting_positions,
