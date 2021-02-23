@@ -42,9 +42,7 @@ The life-stress models available within `reliability` are:
 
 .. math:: \text{Dual_Exponential (also known as Temperature-Humidity):} \hspace{7mm} L(S_1,S_2) = c.exp \left(\frac{a}{S_1} + \frac{b}{S_2} \right)
 
-.. math:: \text{Power_Exponential (also known as Thermal-Nonthermal):} \hspace{4mm} L(S_1,S_2) = 5
-
-fault finding here
+I'm doing fault finding here
 
 Note that while this model is named "Power_Exponential" (keeping in line with academic literature), it would be more appropriate to call it the Exponential_Power model since the stresses are modelled in the "Thermal-Non-Thermal" stress order. This means that the first stress (S1) is modelled by the Exponential model (typically used for thermal stresses) and the second stress (S2) is modelled by the Power model (typically used for non-thermal stresses). The model may perform differently if given S1 and S2 in the opposite order.
 
