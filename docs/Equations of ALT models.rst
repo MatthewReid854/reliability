@@ -40,7 +40,9 @@ The life-stress models available within `reliability` are:
 
 :math:`\text{Power (also known as Inverse Power):} \hspace{6mm} L(S) = a.S^n`
 
-:math:`\text{Dual_Power:} \hspace{20mm} L(S_1,S_2) = c.S_1^m.S_2^n`
+:math:`\text{Dual_Power:} \hspace{20mm} L(S1,S2) = c.S1^m.S2^n`
+
+:math:`\text{Dual_Power:} \hspace{20mm} L(S1,S2) = c.S1^m.S2^n`
 
 I'm doing fault finding here....
 
@@ -52,15 +54,11 @@ Weibull ALT models
 """"""""""""""""""
 
 to be written
-
-:math:`\text{Dual_Power:} \hspace{20mm} L(S_1,S_2) = c.S_1^m.S_2^n`
-  
+ 
 Lognormal ALT models
 """"""""""""""""""""
 
 To be written
-
-:math:`\text{Dual_Power:} \hspace{20mm} L(S1,S2) = c.S1^m.S2^n`
 
 Normal ALT models
 """""""""""""""""
