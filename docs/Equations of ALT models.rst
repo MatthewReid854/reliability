@@ -34,27 +34,27 @@ In the above example we saw that :math:`\alpha` was replaced with the life model
 
 The life-stress models available within `reliability` are:
 
-:math:`\text{Exponential:} \hspace{55mm} L(S) = b.{\rm exp} \left(\frac{a}{S} \right)`
+:math:`\text{Exponential:} \hspace{56mm} L(S) = b.{\rm exp} \left(\frac{a}{S} \right)`
 
 :math:`\text{(also known as Arrhenius)}\hspace{30mm} \text{limits:}\hspace{2mm}(-\infty < a < \infty)\hspace{1mm},\hspace{1mm} (b > 0)`
 
-:math:`\text{Eyring:} \hspace{64mm} L(S) = \frac{1}{S} .{\rm exp} \left( - \left( c - \frac{a}{S} \right) \right)`
+:math:`\text{Eyring:} \hspace{67mm} L(S) = \frac{1}{S} .{\rm exp} \left( - \left( c - \frac{a}{S} \right) \right)`
 
-:math:`\hspace{80mm} \text{limits:}\hspace{2mm}(-\infty < a < \infty)\hspace{1mm},\hspace{1mm} (-\infty < c < \infty)`
+:math:`\hspace{83mm} \text{limits:}\hspace{2mm}(-\infty < a < \infty)\hspace{1mm},\hspace{1mm} (-\infty < c < \infty)`
 
-:math:`\text{Power:} \hspace{65mm} L(S) = a.S^n`
+:math:`\text{Power:} \hspace{68mm} L(S) = a.S^n`
 
-:math:`\text{(also known as Inverse Power Law)}\hspace{10mm} \text{limits:}\hspace{2mm}(a > 0)\hspace{1mm},\hspace{1mm} (-\infty < n < \infty)`
+:math:`\text{(also known as Inverse Power Law)}\hspace{12mm} \text{limits:}\hspace{2mm}(a > 0)\hspace{1mm},\hspace{1mm} (-\infty < n < \infty)`
 
-:math:`\text{Dual-Exponential:} \hspace{44mm} L({S_1},{S_2}) = c.{\rm exp} \left(\frac{a}{S_1} + \frac{b}{S_2} \right)`
+:math:`\text{Dual-Exponential:} \hspace{45mm} L({S_1},{S_2}) = c.{\rm exp} \left(\frac{a}{S_1} + \frac{b}{S_2} \right)`
 
 :math:`\text{(also known as Temperature-Humidity)}\hspace{4mm} \text{limits:}\hspace{2mm}(-\infty < a < \infty)\hspace{1mm},\hspace{1mm} (-\infty < b < \infty)\hspace{1mm},\hspace{1mm}(c > 0)`
 
-:math:`\text{Dual-Power:} \hspace{55mm} L(S_1,S_2) = c.S_1^m.S_2^n`
+:math:`\text{Dual-Power:} \hspace{57mm} L(S_1,S_2) = c.S_1^m.S_2^n`
 
-:math:`\hspace{80mm} \text{limits:}\hspace{2mm}(c > 0)\hspace{1mm},\hspace{1mm} (-\infty < m < \infty)\hspace{1mm},\hspace{1mm}(-\infty < n < \infty)`
+:math:`\hspace{83mm} \text{limits:}\hspace{2mm}(c > 0)\hspace{1mm},\hspace{1mm} (-\infty < m < \infty)\hspace{1mm},\hspace{1mm}(-\infty < n < \infty)`
 
-:math:`\text{Power-Exponential:} \hspace{45mm} L(S_1,S_2) = c.{\rm exp} \left(\frac{a}{S_1} \right).S_2^n`
+:math:`\text{Power-Exponential:} \hspace{42mm} L(S_1,S_2) = c.{\rm exp} \left(\frac{a}{S_1} \right).S_2^n`
 
 :math:`\text{(also known as Thermal-Nonthermal)}\hspace{7mm} \text{limits:}\hspace{2mm}(-\infty < a < \infty)\hspace{1mm},\hspace{1mm} (c>0)\hspace{1mm},\hspace{1mm}(-\infty < n < \infty)`
 
