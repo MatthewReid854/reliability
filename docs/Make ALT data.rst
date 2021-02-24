@@ -121,3 +121,14 @@ In this second example we will create ALT data from a Lognormal_Dual_Power model
 
     The mean life from the true model is 5920.122530308318
     '''
+
+*Recommended values*
+
+Some parameters are more suitable than others for these models. The following parameters are recommended for use as a starting point if you are having difficulty in determining the rough order of magnitude of the values you should use:
+
+- Exponential: a=2000, b=10
+- Eyring: a=1500, c=-10
+- Power: a=5e15, n=-4
+- Dual_Exponential: a=50, b=0.1, c=500
+- Dual_Power: c=1e15, m=-4, n=-2
+- Power_Exponential: a=200, c=400, n=-0.5
