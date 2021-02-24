@@ -9,6 +9,21 @@ Before reading this section it is recommended that readers are familiar with the
 
 The module `reliability.ALT_fitters` contains 24 `ALT models <https://reliability.readthedocs.io/en/latest/Equations%20of%20ALT%20models.html>`_; 12 of these models are for single stress and 12 are for dual stress. This section details the single stress models, though the process for `fitting dual-stress models <https://reliability.readthedocs.io/en/latest/Fitting%20a%20dual%20stress%20model%20to%20ALT%20data.html>`_ is similar. The decision to use a single stress or dual stress model depends entirely on your data. If your data only has one stress that is being changed then you will use a single stress model.
 
+The following single stress models are available within ALT_fitters:
+
+-    Fit_Weibull_Exponential
+-    Fit_Weibull_Eyring
+-    Fit_Weibull_Power
+-    Fit_Lognormal_Exponential
+-    Fit_Lognormal_Eyring
+-    Fit_Lognormal_Power
+-    Fit_Normal_Exponential
+-    Fit_Normal_Eyring
+-    Fit_Normal_Power
+-    Fit_Exponential_Exponential
+-    Fit_Exponential_Eyring
+-    Fit_Exponential_Power
+
 Each of the ALT models works in a very similar way so the documentation below can be applied to all of the single stress models with minor modifications to the parameter names of the outputs. The following documentation is for the Weibull-Power model.
 
 Inputs:
