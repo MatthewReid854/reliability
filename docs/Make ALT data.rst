@@ -122,7 +122,7 @@ In this second example we will create ALT data from a Lognormal_Dual_Power model
     The mean life from the true model is 5920.122530308318
     '''
 
-*Recommended values*
+**Recommended values**
 
 Some parameters are more suitable than others for these models. The following parameters are recommended for use as a starting point if you are having difficulty in determining the rough order of magnitude of the values you should use:
 
