@@ -110,6 +110,7 @@ Contents:
   Stress-Strength interference
   Similar Distributions
   Make right censored data
+  Make ALT data
   Crosshairs
   Distribution explorer
   Histogram

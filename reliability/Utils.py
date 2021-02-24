@@ -4883,9 +4883,11 @@ def life_stress_plot(
                 label=str("Use stress of " + str(round_to_decimals(use_level_stress))),
                 color=color_cycle[i + 1],
             )
+        #this is a list comprehension to flatten the list of lists. np.ravel won't work here
+        flattened_failure_groups = [item for sublist in failure_groups for item in sublist]
         plt.ylim(
             0,
-            1.2 * max(life_func(S1=stress_array_lower), max(np.ravel(failure_groups))),
+            1.2 * max(life_func(S1=stress_array_lower), max(flattened_failure_groups)),
         )
         plt.xlim(stress_array_lower, stress_array_upper)
         plt.legend(loc="upper right")
