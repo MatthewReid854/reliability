@@ -137,6 +137,6 @@ The results show that the fitted parameters agree well with the parameters we us
     The mean life at use stress of the true model is: 10896.724574907037
     '''
 
-.. image:: images/Exponential_Eyring_probability_plot
+.. image:: images/Exponential_Eyring_probability_plot.png
 
-.. image:: images/Exponential_Eyring_lifestress
+.. image:: images/Exponential_Eyring_lifestress.png
