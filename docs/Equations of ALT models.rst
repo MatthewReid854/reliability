@@ -40,7 +40,7 @@ The life-stress models available within `reliability` are:
 
 :math:`\text{Eyring:} \hspace{67mm} L(S) = \frac{1}{S} .{\rm exp} \left( - \left( c - \frac{a}{S} \right) \right)`
 
-:math:`\hspace{83mm} \text{limits:}\hspace{2mm}(-\infty < a < \infty)\hspace{1mm},\hspace{1mm} (-\infty < c < \infty)`
+:math:`\hspace{82mm} \text{limits:}\hspace{2mm}(-\infty < a < \infty)\hspace{1mm},\hspace{1mm} (-\infty < c < \infty)`
 
 :math:`\text{Power:} \hspace{68mm} L(S) = a.S^n`
 
@@ -52,7 +52,7 @@ The life-stress models available within `reliability` are:
 
 :math:`\text{Dual-Power:} \hspace{57mm} L(S_1,S_2) = c.S_1^m.S_2^n`
 
-:math:`\hspace{83mm} \text{limits:}\hspace{2mm}(c > 0)\hspace{1mm},\hspace{1mm} (-\infty < m < \infty)\hspace{1mm},\hspace{1mm}(-\infty < n < \infty)`
+:math:`\hspace{82mm} \text{limits:}\hspace{2mm}(c > 0)\hspace{1mm},\hspace{1mm} (-\infty < m < \infty)\hspace{1mm},\hspace{1mm}(-\infty < n < \infty)`
 
 :math:`\text{Power-Exponential:} \hspace{42mm} L(S_1,S_2) = c.{\rm exp} \left(\frac{a}{S_1} \right).S_2^n`
 
