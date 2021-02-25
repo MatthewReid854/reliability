@@ -72,7 +72,6 @@ Outputs:
 -    probability_plot - the figure object from the probability plot (only provided if show_probability_plot is True)
 -    life_stress_plot - the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
     
-
 Example 1
 ---------
 
@@ -122,6 +121,8 @@ Example 2
 
 In this second example we will fit the Lognormal_Power_Exponential model. Instead of using an existing dataset we will create our own data using the function make_ALT_data. The results show that the fitted parameters agree well with the parameters we used to generate the data, as does the mean life at the use stress. This accuracy improves with more data.
 
+Two of the outputs returned are the figure handles for the probability plot and the life-stress plot. These handles can be used to set certain values. In the example below we see the axes labels being set to custom values after the plots have been generated but before the plots have been displayed.
+
 .. code:: python
 
     from reliability.Other_functions import make_ALT_data
@@ -129,7 +130,14 @@ In this second example we will fit the Lognormal_Power_Exponential model. Instea
     import matplotlib.pyplot as plt
     use_level_stress = [150,3]
     ALT_data = make_ALT_data(distribution='Lognormal',life_stress_model='Power_Exponential',a=200,c=400,n=-0.5,sigma=0.5,stress_1=[500,400,350,420,245],stress_2=[12,8,6,9,10],number_of_samples=100,fraction_censored=0.5,seed=1,use_level_stress=use_level_stress)
-    Fit_Lognormal_Power_Exponential(failures=ALT_data.failures, failure_stress_1=ALT_data.failure_stresses_1, failure_stress_2=ALT_data.failure_stresses_2, right_censored=ALT_data.right_censored, right_censored_stress_1=ALT_data.right_censored_stresses_1,right_censored_stress_2=ALT_data.right_censored_stresses_2, use_level_stress=use_level_stress)
+    model = Fit_Lognormal_Power_Exponential(failures=ALT_data.failures, failure_stress_1=ALT_data.failure_stresses_1, failure_stress_2=ALT_data.failure_stresses_2, right_censored=ALT_data.right_censored, right_censored_stress_1=ALT_data.right_censored_stresses_1,right_censored_stress_2=ALT_data.right_censored_stresses_2, use_level_stress=use_level_stress)
+    # this will change the xlabel on the probability plot
+    model.probability_plot.axes[0].set_xlabel('Time (hours)')
+    # this will change the axes labels on the life-stress plot
+    model.life_stress_plot.axes[0].set_xlabel('Temperature $(^oK)$')
+    model.life_stress_plot.axes[0].set_ylabel('Voltage (kV)')
+    model.life_stress_plot.axes[0].set_zlabel('Life (hours)')
+
     print('The mean life at use stress of the true model is:',ALT_data.mean_life_at_use_stress)
     plt.show()
     
