@@ -37,7 +37,7 @@ Inputs:
 -    show_probability_plot - True/False. Default is True
 -    show_life_stress_plot - True/False. Default is True
 -    CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
--    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the inital guess (using least squares) will be returned with a warning.
+-    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
 
 Outputs:
 
@@ -71,13 +71,18 @@ Example 1
 
 In the following example, we will fit the Weibull-Power model to an ALT dataset obtained from a fatigue test. This dataset can be found in `reliability.Datasets`. We want to know the mean life at the use level stress of 60 so the parameter use_level_stress is specified. All other values are left as defaults and the results and plot are shown.
 
+Two of the outputs returned are the figure handles for the probability plot and the life-stress plot. These handles can be used to set certain values. In the example below we see the axes labels being set to custom values after the plots have been generated but before the plots have been displayed.
+
 .. code:: python
 
     from reliability.ALT_fitters import Fit_Weibull_Power
     from reliability.Datasets import ALT_load2
     import matplotlib.pyplot as plt
 
-    Fit_Weibull_Power(failures=ALT_load2().failures, failure_stress=ALT_load2().failure_stresses, right_censored=ALT_load2().right_censored, right_censored_stress=ALT_load2().right_censored_stresses, use_level_stress=60)
+    model = Fit_Weibull_Power(failures=ALT_load2().failures, failure_stress=ALT_load2().failure_stresses, right_censored=ALT_load2().right_censored, right_censored_stress=ALT_load2().right_censored_stresses, use_level_stress=60)
+    model.probability_plot.axes[0].set_xlabel("Cycles ('000)")
+    model.life_stress_plot.axes[0].set_xlabel('Load (kg)')
+    model.life_stress_plot.axes[0].set_ylabel("Life ('000 cycles)")
     plt.show()
     
     '''
