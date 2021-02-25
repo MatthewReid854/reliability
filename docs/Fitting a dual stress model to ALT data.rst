@@ -76,11 +76,93 @@ Outputs:
 Example 1
 ---------
 
-This will be written soon
+In the following example, we will fit the Normal-Dual-Exponential model to an ALT dataset obtained from a temperature-voltage dual stress test. This dataset can be found in `reliability.Datasets`. We want to know the mean life at the use level stress of 330 Kelvin, 2.5 Volts so the parameter use_level_stress is specified. All other values are left as defaults and the results and plot are shown.
+
+.. code:: python
+
+    from reliability.Datasets import ALT_temperature_voltage
+    from reliability.ALT_fitters import Fit_Normal_Dual_Exponential
+    import matplotlib.pyplot as plt
+    data = ALT_temperature_voltage()
+    Fit_Normal_Dual_Exponential(failures=data.failures, failure_stress_1=data.failure_stress_temp, failure_stress_2=data.failure_stress_voltage,use_level_stress=[330,2.5])
+    plt.show()
+
+    '''
+    Results from Fit_Normal_Dual_Exponential (95% CI):
+    Analysis method: Maximum Likelihood Estimation (MLE)
+    Failures / Right censored: 12/0 (0% right censored) 
+
+    Parameter  Point Estimate  Standard Error    Lower CI  Upper CI
+            a         4056.06         752.956     2580.29   5531.83
+            b         2.98952        0.851787     1.32005   4.65899
+            c      0.00220833      0.00488708 2.88625e-05  0.168963
+        sigma         87.3192          17.824     58.5274   130.275 
+
+     stress  original mu  original sigma  new mu  common sigma sigma change  acceleration factor
+     378, 3        273.5         98.7258   273.5       87.3192      -11.55%              5.81287
+     348, 5          463         81.8475     463       87.3192       +6.69%              3.43374
+     348, 3       689.75         80.1759  689.75       87.3192       +8.91%              2.30492
+
+     Goodness of fit    Value
+     Log-likelihood -70.6621
+               AICc  155.039
+                BIC  151.264 
+
+    At the use level stress of 330, 2.5, the mean life is 1589.82043
+    '''
+
+.. image:: images/Normal_dual_exponential_probplot.png
+
+.. image:: images/Normal_dual_exponential_lifestress.png
+
+In the results above we see 3 tables of results; the fitted parameters (along with their confidence bounds) dataframe, the change of parameters dataframe, and the goodness of fit dataframe. For the change of parameters dataframe the "original mu" and "original sigma" are the fitted values for the Normal_2P distribution that is fitted to the data at each stress (shown on the probability plot by the dashed lines). The "new mu" and "new sigma" are from the Normal_Dual_Exponential model. The sigma change is extremely important as it allows us to identify whether the fitted ALT model is appropriate at each stress level. A sigma change of over 50% will trigger a warning to be printed informing the user that the failure mode may be changing across different stresses, or that the model is inappropriate for the data. The acceleration factor column will only be returned if the use level stress is provided since acceleration factor is a comparison of the life at the higher stress vs the use stress.
 
 Example 2
 ---------
 
-This will be written soon
+In this second example we will fit the Lognormal_Power_Exponential model. Instead of using an existing dataset we will create our own data using the function make_ALT_data. The results show that the fitted parameters agree well with the parameters we used to generate the data, as does the mean life at the use stress. This accuracy improves with more data.
 
+.. code:: python
 
+    from reliability.Other_functions import make_ALT_data
+    from reliability.ALT_fitters import Fit_Lognormal_Power_Exponential
+    import matplotlib.pyplot as plt
+    use_level_stress = [150,3]
+    ALT_data = make_ALT_data(distribution='Lognormal',life_stress_model='Power_Exponential',a=200,c=400,n=-0.5,sigma=0.5,stress_1=[500,400,350,420,245],stress_2=[12,8,6,9,10],number_of_samples=100,fraction_censored=0.5,seed=1,use_level_stress=use_level_stress)
+    Fit_Lognormal_Power_Exponential(failures=ALT_data.failures, failure_stress_1=ALT_data.failure_stresses_1, failure_stress_2=ALT_data.failure_stresses_2, right_censored=ALT_data.right_censored, right_censored_stress_1=ALT_data.right_censored_stresses_1,right_censored_stress_2=ALT_data.right_censored_stresses_2, use_level_stress=use_level_stress)
+    print('The mean life at use stress of the true model is:',ALT_data.mean_life_at_use_stress)
+    plt.show()
+    
+    '''
+    Results from Fit_Lognormal_Power_Exponential (95% CI):
+    Analysis method: Maximum Likelihood Estimation (MLE)
+    Failures / Right censored: 250/250 (50% right censored) 
+
+    Parameter  Point Estimate  Standard Error  Lower CI  Upper CI
+            a          192.66         36.7262   120.678   264.642
+            c         369.526         100.472   216.875   629.624
+            n       -0.463811        0.110597 -0.680578 -0.247044
+        sigma        0.466844        0.020649  0.428078  0.509122 
+
+      stress  original mu  original sigma  new mu  common sigma sigma change  acceleration factor
+     500, 12      5.11464        0.480696 5.14501      0.466844       -2.88%               4.6742
+      420, 9      5.46727        0.491475 5.35184      0.466844       -5.01%              3.80088
+      400, 8      5.34327        0.431199  5.4294      0.466844       +8.27%              3.51721
+      350, 6      5.64245        0.504774 5.63164      0.466844       -7.51%              2.87321
+     245, 10      5.61146        0.413335 5.63062      0.466844      +12.95%              2.87614
+
+     Goodness of fit    Value
+     Log-likelihood -1562.46
+               AICc  3133.01
+                BIC  3149.79 
+
+    At the use level stress of 150, 3, the mean life is 894.30098
+
+    The mean life at use stress of the true model is: 992.7627728988726
+    '''
+
+.. image:: images/Lognormal_power_exponential_probplot.png
+
+.. image:: images/Lognormal_power_exponential_lifestress.png
+
+.. note:: The 3D surface plot with scatter plot has a known visibility issue where the 3D surface will appear to be in front of the scatter plot even when it should be shown behind it. This `issue is internal to matplotlib <https://matplotlib.org/mpl_toolkits/mplot3d/faq.html#my-3d-plot-doesn-t-look-right-at-certain-viewing-angles>`_ and the only current fix is to change the plotting library to MayaVi.
