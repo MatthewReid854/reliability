@@ -881,17 +881,17 @@ class make_ALT_data:
 
     Inputs:
     distribution - "Weibull", "Exponential", "Lognormal", or "Normal"
-    life_stress_model - "Exponential", "Eyring", "Power", "Dual-Exponential", "Power-Exponential", "Dual-Power"
+    life_stress_model - "Exponential", "Eyring", "Power", "Dual_Exponential", "Power_Exponential", "Dual_Power"
     stress_1 - array or list of the stresses. eg. [100,50,10].
     stress_2 - array or list of the stresses. eg. [0.8,0.6,0.4]. Required only if using a dual stress model. Must match the length of stress_1.
     a - parameter from all models
-    b - parameter from Exponential and Dual-Exponential models
-    c - parameter from Eyring, Dual-Exponential, Power-Exponential, and Dual-Power models
-    n - parameter from Power, Power-Exponential, and Dual-Power models
-    m - parameter from Dual-Power model
+    b - parameter from Exponential and Dual_Exponential models
+    c - parameter from Eyring, Dual_Exponential, Power_Exponential, and Dual_Power models
+    n - parameter from Power, Power_Exponential, and Dual_Power models
+    m - parameter from Dual_Power model
     beta - shape parameter for Weibull distributon
     sigma - shape parameter for Normal or Lognormal distributions
-    use_level_stress - a number (if single stress) or list or array (if dual stress)
+    use_level_stress - Optional input. A number (if single stress) or list or array (if dual stress)
     number_of_samples - the number of samples to generate for each stress. Default is 100. The total data points will be equal to the number of samples x number of stress levels
     fraction_censored - 0 for no censoring or between 0 and 1 for right censoring. Censoring is "multiply censored" meaning that there is no threshold above which all the right censored values will occur.
     seed - random seed for repeatability
@@ -937,14 +937,14 @@ class make_ALT_data:
         if life_stress_model in ["Exponential", "Eyring", "Power"]:
             dual_stress = False
         elif life_stress_model in [
-            "Dual-Exponential",
-            "Power-Exponential",
-            "Dual-Power",
+            "Dual_Exponential",
+            "Power_Exponential",
+            "Dual_Power",
         ]:
             dual_stress = True
         else:
             raise ValueError(
-                "life_stress_model must be one of Exponential, Eyring, Power, Dual-Exponential, Power-Exponential, Dual-Power"
+                "life_stress_model must be one of Exponential, Eyring, Power, Dual_Exponential, Power_Exponential, Dual_Power"
             )
 
         if type(stress_1) not in [list, np.ndarray]:
@@ -1002,26 +1002,26 @@ class make_ALT_data:
             if a <= 0:
                 raise ValueError("a must be positive")
             life_model = a * stress_1 ** float(n)
-        elif life_stress_model == "Dual-Exponential":
+        elif life_stress_model == "Dual_Exponential":
             if a is None or b is None or c is None:
                 raise ValueError(
-                    "a, b, and c must be specified for the Dual-Exponential life-stress model"
+                    "a, b, and c must be specified for the Dual_Exponential life-stress model"
                 )
             if c <= 0:
                 raise ValueError("c must be positive")
             life_model = c * np.exp(a / stress_1 + b / stress_2)
-        elif life_stress_model == "Power-Exponential":
+        elif life_stress_model == "Power_Exponential":
             if a is None or c is None or n is None:
                 raise ValueError(
-                    "a, c, and n must be specified for the Power-Exponential life-stress model"
+                    "a, c, and n must be specified for the Power_Exponential life-stress model"
                 )
             if c <= 0:
                 raise ValueError("c must be positive")
             life_model = c * (stress_2 ** float(n)) * np.exp(a / stress_1)
-        elif life_stress_model == "Dual-Power":
+        elif life_stress_model == "Dual_Power":
             if c is None or n is None or m is None:
                 raise ValueError(
-                    "c, n, and m must be specified for the Dual-Power life-stress model"
+                    "c, n, and m must be specified for the Dual_Power life-stress model"
                 )
             if c <= 0:
                 raise ValueError("c must be positive")

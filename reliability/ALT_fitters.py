@@ -1517,6 +1517,7 @@ class Fit_Everything_ALT:
                 ) * 100
             else:
                 frac_cens = 0
+                right_censored = []
             if frac_cens % 1 < 1e-10:
                 frac_cens = int(frac_cens)
             colorprint("Results from Fit_Everything_ALT:", bold=True, underline=True)
@@ -2745,10 +2746,7 @@ class Fit_Weibull_Exponential:
         )
 
         if print_results is True:
-            if right_censored is None:
-                n = len(failures)
-            else:
-                n = len(failures) + len(right_censored)
+            n = len(failures) + len(right_censored)
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
@@ -3120,10 +3118,7 @@ class Fit_Weibull_Eyring:
         )
 
         if print_results is True:
-            if right_censored is None:
-                n = len(failures)
-            else:
-                n = len(failures) + len(right_censored)
+            n = len(failures) + len(right_censored)
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
@@ -3484,10 +3479,7 @@ class Fit_Weibull_Power:
         )
 
         if print_results is True:
-            if right_censored is None:
-                n = len(failures)
-            else:
-                n = len(failures) + len(right_censored)
+            n = len(failures) + len(right_censored)
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
@@ -3896,10 +3888,7 @@ class Fit_Weibull_Dual_Exponential:
         )
 
         if print_results is True:
-            if right_censored is None:
-                n = len(failures)
-            else:
-                n = len(failures) + len(right_censored)
+            n = len(failures) + len(right_censored)
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
@@ -4317,10 +4306,7 @@ class Fit_Weibull_Power_Exponential:
         )
 
         if print_results is True:
-            if right_censored is None:
-                n = len(failures)
-            else:
-                n = len(failures) + len(right_censored)
+            n = len(failures) + len(right_censored)
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
@@ -4735,10 +4721,7 @@ class Fit_Weibull_Dual_Power:
         )
 
         if print_results is True:
-            if right_censored is None:
-                n = len(failures)
-            else:
-                n = len(failures) + len(right_censored)
+            n = len(failures) + len(right_censored)
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
@@ -5110,10 +5093,7 @@ class Fit_Lognormal_Exponential:
         )
 
         if print_results is True:
-            if right_censored is None:
-                n = len(failures)
-            else:
-                n = len(failures) + len(right_censored)
+            n = len(failures) + len(right_censored)
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
@@ -5492,10 +5472,7 @@ class Fit_Lognormal_Eyring:
         )
 
         if print_results is True:
-            if right_censored is None:
-                n = len(failures)
-            else:
-                n = len(failures) + len(right_censored)
+            n = len(failures) + len(right_censored)
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
@@ -5865,10 +5842,7 @@ class Fit_Lognormal_Power:
         )
 
         if print_results is True:
-            if right_censored is None:
-                n = len(failures)
-            else:
-                n = len(failures) + len(right_censored)
+            n = len(failures) + len(right_censored)
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
@@ -6282,10 +6256,7 @@ class Fit_Lognormal_Dual_Exponential:
         )
 
         if print_results is True:
-            if right_censored is None:
-                n = len(failures)
-            else:
-                n = len(failures) + len(right_censored)
+            n = len(failures) + len(right_censored)
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
@@ -6704,10 +6675,7 @@ class Fit_Lognormal_Power_Exponential:
         )
 
         if print_results is True:
-            if right_censored is None:
-                n = len(failures)
-            else:
-                n = len(failures) + len(right_censored)
+            n = len(failures) + len(right_censored)
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
@@ -7125,10 +7093,7 @@ class Fit_Lognormal_Dual_Power:
         )
 
         if print_results is True:
-            if right_censored is None:
-                n = len(failures)
-            else:
-                n = len(failures) + len(right_censored)
+            n = len(failures) + len(right_censored)
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
@@ -7506,10 +7471,7 @@ class Fit_Normal_Exponential:
         )
 
         if print_results is True:
-            if right_censored is None:
-                n = len(failures)
-            else:
-                n = len(failures) + len(right_censored)
+            n = len(failures) + len(right_censored)
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
@@ -7883,10 +7845,7 @@ class Fit_Normal_Eyring:
         )
 
         if print_results is True:
-            if right_censored is None:
-                n = len(failures)
-            else:
-                n = len(failures) + len(right_censored)
+            n = len(failures) + len(right_censored)
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
@@ -8251,10 +8210,7 @@ class Fit_Normal_Power:
         )
 
         if print_results is True:
-            if right_censored is None:
-                n = len(failures)
-            else:
-                n = len(failures) + len(right_censored)
+            n = len(failures) + len(right_censored)
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
@@ -8663,10 +8619,7 @@ class Fit_Normal_Dual_Exponential:
         )
 
         if print_results is True:
-            if right_censored is None:
-                n = len(failures)
-            else:
-                n = len(failures) + len(right_censored)
+            n = len(failures) + len(right_censored)
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
@@ -9084,10 +9037,7 @@ class Fit_Normal_Power_Exponential:
         )
 
         if print_results is True:
-            if right_censored is None:
-                n = len(failures)
-            else:
-                n = len(failures) + len(right_censored)
+            n = len(failures) + len(right_censored)
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
@@ -9504,10 +9454,7 @@ class Fit_Normal_Dual_Power:
         )
 
         if print_results is True:
-            if right_censored is None:
-                n = len(failures)
-            else:
-                n = len(failures) + len(right_censored)
+            n = len(failures) + len(right_censored)
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
@@ -9861,10 +9808,7 @@ class Fit_Exponential_Exponential:
         )
 
         if print_results is True:
-            if right_censored is None:
-                n = len(failures)
-            else:
-                n = len(failures) + len(right_censored)
+            n = len(failures) + len(right_censored)
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
@@ -10219,10 +10163,7 @@ class Fit_Exponential_Eyring:
         )
 
         if print_results is True:
-            if right_censored is None:
-                n = len(failures)
-            else:
-                n = len(failures) + len(right_censored)
+            n = len(failures) + len(right_censored)
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
@@ -10568,10 +10509,7 @@ class Fit_Exponential_Power:
         )
 
         if print_results is True:
-            if right_censored is None:
-                n = len(failures)
-            else:
-                n = len(failures) + len(right_censored)
+            n = len(failures) + len(right_censored)
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
@@ -10964,10 +10902,7 @@ class Fit_Exponential_Dual_Exponential:
         )
 
         if print_results is True:
-            if right_censored is None:
-                n = len(failures)
-            else:
-                n = len(failures) + len(right_censored)
+            n = len(failures) + len(right_censored)
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
@@ -11369,10 +11304,7 @@ class Fit_Exponential_Power_Exponential:
         )
 
         if print_results is True:
-            if right_censored is None:
-                n = len(failures)
-            else:
-                n = len(failures) + len(right_censored)
+            n = len(failures) + len(right_censored)
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
@@ -11773,10 +11705,7 @@ class Fit_Exponential_Dual_Power:
         )
 
         if print_results is True:
-            if right_censored is None:
-                n = len(failures)
-            else:
-                n = len(failures) + len(right_censored)
+            n = len(failures) + len(right_censored)
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
