@@ -55,7 +55,7 @@ class Fit_Everything_ALT:
     show_probability_plot - True/False. Default is True. Provides a probability plot of each of the fitted ALT model.
     show_best_distribution_probability_plot - True/False. Defaults to True. Provides a probability plot in a new figure of the best ALT model.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the inital guess (using least squares) will be returned with a warning.
+    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
     sort_by - goodness of fit test to sort results by. Must be 'BIC','AICc', or 'Log-likelihood'. Default is BIC.
     exclude - list or array of strings specifying which distributions to exclude. Default is None. Options are:
         Weibull_Exponential
@@ -2494,7 +2494,7 @@ class Fit_Weibull_Exponential:
     show_probability_plot - True/False. Default is True
     show_life_stress_plot - True/False. Default is True
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the inital guess (using least squares) will be returned with a warning.
+    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
 
     Outputs:
     a - fitted parameter from the Exponential model
@@ -2866,7 +2866,7 @@ class Fit_Weibull_Eyring:
     show_probability_plot - True/False. Default is True
     show_life_stress_plot - True/False. Default is True
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the inital guess (using least squares) will be returned with a warning.
+    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
 
     Outputs:
     a - fitted parameter from the Eyring model
@@ -3227,7 +3227,7 @@ class Fit_Weibull_Power:
     show_probability_plot - True/False. Default is True
     show_life_stress_plot - True/False. Default is True
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the inital guess (using least squares) will be returned with a warning.
+    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
 
     Outputs:
     a - fitted parameter from the Power model
@@ -3590,7 +3590,7 @@ class Fit_Weibull_Dual_Exponential:
     show_probability_plot - True/False. Default is True
     show_life_stress_plot - True/False. Default is True
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the inital guess (using least squares) will be returned with a warning.
+    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
 
     Outputs:
     a - fitted parameter from the Dual_Exponential model
@@ -4008,7 +4008,7 @@ class Fit_Weibull_Power_Exponential:
     show_probability_plot - True/False. Default is True
     show_life_stress_plot - True/False. Default is True
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the inital guess (using least squares) will be returned with a warning.
+    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
 
     Outputs:
     a - fitted parameter from the Power_Exponential model
@@ -4423,7 +4423,7 @@ class Fit_Weibull_Dual_Power:
     show_probability_plot - True/False. Default is True
     show_life_stress_plot - True/False. Default is True
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the inital guess (using least squares) will be returned with a warning.
+    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
 
     Outputs:
     c - fitted parameter from the Dual_Power model
@@ -4837,7 +4837,7 @@ class Fit_Lognormal_Exponential:
     show_probability_plot - True/False. Default is True
     show_life_stress_plot - True/False. Default is True
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the inital guess (using least squares) will be returned with a warning.
+    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
 
     Outputs:
     a - fitted parameter from the Exponential model
@@ -5216,7 +5216,7 @@ class Fit_Lognormal_Eyring:
     show_probability_plot - True/False. Default is True
     show_life_stress_plot - True/False. Default is True
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the inital guess (using least squares) will be returned with a warning.
+    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
 
     Outputs:
     a - fitted parameter from the Eyring model
@@ -5586,7 +5586,7 @@ class Fit_Lognormal_Power:
     show_probability_plot - True/False. Default is True
     show_life_stress_plot - True/False. Default is True
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the inital guess (using least squares) will be returned with a warning.
+    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
 
     Outputs:
     a - fitted parameter from the Power model
@@ -5958,7 +5958,7 @@ class Fit_Lognormal_Dual_Exponential:
     show_probability_plot - True/False. Default is True
     show_life_stress_plot - True/False. Default is True
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the inital guess (using least squares) will be returned with a warning.
+    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
 
     Outputs:
     a - fitted parameter from the Dual_Exponential model
@@ -6377,7 +6377,7 @@ class Fit_Lognormal_Power_Exponential:
     show_probability_plot - True/False. Default is True
     show_life_stress_plot - True/False. Default is True
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the inital guess (using least squares) will be returned with a warning.
+    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
 
     Outputs:
     a - fitted parameter from the Power_Exponential model
@@ -6795,7 +6795,7 @@ class Fit_Lognormal_Dual_Power:
     show_probability_plot - True/False. Default is True
     show_life_stress_plot - True/False. Default is True
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the inital guess (using least squares) will be returned with a warning.
+    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
 
     Outputs:
     c - fitted parameter from the Dual_Power model
@@ -7214,7 +7214,7 @@ class Fit_Normal_Exponential:
     show_probability_plot - True/False. Default is True
     show_life_stress_plot - True/False. Default is True
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the inital guess (using least squares) will be returned with a warning.
+    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
 
 
     Outputs:
@@ -7589,7 +7589,7 @@ class Fit_Normal_Eyring:
     show_probability_plot - True/False. Default is True
     show_life_stress_plot - True/False. Default is True
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the inital guess (using least squares) will be returned with a warning.
+    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
 
     Outputs:
     a - fitted parameter from the Eyring model
@@ -7954,7 +7954,7 @@ class Fit_Normal_Power:
     show_probability_plot - True/False. Default is True
     show_life_stress_plot - True/False. Default is True
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the inital guess (using least squares) will be returned with a warning.
+    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
 
     Outputs:
     a - fitted parameter from the Power model
@@ -8321,7 +8321,7 @@ class Fit_Normal_Dual_Exponential:
     show_probability_plot - True/False. Default is True
     show_life_stress_plot - True/False. Default is True
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the inital guess (using least squares) will be returned with a warning.
+    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
 
     Outputs:
     a - fitted parameter from the Dual_Exponential model
@@ -8739,7 +8739,7 @@ class Fit_Normal_Power_Exponential:
     show_probability_plot - True/False. Default is True
     show_life_stress_plot - True/False. Default is True
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the inital guess (using least squares) will be returned with a warning.
+    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
 
     Outputs:
     a - fitted parameter from the Power_Exponential model
@@ -9156,7 +9156,7 @@ class Fit_Normal_Dual_Power:
     show_probability_plot - True/False. Default is True
     show_life_stress_plot - True/False. Default is True
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the inital guess (using least squares) will be returned with a warning.
+    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
 
     Outputs:
     c - fitted parameter from the Dual_Power model
@@ -9568,7 +9568,7 @@ class Fit_Exponential_Exponential:
     show_probability_plot - True/False. Default is True
     show_life_stress_plot - True/False. Default is True
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the inital guess (using least squares) will be returned with a warning.
+    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
 
 
     Outputs:
@@ -9924,7 +9924,7 @@ class Fit_Exponential_Eyring:
     show_probability_plot - True/False. Default is True
     show_life_stress_plot - True/False. Default is True
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the inital guess (using least squares) will be returned with a warning.
+    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
 
     Outputs:
     a - fitted parameter from the Eyring model
@@ -10270,7 +10270,7 @@ class Fit_Exponential_Power:
     show_probability_plot - True/False. Default is True
     show_life_stress_plot - True/False. Default is True
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the inital guess (using least squares) will be returned with a warning.
+    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
 
     Outputs:
     a - fitted parameter from the Power model
@@ -10618,7 +10618,7 @@ class Fit_Exponential_Dual_Exponential:
     show_probability_plot - True/False. Default is True
     show_life_stress_plot - True/False. Default is True
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the inital guess (using least squares) will be returned with a warning.
+    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
 
     Outputs:
     a - fitted parameter from the Dual_Exponential model
@@ -11020,7 +11020,7 @@ class Fit_Exponential_Power_Exponential:
     show_probability_plot - True/False. Default is True
     show_life_stress_plot - True/False. Default is True
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the inital guess (using least squares) will be returned with a warning.
+    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
 
     Outputs:
     a - fitted parameter from the Power_Exponential model
@@ -11421,7 +11421,7 @@ class Fit_Exponential_Dual_Power:
     show_probability_plot - True/False. Default is True
     show_life_stress_plot - True/False. Default is True
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the inital guess (using least squares) will be returned with a warning.
+    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
 
     Outputs:
     c - fitted parameter from the Dual_Power model
