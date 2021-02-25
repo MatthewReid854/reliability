@@ -16,7 +16,7 @@ jobs:
         python-version: 3.7
     - name: Generate coverage report
       run: |
-        pip install reliability
+        pip install git+git://github.com/MatthewReid854/reliability.git
         pip install pytest
         pip install pytest-cov
         pytest --cov=./ --cov-report=xml
