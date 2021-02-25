@@ -39,11 +39,11 @@ Inputs:
 -    show_probability_plot - True/False. Default is True
 -    show_life_stress_plot - True/False. Default is True
 -    CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
--    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the inital guess (using least squares) will be returned with a warning.
+-    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
 
 Outputs:
 
--   a - fitted parameter from the Dual_Exponential model
+-    a - fitted parameter from the Dual_Exponential model
 -    b - fitted parameter from the Dual_Exponential model
 -    c - fitted parameter from the Dual_Exponential model
 -    beta - the fitted Weibull_2P beta
