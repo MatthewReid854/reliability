@@ -1,6 +1,5 @@
 # This workflow will generate a code coverage report for codecov
 
-
 name: Codecov
 on: [push]
 jobs:
@@ -19,7 +18,7 @@ jobs:
       run: |
         pip install pytest
         pip install pytest-cov
-        pytest --cov=./ --cov-report=xml
+        pytest --cov=./ --cov-report=xml --ignore-glob=**/tests/*
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1
       with:
@@ -31,4 +30,3 @@ jobs:
         fail_ci_if_error: true
         path_to_write_report: ./coverage/codecov_report.txt
         verbose: true
-        ignore: "*/tests/*"
