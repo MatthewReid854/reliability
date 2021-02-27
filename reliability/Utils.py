@@ -4730,7 +4730,7 @@ def ALT_prob_plot(
     probability_plot_xyticks()
     plt.title("Probability plot\n" + dist + "_" + model + " Model")
     plt.tight_layout()
-    return plt.gcf()
+    return plt.gca()
 
 
 def life_stress_plot(
@@ -4893,4 +4893,4 @@ def life_stress_plot(
         plt.legend(loc="upper right")
         plt.title("Life-stress plot\n" + dist + "-" + model + " model")
         plt.tight_layout()
-    return fig
+    return plt.gca()
