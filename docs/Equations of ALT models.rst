@@ -130,7 +130,7 @@ The acceleration factor is a value used to show by how much the life is being ac
 
 :math:`AF = \frac{L_{USE}}{L_{ACCELERATED}}`
 
-Further reading
-"""""""""""""""
+**References:**
 
-Reliasoft's `Accelerated Life Testing Data Analysis Reference <http://reliawiki.com/index.php/Accelerated_Life_Testing_Data_Analysis_Reference>`_ provides many more equations, including the equations for confidence intervals (which are not implemented within `reliability`).
+- Probabilistic Physics of Failure Approach to Reliability (2017), by M. Modarres, M. Amiri, and C. Jackson. pp. 136-168
+- Accelerated Life Testing Data Analysis Reference - ReliaWiki, Reliawiki.com, 2019. [`Online <http://reliawiki.com/index.php/Accelerated_Life_Testing_Data_Analysis_Reference>`_].
