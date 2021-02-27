@@ -11,7 +11,7 @@ An ALT probability plot shows us how well our dataset can be modeled by the chos
 - Examine the AICc and BIC values when comparing multiple models. A lower value suggests a better fit.
 - Is the amount of change to the shape parameter within the acceptable limits (generally less than 50% for each distribution).
 
-The following example fits 2 models to ALT data that is generated from a Normal_Exponential model. This first plot is an example of a good fit. The second plot is an example of a very bad fit. Notice how a warning is printed in the output telling the user that the shape parameter is changing too much, indicating the model may be a poor fit for the data. Also note that the total AIC and total BIC for the Exponential_Power model is higher (worse) than for the Normal_Exponential model.
+The following example fits 2 models to ALT data that is generated from a Normal_Exponential model. The first plot is an example of a good fit. The second plot is an example of a very bad fit. Notice how a warning is printed in the output telling the user that the shape parameter is changing too much, indicating the model may be a poor fit for the data. Also note that the total AIC and total BIC for the Exponential_Power model is higher (worse) than for the Normal_Exponential model.
 
 If you are uncertain about which model you should fit, try `fitting everything <https://reliability.readthedocs.io/en/latest/Fitting%20all%20available%20models%20to%20ALT%20data.html>`_ and select the best fitting model.
 
