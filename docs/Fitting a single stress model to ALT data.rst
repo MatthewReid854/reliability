@@ -178,3 +178,8 @@ In this third example, we will look at how to customise the labels on the plots.
     plt.show()
 
 .. image:: images/Normal_Exponential_lifestress.png
+
+**References:**
+
+- Probabilistic Physics of Failure Approach to Reliability (2017), by M. Modarres, M. Amiri, and C. Jackson. pp. 136-168
+- Accelerated Life Testing Data Analysis Reference - ReliaWiki, Reliawiki.com, 2019. [`Online <http://reliawiki.com/index.php/Accelerated_Life_Testing_Data_Analysis_Reference>`_].

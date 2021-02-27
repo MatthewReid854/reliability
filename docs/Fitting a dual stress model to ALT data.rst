@@ -174,3 +174,8 @@ Two of the outputs returned are the axes handles for the probability plot and th
 .. image:: images/Lognormal_power_exponential_lifestress.png
 
 .. note:: The 3D surface plot with scatter plot has a known visibility issue where the 3D surface will appear to be in front of the scatter plot even when it should be shown behind it. This `issue is internal to matplotlib <https://matplotlib.org/mpl_toolkits/mplot3d/faq.html#my-3d-plot-doesn-t-look-right-at-certain-viewing-angles>`_ and the only current fix is to change the plotting library to MayaVi.
+
+**References:**
+
+- Probabilistic Physics of Failure Approach to Reliability (2017), by M. Modarres, M. Amiri, and C. Jackson. pp. 136-168
+- Accelerated Life Testing Data Analysis Reference - ReliaWiki, Reliawiki.com, 2019. [`Online <http://reliawiki.com/index.php/Accelerated_Life_Testing_Data_Analysis_Reference>`_].

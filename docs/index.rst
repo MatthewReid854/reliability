@@ -55,11 +55,11 @@ Contents:
 
   What is Accelerated Life Testing
   Equations of ALT models
+  Getting your ALT data in the right format
   Fitting a single stress model to ALT data
   Fitting a dual stress model to ALT data
   Fitting all available models to ALT data
-  Fitting a model to ALT data (deprecated)
-  ALT probability plots (deprecated)
+  What does an ALT probability plot show me
 
 .. toctree::
   :maxdepth: 1

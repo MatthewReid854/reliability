@@ -147,7 +147,7 @@ In this second example, we will repeat what we saw in Example 1, but this time w
 Example 3
 ---------
 
-In this third example, we will look at how to extract specific parameters from the output. This example uses a dataset from reliability.Datasets. The plots are turned off for this example.
+In this third example, we will look at how to extract specific parameters from the output. This example uses a dataset from `reliability.Datasets`. The plots are turned off for this example.
 
 .. code:: python
 
