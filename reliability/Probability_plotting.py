@@ -50,7 +50,7 @@ np.seterr("ignore")
 dec = 3  # number of decimals to use when rounding fitted parameters in labels
 
 
-def plotting_positions(failures=None, right_censored=None, a=None):
+def plotting_positions(failures=None, right_censored=None, a=None, preserve_order=False):
     """
     Calculates the plotting positions for plotting on probability paper
     This function is primarily used by the probability plotting functions.
@@ -71,20 +71,14 @@ def plotting_positions(failures=None, right_censored=None, a=None):
             "a must be in the range 0 to 1. Default is 0.3 which gives the median rank. For more information see https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics"
         )
 
-    if failures is None:
+    if failures is None or type(failures) not in (list, np.ndarray):
         raise ValueError("failures must be specified as an array or list")
-    elif type(failures) == np.ndarray:
-        f = np.sort(failures)
-    elif type(failures) == list:
-        f = np.sort(np.array(failures))
     else:
-        raise ValueError("failures must be specified as an array or list")
+        f = np.array(failures)  # do not sort yet
     if right_censored is None:
         rc = np.array([])
-    elif type(right_censored) == np.ndarray:
-        rc = np.sort(right_censored)
-    elif type(right_censored) == list:
-        rc = np.sort(np.array(right_censored))
+    elif type(right_censored) in (list, np.ndarray):
+        rc = np.array(right_censored)  # do not sort yet
     else:
         raise ValueError("if specified, right_censored must be an array or list")
 
@@ -95,34 +89,36 @@ def plotting_positions(failures=None, right_censored=None, a=None):
     n = len(all_data)
     data = {"times": all_data, "cens_codes": cens_codes}
     df = pd.DataFrame(data, columns=["times", "cens_codes"])
-    df_sorted = df.sort_values(by="times")
-    df_sorted["reverse_i"] = np.arange(1, len(all_data) + 1)[::-1]
-    failure_rows = df_sorted.loc[df_sorted["cens_codes"] == 1.0]
+    df.sort_values(by="times", inplace=True)  # retains original order via index
+    df["reverse_i"] = np.arange(1, len(all_data) + 1)[::-1]
+    failure_rows = df.loc[df["cens_codes"] == 1.0]
     reverse_i = failure_rows["reverse_i"].values
-    c = list(df_sorted["cens_codes"].values)
+    c = list(df["cens_codes"].values)
     leading_cens = c.index(1)
     # this is the rank adjustment method
     if leading_cens > 0:  # there are censored items before the first failure
         k = np.arange(1, len(reverse_i) + 1)
-        adjusted_rank2 = [0]
+        adjusted_rank = [0]
         rank_increment = [leading_cens / (n - 1)]
         for j in k:
-            rank_increment.append((n + 1 - adjusted_rank2[-1]) / (1 + reverse_i[j - 1]))
-            adjusted_rank2.append(adjusted_rank2[-1] + rank_increment[-1])
-        adjusted_rank = adjusted_rank2[1:]
+            rank_increment.append((n + 1 - adjusted_rank[-1]) / (1 + reverse_i[j - 1]))
+            adjusted_rank.append(adjusted_rank[-1] + rank_increment[-1])
+        df = df[df["cens_codes"] == 1]  # remove right censored from dataframe
+        df["adjusted_rank"] = adjusted_rank[1:]
     else:  # the first item is a failure
-        k = np.arange(1, len(reverse_i))
         adjusted_rank = [1]
         rank_increment = [1]
-        for j in k:
-            if j > 0:
-                rank_increment.append((n + 1 - adjusted_rank[-1]) / (1 + reverse_i[j]))
-                adjusted_rank.append(adjusted_rank[-1] + rank_increment[-1])
-    F = []
-    for i in adjusted_rank:
-        F.append((i - a) / (n + 1 - 2 * a))
-    x = list(f)
-    y = F
+        for irev in df['reverse_i'].iloc[1:]:
+            rank_increment.append((n + 1 - adjusted_rank[-1]) / (1 + irev))
+            adjusted_rank.append(adjusted_rank[-1] + rank_increment[-1])
+        df["rank_increment"] = rank_increment
+        df["adjusted_rank"] = adjusted_rank
+        df = df[df["cens_codes"] == 1]  # remove right censored from dataframe
+    if preserve_order:
+        df.sort_index(inplace=True)  # Return to original order
+    df["F"] = (df["adjusted_rank"] - a) / (n + 1 - 2 * a)
+    x = df["times"].values.tolist()
+    y = df["F"].values.tolist()
     return x, y
 
 
