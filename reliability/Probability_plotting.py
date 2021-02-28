@@ -50,7 +50,7 @@ np.seterr("ignore")
 dec = 3  # number of decimals to use when rounding fitted parameters in labels
 
 
-def plotting_positions(failures=None, right_censored=None, a=None):
+def plotting_positions(failures=None, right_censored=None, a=None, preserve_order=False):
     """
     Calculates the plotting positions for plotting on probability paper
     This function is primarily used by the probability plotting functions.
@@ -71,20 +71,14 @@ def plotting_positions(failures=None, right_censored=None, a=None):
             "a must be in the range 0 to 1. Default is 0.3 which gives the median rank. For more information see https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics"
         )
 
-    if failures is None:
+    if failures is None or type(failures) not in (list, np.ndarray):
         raise ValueError("failures must be specified as an array or list")
-    elif type(failures) == np.ndarray:
-        f = np.sort(failures)
-    elif type(failures) == list:
-        f = np.sort(np.array(failures))
     else:
-        raise ValueError("failures must be specified as an array or list")
+        f = np.array(failures)  # do not sort yet
     if right_censored is None:
         rc = np.array([])
-    elif type(right_censored) == np.ndarray:
-        rc = np.sort(right_censored)
-    elif type(right_censored) == list:
-        rc = np.sort(np.array(right_censored))
+    elif type(right_censored) in (list, np.ndarray):
+        rc = np.array(right_censored)  # do not sort yet
     else:
         raise ValueError("if specified, right_censored must be an array or list")
 
@@ -95,47 +89,49 @@ def plotting_positions(failures=None, right_censored=None, a=None):
     n = len(all_data)
     data = {"times": all_data, "cens_codes": cens_codes}
     df = pd.DataFrame(data, columns=["times", "cens_codes"])
-    df_sorted = df.sort_values(by="times")
-    df_sorted["reverse_i"] = np.arange(1, len(all_data) + 1)[::-1]
-    failure_rows = df_sorted.loc[df_sorted["cens_codes"] == 1.0]
+    df.sort_values(by="times", inplace=True)  # retains original order via index
+    df["reverse_i"] = np.arange(1, len(all_data) + 1)[::-1]
+    failure_rows = df.loc[df["cens_codes"] == 1.0]
     reverse_i = failure_rows["reverse_i"].values
-    c = list(df_sorted["cens_codes"].values)
+    c = list(df["cens_codes"].values)
     leading_cens = c.index(1)
     # this is the rank adjustment method
     if leading_cens > 0:  # there are censored items before the first failure
         k = np.arange(1, len(reverse_i) + 1)
-        adjusted_rank2 = [0]
+        adjusted_rank = [0]
         rank_increment = [leading_cens / (n - 1)]
         for j in k:
-            rank_increment.append((n + 1 - adjusted_rank2[-1]) / (1 + reverse_i[j - 1]))
-            adjusted_rank2.append(adjusted_rank2[-1] + rank_increment[-1])
-        adjusted_rank = adjusted_rank2[1:]
+            rank_increment.append((n + 1 - adjusted_rank[-1]) / (1 + reverse_i[j - 1]))
+            adjusted_rank.append(adjusted_rank[-1] + rank_increment[-1])
+        df = df[df["cens_codes"] == 1]  # remove right censored from dataframe
+        df["adjusted_rank"] = adjusted_rank[1:]
     else:  # the first item is a failure
-        k = np.arange(1, len(reverse_i))
         adjusted_rank = [1]
         rank_increment = [1]
-        for j in k:
-            if j > 0:
-                rank_increment.append((n + 1 - adjusted_rank[-1]) / (1 + reverse_i[j]))
-                adjusted_rank.append(adjusted_rank[-1] + rank_increment[-1])
-    F = []
-    for i in adjusted_rank:
-        F.append((i - a) / (n + 1 - 2 * a))
-    x = list(f)
-    y = F
+        for irev in df['reverse_i'].iloc[1:]:
+            rank_increment.append((n + 1 - adjusted_rank[-1]) / (1 + irev))
+            adjusted_rank.append(adjusted_rank[-1] + rank_increment[-1])
+        df["rank_increment"] = rank_increment
+        df["adjusted_rank"] = adjusted_rank
+        df = df[df["cens_codes"] == 1]  # remove right censored from dataframe
+    if preserve_order:
+        df.sort_index(inplace=True)  # Return to original order
+    df["F"] = (df["adjusted_rank"] - a) / (n + 1 - 2 * a)
+    x = df["times"].values.tolist()
+    y = df["F"].values.tolist()
     return x, y
 
 
 def Weibull_probability_plot(
-    failures=None,
-    right_censored=None,
-    fit_gamma=False,
-    __fitted_dist_params=None,
-    a=None,
-    CI=0.95,
-    CI_type="time",
-    show_fitted_distribution=True,
-    **kwargs
+        failures=None,
+        right_censored=None,
+        fit_gamma=False,
+        __fitted_dist_params=None,
+        a=None,
+        CI=0.95,
+        CI_type="time",
+        show_fitted_distribution=True,
+        **kwargs
 ):
     """
     Weibull probability plot
@@ -303,15 +299,15 @@ def Weibull_probability_plot(
 
 
 def Loglogistic_probability_plot(
-    failures=None,
-    right_censored=None,
-    fit_gamma=False,
-    __fitted_dist_params=None,
-    a=None,
-    CI=0.95,
-    CI_type="time",
-    show_fitted_distribution=True,
-    **kwargs
+        failures=None,
+        right_censored=None,
+        fit_gamma=False,
+        __fitted_dist_params=None,
+        a=None,
+        CI=0.95,
+        CI_type="time",
+        show_fitted_distribution=True,
+        **kwargs
 ):
     """
     Loglogistic probability plot
@@ -482,14 +478,14 @@ def Loglogistic_probability_plot(
 
 
 def Exponential_probability_plot_Weibull_Scale(
-    failures=None,
-    right_censored=None,
-    fit_gamma=False,
-    __fitted_dist_params=None,
-    a=None,
-    CI=0.95,
-    show_fitted_distribution=True,
-    **kwargs
+        failures=None,
+        right_censored=None,
+        fit_gamma=False,
+        __fitted_dist_params=None,
+        a=None,
+        CI=0.95,
+        show_fitted_distribution=True,
+        **kwargs
 ):
     """
     Exponential probability plot Weibull Scale
@@ -603,11 +599,11 @@ def Exponential_probability_plot_Weibull_Scale(
                 )
             xlabel = "Time - gamma"
             failures = (
-                failures - gamma + 0.009
+                    failures - gamma + 0.009
             )  # this 0.009 adjustment is to avoid taking the log of 0. It causes negligible difference to the fit and plot. 0.009 is chosen to be the same as Weibull_Fit_3P adjustment.
             if right_censored is not None:
                 right_censored = (
-                    right_censored - gamma + 0.009
+                        right_censored - gamma + 0.009
                 )  # this 0.009 adjustment is to avoid taking the log of 0. It causes negligible difference to the fit and plot. 0.009 is chosen to be the same as Weibull_Fit_3P adjustment.
 
         ef = Exponential_Distribution(Lambda=Lambda, Lambda_SE=Lambda_SE, CI=CI)
@@ -640,14 +636,14 @@ def Exponential_probability_plot_Weibull_Scale(
 
 
 def Gumbel_probability_plot(
-    failures=None,
-    right_censored=None,
-    __fitted_dist_params=None,
-    a=None,
-    show_fitted_distribution=True,
-    CI=0.95,
-    CI_type="time",
-    **kwargs
+        failures=None,
+        right_censored=None,
+        __fitted_dist_params=None,
+        a=None,
+        show_fitted_distribution=True,
+        CI=0.95,
+        CI_type="time",
+        **kwargs
 ):
     """
     Gumbel probability plot
@@ -755,14 +751,14 @@ def Gumbel_probability_plot(
 
 
 def Normal_probability_plot(
-    failures=None,
-    right_censored=None,
-    __fitted_dist_params=None,
-    a=None,
-    CI=0.95,
-    CI_type="time",
-    show_fitted_distribution=True,
-    **kwargs
+        failures=None,
+        right_censored=None,
+        __fitted_dist_params=None,
+        a=None,
+        CI=0.95,
+        CI_type="time",
+        show_fitted_distribution=True,
+        **kwargs
 ):
     """
     Normal probability plot
@@ -870,15 +866,15 @@ def Normal_probability_plot(
 
 
 def Lognormal_probability_plot(
-    failures=None,
-    right_censored=None,
-    fit_gamma=False,
-    __fitted_dist_params=None,
-    a=None,
-    CI=0.95,
-    CI_type="time",
-    show_fitted_distribution=True,
-    **kwargs
+        failures=None,
+        right_censored=None,
+        fit_gamma=False,
+        __fitted_dist_params=None,
+        a=None,
+        CI=0.95,
+        CI_type="time",
+        show_fitted_distribution=True,
+        **kwargs
 ):
     """
     Lognormal probability plot
@@ -1042,13 +1038,13 @@ def Lognormal_probability_plot(
 
 
 def Beta_probability_plot(
-    failures=None,
-    right_censored=None,
-    __fitted_dist_params=None,
-    a=None,
-    CI=0.95,
-    show_fitted_distribution=True,
-    **kwargs
+        failures=None,
+        right_censored=None,
+        __fitted_dist_params=None,
+        a=None,
+        CI=0.95,
+        show_fitted_distribution=True,
+        **kwargs
 ):
     """
     Beta probability plot
@@ -1143,14 +1139,14 @@ def Beta_probability_plot(
 
 
 def Gamma_probability_plot(
-    failures=None,
-    right_censored=None,
-    fit_gamma=False,
-    __fitted_dist_params=None,
-    a=None,
-    CI=0.95,
-    show_fitted_distribution=True,
-    **kwargs
+        failures=None,
+        right_censored=None,
+        fit_gamma=False,
+        __fitted_dist_params=None,
+        a=None,
+        CI=0.95,
+        show_fitted_distribution=True,
+        **kwargs
 ):
     """
     Gamma probability plot
@@ -1292,14 +1288,14 @@ def Gamma_probability_plot(
 
 
 def Exponential_probability_plot(
-    failures=None,
-    right_censored=None,
-    fit_gamma=False,
-    __fitted_dist_params=None,
-    a=None,
-    CI=0.95,
-    show_fitted_distribution=True,
-    **kwargs
+        failures=None,
+        right_censored=None,
+        fit_gamma=False,
+        __fitted_dist_params=None,
+        a=None,
+        CI=0.95,
+        show_fitted_distribution=True,
+        **kwargs
 ):
     """
     Exponential probability plot
@@ -1442,12 +1438,12 @@ def Exponential_probability_plot(
 
 
 def PP_plot_parametric(
-    X_dist=None,
-    Y_dist=None,
-    y_quantile_lines=None,
-    x_quantile_lines=None,
-    show_diagonal_line=False,
-    **kwargs
+        X_dist=None,
+        Y_dist=None,
+        y_quantile_lines=None,
+        x_quantile_lines=None,
+        show_diagonal_line=False,
+        **kwargs
 ):
     """
     A PP_Plot is a probability-probability plot that consists of plotting the CDF of one distribution against the CDF of another distribution. If the distributions are similar, the PP_Plot will lie on the diagonal.
@@ -1561,7 +1557,7 @@ def PP_plot_parametric(
 
 
 def QQ_plot_parametric(
-    X_dist=None, Y_dist=None, show_fitted_lines=True, show_diagonal_line=False, **kwargs
+        X_dist=None, Y_dist=None, show_fitted_lines=True, show_diagonal_line=False, **kwargs
 ):
     """
     A QQ plot is a quantile-quantile plot which consists of plotting failure units vs failure units for shared quantiles. A quantile is simply the fraction failing (ranging from 0 to 1).
@@ -1677,12 +1673,12 @@ def QQ_plot_parametric(
 
 
 def PP_plot_semiparametric(
-    X_data_failures=None,
-    X_data_right_censored=None,
-    Y_dist=None,
-    show_diagonal_line=True,
-    method="KM",
-    **kwargs
+        X_data_failures=None,
+        X_data_right_censored=None,
+        Y_dist=None,
+        show_diagonal_line=True,
+        method="KM",
+        **kwargs
 ):
     """
     A PP_Plot is a probability-probability plot that consists of plotting the CDF of one distribution against the CDF of another distribution. If we have both distributions we can use PP_plot_parametric.
@@ -1811,13 +1807,13 @@ def PP_plot_semiparametric(
 
 
 def QQ_plot_semiparametric(
-    X_data_failures=None,
-    X_data_right_censored=None,
-    Y_dist=None,
-    show_fitted_lines=True,
-    show_diagonal_line=False,
-    method="KM",
-    **kwargs
+        X_data_failures=None,
+        X_data_right_censored=None,
+        Y_dist=None,
+        show_fitted_lines=True,
+        show_diagonal_line=False,
+        method="KM",
+        **kwargs
 ):
     """
     A QQ plot is a quantile-quantile plot which consists of plotting failure units vs failure units for shared quantiles. A quantile is simply the fraction failing (ranging from 0 to 1).
@@ -2071,8 +2067,8 @@ def plot_points(failures=None, right_censored=None, func="CDF", a=None, **kwargs
     xlims = plt.xlim(auto=None)  # get previous xlim
     ylims = plt.ylim(auto=None)  # get previous ylim
     if xlims == (0, 1) and ylims == (
-        0,
-        1,
+            0,
+            1,
     ):  # this checks if there was a previous plot. If the lims were 0,1 and 0,1 then there probably wasn't.
         plt.scatter(
             x, y_adjusted, marker=marker, color=color, **kwargs
