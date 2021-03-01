@@ -154,7 +154,7 @@ def test_Fit_Lognormal_Power():
     warnings.filterwarnings(action="ignore", category=RuntimeWarning)
     data = make_ALT_data(distribution='Lognormal', life_stress_model='Power', a=5e15, n=-4, sigma=0.5, stress_1=[500, 400, 350], number_of_samples=100, fraction_censored=0.2, seed=1)
     model = Fit_Lognormal_Power(failures=data.failures, failure_stress=data.failure_stresses, right_censored=data.right_censored, right_censored_stress=data.right_censored_stresses, use_level_stress=300, show_life_stress_plot=False, show_probability_plot=False, print_results=False)
-    assert_allclose(model.a, 3491334253992439.0, rtol=rtol, atol=atol)
+    assert_allclose(model.a, 3491334253992439.0, rtol=0.06, atol=2e14) # larger due to variation in python versions
     assert_allclose(model.n, -3.9485517292713515, rtol=rtol, atol=atol)
     assert_allclose(model.sigma, 0.49040270483915543, rtol=rtol, atol=atol)
     assert_allclose(model.AICc, 6129.883772738487, rtol=rtol, atol=atol)
@@ -234,7 +234,7 @@ def test_Fit_Exponential_Dual_Exponential():
     warnings.filterwarnings(action="ignore", category=RuntimeWarning)
     data = make_ALT_data(distribution='Exponential',life_stress_model='Dual_Exponential',a=50,b=0.2,c=500,stress_1=[500,400,350,300,200,180,390,250,540],stress_2=[0.9,0.8,0.7,0.6,0.3,0.3,0.2,0.7,0.5],number_of_samples=100,fraction_censored=0.2,seed=1)
     model = Fit_Exponential_Dual_Exponential(failures=data.failures, failure_stress_1=data.failure_stresses_1, failure_stress_2=data.failure_stresses_2, right_censored=data.right_censored, right_censored_stress_1=data.right_censored_stresses_1,right_censored_stress_2=data.right_censored_stresses_2, use_level_stress=[100,0.2], show_life_stress_plot=False, show_probability_plot=False, print_results=False)
-    assert_allclose(model.a, 88.9138420005482, rtol=rtol, atol=atol)
+    assert_allclose(model.a, 88.9138420005482, rtol=0.003, atol=0.3) # larger due to variation in python versions
     assert_allclose(model.b, 0.15559480591338323, rtol=rtol, atol=atol)
     assert_allclose(model.c, 484.42992854739765, rtol=rtol, atol=atol)
     assert_allclose(model.AICc, 11283.120647795477, rtol=rtol, atol=atol)
@@ -289,7 +289,7 @@ def test_Fit_Exponential_Dual_Power():
     warnings.filterwarnings(action="ignore", category=RuntimeWarning)
     data = make_ALT_data(distribution='Exponential', life_stress_model='Dual_Power', c=1e15, m=-4, n=-2, stress_1=[500, 400, 350, 420, 245], stress_2=[12, 8, 6, 9, 10], number_of_samples=100, fraction_censored=0.2, seed=1)
     model = Fit_Exponential_Dual_Power(failures=data.failures, failure_stress_1=data.failure_stresses_1, failure_stress_2=data.failure_stresses_2, right_censored=data.right_censored, right_censored_stress_1=data.right_censored_stresses_1,right_censored_stress_2=data.right_censored_stresses_2, use_level_stress=[100,0.2], show_life_stress_plot=False, show_probability_plot=False, print_results=False)
-    assert_allclose(model.c, 8217056028827617.0, rtol=rtol, atol=atol)
+    assert_allclose(model.c, 8217056028827617.0, rtol=0.02, atol=1e14) # larger due to variation in python versions
     assert_allclose(model.m, -4.4290315992680895, rtol=rtol, atol=atol)
     assert_allclose(model.n, -1.7851821319822152, rtol=rtol, atol=atol)
     assert_allclose(model.AICc, 6041.4828154995885, rtol=rtol, atol=atol)
@@ -412,7 +412,7 @@ def test_Fit_Everything_ALT_single_stress():
     assert_allclose(model.Exponential_Eyring_BIC, 3917.1513480305193, rtol=rtol, atol=atol)
     assert_allclose(model.Exponential_Eyring_loglik, -1952.8718915406034, rtol=rtol, atol=atol)
 
-    assert_allclose(model.Weibull_Power_a, 1704571726306460.2, rtol=rtol, atol=atol)
+    assert_allclose(model.Weibull_Power_a, 1704571726306460.2, rtol=0.02, atol=3e13) # larger due to variation in python versions
     assert_allclose(model.Weibull_Power_n, -4.632734486704249, rtol=rtol, atol=atol)
     assert_allclose(model.Weibull_Power_beta, 2.314945291433339, rtol=rtol, atol=atol)
     assert_allclose(model.Weibull_Power_AICc, 3710.2611745093573, rtol=rtol, atol=atol)
