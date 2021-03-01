@@ -426,7 +426,7 @@ def test_Fit_Everything_ALT_single_stress():
     assert_allclose(model.Lognormal_Power_BIC, 3733.6413086492744, rtol=rtol, atol=atol)
     assert_allclose(model.Lognormal_Power_loglik, -1858.2649806126528, rtol=rtol, atol=atol)
 
-    assert_allclose(model.Normal_Power_a, 5382471637730783.0, rtol=rtol, atol=atol)
+    assert_allclose(model.Normal_Power_a, 5382471637730783.0, rtol=0.02, atol=1e14)  # larger due to variation in python versions
     assert_allclose(model.Normal_Power_n, -4.844657942648189, rtol=rtol, atol=atol)
     assert_allclose(model.Normal_Power_sigma, 705.2782926967965, rtol=rtol, atol=atol)
     assert_allclose(model.Normal_Power_AICc, 3884.6006939979784, rtol=rtol, atol=atol)
@@ -495,7 +495,7 @@ def test_Fit_Everything_ALT_dual_stress():
 
     assert_allclose(model.Normal_Dual_Power_c, 1660.148499564434, rtol=0.11, atol=180)  # larger due to variation in python versions
     assert_allclose(model.Normal_Dual_Power_m, -0.18518820513140954, rtol=0.21, atol=0.04)  # larger due to variation in python versions
-    assert_allclose(model.Normal_Dual_Power_n, -0.1626895367508826, rtol=rtol, atol=atol)
+    assert_allclose(model.Normal_Dual_Power_n, -0.1626895367508826, rtol=0.13, atol=0.03)  # larger due to variation in python versions
     assert_allclose(model.Normal_Dual_Power_sigma, 272.48450130744226, rtol=rtol, atol=atol)
     assert_allclose(model.Normal_Dual_Power_AICc, 6659.922216946836, rtol=rtol, atol=atol)
     assert_allclose(model.Normal_Dual_Power_BIC, 6679.087103262703, rtol=rtol, atol=atol)
