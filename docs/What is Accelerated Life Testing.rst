@@ -35,7 +35,7 @@ Environmental Stress Screening (ESS) is a process of exposing components to a se
 
 Burn-in involves stressing components with a higher load than their design load such that the "weak" items are screened out through failure. Often confused with ESS, burn-in can be though of as a subset of ESS with a focus on thermal or electrical loads generally used for screening electrical components. The strength of a population of components will always have some variability (that can be modeled using a probability distribution). By "burning-in" the population of components, manufacturers can screen out (through failure) the lower part of the distribution (of strengths) to be left with only the stronger components from the batch. Burn-in is only appropriate for stresses which cause wear-in or random failure modes (not wear out failure modes which accumulate damage). If the stress causes cumulative damage then the burn-in process would consume some of the component's life. MIL-STD-883C defines a burn-in test as `Burn-in is a test performed for the purpose of screening or eliminating marginal devices, those with inherent defects or defects resulting from manufacturing aberrations which cause time and stress dependent failures.`
 
-Further reading
-"""""""""""""""
+**References:**
 
-Reliasoft's `Accelerated Life Testing Data Analysis Reference <http://reliawiki.com/index.php/Accelerated_Life_Testing_Data_Analysis_Reference>`_ provides a great deal more information on ALT.
+- Probabilistic Physics of Failure Approach to Reliability (2017), by M. Modarres, M. Amiri, and C. Jackson. pp. 136-168
+- Accelerated Life Testing Data Analysis Reference - ReliaWiki, Reliawiki.com, 2019. [`Online <http://reliawiki.com/index.php/Accelerated_Life_Testing_Data_Analysis_Reference>`_].

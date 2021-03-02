@@ -73,6 +73,7 @@ Outputs (the following example outputs are for the Fit_Weibull_2P distribution b
 -   results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
 -   goodness_of_fit - a dataframe of the goodness of fit values (Log-likelihood, AICc, BIC, AD).
 -   percentiles - a dataframe of the percentiles.
+-   probability_plot - the axes handle for the probability plot (only returned if show_probability_plot = True).
 
 Example 1
 ---------

@@ -4452,8 +4452,8 @@ class Fit_Weibull_Dual_Power:
     mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided)
     alpha_at_use_stress - the equivalent Weibull alpha parameter at the use level stress (only provided if use_level_stress is provided)
     distribution_at_use_stress - the Weibull distribution at the use level stress (only provided if use_level_stress is provided)
-    probability_plot - the figure object from the probability plot (only provided if show_probability_plot is True)
-    life_stress_plot - the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
+    probability_plot - the axes handles for the figure object from the probability plot (only provided if show_probability_plot is True)
+    life_stress_plot - the axes handles for the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
     """
 
     def __init__(
@@ -4862,8 +4862,8 @@ class Fit_Lognormal_Exponential:
     mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided)
     mu_at_use_stress - the equivalent Lognormal mu parameter at the use level stress (only provided if use_level_stress is provided)
     distribution_at_use_stress - the Lognormal distribution at the use level stress (only provided if use_level_stress is provided)
-    probability_plot - the figure object from the probability plot (only provided if show_probability_plot is True)
-    life_stress_plot - the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
+    probability_plot - the axes handles for the figure object from the probability plot (only provided if show_probability_plot is True)
+    life_stress_plot - the axes handles for the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
     """
 
     def __init__(
@@ -5241,8 +5241,8 @@ class Fit_Lognormal_Eyring:
     mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided)
     mu_at_use_stress - the equivalent Lognormal mu parameter at the use level stress (only provided if use_level_stress is provided)
     distribution_at_use_stress - the Lognormal distribution at the use level stress (only provided if use_level_stress is provided)
-    probability_plot - the figure object from the probability plot (only provided if show_probability_plot is True)
-    life_stress_plot - the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
+    probability_plot - the axes handles for the figure object from the probability plot (only provided if show_probability_plot is True)
+    life_stress_plot - the axes handles for the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
     """
 
     def __init__(
@@ -5611,8 +5611,8 @@ class Fit_Lognormal_Power:
     mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided)
     mu_at_use_stress - the equivalent Lognormal mu parameter at the use level stress (only provided if use_level_stress is provided)
     distribution_at_use_stress - the Lognormal distribution at the use level stress (only provided if use_level_stress is provided)
-    probability_plot - the figure object from the probability plot (only provided if show_probability_plot is True)
-    life_stress_plot - the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
+    probability_plot - the axes handles for the figure object from the probability plot (only provided if show_probability_plot is True)
+    life_stress_plot - the axes handles for the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
     """
 
     def __init__(
@@ -5987,8 +5987,8 @@ class Fit_Lognormal_Dual_Exponential:
     mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided)
     mu_at_use_stress - the equivalent Lognormal mu parameter at the use level stress (only provided if use_level_stress is provided)
     distribution_at_use_stress - the Lognormal distribution at the use level stress (only provided if use_level_stress is provided)
-    probability_plot - the figure object from the probability plot (only provided if show_probability_plot is True)
-    life_stress_plot - the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
+    probability_plot - the axes handles for the figure object from the probability plot (only provided if show_probability_plot is True)
+    life_stress_plot - the axes handles for the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
     """
 
     def __init__(
@@ -6406,8 +6406,8 @@ class Fit_Lognormal_Power_Exponential:
     mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided).
     mu_at_use_stress - the equivalent Lognormal mu parameter at the use level stress (only provided if use_level_stress is provided).
     distribution_at_use_stress - the Lognormal distribution at the use level stress (only provided if use_level_stress is provided).
-    probability_plot - the figure object from the probability plot (only provided if show_probability_plot is True)
-    life_stress_plot - the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
+    probability_plot - the axes handles for the figure object from the probability plot (only provided if show_probability_plot is True)
+    life_stress_plot - the axes handles for the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
     """
 
     def __init__(
@@ -6824,8 +6824,8 @@ class Fit_Lognormal_Dual_Power:
     mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided)
     mu_at_use_stress - the equivalent Lognormal mu parameter at the use level stress (only provided if use_level_stress is provided)
     distribution_at_use_stress - the Lognormal distribution at the use level stress (only provided if use_level_stress is provided)
-    probability_plot - the figure object from the probability plot (only provided if show_probability_plot is True)
-    life_stress_plot - the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
+    probability_plot - the axes handles for the figure object from the probability plot (only provided if show_probability_plot is True)
+    life_stress_plot - the axes handles for the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
     """
 
     def __init__(
@@ -7240,8 +7240,8 @@ class Fit_Normal_Exponential:
     mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided)
     mu_at_use_stress - the equivalent Normal mu parameter at the use level stress (only provided if use_level_stress is provided)
     distribution_at_use_stress - the Normal distribution at the use level stress (only provided if use_level_stress is provided)
-    probability_plot - the figure object from the probability plot (only provided if show_probability_plot is True)
-    life_stress_plot - the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
+    probability_plot - the axes handles for the figure object from the probability plot (only provided if show_probability_plot is True)
+    life_stress_plot - the axes handles for the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
     """
 
     def __init__(
@@ -7614,8 +7614,8 @@ class Fit_Normal_Eyring:
     mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided)
     mu_at_use_stress - the equivalent Normal mu parameter at the use level stress (only provided if use_level_stress is provided)
     distribution_at_use_stress - the Normal distribution at the use level stress (only provided if use_level_stress is provided)
-    probability_plot - the figure object from the probability plot (only provided if show_probability_plot is True)
-    life_stress_plot - the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
+    probability_plot - the axes handles for the figure object from the probability plot (only provided if show_probability_plot is True)
+    life_stress_plot - the axes handles for the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
     """
 
     def __init__(
@@ -7979,8 +7979,8 @@ class Fit_Normal_Power:
     mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided)
     mu_at_use_stress - the equivalent Normal mu parameter at the use level stress (only provided if use_level_stress is provided)
     distribution_at_use_stress - the Normal distribution at the use level stress (only provided if use_level_stress is provided)
-    probability_plot - the figure object from the probability plot (only provided if show_probability_plot is True)
-    life_stress_plot - the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
+    probability_plot - the axes handles for the figure object from the probability plot (only provided if show_probability_plot is True)
+    life_stress_plot - the axes handles for the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
     """
 
     def __init__(
@@ -8350,8 +8350,8 @@ class Fit_Normal_Dual_Exponential:
     mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided)
     mu_at_use_stress - the equivalent Normal mu parameter at the use level stress (only provided if use_level_stress is provided)
     distribution_at_use_stress - the Normal distribution at the use level stress (only provided if use_level_stress is provided)
-    probability_plot - the figure object from the probability plot (only provided if show_probability_plot is True)
-    life_stress_plot - the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
+    probability_plot - the axes handles for the figure object from the probability plot (only provided if show_probability_plot is True)
+    life_stress_plot - the axes handles for the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
     """
 
     def __init__(
@@ -8768,8 +8768,8 @@ class Fit_Normal_Power_Exponential:
     mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided).
     mu_at_use_stress - the equivalent Normal mu parameter at the use level stress (only provided if use_level_stress is provided).
     distribution_at_use_stress - the Normal distribution at the use level stress (only provided if use_level_stress is provided).
-    probability_plot - the figure object from the probability plot (only provided if show_probability_plot is True)
-    life_stress_plot - the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
+    probability_plot - the axes handles for the figure object from the probability plot (only provided if show_probability_plot is True)
+    life_stress_plot - the axes handles for the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
     """
 
     def __init__(
@@ -9185,8 +9185,8 @@ class Fit_Normal_Dual_Power:
     mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided)
     mu_at_use_stress - the equivalent Normal mu parameter at the use level stress (only provided if use_level_stress is provided)
     distribution_at_use_stress - the Normal distribution at the use level stress (only provided if use_level_stress is provided)
-    probability_plot - the figure object from the probability plot (only provided if show_probability_plot is True)
-    life_stress_plot - the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
+    probability_plot - the axes handles for the figure object from the probability plot (only provided if show_probability_plot is True)
+    life_stress_plot - the axes handles for the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
     """
 
     def __init__(
@@ -9590,8 +9590,8 @@ class Fit_Exponential_Exponential:
     mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided)
     Lambda_at_use_stress - the equivalent Exponential Lambda parameter at the use level stress (only provided if use_level_stress is provided)
     distribution_at_use_stress - the Exponential distribution at the use level stress (only provided if use_level_stress is provided)
-    probability_plot - the figure object from the probability plot (only provided if show_probability_plot is True)
-    life_stress_plot - the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
+    probability_plot - the axes handles for the figure object from the probability plot (only provided if show_probability_plot is True)
+    life_stress_plot - the axes handles for the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
     """
 
     def __init__(
@@ -9945,8 +9945,8 @@ class Fit_Exponential_Eyring:
     mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided)
     Lambda_at_use_stress - the equivalent Exponential Lambda parameter at the use level stress (only provided if use_level_stress is provided)
     distribution_at_use_stress - the Exponential distribution at the use level stress (only provided if use_level_stress is provided)
-    probability_plot - the figure object from the probability plot (only provided if show_probability_plot is True)
-    life_stress_plot - the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
+    probability_plot - the axes handles for the figure object from the probability plot (only provided if show_probability_plot is True)
+    life_stress_plot - the axes handles for the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
     """
 
     def __init__(
@@ -10291,8 +10291,8 @@ class Fit_Exponential_Power:
     mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided)
     Lambda_at_use_stress - the equivalent Exponential Lambda parameter at the use level stress (only provided if use_level_stress is provided)
     distribution_at_use_stress - the Exponential distribution at the use level stress (only provided if use_level_stress is provided)
-    probability_plot - the figure object from the probability plot (only provided if show_probability_plot is True)
-    life_stress_plot - the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
+    probability_plot - the axes handles for the figure object from the probability plot (only provided if show_probability_plot is True)
+    life_stress_plot - the axes handles for the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
     """
 
     def __init__(
@@ -10643,8 +10643,8 @@ class Fit_Exponential_Dual_Exponential:
     mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided)
     Lambda_at_use_stress - the equivalent Exponential Lambda parameter at the use level stress (only provided if use_level_stress is provided)
     distribution_at_use_stress - the Exponential distribution at the use level stress (only provided if use_level_stress is provided)
-    probability_plot - the figure object from the probability plot (only provided if show_probability_plot is True)
-    life_stress_plot - the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
+    probability_plot - the axes handles for the figure object from the probability plot (only provided if show_probability_plot is True)
+    life_stress_plot - the axes handles for the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
     """
 
     def __init__(
@@ -11045,8 +11045,8 @@ class Fit_Exponential_Power_Exponential:
     mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided).
     Lambda_at_use_stress - the equivalent Exponential Lambda parameter at the use level stress (only provided if use_level_stress is provided).
     distribution_at_use_stress - the Exponential distribution at the use level stress (only provided if use_level_stress is provided).
-    probability_plot - the figure object from the probability plot (only provided if show_probability_plot is True)
-    life_stress_plot - the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
+    probability_plot - the axes handles for the figure object from the probability plot (only provided if show_probability_plot is True)
+    life_stress_plot - the axes handles for the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
     """
 
     def __init__(
@@ -11446,8 +11446,8 @@ class Fit_Exponential_Dual_Power:
     mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided)
     Lambda_at_use_stress - the equivalent Exponential Lambda parameter at the use level stress (only provided if use_level_stress is provided)
     distribution_at_use_stress - the Exponential distribution at the use level stress (only provided if use_level_stress is provided)
-    probability_plot - the figure object from the probability plot (only provided if show_probability_plot is True)
-    life_stress_plot - the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
+    probability_plot - the axes handles for the figure object from the probability plot (only provided if show_probability_plot is True)
+    life_stress_plot - the axes handles for the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
     """
 
     def __init__(

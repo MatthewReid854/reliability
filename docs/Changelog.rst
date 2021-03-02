@@ -8,18 +8,45 @@ Changelog
 **Version: 0.5.6 --- Currently unreleased --- due for release early March 2021**
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
+**Summary of changes**
+
+Version 0.5.6 of `reliability` is focused on enhancing the accelerated life testing (ALT) section of the library. This release includes a complete rewrite of ALT fitters and supporting Utils, comprising around 13000 lines of code (about 28% of the total codebase). This is the biggest update in terms of lines of code for this library. The rewrite also includes new ALT models (bringing the total from 20 to 24) and tremendous speed enhancements. In addition to the rewrites done to ALT_fitters, there are numerous other small enhancements and bug fixes detailed below.
+
 **New features**
+
+-    Fitters.Fit_Everything now includes an option to show_best_distribution_probability_plot. Default is True.
+-    Each of the functions within ALT fitters now has a goodness of fit dataframe printed with results.
+-    Other_functions.make_ALT_data is a new function that enables ALT data to be created. This is useful for testing the functions within ALT_Fitters.
+-    ALT fitters was sensitive to the initial guess as it used curve_fit. The initial guess has been changed to use least squares to obtain the initial guess since the stress-life equations are all linearizable.
+-    ALT_fitters.Fit_Everything_ALT is a new function that enables users to fit all the ALT models.
+-    ALT_fitters now has Dual_Power models, bringing the total available models to 24.
 
 **API Changes**
 
+-    The ALT_probability_plotting module has been deprecated. Functions will still run with a Deprecation Warning. This was done because all the functionality has been included in the new ALT_fitters module.
+-    ALT_fitters functions have several changes to the inputs and outputs. Please see the documentation for detail of the new input and output arguments.
+
 **Bug Fixes**
+
+-    Failure to fit any of the ALT_fitters will now report the failure and run with the initial guess, rather than crashing.
+-    make_right_censored_data used a seed but this seed was ineffective due to the use of both the random module and numpy.random. Changed to use only numpy.random so now the seed achieves repeatability.
+-    ALT_fitters had incorrect confidence intervals for b in Exponential, a in Power, and c in Dual-Exponential
+-    ALT_fitters Eyring models would crash if not given right_censored data.
+-    Some ALT models didn't accept data with < 2 failures at each stress level. The new requirement is to have at least as many failures as there are parameters in the model. It is possible to have a single failure at each stress level and still fit the model.
 
 **Other**
 
 -    Minor improvement to scaling and text positions in stress_strain_diagram
+-    CodeCov was broken when the continuous integration was changed from Travis_CI to GitHub Actions. CodeCov reporting is now fixed and the coverage will be improved upon progressively.
+-    All the Fitters now return the axes handles in the probability_plot output object.
+-    Started work on API documentation. This is already available using the help function in Python, but adding it to `readthedocs` makes it much easier to read.
 
 **Version: 0.5.5 --- Released: 6 January 2021**
 '''''''''''''''''''''''''''''''''''''''''''''''
+
+**Summary of changes**
+
+Version 0.5.5 of `reliability` has significant improvements to the initial guess methods for the Fitters functions. This makes all the fitters much faster and more accurate. There are also many new enhancements including functions to help with importing data from Excel and converting data between different formats. There are many bug fixes in this release. The other major change is in code formatting using Black.
 
 **New features**
 
@@ -76,6 +103,10 @@ Changelog
 **Version: 0.5.4 --- Released: 7 November 2020**
 ''''''''''''''''''''''''''''''''''''''''''''''''
 
+**Summary of changes**
+
+Version 0.5.4 of `reliability` brings in confidence intervals for many more distributions, as well as the inclusion of the Gumbel distribution. Due to the time it took to get the confidence intervals working, there have been many other minor changes to formatting of plots and printed results that are included in this release.
+
 **New features**
 
 -    Confidence intervals added for Normal, Lognormal, Loglogistic, and Gumbel Distributions. *Confidence intervals for the Gamma and Beta Distributions will be part of 0.5.6 in Feb/Mar 2021*
@@ -126,6 +157,10 @@ Changelog
 **Version: 0.5.3 --- Released: 29 September 2020**
 ''''''''''''''''''''''''''''''''''''''''''''''''''
 
+**Summary of changes**
+
+Version 0.5.3 of `reliability` is a major release, adding in the Loglogistic distribution, the RankAdjustment nonparametric method, a new goodness of fit measure (anderson darling) and many other new functions.
+
 **New features**
 
 -    Added Loglogistic_Distribution to Distributions
@@ -155,9 +190,9 @@ Changelog
 **Bug Fixes**
 
 -    Fixed autoscale for cases where the HF is constant so it no longer lies along the yaxis upper limit
--    Fit_Everything had a bug in the default xvals for the Beta_Distribution's histogram which caused an error in some special cases. This is now resolved.
+-    Fit_Everything had a bug in the default xvals for the Beta_Distribution's histogram which caused an error in some special cases.
 -    All the quantile functions in each distribution didn't accept np.float64 and raised an error. They now accept this data type.
--    The AICc and BIC in all the ALT_fitters was slightly wrong due to a small coding error. This is now fixed.
+-    The AICc and BIC in all the ALT_fitters was slightly wrong due to a small coding error.
 
 **Other**
 
@@ -178,6 +213,9 @@ Changelog
 
 **Version: 0.5.2 --- Released: 14 August 2020**
 '''''''''''''''''''''''''''''''''''''''''''''''
+**Summary of changes**
+
+Version 0.5.2 of `reliability` includes two special distributions, the mixture distribution and the competing risks distribution, along with their respective fitters. Autoscaling is also a great improvement to ensure that plots appear mostly the same, just with their axes scaled appropriately.
 
 **New features**
 
@@ -215,6 +253,10 @@ Changelog
 **Version: 0.5.1 --- Released: 08 July 2020**
 '''''''''''''''''''''''''''''''''''''''''''''
 
+**Summary of changes**
+
+Version 0.5.1 of `reliability` is a fairly minor release.
+
 **New features**
 
 -    More efficient method used within Other_functions.similar_distributions. Results are always consistent and more accurate now.
@@ -242,6 +284,10 @@ Changelog
 
 **Version: 0.5.0 --- Released: 04 July 2020**
 '''''''''''''''''''''''''''''''''''''''''''''
+
+**Summary of changes**
+
+Version 0.5.0 of `reliability` is a major release that includes the first introduction of confidence intervals, and many other new features. Significant structural changes have also been made including the use of a Utils function and the the introduction of automated testing.
 
 **New features**
 

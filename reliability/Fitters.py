@@ -1393,7 +1393,7 @@ class Fit_Weibull_2P:
 
     Fits a 2-parameter Weibull distribution (alpha,beta) to the data provided.
 
-    inputs:
+    Inputs:
     failures - an array or list of failure data
     right_censored - an array or list of right censored data
     show_probability_plot - True/False. Defaults to True.
@@ -1406,7 +1406,7 @@ class Fit_Weibull_2P:
     percentiles - percentiles to produce a table of percentiles failed with lower, point, and upper estimates. Default is None which results in no output. True or 'auto' will use default array [1, 5, 10,..., 95, 99]. If an array or list is specified then it will be used instead of the default array.
     kwargs are accepted for the probability plot (eg. linestyle, label, color)
 
-    outputs:
+    Outputs:
     alpha - the fitted Weibull_2P alpha parameter
     beta - the fitted Weibull_2P beta parameter
     loglik - Log Likelihood (as used in Minitab and Reliasoft)
@@ -1425,6 +1425,7 @@ class Fit_Weibull_2P:
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     goodness_of_fit - a dataframe of the goodness of fit values (Log-likelihood, AICc, BIC, AD).
     percentiles - a dataframe of the percentiles with bounds on time. This is only produced if percentiles is 'auto' or a list or array. Since percentiles defaults to None, this output is not normally produced.
+    probability_plot - the axes handle for the probability plot (only returned if show_probability_plot = True)
     """
 
     def __init__(
@@ -1663,6 +1664,7 @@ class Fit_Weibull_2P:
                 CI_type=CI_type,
                 **kwargs
             )
+            self.probability_plot = plt.gca()
 
     @staticmethod
     def logf(t, a, b):  # Log PDF (2 parameter Weibull)
@@ -1733,6 +1735,7 @@ class Fit_Weibull_2P_grouped:
     beta_lower - the lower CI estimate of the parameter
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     percentiles - a dataframe of the percentiles with bounds on time. This is only produced if percentiles is 'auto' or a list or array. Since percentiles defaults to None, this output is not normally produced.
+    probability_plot - the axes handle for the probability plot (only returned if show_probability_plot = True)
 
     Requirements of the input dataframe:
     The column titles MUST be 'category', 'time', 'quantity'
@@ -2245,6 +2248,7 @@ class Fit_Weibull_2P_grouped:
                 CI_type=CI_type,
                 **kwargs
             )
+            self.probability_plot = plt.gca()
 
     @staticmethod
     def logf(t, a, b):  # Log PDF (2 parameter Weibull)
@@ -2324,6 +2328,7 @@ class Fit_Weibull_3P:
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     goodness_of_fit - a dataframe of the goodness of fit values (Log-likelihood, AICc, BIC, AD).
     percentiles - a dataframe of the percentiles with bounds on time. This is only produced if percentiles is 'auto' or a list or array. Since percentiles defaults to None, this output is not normally produced.
+    probability_plot - the axes handle for the probability plot (only returned if show_probability_plot = True)
     """
 
     def __init__(
@@ -2594,6 +2599,7 @@ class Fit_Weibull_3P:
                         + ")"
                     )
                 )
+            self.probability_plot = plt.gca()
 
     @staticmethod
     def logf(t, a, b, g):  # Log PDF (3 parameter Weibull)
@@ -2674,6 +2680,7 @@ class Fit_Weibull_Mixture:
     AD - the Anderson Darling (corrected) statistic (as reported by Minitab)
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     goodness_of_fit - a dataframe of the goodness of fit values (Log-likelihood, AICc, BIC, AD).
+    probability_plot - the axes handle for the probability plot (only returned if show_probability_plot = True)
     """
 
     def __init__(
@@ -2977,6 +2984,7 @@ class Fit_Weibull_Mixture:
                 xvals=xvals, label=label_str
             )  # need to add this manually as Weibull_probability_plot can only add Weibull_2P and Weibull_3P using __fitted_dist_params
             plt.title("Probability Plot\nWeibull Mixture CDF")
+            self.probability_plot = plt.gca()
 
     @staticmethod
     def logf(t, a1, b1, a2, b2, p):  # Log Mixture PDF (2 parameter Weibull)
@@ -3052,6 +3060,7 @@ class Fit_Weibull_CR:
     AD - the Anderson Darling (corrected) statistic (as reported by Minitab)
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     goodness_of_fit - a dataframe of the goodness of fit values (Log-likelihood, AICc, BIC, AD).
+    probability_plot - the axes handle for the probability plot (only returned if show_probability_plot = True)
     """
 
     def __init__(
@@ -3301,6 +3310,7 @@ class Fit_Weibull_CR:
             )
             self.distribution.CDF(xvals=xvals, label=label_str)
             plt.title("Probability Plot\nWeibull Competing Risks CDF")
+            self.probability_plot = plt.gca()
 
     @staticmethod
     def logf(t, a1, b1, a2, b2):  # Log PDF (Competing Risks)
@@ -3414,6 +3424,7 @@ class Fit_Exponential_1P:
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for the parameter)
     goodness_of_fit - a dataframe of the goodness of fit values (Log-likelihood, AICc, BIC, AD).
     percentiles - a dataframe of the percentiles with bounds on time. This is only produced if percentiles is 'auto' or a list or array. Since percentiles defaults to None, this output is not normally produced.
+    probability_plot - the axes handle for the probability plot (only returned if show_probability_plot = True)
 
     *Note that this is a 1 parameter distribution but Lambda_inv is also provided as some programs (such as Minitab and scipy.stats) use this instead of Lambda
     """
@@ -3610,6 +3621,7 @@ class Fit_Exponential_1P:
                 CI=CI,
                 **kwargs
             )
+            self.probability_plot = plt.gca()
 
     @staticmethod
     def logf(t, L):  # Log PDF (1 parameter Expon)
@@ -3667,6 +3679,7 @@ class Fit_Exponential_2P:
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for the parameter)
     goodness_of_fit - a dataframe of the goodness of fit values (Log-likelihood, AICc, BIC, AD).
     percentiles - a dataframe of the percentiles with bounds on time. This is only produced if percentiles is 'auto' or a list or array. Since percentiles defaults to None, this output is not normally produced.
+    probability_plot - the axes handle for the probability plot (only returned if show_probability_plot = True)
 
     *Note that this is a 2 parameter distribution but Lambda_inv is also provided as some programs (such as Minitab and scipy.stats) use this instead of Lambda
     """
@@ -3892,6 +3905,7 @@ class Fit_Exponential_2P:
                 __fitted_dist_params=self,
                 **kwargs
             )
+            self.probability_plot = plt.gca()
 
     @staticmethod
     def logf(t, L, g):  # Log PDF (2 parameter Expon)
@@ -3964,6 +3978,7 @@ class Fit_Normal_2P:
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     goodness_of_fit - a dataframe of the goodness of fit values (Log-likelihood, AICc, BIC, AD).
     percentiles - a dataframe of the percentiles with bounds on time. This is only produced if percentiles is 'auto' or a list or array. Since percentiles defaults to None, this output is not normally produced.
+    probability_plot - the axes handle for the probability plot (only returned if show_probability_plot = True)
     """
 
     def __init__(
@@ -4207,6 +4222,7 @@ class Fit_Normal_2P:
                 CI_type=CI_type,
                 **kwargs
             )
+            self.probability_plot = plt.gca()
 
     @staticmethod
     def logf(t, mu, sigma):  # Log PDF (Normal)
@@ -4277,6 +4293,7 @@ class Fit_Gumbel_2P:
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     goodness_of_fit - a dataframe of the goodness of fit values (Log-likelihood, AICc, BIC, AD).
     percentiles - a dataframe of the percentiles with bounds on time. This is only produced if percentiles is 'auto' or a list or array. Since percentiles defaults to None, this output is not normally produced.
+    probability_plot - the axes handle for the probability plot (only returned if show_probability_plot = True)
     """
 
     def __init__(
@@ -4489,6 +4506,7 @@ class Fit_Gumbel_2P:
                 CI_type=CI_type,
                 **kwargs
             )
+            self.probability_plot = plt.gca()
 
     @staticmethod
     def logf(t, mu, sigma):  # Log PDF (Gumbel)
@@ -4544,7 +4562,7 @@ class Fit_Lognormal_2P:
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     goodness_of_fit - a dataframe of the goodness of fit values (Log-likelihood, AICc, BIC, AD).
     percentiles - a dataframe of the percentiles with bounds on time. This is only produced if percentiles is 'auto' or a list or array. Since percentiles defaults to None, this output is not normally produced.
-
+    probability_plot - the axes handle for the probability plot (only returned if show_probability_plot = True)
     """
 
     def __init__(
@@ -4787,6 +4805,7 @@ class Fit_Lognormal_2P:
                 CI_type=CI_type,
                 **kwargs
             )
+            self.probability_plot = plt.gca()
 
     @staticmethod
     def logf(t, mu, sigma):  # Log PDF (Lognormal)
@@ -4862,6 +4881,7 @@ class Fit_Lognormal_3P:
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     goodness_of_fit - a dataframe of the goodness of fit values (Log-likelihood, AICc, BIC, AD).
     percentiles - a dataframe of the percentiles with bounds on time. This is only produced if percentiles is 'auto' or a list or array. Since percentiles defaults to None, this output is not normally produced.
+    probability_plot - the axes handle for the probability plot (only returned if show_probability_plot = True)
     """
 
     def __init__(
@@ -5136,6 +5156,7 @@ class Fit_Lognormal_3P:
                         + ")"
                     )
                 )
+            self.probability_plot = plt.gca()
 
     @staticmethod
     def logf(t, mu, sigma, gamma):  # Log PDF (3 parameter Lognormal)
@@ -5195,6 +5216,7 @@ class Fit_Gamma_2P:
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     goodness_of_fit - a dataframe of the goodness of fit values (Log-likelihood, AICc, BIC, AD).
     percentiles - a dataframe of the percentiles with bounds on time. This is only produced if percentiles is 'auto' or a list or array. Since percentiles defaults to None, this output is not normally produced.
+    probability_plot - the axes handle for the probability plot (only returned if show_probability_plot = True)
     """
 
     def __init__(
@@ -5364,6 +5386,7 @@ class Fit_Gamma_2P:
                 __fitted_dist_params=self,
                 **kwargs
             )
+            self.probability_plot = plt.gca()
             # Gamma_probability_plot(failures=failures, right_censored=rc, __fitted_dist_params=self, CI=CI, CI_type=CI_type, **kwargs)
 
     @staticmethod
@@ -5423,6 +5446,7 @@ class Fit_Gamma_3P:
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     goodness_of_fit - a dataframe of the goodness of fit values (Log-likelihood, AICc, BIC, AD).
     percentiles - a dataframe of the percentiles with bounds on time. This is only produced if percentiles is 'auto' or a list or array. Since percentiles defaults to None, this output is not normally produced.
+    probability_plot - the axes handle for the probability plot (only returned if show_probability_plot = True)
     """
 
     def __init__(
@@ -5656,6 +5680,7 @@ class Fit_Gamma_3P:
                         + ")"
                     )
                 )
+            self.probability_plot = plt.gca()
 
     @staticmethod
     def logf(t, a, b, g):  # Log PDF (3 parameter Gamma)
@@ -5715,6 +5740,7 @@ class Fit_Beta_2P:
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     goodness_of_fit - a dataframe of the goodness of fit values (Log-likelihood, AICc, BIC, AD).
     percentiles - a dataframe of the percentiles with bounds on time. This is only produced if percentiles is 'auto' or a list or array. Since percentiles defaults to None, this output is not normally produced.
+    probability_plot - the axes handle for the probability plot (only returned if show_probability_plot = True)
     """
 
     def __init__(
@@ -5888,6 +5914,7 @@ class Fit_Beta_2P:
                 __fitted_dist_params=self,
                 **kwargs
             )
+            self.probability_plot = plt.gca()
 
     @staticmethod
     def logf(t, a, b):  # Log PDF (2 parameter Beta)
@@ -5944,6 +5971,7 @@ class Fit_Loglogistic_2P:
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     goodness_of_fit - a dataframe of the goodness of fit values (Log-likelihood, AICc, BIC, AD).
     percentiles - a dataframe of the percentiles with bounds on time. This is only produced if percentiles is 'auto' or a list or array. Since percentiles defaults to None, this output is not normally produced.
+    probability_plot - the axes handle for the probability plot (only returned if show_probability_plot = True)
     """
 
     def __init__(
@@ -6155,6 +6183,7 @@ class Fit_Loglogistic_2P:
                 CI_type=CI_type,
                 **kwargs
             )
+            self.probability_plot = plt.gca()
 
     @staticmethod
     def logf(t, a, b):  # Log PDF (2 parameter Loglogistic)
@@ -6219,6 +6248,7 @@ class Fit_Loglogistic_3P:
     results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
     goodness_of_fit - a dataframe of the goodness of fit values (Log-likelihood, AICc, BIC, AD).
     percentiles - a dataframe of the percentiles with bounds on time. This is only produced if percentiles is 'auto' or a list or array. Since percentiles defaults to None, this output is not normally produced.
+    probability_plot - the axes handle for the probability plot (only returned if show_probability_plot = True)
     """
 
     def __init__(
@@ -6488,6 +6518,7 @@ class Fit_Loglogistic_3P:
                         + ")"
                     )
                 )
+            self.probability_plot = plt.gca()
 
     @staticmethod
     def logf(t, a, b, g):  # Log PDF (3 parameter Loglogistic)

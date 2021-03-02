@@ -4730,7 +4730,7 @@ def ALT_prob_plot(
     probability_plot_xyticks()
     plt.title("Probability plot\n" + dist + "_" + model + " Model")
     plt.tight_layout()
-    return plt.gcf()
+    return plt.gca()
 
 
 def life_stress_plot(
@@ -4883,8 +4883,10 @@ def life_stress_plot(
                 label=str("Use stress of " + str(round_to_decimals(use_level_stress))),
                 color=color_cycle[i + 1],
             )
-        #this is a list comprehension to flatten the list of lists. np.ravel won't work here
-        flattened_failure_groups = [item for sublist in failure_groups for item in sublist]
+        # this is a list comprehension to flatten the list of lists. np.ravel won't work here
+        flattened_failure_groups = [
+            item for sublist in failure_groups for item in sublist
+        ]
         plt.ylim(
             0,
             1.2 * max(life_func(S1=stress_array_lower), max(flattened_failure_groups)),
@@ -4893,4 +4895,4 @@ def life_stress_plot(
         plt.legend(loc="upper right")
         plt.title("Life-stress plot\n" + dist + "-" + model + " model")
         plt.tight_layout()
-    return fig
+    return plt.gca()

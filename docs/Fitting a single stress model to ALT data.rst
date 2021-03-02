@@ -71,18 +71,13 @@ Example 1
 
 In the following example, we will fit the Weibull-Power model to an ALT dataset obtained from a fatigue test. This dataset can be found in `reliability.Datasets`. We want to know the mean life at the use level stress of 60 so the parameter use_level_stress is specified. All other values are left as defaults and the results and plot are shown.
 
-Two of the outputs returned are the axes handles for the probability plot and the life-stress plot. These handles can be used to set certain values. In the example below we see the axes labels being set to custom values after the plots have been generated but before the plots have been displayed.
-
 .. code:: python
 
     from reliability.ALT_fitters import Fit_Weibull_Power
     from reliability.Datasets import ALT_load2
     import matplotlib.pyplot as plt
 
-    model = Fit_Weibull_Power(failures=ALT_load2().failures, failure_stress=ALT_load2().failure_stresses, right_censored=ALT_load2().right_censored, right_censored_stress=ALT_load2().right_censored_stresses, use_level_stress=60)
-    model.probability_plot.axes[0].set_xlabel("Cycles ('000)")
-    model.life_stress_plot.axes[0].set_xlabel('Load (kg)')
-    model.life_stress_plot.axes[0].set_ylabel("Life ('000 cycles)")
+    Fit_Weibull_Power(failures=ALT_load2().failures, failure_stress=ALT_load2().failure_stresses, right_censored=ALT_load2().right_censored, right_censored_stress=ALT_load2().right_censored_stresses, use_level_stress=60)
     plt.show()
     
     '''
@@ -108,7 +103,7 @@ Two of the outputs returned are the axes handles for the probability plot and th
     At the use level stress of 60, the mean life is 1075.28447
     '''
     
-.. image:: images/Weibull_powerV4.png
+.. image:: images/Weibull_power_probplot.png
 
 .. image:: images/Weibull_power_lifestress.png
 
@@ -160,3 +155,31 @@ The results show that the fitted parameters agree well with the parameters we us
 .. image:: images/Exponential_Eyring_probability_plot.png
 
 .. image:: images/Exponential_Eyring_lifestress.png
+
+Example 3
+---------
+
+In this third example, we will look at how to customise the labels on the plots. Two of the outputs returned are the axes handles for the probability plot and the life-stress plot. These handles can be used to set certain values such as xlabel, ylabel, title, legend title, etc. For simplicity in this example the printing of results and the probability plot are turned off so the only output is the life-stress plot.
+
+.. code:: python
+
+    from reliability.Other_functions import make_ALT_data
+    from reliability.ALT_fitters import Fit_Normal_Exponential
+    import matplotlib.pyplot as plt
+
+    ALT_data = make_ALT_data(distribution='Normal',life_stress_model='Exponential',a=500,b=1000,sigma=500,stress_1=[500,400,350],number_of_samples=100,fraction_censored=0.2,seed=1)
+    # the results and probability plot have been turned off so we just get the life-stress plot
+    model = Fit_Normal_Exponential(failures=ALT_data.failures, failure_stress=ALT_data.failure_stresses, right_censored=ALT_data.right_censored, right_censored_stress=ALT_data.right_censored_stresses, use_level_stress=300, print_results=False, show_probability_plot=False)
+    # customize the life-stress plot labels
+    model.life_stress_plot.set_xlabel('Load (kg)')
+    model.life_stress_plot.set_ylabel("Life ('000 cycles)")
+    model.life_stress_plot.set_title('Life-stress plot from fatigue test')
+    model.life_stress_plot.legend(title='Life-stress and failures:')
+    plt.show()
+
+.. image:: images/Normal_Exponential_lifestress.png
+
+**References:**
+
+- Probabilistic Physics of Failure Approach to Reliability (2017), by M. Modarres, M. Amiri, and C. Jackson. pp. 136-168
+- Accelerated Life Testing Data Analysis Reference - ReliaWiki, Reliawiki.com, 2019. [`Online <http://reliawiki.com/index.php/Accelerated_Life_Testing_Data_Analysis_Reference>`_].
