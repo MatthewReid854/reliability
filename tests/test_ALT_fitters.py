@@ -427,7 +427,7 @@ def test_Fit_Everything_ALT_single_stress():
     assert_allclose(model.Lognormal_Power_loglik, -1858.2649806126528, rtol=rtol, atol=atol)
 
     assert_allclose(model.Normal_Power_a, 5382471637730783.0, rtol=0.06, atol=3e14)  # larger due to variation in python versions
-    assert_allclose(model.Normal_Power_n, -4.844657942648189, rtol=rtol, atol=atol)
+    assert_allclose(model.Normal_Power_n, -4.844657942648189, rtol=0.002, atol=0.01) # larger due to variation in python versions
     assert_allclose(model.Normal_Power_sigma, 705.2782926967965, rtol=rtol, atol=atol)
     assert_allclose(model.Normal_Power_AICc, 3884.6006939979784, rtol=rtol, atol=atol)
     assert_allclose(model.Normal_Power_BIC, 3895.630960340866, rtol=rtol, atol=atol)
