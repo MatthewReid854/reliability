@@ -39,6 +39,7 @@ Version 0.5.6 of `reliability` is focused on enhancing the accelerated life test
 -    Minor improvement to scaling and text positions in stress_strain_diagram
 -    CodeCov was broken when the continuous integration was changed from Travis_CI to GitHub Actions. CodeCov reporting is now fixed and the coverage will be improved upon progressively.
 -    All the Fitters now return the axes handles in the probability_plot output object.
+-    Started work on API documentation. This is already available using the help function in Python, but adding it to `readthedocs` makes it much easier to read.
 
 **Version: 0.5.5 --- Released: 6 January 2021**
 '''''''''''''''''''''''''''''''''''''''''''''''
