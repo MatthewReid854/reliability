@@ -1987,7 +1987,7 @@ def QQ_plot_semiparametric(
     return [m, deg1[0], deg1[1]]
 
 
-def plot_points(failures=None, right_censored=None, func="CDF", a=None, **kwargs):
+def plot_points(failures=None, right_censored=None, func="CDF", a=None, preserve_order=False, **kwargs):
     """
     plot_points
 
@@ -2025,7 +2025,7 @@ def plot_points(failures=None, right_censored=None, func="CDF", a=None, **kwargs
         )
 
     x, y = plotting_positions(
-        failures=failures, right_censored=right_censored, a=a
+        failures=failures, right_censored=right_censored, a=a, preser_order=preserve_order
     )  # get the plotting positions
     y = np.array(y)
     x = np.array(x)
