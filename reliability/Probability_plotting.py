@@ -2025,7 +2025,7 @@ def plot_points(failures=None, right_censored=None, func="CDF", a=None, preserve
         )
 
     x, y = plotting_positions(
-        failures=failures, right_censored=right_censored, a=a, preser_order=preserve_order
+        failures=failures, right_censored=right_censored, a=a, preserve_order=preserve_order
     )  # get the plotting positions
     y = np.array(y)
     x = np.array(x)
