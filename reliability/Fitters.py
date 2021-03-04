@@ -1587,7 +1587,7 @@ class Fit_Weibull_2P:
                     "Point Estimate",
                     "Upper Estimate",
                 ],
-            )
+            ).set_index("Percentile")
 
         # goodness of fit measures
         n = len(failures) + len(right_censored)
@@ -1647,7 +1647,7 @@ class Fit_Weibull_2P:
                         + "% CI bounds on time):"
                     )
                 )
-                print(self.percentiles.to_string(index=False), "\n")
+                print(self.percentiles.to_string(), "\n")
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Weibull_probability_plot
@@ -2156,7 +2156,7 @@ class Fit_Weibull_2P_grouped:
                     "Point Estimate",
                     "Upper Estimate",
                 ],
-            )
+            ).set_index("Percentile")
 
         # goodness of fit measures
         n = sum(failure_qty) + sum(right_censored_qty)
@@ -2231,7 +2231,7 @@ class Fit_Weibull_2P_grouped:
                         + "% CI bounds on time):"
                     )
                 )
-                print(self.percentiles.to_string(index=False), "\n")
+                print(self.percentiles.to_string(), "\n")
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Weibull_probability_plot
@@ -2504,7 +2504,7 @@ class Fit_Weibull_3P:
                 "Point Estimate": point_estimate,
                 "Upper Estimate": upper_estimate,
             }
-            percentiles = pd.DataFrame(
+            self.percentiles = pd.DataFrame(
                 percentile_data,
                 columns=[
                     "Percentile",
@@ -2512,8 +2512,7 @@ class Fit_Weibull_3P:
                     "Point Estimate",
                     "Upper Estimate",
                 ],
-            )
-            self.percentiles = percentiles.set_index("Percentile")
+            ).set_index("Percentile")
 
         # goodness of fit measures
         n = len(failures) + len(right_censored)
@@ -2569,7 +2568,7 @@ class Fit_Weibull_3P:
                         + "% CI bounds on time):"
                     )
                 )
-                print(self.percentiles.to_string(index=False), "\n")
+                print(self.percentiles.to_string(), "\n")
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Weibull_probability_plot
@@ -3547,7 +3546,7 @@ class Fit_Exponential_1P:
                     "Point Estimate",
                     "Upper Estimate",
                 ],
-            )
+            ).set_index("Percentile")
 
         # goodness of fit measures
         n = len(failures) + len(right_censored)
@@ -3603,7 +3602,7 @@ class Fit_Exponential_1P:
                         + "% CI bounds on time):"
                     )
                 )
-                print(self.percentiles.to_string(index=False), "\n")
+                print(self.percentiles.to_string(), "\n")
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import (
@@ -3831,7 +3830,7 @@ class Fit_Exponential_2P:
                     "Point Estimate",
                     "Upper Estimate",
                 ],
-            )
+            ).set_index("Percentile")
 
         # goodness of fit measures
         n = len(failures) + len(right_censored)
@@ -3887,7 +3886,7 @@ class Fit_Exponential_2P:
                         + "% CI bounds on time):"
                     )
                 )
-                print(self.percentiles.to_string(index=False), "\n")
+                print(self.percentiles.to_string(), "\n")
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import (
@@ -4143,7 +4142,7 @@ class Fit_Normal_2P:
                     "Point Estimate",
                     "Upper Estimate",
                 ],
-            )
+            ).set_index("Percentile")
 
         # goodness of fit measures
         n = len(failures) + len(right_censored)
@@ -4205,7 +4204,7 @@ class Fit_Normal_2P:
                         + "% CI bounds on time):"
                     )
                 )
-                print(self.percentiles.to_string(index=False), "\n")
+                print(self.percentiles.to_string(), "\n")
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Normal_probability_plot
@@ -4433,7 +4432,7 @@ class Fit_Gumbel_2P:
                     "Point Estimate",
                     "Upper Estimate",
                 ],
-            )
+            ).set_index("Percentile")
 
         # goodness of fit measures
         n = len(failures) + len(right_censored)
@@ -4489,7 +4488,7 @@ class Fit_Gumbel_2P:
                         + "% CI bounds on time):"
                     )
                 )
-                print(self.percentiles.to_string(index=False), "\n")
+                print(self.percentiles.to_string(), "\n")
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Gumbel_probability_plot
@@ -4726,7 +4725,7 @@ class Fit_Lognormal_2P:
                     "Point Estimate",
                     "Upper Estimate",
                 ],
-            )
+            ).set_index("Percentile")
 
         # goodness of fit measures
         n = len(failures) + len(right_censored)
@@ -4788,7 +4787,7 @@ class Fit_Lognormal_2P:
                         + "% CI bounds on time):"
                     )
                 )
-                print(self.percentiles.to_string(index=False), "\n")
+                print(self.percentiles.to_string(), "\n")
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Lognormal_probability_plot
@@ -5070,7 +5069,7 @@ class Fit_Lognormal_3P:
                     "Point Estimate",
                     "Upper Estimate",
                 ],
-            )
+            ).set_index("Percentile")
 
         # goodness of fit measures
         n = len(failures) + len(right_censored)
@@ -5126,7 +5125,7 @@ class Fit_Lognormal_3P:
                         + "% CI bounds on time):"
                     )
                 )
-                print(self.percentiles.to_string(index=False), "\n")
+                print(self.percentiles.to_string(), "\n")
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Lognormal_probability_plot
@@ -6110,7 +6109,7 @@ class Fit_Loglogistic_2P:
                     "Point Estimate",
                     "Upper Estimate",
                 ],
-            )
+            ).set_index("Percentile")
 
         # goodness of fit measures
         n = len(failures) + len(right_censored)
@@ -6166,7 +6165,7 @@ class Fit_Loglogistic_2P:
                         + "% CI bounds on time):"
                     )
                 )
-                print(self.percentiles.to_string(index=False), "\n")
+                print(self.percentiles.to_string(), "\n")
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Loglogistic_probability_plot
@@ -6432,7 +6431,7 @@ class Fit_Loglogistic_3P:
                     "Point Estimate",
                     "Upper Estimate",
                 ],
-            )
+            ).set_index("Percentile")
 
         # goodness of fit measures
         n = len(failures) + len(right_censored)
@@ -6488,7 +6487,7 @@ class Fit_Loglogistic_3P:
                         + "% CI bounds on time):"
                     )
                 )
-                print(self.percentiles.to_string(index=False), "\n")
+                print(self.percentiles.to_string(), "\n")
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Loglogistic_probability_plot
