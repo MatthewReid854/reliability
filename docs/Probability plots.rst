@@ -32,6 +32,7 @@ Inputs:
 - right_censored - the array or list of right censored failure times
 - fit_gamma - True/False. Default is False. Specify this as True in order to fit the location shifted distribution and scale the x-axis to time - gamma. This is only included for Weibull, Gamma, Lognormal, Loglogistic, and Exponential probability plots
 - show_fitted_distribution - True/False. If true, the fitted distribution will be plotted on the probability plot. Defaults to True. If you want a probability plot with just the data points and no line for the distribution then set this to False.
+- show_scatter_points - True/False. If True, the plot will include the scatter points from the failure times. Defaults to True.
 - a - the heuristic constant for plotting positions of the form (k-a)/(n+1-2a). Default is a=0.3 which is the median rank method (same as the default in Minitab). For more heuristics, see `Wikipedia <https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics>`_.
 - CI - the confidence interval for the bounds. Default is 0.95 for 95% CI. Not yet available for Gamma or Beta probability plots.
 - CI_type - time, reliability, None. Default is time. This is the type of CI bounds. i.e. bounds on time or bounds on reliability. Use None to turn off the confidence intervals. Not yet available for Gamma or Beta probability plots. Not required for either of the Exponential probability plots since CI bounds on time are same as bounds on reliability.

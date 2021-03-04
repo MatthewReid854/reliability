@@ -25,6 +25,7 @@ Version 0.5.6 of `reliability` is focused on enhancing the accelerated life test
 
 -    The ALT_probability_plotting module has been deprecated. Functions will still run with a Deprecation Warning. This was done because all the functionality has been included in the new ALT_fitters module.
 -    ALT_fitters functions have several changes to the inputs and outputs. Please see the documentation for detail of the new input and output arguments.
+-    All the probability plots now have a new argument "show_scatter_points" which allows the scatter plot to be hidden if set to False. This was implemented based on `this issue <https://github.com/MatthewReid854/reliability/pull/19>`_.
 
 **Bug Fixes**
 
@@ -33,6 +34,8 @@ Version 0.5.6 of `reliability` is focused on enhancing the accelerated life test
 -    ALT_fitters had incorrect confidence intervals for b in Exponential, a in Power, and c in Dual-Exponential
 -    ALT_fitters Eyring models would crash if not given right_censored data.
 -    Some ALT models didn't accept data with < 2 failures at each stress level. The new requirement is to have at least as many failures as there are parameters in the model. It is possible to have a single failure at each stress level and still fit the model.
+-    The percentiles dataframe in Fit_Weibull_3P had the first column set as the index. This has been corrected to retain the original index. Identified in `this issue <https://github.com/MatthewReid854/reliability/pull/20>`_.
+-    The function plotting_positions sorted the failure data and returned sorted lists. This made it difficult if users wanted to specify different colors for each of the points. plotting_positions now returns the results in the same order the input was given, as per `this issue <https://github.com/MatthewReid854/reliability/pull/19>`_.
 
 **Other**
 
@@ -40,6 +43,7 @@ Version 0.5.6 of `reliability` is focused on enhancing the accelerated life test
 -    CodeCov was broken when the continuous integration was changed from Travis_CI to GitHub Actions. CodeCov reporting is now fixed and the coverage will be improved upon progressively.
 -    All the Fitters now return the axes handles in the probability_plot output object.
 -    Started work on API documentation. This is already available using the help function in Python, but adding it to `readthedocs` makes it much easier to read.
+-    Fit_Expon_1P and Fit_Expon_2P are now fully deprecated and have been removed. These were replaced by Fit_Exponential_1P and Fit_Exponential_2P in version 0.5.4 (released Nov 2020).
 
 **Version: 0.5.5 --- Released: 6 January 2021**
 '''''''''''''''''''''''''''''''''''''''''''''''
@@ -134,8 +138,8 @@ Version 0.5.4 of `reliability` brings in confidence intervals for many more dist
 
 -    Other_functions.distribution_explorer had a bug caused by a recent update to matplotlib. When a non-existent axis was deleted, the error matplotlib generated was a ValueError and that is now changed to AttributeError which was not being appropriately handled by distribution_explorer.
 -    All of the standard distributions expected a list or array for their 5 functions (PDF, CDF, SF, HF, CHF). A command like this "dist.SF(1)" would cause an error and should have been entered as dist.SF([1]). This is now fixed such that if the input is not in a list or array then it will no longer produce an error and the output type will be np.float64.
--   Within Fit_Everything if only 3 points were entered some of the AIC values would be 'Insufficient Data'. If the user also specified sort_by='AIC' then an error would be raised by pandas trying to sort by strings and numbers. In this case the sort_by method will automatically be changed to BIC.
--   The Exponential confidence intervals were invisibe if there were only 2 failures for the fit. This was cause by the upper CI reaching 1 which is effectively infinity on a probability plot. 1's are now filtered out so the CI will always appear.
+-    Within Fit_Everything if only 3 points were entered some of the AIC values would be 'Insufficient Data'. If the user also specified sort_by='AIC' then an error would be raised by pandas trying to sort by strings and numbers. In this case the sort_by method will automatically be changed to BIC.
+-    The Exponential confidence intervals were invisibe if there were only 2 failures for the fit. This was cause by the upper CI reaching 1 which is effectively infinity on a probability plot. 1's are now filtered out so the CI will always appear.
 
 **Other**
 

@@ -2504,7 +2504,7 @@ class Fit_Weibull_3P:
                 "Point Estimate": point_estimate,
                 "Upper Estimate": upper_estimate,
             }
-            percentiles = pd.DataFrame(
+            self.percentiles = pd.DataFrame(
                 percentile_data,
                 columns=[
                     "Percentile",
@@ -2513,7 +2513,6 @@ class Fit_Weibull_3P:
                     "Upper Estimate",
                 ],
             )
-            self.percentiles = percentiles.set_index("Percentile")
 
         # goodness of fit measures
         n = len(failures) + len(right_censored)
@@ -3334,64 +3333,6 @@ class Fit_Weibull_CR:
             T_rc, params[0], params[1], params[2], params[3]
         ).sum()  # right censored times
         return -(LL_f + LL_rc)
-
-
-class Fit_Expon_1P:
-    """
-    Deprecated Function due to renaming
-    Use Fit_Exponential_1P instead
-    """
-
-    def __init__(
-        self,
-        failures=None,
-        right_censored=None,
-        show_probability_plot=True,
-        print_results=True,
-        CI=0.95,
-        percentiles=None,
-        **kwargs
-    ):
-        warning_str = "DeprecationWarning: Fit_Expon_1P was renamed to Fit_Exponential_1P in version 0.5.4. Your function has still been run, however, Fit_Expon_1P will be fully deprecated in March 2021."
-        colorprint(warning_str, text_color="red")
-        Fit_Exponential_1P(
-            failures=failures,
-            right_censored=right_censored,
-            show_probability_plot=show_probability_plot,
-            print_results=print_results,
-            CI=CI,
-            percentiles=percentiles,
-            **kwargs
-        )
-
-
-class Fit_Expon_2P:
-    """
-    Deprecated Function due to renaming
-    Use Fit_Exponential_2P instead
-    """
-
-    def __init__(
-        self,
-        failures=None,
-        right_censored=None,
-        show_probability_plot=True,
-        print_results=True,
-        CI=0.95,
-        percentiles=None,
-        **kwargs
-    ):
-        warning_str = "DeprecationWarning: Fit_Expon_2P was renamed to Fit_Exponential_2P in version 0.5.4. Your function has still been run, however, Fit_Expon_2P will be fully deprecated in March 2021."
-        colorprint(warning_str, text_color="red")
-        Fit_Exponential_2P(
-            failures=failures,
-            right_censored=right_censored,
-            show_probability_plot=show_probability_plot,
-            print_results=print_results,
-            CI=CI,
-            percentiles=percentiles,
-            **kwargs
-        )
 
 
 class Fit_Exponential_1P:
