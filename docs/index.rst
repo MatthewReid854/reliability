@@ -6,7 +6,7 @@
 
 *reliability* is a Python library for `reliability engineering <https://en.wikipedia.org/wiki/Reliability_engineering>`_ and `survival analysis <https://en.wikipedia.org/wiki/Survival_analysis>`_. It significantly extends the functionality of scipy.stats and also includes many specialist tools that are otherwise only available in proprietary software.
 
-.. image:: images/readme_image_V2.png
+.. image:: images/readme_image_V3.png
 
 If you frequently use the Python Reliability Library, please consider filling out a quick `survey <https://form.jotform.com/203156856636058>`_ to help guide the development of the library and this documentation.
 
@@ -160,10 +160,10 @@ Contents:
     :scale: 100%
     :target: https://github.com/MatthewReid854/reliability
 
-.. |downloads| image:: https://img.shields.io/pypi/dm/reliability?color=brightgreen&logo=Docusign&logoColor=white&label=PyPI%20downloads
+.. |downloads| image:: https://static.pepy.tech/personalized-badge/reliability?period=month&units=international_system&left_color=grey&right_color=brightgreen&left_text=PyPI%20downloads/month
     :alt: downloads
     :scale: 100%
-    :target: https://pypistats.org/packages/reliability
+    :target: https://pepy.tech/project/reliability
 
 .. |license| image:: https://img.shields.io/badge/License-LGPLv3-blue.svg?logo=GNU
     :alt: license
