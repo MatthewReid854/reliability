@@ -413,7 +413,7 @@ def test_Fit_Everything_ALT_single_stress():
     assert_allclose(model.Exponential_Eyring_loglik, -1952.8718915406034, rtol=rtol, atol=atol)
 
     assert_allclose(model.Weibull_Power_a, 1704571726306460.2, rtol=0.06, atol=1e14) # larger due to variation in python versions
-    assert_allclose(model.Weibull_Power_n, -4.632734486704249, rtol=rtol, atol=atol)
+    assert_allclose(model.Weibull_Power_n, -4.632734486704249, rtol=0.002, atol=0.01) # larger due to variation in python versions
     assert_allclose(model.Weibull_Power_beta, 2.314945291433339, rtol=rtol, atol=atol)
     assert_allclose(model.Weibull_Power_AICc, 3710.2611745093573, rtol=rtol, atol=atol)
     assert_allclose(model.Weibull_Power_BIC, 3721.2914408522447, rtol=rtol, atol=atol)
