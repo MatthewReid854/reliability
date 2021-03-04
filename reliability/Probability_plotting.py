@@ -50,20 +50,35 @@ np.seterr("ignore")
 dec = 3  # number of decimals to use when rounding fitted parameters in labels
 
 
-def plotting_positions(failures=None, right_censored=None, a=None, preserve_order=False):
+def plotting_positions(failures=None, right_censored=None, a=None):
     """
     Calculates the plotting positions for plotting on probability paper
     This function is primarily used by the probability plotting functions.
+    The order of the input data is preserved (not sorted).
 
     Inputs:
     failures - the array or list of failure times
     right_censored - the array or list of right censored failure times
-    a - the heuristic constant for plotting positions of the form (k-a)/(n+1-2a). Default is a=0.3 which is the median rank method (same as the default in Minitab).
+    a - the heuristic constant for plotting positions of the form (k-a)/(n+1-2a). Default is a=0.3 which is the median rank method (same as the default in Minitab and Reliasoft).
         Must be in the range 0 to 1. For more heuristics, see: https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics
 
     Outputs:
     x,y - the x and y plotting positions as lists
     """
+
+    # error checking the input
+    if type(failures) in [list, np.ndarray]:
+        f = failures
+    else:
+        raise ValueError("failures must be specified as an array or list")
+
+    if type(right_censored) == type(None):
+        rc = np.array([])
+    elif type(right_censored) in [np.ndarray, list]:
+        rc = right_censored
+    else:
+        raise ValueError("if specified, right_censored must be an array or list")
+
     if a is None:
         a = 0.3
     elif a < 0 or a > 1:
@@ -71,17 +86,7 @@ def plotting_positions(failures=None, right_censored=None, a=None, preserve_orde
             "a must be in the range 0 to 1. Default is 0.3 which gives the median rank. For more information see https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics"
         )
 
-    if failures is None or type(failures) not in (list, np.ndarray):
-        raise ValueError("failures must be specified as an array or list")
-    else:
-        f = np.array(failures)  # do not sort yet
-    if right_censored is None:
-        rc = np.array([])
-    elif type(right_censored) in (list, np.ndarray):
-        rc = np.array(right_censored)  # do not sort yet
-    else:
-        raise ValueError("if specified, right_censored must be an array or list")
-
+    # construct the dataframe for the rank adjustment method
     f_codes = np.ones_like(f)
     rc_codes = np.zeros_like(rc)
     cens_codes = np.hstack([f_codes, rc_codes])
@@ -89,49 +94,54 @@ def plotting_positions(failures=None, right_censored=None, a=None, preserve_orde
     n = len(all_data)
     data = {"times": all_data, "cens_codes": cens_codes}
     df = pd.DataFrame(data, columns=["times", "cens_codes"])
-    df.sort_values(by="times", inplace=True)  # retains original order via index
-    df["reverse_i"] = np.arange(1, len(all_data) + 1)[::-1]
-    failure_rows = df.loc[df["cens_codes"] == 1.0]
+    df_sorted = df.sort_values(by="times")
+    df_sorted["reverse_i"] = np.arange(1, len(all_data) + 1)[::-1]
+    failure_rows = df_sorted.loc[df_sorted["cens_codes"] == 1.0]
     reverse_i = failure_rows["reverse_i"].values
-    c = list(df["cens_codes"].values)
+    c = list(df_sorted["cens_codes"].values)
     leading_cens = c.index(1)
-    # this is the rank adjustment method
     if leading_cens > 0:  # there are censored items before the first failure
         k = np.arange(1, len(reverse_i) + 1)
-        adjusted_rank = [0]
+        adjusted_rank2 = [0]
         rank_increment = [leading_cens / (n - 1)]
         for j in k:
-            rank_increment.append((n + 1 - adjusted_rank[-1]) / (1 + reverse_i[j - 1]))
-            adjusted_rank.append(adjusted_rank[-1] + rank_increment[-1])
-        df = df[df["cens_codes"] == 1]  # remove right censored from dataframe
-        df["adjusted_rank"] = adjusted_rank[1:]
+            rank_increment.append((n + 1 - adjusted_rank2[-1]) / (1 + reverse_i[j - 1]))
+            adjusted_rank2.append(adjusted_rank2[-1] + rank_increment[-1])
+        adjusted_rank = adjusted_rank2[1:]
     else:  # the first item is a failure
+        k = np.arange(1, len(reverse_i))
         adjusted_rank = [1]
         rank_increment = [1]
-        for irev in df['reverse_i'].iloc[1:]:
-            rank_increment.append((n + 1 - adjusted_rank[-1]) / (1 + irev))
-            adjusted_rank.append(adjusted_rank[-1] + rank_increment[-1])
-        df["rank_increment"] = rank_increment
-        df["adjusted_rank"] = adjusted_rank
-        df = df[df["cens_codes"] == 1]  # remove right censored from dataframe
-    if preserve_order:
-        df.sort_index(inplace=True)  # Return to original order
-    df["F"] = (df["adjusted_rank"] - a) / (n + 1 - 2 * a)
-    x = df["times"].values.tolist()
-    y = df["F"].values.tolist()
+        for j in k:
+            if j > 0:
+                rank_increment.append((n + 1 - adjusted_rank[-1]) / (1 + reverse_i[j]))
+                adjusted_rank.append(adjusted_rank[-1] + rank_increment[-1])
+    F = []
+    for i in adjusted_rank:
+        F.append((i - a) / (n + 1 - 2 * a))
+
+    # restore the original order of the points using the index from the sorted dataframe
+    idx = failure_rows.index.values
+    df2 = pd.DataFrame(
+        data={"x": failure_rows.times.values, "y": F, "idx": idx},
+        columns=["x", "y", "idx"],
+    ).sort_values(by="idx")
+    x = df2.x.values
+    y = df2.y.values
     return x, y
 
 
 def Weibull_probability_plot(
-        failures=None,
-        right_censored=None,
-        fit_gamma=False,
-        __fitted_dist_params=None,
-        a=None,
-        CI=0.95,
-        CI_type="time",
-        show_fitted_distribution=True,
-        **kwargs
+    failures=None,
+    right_censored=None,
+    fit_gamma=False,
+    __fitted_dist_params=None,
+    a=None,
+    CI=0.95,
+    CI_type="time",
+    show_fitted_distribution=True,
+    show_scatter_points=True,
+    **kwargs
 ):
     """
     Weibull probability plot
@@ -141,7 +151,8 @@ def Weibull_probability_plot(
     failures - the array or list of failure times
     right_censored - the array or list of right censored failure times
     fit_gamma - True/False. Default is False. Specify this as True in order to fit the Weibull_3P distribution and scale the x-axis to time - gamma.
-    show_fitted_distribution - True/False. If true, the fitted distribution will be plotted on the probability plot. Defaults to True
+    show_fitted_distribution - True/False. If True, the fitted distribution will be plotted on the probability plot. Defaults to True
+    show_scatter_points - True/False. If True, the plot will include the scatter points from the failure times. Defaults to True.
     a - the heuristic constant for plotting positions of the form (k-a)/(n+1-2a). Default is a=0.3 which is the median rank method (same as the default in Minitab).
         For more heuristics, see: https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics
     CI - the confidence interval for the bounds. Default is 0.95 for 95% CI.
@@ -273,7 +284,8 @@ def Weibull_probability_plot(
 
     # plot the failure points and format the scale and axes
     x, y = plotting_positions(failures=failures, right_censored=right_censored, a=a)
-    plt.scatter(x, y, marker=".", linewidth=2, c=data_color)
+    if show_scatter_points is True:
+        plt.scatter(x, y, marker=".", linewidth=2, c=data_color)
     plt.gca().set_yscale(
         "function",
         functions=(axes_transforms.weibull_forward, axes_transforms.weibull_inverse),
@@ -299,15 +311,16 @@ def Weibull_probability_plot(
 
 
 def Loglogistic_probability_plot(
-        failures=None,
-        right_censored=None,
-        fit_gamma=False,
-        __fitted_dist_params=None,
-        a=None,
-        CI=0.95,
-        CI_type="time",
-        show_fitted_distribution=True,
-        **kwargs
+    failures=None,
+    right_censored=None,
+    fit_gamma=False,
+    __fitted_dist_params=None,
+    a=None,
+    CI=0.95,
+    CI_type="time",
+    show_fitted_distribution=True,
+    show_scatter_points=True,
+    **kwargs
 ):
     """
     Loglogistic probability plot
@@ -317,7 +330,8 @@ def Loglogistic_probability_plot(
     failures - the array or list of failure times
     right_censored - the array or list of right censored failure times
     fit_gamma - True/False. Default is False. Specify this as True in order to fit the Loglogistic_3P distribution and scale the x-axis to time - gamma.
-    show_fitted_distribution - True/False. If true, the fitted distribution will be plotted on the probability plot. Defaults to True
+    show_fitted_distribution - True/False. If True, the fitted distribution will be plotted on the probability plot. Defaults to True
+    show_scatter_points - True/False. If True, the plot will include the scatter points from the failure times. Defaults to True.
     a - the heuristic constant for plotting positions of the form (k-a)/(n+1-2a). Default is a=0.3 which is the median rank method (same as the default in Minitab).
         For more heuristics, see: https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics
     CI - the confidence interval for the bounds. Default is 0.95 for 95% CI.
@@ -449,7 +463,8 @@ def Loglogistic_probability_plot(
 
     # plot the failure points and format the scale and axes
     x, y = plotting_positions(failures=failures, right_censored=right_censored, a=a)
-    plt.scatter(x, y, marker=".", linewidth=2, c=data_color)
+    if show_scatter_points is True:
+        plt.scatter(x, y, marker=".", linewidth=2, c=data_color)
     plt.gca().set_yscale(
         "function",
         functions=(
@@ -478,14 +493,15 @@ def Loglogistic_probability_plot(
 
 
 def Exponential_probability_plot_Weibull_Scale(
-        failures=None,
-        right_censored=None,
-        fit_gamma=False,
-        __fitted_dist_params=None,
-        a=None,
-        CI=0.95,
-        show_fitted_distribution=True,
-        **kwargs
+    failures=None,
+    right_censored=None,
+    fit_gamma=False,
+    __fitted_dist_params=None,
+    a=None,
+    CI=0.95,
+    show_fitted_distribution=True,
+    show_scatter_points=True,
+    **kwargs
 ):
     """
     Exponential probability plot Weibull Scale
@@ -499,6 +515,7 @@ def Exponential_probability_plot_Weibull_Scale(
     right_censored - the array or list of right censored failure times
     fit_gamma - True/False. Default is False. Specify this as True in order to fit the Exponential_2P distribution and scale the x-axis to time - gamma.
     show_fitted_distribution - True/False. If True, the fitted distribution will be plotted on the probability plot. Defaults to True
+    show_scatter_points - True/False. If True, the plot will include the scatter points from the failure times. Defaults to True.
     a - the heuristic constant for plotting positions of the form (k-a)/(n+1-2a). Default is a=0.3 which is the median rank method (same as the default in Minitab).
         For more heuristics, see: https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics
     CI - the confidence interval for the bounds. Default is 0.95 for 95% CI.
@@ -599,18 +616,19 @@ def Exponential_probability_plot_Weibull_Scale(
                 )
             xlabel = "Time - gamma"
             failures = (
-                    failures - gamma + 0.009
+                failures - gamma + 0.009
             )  # this 0.009 adjustment is to avoid taking the log of 0. It causes negligible difference to the fit and plot. 0.009 is chosen to be the same as Weibull_Fit_3P adjustment.
             if right_censored is not None:
                 right_censored = (
-                        right_censored - gamma + 0.009
+                    right_censored - gamma + 0.009
                 )  # this 0.009 adjustment is to avoid taking the log of 0. It causes negligible difference to the fit and plot. 0.009 is chosen to be the same as Weibull_Fit_3P adjustment.
 
         ef = Exponential_Distribution(Lambda=Lambda, Lambda_SE=Lambda_SE, CI=CI)
 
     # plot the failure points and format the scale and axes
     x, y = plotting_positions(failures=failures, right_censored=right_censored, a=a)
-    plt.scatter(x, y, marker=".", linewidth=2, c=data_color)
+    if show_scatter_points is True:
+        plt.scatter(x, y, marker=".", linewidth=2, c=data_color)
     plt.gca().set_yscale(
         "function",
         functions=(axes_transforms.weibull_forward, axes_transforms.weibull_inverse),
@@ -636,14 +654,15 @@ def Exponential_probability_plot_Weibull_Scale(
 
 
 def Gumbel_probability_plot(
-        failures=None,
-        right_censored=None,
-        __fitted_dist_params=None,
-        a=None,
-        show_fitted_distribution=True,
-        CI=0.95,
-        CI_type="time",
-        **kwargs
+    failures=None,
+    right_censored=None,
+    __fitted_dist_params=None,
+    a=None,
+    CI=0.95,
+    CI_type="time",
+    show_fitted_distribution=True,
+    show_scatter_points=True,
+    **kwargs
 ):
     """
     Gumbel probability plot
@@ -653,6 +672,7 @@ def Gumbel_probability_plot(
     failures - the array or list of failure times
     right_censored - the array or list of right censored failure times
     show_fitted_distribution - True/False. If True, the fitted distribution will be plotted on the probability plot. Defaults to True
+    show_scatter_points - True/False. If True, the plot will include the scatter points from the failure times. Defaults to True.
     a - the heuristic constant for plotting positions of the form (k-a)/(n+1-2a). Default is a=0.3 which is the median rank method (same as the default in Minitab).
         For more heuristics, see: https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics
     CI - the confidence interval for the bounds. Default is 0.95 for 95% CI.
@@ -728,7 +748,8 @@ def Gumbel_probability_plot(
         )
 
     x, y = plotting_positions(failures=failures, right_censored=right_censored, a=a)
-    plt.scatter(x, y, marker=".", linewidth=2, c=data_color)
+    if show_scatter_points is True:
+        plt.scatter(x, y, marker=".", linewidth=2, c=data_color)
     plt.gca().set_yscale(
         "function",
         functions=(axes_transforms.gumbel_forward, axes_transforms.gumbel_inverse),
@@ -751,14 +772,15 @@ def Gumbel_probability_plot(
 
 
 def Normal_probability_plot(
-        failures=None,
-        right_censored=None,
-        __fitted_dist_params=None,
-        a=None,
-        CI=0.95,
-        CI_type="time",
-        show_fitted_distribution=True,
-        **kwargs
+    failures=None,
+    right_censored=None,
+    __fitted_dist_params=None,
+    a=None,
+    CI=0.95,
+    CI_type="time",
+    show_fitted_distribution=True,
+    show_scatter_points=True,
+    **kwargs
 ):
     """
     Normal probability plot
@@ -767,7 +789,8 @@ def Normal_probability_plot(
     Inputs:
     failures - the array or list of failure times
     right_censored - the array or list of right censored failure times
-    show_fitted_distribution - True/False. If true, the fitted distribution will be plotted on the probability plot. Defaults to True
+    show_fitted_distribution - True/False. If True, the fitted distribution will be plotted on the probability plot. Defaults to True
+    show_scatter_points - True/False. If True, the plot will include the scatter points from the failure times. Defaults to True.
     a - the heuristic constant for plotting positions of the form (k-a)/(n+1-2a). Default is a=0.3 which is the median rank method (same as the default in Minitab).
         For more heuristics, see: https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics
     CI - the confidence interval for the bounds. Default is 0.95 for 95% CI.
@@ -843,7 +866,8 @@ def Normal_probability_plot(
 
     # plot the failure points and format the scale and axes
     x, y = plotting_positions(failures=failures, right_censored=right_censored, a=a)
-    plt.scatter(x, y, marker=".", linewidth=2, c=data_color)
+    if show_scatter_points is True:
+        plt.scatter(x, y, marker=".", linewidth=2, c=data_color)
     plt.gca().set_yscale(
         "function",
         functions=(axes_transforms.normal_forward, axes_transforms.normal_inverse),
@@ -866,15 +890,16 @@ def Normal_probability_plot(
 
 
 def Lognormal_probability_plot(
-        failures=None,
-        right_censored=None,
-        fit_gamma=False,
-        __fitted_dist_params=None,
-        a=None,
-        CI=0.95,
-        CI_type="time",
-        show_fitted_distribution=True,
-        **kwargs
+    failures=None,
+    right_censored=None,
+    fit_gamma=False,
+    __fitted_dist_params=None,
+    a=None,
+    CI=0.95,
+    CI_type="time",
+    show_fitted_distribution=True,
+    show_scatter_points=True,
+    **kwargs
 ):
     """
     Lognormal probability plot
@@ -885,6 +910,7 @@ def Lognormal_probability_plot(
     right_censored - the array or list of right censored failure times
     fit_gamma - True/False. Default is False. Specify this as True in order to fit the Lognormal_3P distribution and scale the x-axis to time - gamma.
     show_fitted_distribution - True/False. If True, the fitted distribution will be plotted on the probability plot. Defaults to True
+    show_scatter_points - True/False. If True, the plot will include the scatter points from the failure times. Defaults to True.
     a - the heuristic constant for plotting positions of the form (k-a)/(n+1-2a). Default is a=0.3 which is the median rank method (same as the default in Minitab).
         For more heuristics, see: https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics
     CI - the confidence interval for the bounds. Default is 0.95 for 95% CI.
@@ -1014,7 +1040,8 @@ def Lognormal_probability_plot(
 
     # plot the failure points and format the scale and axes
     x, y = plotting_positions(failures=failures, right_censored=right_censored, a=a)
-    plt.scatter(x, y, marker=".", linewidth=2, c=data_color)
+    if show_scatter_points is True:
+        plt.scatter(x, y, marker=".", linewidth=2, c=data_color)
     plt.gca().set_yscale(
         "function",
         functions=(axes_transforms.normal_forward, axes_transforms.normal_inverse),
@@ -1038,13 +1065,14 @@ def Lognormal_probability_plot(
 
 
 def Beta_probability_plot(
-        failures=None,
-        right_censored=None,
-        __fitted_dist_params=None,
-        a=None,
-        CI=0.95,
-        show_fitted_distribution=True,
-        **kwargs
+    failures=None,
+    right_censored=None,
+    __fitted_dist_params=None,
+    a=None,
+    CI=0.95,
+    show_fitted_distribution=True,
+    show_scatter_points=True,
+    **kwargs
 ):
     """
     Beta probability plot
@@ -1054,6 +1082,7 @@ def Beta_probability_plot(
     failures - the array or list of failure times
     right_censored - the array or list of right censored failure times
     show_fitted_distribution - True/False. If True, the fitted distribution will be plotted on the probability plot. Defaults to True
+    show_scatter_points - True/False. If True, the plot will include the scatter points from the failure times. Defaults to True.
     a - the heuristic constant for plotting positions of the form (k-a)/(n+1-2a). Default is a=0.3 which is the median rank method (same as the default in Minitab).
         For more heuristics, see: https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics
     kwargs are accepted for the fitted line (eg. linestyle, label, color)
@@ -1115,7 +1144,8 @@ def Beta_probability_plot(
     x, y = plotting_positions(failures=failures, right_censored=right_censored, a=a)
     plt.grid(b=True, which="major", color="k", alpha=0.3, linestyle="-")
     plt.grid(b=True, which="minor", color="k", alpha=0.08, linestyle="-")
-    plt.scatter(x, y, marker=".", linewidth=2, c=data_color)
+    if show_scatter_points is True:
+        plt.scatter(x, y, marker=".", linewidth=2, c=data_color)
     f_beta = lambda x: axes_transforms.beta_forward(x, alpha, beta)
     fi_beta = lambda x: axes_transforms.beta_inverse(x, alpha, beta)
     plt.gca().set_yscale("function", functions=(f_beta, fi_beta))
@@ -1139,14 +1169,15 @@ def Beta_probability_plot(
 
 
 def Gamma_probability_plot(
-        failures=None,
-        right_censored=None,
-        fit_gamma=False,
-        __fitted_dist_params=None,
-        a=None,
-        CI=0.95,
-        show_fitted_distribution=True,
-        **kwargs
+    failures=None,
+    right_censored=None,
+    fit_gamma=False,
+    __fitted_dist_params=None,
+    a=None,
+    CI=0.95,
+    show_fitted_distribution=True,
+    show_scatter_points=True,
+    **kwargs
 ):
     """
     Gamma probability plot
@@ -1156,7 +1187,8 @@ def Gamma_probability_plot(
     failures - the array or list of failure times
     right_censored - the array or list of right censored failure times
     fit_gamma - True/False. Default is False. Specify this as True in order to fit the Gamma_3P distribution and scale the x-axis to time - gamma.
-    show_fitted_distribution - True/False. If true, the fitted distribution will be plotted on the probability plot. Defaults to True
+    show_fitted_distribution - True/False. If True, the fitted distribution will be plotted on the probability plot. Defaults to True
+    show_scatter_points - True/False. If True, the plot will include the scatter points from the failure times. Defaults to True.
     a - the heuristic constant for plotting positions of the form (k-a)/(n+1-2a). Default is a=0.3 which is the median rank method (same as the default in Minitab).
         For more heuristics, see: https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics
     kwargs are accepted for the fitted line (eg. linestyle, label, color)
@@ -1264,7 +1296,8 @@ def Gamma_probability_plot(
 
     # plot the failure points and format the scale and axes
     x, y = plotting_positions(failures=failures, right_censored=right_censored, a=a)
-    plt.scatter(x, y, marker=".", linewidth=2, c=data_color)
+    if show_scatter_points is True:
+        plt.scatter(x, y, marker=".", linewidth=2, c=data_color)
     f_gamma = lambda x: axes_transforms.gamma_forward(x, beta)
     fi_gamma = lambda x: axes_transforms.gamma_inverse(x, beta)
     plt.gca().set_yscale("function", functions=(f_gamma, fi_gamma))
@@ -1288,14 +1321,15 @@ def Gamma_probability_plot(
 
 
 def Exponential_probability_plot(
-        failures=None,
-        right_censored=None,
-        fit_gamma=False,
-        __fitted_dist_params=None,
-        a=None,
-        CI=0.95,
-        show_fitted_distribution=True,
-        **kwargs
+    failures=None,
+    right_censored=None,
+    fit_gamma=False,
+    __fitted_dist_params=None,
+    a=None,
+    CI=0.95,
+    show_fitted_distribution=True,
+    show_scatter_points=True,
+    **kwargs
 ):
     """
     Exponential probability plot
@@ -1305,7 +1339,8 @@ def Exponential_probability_plot(
     failures - the array or list of failure times
     right_censored - the array or list of right censored failure times
     fit_gamma - True/False. Default is False. Specify this as True in order to fit the Exponential_2P distribution and scale the x-axis to time - gamma.
-    show_fitted_distribution - True/False. If true, the fitted distribution will be plotted on the probability plot. Defaults to True
+    show_fitted_distribution - True/False. If True, the fitted distribution will be plotted on the probability plot. Defaults to True
+    show_scatter_points - True/False. If True, the plot will include the scatter points from the failure times. Defaults to True.
     a - the heuristic constant for plotting positions of the form (k-a)/(n+1-2a). Default is a=0.3 which is the median rank method (same as the default in Minitab).
         For more heuristics, see: https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics
     CI - the confidence interval for the bounds. Default is 0.95 for 95% CI.
@@ -1408,7 +1443,8 @@ def Exponential_probability_plot(
         ef = Exponential_Distribution(Lambda=Lambda, Lambda_SE=Lambda_SE, CI=CI)
 
     x, y = plotting_positions(failures=failures, right_censored=right_censored, a=a)
-    plt.scatter(x, y, marker=".", linewidth=2, c=data_color)
+    if show_scatter_points is True:
+        plt.scatter(x, y, marker=".", linewidth=2, c=data_color)
     plt.gca().set_yscale(
         "function",
         functions=(
@@ -1438,12 +1474,12 @@ def Exponential_probability_plot(
 
 
 def PP_plot_parametric(
-        X_dist=None,
-        Y_dist=None,
-        y_quantile_lines=None,
-        x_quantile_lines=None,
-        show_diagonal_line=False,
-        **kwargs
+    X_dist=None,
+    Y_dist=None,
+    y_quantile_lines=None,
+    x_quantile_lines=None,
+    show_diagonal_line=False,
+    **kwargs
 ):
     """
     A PP_Plot is a probability-probability plot that consists of plotting the CDF of one distribution against the CDF of another distribution. If the distributions are similar, the PP_Plot will lie on the diagonal.
@@ -1557,7 +1593,7 @@ def PP_plot_parametric(
 
 
 def QQ_plot_parametric(
-        X_dist=None, Y_dist=None, show_fitted_lines=True, show_diagonal_line=False, **kwargs
+    X_dist=None, Y_dist=None, show_fitted_lines=True, show_diagonal_line=False, **kwargs
 ):
     """
     A QQ plot is a quantile-quantile plot which consists of plotting failure units vs failure units for shared quantiles. A quantile is simply the fraction failing (ranging from 0 to 1).
@@ -1673,12 +1709,12 @@ def QQ_plot_parametric(
 
 
 def PP_plot_semiparametric(
-        X_data_failures=None,
-        X_data_right_censored=None,
-        Y_dist=None,
-        show_diagonal_line=True,
-        method="KM",
-        **kwargs
+    X_data_failures=None,
+    X_data_right_censored=None,
+    Y_dist=None,
+    show_diagonal_line=True,
+    method="KM",
+    **kwargs
 ):
     """
     A PP_Plot is a probability-probability plot that consists of plotting the CDF of one distribution against the CDF of another distribution. If we have both distributions we can use PP_plot_parametric.
@@ -1807,13 +1843,13 @@ def PP_plot_semiparametric(
 
 
 def QQ_plot_semiparametric(
-        X_data_failures=None,
-        X_data_right_censored=None,
-        Y_dist=None,
-        show_fitted_lines=True,
-        show_diagonal_line=False,
-        method="KM",
-        **kwargs
+    X_data_failures=None,
+    X_data_right_censored=None,
+    Y_dist=None,
+    show_fitted_lines=True,
+    show_diagonal_line=False,
+    method="KM",
+    **kwargs
 ):
     """
     A QQ plot is a quantile-quantile plot which consists of plotting failure units vs failure units for shared quantiles. A quantile is simply the fraction failing (ranging from 0 to 1).
@@ -1987,7 +2023,7 @@ def QQ_plot_semiparametric(
     return [m, deg1[0], deg1[1]]
 
 
-def plot_points(failures=None, right_censored=None, func="CDF", a=None, preserve_order=False, **kwargs):
+def plot_points(failures=None, right_censored=None, func="CDF", a=None, **kwargs):
     """
     plot_points
 
@@ -2025,7 +2061,7 @@ def plot_points(failures=None, right_censored=None, func="CDF", a=None, preserve
         )
 
     x, y = plotting_positions(
-        failures=failures, right_censored=right_censored, a=a, preserve_order=preserve_order
+        failures=failures, right_censored=right_censored, a=a
     )  # get the plotting positions
     y = np.array(y)
     x = np.array(x)
@@ -2067,8 +2103,8 @@ def plot_points(failures=None, right_censored=None, func="CDF", a=None, preserve
     xlims = plt.xlim(auto=None)  # get previous xlim
     ylims = plt.ylim(auto=None)  # get previous ylim
     if xlims == (0, 1) and ylims == (
-            0,
-            1,
+        0,
+        1,
     ):  # this checks if there was a previous plot. If the lims were 0,1 and 0,1 then there probably wasn't.
         plt.scatter(
             x, y_adjusted, marker=marker, color=color, **kwargs
