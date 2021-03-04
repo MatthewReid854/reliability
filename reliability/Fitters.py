@@ -1615,7 +1615,7 @@ class Fit_Weibull_2P:
         }
         self.goodness_of_fit = pd.DataFrame(
             GoF_data, columns=["Goodness of fit", "Value"]
-        )
+        ).set_index("Goodness of fit")
 
         if print_results is True:
             CI_rounded = CI * 100
@@ -1637,7 +1637,7 @@ class Fit_Weibull_2P:
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
-            print(self.goodness_of_fit.to_string(index=False), "\n")
+            print(self.goodness_of_fit.to_string(), "\n")
 
             if percentiles is not None:
                 print(
@@ -2197,7 +2197,7 @@ class Fit_Weibull_2P_grouped:
         }
         self.goodness_of_fit = pd.DataFrame(
             GoF_data, columns=["Goodness of fit", "Value"]
-        )
+        ).set_index("Goodness of fit")
 
         if print_results is True:
             CI_rounded = CI * 100
@@ -2221,7 +2221,7 @@ class Fit_Weibull_2P_grouped:
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
-            print(self.goodness_of_fit.to_string(index=False), "\n")
+            print(self.goodness_of_fit.to_string(), "\n")
 
             if percentiles is not None:
                 print(
@@ -2536,7 +2536,7 @@ class Fit_Weibull_3P:
         }
         self.goodness_of_fit = pd.DataFrame(
             GoF_data, columns=["Goodness of fit", "Value"]
-        )
+        ).set_index("Goodness of fit")
 
         if print_results is True:
             CI_rounded = CI * 100
@@ -2558,7 +2558,7 @@ class Fit_Weibull_3P:
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
-            print(self.goodness_of_fit.to_string(index=False), "\n")
+            print(self.goodness_of_fit.to_string(), "\n")
 
             if percentiles is not None:
                 print(
@@ -2927,7 +2927,7 @@ class Fit_Weibull_Mixture:
         }
         self.goodness_of_fit = pd.DataFrame(
             GoF_data, columns=["Goodness of fit", "Value"]
-        )
+        ).set_index("Goodness of fit")
 
         if print_results is True:
             CI_rounded = CI * 100
@@ -2949,7 +2949,7 @@ class Fit_Weibull_Mixture:
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
-            print(self.goodness_of_fit.to_string(index=False), "\n")
+            print(self.goodness_of_fit.to_string(), "\n")
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Weibull_probability_plot
@@ -3257,7 +3257,7 @@ class Fit_Weibull_CR:
         }
         self.goodness_of_fit = pd.DataFrame(
             GoF_data, columns=["Goodness of fit", "Value"]
-        )
+        ).set_index("Goodness of fit")
 
         if print_results is True:
             CI_rounded = CI * 100
@@ -3279,7 +3279,7 @@ class Fit_Weibull_CR:
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
-            print(self.goodness_of_fit.to_string(index=False), "\n")
+            print(self.goodness_of_fit.to_string(), "\n")
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Weibull_probability_plot
@@ -3570,7 +3570,7 @@ class Fit_Exponential_1P:
         }
         self.goodness_of_fit = pd.DataFrame(
             GoF_data, columns=["Goodness of fit", "Value"]
-        )
+        ).set_index("Goodness of fit")
 
         if print_results is True:
             CI_rounded = CI * 100
@@ -3592,7 +3592,7 @@ class Fit_Exponential_1P:
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
-            print(self.goodness_of_fit.to_string(index=False), "\n")
+            print(self.goodness_of_fit.to_string(), "\n")
 
             if percentiles is not None:
                 print(
@@ -3854,7 +3854,7 @@ class Fit_Exponential_2P:
         }
         self.goodness_of_fit = pd.DataFrame(
             GoF_data, columns=["Goodness of fit", "Value"]
-        )
+        ).set_index("Goodness of fit")
 
         if print_results is True:
             CI_rounded = CI * 100
@@ -3876,7 +3876,7 @@ class Fit_Exponential_2P:
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
-            print(self.goodness_of_fit.to_string(index=False), "\n")
+            print(self.goodness_of_fit.to_string(), "\n")
 
             if percentiles is not None:
                 print(
@@ -4172,7 +4172,7 @@ class Fit_Normal_2P:
         }
         self.goodness_of_fit = pd.DataFrame(
             GoF_data, columns=["Goodness of fit", "Value"]
-        )
+        ).set_index("Goodness of fit")
 
         if print_results is True:
             CI_rounded = CI * 100
@@ -4194,7 +4194,7 @@ class Fit_Normal_2P:
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
-            print(self.goodness_of_fit.to_string(index=False), "\n")
+            print(self.goodness_of_fit.to_string(), "\n")
 
             if percentiles is not None:
                 print(
@@ -4456,7 +4456,7 @@ class Fit_Gumbel_2P:
         }
         self.goodness_of_fit = pd.DataFrame(
             GoF_data, columns=["Goodness of fit", "Value"]
-        )
+        ).set_index("Goodness of fit")
 
         if print_results is True:
             CI_rounded = CI * 100
@@ -4478,7 +4478,7 @@ class Fit_Gumbel_2P:
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
-            print(self.goodness_of_fit.to_string(index=False), "\n")
+            print(self.goodness_of_fit.to_string(), "\n")
 
             if percentiles is not None:
                 print(
@@ -4755,7 +4755,7 @@ class Fit_Lognormal_2P:
         }
         self.goodness_of_fit = pd.DataFrame(
             GoF_data, columns=["Goodness of fit", "Value"]
-        )
+        ).set_index("Goodness of fit")
 
         if print_results is True:
             CI_rounded = CI * 100
@@ -4777,7 +4777,7 @@ class Fit_Lognormal_2P:
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
-            print(self.goodness_of_fit.to_string(index=False), "\n")
+            print(self.goodness_of_fit.to_string(), "\n")
 
             if percentiles is not None:
                 print(
@@ -5093,7 +5093,7 @@ class Fit_Lognormal_3P:
         }
         self.goodness_of_fit = pd.DataFrame(
             GoF_data, columns=["Goodness of fit", "Value"]
-        )
+        ).set_index("Goodness of fit")
 
         if print_results is True:
             CI_rounded = CI * 100
@@ -5115,7 +5115,7 @@ class Fit_Lognormal_3P:
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
-            print(self.goodness_of_fit.to_string(index=False), "\n")
+            print(self.goodness_of_fit.to_string(), "\n")
 
             if percentiles is not None:
                 print(
@@ -5344,7 +5344,7 @@ class Fit_Gamma_2P:
         }
         self.goodness_of_fit = pd.DataFrame(
             GoF_data, columns=["Goodness of fit", "Value"]
-        )
+        ).set_index("Goodness of fit")
 
         if print_results is True:
             CI_rounded = CI * 100
@@ -5366,7 +5366,7 @@ class Fit_Gamma_2P:
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
-            print(self.goodness_of_fit.to_string(index=False), "\n")
+            print(self.goodness_of_fit.to_string(), "\n")
 
             # if percentiles is not None:
             #     print(str('Table of percentiles (' + str(CI_rounded) + '% CI bounds on time):'))
@@ -5624,7 +5624,7 @@ class Fit_Gamma_3P:
         }
         self.goodness_of_fit = pd.DataFrame(
             GoF_data, columns=["Goodness of fit", "Value"]
-        )
+        ).set_index("Goodness of fit")
 
         if print_results is True:
             CI_rounded = CI * 100
@@ -5646,7 +5646,7 @@ class Fit_Gamma_3P:
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
-            print(self.goodness_of_fit.to_string(index=False), "\n")
+            print(self.goodness_of_fit.to_string(), "\n")
 
             # if percentiles is not None:
             #     print(str('Table of percentiles (' + str(CI_rounded) + '% CI bounds on time):'))
@@ -5871,7 +5871,7 @@ class Fit_Beta_2P:
         }
         self.goodness_of_fit = pd.DataFrame(
             GoF_data, columns=["Goodness of fit", "Value"]
-        )
+        ).set_index("Goodness of fit")
 
         if print_results is True:
             CI_rounded = CI * 100
@@ -5893,7 +5893,7 @@ class Fit_Beta_2P:
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
-            print(self.goodness_of_fit.to_string(index=False), "\n")
+            print(self.goodness_of_fit.to_string(), "\n")
 
             # if percentiles is not None:
             #     print(str('Table of percentiles (' + str(CI_rounded) + '% CI bounds on time):'))
@@ -6133,7 +6133,7 @@ class Fit_Loglogistic_2P:
         }
         self.goodness_of_fit = pd.DataFrame(
             GoF_data, columns=["Goodness of fit", "Value"]
-        )
+        ).set_index("Goodness of fit")
 
         if print_results is True:
             CI_rounded = CI * 100
@@ -6155,7 +6155,7 @@ class Fit_Loglogistic_2P:
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
-            print(self.goodness_of_fit.to_string(index=False), "\n")
+            print(self.goodness_of_fit.to_string(), "\n")
 
             if percentiles is not None:
                 print(
@@ -6455,7 +6455,7 @@ class Fit_Loglogistic_3P:
         }
         self.goodness_of_fit = pd.DataFrame(
             GoF_data, columns=["Goodness of fit", "Value"]
-        )
+        ).set_index("Goodness of fit")
 
         if print_results is True:
             CI_rounded = CI * 100
@@ -6477,7 +6477,7 @@ class Fit_Loglogistic_3P:
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
-            print(self.goodness_of_fit.to_string(index=False), "\n")
+            print(self.goodness_of_fit.to_string(), "\n")
 
             if percentiles is not None:
                 print(
