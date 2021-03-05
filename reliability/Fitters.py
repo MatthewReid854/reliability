@@ -28,6 +28,7 @@ Generally the fit achieved by autograd is highly successful, and whenever it fai
 """
 
 import numpy as np
+from numpy.linalg import LinAlgError
 import matplotlib.pyplot as plt
 import pandas as pd
 from scipy.optimize import minimize
@@ -2837,7 +2838,7 @@ class Fit_Weibull_Mixture:
             self.alpha_2_SE = abs(covariance_matrix[2][2]) ** 0.5
             self.beta_2_SE = abs(covariance_matrix[3][3]) ** 0.5
             self.proportion_1_SE = abs(covariance_matrix[4][4]) ** 0.5
-        except:
+        except LinAlgError:
             # this exception is rare but can occur with some optimisers
             colorprint(
                 str(
@@ -3217,7 +3218,7 @@ class Fit_Weibull_CR:
             self.beta_1_SE = abs(covariance_matrix[1][1]) ** 0.5
             self.alpha_2_SE = abs(covariance_matrix[2][2]) ** 0.5
             self.beta_2_SE = abs(covariance_matrix[3][3]) ** 0.5
-        except:
+        except LinAlgError:
             # this exception is rare but can occur with some optimisers
             colorprint(
                 str(
