@@ -103,5 +103,3 @@ In this example, we will create a Weibull stress distribution and a Gamma streng
     '''
 
 .. image:: images/stress_strength_V4.png
-
-.. note:: Prior to version 0.5.5 these two functions were part of a module called Stress_strength and had the names Stress_strength.Probability_of_failure_normdist and Stress_strength.Probability_of_failure. Since these were the only two functions in the Stress_strength module, the decision was made to move these functions into the Other_functions module and rename them. The previous functions will still run and a DeprecationWarning will be shown, but the previous functions will be fully deprecated in mid-2021. See 0.5.5 release notes in the `Changelog <https://reliability.readthedocs.io/en/latest/Changelog.html>`_ for details.
