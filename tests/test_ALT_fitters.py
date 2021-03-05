@@ -414,7 +414,7 @@ def test_Fit_Everything_ALT_single_stress():
 
     assert_allclose(model.Weibull_Power_a, 1704571726306460.2, rtol=0.9, atol=atol) # much larger due to variation in python versions. WHY???
     assert_allclose(model.Weibull_Power_n, -4.632734486704249, rtol=rtol_big, atol=atol) # larger due to variation in python versions
-    assert_allclose(model.Weibull_Power_beta, 2.314945291433339, rtol=rtol, atol=atol)
+    assert_allclose(model.Weibull_Power_beta, 2.314945291433339, rtol=rtol_big, atol=atol) # larger due to variation in python versions
     assert_allclose(model.Weibull_Power_AICc, 3710.2611745093573, rtol=rtol, atol=atol)
     assert_allclose(model.Weibull_Power_BIC, 3721.2914408522447, rtol=rtol, atol=atol)
     assert_allclose(model.Weibull_Power_loglik, -1852.090046714138, rtol=rtol, atol=atol)
