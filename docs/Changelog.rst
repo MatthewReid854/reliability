@@ -36,6 +36,7 @@ Version 0.5.6 of `reliability` is focused on enhancing the accelerated life test
 -    Some ALT models didn't accept data with < 2 failures at each stress level. The new requirement is to have at least as many failures as there are parameters in the model. It is possible to have a single failure at each stress level and still fit the model.
 -    The percentiles dataframe in Fit_Weibull_3P had the first column set as the index. This has been corrected to retain the original index. Identified in `this issue <https://github.com/MatthewReid854/reliability/pull/20>`_.
 -    The function plotting_positions sorted the failure data and returned sorted lists. This made it difficult if users wanted to specify different colors for each of the points. plotting_positions now returns the results in the same order the input was given, as per `this issue <https://github.com/MatthewReid854/reliability/pull/19>`_.
+-    Some datasets with some optimisers could cause a crash due to a non-invertable hessian matrix. This error is now caught and a warning is issued about the confidence intervals without causing a crash.
 
 **Other**
 
@@ -44,6 +45,7 @@ Version 0.5.6 of `reliability` is focused on enhancing the accelerated life test
 -    All the Fitters now return the axes handles in the probability_plot output object.
 -    Started work on API documentation. This is already available using the help function in Python, but adding it to `readthedocs` makes it much easier to read.
 -    Fit_Expon_1P and Fit_Expon_2P are now fully deprecated and have been removed. These were replaced by Fit_Exponential_1P and Fit_Exponential_2P in version 0.5.4 (released Nov 2020).
+-    The Stress_strength module is now fully deprecated and has been removed. The functions from within this module were renamed and moved to the Other_functions module in version 0.5.5 (released Jan 2021).
 
 **Version: 0.5.5 --- Released: 6 January 2021**
 '''''''''''''''''''''''''''''''''''''''''''''''

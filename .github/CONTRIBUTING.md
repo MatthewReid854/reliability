@@ -14,4 +14,4 @@ You can either open up an issue in the Github Repository with as much context as
 
 ### Submitting code, or other changes
 
-I am happy to receive code snippets or other changes via email. These contributions will be reviewed on an individual basis. I will accept merge requests on GitHub if they do not require significant modification, though my preference is to receive code submissions via email.
+I am happy to receive code snippets or other changes via email. These contributions will be reviewed on an individual basis. I will accept pull requests on GitHub if they do not require significant modification, though my preference is to receive code submissions via email.

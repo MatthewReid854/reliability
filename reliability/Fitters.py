@@ -2830,12 +2830,31 @@ class Fit_Weibull_Mixture:
             np.array(tuple(failures)),
             np.array(tuple(right_censored)),
         )
-        covariance_matrix = np.linalg.inv(hessian_matrix)
-        self.alpha_1_SE = abs(covariance_matrix[0][0]) ** 0.5
-        self.beta_1_SE = abs(covariance_matrix[1][1]) ** 0.5
-        self.alpha_2_SE = abs(covariance_matrix[2][2]) ** 0.5
-        self.beta_2_SE = abs(covariance_matrix[3][3]) ** 0.5
-        self.proportion_1_SE = abs(covariance_matrix[4][4]) ** 0.5
+        try:
+            covariance_matrix = np.linalg.inv(hessian_matrix)
+            self.alpha_1_SE = abs(covariance_matrix[0][0]) ** 0.5
+            self.beta_1_SE = abs(covariance_matrix[1][1]) ** 0.5
+            self.alpha_2_SE = abs(covariance_matrix[2][2]) ** 0.5
+            self.beta_2_SE = abs(covariance_matrix[3][3]) ** 0.5
+            self.proportion_1_SE = abs(covariance_matrix[4][4]) ** 0.5
+        except:
+            # this exception is rare but can occur with some optimisers
+            colorprint(
+                str(
+                    "WARNING: The hessian matrix obtained using the "
+                    + optimizer
+                    + " optimizer is non-invertable for the Weibull mixture model.\n"
+                    "Confidence interval estimates of the parameters could not be obtained.\n"
+                    "You may want to try fitting the model using a different optimizer."
+                ),
+                text_color="red",
+            )
+            self.alpha_1_SE = 0
+            self.beta_1_SE = 0
+            self.alpha_2_SE = 0
+            self.beta_2_SE = 0
+            self.proportion_1_SE = 0
+
         self.alpha_1_upper = self.alpha_1 * (
             np.exp(Z * (self.alpha_1_SE / self.alpha_1))
         )
@@ -3192,11 +3211,29 @@ class Fit_Weibull_CR:
             np.array(tuple(failures)),
             np.array(tuple(right_censored)),
         )
-        covariance_matrix = np.linalg.inv(hessian_matrix)
-        self.alpha_1_SE = abs(covariance_matrix[0][0]) ** 0.5
-        self.beta_1_SE = abs(covariance_matrix[1][1]) ** 0.5
-        self.alpha_2_SE = abs(covariance_matrix[2][2]) ** 0.5
-        self.beta_2_SE = abs(covariance_matrix[3][3]) ** 0.5
+        try:
+            covariance_matrix = np.linalg.inv(hessian_matrix)
+            self.alpha_1_SE = abs(covariance_matrix[0][0]) ** 0.5
+            self.beta_1_SE = abs(covariance_matrix[1][1]) ** 0.5
+            self.alpha_2_SE = abs(covariance_matrix[2][2]) ** 0.5
+            self.beta_2_SE = abs(covariance_matrix[3][3]) ** 0.5
+        except:
+            # this exception is rare but can occur with some optimisers
+            colorprint(
+                str(
+                    "WARNING: The hessian matrix obtained using the "
+                    + optimizer
+                    + " optimizer is non-invertable for the Weibull competing risks model.\n"
+                    "Confidence interval estimates of the parameters could not be obtained.\n"
+                    "You may want to try fitting the model using a different optimizer."
+                ),
+                text_color="red",
+            )
+            self.alpha_1_SE = 0
+            self.beta_1_SE = 0
+            self.alpha_2_SE = 0
+            self.beta_2_SE = 0
+
         self.alpha_1_upper = self.alpha_1 * (
             np.exp(Z * (self.alpha_1_SE / self.alpha_1))
         )

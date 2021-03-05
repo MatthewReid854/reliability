@@ -67,6 +67,6 @@ setuptools.setup(
         "mplcursors>=0.3",
     ],
     packages=setuptools.find_packages(
-        exclude=["*.tests", "*.tests.*", "*.notebooks", "*.notebooks.*"]
+        exclude=["*.tests", "*.tests.*"]
     ),
 )
