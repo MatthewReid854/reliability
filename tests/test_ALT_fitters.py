@@ -426,7 +426,7 @@ def test_Fit_Everything_ALT_single_stress():
     assert_allclose(model.Lognormal_Power_BIC, 3733.6413086492744, rtol=rtol, atol=atol)
     assert_allclose(model.Lognormal_Power_loglik, -1858.2649806126528, rtol=rtol, atol=atol)
 
-    assert_allclose(model.Normal_Power_a, 5382471637730783.0, rtol=rtol_big, atol=atol)  # larger due to variation in python versions
+    assert_allclose(model.Normal_Power_a, 5382471637730783.0, rtol=0.9, atol=atol)  # much larger due to variation in python versions
     assert_allclose(model.Normal_Power_n, -4.844657942648189, rtol=rtol_big, atol=atol) # larger due to variation in python versions
     assert_allclose(model.Normal_Power_sigma, 705.2782926967965, rtol=rtol, atol=atol)
     assert_allclose(model.Normal_Power_AICc, 3884.6006939979784, rtol=rtol, atol=atol)
@@ -508,7 +508,7 @@ def test_Fit_Everything_ALT_dual_stress():
     assert_allclose(model.Exponential_Dual_Power_BIC, 7031.159751276041, rtol=rtol, atol=atol)
     assert_allclose(model.Exponential_Dual_Power_loglik, -3505.376283493034, rtol=rtol, atol=atol)
 
-    assert_allclose(model.Weibull_Power_Exponential_a, 61.8031788732226, rtol=0.9, atol=atol) # huge difference between local and online testing
+    assert_allclose(model.Weibull_Power_Exponential_a, 61.8031788732226, rtol=rtol, atol=atol)
     assert_allclose(model.Weibull_Power_Exponential_c, 509.408154921238, rtol=rtol, atol=atol)
     assert_allclose(model.Weibull_Power_Exponential_n, -0.2046637316779507, rtol=rtol, atol=atol)
     assert_allclose(model.Weibull_Power_Exponential_beta, 2.4355835569545903, rtol=rtol, atol=atol)
