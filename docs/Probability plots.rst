@@ -139,6 +139,43 @@ In this fourth example, we will take a look at the special case of the Exponenti
 Example 5
 ---------
 
+In this example we will look at how to create a probability plot that has different colors representing different groups which are being analysed together. Consider corrosion failure data from an oil pipeline where we know the location of the corrosion (either the Bend, Valve, or Joint of the pipe). To show the location of the corrosion in different colors we need to hide the default scatter plot from the probability plot and then replot the scatter plot using the function plot_points. The function plot_points passes keyword arguments (like color) directly to matplotlib's plt.scatter() whereas the probability_plot does some preprocessing of keyword arguments before passing them on. This means that it is only possible to provide a list of colors for the scatter plot to plot_points.
+
+.. code:: python
+
+    from reliability.Probability_plotting import Weibull_probability_plot, plot_points, plotting_positions
+    import matplotlib.pyplot as plt
+    import numpy as np
+
+    # failure data from oil pipe corrosion
+    bend = [74, 52, 32, 76, 46, 35, 65, 54, 56, 20, 71, 72, 38, 61, 29]
+    valve = [78, 83, 94, 76, 86, 39, 54, 82, 96, 66, 63, 57, 82, 70, 72, 61, 84, 73, 69, 97]
+    joint = [74, 52, 32, 76, 46, 35, 65, 54, 56, 25, 71, 72, 37, 61, 29]
+
+    # combine the data into a single array
+    data = np.hstack([bend, valve, joint])
+    color = np.hstack([['red'] * len(bend), ['green'] * len(valve), ['blue'] * len(joint)])
+
+    # create the probability plot and hide the scatter points
+    Weibull_probability_plot(failures=data, show_scatter_points=False)
+
+    # redraw the scatter points. kwargs are passed to plt.scatter so a list of color is accepted
+    plot_points(failures=data, color=color, marker='^', s=100)
+
+    # To show the legend correctly, we need to replot some points in separate scatter plots to create different legend entries
+    x, y = plotting_positions(failures=data)
+    plt.scatter(x[0], y[0], color=color[0], marker='^', s=100, label='bend')
+    plt.scatter(x[len(bend)], y[len(bend)], color=color[len(bend)], marker='^', s=100, label='valve')
+    plt.scatter(x[len(bend) + len(valve)], y[len(bend) + len(valve)], color=color[len(bend) + len(valve)], marker='^', s=100, label='joint')
+    plt.legend()
+
+    plt.show()
+
+.. image:: images/multicolor_probability_plot.png
+
+Example 6
+---------
+
 In this final example, we take a look at how a probability plot can show us that there's something wrong with our assumption of a single distribution. To generate the data, the random samples are drawn from two different distributions which are shown in the left image. In the right image, the scatterplot of failure times is clearly non-linear. The green line is the attempt to fit a single Weibull_2P distribution and this will do a poor job of modelling the data. Also note that the points of the scatterplot do not fall on the True CDF of each distribution. This is because the median rank method of obtaining the plotting positions does not work well if the failure times come from more than one distribution. If you see a pattern like this, try a `mixture model <https://reliability.readthedocs.io/en/latest/Mixture%20models.html>`_ or a `competing risks model <https://reliability.readthedocs.io/en/latest/Competing%20risk%20models.html>`_. Always remember that cusps, corners, and doglegs indicate a mixture of failure modes.
 
 .. code:: python
@@ -174,7 +211,7 @@ What does a probability plot show me?
 
 A probability plot shows how well your data is modelled by a particular distribution. By scaling the axes in such a way that the fitted distribution's CDF appears to be a straight line, we can judge whether the empirical CDF of the failure data (the black dots) are in agreement with the CDF of the fitted distribution. Ideally we would see that all of the black dots would lie on the straight line but most of the time this is not the case. A bad fit is evident when the line or curve formed by the black dots is deviating significantly from the straight line. We can usually tolerate a little bit of deviation at the tails of the distribution but the majority of the black dots should follow the line. A historically popular test was the `'fat pencil test' <https://support.minitab.com/en-us/minitab/18/help-and-how-to/statistics/basic-statistics/supporting-topics/normality/normal-probability-plots-and-the-fat-pencil-test/>`_ which suggested that if a fat pencil could cover the majority of the data points then the fit was probably suitable. Such a method makes no mention of the size of the plot window which could easily affect the result so it is best to use your own judgement and experience. This approach is not a substitute for statistical inference so it is often preferred to use quantitative measures for goodness of fit such as AICc and BIC. Despite being an imprecise measure, probability plots remain popular among reliability engineers and in reliability engineering software as they can reveal many features that are not accurately captured in a single goodness of fit statistic.
 
-Example 6
+Example 7
 ---------
 
 .. code:: python
