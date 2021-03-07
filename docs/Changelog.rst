@@ -5,8 +5,21 @@
 Changelog
 ---------
 
-**Version: 0.5.6 --- Currently unreleased --- due for release early March 2021**
-''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+**Version: 0.5.7 --- Currently unreleased --- due for release in May 2021**
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+**Summary of changes**
+
+**New features**
+
+**API Changes**
+
+**Bug Fixes**
+
+**Other**
+
+**Version: 0.5.6 --- Released: 7 March 2021**
+'''''''''''''''''''''''''''''''''''''''''''''
 
 **Summary of changes**
 
