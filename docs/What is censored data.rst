@@ -5,7 +5,7 @@
 What is censored data
 '''''''''''''''''''''
 
-Censored data is any data for which we do not know the exact event time. There are three types of censored data; right censored, left censored, and interval cesored. Data for which the exact event time is known is referred to as complete data. In addition to the three types of censored data, there are also two ways in which censored data may be grouped; singly censored or multiply censored. An explaination of each of these terms is provided below.
+Censored data is any data for which we do not know the exact event time. There are three types of censored data; right censored, left censored, and interval cesored. Data for which the exact event time is known is referred to as complete data. In addition to the three types of censored data, there are also two ways in which censored data may be grouped; singly censored or multiply censored. Tests may be terminated after a certain time (time-terminated) or after an certain number of failures (failure-terminated). Each of these types of test termination lead to a different type of censoring (type I and type II censoring). An explaination of each of these terms is provided below.
 
 In the context of reliability engineering we typically refer to events as "failures". In other industries a range of terminology may be used to describe events. These often include "deaths" if studying living things such as in medical studies, or simply "events" if studying natural phenomena like flood events. Throughout `reliability` we will use "failures" to describe events.
 
@@ -54,6 +54,11 @@ Multiply censored data
 """"""""""""""""""""""
 
 This is not a type of censored data, but it used to describe how censored data is grouped. In multiply censored data, the censoring times occur at many different times. As an example we may have the following failures and right censored times (right censored represented by +): 50, 55+, 56, 72+, 74+, 78, 89, 98+. We can say this is "multiply censored" as the censoring times occur at multiple points. This is frequently seen when items have different start times or different amounts of usage so their times in service are not aligned. While the end of the observation period may be the same (in terms of the calendar date), the accumulated life will be different between items so their censoring times do not necessarily align.
+
+Type I and Type II censoring
+""""""""""""""""""""""""""""
+
+If a test is stopped after a certain amount of time then the test is "time-terminated". This type of test will produce type I censoring. If a test is stopped after a certain number of failures then the test is "failure-terminated". This type of test will produce type II censoring. The formulas for some calculation methods (such as in some `MTBF calculations <https://reliability.readthedocs.io/en/latest/Reliability%20test%20planner.html>`_) differ between type I and type II censoring so it is important to know what type of censoring your test produces and whether the formulas being used need to be adjusted to reflect the type of censoring.
 
 Considering failures as right censored
 """"""""""""""""""""""""""""""""""""""
