@@ -765,6 +765,10 @@ class Weibull_Distribution:
         return MRL
 
     def stats(self):
+        """
+        Descriptive statistics of the probability distribution. Same as the statistics shown using .plot() but printed to console.
+        No inputs or outputs.
+        """
         if self.gamma == 0:
             print(
                 "Descriptive statistics for Weibull distribution with alpha =",
@@ -1450,6 +1454,10 @@ class Normal_Distribution:
         return MRL
 
     def stats(self):
+        """
+        Descriptive statistics of the probability distribution. Same as the statistics shown using .plot() but printed to console.
+        No inputs or outputs.
+        """
         print(
             "Descriptive statistics for Normal distribution with mu =",
             self.mu,
@@ -2160,6 +2168,10 @@ class Lognormal_Distribution:
         return MRL
 
     def stats(self):
+        """
+        Descriptive statistics of the probability distribution. Same as the statistics shown using .plot() but printed to console.
+        No inputs or outputs.
+        """
         if self.gamma == 0:
             print(
                 "Descriptive statistics for Lognormal distribution with mu =",
@@ -2849,6 +2861,10 @@ class Exponential_Distribution:
         return MRL
 
     def stats(self):
+        """
+        Descriptive statistics of the probability distribution. Same as the statistics shown using .plot() but printed to console.
+        No inputs or outputs.
+        """
         if self.gamma == 0:
             print(
                 "Descriptive statistics for Exponential distribution with lambda =",
@@ -3518,6 +3534,10 @@ class Gamma_Distribution:
         return MRL
 
     def stats(self):
+        """
+        Descriptive statistics of the probability distribution. Same as the statistics shown using .plot() but printed to console.
+        No inputs or outputs.
+        """
         if self.gamma == 0:
             print(
                 "Descriptive statistics for Gamma distribution with alpha =",
@@ -4138,6 +4158,10 @@ class Beta_Distribution:
         return MRL
 
     def stats(self):
+        """
+        Descriptive statistics of the probability distribution. Same as the statistics shown using .plot() but printed to console.
+        No inputs or outputs.
+        """
         print(
             "Descriptive statistics for Beta distribution with alpha =",
             self.alpha,
@@ -4253,7 +4277,7 @@ class Loglogistic_Distribution:
             )
             self.kurtosis = self.excess_kurtosis + 3
         else:
-            self.excess_kurtosis = r"no kurtosis when $\beta \leq 4$"  # excess kurtosis cannot be calculated when beta <= 4
+            self.excess_kurtosis = r"no kurtosis when $\beta \leq 4$"
             self.kurtosis = r"no kurtosis when $\beta \leq 4$"
 
         self.median = ss.fisk.median(self.beta, scale=self.alpha, loc=self.gamma)
@@ -4909,6 +4933,10 @@ class Loglogistic_Distribution:
         return MRL
 
     def stats(self):
+        """
+        Descriptive statistics of the probability distribution. Same as the statistics shown using .plot() but printed to console.
+        No inputs or outputs.
+        """
         if self.gamma == 0:
             print(
                 "Descriptive statistics for Weibull distribution with alpha =",
@@ -5596,6 +5624,10 @@ class Gumbel_Distribution:
         return MRL
 
     def stats(self):
+        """
+        Descriptive statistics of the probability distribution. Same as the statistics shown using .plot() but printed to console.
+        No inputs or outputs.
+        """
         print(
             "Descriptive statistics for Gumbel distribution with mu =",
             self.mu,
@@ -5985,6 +6017,7 @@ class Competing_Risks_Model:
         Plots the PDF (probability density function)
 
         Inputs:
+        plot_components - option to plot the components of the model. Default is False.
         show_plot - True/False. Default is True
         xvals - x-values for plotting
         xmin - minimum x-value for plotting
@@ -6051,6 +6084,7 @@ class Competing_Risks_Model:
         Plots the CDF (cumulative distribution function)
 
         Inputs:
+        plot_components - option to plot the components of the model. Default is False.
         show_plot - True/False. Default is True
         xvals - x-values for plotting
         xmin - minimum x-value for plotting
@@ -6117,6 +6151,7 @@ class Competing_Risks_Model:
         Plots the SF (survival function)
 
         Inputs:
+        plot_components - option to plot the components of the model. Default is False.
         show_plot - True/False. Default is True
         xvals - x-values for plotting
         xmin - minimum x-value for plotting
@@ -6181,6 +6216,7 @@ class Competing_Risks_Model:
         Plots the HF (hazard function)
 
         Inputs:
+        plot_components - option to plot the components of the model. Default is False.
         show_plot - True/False. Default is True
         xvals - x-values for plotting
         xmin - minimum x-value for plotting
@@ -6245,6 +6281,7 @@ class Competing_Risks_Model:
         Plots the CHF (cumulative hazard function)
 
         Inputs:
+        plot_components - option to plot the components of the model. Default is False.
         show_plot - True/False. Default is True
         xvals - x-values for plotting
         xmin - minimum x-value for plotting
@@ -6329,6 +6366,10 @@ class Competing_Risks_Model:
         return self.__xvals_init[np.argmin(abs(self.__sf_init - q))]
 
     def stats(self):
+        """
+        Descriptive statistics of the probability distribution. Same as the statistics shown using .plot() but printed to console.
+        No inputs or outputs.
+        """
         print("Descriptive statistics for Competing Risks Model")
         print("Mean = ", self.mean)
         print("Median =", self.median)
@@ -6784,6 +6825,7 @@ class Mixture_Model:
         Plots the PDF (probability density function)
 
         Inputs:
+        plot_components - option to plot the components of the model. Default is False.
         show_plot - True/False. Default is True
         xvals - x-values for plotting
         xmin - minimum x-value for plotting
@@ -6849,6 +6891,7 @@ class Mixture_Model:
         Plots the CDF (cumulative distribution function)
 
         Inputs:
+        plot_components - option to plot the components of the model. Default is False.
         show_plot - True/False. Default is True
         xvals - x-values for plotting
         xmin - minimum x-value for plotting
@@ -6913,6 +6956,7 @@ class Mixture_Model:
         Plots the SF (survival function)
 
         Inputs:
+        plot_components - option to plot the components of the model. Default is False.
         show_plot - True/False. Default is True
         xvals - x-values for plotting
         xmin - minimum x-value for plotting
@@ -6977,6 +7021,7 @@ class Mixture_Model:
         Plots the HF (hazard function)
 
         Inputs:
+        plot_components - option to plot the components of the model. Default is False.
         show_plot - True/False. Default is True
         xvals - x-values for plotting
         xmin - minimum x-value for plotting
@@ -7041,6 +7086,7 @@ class Mixture_Model:
         Plots the CHF (cumulative hazard function)
 
         Inputs:
+        plot_components - option to plot the components of the model. Default is False.
         show_plot - True/False. Default is True
         xvals - x-values for plotting
         xmin - minimum x-value for plotting
@@ -7126,6 +7172,10 @@ class Mixture_Model:
         return self.__xvals_init[np.argmin(abs((1 - self.__cdf_init) - q))]
 
     def stats(self):
+        """
+        Descriptive statistics of the probability distribution. Same as the statistics shown using .plot() but printed to console.
+        No inputs or outputs.
+        """
         print("Descriptive statistics for Mixture Model")
         print("Mean = ", self.mean)
         print("Median =", self.median)

@@ -12,7 +12,6 @@ API Reference
     reliability.Probability_plotting
     reliability.Nonparametric
     reliability.ALT_fitters
-    reliability.ALT_probability_plotting
     reliability.Datasets
     reliability.Convert_data
     reliability.Reliability_testing

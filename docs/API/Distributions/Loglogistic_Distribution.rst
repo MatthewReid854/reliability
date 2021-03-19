@@ -2,10 +2,10 @@
 
 -------------------------------------
 
-Weibull_Distribution
-''''''''''''''''''''
+Loglogistic_Distribution
+''''''''''''''''''''''''
 
-Creates a Weibull Distribution object.
+Creates a Loglogistic Distribution object.
 
 Inputs:
 
@@ -15,9 +15,9 @@ Inputs:
 
 Methods:
     
--    name - 'Weibull'
--    name2 = 'Weibull_2P' or 'Weibull_3P' depending on the value of the gamma parameter
--    param_title_long - Useful in plot titles, legends and in printing strings. eg. 'Weibull Distribution (α=5,β=2)'
+-    name - 'Loglogistic'
+-    name2 = 'Loglogistic_2P' or 'Loglogistic_3P' depending on the value of the gamma parameter
+-    param_title_long - Useful in plot titles, legends and in printing strings. eg. 'Loglogistic Distribution (α=5,β=2)'
 -    param_title - Useful in plot titles, legends and in printing strings. eg. 'α=5,β=2'
 -    parameters - [alpha,beta,gamma]
 -    alpha

@@ -10,9 +10,9 @@ from reliability import Repairable_systems
 from reliability import Probability_plotting
 from reliability import Datasets
 from reliability import ALT_fitters
-from reliability import ALT_probability_plotting
 from reliability import PoF
 from reliability import Utils
 from reliability import Convert_data
 
 __version__ = "0.5.7"  # Current version
+

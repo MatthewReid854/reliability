@@ -2,27 +2,25 @@
 
 -------------------------------------
 
-Weibull_Distribution
-''''''''''''''''''''
+Beta_Distribution
+'''''''''''''''''
 
-Creates a Weibull Distribution object.
+Creates a Beta Distribution object.
 
 Inputs:
 
--    alpha - scale parameter
--    beta - shape parameter
--    gamma - threshold (offset) parameter. Default = 0
+-    alpha - shape parameter 1
+-    beta - shape parameter 2
 
 Methods:
-    
--    name - 'Weibull'
--    name2 = 'Weibull_2P' or 'Weibull_3P' depending on the value of the gamma parameter
--    param_title_long - Useful in plot titles, legends and in printing strings. eg. 'Weibull Distribution (α=5,β=2)'
+
+-    name - 'Beta'
+-    name2 - 'Beta_2P'
+-    param_title_long - Useful in plot titles, legends and in printing strings. eg. 'Beta Distribution (α=5,β=2)'
 -    param_title - Useful in plot titles, legends and in printing strings. eg. 'α=5,β=2'
--    parameters - [alpha,beta,gamma]
+-    parameters - [alpha,beta]
 -    alpha
 -    beta
--    gamma
 -    mean
 -    variance
 -    standard_deviation

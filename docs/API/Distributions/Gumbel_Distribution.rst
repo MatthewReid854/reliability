@@ -2,27 +2,25 @@
 
 -------------------------------------
 
-Weibull_Distribution
-''''''''''''''''''''
+Gumbel_Distribution
+'''''''''''''''''''
 
-Creates a Weibull Distribution object.
+Creates a Gumbel Distribution object.
 
 Inputs:
 
--    alpha - scale parameter
--    beta - shape parameter
--    gamma - threshold (offset) parameter. Default = 0
+-    mu - location parameter
+-    sigma - scale parameter
 
 Methods:
-    
--    name - 'Weibull'
--    name2 = 'Weibull_2P' or 'Weibull_3P' depending on the value of the gamma parameter
--    param_title_long - Useful in plot titles, legends and in printing strings. eg. 'Weibull Distribution (α=5,β=2)'
--    param_title - Useful in plot titles, legends and in printing strings. eg. 'α=5,β=2'
--    parameters - [alpha,beta,gamma]
--    alpha
--    beta
--    gamma
+
+-    name - 'Gumbel'
+-    name2 - 'Gumbel_2P'
+-    param_title_long - Useful in plot titles, legends and in printing strings. eg. 'Gumbel Distribution (μ=5,σ=2)'
+-    param_title - Useful in plot titles, legends and in printing strings. eg. 'μ=5,σ=2'
+-    parameters - [mu,sigma]
+-    mu
+-    sigma
 -    mean
 -    variance
 -    standard_deviation

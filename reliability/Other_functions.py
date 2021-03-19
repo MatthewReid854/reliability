@@ -6,7 +6,6 @@ Included functions are:
 stress_strength - stress-strength interference for any distributions (uses numerical integration).
 stress_strength_normal - stress-strength interference two normal distributions (uses empirical method).
 similar_distributions - finds the parameters of distributions that are similar to the input distribution and plots the results.
-convert_dataframe_to_grouped_lists - groups values in a 2-column dataframe based on the values in the left column and returns those groups in a list of lists
 make_right_censored_data - a simple tool to right censor a complete dataset based on a threshold. Primarily used for testing Fitters when some right censored data is needed.
 make_ALT_data - a tool to generate data for fitting ALT models. Primarily used for testing ALT_Fitters.
 histogram - generates a histogram with optimal bin width and has an option to shade some bins white above a chosen threshold.
@@ -758,53 +757,6 @@ def histogram(
             np.argmin(abs(np.array(bins_out) - white_above)), len(patches)
         ):  # this is to shade part of the histogram as white
             patches[i].set_facecolor("white")
-
-
-def convert_dataframe_to_grouped_lists(input_dataframe):
-    """
-    convert_dataframe_to_grouped_lists
-
-    Accepts a dataframe containing 2 columns
-    This function assumes the identifying column is the left column
-    returns:
-    lists , names - lists is a list of the grouped lists
-                  - names is the identifying values used to group the lists from the first column
-
-    DeprecationWarning: This function is scheduled for deprecation in July 2021.
-        The original purpose of this function has largely been captured by the functions within the Convert_data module.
-        If you still require this function to be included in future releases, please email alpha.reliability@gmail.com with an example use case.
-
-    Example usage:
-    #create sample data
-    import pandas as pd
-    data = {'outcome': ['Failed', 'Censored', 'Failed', 'Failed', 'Censored'],
-        'cycles': [1253,1500,1342,1489,1500]}
-    df = pd.DataFrame(data, columns = ['outcome', 'cycles'])
-    #usage of the function
-    lists,names = convert_dataframe_to_grouped_lists(df)
-    print(names[1]) >>> Failed
-    print(lists[1]) >>> [1253, 1342, 1489]
-    """
-    warning_str = (
-        "DeprecationWarning: Your function has still been run, however, this function is scheduled for deprecation in July 2021.\n"
-        "The original purpose of convert_dataframe_to_grouped_lists has largely been captured by the functions within the Convert_data module.\n"
-        "If you still require this function to be included in future releases, please email alpha.reliability@gmail.com with an example use case."
-    )
-    colorprint(warning_str, text_color="red")
-
-    df = input_dataframe
-    column_names = df.columns.values
-    if len(column_names) > 2:
-        raise ValueError(
-            "Dataframe contains more than 2 columns. There should only be 2 columns with the first column containing the labels to group by and the second containing the values to be returned in groups."
-        )
-    grouped_lists = []
-    group_list_names = []
-    for key, items in df.groupby(column_names[0]):
-        values = list(items.iloc[:, 1].values)
-        grouped_lists.append(values)
-        group_list_names.append(key)
-    return grouped_lists, group_list_names
 
 
 class make_right_censored_data:

@@ -530,6 +530,7 @@ class reliability_test_planner:
                 ):  # solution is found when result returns a negative number (indicating too many failures)
                     break
                 number_of_failures += 1
+            number_of_failures -= 1  # correction for the last failure added to ensure we keep the MTBF above the minimum requirement
 
             MTBF_check = (2 * test_duration) / ss.chi2.ppf(
                 CI_adj, 2 * 0 + p

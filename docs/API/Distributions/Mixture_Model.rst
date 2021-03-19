@@ -2,35 +2,45 @@
 
 -------------------------------------
 
-Weibull_Distribution
-''''''''''''''''''''
+Mixture_Model
+'''''''''''''
 
-Creates a Weibull Distribution object.
+Creates a Mixture Model probability distribution object.
 
+The mixture model is used to create a distribution that contains parts from multiple distributions.
+This allows for a more complex model to be constructed as the sum of other distributions, each multiplied by a proportion (where the proportions sum to 1).
+The model is obtained using the sum of the cumulative distribution functions: CDF_total = (CDF_1 x p_1) + (CDF_2 x p2) x (CDF_3 x p3) + .... + (CDF_n x pn)
+An equivalent form of this model is to sum the PDF. SF is obtained as 1-CDF. Note that you cannot simply sum the HF or CHF as this method would be equivalent to the competing risks model.
+In this way, we see the mixture model will always lie somewhere between the constituent models.
+  
+This model should be used when a data set cannot be modelled by a single distribution, as evidenced by the shape of the PDF, CDF or probability plot (points do not form a straight line)
+Unlike the competing risks model, this model requires the proportions to be supplied.
+ 
+As this process is additive for the survival function, and may accept many distributions of different types, the mathematical formulation quickly gets complex.
+For this reason, the algorithm combines the models numerically rather than empirically so there are no simple formulas for many of the descriptive statistics (mean, median, etc.)
+Also, the accuracy of the model is dependent on xvals. If the xvals array is small (<100 values) then the answer will be "blocky" and inaccurate.
+the variable xvals is only accepted for PDF, CDF, SF, HF, CHF. The other methods (like random samples) use the default xvals for maximum accuracy.
+The default number of values generated when xvals is not given is 1000. Consider this carefully when specifying xvals in order to avoid inaccuracies in the results.
+
+The API is similar (but not identical) to the other probability distributions (Weibull, Normal, etc.) and has the following Inputs and Methods:
+ 
 Inputs:
 
--    alpha - scale parameter
--    beta - shape parameter
--    gamma - threshold (offset) parameter. Default = 0
-
+- distributions - a list or array of probability distributions used to construct the model
+- proportions - how much of each distribution to add to the mixture. The sum of proportions must always be 1.
+  
 Methods:
-    
--    name - 'Weibull'
--    name2 = 'Weibull_2P' or 'Weibull_3P' depending on the value of the gamma parameter
--    param_title_long - Useful in plot titles, legends and in printing strings. eg. 'Weibull Distribution (α=5,β=2)'
--    param_title - Useful in plot titles, legends and in printing strings. eg. 'α=5,β=2'
--    parameters - [alpha,beta,gamma]
--    alpha
--    beta
--    gamma
+
+-    name - 'Mixture'
+-    name2 - 'Mixture using 3 distributions'
 -    mean
+-    median
+-    mode
 -    variance
 -    standard_deviation
 -    skewness
 -    kurtosis
 -    excess_kurtosis
--    median
--    mode
 -    b5 - The time where 5% have failed. Same as quantile(0.05)
 -    b95 - The time where 95% have failed. Same as quantile(0.95)
 -    plot() - plots all functions (PDF,CDF,SF,HF,CHF)
@@ -56,7 +66,7 @@ Inputs:
 -   xmin - minimum x-value for plotting
 -   xmax - maximum x-value for plotting.
 
-If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 200 elements will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters. No plotting keywords are accepted.
+If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters. No plotting keywords are accepted.
 
 Outputs:
 
@@ -69,12 +79,13 @@ Plots the PDF (probability density function)
 
 Inputs:
 
+-   plot_components - option to plot the components of the model. Default is False.
 -   show_plot - True/False. Default is True
 -   xvals - x-values for plotting
 -   xmin - minimum x-value for plotting
 -   xmax - maximum x-value for plotting.
 
-If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 200 elements will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters. Plotting keywords are also accepted (eg. color, linestyle)
+If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters. Plotting keywords are also accepted (eg. color, linestyle)
 
 Outputs:
 
@@ -89,18 +100,19 @@ Plots the CDF (cumulative distribution function)
       
 Inputs:
 
+- plot_components - option to plot the components of the model. Default is False.
 - show_plot - True/False. Default is True
 - xvals - x-values for plotting
 - xmin - minimum x-value for plotting
 - xmax - maximum x-value for plotting.
 
-If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 200 elements will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters. Plotting keywords are also accepted (eg. color, linestyle)
+If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters. Plotting keywords are also accepted (eg. color, linestyle)
 
 Outputs:
 
 - yvals - this is the y-values of the plot
 - The plot will be shown if show_plot is True (which it is by default).
-  
+
 
 .SF()
 """""
@@ -109,12 +121,13 @@ Plots the SF (survival function). Also known as the reliability function.
       
 Inputs:
 
+- plot_components - option to plot the components of the model. Default is False.
 - show_plot - True/False. Default is True
 - xvals - x-values for plotting
 - xmin - minimum x-value for plotting
 - xmax - maximum x-value for plotting.
 
-If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 200 elements will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters. Plotting keywords are also accepted (eg. color, linestyle)
+If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters. Plotting keywords are also accepted (eg. color, linestyle)
 
 Outputs:
 
@@ -129,12 +142,13 @@ Plots the HF (hazard function function)
       
 Inputs:
 
+- plot_components - option to plot the components of the model. Default is False.
 - show_plot - True/False. Default is True
 - xvals - x-values for plotting
 - xmin - minimum x-value for plotting
 - xmax - maximum x-value for plotting.
 
-If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 200 elements will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters. Plotting keywords are also accepted (eg. color, linestyle)
+If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters. Plotting keywords are also accepted (eg. color, linestyle)
 
 Outputs:
 
@@ -149,12 +163,13 @@ Plots the CHF (cumulative hazard function)
       
 Inputs:
 
+- plot_components - option to plot the components of the model. Default is False.
 - show_plot - True/False. Default is True
 - xvals - x-values for plotting
 - xmin - minimum x-value for plotting
 - xmax - maximum x-value for plotting.
 
-If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 200 elements will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters. Plotting keywords are also accepted (eg. color, linestyle)
+If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 1000 elements will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters. Plotting keywords are also accepted (eg. color, linestyle)
 
 Outputs:
 

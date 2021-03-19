@@ -2,26 +2,26 @@
 
 -------------------------------------
 
-Weibull_Distribution
-''''''''''''''''''''
+Lognormal_Distribution
+''''''''''''''''''''''
 
-Creates a Weibull Distribution object.
+Creates a Lognormal Distribution object.
 
 Inputs:
 
--    alpha - scale parameter
--    beta - shape parameter
+-    mu - location parameter
+-    sigma - scale parameter
 -    gamma - threshold (offset) parameter. Default = 0
 
 Methods:
-    
--    name - 'Weibull'
--    name2 = 'Weibull_2P' or 'Weibull_3P' depending on the value of the gamma parameter
--    param_title_long - Useful in plot titles, legends and in printing strings. eg. 'Weibull Distribution (α=5,β=2)'
--    param_title - Useful in plot titles, legends and in printing strings. eg. 'α=5,β=2'
--    parameters - [alpha,beta,gamma]
--    alpha
--    beta
+
+-    name - 'Lognormal'
+-    name2 - 'Lognormal_2P' or 'Lognormal_3P' depending on the value of the gamma parameter
+-    param_title_long - Useful in plot titles, legends and in printing strings. eg. 'Lognormal Distribution (μ=5,σ=2)'
+-    param_title - Useful in plot titles, legends and in printing strings. eg. 'μ=5,σ=2'
+-    parameters - [mu,sigma,gamma]
+-    mu
+-    sigma
 -    gamma
 -    mean
 -    variance
