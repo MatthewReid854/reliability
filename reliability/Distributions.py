@@ -79,7 +79,7 @@ np.seterr(divide="ignore", invalid="ignore")  # ignore the divide by zero warnin
 
 
 class Weibull_Distribution:
-    """
+    r"""
     Weibull probability distribution
 
     Creates a Distribution object.
@@ -815,7 +815,7 @@ class Weibull_Distribution:
 
 
 class Normal_Distribution:
-    """
+    r"""
     Normal probability distribution
 
     Creates a Distribution object.
