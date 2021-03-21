@@ -249,14 +249,14 @@ man_pages = [("index", "reliability", "reliability Documentation", ["Matthew Rei
 # man_show_urls = False
 
 
-# nbsphinx
-nbsphinx_prolog = r"""
-.. image:: http://i.imgur.com/EOowdSD.png
-
--------------------------------------
-
-
-"""
+# # nbsphinx
+# nbsphinx_prolog = r"""
+# .. image:: https://raw.githubusercontent.com/MatthewReid854/reliability/master/docs/images/logo.png
+#
+# -------------------------------------
+#
+#
+# """
 
 
 # -- Options for Texinfo output -------------------------------------------
@@ -280,18 +280,20 @@ texinfo_documents = [
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 # texinfo_no_detailmenu = False
 
-# use RTFD theme locally
-# on_rtd is whether we are on readthedocs.org, this line of code grabbed from docs.readthedocs.org
-import os
-
-on_rtd = os.environ.get("READTHEDOCS", None) == "True"
-
-if not on_rtd:  # only import and set the theme if we're building docs locally
-    import sphinx_rtd_theme
-
-    html_theme = "sphinx_rtd_theme"
-    html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 
 
-def setup(app):
-    app.add_css_file("custom.css")
+# # use RTFD theme locally
+# # on_rtd is whether we are on readthedocs.org, this line of code grabbed from docs.readthedocs.org
+# import os
+#
+# on_rtd = os.environ.get("READTHEDOCS", None) == "True"
+#
+# if not on_rtd:  # only import and set the theme if we're building docs locally
+#     import sphinx_rtd_theme
+#
+#     html_theme = "sphinx_rtd_theme"
+#     html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+#
+#
+# def setup(app):
+#     app.add_css_file("custom.css")
