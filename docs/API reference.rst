@@ -6,7 +6,7 @@ API Reference
 =============
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 3
     :glob:
 
     API/*
