@@ -2,11 +2,9 @@
 
 -------------------------------------
 
-Distributions2
---------------
+Weibull_Distribution
+--------------------
 
-.. toctree::
-    :maxdepth: 2
-    :glob:
-
-    Distributions/*
+.. autoclass:: reliability.Distributions.Weibull_Distribution
+    :members:
+    :undoc-members:
