@@ -5,14 +5,13 @@
 Distributions2
 --------------
 
-.. automodule:: reliability.Distributions.Weibull_Distribution
+.. autoclass:: reliability.Distributions.Weibull_Distribution
+    :members:
+
+.. autoclass:: reliability.Distributions.Exponential_Distribution
     :members:
     :undoc-members:
 
-.. automodule:: reliability.Distributions.Exponential_Distribution
-    :members:
-    :undoc-members:
-
-.. automodule:: reliability.Distributions.Lognormal_Distribution
+.. autoclass:: reliability.Distributions.Lognormal_Distribution
     :members:
     :undoc-members:
