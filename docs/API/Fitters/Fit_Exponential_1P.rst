@@ -2,11 +2,9 @@
 
 -------------------------------------
 
-ALT_fitters
------------
+Fit_Exponential_1P
+------------------
 
-.. toctree::
-    :maxdepth: 2
-    :glob:
-
-    ALT_fitters/*
+.. autoclass:: reliability.Fitters.Fit_Exponential_1P
+    :members:
+    :undoc-members:

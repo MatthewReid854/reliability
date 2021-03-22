@@ -5,6 +5,8 @@
 Distributions
 -------------
 
-.. automodule:: reliability.Distributions
-    :members:
-    :undoc-members:
+.. toctree::
+    :maxdepth: 2
+    :glob:
+
+    Distributions/*

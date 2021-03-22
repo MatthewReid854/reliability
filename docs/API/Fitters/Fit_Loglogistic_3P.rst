@@ -2,11 +2,9 @@
 
 -------------------------------------
 
-ALT_fitters
------------
+Fit_Loglogistic_3P
+------------------
 
-.. toctree::
-    :maxdepth: 2
-    :glob:
-
-    ALT_fitters/*
+.. autoclass:: reliability.Fitters.Fit_Loglogistic_3P
+    :members:
+    :undoc-members:

@@ -2,11 +2,9 @@
 
 -------------------------------------
 
-ALT_fitters
------------
+Fit_Normal_2P
+-------------
 
-.. toctree::
-    :maxdepth: 2
-    :glob:
-
-    ALT_fitters/*
+.. autoclass:: reliability.Fitters.Fit_Normal_2P
+    :members:
+    :undoc-members:

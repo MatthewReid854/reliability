@@ -2,11 +2,9 @@
 
 -------------------------------------
 
-ALT_fitters
+NelsonAalen
 -----------
 
-.. toctree::
-    :maxdepth: 2
-    :glob:
-
-    ALT_fitters/*
+.. autoclass:: reliability.Nonparametric.NelsonAalen
+    :members:
+    :undoc-members:

@@ -2,11 +2,9 @@
 
 -------------------------------------
 
-ALT_fitters
+FNRN_to_XCN
 -----------
 
-.. toctree::
-    :maxdepth: 2
-    :glob:
-
-    ALT_fitters/*
+.. autoclass:: reliability.Convert_data.FNRN_to_XCN
+    :members:
+    :undoc-members:

@@ -2,11 +2,9 @@
 
 -------------------------------------
 
-ALT_fitters
+KaplanMeier
 -----------
 
-.. toctree::
-    :maxdepth: 2
-    :glob:
-
-    ALT_fitters/*
+.. autoclass:: reliability.Nonparametric.KaplanMeier
+    :members:
+    :undoc-members:

@@ -2,11 +2,9 @@
 
 -------------------------------------
 
-ALT_fitters
------------
+Normal_Distribution
+-------------------
 
-.. toctree::
-    :maxdepth: 2
-    :glob:
-
-    ALT_fitters/*
+.. autoclass:: reliability.Distributions.Normal_Distribution
+    :members:
+    :undoc-members:

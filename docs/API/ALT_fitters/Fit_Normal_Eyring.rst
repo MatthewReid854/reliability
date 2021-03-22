@@ -2,11 +2,9 @@
 
 -------------------------------------
 
-ALT_fitters
------------
+Fit_Normal_Eyring
+-----------------
 
-.. toctree::
-    :maxdepth: 2
-    :glob:
-
-    ALT_fitters/*
+.. autoclass:: reliability.ALT_fitters.Fit_Normal_Eyring
+    :members:
+    :undoc-members:

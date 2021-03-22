@@ -2,11 +2,9 @@
 
 -------------------------------------
 
-ALT_fitters
------------
+Gumbel_Distribution
+-------------------
 
-.. toctree::
-    :maxdepth: 2
-    :glob:
-
-    ALT_fitters/*
+.. autoclass:: reliability.Distributions.Gumbel_Distribution
+    :members:
+    :undoc-members:

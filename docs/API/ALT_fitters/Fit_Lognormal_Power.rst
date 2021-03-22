@@ -2,11 +2,9 @@
 
 -------------------------------------
 
-ALT_fitters
------------
+Fit_Lognormal_Power
+-------------------
 
-.. toctree::
-    :maxdepth: 2
-    :glob:
-
-    ALT_fitters/*
+.. autoclass:: reliability.ALT_fitters.Fit_Lognormal_Power
+    :members:
+    :undoc-members:

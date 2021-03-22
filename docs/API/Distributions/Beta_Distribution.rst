@@ -2,11 +2,9 @@
 
 -------------------------------------
 
-ALT_fitters
------------
+Beta_Distribution
+-----------------
 
-.. toctree::
-    :maxdepth: 2
-    :glob:
-
-    ALT_fitters/*
+.. autoclass:: reliability.Distributions.Beta_Distribution
+    :members:
+    :undoc-members:

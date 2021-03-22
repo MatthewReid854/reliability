@@ -2,11 +2,9 @@
 
 -------------------------------------
 
-ALT_fitters
------------
+xlsx_to_FR
+----------
 
-.. toctree::
-    :maxdepth: 2
-    :glob:
-
-    ALT_fitters/*
+.. autoclass:: reliability.Convert_data.xlsx_to_FR
+    :members:
+    :undoc-members:

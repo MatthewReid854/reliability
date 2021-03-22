@@ -2,11 +2,9 @@
 
 -------------------------------------
 
-ALT_fitters
------------
+Gamma_Distribution
+------------------
 
-.. toctree::
-    :maxdepth: 2
-    :glob:
-
-    ALT_fitters/*
+.. autoclass:: reliability.Distributions.Gamma_Distribution
+    :members:
+    :undoc-members:

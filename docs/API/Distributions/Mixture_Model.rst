@@ -2,11 +2,9 @@
 
 -------------------------------------
 
-ALT_fitters
------------
+Mixture_Model
+-------------
 
-.. toctree::
-    :maxdepth: 2
-    :glob:
-
-    ALT_fitters/*
+.. autoclass:: reliability.Distributions.Mixture_Model
+    :members:
+    :undoc-members:

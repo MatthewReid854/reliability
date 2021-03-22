@@ -5,6 +5,8 @@
 Fitters
 -------
 
-.. automodule:: reliability.Fitters
-    :members:
-    :undoc-members:
+.. toctree::
+    :maxdepth: 2
+    :glob:
+
+    Fitters/*

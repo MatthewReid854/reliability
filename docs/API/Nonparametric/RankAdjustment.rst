@@ -2,11 +2,9 @@
 
 -------------------------------------
 
-Distributions2
+RankAdjustment
 --------------
 
-.. toctree::
-    :maxdepth: 2
-    :glob:
-
-    Distributions/*
+.. autoclass:: reliability.Nonparametric.RankAdjustment
+    :members:
+    :undoc-members:
