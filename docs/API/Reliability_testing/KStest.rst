@@ -2,11 +2,9 @@
 
 -------------------------------------
 
-Reliability_testing
--------------------
+KStest
+------
 
-.. toctree::
-    :maxdepth: 2
-    :glob:
-
-    Reliability_testing/*
+.. autoclass:: reliability.Reliability_testing.KStest
+    :members:
+    :undoc-members:

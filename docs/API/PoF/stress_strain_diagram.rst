@@ -2,11 +2,9 @@
 
 -------------------------------------
 
-Reliability_testing
--------------------
+stress_strain_diagram
+---------------------
 
-.. toctree::
-    :maxdepth: 2
-    :glob:
-
-    Reliability_testing/*
+.. autoclass:: reliability.PoF.stress_strain_diagram
+    :members:
+    :undoc-members:

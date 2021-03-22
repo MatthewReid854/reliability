@@ -2,11 +2,9 @@
 
 -------------------------------------
 
-Reliability_testing
--------------------
+make_ALT_data
+-------------
 
-.. toctree::
-    :maxdepth: 2
-    :glob:
-
-    Reliability_testing/*
+.. autoclass:: reliability.Other_functions.make_ALT_data
+    :members:
+    :undoc-members:

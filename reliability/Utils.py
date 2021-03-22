@@ -1398,6 +1398,10 @@ class fitters_input_checking:
 
 
 class ALT_fitters_input_checking:
+    """
+    performs error checking and some basic default operations for all the inputs given to each of the ALT_fitters
+    """
+
     def __init__(
         self,
         dist,
@@ -3712,6 +3716,12 @@ def ALT_least_squares(model, failures, stress_1_array, stress_2_array=None):
 
 
 class LS_optimisation:
+    """
+    Performs optimisation using least squares regression.
+    There is no actual "optimisation" done here, with the exception of checking which method (RRX or RRY) gave the better solution.
+    This function is used be each of the Fitters.
+    """
+
     def __init__(
         self,
         func_name,
@@ -3789,6 +3799,11 @@ class LS_optimisation:
 
 
 class MLE_optimisation:
+    """
+    This function performs the heavy lifting of finding the optimal parameters using the method of maximum likelihood expectation (MLE).
+    This functions is used be each of the fitters.
+    """
+
     def __init__(
         self,
         func_name,
@@ -4019,8 +4034,8 @@ class MLE_optimisation:
 
 class ALT_MLE_optimisation:
     """
-    This performs the MLE method to find the parameters
-    If the optimizer is None then multiple optimisers will be tried and the best result (lowest LL) will be returned
+    This performs the MLE method to find the parameters.
+    If the optimizer is None then multiple optimisers will be tried and the best result (lowest LL) will be returned.
     If the optimiser is specified then it will be used. If it fails then nelder-mead will be used. If nelder-mead fails then the initial guess and a warning will be returned.
     """
 
@@ -4554,6 +4569,9 @@ def ALT_prob_plot(
     shape_for_change_df,
     use_level_stress,
 ):
+    """
+    Generates an ALT probability plot using the inputs provided.
+    """
 
     from reliability.Probability_plotting import plotting_positions
 
@@ -4736,6 +4754,9 @@ def ALT_prob_plot(
 def life_stress_plot(
     model, dist, life_func, failure_groups, stresses_for_groups, use_level_stress
 ):
+    """
+    Generates a life stress plot using the inputs provided. The life stress plot is an output from each of the ALT_fitters.
+    """
     color_cycle = plt.rcParams["axes.prop_cycle"].by_key()[
         "color"
     ]  # gets the default color cycle

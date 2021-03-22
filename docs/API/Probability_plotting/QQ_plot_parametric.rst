@@ -2,11 +2,9 @@
 
 -------------------------------------
 
-Reliability_testing
--------------------
+QQ_plot_parametric
+------------------
 
-.. toctree::
-    :maxdepth: 2
-    :glob:
-
-    Reliability_testing/*
+.. autoclass:: reliability.Probability_plotting.QQ_plot_parametric
+    :members:
+    :undoc-members:

@@ -2,11 +2,9 @@
 
 -------------------------------------
 
-Reliability_testing
--------------------
+ROCOF
+-----
 
-.. toctree::
-    :maxdepth: 2
-    :glob:
-
-    Reliability_testing/*
+.. autoclass:: reliability.Repairable_systems.ROCOF
+    :members:
+    :undoc-members:

@@ -3,8 +3,10 @@
 -------------------------------------
 
 Other_functions
----------------
+-------------
 
-.. automodule:: reliability.Other_functions
-    :members:
-    :undoc-members:
+.. toctree::
+    :maxdepth: 2
+    :glob:
+
+    Other_functions/*

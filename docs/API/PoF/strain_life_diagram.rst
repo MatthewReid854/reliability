@@ -2,11 +2,9 @@
 
 -------------------------------------
 
-Reliability_testing
+strain_life_diagram
 -------------------
 
-.. toctree::
-    :maxdepth: 2
-    :glob:
-
-    Reliability_testing/*
+.. autoclass:: reliability.PoF.strain_life_diagram
+    :members:
+    :undoc-members:

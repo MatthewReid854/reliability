@@ -20,6 +20,24 @@ from reliability.Utils import colorprint, round_to_decimals
 
 
 class reliability_growth:
+    """
+    Uses the Duane method to find the instantaneous MTBF and produce a reliability growth plot.
+
+    Inputs:
+    times - array or list of failure times
+    xmax - xlim to plot up to. Default is 1.5*max(times)
+    target_MTBF - specify the target MTBF to obtain the total time on test required to reach it.
+    show_plot - True/False. Defaults to true. Other keyword arguments are passed to the plot for style
+    print_results - True/False. Defaults to True.
+
+    Outputs:
+    If print_results is True it will print a summary of the results
+    Lambda - the lambda parameter from the Duane model
+    Beta - the beta parameter from the Duane model
+    time_to_target - Time to target is only returned if target_MTBF is specified.
+    If show_plot is True, it will plot the reliability growth. Use plt.show() to show the plot.
+    """
+
     def __init__(
         self,
         times=None,
@@ -29,23 +47,6 @@ class reliability_growth:
         print_results=True,
         **kwargs
     ):
-        """
-        Uses the Duane method to find the instantaneous MTBF and produce a reliability growth plot.
-
-        Inputs:
-        times - array or list of failure times
-        xmax - xlim to plot up to. Default is 1.5*max(times)
-        target_MTBF - specify the target MTBF to obtain the total time on test required to reach it.
-        show_plot - True/False. Defaults to true. Other keyword arguments are passed to the plot for style
-        print_results - True/False. Defaults to True.
-
-        Outputs:
-        If print_results is True it will print a summary of the results
-        Lambda - the lambda parameter from the Duane model
-        Beta - the beta parameter from the Duane model
-        time_to_target - Time to target is only returned if target_MTBF is specified.
-        If show_plot is True, it will plot the reliability growth. Use plt.show() to show the plot.
-        """
         if times is None:
             raise ValueError("times must be an array or list of failure times")
         if type(times) == list:

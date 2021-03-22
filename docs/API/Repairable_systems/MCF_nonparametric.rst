@@ -2,11 +2,9 @@
 
 -------------------------------------
 
-Reliability_testing
--------------------
+MCF_nonparametric
+-----------------
 
-.. toctree::
-    :maxdepth: 2
-    :glob:
-
-    Reliability_testing/*
+.. autoclass:: reliability.Repairable_systems.MCF_nonparametric
+    :members:
+    :undoc-members:

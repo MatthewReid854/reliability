@@ -5,6 +5,8 @@
 PoF
 ---
 
-.. automodule:: reliability.PoF
-    :members:
-    :undoc-members:
+.. toctree::
+    :maxdepth: 2
+    :glob:
+
+    PoF/*

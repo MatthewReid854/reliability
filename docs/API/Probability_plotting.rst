@@ -5,6 +5,8 @@
 Probability_plotting
 --------------------
 
-.. automodule:: reliability.Probability_plotting
-    :members:
-    :undoc-members:
+.. toctree::
+    :maxdepth: 2
+    :glob:
+
+    Probability_plotting/*

@@ -3,8 +3,10 @@
 -------------------------------------
 
 Convert_data
-------------
+-------------
 
-.. automodule:: reliability.Convert_data
-    :members:
-    :undoc-members:
+.. toctree::
+    :maxdepth: 2
+    :glob:
+
+    Convert_data/*

@@ -2,11 +2,9 @@
 
 -------------------------------------
 
-Reliability_testing
+two_proportion_test
 -------------------
 
-.. toctree::
-    :maxdepth: 2
-    :glob:
-
-    Reliability_testing/*
+.. autoclass:: reliability.Reliability_testing.two_proportion_test
+    :members:
+    :undoc-members:

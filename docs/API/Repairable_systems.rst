@@ -5,6 +5,8 @@
 Repairable_systems
 ------------------
 
-.. automodule:: reliability.Repairable_systems
-    :members:
-    :undoc-members:
+.. toctree::
+    :maxdepth: 2
+    :glob:
+
+    Repairable_systems/*

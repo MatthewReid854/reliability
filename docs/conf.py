@@ -26,8 +26,9 @@ copyright = "2019-{},  Matthew Reid".format(date.today().year)
 author = 'Matthew Reid'
 
 # The full version, including alpha/beta/rc tags
-release = '0.5.6'
-
+import reliability
+version = reliability.__version__
+release = version
 
 # -- General configuration ---------------------------------------------------
 
@@ -45,8 +46,8 @@ napoleon_google_docstring = False
 napoleon_use_param = False
 napoleon_use_ivar = True
 
-# Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+# # Add any paths that contain templates here, relative to this directory.
+# templates_path = ['_templates']
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -59,7 +60,7 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # a list of builtin themes.
 html_theme = 'sphinx_rtd_theme'
 
-# Add any paths that contain custom static files (such as style sheets) here,
-# relative to this directory. They are copied after the builtin static files,
-# so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+# # Add any paths that contain custom static files (such as style sheets) here,
+# # relative to this directory. They are copied after the builtin static files,
+# # so a file named "default.css" will overwrite the builtin "default.css".
+# html_static_path = ['_static']

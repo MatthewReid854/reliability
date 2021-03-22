@@ -2,11 +2,9 @@
 
 -------------------------------------
 
-Reliability_testing
+acceleration_factor
 -------------------
 
-.. toctree::
-    :maxdepth: 2
-    :glob:
-
-    Reliability_testing/*
+.. autoclass:: reliability.PoF.acceleration_factor
+    :members:
+    :undoc-members:
