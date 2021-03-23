@@ -14,5 +14,11 @@ from reliability import PoF
 from reliability import Utils
 from reliability import Convert_data
 
-__version__ = "0.5.7"  # Current version
-
+__title__ = 'reliability'
+__version__ = "0.5.7"
+__description__ = 'A Python library for reliability engineering'
+__url__ = 'https://reliability.readthedocs.io/en/latest/index.html'
+__author__ = 'Matthew Reid'
+__author_email__ = 'alpha.reliability@gmail.com'
+__license__ = 'LGPLv3'
+__copyright__ = 'Copyright 2019-2021 Matthew Reid'
