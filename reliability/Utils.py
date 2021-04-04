@@ -112,12 +112,12 @@ def transform_spaced(
     It is useful if the points generated are going to be plotted on axes that are scaled using the same transform and need to look equally spaced in the transform space
     Note that lognormal is the same as normal, since the x-axis is what is transformed, not the y-axis.
 
-    :param transform: the transform name. Must be either weibull, exponential, normal, gamma, or beta.
-    :param y_upper: the lower bound (must be within the bounds 0 to 1). Default is 1e-8
-    :param y_lower: the upper bound (must be within the bounds 0 to 1). Default is 1-1e-8
-    :param num: the number of values in the array
-    :param alpha: the alpha value of the beta distribution. Only used if the transform is beta
-    :param beta: the alpha value of the beta or gamma distribution. Only used if the transform is beta or gamma
+    :param transform (str): the transform name. Must be either weibull, exponential, normal, gamma, or beta.
+    :param y_upper (float): the lower bound (must be within the bounds 0 to 1). Default is 1e-8
+    :param y_lower (float): the upper bound (must be within the bounds 0 to 1). Default is 1-1e-8
+    :param num (int): the number of values in the array. Default is 1000.
+    :param alpha (int, float): the alpha value of the beta distribution. Only used if the transform is beta
+    :param beta (int, float): the alpha value of the beta or gamma distribution. Only used if the transform is beta or gamma
     :return: linearly spaced array (appears linearly spaced when plotted in transform space)
     """
     np.seterr("ignore")  # this is required due to an error in scipy.stats
