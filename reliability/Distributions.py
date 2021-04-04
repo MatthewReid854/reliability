@@ -79,7 +79,7 @@ np.seterr(divide="ignore", invalid="ignore")  # ignore the divide by zero warnin
 
 
 class Weibull_Distribution:
-    '''
+    """
     Weibull probability distribution. Creates a probability distribution object.
 
     Parameters
@@ -116,7 +116,8 @@ class Weibull_Distribution:
     mode : float
     b5 : float
     b95 : float
-    '''
+    """
+
     def __init__(self, alpha=None, beta=None, gamma=0, **kwargs):
         self.name = "Weibull"
         if alpha is None or beta is None:
@@ -223,7 +224,8 @@ class Weibull_Distribution:
 
     def plot(self, xvals=None, xmin=None, xmax=None):
         """
-        Plots all functions (PDF, CDF, SF, HF, CHF) and descriptive statistics in a single figure
+        Plots all functions (PDF, CDF, SF, HF, CHF) and descriptive statistics
+        in a single figure
 
         Parameters
         ----------
@@ -234,12 +236,18 @@ class Weibull_Distribution:
         xmax : int, float, optional
             maximum x-value for plotting
 
-        If xvals is specified, it will be used. If xvals is not specified but xmin and/or xmax are specified then an array with 200 elements will be created using these limits. If nothing is specified then the range will be based on the distribution's parameters. No plotting keywords are accepted
-
         Returns
         -------
         None
         The plot will be shown. No need to use plt.show()
+
+        Notes
+        -----
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters. No plotting keywords are
+        accepted.
         """
 
         X = generate_X_array(
@@ -381,16 +389,21 @@ class Weibull_Distribution:
         xmax : int, float, optional
             maximum x-value for plotting
         kwargs
-            Plotting keywords that are passed directly to matplotlib (e.g. color, linestyle)
-
-        If xvals is specified, it will be used. If xvals is not specified but xmin and/or xmax are specified then an array with 200 elements
-        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
+            Plotting keywords that are passed directly to matplotlib
+            (e.g. color, linestyle)
 
         Returns
         -------
         yvals : array
             The y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
+
+        Notes
+        -----
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters.
         """
         # obtain the X array
         if (
@@ -439,21 +452,32 @@ class Weibull_Distribution:
         """
         Plots the CDF (cumulative distribution function)
 
-        Inputs:
+        Parameters
+        ----------
+        show_plot : bool
+            True or False. Default = True
+        xvals : array, list, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
+        kwargs
+            Plotting keywords that are passed directly to matplotlib
+            (e.g. color, linestyle)
 
-        - show_plot - True/False. Default is True
-        - xvals - x-values for plotting
-        - xmin - minimum x-value for plotting
-        - xmax - maximum x-value for plotting
+        Returns
+        -------
+        yvals : array
+            The y-values of the plot
+        The plot will be shown if show_plot is True (which it is by default).
 
-        If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 200 elements
-        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
-        plotting keywords are also accepted (eg. color, linestyle)
-
-        Outputs:
-
-        - yvals - this is the y-values of the plot
-        - The plot will be shown if show_plot is True (which it is by default).
+        Notes
+        -----
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters.
         """
 
         # obtain the X array
