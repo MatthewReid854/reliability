@@ -243,6 +243,7 @@ class Weibull_Distribution:
 
         Returns
         -------
+        None
 
         Notes
         -----
@@ -857,8 +858,8 @@ class Weibull_Distribution:
         t : int, float
             Time (x-value) at which mean residual life is to be evaluated
 
-        Returns
-        -------
+        Return
+        ------
         MRL : float
             The mean residual life
         """
@@ -875,9 +876,11 @@ class Weibull_Distribution:
 
         Parameters
         ----------
+        None
 
-        Returns
-        -------
+        Return
+        ------
+        None
 
         """
         if self.gamma == 0:
