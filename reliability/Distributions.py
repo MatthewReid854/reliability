@@ -243,11 +243,10 @@ class Weibull_Distribution:
 
         Returns
         -------
-        None
-        The plot will be shown. No need to use plt.show()
 
         Notes
         -----
+        The plot will be shown. No need to use plt.show()
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
         created using these limits. If nothing is specified then the range will
@@ -811,8 +810,9 @@ class Weibull_Distribution:
 
         Returns
         -------
-        The inverse of the CDF at q. This is the probability (area under the
-        curve) that a random variable from the distribution is < q
+        x : float
+            The inverse of the CDF at q. This is the probability that a random
+            variable from the distribution is < q
         """
         if type(q) in [int, float, np.float64]:
             if q < 0 or q > 1:
@@ -835,7 +835,8 @@ class Weibull_Distribution:
 
         Returns
         -------
-        The inverse of the SF at q.
+        x : float
+            The inverse of the SF at q.
         """
         if type(q) in [int, float, np.float64]:
             if q < 0 or q > 1:
@@ -858,7 +859,8 @@ class Weibull_Distribution:
 
         Returns
         -------
-        The mean residual life
+        MRL : float
+            The mean residual life
         """
         R = lambda x: ss.weibull_min.sf(x, self.beta, scale=self.alpha, loc=self.gamma)
         integral_R, error = integrate.quad(R, t, np.inf)
@@ -873,11 +875,10 @@ class Weibull_Distribution:
 
         Parameters
         ----------
-        None
 
         Returns
         -------
-        None
+
         """
         if self.gamma == 0:
             print(
@@ -918,7 +919,12 @@ class Weibull_Distribution:
 
         Returns
         -------
-        The random samples as an array
+        samples : array
+            The random samples
+
+        Notes
+        -----
+        This is the same as rvs in scipy.stats
         """
         if type(number_of_samples) != int or number_of_samples < 1:
             raise ValueError("number_of_samples must be an integer greater than 1")
