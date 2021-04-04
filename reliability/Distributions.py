@@ -85,18 +85,19 @@ class Weibull_Distribution:
     Parameters
     ----------
     alpha : float, int
-        scale parameter
+        Scale parameter. Must be > 0
     beta : float, int
-        shape parameter
+        Shape parameter. Must be > 0
     gamma : float, int, optional
-        threshold (offset) parameter. Default = 0
+        threshold (offset) parameter. Must be >= 0. Default = 0
 
     Returns
     -------
     name : str
         'Weibull'
     name2 : 'str
-        Weibull_2P' or 'Weibull_3P' depending on the value of the gamma parameter
+        Weibull_2P' or 'Weibull_3P' depending on the value of the gamma
+        parameter
     param_title_long : str
         'Weibull Distribution (α=5,β=2)'
     param_title : str
@@ -116,6 +117,10 @@ class Weibull_Distribution:
     mode : float
     b5 : float
     b95 : float
+
+    Notes
+    -----
+    kwargs are used internally to generate the confidence intervals
     """
 
     def __init__(self, alpha=None, beta=None, gamma=0, **kwargs):
@@ -541,21 +546,32 @@ class Weibull_Distribution:
         """
         Plots the SF (survival function)
 
-        Inputs:
+        Parameters
+        ----------
+        show_plot : bool
+            True or False. Default = True
+        xvals : array, list, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
+        kwargs
+            Plotting keywords that are passed directly to matplotlib
+            (e.g. color, linestyle)
 
-        - show_plot - True/False. Default is True
-        - xvals - x-values for plotting
-        - xmin - minimum x-value for plotting
-        - xmax - maximum x-value for plotting
+        Returns
+        -------
+        yvals : array
+            The y-values of the plot
+        The plot will be shown if show_plot is True (which it is by default).
 
-        If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 200 elements
-        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
-        Plotting keywords are also accepted (eg. color, linestyle)
-
-        Outputs:
-
-        - yvals - this is the y-values of the plot
-        - The plot will be shown if show_plot is True (which it is by default).
+        Notes
+        -----
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters.
         """
 
         # obtain the X array
@@ -619,21 +635,32 @@ class Weibull_Distribution:
         """
         Plots the HF (hazard function)
 
-        Inputs:
+        Parameters
+        ----------
+        show_plot : bool
+            True or False. Default = True
+        xvals : array, list, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
+        kwargs
+            Plotting keywords that are passed directly to matplotlib
+            (e.g. color, linestyle)
 
-        - show_plot - True/False. Default is True
-        - xvals - x-values for plotting
-        - xmin - minimum x-value for plotting
-        - xmax - maximum x-value for plotting
+        Returns
+        -------
+        yvals : array
+            The y-values of the plot
+        The plot will be shown if show_plot is True (which it is by default).
 
-        If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 200 elements
-        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
-        Plotting keywords are also accepted (eg. color, linestyle)
-
-        Outputs:
-
-        - yvals - this is the y-values of the plot
-        - The plot will be shown if show_plot is True (which it is by default).
+        Notes
+        -----
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters.
         """
 
         # obtain the X array
@@ -685,21 +712,32 @@ class Weibull_Distribution:
         """
         Plots the CHF (cumulative hazard function)
 
-        Inputs:
+        Parameters
+        ----------
+        show_plot : bool
+            True or False. Default = True
+        xvals : array, list, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
+        kwargs
+            Plotting keywords that are passed directly to matplotlib
+            (e.g. color, linestyle)
 
-        - show_plot - True/False. Default is True
-        - xvals - x-values for plotting
-        - xmin - minimum x-value for plotting
-        - xmax - maximum x-value for plotting
+        Returns
+        -------
+        yvals : array
+            The y-values of the plot
+        The plot will be shown if show_plot is True (which it is by default).
 
-        If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 200 elements
-        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
-        Plotting keywords are also accepted (eg. color, linestyle)
-
-        Outputs:
-
-        - yvals - this is the y-values of the plot
-        - The plot will be shown if show_plot is True (which it is by default).
+        Notes
+        -----
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters.
         """
 
         # obtain the X array
@@ -766,8 +804,15 @@ class Weibull_Distribution:
         """
         Quantile calculator
 
-        :param q: quantile to be calculated
-        :return: the probability (area under the curve) that a random variable from the distribution is < q
+        Parameters
+        ----------
+        q : float
+            Quantile to be calculated. Must be between 0 and 1.
+
+        Returns
+        -------
+        The inverse of the CDF at q. This is the probability (area under the
+        curve) that a random variable from the distribution is < q
         """
         if type(q) in [int, float, np.float64]:
             if q < 0 or q > 1:
@@ -781,10 +826,16 @@ class Weibull_Distribution:
 
     def inverse_SF(self, q):
         """
-        Inverse Survival function calculator
+        Inverse survival function calculator
 
-        :param q: quantile to be calculated
-        :return: the inverse of the survival function at q
+        Parameters
+        ----------
+        q : float
+            Quantile to be calculated. Must be between 0 and 1.
+
+        Returns
+        -------
+        The inverse of the SF at q.
         """
         if type(q) in [int, float, np.float64]:
             if q < 0 or q > 1:
@@ -800,8 +851,14 @@ class Weibull_Distribution:
         """
         Mean Residual Life calculator
 
-        :param t: time at which MRL is to be evaluated
-        :return: MRL
+        Parameters
+        ----------
+        t : int, float
+            Time (x-value) at which mean residual life is to be evaluated
+
+        Returns
+        -------
+        The mean residual life
         """
         R = lambda x: ss.weibull_min.sf(x, self.beta, scale=self.alpha, loc=self.gamma)
         integral_R, error = integrate.quad(R, t, np.inf)
@@ -810,8 +867,17 @@ class Weibull_Distribution:
 
     def stats(self):
         """
-        Descriptive statistics of the probability distribution. Same as the statistics shown using .plot() but printed to console.
-        No inputs or outputs.
+        Descriptive statistics of the probability distribution.
+        These are the same as the statistics shown using .plot() but printed to
+        the console.
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        None
         """
         if self.gamma == 0:
             print(
@@ -841,13 +907,18 @@ class Weibull_Distribution:
 
     def random_samples(self, number_of_samples, seed=None):
         """
-        random_samples
-
         Draws random samples from the probability distribution
 
-        :param number_of_samples: the number of samples to be drawn
-        :param seed: the random seed. Default is None
-        :return: the random samples
+        Parameters
+        ----------
+        number_of_samples : int
+            The number of samples to be drawn. Must be greater than 0.
+        seed : int, optional
+            The random seed passed to numpy. Default = None
+
+        Returns
+        -------
+        The random samples as an array
         """
         if type(number_of_samples) != int or number_of_samples < 1:
             raise ValueError("number_of_samples must be an integer greater than 1")
