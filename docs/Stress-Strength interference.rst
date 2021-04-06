@@ -61,9 +61,9 @@ If either the stress or strength distributions are not Normal Distributions, the
 
 The equation to find the probability of failure any two distributions is:
 
-:math:`\text{Probability of failure} =\int^{\infty}_{0} \left( f_{stress} \times F_{strength} \right)`
+:math:`\text{Probability of failure} =\int^{\infty}_{0} \left( f_{strength} \times R_{stress} \right)`
 
-Where :math:`f` is the PDF and :math:`F` is the CDF. The above integral can be evaluated using the trapz function in numpy: ``F = np.trapz(stress.PDF(x) * strength.CDF(x), x)``
+Where :math:`f` is the PDF and :math:`R` is the SF. The above integral can be evaluated using the trapz function in numpy: ``probability of failure = np.trapz(strength.PDF(x) * stress.SF(x), x)``
 
 Inputs:
 
@@ -71,7 +71,7 @@ Inputs:
 -   strength - a probability distribution from the Distributions module
 -   show_distribution_plot - True/False (default is True)
 -   print_results - True/False (default is True)
--   warn - a warning will be issued if both stress and strength are Normal as you should use stress_strength_normal. You can supress this using warn=False
+-   warn - a warning will be issued if both stress and strength are Normal as you should use stress_strength_normal. A warning will also be issued if stress.mean > strength.mean to alert the user they may have assigned the stress and strength distributions in reverse. You can supress all warnings using warn=False
 
 Outputs:
 

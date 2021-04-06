@@ -247,7 +247,7 @@ class Weibull_Distribution:
 
         Notes
         -----
-        The plot will be shown. No need to use plt.show()
+        The plot will be shown. No need to use plt.show().
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
         created using these limits. If nothing is specified then the range will
@@ -858,8 +858,8 @@ class Weibull_Distribution:
         t : int, float
             Time (x-value) at which mean residual life is to be evaluated
 
-        Return
-        ------
+        Returns
+        -------
         MRL : float
             The mean residual life
         """

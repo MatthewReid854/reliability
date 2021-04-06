@@ -100,14 +100,14 @@ def stress_strength(
 
     x = np.linspace(stress.quantile(1e-8), strength.quantile(1 - 1e-8), 1000)
     prob_of_failure = np.trapz(
-        stress.PDF(x, show_plot=False) * strength.CDF(x, show_plot=False), x
+        strength.PDF(x, show_plot=False) * stress.SF(x, show_plot=False), x
     )
 
     if show_distribution_plot is True:
         xlims = plt.xlim(auto=None)
         xmin = stress.quantile(0.00001)
         xmax = strength.quantile(0.99999)
-        if xmin < (xmax - xmin) / 4:
+        if abs(xmin) < (xmax - xmin) / 4:
             xmin = 0  # if the lower bound on xmin is near zero (relative to the entire range) then just make it zero
         if type(stress) == Beta_Distribution:
             xmin = 0
