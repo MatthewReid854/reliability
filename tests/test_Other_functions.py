@@ -10,7 +10,7 @@ def test_stress_strength():
     stress = Weibull_Distribution(alpha=40, beta=4)
     strength = Lognormal_Distribution(mu=1.8, sigma=0.25, gamma=50)
     result = stress_strength(stress=stress, strength=strength, print_results=False, show_distribution_plot=False)
-    assert_allclose(result,0.02155359226336879,rtol=rtol,atol=atol)
+    assert_allclose(result,0.021559141113795574,rtol=rtol,atol=atol)
 
 def test_stress_strength_normal():
     stress = Normal_Distribution(mu=50, sigma=5)
