@@ -16,6 +16,7 @@ There are some customisable attributes of the crosshairs and annotations using t
 -   xlabel - the x-label for the annotation. Default is x.
 -   ylabel - the y-label for the annotation. Default is y.
 -   decimals - the number of decimals to use when rounding values in the crosshairs and in the annotation. Default is 2.
+-   dateformat - the datetime format. If specified the x crosshair and label will be formatted as a date using the format provided. Default is None which results in no date format being used on x. For a list of acceptable dateformat strings see `strftime <https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes>`_.
 -   plotting kwargs are also accepted. eg. color, linestyle, etc.
 
 In the following example, we see the crosshairs being used to display the value of the Weibull CDF. The dynamic nature of this feature is shown in the video at the bottom of this page.

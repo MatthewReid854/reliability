@@ -2836,14 +2836,12 @@ class Fit_Weibull_Exponential:
 
     @staticmethod
     def LL(params, t_f, t_rc, T_f, T_rc):  # log likelihood function
-        LL_f = 0
-        LL_rc = 0
         # failure times
-        LL_f += Fit_Weibull_Exponential.logf(
+        LL_f = Fit_Weibull_Exponential.logf(
             t_f, T_f, params[0], params[1], params[2]
         ).sum()
         # right censored times
-        LL_rc += Fit_Weibull_Exponential.logR(
+        LL_rc = Fit_Weibull_Exponential.logR(
             t_rc, T_rc, params[0], params[1], params[2]
         ).sum()
         return -(LL_f + LL_rc)
@@ -3199,12 +3197,10 @@ class Fit_Weibull_Eyring:
 
     @staticmethod
     def LL(params, t_f, t_rc, T_f, T_rc):  # log likelihood function
-        LL_f = 0
-        LL_rc = 0
         # failure times
-        LL_f += Fit_Weibull_Eyring.logf(t_f, T_f, params[0], params[1], params[2]).sum()
+        LL_f = Fit_Weibull_Eyring.logf(t_f, T_f, params[0], params[1], params[2]).sum()
         # right censored times
-        LL_rc += Fit_Weibull_Eyring.logR(
+        LL_rc = Fit_Weibull_Eyring.logR(
             t_rc, T_rc, params[0], params[1], params[2]
         ).sum()
         return -(LL_f + LL_rc)
@@ -3560,12 +3556,10 @@ class Fit_Weibull_Power:
 
     @staticmethod
     def LL(params, t_f, t_rc, T_f, T_rc):  # log likelihood function
-        LL_f = 0
-        LL_rc = 0
         # failure times
-        LL_f += Fit_Weibull_Power.logf(t_f, T_f, params[0], params[1], params[2]).sum()
+        LL_f = Fit_Weibull_Power.logf(t_f, T_f, params[0], params[1], params[2]).sum()
         # right censored times
-        LL_rc += Fit_Weibull_Power.logR(
+        LL_rc = Fit_Weibull_Power.logR(
             t_rc, T_rc, params[0], params[1], params[2]
         ).sum()
         return -(LL_f + LL_rc)
@@ -3975,14 +3969,12 @@ class Fit_Weibull_Dual_Exponential:
 
     @staticmethod
     def LL(params, t_f, t_rc, S1_f, S2_f, S1_rc, S2_rc):  # log likelihood function
-        LL_f = 0
-        LL_rc = 0
         # failure times
-        LL_f += Fit_Weibull_Dual_Exponential.logf(
+        LL_f = Fit_Weibull_Dual_Exponential.logf(
             t_f, S1_f, S2_f, params[0], params[1], params[2], params[3]
         ).sum()
         # right censored times
-        LL_rc += Fit_Weibull_Dual_Exponential.logR(
+        LL_rc = Fit_Weibull_Dual_Exponential.logR(
             t_rc, S1_rc, S2_rc, params[0], params[1], params[2], params[3]
         ).sum()
         return -(LL_f + LL_rc)
@@ -4393,12 +4385,10 @@ class Fit_Weibull_Power_Exponential:
 
     @staticmethod
     def LL(params, t_f, t_rc, S1_f, S2_f, S1_rc, S2_rc):  # log likelihood function
-        LL_f = 0
-        LL_rc = 0
-        LL_f += Fit_Weibull_Power_Exponential.logf(
+        LL_f = Fit_Weibull_Power_Exponential.logf(
             t_f, S1_f, S2_f, params[0], params[1], params[2], params[3]
         ).sum()  # failure times
-        LL_rc += Fit_Weibull_Power_Exponential.logR(
+        LL_rc = Fit_Weibull_Power_Exponential.logR(
             t_rc, S1_rc, S2_rc, params[0], params[1], params[2], params[3]
         ).sum()  # right censored times
         return -(LL_f + LL_rc)
@@ -4806,14 +4796,12 @@ class Fit_Weibull_Dual_Power:
 
     @staticmethod
     def LL(params, t_f, t_rc, S1_f, S2_f, S1_rc, S2_rc):  # log likelihood function
-        LL_f = 0
-        LL_rc = 0
         # failure times
-        LL_f += Fit_Weibull_Dual_Power.logf(
+        LL_f = Fit_Weibull_Dual_Power.logf(
             t_f, S1_f, S2_f, params[0], params[1], params[2], params[3]
         ).sum()
         # right censored times
-        LL_rc += Fit_Weibull_Dual_Power.logR(
+        LL_rc = Fit_Weibull_Dual_Power.logR(
             t_rc, S1_rc, S2_rc, params[0], params[1], params[2], params[3]
         ).sum()
         return -(LL_f + LL_rc)
@@ -5186,14 +5174,12 @@ class Fit_Lognormal_Exponential:
 
     @staticmethod
     def LL(params, t_f, t_rc, T_f, T_rc):  # log likelihood function
-        LL_f = 0
-        LL_rc = 0
         # failure times
-        LL_f += Fit_Lognormal_Exponential.logf(
+        LL_f = Fit_Lognormal_Exponential.logf(
             t_f, T_f, params[0], params[1], params[2]
         ).sum()
         # right censored times
-        LL_rc += Fit_Lognormal_Exponential.logR(
+        LL_rc = Fit_Lognormal_Exponential.logR(
             t_rc, T_rc, params[0], params[1], params[2]
         ).sum()
         return -(LL_f + LL_rc)
@@ -5556,14 +5542,12 @@ class Fit_Lognormal_Eyring:
 
     @staticmethod
     def LL(params, t_f, t_rc, T_f, T_rc):  # log likelihood function
-        LL_f = 0
-        LL_rc = 0
         # failure times
-        LL_f += Fit_Lognormal_Eyring.logf(
+        LL_f = Fit_Lognormal_Eyring.logf(
             t_f, T_f, params[0], params[1], params[2]
         ).sum()
         # right censored times
-        LL_rc += Fit_Lognormal_Eyring.logR(
+        LL_rc = Fit_Lognormal_Eyring.logR(
             t_rc, T_rc, params[0], params[1], params[2]
         ).sum()
         return -(LL_f + LL_rc)
@@ -5926,14 +5910,10 @@ class Fit_Lognormal_Power:
 
     @staticmethod
     def LL(params, t_f, t_rc, T_f, T_rc):  # log likelihood function
-        LL_f = 0
-        LL_rc = 0
         # failure times
-        LL_f += Fit_Lognormal_Power.logf(
-            t_f, T_f, params[0], params[1], params[2]
-        ).sum()
+        LL_f = Fit_Lognormal_Power.logf(t_f, T_f, params[0], params[1], params[2]).sum()
         # right censored times
-        LL_rc += Fit_Lognormal_Power.logR(
+        LL_rc = Fit_Lognormal_Power.logR(
             t_rc, T_rc, params[0], params[1], params[2]
         ).sum()
         return -(LL_f + LL_rc)
@@ -6346,12 +6326,10 @@ class Fit_Lognormal_Dual_Exponential:
 
     @staticmethod
     def LL(params, t_f, t_rc, S1_f, S2_f, S1_rc, S2_rc):  # log likelihood function
-        LL_f = 0
-        LL_rc = 0
-        LL_f += Fit_Lognormal_Dual_Exponential.logf(
+        LL_f = Fit_Lognormal_Dual_Exponential.logf(
             t_f, S1_f, S2_f, params[0], params[1], params[2], params[3]
         ).sum()  # failure times
-        LL_rc += Fit_Lognormal_Dual_Exponential.logR(
+        LL_rc = Fit_Lognormal_Dual_Exponential.logR(
             t_rc, S1_rc, S2_rc, params[0], params[1], params[2], params[3]
         ).sum()  # right censored times
         return -(LL_f + LL_rc)
@@ -6765,12 +6743,10 @@ class Fit_Lognormal_Power_Exponential:
 
     @staticmethod
     def LL(params, t_f, t_rc, S1_f, S2_f, S1_rc, S2_rc):  # log likelihood function
-        LL_f = 0
-        LL_rc = 0
-        LL_f += Fit_Lognormal_Power_Exponential.logf(
+        LL_f = Fit_Lognormal_Power_Exponential.logf(
             t_f, S1_f, S2_f, params[0], params[1], params[2], params[3]
         ).sum()  # failure times
-        LL_rc += Fit_Lognormal_Power_Exponential.logR(
+        LL_rc = Fit_Lognormal_Power_Exponential.logR(
             t_rc, S1_rc, S2_rc, params[0], params[1], params[2], params[3]
         ).sum()  # right censored times
         return -(LL_f + LL_rc)
@@ -7183,14 +7159,12 @@ class Fit_Lognormal_Dual_Power:
 
     @staticmethod
     def LL(params, t_f, t_rc, S1_f, S2_f, S1_rc, S2_rc):  # log likelihood function
-        LL_f = 0
-        LL_rc = 0
         # failure times
-        LL_f += Fit_Lognormal_Dual_Power.logf(
+        LL_f = Fit_Lognormal_Dual_Power.logf(
             t_f, S1_f, S2_f, params[0], params[1], params[2], params[3]
         ).sum()
         # right censored times
-        LL_rc += Fit_Lognormal_Dual_Power.logR(
+        LL_rc = Fit_Lognormal_Dual_Power.logR(
             t_rc, S1_rc, S2_rc, params[0], params[1], params[2], params[3]
         ).sum()
         return -(LL_f + LL_rc)
@@ -7559,14 +7533,12 @@ class Fit_Normal_Exponential:
 
     @staticmethod
     def LL(params, t_f, t_rc, T_f, T_rc):  # log likelihood function
-        LL_f = 0
-        LL_rc = 0
         # failure times
-        LL_f += Fit_Normal_Exponential.logf(
+        LL_f = Fit_Normal_Exponential.logf(
             t_f, T_f, params[0], params[1], params[2]
         ).sum()
         # right censored times
-        LL_rc += Fit_Normal_Exponential.logR(
+        LL_rc = Fit_Normal_Exponential.logR(
             t_rc, T_rc, params[0], params[1], params[2]
         ).sum()
         return -(LL_f + LL_rc)
@@ -7926,12 +7898,10 @@ class Fit_Normal_Eyring:
 
     @staticmethod
     def LL(params, t_f, t_rc, T_f, T_rc):  # log likelihood function
-        LL_f = 0
-        LL_rc = 0
         # failure times
-        LL_f += Fit_Normal_Eyring.logf(t_f, T_f, params[0], params[1], params[2]).sum()
+        LL_f = Fit_Normal_Eyring.logf(t_f, T_f, params[0], params[1], params[2]).sum()
         # right censored times
-        LL_rc += Fit_Normal_Eyring.logR(
+        LL_rc = Fit_Normal_Eyring.logR(
             t_rc, T_rc, params[0], params[1], params[2]
         ).sum()
         return -(LL_f + LL_rc)
@@ -8291,14 +8261,10 @@ class Fit_Normal_Power:
 
     @staticmethod
     def LL(params, t_f, t_rc, T_f, T_rc):  # log likelihood function
-        LL_f = 0
-        LL_rc = 0
         # failure times
-        LL_f += Fit_Normal_Power.logf(t_f, T_f, params[0], params[1], params[2]).sum()
+        LL_f = Fit_Normal_Power.logf(t_f, T_f, params[0], params[1], params[2]).sum()
         # right censored times
-        LL_rc += Fit_Normal_Power.logR(
-            t_rc, T_rc, params[0], params[1], params[2]
-        ).sum()
+        LL_rc = Fit_Normal_Power.logR(t_rc, T_rc, params[0], params[1], params[2]).sum()
         return -(LL_f + LL_rc)
 
 
@@ -8706,14 +8672,12 @@ class Fit_Normal_Dual_Exponential:
 
     @staticmethod
     def LL(params, t_f, t_rc, S1_f, S2_f, S1_rc, S2_rc):  # log likelihood function
-        LL_f = 0
-        LL_rc = 0
         # failure times
-        LL_f += Fit_Normal_Dual_Exponential.logf(
+        LL_f = Fit_Normal_Dual_Exponential.logf(
             t_f, S1_f, S2_f, params[0], params[1], params[2], params[3]
         ).sum()
         # right censored times
-        LL_rc += Fit_Normal_Dual_Exponential.logR(
+        LL_rc = Fit_Normal_Dual_Exponential.logR(
             t_rc, S1_rc, S2_rc, params[0], params[1], params[2], params[3]
         ).sum()
         return -(LL_f + LL_rc)
@@ -9124,14 +9088,12 @@ class Fit_Normal_Power_Exponential:
 
     @staticmethod
     def LL(params, t_f, t_rc, S1_f, S2_f, S1_rc, S2_rc):  # log likelihood function
-        LL_f = 0
-        LL_rc = 0
         # failure times
-        LL_f += Fit_Normal_Power_Exponential.logf(
+        LL_f = Fit_Normal_Power_Exponential.logf(
             t_f, S1_f, S2_f, params[0], params[1], params[2], params[3]
         ).sum()
         # right censored times
-        LL_rc += Fit_Normal_Power_Exponential.logR(
+        LL_rc = Fit_Normal_Power_Exponential.logR(
             t_rc, S1_rc, S2_rc, params[0], params[1], params[2], params[3]
         ).sum()
         return -(LL_f + LL_rc)
@@ -9539,12 +9501,10 @@ class Fit_Normal_Dual_Power:
 
     @staticmethod
     def LL(params, t_f, t_rc, S1_f, S2_f, S1_rc, S2_rc):  # log likelihood function
-        LL_f = 0
-        LL_rc = 0
-        LL_f += Fit_Normal_Dual_Power.logf(
+        LL_f = Fit_Normal_Dual_Power.logf(
             t_f, S1_f, S2_f, params[0], params[1], params[2], params[3]
         ).sum()  # failure times
-        LL_rc += Fit_Normal_Dual_Power.logR(
+        LL_rc = Fit_Normal_Dual_Power.logR(
             t_rc, S1_rc, S2_rc, params[0], params[1], params[2], params[3]
         ).sum()  # right censored times
         return -(LL_f + LL_rc)
@@ -9896,14 +9856,10 @@ class Fit_Exponential_Exponential:
 
     @staticmethod
     def LL(params, t_f, t_rc, T_f, T_rc):  # log likelihood function
-        LL_f = 0
-        LL_rc = 0
         # failure times
-        LL_f += Fit_Exponential_Exponential.logf(t_f, T_f, params[0], params[1]).sum()
+        LL_f = Fit_Exponential_Exponential.logf(t_f, T_f, params[0], params[1]).sum()
         # right censored times
-        LL_rc += Fit_Exponential_Exponential.logR(
-            t_rc, T_rc, params[0], params[1]
-        ).sum()
+        LL_rc = Fit_Exponential_Exponential.logR(t_rc, T_rc, params[0], params[1]).sum()
         return -(LL_f + LL_rc)
 
 
@@ -10244,12 +10200,10 @@ class Fit_Exponential_Eyring:
 
     @staticmethod
     def LL(params, t_f, t_rc, T_f, T_rc):  # log likelihood function
-        LL_f = 0
-        LL_rc = 0
         # failure times
-        LL_f += Fit_Exponential_Eyring.logf(t_f, T_f, params[0], params[1]).sum()
+        LL_f = Fit_Exponential_Eyring.logf(t_f, T_f, params[0], params[1]).sum()
         # right censored times
-        LL_rc += Fit_Exponential_Eyring.logR(t_rc, T_rc, params[0], params[1]).sum()
+        LL_rc = Fit_Exponential_Eyring.logR(t_rc, T_rc, params[0], params[1]).sum()
         return -(LL_f + LL_rc)
 
 
@@ -10590,12 +10544,10 @@ class Fit_Exponential_Power:
 
     @staticmethod
     def LL(params, t_f, t_rc, T_f, T_rc):  # log likelihood function
-        LL_f = 0
-        LL_rc = 0
         # failure times
-        LL_f += Fit_Exponential_Power.logf(t_f, T_f, params[0], params[1]).sum()
+        LL_f = Fit_Exponential_Power.logf(t_f, T_f, params[0], params[1]).sum()
         # right censored times
-        LL_rc += Fit_Exponential_Power.logR(t_rc, T_rc, params[0], params[1]).sum()
+        LL_rc = Fit_Exponential_Power.logR(t_rc, T_rc, params[0], params[1]).sum()
         return -(LL_f + LL_rc)
 
 
@@ -10987,14 +10939,12 @@ class Fit_Exponential_Dual_Exponential:
 
     @staticmethod
     def LL(params, t_f, t_rc, S1_f, S2_f, S1_rc, S2_rc):  # log likelihood function
-        LL_f = 0
-        LL_rc = 0
         # failure times
-        LL_f += Fit_Exponential_Dual_Exponential.logf(
+        LL_f = Fit_Exponential_Dual_Exponential.logf(
             t_f, S1_f, S2_f, params[0], params[1], params[2]
         ).sum()
         # right censored times
-        LL_rc += Fit_Exponential_Dual_Exponential.logR(
+        LL_rc = Fit_Exponential_Dual_Exponential.logR(
             t_rc, S1_rc, S2_rc, params[0], params[1], params[2]
         ).sum()
         return -(LL_f + LL_rc)
@@ -11389,14 +11339,12 @@ class Fit_Exponential_Power_Exponential:
 
     @staticmethod
     def LL(params, t_f, t_rc, S1_f, S2_f, S1_rc, S2_rc):  # log likelihood function
-        LL_f = 0
-        LL_rc = 0
         # failure times
-        LL_f += Fit_Exponential_Power_Exponential.logf(
+        LL_f = Fit_Exponential_Power_Exponential.logf(
             t_f, S1_f, S2_f, params[0], params[1], params[2]
         ).sum()
         # right censored times
-        LL_rc += Fit_Exponential_Power_Exponential.logR(
+        LL_rc = Fit_Exponential_Power_Exponential.logR(
             t_rc, S1_rc, S2_rc, params[0], params[1], params[2]
         ).sum()
         return -(LL_f + LL_rc)
@@ -11790,14 +11738,12 @@ class Fit_Exponential_Dual_Power:
 
     @staticmethod
     def LL(params, t_f, t_rc, S1_f, S2_f, S1_rc, S2_rc):  # log likelihood function
-        LL_f = 0
-        LL_rc = 0
         # failure times
-        LL_f += Fit_Exponential_Dual_Power.logf(
+        LL_f = Fit_Exponential_Dual_Power.logf(
             t_f, S1_f, S2_f, params[0], params[1], params[2]
         ).sum()
         # right censored times
-        LL_rc += Fit_Exponential_Dual_Power.logR(
+        LL_rc = Fit_Exponential_Dual_Power.logR(
             t_rc, S1_rc, S2_rc, params[0], params[1], params[2]
         ).sum()
         return -(LL_f + LL_rc)

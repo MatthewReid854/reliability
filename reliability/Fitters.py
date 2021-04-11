@@ -1676,25 +1676,17 @@ class Fit_Weibull_2P:
         return -((t / a) ** b)
 
     @staticmethod
-    def LL(params, T_f, T_rc):  # log likelihood function (2 parameter weibull)
-        LL_f = 0
-        LL_rc = 0
-        LL_f += Fit_Weibull_2P.logf(T_f, params[0], params[1]).sum()  # failure times
-        LL_rc += Fit_Weibull_2P.logR(
-            T_rc, params[0], params[1]
-        ).sum()  # right censored times
+    def LL(params, T_f, T_rc):
+        # log likelihood function (2 parameter weibull)
+        LL_f = Fit_Weibull_2P.logf(T_f, params[0], params[1]).sum()
+        LL_rc = Fit_Weibull_2P.logR(T_rc, params[0], params[1]).sum()
         return -(LL_f + LL_rc)
 
     @staticmethod
-    def LL_fb(
-        params, T_f, T_rc, force_beta
-    ):  # log likelihood function (2 parameter weibull) FORCED BETA
-        LL_f = 0
-        LL_rc = 0
-        LL_f += Fit_Weibull_2P.logf(T_f, params[0], force_beta).sum()  # failure times
-        LL_rc += Fit_Weibull_2P.logR(
-            T_rc, params[0], force_beta
-        ).sum()  # right censored times
+    def LL_fb(params, T_f, T_rc, force_beta):
+        # log likelihood function (2 parameter weibull) FORCED BETA
+        LL_f = Fit_Weibull_2P.logf(T_f, params[0], force_beta).sum()
+        LL_rc = Fit_Weibull_2P.logR(T_rc, params[0], force_beta).sum()
         return -(LL_f + LL_rc)
 
 
@@ -2260,31 +2252,17 @@ class Fit_Weibull_2P_grouped:
         return -((t / a) ** b)
 
     @staticmethod
-    def LL(
-        params, T_f, T_rc, Q_f, Q_rc
-    ):  # log likelihood function (2 parameter weibull) ==> T is for time, Q is for quantity
-        LL_f = 0
-        LL_rc = 0
-        LL_f += (
-            Fit_Weibull_2P_grouped.logf(T_f, params[0], params[1]) * Q_f
-        ).sum()  # failure times
-        LL_rc += (
-            Fit_Weibull_2P_grouped.logR(T_rc, params[0], params[1]) * Q_rc
-        ).sum()  # right censored times
+    def LL(params, T_f, T_rc, Q_f, Q_rc):
+        # log likelihood function (2 parameter weibull) ==> T is for time, Q is for quantity
+        LL_f = (Fit_Weibull_2P_grouped.logf(T_f, params[0], params[1]) * Q_f).sum()
+        LL_rc = (Fit_Weibull_2P_grouped.logR(T_rc, params[0], params[1]) * Q_rc).sum()
         return -(LL_f + LL_rc)
 
     @staticmethod
-    def LL_fb(
-        params, T_f, T_rc, Q_f, Q_rc, force_beta
-    ):  # log likelihood function (2 parameter weibull) FORCED BETA  ==> T is for time, Q is for quantity
-        LL_f = 0
-        LL_rc = 0
-        LL_f += (
-            Fit_Weibull_2P_grouped.logf(T_f, params[0], force_beta) * Q_f
-        ).sum()  # failure times
-        LL_rc += (
-            Fit_Weibull_2P_grouped.logR(T_rc, params[0], force_beta) * Q_rc
-        ).sum()  # right censored times
+    def LL_fb(params, T_f, T_rc, Q_f, Q_rc, force_beta):
+        # log likelihood function (2 parameter weibull) FORCED BETA  ==> T is for time, Q is for quantity
+        LL_f = (Fit_Weibull_2P_grouped.logf(T_f, params[0], force_beta) * Q_f).sum()
+        LL_rc = (Fit_Weibull_2P_grouped.logR(T_rc, params[0], force_beta) * Q_rc).sum()
         return -(LL_f + LL_rc)
 
 
@@ -2610,15 +2588,10 @@ class Fit_Weibull_3P:
         return -(((t - g) / a) ** b)
 
     @staticmethod
-    def LL(params, T_f, T_rc):  # log likelihood function (3 parameter Weibull)
-        LL_f = 0
-        LL_rc = 0
-        LL_f += Fit_Weibull_3P.logf(
-            T_f, params[0], params[1], params[2]
-        ).sum()  # failure times
-        LL_rc += Fit_Weibull_3P.logR(
-            T_rc, params[0], params[1], params[2]
-        ).sum()  # right censored times
+    def LL(params, T_f, T_rc):
+        # log likelihood function (3 parameter Weibull)
+        LL_f = Fit_Weibull_3P.logf(T_f, params[0], params[1], params[2]).sum()
+        LL_rc = Fit_Weibull_3P.logR(T_rc, params[0], params[1], params[2]).sum()
         return -(LL_f + LL_rc)
 
 
@@ -3019,15 +2992,14 @@ class Fit_Weibull_Mixture:
         )
 
     @staticmethod
-    def LL(params, T_f, T_rc):  # Log Mixture Likelihood function (2 parameter weibull)
-        LL_f = 0
-        LL_rc = 0
-        LL_f += Fit_Weibull_Mixture.logf(
+    def LL(params, T_f, T_rc):
+        # Log Mixture Likelihood function (2 parameter weibull)
+        LL_f = Fit_Weibull_Mixture.logf(
             T_f, params[0], params[1], params[2], params[3], params[4]
-        ).sum()  # failure times
-        LL_rc += Fit_Weibull_Mixture.logR(
+        ).sum()
+        LL_rc = Fit_Weibull_Mixture.logR(
             T_rc, params[0], params[1], params[2], params[3], params[4]
-        ).sum()  # right censored times
+        ).sum()
         return -(LL_f + LL_rc)
 
 
@@ -3361,15 +3333,10 @@ class Fit_Weibull_CR:
         return -((t / a1) ** b1) - ((t / a2) ** b2)
 
     @staticmethod
-    def LL(params, T_f, T_rc):  # Log Likelihood function (Competing Risks)
-        LL_f = 0
-        LL_rc = 0
-        LL_f += Fit_Weibull_CR.logf(
-            T_f, params[0], params[1], params[2], params[3]
-        ).sum()  # failure times
-        LL_rc += Fit_Weibull_CR.logR(
-            T_rc, params[0], params[1], params[2], params[3]
-        ).sum()  # right censored times
+    def LL(params, T_f, T_rc):
+        # Log Likelihood function (Competing Risks)
+        LL_f = Fit_Weibull_CR.logf(T_f, params[0], params[1], params[2], params[3]).sum()
+        LL_rc = Fit_Weibull_CR.logR(T_rc, params[0], params[1], params[2], params[3]).sum()
         return -(LL_f + LL_rc)
 
 
@@ -3611,11 +3578,10 @@ class Fit_Exponential_1P:
         return -(L * t)
 
     @staticmethod
-    def LL(params, T_f, T_rc):  # log likelihood function (1 parameter Expon)
-        LL_f = 0
-        LL_rc = 0
-        LL_f += Fit_Exponential_1P.logf(T_f, params[0]).sum()  # failure times
-        LL_rc += Fit_Exponential_1P.logR(T_rc, params[0]).sum()  # right censored times
+    def LL(params, T_f, T_rc):
+        # log likelihood function (1 parameter Expon)
+        LL_f = Fit_Exponential_1P.logf(T_f, params[0]).sum()
+        LL_rc = Fit_Exponential_1P.logR(T_rc, params[0]).sum()
         return -(LL_f + LL_rc)
 
 
@@ -3895,28 +3861,18 @@ class Fit_Exponential_2P:
         return -(L * (t - g))
 
     @staticmethod
-    def LL(params, T_f, T_rc):  # log likelihood function (2 parameter Expon)
-        LL_f = 0
-        LL_rc = 0
-        LL_f += Fit_Exponential_2P.logf(
-            T_f, params[0], params[1]
-        ).sum()  # failure times
-        LL_rc += Fit_Exponential_2P.logR(
-            T_rc, params[0], params[1]
-        ).sum()  # right censored times
+    def LL(params, T_f, T_rc):
+        # log likelihood function (2 parameter Expon)
+        LL_f = Fit_Exponential_2P.logf(T_f, params[0], params[1]).sum()
+        LL_rc = Fit_Exponential_2P.logR(T_rc, params[0], params[1]).sum()
         return -(LL_f + LL_rc)
 
     # #this is the inverted forms of the above functions. It simply changes Lambda to be 1/Lambda which is necessary when Lambda<<1
     @staticmethod
-    def LL_inv(params, T_f, T_rc):  # log likelihood function (2 parameter Expon)
-        LL_f = 0
-        LL_rc = 0
-        LL_f += Fit_Exponential_2P.logf(
-            T_f, 1 / params[0], params[1]
-        ).sum()  # failure times
-        LL_rc += Fit_Exponential_2P.logR(
-            T_rc, 1 / params[0], params[1]
-        ).sum()  # right censored times
+    def LL_inv(params, T_f, T_rc):
+        # log likelihood function (2 parameter Expon)
+        LL_f = Fit_Exponential_2P.logf(T_f, 1 / params[0], params[1]).sum()
+        LL_rc = Fit_Exponential_2P.logR(T_rc, 1 / params[0], params[1]).sum()
         return -(LL_f + LL_rc)
 
 
@@ -4215,24 +4171,15 @@ class Fit_Normal_2P:
 
     @staticmethod
     def LL(params, T_f, T_rc):  # log likelihood function (2 parameter Normal)
-        LL_f = 0
-        LL_rc = 0
-        LL_f += Fit_Normal_2P.logf(T_f, params[0], params[1]).sum()  # failure times
-        LL_rc += Fit_Normal_2P.logR(
-            T_rc, params[0], params[1]
-        ).sum()  # right censored times
+        LL_f = Fit_Normal_2P.logf(T_f, params[0], params[1]).sum()
+        LL_rc = Fit_Normal_2P.logR(T_rc, params[0], params[1]).sum()
         return -(LL_f + LL_rc)
 
     @staticmethod
-    def LL_fs(
-        params, T_f, T_rc, force_sigma
-    ):  # log likelihood function (2 parameter Normal) FORCED SIGMA
-        LL_f = 0
-        LL_rc = 0
-        LL_f += Fit_Normal_2P.logf(T_f, params[0], force_sigma).sum()  # failure times
-        LL_rc += Fit_Normal_2P.logR(
-            T_rc, params[0], force_sigma
-        ).sum()  # right censored times
+    def LL_fs(params, T_f, T_rc, force_sigma):
+        # log likelihood function (2 parameter Normal) FORCED SIGMA
+        LL_f = Fit_Normal_2P.logf(T_f, params[0], force_sigma).sum()
+        LL_rc = Fit_Normal_2P.logR(T_rc, params[0], force_sigma).sum()
         return -(LL_f + LL_rc)
 
 
@@ -4496,13 +4443,10 @@ class Fit_Gumbel_2P:
         return -anp.exp((t - mu) / sigma)
 
     @staticmethod
-    def LL(params, T_f, T_rc):  # log likelihood function (2 parameter Gumbel)
-        LL_f = 0
-        LL_rc = 0
-        LL_f += Fit_Gumbel_2P.logf(T_f, params[0], params[1]).sum()  # failure times
-        LL_rc += Fit_Gumbel_2P.logR(
-            T_rc, params[0], params[1]
-        ).sum()  # right censored times
+    def LL(params, T_f, T_rc):
+        # log likelihood function (2 parameter Gumbel)
+        LL_f = Fit_Gumbel_2P.logf(T_f, params[0], params[1]).sum()
+        LL_rc = Fit_Gumbel_2P.logR(T_rc, params[0], params[1]).sum()
         return -(LL_f + LL_rc)
 
 
@@ -4798,27 +4742,17 @@ class Fit_Lognormal_2P:
         return anp.log(0.5 - 0.5 * erf((anp.log(t) - mu) / (sigma * 2 ** 0.5)))
 
     @staticmethod
-    def LL(params, T_f, T_rc):  # log likelihood function (2 parameter lognormal)
-        LL_f = 0
-        LL_rc = 0
-        LL_f += Fit_Lognormal_2P.logf(T_f, params[0], params[1]).sum()  # failure times
-        LL_rc += Fit_Lognormal_2P.logR(
-            T_rc, params[0], params[1]
-        ).sum()  # right censored times
+    def LL(params, T_f, T_rc):
+        # log likelihood function (2 parameter lognormal)
+        LL_f = Fit_Lognormal_2P.logf(T_f, params[0], params[1]).sum()
+        LL_rc = Fit_Lognormal_2P.logR(T_rc, params[0], params[1]).sum()
         return -(LL_f + LL_rc)
 
     @staticmethod
-    def LL_fs(
-        params, T_f, T_rc, force_sigma
-    ):  # log likelihood function (2 parameter lognormal) FORCED SIGMA
-        LL_f = 0
-        LL_rc = 0
-        LL_f += Fit_Lognormal_2P.logf(
-            T_f, params[0], force_sigma
-        ).sum()  # failure times
-        LL_rc += Fit_Lognormal_2P.logR(
-            T_rc, params[0], force_sigma
-        ).sum()  # right censored times
+    def LL_fs(params, T_f, T_rc, force_sigma):
+        # log likelihood function (2 parameter lognormal) FORCED SIGMA
+        LL_f = Fit_Lognormal_2P.logf(T_f, params[0], force_sigma).sum()
+        LL_rc = Fit_Lognormal_2P.logR(T_rc, params[0], force_sigma).sum()
         return -(LL_f + LL_rc)
 
 
@@ -5149,15 +5083,10 @@ class Fit_Lognormal_3P:
         return anp.log(0.5 - 0.5 * erf((anp.log(t - gamma) - mu) / (sigma * 2 ** 0.5)))
 
     @staticmethod
-    def LL(params, T_f, T_rc):  # log likelihood function (3 parameter Lognormal)
-        LL_f = 0
-        LL_rc = 0
-        LL_f += Fit_Lognormal_3P.logf(
-            T_f, params[0], params[1], params[2]
-        ).sum()  # failure times
-        LL_rc += Fit_Lognormal_3P.logR(
-            T_rc, params[0], params[1], params[2]
-        ).sum()  # right censored times
+    def LL(params, T_f, T_rc):
+        # log likelihood function (3 parameter Lognormal)
+        LL_f = Fit_Lognormal_3P.logf(T_f, params[0], params[1], params[2]).sum()
+        LL_rc = Fit_Lognormal_3P.logR(T_rc, params[0], params[1], params[2]).sum()
         return -(LL_f + LL_rc)
 
 
@@ -5377,13 +5306,10 @@ class Fit_Gamma_2P:
         return anp.log(gammaincc(b, t / a))
 
     @staticmethod
-    def LL(params, T_f, T_rc):  # log likelihood function (2 parameter Gamma)
-        LL_f = 0
-        LL_rc = 0
-        LL_f += Fit_Gamma_2P.logf(T_f, params[0], params[1]).sum()  # failure times
-        LL_rc += Fit_Gamma_2P.logR(
-            T_rc, params[0], params[1]
-        ).sum()  # right censored times
+    def LL(params, T_f, T_rc):
+        # log likelihood function (2 parameter Gamma)
+        LL_f = Fit_Gamma_2P.logf(T_f, params[0], params[1]).sum()
+        LL_rc = Fit_Gamma_2P.logR(T_rc, params[0], params[1]).sum()
         return -(LL_f + LL_rc)
 
 
@@ -5672,15 +5598,10 @@ class Fit_Gamma_3P:
         return anp.log(gammaincc(b, (t - g) / a))
 
     @staticmethod
-    def LL(params, T_f, T_rc):  # log likelihood function (3 parameter Gamma)
-        LL_f = 0
-        LL_rc = 0
-        LL_f += Fit_Gamma_3P.logf(
-            T_f, params[0], params[1], params[2]
-        ).sum()  # failure times
-        LL_rc += Fit_Gamma_3P.logR(
-            T_rc, params[0], params[1], params[2]
-        ).sum()  # right censored times
+    def LL(params, T_f, T_rc):
+        # log likelihood function (3 parameter Gamma)
+        LL_f = Fit_Gamma_3P.logf(T_f, params[0], params[1], params[2]).sum()
+        LL_rc = Fit_Gamma_3P.logR(T_rc, params[0], params[1], params[2]).sum()
         return -(LL_f + LL_rc)
 
 
@@ -5904,13 +5825,10 @@ class Fit_Beta_2P:
         return anp.log(1 - betainc(a, b, t))
 
     @staticmethod
-    def LL(params, T_f, T_rc):  # log likelihood function (2 parameter beta)
-        LL_f = 0
-        LL_rc = 0
-        LL_f += Fit_Beta_2P.logf(T_f, params[0], params[1]).sum()  # failure times
-        LL_rc += Fit_Beta_2P.logR(
-            T_rc, params[0], params[1]
-        ).sum()  # right censored times
+    def LL(params, T_f, T_rc):
+        # log likelihood function (2 parameter beta)
+        LL_f = Fit_Beta_2P.logf(T_f, params[0], params[1]).sum()
+        LL_rc = Fit_Beta_2P.logR(T_rc, params[0], params[1]).sum()
         return -(LL_f + LL_rc)
 
 
@@ -6175,15 +6093,10 @@ class Fit_Loglogistic_2P:
         return -anp.log((1 + (t / a) ** b))
 
     @staticmethod
-    def LL(params, T_f, T_rc):  # log likelihood function (2 parameter Loglogistic)
-        LL_f = 0
-        LL_rc = 0
-        LL_f += Fit_Loglogistic_2P.logf(
-            T_f, params[0], params[1]
-        ).sum()  # failure times
-        LL_rc += Fit_Loglogistic_2P.logR(
-            T_rc, params[0], params[1]
-        ).sum()  # right censored times
+    def LL(params, T_f, T_rc):
+        # log likelihood function (2 parameter Loglogistic)
+        LL_f = Fit_Loglogistic_2P.logf(T_f, params[0], params[1]).sum()
+        LL_rc = Fit_Loglogistic_2P.logR(T_rc, params[0], params[1]).sum()
         return -(LL_f + LL_rc)
 
 
@@ -6512,13 +6425,8 @@ class Fit_Loglogistic_3P:
         return -anp.log((1 + ((t - g) / a) ** b))
 
     @staticmethod
-    def LL(params, T_f, T_rc):  # log likelihood function (3 parameter Loglogistic)
-        LL_f = 0
-        LL_rc = 0
-        LL_f += Fit_Loglogistic_3P.logf(
-            T_f, params[0], params[1], params[2]
-        ).sum()  # failure times
-        LL_rc += Fit_Loglogistic_3P.logR(
-            T_rc, params[0], params[1], params[2]
-        ).sum()  # right censored times
+    def LL(params, T_f, T_rc):
+        # log likelihood function (3 parameter Loglogistic)
+        LL_f = Fit_Loglogistic_3P.logf(T_f, params[0], params[1], params[2]).sum()
+        LL_rc = Fit_Loglogistic_3P.logR(T_rc, params[0], params[1], params[2]).sum()
         return -(LL_f + LL_rc)

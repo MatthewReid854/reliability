@@ -32,6 +32,7 @@ from reliability.Fitters import Fit_Everything
 from reliability.Utils import colorprint, round_to_decimals
 from matplotlib.widgets import Slider, RadioButtons
 import scipy.stats as ss
+import time
 
 
 def stress_strength(
@@ -98,7 +99,11 @@ def stress_strength(
             text_color="red",
         )
 
-    x = np.linspace(stress.quantile(1e-8), strength.quantile(1 - 1e-8), 1000)
+    x = np.linspace(
+        min(stress.quantile(1e-8), strength.quantile(1e-8)),
+        max(strength.quantile(1 - 1e-8), stress.quantile(1 - 1e-8)),
+        1000,
+    )  # we take the min and max here since there may be cases when stress > strength
     prob_of_failure = np.trapz(
         strength.PDF(x, show_plot=False) * stress.SF(x, show_plot=False), x
     )
@@ -1079,21 +1084,59 @@ class make_ALT_data:
 class crosshairs:
     """
     Adds interactive crosshairs to matplotlib plots
-    Ensure this is used after you plot everything as anything plotted after crosshairs() is called will not be recognised by the snap-to feature.
 
-    :param xlabel: the xlabel for annotations. Default is 'x'
-    :param ylabel: the ylabel for annotations. Default is 'y'
-    :param decimals: the number of decimals for rounding. Default is 2.
-    :param kwargs: plotting kwargs to change the style of the crosshairs (eg. color, linestyle, etc.)
+    Parameters
+    ----------
+    xlabel : str, optional
+        The xlabel for annotations. Default is 'x'.
+    ylabel : str, optional
+        The ylabel for annotations. Default is 'y'.
+    decimals : int, optional
+        The number of decimals for rounding. Default is 2.
+    dateformat : str, optional
+        The datetime format. If specified the x crosshair and label will be formatted as a date using the format provided. Default is None which results in no date format being used on x.
+    kwargs : optional
+        plotting kwargs to change the style of the crosshairs (eg. color, linestyle, etc.).
+
+    Returns
+    -------
+    None
+
+    Notes
+    -----
+    Ensure this is used after you plot everything as anything plotted after crosshairs() is called will not be recognised by the snap-to feature.
+    For a list of acceptable dateformat strings see https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes
     """
 
-    def __init__(self, xlabel=None, ylabel=None, decimals=2, **kwargs):
-        crosshairs.__generate_crosshairs(
-            self, xlabel=xlabel, ylabel=ylabel, decimals=decimals, **kwargs
-        )
+    def __init__(self, xlabel=None, ylabel=None, decimals=2, dateformat=None ,**kwargs):
+
+        if type(dateformat) not in [str, type(None)]:
+            raise ValueError('dateformat type must be str or None. For acceptable strings see https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes')
+        if type(decimals) is not int:
+            raise ValueError('decimals must be int')
+        if type(xlabel) not in [str, type(None)]:
+            raise ValueError('xlabel must be string or None')
+        if type(ylabel) not in [str, type(None)]:
+            raise ValueError('ylabel must be string or None')
+
+        warnings.simplefilter("ignore")  # required when using fill_between due to warning in mplcursors: "UserWarning: Pick support for PolyCollection is missing."
+        ch = cursor(hover=True)
+        add_lines_and_text_with_kwargs = (lambda _: crosshairs.__add_lines_and_text_to_crosshairs(_, decimals,dateformat, **kwargs))  # adds the line's kwargs before connecting it to cursor
+        ch.connect("add", add_lines_and_text_with_kwargs)
+        plt.gcf().canvas.mpl_connect("axes_leave_event", crosshairs.__hide_crosshairs)  # hide the crosshairs and text when the mouse leaves the axes
+
+        # this does the annotation part
+        if xlabel is None:
+            xlabel = "x"
+        if ylabel is None:
+            ylabel = "y"
+        warnings.simplefilter("ignore")  # required when using fill_between due to warning in mplcursors: "UserWarning: Pick support for PolyCollection is missing."
+        annot = cursor(multiple=True, bindings={"toggle_visible": "h"})
+        format_annotation_labeled = lambda _: crosshairs.__format_annotation(_, decimals,dateformat, [xlabel, ylabel])  # adds the labels to the 'format_annotation' function before connecting it to cursor
+        annot.connect("add", format_annotation_labeled)
 
     @staticmethod
-    def __add_lines_and_text_to_crosshairs(sel, decimals, **kwargs):
+    def __add_lines_and_text_to_crosshairs(sel, decimals, dateformat, **kwargs):
         # set the default properties of the lines and text if they were not provided as kwargs
         if "c" in kwargs:
             color = kwargs.pop("c")
@@ -1137,6 +1180,7 @@ class crosshairs:
             ax = sel.artist.axes
         except AttributeError:
             ax = sel.annotation.axes  # this exception occurs for bar charts
+
         x, y = sel.target
         lines = [
             Line2D(
@@ -1158,6 +1202,12 @@ class crosshairs:
                 **kwargs
             ),
         ]
+
+        if type(dateformat) is str:
+            x_string = time.strftime(dateformat, time.gmtime(x * 24 * 3600))
+        else:
+            x_string = round(x, decimals)
+
         texts = [
             ax.text(
                 s=round(y, decimals),
@@ -1171,7 +1221,7 @@ class crosshairs:
                 **kwargs
             ),
             ax.text(
-                s=round(x, decimals),
+                s=x_string,
                 x=x,
                 y=0,
                 transform=ax.get_xaxis_transform(),
@@ -1182,6 +1232,7 @@ class crosshairs:
                 **kwargs
             ),
         ]
+
         for i in [0, 1]:
             line = lines[i]
             text = texts[i]
@@ -1191,14 +1242,19 @@ class crosshairs:
             sel.extras.append(text)
 
     @staticmethod
-    def __format_annotation(
-        sel, decimals, label
-    ):  # this is some simple formatting for the annotations (applied on click)
+    def __format_annotation(sel, decimals, dateformat, label):
+        # this is some simple formatting for the annotations (applied on mouse click)
         [x, y] = sel.annotation.xy
+
+        if type(dateformat) is str:
+            x_string = time.strftime(dateformat, time.gmtime(x * 24 * 3600))
+        else:
+            x_string = round(x, decimals)
+
         text = str(
             label[0]
             + " = "
-            + str(round(x, decimals))
+            + str(x_string)
             + "\n"
             + label[1]
             + " = "
@@ -1220,37 +1276,6 @@ class crosshairs:
                 ax.texts[-1].set_visible(False)
                 ax.texts[-2].set_visible(False)
         event.canvas.draw()
-
-    def __generate_crosshairs(
-        self, xlabel=None, ylabel=None, decimals=2, **kwargs
-    ):  # this is the main program
-        warnings.simplefilter(
-            "ignore"
-        )  # required when using fill_between due to warning in mplcursors: "UserWarning: Pick support for PolyCollection is missing."
-        ch = cursor(hover=True)
-        add_lines_and_text_with_kwargs = (
-            lambda _: crosshairs.__add_lines_and_text_to_crosshairs(
-                _, decimals, **kwargs
-            )
-        )  # adds the line's kwargs before connecting it to cursor
-        ch.connect("add", add_lines_and_text_with_kwargs)
-        plt.gcf().canvas.mpl_connect(
-            "axes_leave_event", crosshairs.__hide_crosshairs
-        )  # hide the crosshairs and text when the mouse leaves the axes
-
-        # does the annotation part
-        if xlabel is None:
-            xlabel = "x"
-        if ylabel is None:
-            ylabel = "y"
-        warnings.simplefilter(
-            "ignore"
-        )  # required when using fill_between due to warning in mplcursors: "UserWarning: Pick support for PolyCollection is missing."
-        annot = cursor(multiple=True, bindings={"toggle_visible": "h"})
-        format_annotation_labeled = lambda _: crosshairs.__format_annotation(
-            _, decimals, [xlabel, ylabel]
-        )  # adds the labels to the 'format_annotation' function before connecting it to cursor
-        annot.connect("add", format_annotation_labeled)
 
 
 class distribution_explorer:
