@@ -9,15 +9,13 @@ The following development roadmap is the current task list and implementation pl
 
 **Planned for version 0.5.7 (around May 2021)**
 
--    Confidence intervals for Gamma and Beta Distributions. Currently the confidence intervals have been completed for all of the other standard distributions.
--    Generate API docs for every function.
--    Fully deprecate Convert_dataframe_to_grouped_lists function and ALT_probability_plotting module.
 -    Make tests for everything that doesn't have a test yet.
 -    Add plotting to all things that can plot in order to increase test coverage.
 -    Provide ax argument so that plots which normally make a new figure (such as in Fit_Everything and ALT_Fitters) will instead plot on the axes they are given. This will enable subplots of things that normally occur in their own figure.
 
 **Planned for version 0.5.8 (around July 2021)**
 
+-    Correct the formatting in the API docs for every function.
 -    DSZI Distribution along with its associated fitters and probability plots. DSZI is a combination of DS (`Defective Subpopulation Distribution <https://www.jmp.com/support/help/14-2/distributions-2.shtml>`_. This is for when the CDF does not reach 1 due to a lot of right censored data) and ZI (`Zero Inflated Distribution <https://www.jmp.com/support/help/14-2/distributions-2.shtml>`_. This is for when the CDF starts above 0 due to a lot of 'dead on arrival' products in the dataset). A DSZI distribution may include features of both the DS and ZI distributions.
 -    Improvement to the online documentation for how some of these methods work, including the addition of more formulas, algorithms, and better referencing.
 

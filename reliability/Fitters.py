@@ -852,9 +852,7 @@ class Fit_Everything:
 
         # print the results
         if print_results is True:  # printing occurs by default
-            frac_cens = self._frac_cens * 100
-            if frac_cens % 1 < 1e-10:
-                frac_cens = int(frac_cens)
+            frac_cens = round_to_decimals(self._frac_cens * 100)
             colorprint("Results from Fit_Everything:", bold=True, underline=True)
             print("Analysis method:", method)
             print(
@@ -1514,7 +1512,7 @@ class Fit_Weibull_2P:
             covariance_matrix = np.linalg.inv(hessian_matrix)
             self.alpha_SE = abs(covariance_matrix[0][0]) ** 0.5
             self.beta_SE = abs(covariance_matrix[1][1]) ** 0.5
-            self.Cov_alpha_beta = abs(covariance_matrix[0][1])
+            self.Cov_alpha_beta = covariance_matrix[0][1]
             self.alpha_upper = self.alpha * (np.exp(Z * (self.alpha_SE / self.alpha)))
             self.alpha_lower = self.alpha * (np.exp(-Z * (self.alpha_SE / self.alpha)))
             self.beta_upper = self.beta * (np.exp(Z * (self.beta_SE / self.beta)))
@@ -1707,6 +1705,7 @@ class Fit_Weibull_2P_grouped:
     force_beta - Use this to specify the beta value if you need to force beta to be a certain value. Used in ALT probability plotting. Optional input.
     method - 'MLE' (maximum likelihood estimation), 'LS' (least squares estimation), 'RRX' (Rank regression on X), 'RRY' (Rank regression on Y). LS will perform both RRX and RRY and return the better one. Default is 'MLE'.
     optimizer - 'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
+    CI_type - time, reliability, None. Default is time. This is the confidence bounds on time or on reliability. Use None to turn off the confidence intervals.
     percentiles - percentiles to produce a table of percentiles failed with lower, point, and upper estimates. Default is None which results in no output. True or 'auto' will use default array [1, 5, 10,..., 95, 99]. If an array or list is specified then it will be used instead of the default array.
     kwargs are accepted for the probability plot (eg. linestyle, label, color)
 
@@ -2073,7 +2072,7 @@ class Fit_Weibull_2P_grouped:
             covariance_matrix = np.linalg.inv(hessian_matrix)
             self.alpha_SE = abs(covariance_matrix[0][0]) ** 0.5
             self.beta_SE = abs(covariance_matrix[1][1]) ** 0.5
-            self.Cov_alpha_beta = abs(covariance_matrix[0][1])
+            self.Cov_alpha_beta = covariance_matrix[0][1]
             self.alpha_upper = self.alpha * (np.exp(Z * (self.alpha_SE / self.alpha)))
             self.alpha_lower = self.alpha * (np.exp(-Z * (self.alpha_SE / self.alpha)))
             self.beta_upper = self.beta * (np.exp(Z * (self.beta_SE / self.beta)))
@@ -2427,7 +2426,7 @@ class Fit_Weibull_3P:
             self.alpha_SE = abs(covariance_matrix[0][0]) ** 0.5
             self.beta_SE = abs(covariance_matrix[1][1]) ** 0.5
             self.gamma_SE = abs(covariance_matrix_for_gamma[2][2]) ** 0.5
-            self.Cov_alpha_beta = abs(covariance_matrix[0][1])
+            self.Cov_alpha_beta = covariance_matrix[0][1]
             self.alpha_upper = self.alpha * (np.exp(Z * (self.alpha_SE / self.alpha)))
             self.alpha_lower = self.alpha * (np.exp(-Z * (self.alpha_SE / self.alpha)))
             self.beta_upper = self.beta * (np.exp(Z * (self.beta_SE / self.beta)))
@@ -3335,8 +3334,12 @@ class Fit_Weibull_CR:
     @staticmethod
     def LL(params, T_f, T_rc):
         # Log Likelihood function (Competing Risks)
-        LL_f = Fit_Weibull_CR.logf(T_f, params[0], params[1], params[2], params[3]).sum()
-        LL_rc = Fit_Weibull_CR.logR(T_rc, params[0], params[1], params[2], params[3]).sum()
+        LL_f = Fit_Weibull_CR.logf(
+            T_f, params[0], params[1], params[2], params[3]
+        ).sum()
+        LL_rc = Fit_Weibull_CR.logR(
+            T_rc, params[0], params[1], params[2], params[3]
+        ).sum()
         return -(LL_f + LL_rc)
 
 
@@ -3889,6 +3892,8 @@ class Fit_Normal_2P:
     show_probability_plot - True/False. Defaults to True.
     print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
+    CI_type - time, reliability, None. Default is time. This is the confidence bounds on time or on reliability. Use None to turn off the confidence intervals.
+    percentiles - percentiles to produce a table of percentiles failed with lower, point, and upper estimates. Default is None which results in no output. True or 'auto' will use default array [1, 5, 10,..., 95, 99]. If an array or list is specified then it will be used instead of the default array.
     method - 'MLE' (maximum likelihood estimation), 'LS' (least squares estimation), 'RRX' (Rank regression on X), 'RRY' (Rank regression on Y). LS will perform both RRX and RRY and return the better one. Default is 'MLE'.
     optimizer - 'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
     force_sigma - Use this to specify the sigma value if you need to force sigma to be a certain value. Used in ALT probability plotting. Optional input.
@@ -4000,7 +4005,7 @@ class Fit_Normal_2P:
             covariance_matrix = np.linalg.inv(hessian_matrix)
             self.mu_SE = abs(covariance_matrix[0][0]) ** 0.5
             self.sigma_SE = abs(covariance_matrix[1][1]) ** 0.5
-            self.Cov_mu_sigma = abs(covariance_matrix[0][1])
+            self.Cov_mu_sigma = covariance_matrix[0][1]
             self.mu_upper = self.mu + (
                 Z * self.mu_SE
             )  # these are unique to normal and lognormal mu params
@@ -4196,6 +4201,8 @@ class Fit_Gumbel_2P:
     show_probability_plot - True/False. Defaults to True.
     print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
+    CI_type - time, reliability, None. Default is time. This is the confidence bounds on time or on reliability. Use None to turn off the confidence intervals.
+    percentiles - percentiles to produce a table of percentiles failed with lower, point, and upper estimates. Default is None which results in no output. True or 'auto' will use default array [1, 5, 10,..., 95, 99]. If an array or list is specified then it will be used instead of the default array.
     method - 'MLE' (maximum likelihood estimation), 'LS' (least squares estimation), 'RRX' (Rank regression on X), 'RRY' (Rank regression on Y). LS will perform both RRX and RRY and return the better one. Default is 'MLE'.
     optimizer - 'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
     kwargs are accepted for the probability plot (eg. linestyle, label, color)
@@ -4298,7 +4305,7 @@ class Fit_Gumbel_2P:
         covariance_matrix = np.linalg.inv(hessian_matrix)
         self.mu_SE = abs(covariance_matrix[0][0]) ** 0.5
         self.sigma_SE = abs(covariance_matrix[1][1]) ** 0.5
-        self.Cov_mu_sigma = abs(covariance_matrix[0][1])
+        self.Cov_mu_sigma = covariance_matrix[0][1]
         self.mu_upper = self.mu + (
             Z * self.mu_SE
         )  # these are unique to gumbel, normal and lognormal mu params
@@ -4461,6 +4468,8 @@ class Fit_Lognormal_2P:
     show_probability_plot - True/False. Defaults to True.
     print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
+    CI_type - time, reliability, None. Default is time. This is the confidence bounds on time or on reliability. Use None to turn off the confidence intervals.
+    percentiles - percentiles to produce a table of percentiles failed with lower, point, and upper estimates. Default is None which results in no output. True or 'auto' will use default array [1, 5, 10,..., 95, 99]. If an array or list is specified then it will be used instead of the default array.
     method - 'MLE' (maximum likelihood estimation), 'LS' (least squares estimation), 'RRX' (Rank regression on X), 'RRY' (Rank regression on Y). LS will perform both RRX and RRY and return the better one. Default is 'MLE'.
     optimizer - 'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
     force_sigma - Use this to specify the sigma value if you need to force sigma to be a certain value. Used in ALT probability plotting. Optional input.
@@ -4573,7 +4582,7 @@ class Fit_Lognormal_2P:
             covariance_matrix = np.linalg.inv(hessian_matrix)
             self.mu_SE = abs(covariance_matrix[0][0]) ** 0.5
             self.sigma_SE = abs(covariance_matrix[1][1]) ** 0.5
-            self.Cov_mu_sigma = abs(covariance_matrix[0][1])
+            self.Cov_mu_sigma = covariance_matrix[0][1]
             self.mu_upper = self.mu + (Z * self.mu_SE)  # mu is positive or negative
             self.mu_lower = self.mu + (-Z * self.mu_SE)
             self.sigma_upper = self.sigma * (
@@ -4768,6 +4777,8 @@ class Fit_Lognormal_3P:
     show_probability_plot - True/False. Defaults to True.
     print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
+    CI_type - time, reliability, None. Default is time. This is the confidence bounds on time or on reliability. Use None to turn off the confidence intervals.
+    percentiles - percentiles to produce a table of percentiles failed with lower, point, and upper estimates. Default is None which results in no output. True or 'auto' will use default array [1, 5, 10,..., 95, 99]. If an array or list is specified then it will be used instead of the default array.
     method - 'MLE' (maximum likelihood estimation), 'LS' (least squares estimation), 'RRX' (Rank regression on X), 'RRY' (Rank regression on Y). LS will perform both RRX and RRY and return the better one. Default is 'MLE'.
     optimizer - 'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
     kwargs are accepted for the probability plot (eg. linestyle, label, color)
@@ -4915,7 +4926,7 @@ class Fit_Lognormal_3P:
             self.mu_SE = abs(covariance_matrix[0][0]) ** 0.5
             self.sigma_SE = abs(covariance_matrix[1][1]) ** 0.5
             self.gamma_SE = abs(covariance_matrix_for_gamma[2][2]) ** 0.5
-            self.Cov_mu_sigma = abs(covariance_matrix[0][1])
+            self.Cov_mu_sigma = covariance_matrix[0][1]
             self.mu_upper = self.mu + (
                 Z * self.mu_SE
             )  # Mu can be positive or negative.
@@ -5101,6 +5112,8 @@ class Fit_Gamma_2P:
     show_probability_plot - True/False. Defaults to True.
     print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
+    CI_type - time, reliability, None. Default is time. This is the confidence bounds on time or on reliability. Use None to turn off the confidence intervals.
+    percentiles - percentiles to produce a table of percentiles failed with lower, point, and upper estimates. Default is None which results in no output. True or 'auto' will use default array [1, 5, 10,..., 95, 99]. If an array or list is specified then it will be used instead of the default array.
     method - 'MLE' (maximum likelihood estimation), 'LS' (least squares estimation), 'RRX' (Rank regression on X), 'RRY' (Rank regression on Y). LS will perform both RRX and RRY and return the better one. Default is 'MLE'.
     optimizer - 'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
     kwargs are accepted for the probability plot (eg. linestyle, label, color)
@@ -5136,6 +5149,8 @@ class Fit_Gamma_2P:
         CI=0.95,
         method="MLE",
         optimizer=None,
+        percentiles=None,
+        CI_type="time",
         **kwargs
     ):
 
@@ -5146,14 +5161,16 @@ class Fit_Gamma_2P:
             method=method,
             optimizer=optimizer,
             CI=CI,
+            CI_type=CI_type,
+            percentiles=percentiles,
         )
         failures = inputs.failures
         right_censored = inputs.right_censored
         CI = inputs.CI
         method = inputs.method
         optimizer = inputs.optimizer
-        # percentiles = inputs.percentiles
-        # CI_type = inputs.CI_type
+        percentiles = inputs.percentiles
+        CI_type = inputs.CI_type
         self.gamma = 0
 
         # Obtain least squares estimates
@@ -5196,7 +5213,7 @@ class Fit_Gamma_2P:
         covariance_matrix = np.linalg.inv(hessian_matrix)
         self.alpha_SE = abs(covariance_matrix[0][0]) ** 0.5
         self.beta_SE = abs(covariance_matrix[1][1]) ** 0.5
-        self.Cov_alpha_beta = abs(covariance_matrix[0][1])
+        self.Cov_alpha_beta = covariance_matrix[0][1]
         self.alpha_upper = self.alpha * (np.exp(Z * (self.alpha_SE / self.alpha)))
         self.alpha_lower = self.alpha * (np.exp(-Z * (self.alpha_SE / self.alpha)))
         self.beta_upper = self.beta * (np.exp(Z * (self.beta_SE / self.beta)))
@@ -5219,17 +5236,40 @@ class Fit_Gamma_2P:
                 "Upper CI",
             ],
         )
-        self.distribution = Gamma_Distribution(alpha=self.alpha, beta=self.beta)
-        # self.distribution = Gamma_Distribution(alpha=self.alpha, beta=self.beta, alpha_SE=self.alpha_SE, beta_SE=self.beta_SE, Cov_alpha_beta=self.Cov_alpha_beta, CI=CI, CI_type=CI_type)
+        self.distribution = Gamma_Distribution(
+            alpha=self.alpha,
+            beta=self.beta,
+            alpha_SE=self.alpha_SE,
+            beta_SE=self.beta_SE,
+            Cov_alpha_beta=self.Cov_alpha_beta,
+            CI=CI,
+            CI_type=CI_type,
+        )
 
-        # if percentiles is not None:
-        #     point_estimate = self.distribution.quantile(q=percentiles / 100)
-        #     lower_estimate, upper_estimate = distribution_confidence_intervals.gamma_CI(self=self.distribution, func='CDF', CI_type='time', CI=CI, q=1 - (percentiles / 100))
-        #     percentile_data = {'Percentile': percentiles,
-        #                        'Lower Estimate': lower_estimate,
-        #                        'Point Estimate': point_estimate,
-        #                        'Upper Estimate': upper_estimate}
-        #     self.percentiles = pd.DataFrame(percentile_data, columns=['Percentile', 'Lower Estimate', 'Point Estimate', 'Upper Estimate'])
+        if percentiles is not None:
+            point_estimate = self.distribution.quantile(q=percentiles / 100)
+            lower_estimate, upper_estimate = distribution_confidence_intervals.gamma_CI(
+                self=self.distribution,
+                func="CDF",
+                CI_type="time",
+                CI=CI,
+                q=1 - (percentiles / 100),
+            )
+            percentile_data = {
+                "Percentile": percentiles,
+                "Lower Estimate": lower_estimate,
+                "Point Estimate": point_estimate,
+                "Upper Estimate": upper_estimate,
+            }
+            self.percentiles = pd.DataFrame(
+                percentile_data,
+                columns=[
+                    "Percentile",
+                    "Lower Estimate",
+                    "Point Estimate",
+                    "Upper Estimate",
+                ],
+            )
 
         # goodness of fit measures
         n = len(failures) + len(right_censored)
@@ -5277,9 +5317,15 @@ class Fit_Gamma_2P:
             print(self.results.to_string(index=False), "\n")
             print(self.goodness_of_fit.to_string(index=False), "\n")
 
-            # if percentiles is not None:
-            #     print(str('Table of percentiles (' + str(CI_rounded) + '% CI bounds on time):'))
-            #     print(self.percentiles.to_string(index=False), '\n')
+            if percentiles is not None:
+                print(
+                    str(
+                        "Table of percentiles ("
+                        + str(CI_rounded)
+                        + "% CI bounds on time):"
+                    )
+                )
+                print(self.percentiles.to_string(index=False), "\n")
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Gamma_probability_plot
@@ -5292,10 +5338,11 @@ class Fit_Gamma_2P:
                 failures=failures,
                 right_censored=rc,
                 __fitted_dist_params=self,
+                CI_type=CI_type,
+                CI=CI,
                 **kwargs
             )
             self.probability_plot = plt.gca()
-            # Gamma_probability_plot(failures=failures, right_censored=rc, __fitted_dist_params=self, CI=CI, CI_type=CI_type, **kwargs)
 
     @staticmethod
     def logf(t, a, b):  # Log PDF (2 parameter Gamma)
@@ -5325,6 +5372,8 @@ class Fit_Gamma_3P:
     show_probability_plot - True/False. Defaults to True.
     print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
+    CI_type - time, reliability, None. Default is time. This is the confidence bounds on time or on reliability. Use None to turn off the confidence intervals.
+    percentiles - percentiles to produce a table of percentiles failed with lower, point, and upper estimates. Default is None which results in no output. True or 'auto' will use default array [1, 5, 10,..., 95, 99]. If an array or list is specified then it will be used instead of the default array.
     method - 'MLE' (maximum likelihood estimation), or 'LS' (least squares estimation). LS will perform non-linear least squares estimation. Default is 'MLE'.
     optimizer - 'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
     kwargs are accepted for the probability plot (eg. linestyle, label, color)
@@ -5363,6 +5412,8 @@ class Fit_Gamma_3P:
         CI=0.95,
         optimizer=None,
         method="MLE",
+        percentiles=None,
+        CI_type="time",
         **kwargs
     ):
 
@@ -5373,14 +5424,16 @@ class Fit_Gamma_3P:
             method=method,
             optimizer=optimizer,
             CI=CI,
+            CI_type=CI_type,
+            percentiles=percentiles,
         )
         failures = inputs.failures
         right_censored = inputs.right_censored
         CI = inputs.CI
         method = inputs.method
         optimizer = inputs.optimizer
-        # percentiles = inputs.percentiles
-        # CI_type = inputs.CI_type
+        percentiles = inputs.percentiles
+        CI_type = inputs.CI_type
 
         # Obtain least squares estimates
         if method == "MLE":
@@ -5467,14 +5520,12 @@ class Fit_Gamma_3P:
             self.alpha_SE = abs(covariance_matrix[0][0]) ** 0.5
             self.beta_SE = abs(covariance_matrix[1][1]) ** 0.5
             self.gamma_SE = abs(covariance_matrix_for_gamma[2][2]) ** 0.5
-            self.Cov_alpha_beta = abs(covariance_matrix[0][1])
+            self.Cov_alpha_beta = covariance_matrix[0][1]
             self.alpha_upper = self.alpha * (np.exp(Z * (self.alpha_SE / self.alpha)))
             self.alpha_lower = self.alpha * (np.exp(-Z * (self.alpha_SE / self.alpha)))
             self.beta_upper = self.beta * (np.exp(Z * (self.beta_SE / self.beta)))
             self.beta_lower = self.beta * (np.exp(-Z * (self.beta_SE / self.beta)))
-            self.gamma_upper = self.gamma * (
-                np.exp(Z * (self.gamma_SE / self.gamma))
-            )  # here we assume gamma can only be positive as there are bounds placed on it in the optimizer. Minitab assumes positive or negative so bounds are different
+            self.gamma_upper = self.gamma * (np.exp(Z * (self.gamma_SE / self.gamma)))
             self.gamma_lower = self.gamma * (np.exp(-Z * (self.gamma_SE / self.gamma)))
 
         results_data = {
@@ -5494,19 +5545,41 @@ class Fit_Gamma_3P:
                 "Upper CI",
             ],
         )
-        # self.distribution = Gamma_Distribution(alpha=self.alpha, beta=self.beta, gamma=self.gamma, alpha_SE=self.alpha_SE, beta_SE=self.beta_SE, Cov_alpha_beta=self.Cov_alpha_beta, CI=CI, CI_type=CI_type)
         self.distribution = Gamma_Distribution(
-            alpha=self.alpha, beta=self.beta, gamma=self.gamma
+            alpha=self.alpha,
+            beta=self.beta,
+            gamma=self.gamma,
+            alpha_SE=self.alpha_SE,
+            beta_SE=self.beta_SE,
+            Cov_alpha_beta=self.Cov_alpha_beta,
+            CI=CI,
+            CI_type=CI_type,
         )
 
-        # if percentiles is not None:
-        #     point_estimate = self.distribution.quantile(q=percentiles / 100)
-        #     lower_estimate, upper_estimate = distribution_confidence_intervals.gamma_CI(self=self.distribution, func='CDF', CI_type='time', CI=CI, q=1 - (percentiles / 100))
-        #     percentile_data = {'Percentile': percentiles,
-        #                        'Lower Estimate': lower_estimate,
-        #                        'Point Estimate': point_estimate,
-        #                        'Upper Estimate': upper_estimate}
-        #     self.percentiles = pd.DataFrame(percentile_data, columns=['Percentile', 'Lower Estimate', 'Point Estimate', 'Upper Estimate'])
+        if percentiles is not None:
+            point_estimate = self.distribution.quantile(q=percentiles / 100)
+            lower_estimate, upper_estimate = distribution_confidence_intervals.gamma_CI(
+                self=self.distribution,
+                func="CDF",
+                CI_type="time",
+                CI=CI,
+                q=1 - (percentiles / 100),
+            )
+            percentile_data = {
+                "Percentile": percentiles,
+                "Lower Estimate": lower_estimate,
+                "Point Estimate": point_estimate,
+                "Upper Estimate": upper_estimate,
+            }
+            self.percentiles = pd.DataFrame(
+                percentile_data,
+                columns=[
+                    "Percentile",
+                    "Lower Estimate",
+                    "Point Estimate",
+                    "Upper Estimate",
+                ],
+            )
 
         # goodness of fit measures
         n = len(failures) + len(right_censored)
@@ -5554,9 +5627,15 @@ class Fit_Gamma_3P:
             print(self.results.to_string(index=False), "\n")
             print(self.goodness_of_fit.to_string(index=False), "\n")
 
-            # if percentiles is not None:
-            #     print(str('Table of percentiles (' + str(CI_rounded) + '% CI bounds on time):'))
-            #     print(self.percentiles.to_string(index=False), '\n')
+            if percentiles is not None:
+                print(
+                    str(
+                        "Table of percentiles ("
+                        + str(CI_rounded)
+                        + "% CI bounds on time):"
+                    )
+                )
+                print(self.percentiles.to_string(index=False), "\n")
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Gamma_probability_plot
@@ -5565,11 +5644,12 @@ class Fit_Gamma_3P:
                 rc = None
             else:
                 rc = right_censored
-            # fig = Gamma_probability_plot(failures=failures, right_censored=rc, __fitted_dist_params=self, CI=CI, CI_type=CI_type, **kwargs)
             fig = Gamma_probability_plot(
                 failures=failures,
                 right_censored=rc,
                 __fitted_dist_params=self,
+                CI=CI,
+                CI_type=CI_type,
                 **kwargs
             )
             if self.gamma < 0.01:
@@ -5617,6 +5697,8 @@ class Fit_Beta_2P:
     show_probability_plot - True/False. Defaults to True.
     print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
+    CI_type - time, reliability, None. Default is time. This is the confidence bounds on time or on reliability. Use None to turn off the confidence intervals.
+    percentiles - percentiles to produce a table of percentiles failed with lower, point, and upper estimates. Default is None which results in no output. True or 'auto' will use default array [1, 5, 10,..., 95, 99]. If an array or list is specified then it will be used instead of the default array.
     method - 'MLE' (maximum likelihood estimation), 'LS' (least squares estimation), 'RRX' (Rank regression on X), 'RRY' (Rank regression on Y). LS will perform both RRX and RRY and return the better one. Default is 'MLE'.
     optimizer - 'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
     kwargs are accepted for the probability plot (eg. linestyle, label, color)
@@ -5650,6 +5732,8 @@ class Fit_Beta_2P:
         show_probability_plot=True,
         print_results=True,
         CI=0.95,
+        percentiles=None,
+        CI_type="time",
         method="MLE",
         optimizer=None,
         **kwargs
@@ -5662,14 +5746,16 @@ class Fit_Beta_2P:
             method=method,
             optimizer=optimizer,
             CI=CI,
+            percentiles=percentiles,
+            CI_type=CI_type,
         )
         failures = inputs.failures
         right_censored = inputs.right_censored
         CI = inputs.CI
         method = inputs.method
         optimizer = inputs.optimizer
-        # percentiles = inputs.percentiles
-        # CI_type = inputs.CI_type
+        percentiles = inputs.percentiles
+        CI_type = inputs.CI_type
 
         # Obtain least squares estimates
         if method == "MLE":
@@ -5715,7 +5801,7 @@ class Fit_Beta_2P:
         covariance_matrix = np.linalg.inv(hessian_matrix)
         self.alpha_SE = abs(covariance_matrix[0][0]) ** 0.5
         self.beta_SE = abs(covariance_matrix[1][1]) ** 0.5
-        self.Cov_alpha_beta = abs(covariance_matrix[0][1])
+        self.Cov_alpha_beta = covariance_matrix[0][1]
         self.alpha_upper = self.alpha * (np.exp(Z * (self.alpha_SE / self.alpha)))
         self.alpha_lower = self.alpha * (np.exp(-Z * (self.alpha_SE / self.alpha)))
         self.beta_upper = self.beta * (np.exp(Z * (self.beta_SE / self.beta)))
@@ -5738,17 +5824,40 @@ class Fit_Beta_2P:
                 "Upper CI",
             ],
         )
-        self.distribution = Beta_Distribution(alpha=self.alpha, beta=self.beta)
-        # self.distribution = Beta_Distribution(alpha=self.alpha, beta=self.beta, alpha_SE=self.alpha_SE, beta_SE=self.beta_SE, Cov_alpha_beta=self.Cov_alpha_beta, CI=CI, CI_type=CI_type)
+        self.distribution = Beta_Distribution(
+            alpha=self.alpha,
+            beta=self.beta,
+            alpha_SE=self.alpha_SE,
+            beta_SE=self.beta_SE,
+            Cov_alpha_beta=self.Cov_alpha_beta,
+            CI=CI,
+            CI_type=CI_type,
+        )
 
-        # if percentiles is not None:
-        #     point_estimate = self.distribution.quantile(q=percentiles / 100)
-        #     lower_estimate, upper_estimate = distribution_confidence_intervals.beta_CI(self=self.distribution, func='CDF', CI_type='time', CI=CI, q=1 - (percentiles / 100))
-        #     percentile_data = {'Percentile': percentiles,
-        #                        'Lower Estimate': lower_estimate,
-        #                        'Point Estimate': point_estimate,
-        #                        'Upper Estimate': upper_estimate}
-        #     self.percentiles = pd.DataFrame(percentile_data, columns=['Percentile', 'Lower Estimate', 'Point Estimate', 'Upper Estimate'])
+        if percentiles is not None:
+            point_estimate = self.distribution.quantile(q=percentiles / 100)
+            lower_estimate, upper_estimate = distribution_confidence_intervals.beta_CI(
+                self=self.distribution,
+                func="CDF",
+                CI_type="time",
+                CI=CI,
+                q=1 - (percentiles / 100),
+            )
+            percentile_data = {
+                "Percentile": percentiles,
+                "Lower Estimate": lower_estimate,
+                "Point Estimate": point_estimate,
+                "Upper Estimate": upper_estimate,
+            }
+            self.percentiles = pd.DataFrame(
+                percentile_data,
+                columns=[
+                    "Percentile",
+                    "Lower Estimate",
+                    "Point Estimate",
+                    "Upper Estimate",
+                ],
+            )
 
         # goodness of fit measures
         n = len(failures) + len(right_censored)
@@ -5796,9 +5905,15 @@ class Fit_Beta_2P:
             print(self.results.to_string(index=False), "\n")
             print(self.goodness_of_fit.to_string(index=False), "\n")
 
-            # if percentiles is not None:
-            #     print(str('Table of percentiles (' + str(CI_rounded) + '% CI bounds on time):'))
-            #     print(self.percentiles.to_string(index=False), '\n')
+            if percentiles is not None:
+                print(
+                    str(
+                        "Table of percentiles ("
+                        + str(CI_rounded)
+                        + "% CI bounds on time):"
+                    )
+                )
+                print(self.percentiles.to_string(index=False), "\n")
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Beta_probability_plot
@@ -5807,11 +5922,12 @@ class Fit_Beta_2P:
                 rc = None
             else:
                 rc = right_censored
-            # Beta_probability_plot(failures=failures, right_censored=rc, __fitted_dist_params=self, CI=CI, CI_type=CI_type, **kwargs)
             Beta_probability_plot(
                 failures=failures,
                 right_censored=rc,
                 __fitted_dist_params=self,
+                CI=CI,
+                CI_type=CI_type,
                 **kwargs
             )
             self.probability_plot = plt.gca()
@@ -5847,6 +5963,7 @@ class Fit_Loglogistic_2P:
     optimizer - 'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
     CI_type - time, reliability, None. Default is time. This is the confidence bounds on time or on reliability. Use None to turn off the confidence intervals.
+    percentiles - percentiles to produce a table of percentiles failed with lower, point, and upper estimates. Default is None which results in no output. True or 'auto' will use default array [1, 5, 10,..., 95, 99]. If an array or list is specified then it will be used instead of the default array.
     kwargs are accepted for the probability plot (eg. linestyle, label, color)
 
     outputs:
@@ -5948,7 +6065,7 @@ class Fit_Loglogistic_2P:
         covariance_matrix = np.linalg.inv(hessian_matrix)
         self.alpha_SE = abs(covariance_matrix[0][0]) ** 0.5
         self.beta_SE = abs(covariance_matrix[1][1]) ** 0.5
-        self.Cov_alpha_beta = abs(covariance_matrix[0][1])
+        self.Cov_alpha_beta = covariance_matrix[0][1]
         self.alpha_upper = self.alpha * (np.exp(Z * (self.alpha_SE / self.alpha)))
         self.alpha_lower = self.alpha * (np.exp(-Z * (self.alpha_SE / self.alpha)))
         self.beta_upper = self.beta * (np.exp(Z * (self.beta_SE / self.beta)))
@@ -6113,6 +6230,7 @@ class Fit_Loglogistic_3P:
     print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
     CI_type - 'time' or 'reliability'. Default is time. Used for the probability plot and the distribution object in the output.
+    percentiles - percentiles to produce a table of percentiles failed with lower, point, and upper estimates. Default is None which results in no output. True or 'auto' will use default array [1, 5, 10,..., 95, 99]. If an array or list is specified then it will be used instead of the default array.
     method - 'MLE' (maximum likelihood estimation), or 'LS' (least squares estimation). LS will perform non-linear least squares estimation. Default is 'MLE'.
     optimizer - 'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
     kwargs are accepted for the probability plot (eg. linestyle, label, color)
@@ -6260,7 +6378,7 @@ class Fit_Loglogistic_3P:
             self.alpha_SE = abs(covariance_matrix[0][0]) ** 0.5
             self.beta_SE = abs(covariance_matrix[1][1]) ** 0.5
             self.gamma_SE = abs(covariance_matrix_for_gamma[2][2]) ** 0.5
-            self.Cov_alpha_beta = abs(covariance_matrix[0][1])
+            self.Cov_alpha_beta = covariance_matrix[0][1]
             self.alpha_upper = self.alpha * (np.exp(Z * (self.alpha_SE / self.alpha)))
             self.alpha_lower = self.alpha * (np.exp(-Z * (self.alpha_SE / self.alpha)))
             self.beta_upper = self.beta * (np.exp(Z * (self.beta_SE / self.beta)))

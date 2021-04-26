@@ -519,7 +519,6 @@ def Exponential_probability_plot_Weibull_Scale(
     a - the heuristic constant for plotting positions of the form (k-a)/(n+1-2a). Default is a=0.3 which is the median rank method (same as the default in Minitab).
         For more heuristics, see: https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics
     CI - the confidence interval for the bounds. Default is 0.95 for 95% CI.
-    CI_type - time, reliability, None. Default is time. This is the type of CI bounds. i.e. bounds on time or bounds on reliability. Use None to turn off the confidence intervals.
     kwargs are accepted for the fitted line (eg. linestyle, label, color)
 
     Outputs:
@@ -1070,6 +1069,7 @@ def Beta_probability_plot(
     __fitted_dist_params=None,
     a=None,
     CI=0.95,
+    CI_type="time",
     show_fitted_distribution=True,
     show_scatter_points=True,
     **kwargs
@@ -1085,6 +1085,8 @@ def Beta_probability_plot(
     show_scatter_points - True/False. If True, the plot will include the scatter points from the failure times. Defaults to True.
     a - the heuristic constant for plotting positions of the form (k-a)/(n+1-2a). Default is a=0.3 which is the median rank method (same as the default in Minitab).
         For more heuristics, see: https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics
+    CI - the confidence interval for the bounds. Default is 0.95 for 95% CI.
+    CI_type - time, reliability, None. Default is time. This is the type of CI bounds. i.e. bounds on time or bounds on reliability. Use None to turn off the confidence intervals.
     kwargs are accepted for the fitted line (eg. linestyle, label, color)
 
     Outputs:
@@ -1118,6 +1120,9 @@ def Beta_probability_plot(
     if __fitted_dist_params is not None:
         alpha = __fitted_dist_params.alpha
         beta = __fitted_dist_params.beta
+        alpha_SE = __fitted_dist_params.alpha_SE
+        beta_SE = __fitted_dist_params.beta_SE
+        Cov_alpha_beta = __fitted_dist_params.Cov_alpha_beta
     else:
         from reliability.Fitters import Fit_Beta_2P
 
@@ -1129,6 +1134,9 @@ def Beta_probability_plot(
         )
         alpha = fit.alpha
         beta = fit.beta
+        alpha_SE = fit.alpha_SE
+        beta_SE = fit.beta_SE
+        Cov_alpha_beta = fit.Cov_alpha_beta
     if "label" in kwargs:
         label = kwargs.pop("label")
     else:
@@ -1139,7 +1147,15 @@ def Beta_probability_plot(
             + str(round_to_decimals(beta, dec))
             + ")"
         )
-    bf = Beta_Distribution(alpha=alpha, beta=beta)
+    bf = Beta_Distribution(
+        alpha=alpha,
+        beta=beta,
+        alpha_SE=alpha_SE,
+        beta_SE=beta_SE,
+        Cov_alpha_beta=Cov_alpha_beta,
+        CI=CI,
+        CI_type=CI_type,
+    )
 
     x, y = plotting_positions(failures=failures, right_censored=right_censored, a=a)
     plt.grid(b=True, which="major", color="k", alpha=0.3, linestyle="-")
@@ -1175,6 +1191,7 @@ def Gamma_probability_plot(
     __fitted_dist_params=None,
     a=None,
     CI=0.95,
+    CI_type="time",
     show_fitted_distribution=True,
     show_scatter_points=True,
     **kwargs
@@ -1191,6 +1208,8 @@ def Gamma_probability_plot(
     show_scatter_points - True/False. If True, the plot will include the scatter points from the failure times. Defaults to True.
     a - the heuristic constant for plotting positions of the form (k-a)/(n+1-2a). Default is a=0.3 which is the median rank method (same as the default in Minitab).
         For more heuristics, see: https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics
+    CI - the confidence interval for the bounds. Default is 0.95 for 95% CI.
+    CI_type - time, reliability, None. Default is time. This is the type of CI bounds. i.e. bounds on time or bounds on reliability. Use None to turn off the confidence intervals.
     kwargs are accepted for the fitted line (eg. linestyle, label, color)
 
     Outputs:
@@ -1237,6 +1256,9 @@ def Gamma_probability_plot(
         if __fitted_dist_params is not None:
             alpha = __fitted_dist_params.alpha
             beta = __fitted_dist_params.beta
+            alpha_SE = __fitted_dist_params.alpha_SE
+            beta_SE = __fitted_dist_params.beta_SE
+            Cov_alpha_beta = __fitted_dist_params.Cov_alpha_beta
         else:
             from reliability.Fitters import Fit_Gamma_2P
 
@@ -1248,6 +1270,10 @@ def Gamma_probability_plot(
             )
             alpha = fit.alpha
             beta = fit.beta
+            alpha_SE = fit.alpha_SE
+            beta_SE = fit.beta_SE
+            Cov_alpha_beta = fit.Cov_alpha_beta
+
         if "label" in kwargs:
             label = kwargs.pop("label")
         else:
@@ -1263,6 +1289,9 @@ def Gamma_probability_plot(
             alpha = __fitted_dist_params.alpha
             beta = __fitted_dist_params.beta
             gamma = __fitted_dist_params.gamma
+            alpha_SE = __fitted_dist_params.alpha_SE
+            beta_SE = __fitted_dist_params.beta_SE
+            Cov_alpha_beta = __fitted_dist_params.Cov_alpha_beta
         else:
             from reliability.Fitters import Fit_Gamma_3P
 
@@ -1275,6 +1304,9 @@ def Gamma_probability_plot(
             alpha = fit.alpha
             beta = fit.beta
             gamma = fit.gamma
+            alpha_SE = fit.alpha_SE
+            beta_SE = fit.beta_SE
+            Cov_alpha_beta = fit.Cov_alpha_beta
 
         if "label" in kwargs:
             label = kwargs.pop("label")
@@ -1292,7 +1324,15 @@ def Gamma_probability_plot(
         failures = failures - gamma
         if right_censored is not None:
             right_censored = right_censored - gamma
-    gf = Gamma_Distribution(alpha=alpha, beta=beta)
+    gf = Gamma_Distribution(
+        alpha=alpha,
+        beta=beta,
+        alpha_SE=alpha_SE,
+        beta_SE=beta_SE,
+        Cov_alpha_beta=Cov_alpha_beta,
+        CI=CI,
+        CI_type=CI_type,
+    )
 
     # plot the failure points and format the scale and axes
     x, y = plotting_positions(failures=failures, right_censored=right_censored, a=a)

@@ -20,7 +20,7 @@ def test_Fit_Weibull_2P():
     assert_allclose(MLE.BIC, 116.95530107300358, rtol=rtol, atol=atol)
     assert_allclose(MLE.loglik, -55.4819182629478, rtol=rtol, atol=atol)
     assert_allclose(MLE.AD, 55.60004028891652, rtol=rtol, atol=atol)
-    assert_allclose(MLE.Cov_alpha_beta, 0.9178064889295378, rtol=rtol, atol=atol)
+    assert_allclose(MLE.Cov_alpha_beta, -0.9178064889295378, rtol=rtol, atol=atol)
 
     LS = Fit_Weibull_2P(failures=data.failures, right_censored=data.right_censored, method='LS', show_probability_plot=False, print_results=False)
     assert_allclose(LS.alpha, 42.91333312142757, rtol=rtol, atol=atol)
@@ -30,7 +30,7 @@ def test_Fit_Weibull_2P():
     assert_allclose(LS.BIC, 117.222266038727, rtol=rtol, atol=atol)
     assert_allclose(LS.loglik, -55.61540074580951, rtol=rtol, atol=atol)
     assert_allclose(LS.AD, 55.62807482958476, rtol=rtol, atol=atol)
-    assert_allclose(LS.Cov_alpha_beta, 0.1119680481788733, rtol=rtol, atol=atol)
+    assert_allclose(LS.Cov_alpha_beta, -0.1119680481788733, rtol=rtol, atol=atol)
 
 
 def test_Fit_Weibull_3P():
@@ -46,7 +46,7 @@ def test_Fit_Weibull_3P():
     assert_allclose(MLE.BIC, 118.0199549415479, rtol=rtol, atol=atol)
     assert_allclose(MLE.loglik, -54.51637906044296, rtol=rtol, atol=atol)
     assert_allclose(MLE.AD, 55.6067996515715, rtol=rtol, atol=atol)
-    assert_allclose(MLE.Cov_alpha_beta, 0.7687692976797089, rtol=rtol, atol=atol)
+    assert_allclose(MLE.Cov_alpha_beta, -0.7687692976797089, rtol=rtol, atol=atol)
 
     LS = Fit_Weibull_3P(failures=data.failures, right_censored=data.right_censored, method='LS', show_probability_plot=False, print_results=False)
     assert_allclose(LS.alpha, 32.639290779819824, rtol=rtol, atol=atol)
@@ -56,7 +56,7 @@ def test_Fit_Weibull_3P():
     assert_allclose(LS.BIC, 120.96089454770721, rtol=rtol, atol=atol)
     assert_allclose(LS.loglik, -55.98684886352262, rtol=rtol, atol=atol)
     assert_allclose(LS.AD, 55.70853682331155, rtol=rtol, atol=atol)
-    assert_allclose(LS.Cov_alpha_beta, 0.8435523816679948, rtol=rtol, atol=atol)
+    assert_allclose(LS.Cov_alpha_beta, -0.8435523816679948, rtol=rtol, atol=atol)
 
 
 def test_Fit_Gamma_2P():
@@ -72,7 +72,7 @@ def test_Fit_Gamma_2P():
     assert_allclose(MLE.BIC, 155.61752924510233, rtol=rtol, atol=atol)
     assert_allclose(MLE.loglik, -74.81303234899717, rtol=rtol, atol=atol)
     assert_allclose(MLE.AD, 38.004356262808585, rtol=rtol, atol=atol)
-    assert_allclose(MLE.Cov_alpha_beta, 11.610946543514364, rtol=rtol, atol=atol)
+    assert_allclose(MLE.Cov_alpha_beta, -11.610946543514364, rtol=rtol, atol=atol)
 
     LS = Fit_Gamma_2P(failures=data.failures, right_censored=data.right_censored, method='LS', show_probability_plot=False, print_results=False)
     assert_allclose(LS.alpha, 25.803340662553182, rtol=rtol, atol=atol)
@@ -82,7 +82,7 @@ def test_Fit_Gamma_2P():
     assert_allclose(LS.BIC, 155.84456442643477, rtol=rtol, atol=atol)
     assert_allclose(LS.loglik, -74.92654993966339, rtol=rtol, atol=atol)
     assert_allclose(LS.AD, 38.01670664187149, rtol=rtol, atol=atol)
-    assert_allclose(LS.Cov_alpha_beta, 5.761109354575602, rtol=rtol, atol=atol)
+    assert_allclose(LS.Cov_alpha_beta, -5.761109354575602, rtol=rtol, atol=atol)
 
 
 def test_Fit_Gamma_3P():
@@ -98,7 +98,7 @@ def test_Fit_Gamma_3P():
     assert_allclose(MLE.BIC, 151.50075747473068, rtol=rtol, atol=atol)
     assert_allclose(MLE.loglik, -71.25678032703435, rtol=rtol, atol=atol)
     assert_allclose(MLE.AD, 38.63647775048046, rtol=rtol, atol=atol)
-    assert_allclose(MLE.Cov_alpha_beta, 11.302538880460721, rtol=rtol, atol=atol)
+    assert_allclose(MLE.Cov_alpha_beta, -11.302538880460721, rtol=rtol, atol=atol)
 
     LS = Fit_Gamma_3P(failures=data.failures, right_censored=data.right_censored, method='LS', show_probability_plot=False, print_results=False)
     assert_allclose(LS.alpha, 67.82751726558604, rtol=rtol, atol=atol)
@@ -176,7 +176,7 @@ def test_Fit_Loglogistic_2P():
     assert_allclose(MLE.BIC, 948.4818944983512, rtol=rtol, atol=atol)
     assert_allclose(MLE.loglik, -468.94262988262756, rtol=rtol, atol=atol)
     assert_allclose(MLE.AD, 582.5464625675626, rtol=rtol, atol=atol)
-    assert_allclose(MLE.Cov_alpha_beta, 0.14731273967044273, rtol=rtol, atol=atol)
+    assert_allclose(MLE.Cov_alpha_beta, -0.14731273967044273, rtol=rtol, atol=atol)
 
     LS = Fit_Loglogistic_2P(failures=data.failures, right_censored=data.right_censored, method='LS', show_probability_plot=False, print_results=False)
     assert_allclose(LS.alpha, 50.657493341191135, rtol=rtol, atol=atol)
@@ -186,7 +186,7 @@ def test_Fit_Loglogistic_2P():
     assert_allclose(LS.BIC, 949.09809758231, rtol=rtol, atol=atol)
     assert_allclose(LS.loglik, -469.25073142460695, rtol=rtol, atol=atol)
     assert_allclose(LS.AD, 582.5637861880587, rtol=rtol, atol=atol)
-    assert_allclose(LS.Cov_alpha_beta, 0.1828511494829605, rtol=rtol, atol=atol)
+    assert_allclose(LS.Cov_alpha_beta, -0.1828511494829605, rtol=rtol, atol=atol)
 
 
 def test_Fit_Loglogistic_3P():
@@ -202,7 +202,7 @@ def test_Fit_Loglogistic_3P():
     assert_allclose(MLE.BIC, 953.5853270747824, rtol=rtol, atol=atol)
     assert_allclose(MLE.loglik, -468.84518748756915, rtol=rtol, atol=atol)
     assert_allclose(MLE.AD, 582.5424432519599, rtol=rtol, atol=atol)
-    assert_allclose(MLE.Cov_alpha_beta, 0.18172584774539235, rtol=rtol, atol=atol)
+    assert_allclose(MLE.Cov_alpha_beta, -0.18172584774539235, rtol=rtol, atol=atol)
 
     LS = Fit_Loglogistic_3P(failures=data.failures, right_censored=data.right_censored, method='LS', show_probability_plot=False, print_results=False)
     assert_allclose(LS.alpha, 62.356306952705054, rtol=rtol, atol=atol)
@@ -212,7 +212,7 @@ def test_Fit_Loglogistic_3P():
     assert_allclose(LS.BIC, 953.5929971820636, rtol=rtol, atol=atol)
     assert_allclose(LS.loglik, -468.84902254120976, rtol=rtol, atol=atol)
     assert_allclose(LS.AD, 582.5422083314535, rtol=rtol, atol=atol)
-    assert_allclose(LS.Cov_alpha_beta, 0.1864715435778476, rtol=rtol, atol=atol)
+    assert_allclose(LS.Cov_alpha_beta, -0.1864715435778476, rtol=rtol, atol=atol)
 
 
 def test_Fit_Normal_2P():

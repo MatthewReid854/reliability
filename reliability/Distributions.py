@@ -3137,32 +3137,37 @@ class Gamma_Distribution:
         self.b5 = ss.gamma.ppf(0.05, self.beta, scale=self.alpha, loc=self.gamma)
         self.b95 = ss.gamma.ppf(0.95, self.beta, scale=self.alpha, loc=self.gamma)
 
-        #################
-        # # extracts values for confidence interval plotting
-        # if 'alpha_SE' in kwargs:
-        #     self.alpha_SE = kwargs.pop('alpha_SE')
-        # else:
-        #     self.alpha_SE = None
-        # if 'beta_SE' in kwargs:
-        #     self.beta_SE = kwargs.pop('beta_SE')
-        # else:
-        #     self.beta_SE = None
-        # if 'Cov_alpha_beta' in kwargs:
-        #     self.Cov_alpha_beta = kwargs.pop('Cov_alpha_beta')
-        # else:
-        #     self.Cov_alpha_beta = None
-        # if 'CI' in kwargs:
-        #     CI = kwargs.pop('CI')
-        #     self.Z = -ss.norm.ppf((1 - CI) / 2)
-        # else:
-        #     self.Z = None
-        # if 'CI_type' in kwargs:
-        #     self.CI_type = kwargs.pop('CI_type')
-        # else:
-        #     self.CI_type = 'time'
-        # for item in kwargs.keys():
-        #     colorprint(str('WARNING: '+ item + ' is not recognised as an appropriate entry in kwargs. Appropriate entries are alpha_SE, beta_SE, Cov_alpha_beta, CI, and CI_type'),text_color='red')
-        ################
+        # extracts values for confidence interval plotting
+        if "alpha_SE" in kwargs:
+            self.alpha_SE = kwargs.pop("alpha_SE")
+        else:
+            self.alpha_SE = None
+        if "beta_SE" in kwargs:
+            self.beta_SE = kwargs.pop("beta_SE")
+        else:
+            self.beta_SE = None
+        if "Cov_alpha_beta" in kwargs:
+            self.Cov_alpha_beta = kwargs.pop("Cov_alpha_beta")
+        else:
+            self.Cov_alpha_beta = None
+        if "CI" in kwargs:
+            CI = kwargs.pop("CI")
+            self.Z = -ss.norm.ppf((1 - CI) / 2)
+        else:
+            self.Z = None
+        if "CI_type" in kwargs:
+            self.CI_type = kwargs.pop("CI_type")
+        else:
+            self.CI_type = "time"
+        for item in kwargs.keys():
+            colorprint(
+                str(
+                    "WARNING: "
+                    + item
+                    + " is not recognised as an appropriate entry in kwargs. Appropriate entries are alpha_SE, beta_SE, Cov_alpha_beta, CI, and CI_type"
+                ),
+                text_color="red",
+            )
 
         self._pdf0 = ss.gamma.pdf(
             0, self.beta, scale=self.alpha, loc=0
@@ -3401,12 +3406,13 @@ class Gamma_Distribution:
         if show_plot == False:
             return cdf
         else:
-            # CI_type, plot_CI, CI = distribution_confidence_intervals.CI_kwarg_handler(self, kwargs)
+            CI_type, plot_CI, CI = distribution_confidence_intervals.CI_kwarg_handler(
+                self, kwargs
+            )
 
             limits = get_axes_limits()
 
-            # p = plt.plot(X, cdf, **kwargs)
-            plt.plot(X, cdf, **kwargs)
+            p = plt.plot(X, cdf, **kwargs)
             plt.xlabel("x values")
             plt.ylabel("Fraction failing")
             text_title = str(
@@ -3429,7 +3435,15 @@ class Gamma_Distribution:
                 xmax=xmax,
             )
 
-            # distribution_confidence_intervals.gamma_CI(self, func='CDF', CI_type=CI_type, plot_CI=plot_CI, CI=CI, text_title=text_title, color=p[0].get_color())
+            distribution_confidence_intervals.gamma_CI(
+                self,
+                func="CDF",
+                CI_type=CI_type,
+                plot_CI=plot_CI,
+                CI=CI,
+                text_title=text_title,
+                color=p[0].get_color(),
+            )
 
             return cdf
 
@@ -3467,9 +3481,13 @@ class Gamma_Distribution:
         if show_plot == False:
             return sf
         else:
+            CI_type, plot_CI, CI = distribution_confidence_intervals.CI_kwarg_handler(
+                self, kwargs
+            )
+
             limits = get_axes_limits()
 
-            plt.plot(X, sf, **kwargs)
+            p = plt.plot(X, sf, **kwargs)
             plt.xlabel("x values")
             plt.ylabel("Fraction surviving")
             text_title = str(
@@ -3487,6 +3505,16 @@ class Gamma_Distribution:
                 xvals=xvals,
                 xmin=xmin,
                 xmax=xmax,
+            )
+
+            distribution_confidence_intervals.gamma_CI(
+                self,
+                func="SF",
+                CI_type=CI_type,
+                plot_CI=plot_CI,
+                CI=CI,
+                text_title=text_title,
+                color=p[0].get_color(),
             )
 
             return sf
@@ -3581,13 +3609,19 @@ class Gamma_Distribution:
             )  # obtain the X array
 
         chf = -np.log(ss.gamma.sf(X, self.beta, scale=self.alpha, loc=self.gamma))
+        self._chf = chf  # required by the CI plotting part
+        self._X = X
 
         if show_plot == False:
             return chf
         else:
+            CI_type, plot_CI, CI = distribution_confidence_intervals.CI_kwarg_handler(
+                self, kwargs
+            )
+
             limits = get_axes_limits()
 
-            plt.plot(X, chf, **kwargs)
+            p = plt.plot(X, chf, **kwargs)
             plt.xlabel("x values")
             plt.ylabel("Cumulative hazard")
             text_title = str(
@@ -3608,6 +3642,16 @@ class Gamma_Distribution:
                 xvals=xvals,
                 xmin=xmin,
                 xmax=xmax,
+            )
+
+            distribution_confidence_intervals.gamma_CI(
+                self,
+                func="CHF",
+                CI_type=CI_type,
+                plot_CI=plot_CI,
+                CI=CI,
+                text_title=text_title,
+                color=p[0].get_color(),
             )
 
             return chf
@@ -3751,7 +3795,7 @@ class Beta_Distribution:
     random_samples() - draws random samples from the distribution to which it is applied. Same as rvs in scipy.stats.
     """
 
-    def __init__(self, alpha=None, beta=None):
+    def __init__(self, alpha=None, beta=None, **kwargs):
         self.name = "Beta"
         self.name2 = "Beta_2P"
         if alpha is None or beta is None:
@@ -3790,12 +3834,45 @@ class Beta_Distribution:
         )
         self.b5 = ss.beta.ppf(0.05, self.alpha, self.beta, 0, 1)
         self.b95 = ss.beta.ppf(0.95, self.alpha, self.beta, 0, 1)
-        self._pdf0 = ss.beta.pdf(
-            0, self.alpha, self.beta, 0, 1
-        )  # the pdf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
+
+        # extracts values for confidence interval plotting
+        if "alpha_SE" in kwargs:
+            self.alpha_SE = kwargs.pop("alpha_SE")
+        else:
+            self.alpha_SE = None
+        if "beta_SE" in kwargs:
+            self.beta_SE = kwargs.pop("beta_SE")
+        else:
+            self.beta_SE = None
+        if "Cov_alpha_beta" in kwargs:
+            self.Cov_alpha_beta = kwargs.pop("Cov_alpha_beta")
+        else:
+            self.Cov_alpha_beta = None
+        if "CI" in kwargs:
+            CI = kwargs.pop("CI")
+            self.Z = -ss.norm.ppf((1 - CI) / 2)
+        else:
+            self.Z = None
+        if "CI_type" in kwargs:
+            self.CI_type = kwargs.pop("CI_type")
+        else:
+            self.CI_type = "time"
+        for item in kwargs.keys():
+            colorprint(
+                str(
+                    "WARNING: "
+                    + item
+                    + " is not recognised as an appropriate entry in kwargs. Appropriate entries are alpha_SE, beta_SE, Cov_alpha_beta, CI, and CI_type"
+                ),
+                text_color="red",
+            )
+
+        # the pdf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
+        self._pdf0 = ss.beta.pdf(0, self.alpha, self.beta, 0, 1)
+        # the hf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
         self._hf0 = ss.beta.pdf(0, self.alpha, self.beta, 0, 1) / ss.beta.sf(
             0, self.alpha, self.beta, 0, 1
-        )  # the hf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
+        )
 
     def plot(self, xvals=None, xmin=None, xmax=None):
         """
@@ -4030,9 +4107,13 @@ class Beta_Distribution:
         if show_plot == False:
             return cdf
         else:
+            CI_type, plot_CI, CI = distribution_confidence_intervals.CI_kwarg_handler(
+                self, kwargs
+            )
+
             limits = get_axes_limits()
 
-            plt.plot(X, cdf, **kwargs)
+            p = plt.plot(X, cdf, **kwargs)
             plt.xlabel("x values")
             plt.ylabel("Fraction failing")
             text_title = str(
@@ -4053,6 +4134,16 @@ class Beta_Distribution:
                 xvals=xvals,
                 xmin=xmin,
                 xmax=xmax,
+            )
+
+            distribution_confidence_intervals.beta_CI(
+                self,
+                func="CDF",
+                CI_type=CI_type,
+                plot_CI=plot_CI,
+                CI=CI,
+                text_title=text_title,
+                color=p[0].get_color(),
             )
 
             return cdf
@@ -4091,9 +4182,13 @@ class Beta_Distribution:
         if show_plot == False:
             return sf
         else:
+            CI_type, plot_CI, CI = distribution_confidence_intervals.CI_kwarg_handler(
+                self, kwargs
+            )
+
             limits = get_axes_limits()
 
-            plt.plot(X, sf, **kwargs)
+            p = plt.plot(X, sf, **kwargs)
             plt.xlabel("x values")
             plt.ylabel("Fraction surviving")
             text_title = str(
@@ -4111,6 +4206,16 @@ class Beta_Distribution:
                 xvals=xvals,
                 xmin=xmin,
                 xmax=xmax,
+            )
+
+            distribution_confidence_intervals.beta_CI(
+                self,
+                func="SF",
+                CI_type=CI_type,
+                plot_CI=plot_CI,
+                CI=CI,
+                text_title=text_title,
+                color=p[0].get_color(),
             )
 
             return sf
@@ -4205,13 +4310,19 @@ class Beta_Distribution:
             )  # obtain the X array
 
         chf = -np.log(ss.beta.sf(X, self.alpha, self.beta, 0, 1))
+        self._chf = chf  # required by the CI plotting part
+        self._X = X
 
         if show_plot == False:
             return chf
         else:
+            CI_type, plot_CI, CI = distribution_confidence_intervals.CI_kwarg_handler(
+                self, kwargs
+            )
+
             limits = get_axes_limits()
 
-            plt.plot(X, chf, **kwargs)
+            p = plt.plot(X, chf, **kwargs)
             plt.xlabel("x values")
             plt.ylabel("Cumulative hazard")
             text_title = str(
@@ -4232,6 +4343,16 @@ class Beta_Distribution:
                 xvals=xvals,
                 xmin=xmin,
                 xmax=xmax,
+            )
+
+            distribution_confidence_intervals.beta_CI(
+                self,
+                func="CHF",
+                CI_type=CI_type,
+                plot_CI=plot_CI,
+                CI=CI,
+                text_title=text_title,
+                color=p[0].get_color(),
             )
 
             return chf
