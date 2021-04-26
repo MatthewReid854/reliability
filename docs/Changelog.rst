@@ -9,12 +9,15 @@ Changelog
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 **Summary of changes**
+
 Version 0.5.7 of `reliability` completes a part of this project that has taken almost one year by providing confidence intervals for all standard distributions. This release now incorporates confidence intervals for the Gamma_2P, Gamma_3P, and Beta_2P distributions which were the last remaining to be implemented and proved quite a mathematical challenge. In addition to these enhancements, version 0.5.7 contains numerous minor bug fixes.
 
 **New features**
+
 -    Gamma and Beta distributions now have confidence intervals implemented. This involved changes to Distributions, Utils, Fitters, and Probability_plotting modules.
 
 **API Changes**
+
 -    Added "dateformat" argument to Other_functions.crosshairs. This provides datetime formatting capability for x axis crosshair labels and annotations. Useful if the plot contains datetime data on the x axis.
 -    Fully deprecated Other_functions.convert_dataframe_to_grouped_lists
 -    Fully deprecated the ALT_probability_plotting module as this was made redundant by the improvements to ALT_Fitters in v0.5.6
