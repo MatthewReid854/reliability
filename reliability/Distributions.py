@@ -15,35 +15,6 @@ Mixture distributions are:
     Mixture_Model - this must be created using 2 or more of the above standard distributions
     Competing_Risks_Model - this must be created using 2 or more of the above standard distributions
 
-Methods:
-    name - the name of the distribution. eg. 'Weibull'
-    name2 - the name of the distribution with the number of parameters. eg. 'Weibull_2P'
-    param_title_long - Useful in plot titles, legends and in printing strings. Varies by distribution. eg. 'Weibull Distribution (α=5,β=2)'
-    param_title - Useful in plot titles, legends and in printing strings. Varies by distribution. eg. 'α=5,β=2'
-    parameters - returns an array of parameters. eg. [alpha,beta,gamma]
-    alpha, beta, gamma, Lambda, mu, sigma - these vary by distribution but will return the value of their respective parameter.
-    mean
-    variance
-    standard_deviation
-    skewness
-    kurtosis
-    excess_kurtosis
-    median
-    mode
-    plot() - plots all functions (PDF,CDF,SF,HF,CHF)
-    PDF() - plots the probability density function
-    CDF() - plots the cumulative distribution function
-    SF() - plots the survival function (also known as reliability function)
-    HF() - plots the hazard function
-    CHF() - plots the cumulative hazard function
-    quantile() - Calculates the quantile (time until a fraction has failed) for a given fraction failing.
-                 Also known as b life where b5 is the time at which 5% have failed.
-    inverse_SF() - the inverse of the Survival Function. This is useful when producing QQ plots.
-    mean_residual_life() - Average residual lifetime of an item given that the item has survived up to a given time.
-                           Effectively the mean of the remaining amount (right side) of a distribution at a given time.
-    stats() - prints all the descriptive statistics. Same as the statistics shown using .plot() but printed to console.
-    random_samples() - draws random samples from the distribution to which it is applied. Same as rvs in scipy.stats.
-
 Example usage:
 dist = Weibull_Distribution(alpha = 8, beta = 1.2)
 print(dist.mean)
@@ -385,7 +356,7 @@ class Weibull_Distribution:
 
         Parameters
         ----------
-        show_plot : bool
+        show_plot : bool, optional
             True or False. Default = True
         xvals : array, list, optional
             x-values for plotting
@@ -459,7 +430,7 @@ class Weibull_Distribution:
 
         Parameters
         ----------
-        show_plot : bool
+        show_plot : bool, optional
             True or False. Default = True
         xvals : array, list, optional
             x-values for plotting
@@ -548,7 +519,7 @@ class Weibull_Distribution:
 
         Parameters
         ----------
-        show_plot : bool
+        show_plot : bool, optional
             True or False. Default = True
         xvals : array, list, optional
             x-values for plotting
@@ -637,7 +608,7 @@ class Weibull_Distribution:
 
         Parameters
         ----------
-        show_plot : bool
+        show_plot : bool, optional
             True or False. Default = True
         xvals : array, list, optional
             x-values for plotting
@@ -714,7 +685,7 @@ class Weibull_Distribution:
 
         Parameters
         ----------
-        show_plot : bool
+        show_plot : bool, optional
             True or False. Default = True
         xvals : array, list, optional
             x-values for plotting
@@ -941,45 +912,43 @@ class Weibull_Distribution:
 
 class Normal_Distribution:
     """
-    Normal probability distribution
+    Normal probability distribution. Creates a probability distribution object.
 
-    Creates a Distribution object.
+    Parameters
+    ----------
+    mu : float, int
+        Location parameter
+    sigma : float, int
+        Scale parameter. Must be > 0
 
-    Inputs:
-    mu - location parameter (mean)
-    sigma - scale parameter (standard deviation)
+    Returns
+    -------
+    name : str
+        'Normal'
+    name2 : 'str
+        'Normal_2P'
+    param_title_long : str
+        'Normal Distribution (μ=5,σ=2)'
+    param_title : str
+        'μ=5,σ=2'
+    parameters : list
+        [mu,sigma]
+    mu : float
+    sigma : float
+    mean : float
+    variance : float
+    standard_deviation : float
+    skewness : float
+    kurtosis : float
+    excess_kurtosis : float
+    median : float
+    mode : float
+    b5 : float
+    b95 : float
 
-    Methods:
-    name - 'Normal'
-    name2 - 'Normal_2P'
-    param_title_long - Useful in plot titles, legends and in printing strings. eg. 'Normal Distribution (μ=5,σ=2)'
-    param_title - Useful in plot titles, legends and in printing strings. eg. 'μ=5,σ=2'
-    parameters - [mu,sigma]
-    mu
-    sigma
-    mean
-    variance
-    standard_deviation
-    skewness
-    kurtosis
-    excess_kurtosis
-    median
-    mode
-    b5
-    b95
-    plot() - plots all functions (PDF,CDF,SF,HF,CHF)
-    PDF() - plots the probability density function
-    CDF() - plots the cumulative distribution function
-    SF() - plots the survival function (also known as reliability function)
-    HF() - plots the hazard function
-    CHF() - plots the cumulative hazard function
-    quantile() - Calculates the quantile (time until a fraction has failed) for a given fraction failing.
-                 Also known as b life where b5 is the time at which 5% have failed.
-    inverse_SF() - the inverse of the Survival Function. This is useful when producing QQ plots.
-    mean_residual_life() - Average residual lifetime of an item given that the item has survived up to a given time.
-                           Effectively the mean of the remaining amount (right side) of a distribution at a given time.
-    stats() - prints all the descriptive statistics. Same as the statistics shown using .plot() but printed to console.
-    random_samples() - draws random samples from the distribution to which it is applied. Same as rvs in scipy.stats.
+    Notes
+    -----
+    kwargs are used internally to generate the confidence intervals
     """
 
     def __init__(self, mu=None, sigma=None, **kwargs):
@@ -1053,18 +1022,30 @@ class Normal_Distribution:
 
     def plot(self, xvals=None, xmin=None, xmax=None):
         """
-        Plots all functions (PDF, CDF, SF, HF, CHF) and descriptive statistics in a single figure
+        Plots all functions (PDF, CDF, SF, HF, CHF) and descriptive statistics
+        in a single figure
 
-        Inputs:
-        xvals - x-values for plotting
-        xmin - minimum x-value for plotting
-        xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 200 elements
-        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
-        *no plotting keywords are accepted
+        Parameters
+        ----------
+        xvals : list, array, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
 
-        Outputs:
-        The plot will be shown. No need to use plt.show()
+        Returns
+        -------
+        None
+
+        Notes
+        -----
+        The plot will be shown. No need to use plt.show().
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters. No plotting keywords are
+        accepted.
         """
         X = generate_X_array(
             dist=self, xvals=xvals, xmin=xmin, xmax=xmax
@@ -1190,18 +1171,32 @@ class Normal_Distribution:
         """
         Plots the PDF (probability density function)
 
-        Inputs:
-        show_plot - True/False. Default is True
-        xvals - x-values for plotting
-        xmin - minimum x-value for plotting
-        xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 200 elements
-        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
-        *plotting keywords are also accepted (eg. color, linestyle)
+        Parameters
+        ----------
+        show_plot : bool, optional
+            True or False. Default = True
+        xvals : array, list, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
+        kwargs
+            Plotting keywords that are passed directly to matplotlib
+            (e.g. color, linestyle)
 
-        Outputs:
-        yvals - this is the y-values of the plot
+        Returns
+        -------
+        yvals : array
+            The y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
+
+        Notes
+        -----
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters.
         """
         if (
             xmin is None
@@ -1251,18 +1246,32 @@ class Normal_Distribution:
         """
         Plots the CDF (cumulative distribution function)
 
-        Inputs:
-        show_plot - True/False. Default is True
-        xvals - x-values for plotting
-        xmin - minimum x-value for plotting
-        xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 200 elements
-        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
-        *plotting keywords are also accepted (eg. color, linestyle)
+        Parameters
+        ----------
+        show_plot : bool, optional
+            True or False. Default = True
+        xvals : array, list, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
+        kwargs
+            Plotting keywords that are passed directly to matplotlib
+            (e.g. color, linestyle)
 
-        Outputs:
-        yvals - this is the y-values of the plot
+        Returns
+        -------
+        yvals : array
+            The y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
+
+        Notes
+        -----
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters.
         """
         if (
             xmin is None
@@ -1326,18 +1335,32 @@ class Normal_Distribution:
         """
         Plots the SF (survival function)
 
-        Inputs:
-        show_plot - True/False. Default is True
-        xvals - x-values for plotting
-        xmin - minimum x-value for plotting
-        xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 200 elements
-        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
-        *plotting keywords are also accepted (eg. color, linestyle)
+        Parameters
+        ----------
+        show_plot : bool, optional
+            True or False. Default = True
+        xvals : array, list, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
+        kwargs
+            Plotting keywords that are passed directly to matplotlib
+            (e.g. color, linestyle)
 
-        Outputs:
-        yvals - this is the y-values of the plot
+        Returns
+        -------
+        yvals : array
+            The y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
+
+        Notes
+        -----
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters.
         """
         if (
             xmin is None
@@ -1401,18 +1424,32 @@ class Normal_Distribution:
         """
         Plots the HF (hazard function)
 
-        Inputs:
-        show_plot - True/False. Default is True
-        xvals - x-values for plotting
-        xmin - minimum x-value for plotting
-        xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 200 elements
-        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
-        *plotting keywords are also accepted (eg. color, linestyle)
+        Parameters
+        ----------
+        show_plot : bool, optional
+            True or False. Default = True
+        xvals : array, list, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
+        kwargs
+            Plotting keywords that are passed directly to matplotlib
+            (e.g. color, linestyle)
 
-        Outputs:
-        yvals - this is the y-values of the plot
+        Returns
+        -------
+        yvals : array
+            The y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
+
+        Notes
+        -----
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters.
         """
         if (
             xmin is None
@@ -1459,18 +1496,32 @@ class Normal_Distribution:
         """
         Plots the CHF (cumulative hazard function)
 
-        Inputs:
-        show_plot - True/False. Default is True
-        xvals - x-values for plotting
-        xmin - minimum x-value for plotting
-        xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 200 elements
-        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
-        *plotting keywords are also accepted (eg. color, linestyle)
+        Parameters
+        ----------
+        show_plot : bool, optional
+            True or False. Default = True
+        xvals : array, list, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
+        kwargs
+            Plotting keywords that are passed directly to matplotlib
+            (e.g. color, linestyle)
 
-        Outputs:
-        yvals - this is the y-values of the plot
+        Returns
+        -------
+        yvals : array
+            The y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
+
+        Notes
+        -----
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters.
         """
         if (
             xmin is None
@@ -1536,8 +1587,16 @@ class Normal_Distribution:
         """
         Quantile calculator
 
-        :param q: quantile to be calculated
-        :return: the probability (area under the curve) that a random variable from the distribution is < q
+        Parameters
+        ----------
+        q : float
+            Quantile to be calculated. Must be between 0 and 1.
+
+        Returns
+        -------
+        x : float
+            The inverse of the CDF at q. This is the probability that a random
+            variable from the distribution is < q
         """
         if type(q) in [int, float, np.float64]:
             if q < 0 or q > 1:
@@ -1551,10 +1610,17 @@ class Normal_Distribution:
 
     def inverse_SF(self, q):
         """
-        Inverse Survival function calculator
+        Inverse survival function calculator
 
-        :param q: quantile to be calculated
-        :return: the inverse of the survival function at q
+        Parameters
+        ----------
+        q : float
+            Quantile to be calculated. Must be between 0 and 1.
+
+        Returns
+        -------
+        x : float
+            The inverse of the SF at q.
         """
         if type(q) in [int, float, np.float64]:
             if q < 0 or q > 1:
@@ -1570,8 +1636,15 @@ class Normal_Distribution:
         """
         Mean Residual Life calculator
 
-        :param t: time at which MRL is to be evaluated
-        :return: MRL
+        Parameters
+        ----------
+        t : int, float
+            Time (x-value) at which mean residual life is to be evaluated
+
+        Returns
+        -------
+        MRL : float
+            The mean residual life
         """
         R = lambda x: ss.norm.sf(x, loc=self.mu, scale=self.sigma)
         integral_R, error = integrate.quad(R, t, np.inf)
@@ -1580,8 +1653,18 @@ class Normal_Distribution:
 
     def stats(self):
         """
-        Descriptive statistics of the probability distribution. Same as the statistics shown using .plot() but printed to console.
-        No inputs or outputs.
+        Descriptive statistics of the probability distribution.
+        These are the same as the statistics shown using .plot() but printed to
+        the console.
+
+        Parameters
+        ----------
+        None
+
+        Return
+        ------
+        None
+
         """
         print(
             "Descriptive statistics for Normal distribution with mu =",
@@ -1601,12 +1684,23 @@ class Normal_Distribution:
 
     def random_samples(self, number_of_samples, seed=None):
         """
-        random_samples
         Draws random samples from the probability distribution
 
-        :param number_of_samples: the number of samples to be drawn
-        :param seed: the random seed. Default is None
-        :return: the random samples
+        Parameters
+        ----------
+        number_of_samples : int
+            The number of samples to be drawn. Must be greater than 0.
+        seed : int, optional
+            The random seed passed to numpy. Default = None
+
+        Returns
+        -------
+        samples : array
+            The random samples
+
+        Notes
+        -----
+        This is the same as rvs in scipy.stats
         """
         if type(number_of_samples) != int or number_of_samples < 1:
             raise ValueError("number_of_samples must be an integer greater than 1")
@@ -1762,18 +1856,30 @@ class Lognormal_Distribution:
 
     def plot(self, xvals=None, xmin=None, xmax=None):
         """
-        Plots all functions (PDF, CDF, SF, HF, CHF) and descriptive statistics in a single figure
+        Plots all functions (PDF, CDF, SF, HF, CHF) and descriptive statistics
+        in a single figure
 
-        Inputs:
-        xvals - x-values for plotting
-        xmin - minimum x-value for plotting
-        xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 200 elements
-        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
-        *no plotting keywords are accepted
+        Parameters
+        ----------
+        xvals : list, array, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
 
-        Outputs:
-        The plot will be shown. No need to use plt.show()
+        Returns
+        -------
+        None
+
+        Notes
+        -----
+        The plot will be shown. No need to use plt.show().
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters. No plotting keywords are
+        accepted.
         """
         X = generate_X_array(
             dist=self, xvals=xvals, xmin=xmin, xmax=xmax
@@ -1899,18 +2005,32 @@ class Lognormal_Distribution:
         """
         Plots the PDF (probability density function)
 
-        Inputs:
-        show_plot - True/False. Default is True
-        xvals - x-values for plotting
-        xmin - minimum x-value for plotting
-        xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 200 elements
-        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
-        *plotting keywords are also accepted (eg. color, linestyle)
+        Parameters
+        ----------
+        show_plot : bool, optional
+            True or False. Default = True
+        xvals : array, list, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
+        kwargs
+            Plotting keywords that are passed directly to matplotlib
+            (e.g. color, linestyle)
 
-        Outputs:
-        yvals - this is the y-values of the plot
+        Returns
+        -------
+        yvals : array
+            The y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
+
+        Notes
+        -----
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters.
         """
         if (
             xmin is None
@@ -1960,18 +2080,32 @@ class Lognormal_Distribution:
         """
         Plots the CDF (cumulative distribution function)
 
-        Inputs:
-        show_plot - True/False. Default is True
-        xvals - x-values for plotting
-        xmin - minimum x-value for plotting
-        xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 200 elements
-        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
-        *plotting keywords are also accepted (eg. color, linestyle)
+        Parameters
+        ----------
+        show_plot : bool, optional
+            True or False. Default = True
+        xvals : array, list, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
+        kwargs
+            Plotting keywords that are passed directly to matplotlib
+            (e.g. color, linestyle)
 
-        Outputs:
-        yvals - this is the y-values of the plot
+        Returns
+        -------
+        yvals : array
+            The y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
+
+        Notes
+        -----
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters.
         """
         if (
             xmin is None
@@ -2035,18 +2169,32 @@ class Lognormal_Distribution:
         """
         Plots the SF (survival function)
 
-        Inputs:
-        show_plot - True/False. Default is True
-        xvals - x-values for plotting
-        xmin - minimum x-value for plotting
-        xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 200 elements
-        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
-        *plotting keywords are also accepted (eg. color, linestyle)
+        Parameters
+        ----------
+        show_plot : bool, optional
+            True or False. Default = True
+        xvals : array, list, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
+        kwargs
+            Plotting keywords that are passed directly to matplotlib
+            (e.g. color, linestyle)
 
-        Outputs:
-        yvals - this is the y-values of the plot
+        Returns
+        -------
+        yvals : array
+            The y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
+
+        Notes
+        -----
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters.
         """
         if (
             xmin is None
@@ -2110,18 +2258,32 @@ class Lognormal_Distribution:
         """
         Plots the HF (hazard function)
 
-        Inputs:
-        show_plot - True/False. Default is True
-        xvals - x-values for plotting
-        xmin - minimum x-value for plotting
-        xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 200 elements
-        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
-        *plotting keywords are also accepted (eg. color, linestyle)
+        Parameters
+        ----------
+        show_plot : bool, optional
+            True or False. Default = True
+        xvals : array, list, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
+        kwargs
+            Plotting keywords that are passed directly to matplotlib
+            (e.g. color, linestyle)
 
-        Outputs:
-        yvals - this is the y-values of the plot
+        Returns
+        -------
+        yvals : array
+            The y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
+
+        Notes
+        -----
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters.
         """
         if (
             xmin is None
@@ -2173,18 +2335,32 @@ class Lognormal_Distribution:
         """
         Plots the CHF (cumulative hazard function)
 
-        Inputs:
-        show_plot - True/False. Default is True
-        xvals - x-values for plotting
-        xmin - minimum x-value for plotting
-        xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 200 elements
-        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
-        *plotting keywords are also accepted (eg. color, linestyle)
+        Parameters
+        ----------
+        show_plot : bool, optional
+            True or False. Default = True
+        xvals : array, list, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
+        kwargs
+            Plotting keywords that are passed directly to matplotlib
+            (e.g. color, linestyle)
 
-        Outputs:
-        yvals - this is the y-values of the plot
+        Returns
+        -------
+        yvals : array
+            The y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
+
+        Notes
+        -----
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters.
         """
         if (
             xmin is None
@@ -2250,8 +2426,16 @@ class Lognormal_Distribution:
         """
         Quantile calculator
 
-        :param q: quantile to be calculated
-        :return: the probability (area under the curve) that a random variable from the distribution is < q
+        Parameters
+        ----------
+        q : float
+            Quantile to be calculated. Must be between 0 and 1.
+
+        Returns
+        -------
+        x : float
+            The inverse of the CDF at q. This is the probability that a random
+            variable from the distribution is < q
         """
         if type(q) in [int, float, np.float64]:
             if q < 0 or q > 1:
@@ -2265,10 +2449,17 @@ class Lognormal_Distribution:
 
     def inverse_SF(self, q):
         """
-        Inverse Survival function calculator
+        Inverse survival function calculator
 
-        :param q: quantile to be calculated
-        :return: the inverse of the survival function at q
+        Parameters
+        ----------
+        q : float
+            Quantile to be calculated. Must be between 0 and 1.
+
+        Returns
+        -------
+        x : float
+            The inverse of the SF at q.
         """
         if type(q) in [int, float, np.float64]:
             if q < 0 or q > 1:
@@ -2284,8 +2475,15 @@ class Lognormal_Distribution:
         """
         Mean Residual Life calculator
 
-        :param t: time at which MRL is to be evaluated
-        :return: MRL
+        Parameters
+        ----------
+        t : int, float
+            Time (x-value) at which mean residual life is to be evaluated
+
+        Returns
+        -------
+        MRL : float
+            The mean residual life
         """
         R = lambda x: ss.lognorm.sf(x, self.sigma, self.gamma, np.exp(self.mu))
         integral_R, error = integrate.quad(R, t, np.inf)
@@ -2294,8 +2492,18 @@ class Lognormal_Distribution:
 
     def stats(self):
         """
-        Descriptive statistics of the probability distribution. Same as the statistics shown using .plot() but printed to console.
-        No inputs or outputs.
+        Descriptive statistics of the probability distribution.
+        These are the same as the statistics shown using .plot() but printed to
+        the console.
+
+        Parameters
+        ----------
+        None
+
+        Return
+        ------
+        None
+
         """
         if self.gamma == 0:
             print(
@@ -2325,12 +2533,23 @@ class Lognormal_Distribution:
 
     def random_samples(self, number_of_samples, seed=None):
         """
-        random_samples
         Draws random samples from the probability distribution
 
-        :param number_of_samples: the number of samples to be drawn
-        :param seed: the random seed. Default is None
-        :return: the random samples
+        Parameters
+        ----------
+        number_of_samples : int
+            The number of samples to be drawn. Must be greater than 0.
+        seed : int, optional
+            The random seed passed to numpy. Default = None
+
+        Returns
+        -------
+        samples : array
+            The random samples
+
+        Notes
+        -----
+        This is the same as rvs in scipy.stats
         """
         if type(number_of_samples) != int or number_of_samples < 1:
             raise ValueError("number_of_samples must be an integer greater than 1")
@@ -2459,18 +2678,30 @@ class Exponential_Distribution:
 
     def plot(self, xvals=None, xmin=None, xmax=None):
         """
-        Plots all functions (PDF, CDF, SF, HF, CHF) and descriptive statistics in a single figure
+        Plots all functions (PDF, CDF, SF, HF, CHF) and descriptive statistics
+        in a single figure
 
-        Inputs:
-        xvals - x-values for plotting
-        xmin - minimum x-value for plotting
-        xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 200 elements
-        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
-        *no plotting keywords are accepted
+        Parameters
+        ----------
+        xvals : list, array, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
 
-        Outputs:
-        The plot will be shown. No need to use plt.show()
+        Returns
+        -------
+        None
+
+        Notes
+        -----
+        The plot will be shown. No need to use plt.show().
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters. No plotting keywords are
+        accepted.
         """
 
         X = generate_X_array(
@@ -2599,18 +2830,32 @@ class Exponential_Distribution:
         """
         Plots the PDF (probability density function)
 
-        Inputs:
-        show_plot - True/False. Default is True
-        xvals - x-values for plotting
-        xmin - minimum x-value for plotting
-        xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 200 elements
-        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
-        *plotting keywords are also accepted (eg. color, linestyle)
+        Parameters
+        ----------
+        show_plot : bool, optional
+            True or False. Default = True
+        xvals : array, list, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
+        kwargs
+            Plotting keywords that are passed directly to matplotlib
+            (e.g. color, linestyle)
 
-        Outputs:
-        yvals - this is the y-values of the plot
+        Returns
+        -------
+        yvals : array
+            The y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
+
+        Notes
+        -----
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters.
         """
         if (
             xmin is None
@@ -2658,20 +2903,32 @@ class Exponential_Distribution:
         """
         Plots the CDF (cumulative distribution function)
 
-        Inputs:
-        show_plot - True/False. Default is True
-        xvals - x-values for plotting
-        xmin - minimum x-value for plotting
-        xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 200 elements
-        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
-        *plotting keywords are also accepted (eg. color, linestyle)
+        Parameters
+        ----------
+        show_plot : bool, optional
+            True or False. Default = True
+        xvals : array, list, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
+        kwargs
+            Plotting keywords that are passed directly to matplotlib
+            (e.g. color, linestyle)
 
-        Outputs:
-        yvals - this is the y-values of the plot
+        Returns
+        -------
+        yvals : array
+            The y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
-        If the distribution object contains Lambda_lower and Lambda_upper, the CI bounds will be plotted. The bounds for the CI are the same as the Fitter was given (default is 0.95). To hide the CI bounds specify show_CI=False
 
+        Notes
+        -----
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters.
         """
         # obtain the X array
         if (
@@ -2733,19 +2990,32 @@ class Exponential_Distribution:
         """
         Plots the SF (survival function)
 
-        Inputs:
-        show_plot - True/False. Default is True
-        xvals - x-values for plotting
-        xmin - minimum x-value for plotting
-        xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 200 elements
-        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
-        *plotting keywords are also accepted (eg. color, linestyle)
+        Parameters
+        ----------
+        show_plot : bool, optional
+            True or False. Default = True
+        xvals : array, list, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
+        kwargs
+            Plotting keywords that are passed directly to matplotlib
+            (e.g. color, linestyle)
 
-        Outputs:
-        yvals - this is the y-values of the plot
+        Returns
+        -------
+        yvals : array
+            The y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
-        If the distribution object contains Lambda_lower and Lambda_upper, the CI bounds will be plotted. The bounds for the CI are the same as the Fitter was given (default is 0.95). To hide the CI bounds specify show_CI=False
+
+        Notes
+        -----
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters.
         """
         # obtain the X array
         if (
@@ -2806,18 +3076,32 @@ class Exponential_Distribution:
         """
         Plots the HF (hazard function)
 
-        Inputs:
-        show_plot - True/False. Default is True
-        xvals - x-values for plotting
-        xmin - minimum x-value for plotting
-        xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 200 elements
-        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
-        *plotting keywords are also accepted (eg. color, linestyle)
+        Parameters
+        ----------
+        show_plot : bool, optional
+            True or False. Default = True
+        xvals : array, list, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
+        kwargs
+            Plotting keywords that are passed directly to matplotlib
+            (e.g. color, linestyle)
 
-        Outputs:
-        yvals - this is the y-values of the plot
+        Returns
+        -------
+        yvals : array
+            The y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
+
+        Notes
+        -----
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters.
         """
         # obtain the X array
         if (
@@ -2867,19 +3151,32 @@ class Exponential_Distribution:
         """
         Plots the CHF (cumulative hazard function)
 
-        Inputs:
-        show_plot - True/False. Default is True
-        xvals - x-values for plotting
-        xmin - minimum x-value for plotting
-        xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 200 elements
-        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
-        *plotting keywords are also accepted (eg. color, linestyle)
+        Parameters
+        ----------
+        show_plot : bool, optional
+            True or False. Default = True
+        xvals : array, list, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
+        kwargs
+            Plotting keywords that are passed directly to matplotlib
+            (e.g. color, linestyle)
 
-        Outputs:
-        yvals - this is the y-values of the plot
+        Returns
+        -------
+        yvals : array
+            The y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
-        If the distribution object contains Lambda_lower and Lambda_upper, the CI bounds will be plotted. The bounds for the CI are the same as the Fitter was given (default is 0.95). To hide the CI bounds specify show_CI=False
+
+        Notes
+        -----
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters.
         """
 
         # obtain the X array
@@ -2943,8 +3240,16 @@ class Exponential_Distribution:
         """
         Quantile calculator
 
-        :param q: quantile to be calculated
-        :return: the probability (area under the curve) that a random variable from the distribution is < q
+        Parameters
+        ----------
+        q : float
+            Quantile to be calculated. Must be between 0 and 1.
+
+        Returns
+        -------
+        x : float
+            The inverse of the CDF at q. This is the probability that a random
+            variable from the distribution is < q
         """
         if type(q) in [int, float, np.float64]:
             if q < 0 or q > 1:
@@ -2958,10 +3263,17 @@ class Exponential_Distribution:
 
     def inverse_SF(self, q):
         """
-        Inverse Survival function calculator
+        Inverse survival function calculator
 
-        :param q: quantile to be calculated
-        :return: the inverse of the survival function at q
+        Parameters
+        ----------
+        q : float
+            Quantile to be calculated. Must be between 0 and 1.
+
+        Returns
+        -------
+        x : float
+            The inverse of the SF at q.
         """
         if type(q) in [int, float, np.float64]:
             if q < 0 or q > 1:
@@ -2977,8 +3289,15 @@ class Exponential_Distribution:
         """
         Mean Residual Life calculator
 
-        :param t: time at which MRL is to be evaluated
-        :return: MRL
+        Parameters
+        ----------
+        t : int, float
+            Time (x-value) at which mean residual life is to be evaluated
+
+        Returns
+        -------
+        MRL : float
+            The mean residual life
         """
         R = lambda x: ss.expon.sf(x, scale=1 / self.Lambda, loc=self.gamma)
         integral_R, error = integrate.quad(R, t, np.inf)
@@ -2987,8 +3306,18 @@ class Exponential_Distribution:
 
     def stats(self):
         """
-        Descriptive statistics of the probability distribution. Same as the statistics shown using .plot() but printed to console.
-        No inputs or outputs.
+        Descriptive statistics of the probability distribution.
+        These are the same as the statistics shown using .plot() but printed to
+        the console.
+
+        Parameters
+        ----------
+        None
+
+        Return
+        ------
+        None
+
         """
         if self.gamma == 0:
             print(
@@ -3014,12 +3343,23 @@ class Exponential_Distribution:
 
     def random_samples(self, number_of_samples, seed=None):
         """
-        random_samples
         Draws random samples from the probability distribution
 
-        :param number_of_samples: the number of samples to be drawn
-        :param seed: the random seed. Default is None
-        :return: the random samples
+        Parameters
+        ----------
+        number_of_samples : int
+            The number of samples to be drawn. Must be greater than 0.
+        seed : int, optional
+            The random seed passed to numpy. Default = None
+
+        Returns
+        -------
+        samples : array
+            The random samples
+
+        Notes
+        -----
+        This is the same as rvs in scipy.stats
         """
         if type(number_of_samples) != int or number_of_samples < 1:
             raise ValueError("number_of_samples must be an integer greater than 1")
@@ -3178,18 +3518,30 @@ class Gamma_Distribution:
 
     def plot(self, xvals=None, xmin=None, xmax=None):
         """
-        Plots all functions (PDF, CDF, SF, HF, CHF) and descriptive statistics in a single figure
+        Plots all functions (PDF, CDF, SF, HF, CHF) and descriptive statistics
+        in a single figure
 
-        Inputs:
-        xvals - x-values for plotting
-        xmin - minimum x-value for plotting
-        xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 200 elements
-        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
-        *no plotting keywords are accepted
+        Parameters
+        ----------
+        xvals : list, array, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
 
-        Outputs:
-        The plot will be shown. No need to use plt.show()
+        Returns
+        -------
+        None
+
+        Notes
+        -----
+        The plot will be shown. No need to use plt.show().
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters. No plotting keywords are
+        accepted.
         """
         X = generate_X_array(
             dist=self, xvals=xvals, xmin=xmin, xmax=xmax
@@ -3315,18 +3667,32 @@ class Gamma_Distribution:
         """
         Plots the PDF (probability density function)
 
-        Inputs:
-        show_plot - True/False. Default is True
-        xvals - x-values for plotting
-        xmin - minimum x-value for plotting
-        xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 200 elements
-        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
-        *plotting keywords are also accepted (eg. color, linestyle)
+        Parameters
+        ----------
+        show_plot : bool, optional
+            True or False. Default = True
+        xvals : array, list, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
+        kwargs
+            Plotting keywords that are passed directly to matplotlib
+            (e.g. color, linestyle)
 
-        Outputs:
-        yvals - this is the y-values of the plot
+        Returns
+        -------
+        yvals : array
+            The y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
+
+        Notes
+        -----
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters.
         """
         if (
             xmin is None
@@ -3376,18 +3742,32 @@ class Gamma_Distribution:
         """
         Plots the CDF (cumulative distribution function)
 
-        Inputs:
-        show_plot - True/False. Default is True
-        xvals - x-values for plotting
-        xmin - minimum x-value for plotting
-        xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 200 elements
-        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
-        *plotting keywords are also accepted (eg. color, linestyle)
+        Parameters
+        ----------
+        show_plot : bool, optional
+            True or False. Default = True
+        xvals : array, list, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
+        kwargs
+            Plotting keywords that are passed directly to matplotlib
+            (e.g. color, linestyle)
 
-        Outputs:
-        yvals - this is the y-values of the plot
+        Returns
+        -------
+        yvals : array
+            The y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
+
+        Notes
+        -----
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters.
         """
         if (
             xmin is None
@@ -3451,18 +3831,32 @@ class Gamma_Distribution:
         """
         Plots the SF (survival function)
 
-        Inputs:
-        show_plot - True/False. Default is True
-        xvals - x-values for plotting
-        xmin - minimum x-value for plotting
-        xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 200 elements
-        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
-        *plotting keywords are also accepted (eg. color, linestyle)
+        Parameters
+        ----------
+        show_plot : bool, optional
+            True or False. Default = True
+        xvals : array, list, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
+        kwargs
+            Plotting keywords that are passed directly to matplotlib
+            (e.g. color, linestyle)
 
-        Outputs:
-        yvals - this is the y-values of the plot
+        Returns
+        -------
+        yvals : array
+            The y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
+
+        Notes
+        -----
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters.
         """
         if (
             xmin is None
@@ -3523,18 +3917,32 @@ class Gamma_Distribution:
         """
         Plots the HF (hazard function)
 
-        Inputs:
-        show_plot - True/False. Default is True
-        xvals - x-values for plotting
-        xmin - minimum x-value for plotting
-        xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 200 elements
-        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
-        *plotting keywords are also accepted (eg. color, linestyle)
+        Parameters
+        ----------
+        show_plot : bool, optional
+            True or False. Default = True
+        xvals : array, list, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
+        kwargs
+            Plotting keywords that are passed directly to matplotlib
+            (e.g. color, linestyle)
 
-        Outputs:
-        yvals - this is the y-values of the plot
+        Returns
+        -------
+        yvals : array
+            The y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
+
+        Notes
+        -----
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters.
         """
         if (
             xmin is None
@@ -3583,18 +3991,32 @@ class Gamma_Distribution:
         """
         Plots the CHF (cumulative hazard function)
 
-        Inputs:
-        show_plot - True/False. Default is True
-        xvals - x-values for plotting
-        xmin - minimum x-value for plotting
-        xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 200 elements
-        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
-        *plotting keywords are also accepted (eg. color, linestyle)
+        Parameters
+        ----------
+        show_plot : bool, optional
+            True or False. Default = True
+        xvals : array, list, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
+        kwargs
+            Plotting keywords that are passed directly to matplotlib
+            (e.g. color, linestyle)
 
-        Outputs:
-        yvals - this is the y-values of the plot
+        Returns
+        -------
+        yvals : array
+            The y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
+
+        Notes
+        -----
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters.
         """
         if (
             xmin is None
@@ -3660,8 +4082,16 @@ class Gamma_Distribution:
         """
         Quantile calculator
 
-        :param q: quantile to be calculated
-        :return: the probability (area under the curve) that a random variable from the distribution is < q
+        Parameters
+        ----------
+        q : float
+            Quantile to be calculated. Must be between 0 and 1.
+
+        Returns
+        -------
+        x : float
+            The inverse of the CDF at q. This is the probability that a random
+            variable from the distribution is < q
         """
         if type(q) in [int, float, np.float64]:
             if q < 0 or q > 1:
@@ -3675,10 +4105,17 @@ class Gamma_Distribution:
 
     def inverse_SF(self, q):
         """
-        Inverse Survival function calculator
+        Inverse survival function calculator
 
-        :param q: quantile to be calculated
-        :return: the inverse of the survival function at q
+        Parameters
+        ----------
+        q : float
+            Quantile to be calculated. Must be between 0 and 1.
+
+        Returns
+        -------
+        x : float
+            The inverse of the SF at q.
         """
         if type(q) in [int, float, np.float64]:
             if q < 0 or q > 1:
@@ -3694,8 +4131,15 @@ class Gamma_Distribution:
         """
         Mean Residual Life calculator
 
-        :param t: time at which MRL is to be evaluated
-        :return: MRL
+        Parameters
+        ----------
+        t : int, float
+            Time (x-value) at which mean residual life is to be evaluated
+
+        Returns
+        -------
+        MRL : float
+            The mean residual life
         """
         R = lambda x: ss.gamma.sf(x, self.beta, scale=self.alpha, loc=self.gamma)
         integral_R, error = integrate.quad(R, t, np.inf)
@@ -3704,8 +4148,18 @@ class Gamma_Distribution:
 
     def stats(self):
         """
-        Descriptive statistics of the probability distribution. Same as the statistics shown using .plot() but printed to console.
-        No inputs or outputs.
+        Descriptive statistics of the probability distribution.
+        These are the same as the statistics shown using .plot() but printed to
+        the console.
+
+        Parameters
+        ----------
+        None
+
+        Return
+        ------
+        None
+
         """
         if self.gamma == 0:
             print(
@@ -3735,12 +4189,23 @@ class Gamma_Distribution:
 
     def random_samples(self, number_of_samples, seed=None):
         """
-        random_samples
         Draws random samples from the probability distribution
 
-        :param number_of_samples: the number of samples to be drawn
-        :param seed: the random seed. Default is None
-        :return: the random samples
+        Parameters
+        ----------
+        number_of_samples : int
+            The number of samples to be drawn. Must be greater than 0.
+        seed : int, optional
+            The random seed passed to numpy. Default = None
+
+        Returns
+        -------
+        samples : array
+            The random samples
+
+        Notes
+        -----
+        This is the same as rvs in scipy.stats
         """
         if type(number_of_samples) != int or number_of_samples < 1:
             raise ValueError("number_of_samples must be an integer greater than 1")
@@ -3876,18 +4341,30 @@ class Beta_Distribution:
 
     def plot(self, xvals=None, xmin=None, xmax=None):
         """
-        Plots all functions (PDF, CDF, SF, HF, CHF) and descriptive statistics in a single figure
+        Plots all functions (PDF, CDF, SF, HF, CHF) and descriptive statistics
+        in a single figure
 
-        Inputs:
-        xvals - x-values for plotting
-        xmin - minimum x-value for plotting
-        xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 200 elements
-        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
-        *no plotting keywords are accepted
+        Parameters
+        ----------
+        xvals : list, array, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
 
-        Outputs:
-        The plot will be shown. No need to use plt.show()
+        Returns
+        -------
+        None
+
+        Notes
+        -----
+        The plot will be shown. No need to use plt.show().
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters. No plotting keywords are
+        accepted.
         """
         X = generate_X_array(
             dist=self, xvals=xvals, xmin=xmin, xmax=xmax
@@ -4016,18 +4493,32 @@ class Beta_Distribution:
         """
         Plots the PDF (probability density function)
 
-        Inputs:
-        show_plot - True/False. Default is True
-        xvals - x-values for plotting
-        xmin - minimum x-value for plotting
-        xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 200 elements
-        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
-        *plotting keywords are also accepted (eg. color, linestyle)
+        Parameters
+        ----------
+        show_plot : bool, optional
+            True or False. Default = True
+        xvals : array, list, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
+        kwargs
+            Plotting keywords that are passed directly to matplotlib
+            (e.g. color, linestyle)
 
-        Outputs:
-        yvals - this is the y-values of the plot
+        Returns
+        -------
+        yvals : array
+            The y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
+
+        Notes
+        -----
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters.
         """
         if (
             xmin is None
@@ -4077,18 +4568,32 @@ class Beta_Distribution:
         """
         Plots the CDF (cumulative distribution function)
 
-        Inputs:
-        show_plot - True/False. Default is True
-        xvals - x-values for plotting
-        xmin - minimum x-value for plotting
-        xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 200 elements
-        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
-        *plotting keywords are also accepted (eg. color, linestyle)
+        Parameters
+        ----------
+        show_plot : bool, optional
+            True or False. Default = True
+        xvals : array, list, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
+        kwargs
+            Plotting keywords that are passed directly to matplotlib
+            (e.g. color, linestyle)
 
-        Outputs:
-        yvals - this is the y-values of the plot
+        Returns
+        -------
+        yvals : array
+            The y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
+
+        Notes
+        -----
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters.
         """
         if (
             xmin is None
@@ -4152,18 +4657,32 @@ class Beta_Distribution:
         """
         Plots the SF (survival function)
 
-        Inputs:
-        show_plot - True/False. Default is True
-        xvals - x-values for plotting
-        xmin - minimum x-value for plotting
-        xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 200 elements
-        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
-        *plotting keywords are also accepted (eg. color, linestyle)
+        Parameters
+        ----------
+        show_plot : bool, optional
+            True or False. Default = True
+        xvals : array, list, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
+        kwargs
+            Plotting keywords that are passed directly to matplotlib
+            (e.g. color, linestyle)
 
-        Outputs:
-        yvals - this is the y-values of the plot
+        Returns
+        -------
+        yvals : array
+            The y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
+
+        Notes
+        -----
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters.
         """
         if (
             xmin is None
@@ -4224,18 +4743,32 @@ class Beta_Distribution:
         """
         Plots the HF (hazard function)
 
-        Inputs:
-        show_plot - True/False. Default is True
-        xvals - x-values for plotting
-        xmin - minimum x-value for plotting
-        xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 200 elements
-        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
-        *plotting keywords are also accepted (eg. color, linestyle)
+        Parameters
+        ----------
+        show_plot : bool, optional
+            True or False. Default = True
+        xvals : array, list, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
+        kwargs
+            Plotting keywords that are passed directly to matplotlib
+            (e.g. color, linestyle)
 
-        Outputs:
-        yvals - this is the y-values of the plot
+        Returns
+        -------
+        yvals : array
+            The y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
+
+        Notes
+        -----
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters.
         """
         if (
             xmin is None
@@ -4284,18 +4817,32 @@ class Beta_Distribution:
         """
         Plots the CHF (cumulative hazard function)
 
-        Inputs:
-        show_plot - True/False. Default is True
-        xvals - x-values for plotting
-        xmin - minimum x-value for plotting
-        xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 200 elements
-        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
-        *plotting keywords are also accepted (eg. color, linestyle)
+        Parameters
+        ----------
+        show_plot : bool, optional
+            True or False. Default = True
+        xvals : array, list, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
+        kwargs
+            Plotting keywords that are passed directly to matplotlib
+            (e.g. color, linestyle)
 
-        Outputs:
-        yvals - this is the y-values of the plot
+        Returns
+        -------
+        yvals : array
+            The y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
+
+        Notes
+        -----
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters.
         """
         if (
             xmin is None
@@ -4361,8 +4908,16 @@ class Beta_Distribution:
         """
         Quantile calculator
 
-        :param q: quantile to be calculated
-        :return: the probability (area under the curve) that a random variable from the distribution is < q
+        Parameters
+        ----------
+        q : float
+            Quantile to be calculated. Must be between 0 and 1.
+
+        Returns
+        -------
+        x : float
+            The inverse of the CDF at q. This is the probability that a random
+            variable from the distribution is < q
         """
         if type(q) in [int, float, np.float64]:
             if q < 0 or q > 1:
@@ -4376,10 +4931,17 @@ class Beta_Distribution:
 
     def inverse_SF(self, q):
         """
-        Inverse Survival function calculator
+        Inverse survival function calculator
 
-        :param q: quantile to be calculated
-        :return: the inverse of the survival function at q
+        Parameters
+        ----------
+        q : float
+            Quantile to be calculated. Must be between 0 and 1.
+
+        Returns
+        -------
+        x : float
+            The inverse of the SF at q.
         """
         if type(q) in [int, float, np.float64]:
             if q < 0 or q > 1:
@@ -4395,8 +4957,15 @@ class Beta_Distribution:
         """
         Mean Residual Life calculator
 
-        :param t: time at which MRL is to be evaluated
-        :return: MRL
+        Parameters
+        ----------
+        t : int, float
+            Time (x-value) at which mean residual life is to be evaluated
+
+        Returns
+        -------
+        MRL : float
+            The mean residual life
         """
         R = lambda x: ss.beta.sf(x, self.alpha, self.beta, 0, 1)
         integral_R, error = integrate.quad(R, t, np.inf)
@@ -4405,8 +4974,18 @@ class Beta_Distribution:
 
     def stats(self):
         """
-        Descriptive statistics of the probability distribution. Same as the statistics shown using .plot() but printed to console.
-        No inputs or outputs.
+        Descriptive statistics of the probability distribution.
+        These are the same as the statistics shown using .plot() but printed to
+        the console.
+
+        Parameters
+        ----------
+        None
+
+        Return
+        ------
+        None
+
         """
         print(
             "Descriptive statistics for Beta distribution with alpha =",
@@ -4426,12 +5005,23 @@ class Beta_Distribution:
 
     def random_samples(self, number_of_samples, seed=None):
         """
-        random_samples
         Draws random samples from the probability distribution
 
-        :param number_of_samples: the number of samples to be drawn
-        :param seed: the random seed. Default is None
-        :return: the random samples
+        Parameters
+        ----------
+        number_of_samples : int
+            The number of samples to be drawn. Must be greater than 0.
+        seed : int, optional
+            The random seed passed to numpy. Default = None
+
+        Returns
+        -------
+        samples : array
+            The random samples
+
+        Notes
+        -----
+        This is the same as rvs in scipy.stats
         """
         if type(number_of_samples) != int or number_of_samples < 1:
             raise ValueError("number_of_samples must be an integer greater than 1")
@@ -4611,18 +5201,30 @@ class Loglogistic_Distribution:
 
     def plot(self, xvals=None, xmin=None, xmax=None):
         """
-        Plots all functions (PDF, CDF, SF, HF, CHF) and descriptive statistics in a single figure
+        Plots all functions (PDF, CDF, SF, HF, CHF) and descriptive statistics
+        in a single figure
 
-        Inputs:
-        xvals - x-values for plotting
-        xmin - minimum x-value for plotting
-        xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 200 elements
-        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
-        *no plotting keywords are accepted
+        Parameters
+        ----------
+        xvals : list, array, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
 
-        Outputs:
-        The plot will be shown. No need to use plt.show()
+        Returns
+        -------
+        None
+
+        Notes
+        -----
+        The plot will be shown. No need to use plt.show().
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters. No plotting keywords are
+        accepted.
         """
 
         X = generate_X_array(
@@ -4783,18 +5385,32 @@ class Loglogistic_Distribution:
         """
         Plots the PDF (probability density function)
 
-        Inputs:
-        show_plot - True/False. Default is True
-        xvals - x-values for plotting
-        xmin - minimum x-value for plotting
-        xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 200 elements
-        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
-        *plotting keywords are also accepted (eg. color, linestyle)
+        Parameters
+        ----------
+        show_plot : bool, optional
+            True or False. Default = True
+        xvals : array, list, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
+        kwargs
+            Plotting keywords that are passed directly to matplotlib
+            (e.g. color, linestyle)
 
-        Outputs:
-        yvals - this is the y-values of the plot
+        Returns
+        -------
+        yvals : array
+            The y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
+
+        Notes
+        -----
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters.
         """
 
         # obtain the X array
@@ -4844,20 +5460,33 @@ class Loglogistic_Distribution:
         """
         Plots the CDF (cumulative distribution function)
 
-        Inputs:
-        show_plot - True/False. Default is True
-        xvals - x-values for plotting
-        xmin - minimum x-value for plotting
-        xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 200 elements
-        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
-        *plotting keywords are also accepted (eg. color, linestyle)
+        Parameters
+        ----------
+        show_plot : bool, optional
+            True or False. Default = True
+        xvals : array, list, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
+        kwargs
+            Plotting keywords that are passed directly to matplotlib
+            (e.g. color, linestyle)
 
-        Outputs:
-        yvals - this is the y-values of the plot
+        Returns
+        -------
+        yvals : array
+            The y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
-        """
 
+        Notes
+        -----
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters.
+        """
         # obtain the X array
         if (
             xmin is None
@@ -4919,18 +5548,32 @@ class Loglogistic_Distribution:
         """
         Plots the SF (survival function)
 
-        Inputs:
-        show_plot - True/False. Default is True
-        xvals - x-values for plotting
-        xmin - minimum x-value for plotting
-        xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 200 elements
-        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
-        *plotting keywords are also accepted (eg. color, linestyle)
+        Parameters
+        ----------
+        show_plot : bool, optional
+            True or False. Default = True
+        xvals : array, list, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
+        kwargs
+            Plotting keywords that are passed directly to matplotlib
+            (e.g. color, linestyle)
 
-        Outputs:
-        yvals - this is the y-values of the plot
+        Returns
+        -------
+        yvals : array
+            The y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
+
+        Notes
+        -----
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters.
         """
 
         # obtain the X array
@@ -4994,18 +5637,32 @@ class Loglogistic_Distribution:
         """
         Plots the HF (hazard function)
 
-        Inputs:
-        show_plot - True/False. Default is True
-        xvals - x-values for plotting
-        xmin - minimum x-value for plotting
-        xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 200 elements
-        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
-        *plotting keywords are also accepted (eg. color, linestyle)
+        Parameters
+        ----------
+        show_plot : bool, optional
+            True or False. Default = True
+        xvals : array, list, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
+        kwargs
+            Plotting keywords that are passed directly to matplotlib
+            (e.g. color, linestyle)
 
-        Outputs:
-        yvals - this is the y-values of the plot
+        Returns
+        -------
+        yvals : array
+            The y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
+
+        Notes
+        -----
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters.
         """
 
         # obtain the X array
@@ -5058,18 +5715,32 @@ class Loglogistic_Distribution:
         """
         Plots the CHF (cumulative hazard function)
 
-        Inputs:
-        show_plot - True/False. Default is True
-        xvals - x-values for plotting
-        xmin - minimum x-value for plotting
-        xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 200 elements
-        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
-        *plotting keywords are also accepted (eg. color, linestyle)
+        Parameters
+        ----------
+        show_plot : bool, optional
+            True or False. Default = True
+        xvals : array, list, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
+        kwargs
+            Plotting keywords that are passed directly to matplotlib
+            (e.g. color, linestyle)
 
-        Outputs:
-        yvals - this is the y-values of the plot
+        Returns
+        -------
+        yvals : array
+            The y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
+
+        Notes
+        -----
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters.
         """
 
         # obtain the X array
@@ -5136,8 +5807,16 @@ class Loglogistic_Distribution:
         """
         Quantile calculator
 
-        :param q: quantile to be calculated
-        :return: the probability (area under the curve) that a random variable from the distribution is < q
+        Parameters
+        ----------
+        q : float
+            Quantile to be calculated. Must be between 0 and 1.
+
+        Returns
+        -------
+        x : float
+            The inverse of the CDF at q. This is the probability that a random
+            variable from the distribution is < q
         """
         if type(q) in [int, float, np.float64]:
             if q < 0 or q > 1:
@@ -5151,10 +5830,17 @@ class Loglogistic_Distribution:
 
     def inverse_SF(self, q):
         """
-        Inverse Survival function calculator
+        Inverse survival function calculator
 
-        :param q: quantile to be calculated
-        :return: the inverse of the survival function at q
+        Parameters
+        ----------
+        q : float
+            Quantile to be calculated. Must be between 0 and 1.
+
+        Returns
+        -------
+        x : float
+            The inverse of the SF at q.
         """
         if type(q) in [int, float, np.float64]:
             if q < 0 or q > 1:
@@ -5170,8 +5856,15 @@ class Loglogistic_Distribution:
         """
         Mean Residual Life calculator
 
-        :param t: time at which MRL is to be evaluated
-        :return: MRL
+        Parameters
+        ----------
+        t : int, float
+            Time (x-value) at which mean residual life is to be evaluated
+
+        Returns
+        -------
+        MRL : float
+            The mean residual life
         """
         R = lambda x: ss.fisk.sf(x, self.beta, scale=self.alpha, loc=self.gamma)
         integral_R, error = integrate.quad(R, t, np.inf)
@@ -5180,8 +5873,18 @@ class Loglogistic_Distribution:
 
     def stats(self):
         """
-        Descriptive statistics of the probability distribution. Same as the statistics shown using .plot() but printed to console.
-        No inputs or outputs.
+        Descriptive statistics of the probability distribution.
+        These are the same as the statistics shown using .plot() but printed to
+        the console.
+
+        Parameters
+        ----------
+        None
+
+        Return
+        ------
+        None
+
         """
         if self.gamma == 0:
             print(
@@ -5211,12 +5914,23 @@ class Loglogistic_Distribution:
 
     def random_samples(self, number_of_samples, seed=None):
         """
-        random_samples
         Draws random samples from the probability distribution
 
-        :param number_of_samples: the number of samples to be drawn
-        :param seed: the random seed. Default is None
-        :return: the random samples
+        Parameters
+        ----------
+        number_of_samples : int
+            The number of samples to be drawn. Must be greater than 0.
+        seed : int, optional
+            The random seed passed to numpy. Default = None
+
+        Returns
+        -------
+        samples : array
+            The random samples
+
+        Notes
+        -----
+        This is the same as rvs in scipy.stats
         """
         if type(number_of_samples) != int or number_of_samples < 1:
             raise ValueError("number_of_samples must be an integer greater than 1")
@@ -5343,18 +6057,30 @@ class Gumbel_Distribution:
 
     def plot(self, xvals=None, xmin=None, xmax=None):
         """
-        Plots all functions (PDF, CDF, SF, HF, CHF) and descriptive statistics in a single figure
+        Plots all functions (PDF, CDF, SF, HF, CHF) and descriptive statistics
+        in a single figure
 
-        Inputs:
-        xvals - x-values for plotting
-        xmin - minimum x-value for plotting
-        xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 200 elements
-        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
-        *no plotting keywords are accepted
+        Parameters
+        ----------
+        xvals : list, array, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
 
-        Outputs:
-        The plot will be shown. No need to use plt.show()
+        Returns
+        -------
+        None
+
+        Notes
+        -----
+        The plot will be shown. No need to use plt.show().
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters. No plotting keywords are
+        accepted.
         """
         X = generate_X_array(
             dist=self, xvals=xvals, xmin=xmin, xmax=xmax
@@ -5481,18 +6207,32 @@ class Gumbel_Distribution:
         """
         Plots the PDF (probability density function)
 
-        Inputs:
-        show_plot - True/False. Default is True
-        xvals - x-values for plotting
-        xmin - minimum x-value for plotting
-        xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 200 elements
-        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
-        *plotting keywords are also accepted (eg. color, linestyle)
+        Parameters
+        ----------
+        show_plot : bool, optional
+            True or False. Default = True
+        xvals : array, list, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
+        kwargs
+            Plotting keywords that are passed directly to matplotlib
+            (e.g. color, linestyle)
 
-        Outputs:
-        yvals - this is the y-values of the plot
+        Returns
+        -------
+        yvals : array
+            The y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
+
+        Notes
+        -----
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters.
         """
         if (
             xmin is None
@@ -5542,18 +6282,32 @@ class Gumbel_Distribution:
         """
         Plots the CDF (cumulative distribution function)
 
-        Inputs:
-        show_plot - True/False. Default is True
-        xvals - x-values for plotting
-        xmin - minimum x-value for plotting
-        xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 200 elements
-        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
-        *plotting keywords are also accepted (eg. color, linestyle)
+        Parameters
+        ----------
+        show_plot : bool, optional
+            True or False. Default = True
+        xvals : array, list, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
+        kwargs
+            Plotting keywords that are passed directly to matplotlib
+            (e.g. color, linestyle)
 
-        Outputs:
-        yvals - this is the y-values of the plot
+        Returns
+        -------
+        yvals : array
+            The y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
+
+        Notes
+        -----
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters.
         """
         if (
             xmin is None
@@ -5617,18 +6371,32 @@ class Gumbel_Distribution:
         """
         Plots the SF (survival function)
 
-        Inputs:
-        show_plot - True/False. Default is True
-        xvals - x-values for plotting
-        xmin - minimum x-value for plotting
-        xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 200 elements
-        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
-        *plotting keywords are also accepted (eg. color, linestyle)
+        Parameters
+        ----------
+        show_plot : bool, optional
+            True or False. Default = True
+        xvals : array, list, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
+        kwargs
+            Plotting keywords that are passed directly to matplotlib
+            (e.g. color, linestyle)
 
-        Outputs:
-        yvals - this is the y-values of the plot
+        Returns
+        -------
+        yvals : array
+            The y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
+
+        Notes
+        -----
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters.
         """
         if (
             xmin is None
@@ -5692,18 +6460,32 @@ class Gumbel_Distribution:
         """
         Plots the HF (hazard function)
 
-        Inputs:
-        show_plot - True/False. Default is True
-        xvals - x-values for plotting
-        xmin - minimum x-value for plotting
-        xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 200 elements
-        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
-        *plotting keywords are also accepted (eg. color, linestyle)
+        Parameters
+        ----------
+        show_plot : bool, optional
+            True or False. Default = True
+        xvals : array, list, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
+        kwargs
+            Plotting keywords that are passed directly to matplotlib
+            (e.g. color, linestyle)
 
-        Outputs:
-        yvals - this is the y-values of the plot
+        Returns
+        -------
+        yvals : array
+            The y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
+
+        Notes
+        -----
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters.
         """
         if (
             xmin is None
@@ -5750,18 +6532,32 @@ class Gumbel_Distribution:
         """
         Plots the CHF (cumulative hazard function)
 
-        Inputs:
-        show_plot - True/False. Default is True
-        xvals - x-values for plotting
-        xmin - minimum x-value for plotting
-        xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and xmax are specified then an array with 200 elements
-        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
-        *plotting keywords are also accepted (eg. color, linestyle)
+        Parameters
+        ----------
+        show_plot : bool, optional
+            True or False. Default = True
+        xvals : array, list, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
+        kwargs
+            Plotting keywords that are passed directly to matplotlib
+            (e.g. color, linestyle)
 
-        Outputs:
-        yvals - this is the y-values of the plot
+        Returns
+        -------
+        yvals : array
+            The y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
+
+        Notes
+        -----
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters.
         """
         if (
             xmin is None
@@ -5827,8 +6623,16 @@ class Gumbel_Distribution:
         """
         Quantile calculator
 
-        :param q: quantile to be calculated
-        :return: the probability (area under the curve) that a random variable from the distribution is < q
+        Parameters
+        ----------
+        q : float
+            Quantile to be calculated. Must be between 0 and 1.
+
+        Returns
+        -------
+        x : float
+            The inverse of the CDF at q. This is the probability that a random
+            variable from the distribution is < q
         """
         if type(q) in [int, float, np.float64]:
             if q < 0 or q > 1:
@@ -5842,10 +6646,17 @@ class Gumbel_Distribution:
 
     def inverse_SF(self, q):
         """
-        Inverse Survival function calculator
+        Inverse survival function calculator
 
-        :param q: quantile to be calculated
-        :return: the inverse of the survival function at q
+        Parameters
+        ----------
+        q : float
+            Quantile to be calculated. Must be between 0 and 1.
+
+        Returns
+        -------
+        x : float
+            The inverse of the SF at q.
         """
         if type(q) in [int, float, np.float64]:
             if q < 0 or q > 1:
@@ -5861,8 +6672,15 @@ class Gumbel_Distribution:
         """
         Mean Residual Life calculator
 
-        :param t: time at which MRL is to be evaluated
-        :return: MRL
+        Parameters
+        ----------
+        t : int, float
+            Time (x-value) at which mean residual life is to be evaluated
+
+        Returns
+        -------
+        MRL : float
+            The mean residual life
         """
         R = lambda x: ss.gumbel_l.sf(x, loc=self.mu, scale=self.sigma)
         integral_R, error = integrate.quad(R, t, np.inf)
@@ -5871,8 +6689,18 @@ class Gumbel_Distribution:
 
     def stats(self):
         """
-        Descriptive statistics of the probability distribution. Same as the statistics shown using .plot() but printed to console.
-        No inputs or outputs.
+        Descriptive statistics of the probability distribution.
+        These are the same as the statistics shown using .plot() but printed to
+        the console.
+
+        Parameters
+        ----------
+        None
+
+        Return
+        ------
+        None
+
         """
         print(
             "Descriptive statistics for Gumbel distribution with mu =",
@@ -5892,12 +6720,23 @@ class Gumbel_Distribution:
 
     def random_samples(self, number_of_samples, seed=None):
         """
-        random_samples
         Draws random samples from the probability distribution
 
-        :param number_of_samples: the number of samples to be drawn
-        :param seed: the random seed. Default is None
-        :return: the random samples
+        Parameters
+        ----------
+        number_of_samples : int
+            The number of samples to be drawn. Must be greater than 0.
+        seed : int, optional
+            The random seed passed to numpy. Default = None
+
+        Returns
+        -------
+        samples : array
+            The random samples
+
+        Notes
+        -----
+        This is the same as rvs in scipy.stats
         """
         if type(number_of_samples) != int or number_of_samples < 1:
             raise ValueError("number_of_samples must be an integer greater than 1")
@@ -6054,10 +6893,10 @@ class Competing_Risks_Model:
 
     def __combiner(self, xvals=None, xmin=None, xmax=None):
         """
-        This is where the combination happens.
+        This is a hidden function used to combine the distributions numerically.
         It is necessary to do this outside of the __init__ method as it needs to be called by each function (PDF, CDF...) so that xvals is used consistently.
         This approach keeps the API the same as the other probability distributions.
-        This is a hidden function as the user should never need to access it directly.
+        Users should never need to access this function directly.
         """
         distributions = self.distributions
 
@@ -6126,18 +6965,30 @@ class Competing_Risks_Model:
 
     def plot(self, xvals=None, xmin=None, xmax=None):
         """
-        Plots all functions (PDF, CDF, SF, HF, CHF) and descriptive statistics in a single figure
+        Plots all functions (PDF, CDF, SF, HF, CHF) and descriptive statistics
+        in a single figure
 
-        Inputs:
-        xvals - x-values for plotting
-        xmin - minimum x-value for plotting
-        xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and/or xmax are specified then an array with 1000 elements
-        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
-        *no plotting keywords are accepted
+        Parameters
+        ----------
+        xvals : list, array, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
 
-        Outputs:
-        The plot will be shown. No need to use plt.show()
+        Returns
+        -------
+        None
+
+        Notes
+        -----
+        The plot will be shown. No need to use plt.show().
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters. No plotting keywords are
+        accepted.
         """
         Competing_Risks_Model.__combiner(self, xvals=xvals, xmin=xmin, xmax=xmax)
         plt.figure(figsize=(9, 7))
@@ -6259,22 +7110,38 @@ class Competing_Risks_Model:
         plot_components=False,
         **kwargs
     ):
+
         """
         Plots the PDF (probability density function)
 
-        Inputs:
-        plot_components - option to plot the components of the model. Default is False.
-        show_plot - True/False. Default is True
-        xvals - x-values for plotting
-        xmin - minimum x-value for plotting
-        xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and/or xmax are specified then an array with 1000 elements
-        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
-        *plotting keywords are also accepted (eg. color, linestyle)
+        Parameters
+        ----------
+        show_plot : bool, optional
+            True or False. Default = True
+        plot_components : bool
+            Option to plot the components of the model. True or False. Default = False.
+        xvals : array, list, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
+        kwargs
+            Plotting keywords that are passed directly to matplotlib
+            (e.g. color, linestyle)
 
-        Outputs:
-        yvals - this is the y-values of the plot
+        Returns
+        -------
+        yvals : array
+            The y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
+
+        Notes
+        -----
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters.
         """
         Competing_Risks_Model.__combiner(self, xvals=xvals, xmin=xmin, xmax=xmax)
 
@@ -6329,20 +7196,36 @@ class Competing_Risks_Model:
         """
         Plots the CDF (cumulative distribution function)
 
-        Inputs:
-        plot_components - option to plot the components of the model. Default is False.
-        show_plot - True/False. Default is True
-        xvals - x-values for plotting
-        xmin - minimum x-value for plotting
-        xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and/or xmax are specified then an array with 1000 elements
-        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
-        *plotting keywords are also accepted (eg. color, linestyle)
+        Parameters
+        ----------
+        show_plot : bool, optional
+            True or False. Default = True
+        plot_components : bool
+            Option to plot the components of the model. True or False. Default = False.
+        xvals : array, list, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
+        kwargs
+            Plotting keywords that are passed directly to matplotlib
+            (e.g. color, linestyle)
 
-        Outputs:
-        yvals - this is the y-values of the plot
+        Returns
+        -------
+        yvals : array
+            The y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
+
+        Notes
+        -----
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters.
         """
+
         Competing_Risks_Model.__combiner(self, xvals=xvals, xmin=xmin, xmax=xmax)
 
         if show_plot == False:
@@ -6396,19 +7279,34 @@ class Competing_Risks_Model:
         """
         Plots the SF (survival function)
 
-        Inputs:
-        plot_components - option to plot the components of the model. Default is False.
-        show_plot - True/False. Default is True
-        xvals - x-values for plotting
-        xmin - minimum x-value for plotting
-        xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and/or xmax are specified then an array with 1000 elements
-        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
-        *plotting keywords are also accepted (eg. color, linestyle)
+        Parameters
+        ----------
+        show_plot : bool, optional
+            True or False. Default = True
+        plot_components : bool
+            Option to plot the components of the model. True or False. Default = False.
+        xvals : array, list, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
+        kwargs
+            Plotting keywords that are passed directly to matplotlib
+            (e.g. color, linestyle)
 
-        Outputs:
-        yvals - this is the y-values of the plot
+        Returns
+        -------
+        yvals : array
+            The y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
+
+        Notes
+        -----
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters.
         """
         Competing_Risks_Model.__combiner(self, xvals=xvals, xmin=xmin, xmax=xmax)
 
@@ -6461,19 +7359,34 @@ class Competing_Risks_Model:
         """
         Plots the HF (hazard function)
 
-        Inputs:
-        plot_components - option to plot the components of the model. Default is False.
-        show_plot - True/False. Default is True
-        xvals - x-values for plotting
-        xmin - minimum x-value for plotting
-        xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and/or xmax are specified then an array with 1000 elements
-        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
-        *plotting keywords are also accepted (eg. color, linestyle)
+        Parameters
+        ----------
+        show_plot : bool, optional
+            True or False. Default = True
+        plot_components : bool
+            Option to plot the components of the model. True or False. Default = False.
+        xvals : array, list, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
+        kwargs
+            Plotting keywords that are passed directly to matplotlib
+            (e.g. color, linestyle)
 
-        Outputs:
-        yvals - this is the y-values of the plot
+        Returns
+        -------
+        yvals : array
+            The y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
+
+        Notes
+        -----
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters.
         """
         Competing_Risks_Model.__combiner(self, xvals=xvals, xmin=xmin, xmax=xmax)
 
@@ -6526,19 +7439,34 @@ class Competing_Risks_Model:
         """
         Plots the CHF (cumulative hazard function)
 
-        Inputs:
-        plot_components - option to plot the components of the model. Default is False.
-        show_plot - True/False. Default is True
-        xvals - x-values for plotting
-        xmin - minimum x-value for plotting
-        xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and/or xmax are specified then an array with 1000 elements
-        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
-        *plotting keywords are also accepted (eg. color, linestyle)
+        Parameters
+        ----------
+        show_plot : bool, optional
+            True or False. Default = True
+        plot_components : bool
+            Option to plot the components of the model. True or False. Default = False.
+        xvals : array, list, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
+        kwargs
+            Plotting keywords that are passed directly to matplotlib
+            (e.g. color, linestyle)
 
-        Outputs:
-        yvals - this is the y-values of the plot
+        Returns
+        -------
+        yvals : array
+            The y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
+
+        Notes
+        -----
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters.
         """
         Competing_Risks_Model.__combiner(self, xvals=xvals, xmin=xmin, xmax=xmax)
 
@@ -6580,10 +7508,19 @@ class Competing_Risks_Model:
             return self.__chf
 
     def quantile(self, q):
-        """Quantile calculator
+        """
+        Quantile calculator
 
-        :param q: quantile to be calculated
-        :return: the probability (area under the curve) that a random variable from the distribution is < q
+        Parameters
+        ----------
+        q : float
+            Quantile to be calculated. Must be between 0 and 1.
+
+        Returns
+        -------
+        x : float
+            The inverse of the CDF at q. This is the probability that a random
+            variable from the distribution is < q
         """
         if type(q) in [int, float, np.float64]:
             if q < 0 or q > 1:
@@ -6596,10 +7533,18 @@ class Competing_Risks_Model:
         return self.__xvals_init[np.argmin(abs((1 - self.__sf_init) - q))]
 
     def inverse_SF(self, q):
-        """Inverse survival function calculator
+        """
+        Inverse survival function calculator
 
-        :param q: quantile to be calculated
-        :return: :return: the inverse of the survival function at q
+        Parameters
+        ----------
+        q : float
+            Quantile to be calculated. Must be between 0 and 1.
+
+        Returns
+        -------
+        x : float
+            The inverse of the SF at q.
         """
         if type(q) in [int, float, np.float64]:
             if q < 0 or q > 1:
@@ -6613,8 +7558,18 @@ class Competing_Risks_Model:
 
     def stats(self):
         """
-        Descriptive statistics of the probability distribution. Same as the statistics shown using .plot() but printed to console.
-        No inputs or outputs.
+        Descriptive statistics of the probability distribution.
+        These are the same as the statistics shown using .plot() but printed to
+        the console.
+
+        Parameters
+        ----------
+        None
+
+        Return
+        ------
+        None
+
         """
         print("Descriptive statistics for Competing Risks Model")
         print("Mean = ", self.mean)
@@ -6631,8 +7586,15 @@ class Competing_Risks_Model:
         """
         Mean Residual Life calculator
 
-        :param t: time at which MRL is to be evaluated
-        :return: MRL
+        Parameters
+        ----------
+        t : int, float
+            Time (x-value) at which mean residual life is to be evaluated
+
+        Returns
+        -------
+        MRL : float
+            The mean residual life
         """
 
         def __subcombiner(
@@ -6676,12 +7638,23 @@ class Competing_Risks_Model:
 
     def random_samples(self, number_of_samples, seed=None):
         """
-        random_samples
         Draws random samples from the probability distribution
 
-        :param number_of_samples: the number of samples to be drawn
-        :param seed: the random seed. Default is None
-        :return: the random samples
+        Parameters
+        ----------
+        number_of_samples : int
+            The number of samples to be drawn. Must be greater than 0.
+        seed : int, optional
+            The random seed passed to numpy. Default = None
+
+        Returns
+        -------
+        samples : array
+            The random samples
+
+        Notes
+        -----
+        This is the same as rvs in scipy.stats
         """
         if type(number_of_samples) != int or number_of_samples < 1:
             raise ValueError("number_of_samples must be an integer greater than 1")
@@ -6854,10 +7827,10 @@ class Mixture_Model:
 
     def __combiner(self, xvals=None, xmin=None, xmax=None):
         """
-        This is where the combination happens.
+        This is a hidden function used to combine the distributions numerically.
         It is necessary to do this outside of the __init__ method as it needs to be called by each function (PDF, CDF...) so that xvals is used consistently.
         This approach keeps the API the same as the other probability distributions.
-        This is a hidden function as the user should never need to access it directly.
+        Users should never need to access this function directly.
         """
         distributions = self.distributions
         proportions = self.proportions
@@ -6932,18 +7905,30 @@ class Mixture_Model:
 
     def plot(self, xvals=None, xmin=None, xmax=None):
         """
-        Plots all functions (PDF, CDF, SF, HF, CHF) and descriptive statistics in a single figure
+        Plots all functions (PDF, CDF, SF, HF, CHF) and descriptive statistics
+        in a single figure
 
-        Inputs:
-        xvals - x-values for plotting
-        xmin - minimum x-value for plotting
-        xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and/or xmax are specified then an array with 1000 elements
-        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
-        *no plotting keywords are accepted
+        Parameters
+        ----------
+        xvals : list, array, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
 
-        Outputs:
-        The plot will be shown. No need to use plt.show()
+        Returns
+        -------
+        None
+
+        Notes
+        -----
+        The plot will be shown. No need to use plt.show().
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters. No plotting keywords are
+        accepted.
         """
 
         Mixture_Model.__combiner(self, xvals=xvals, xmin=xmin, xmax=xmax)
@@ -7070,19 +8055,34 @@ class Mixture_Model:
         """
         Plots the PDF (probability density function)
 
-        Inputs:
-        plot_components - option to plot the components of the model. Default is False.
-        show_plot - True/False. Default is True
-        xvals - x-values for plotting
-        xmin - minimum x-value for plotting
-        xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and/or xmax are specified then an array with 1000 elements
-        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
-        *plotting keywords are also accepted (eg. color, linestyle)
+        Parameters
+        ----------
+        show_plot : bool, optional
+            True or False. Default = True
+        plot_components : bool
+            Option to plot the components of the model. True or False. Default = False.
+        xvals : array, list, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
+        kwargs
+            Plotting keywords that are passed directly to matplotlib
+            (e.g. color, linestyle)
 
-        Outputs:
-        yvals - this is the y-values of the plot
+        Returns
+        -------
+        yvals : array
+            The y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
+
+        Notes
+        -----
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters.
         """
         Mixture_Model.__combiner(self, xvals=xvals, xmin=xmin, xmax=xmax)
 
@@ -7136,19 +8136,34 @@ class Mixture_Model:
         """
         Plots the CDF (cumulative distribution function)
 
-        Inputs:
-        plot_components - option to plot the components of the model. Default is False.
-        show_plot - True/False. Default is True
-        xvals - x-values for plotting
-        xmin - minimum x-value for plotting
-        xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and/or xmax are specified then an array with 1000 elements
-        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
-        *plotting keywords are also accepted (eg. color, linestyle)
+        Parameters
+        ----------
+        show_plot : bool, optional
+            True or False. Default = True
+        plot_components : bool
+            Option to plot the components of the model. True or False. Default = False.
+        xvals : array, list, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
+        kwargs
+            Plotting keywords that are passed directly to matplotlib
+            (e.g. color, linestyle)
 
-        Outputs:
-        yvals - this is the y-values of the plot
+        Returns
+        -------
+        yvals : array
+            The y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
+
+        Notes
+        -----
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters.
         """
         Mixture_Model.__combiner(self, xvals=xvals, xmin=xmin, xmax=xmax)
 
@@ -7201,19 +8216,34 @@ class Mixture_Model:
         """
         Plots the SF (survival function)
 
-        Inputs:
-        plot_components - option to plot the components of the model. Default is False.
-        show_plot - True/False. Default is True
-        xvals - x-values for plotting
-        xmin - minimum x-value for plotting
-        xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and/or xmax are specified then an array with 1000 elements
-        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
-        *plotting keywords are also accepted (eg. color, linestyle)
+        Parameters
+        ----------
+        show_plot : bool, optional
+            True or False. Default = True
+        plot_components : bool
+            Option to plot the components of the model. True or False. Default = False.
+        xvals : array, list, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
+        kwargs
+            Plotting keywords that are passed directly to matplotlib
+            (e.g. color, linestyle)
 
-        Outputs:
-        yvals - this is the y-values of the plot
+        Returns
+        -------
+        yvals : array
+            The y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
+
+        Notes
+        -----
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters.
         """
         Mixture_Model.__combiner(self, xvals=xvals, xmin=xmin, xmax=xmax)
 
@@ -7266,19 +8296,34 @@ class Mixture_Model:
         """
         Plots the HF (hazard function)
 
-        Inputs:
-        plot_components - option to plot the components of the model. Default is False.
-        show_plot - True/False. Default is True
-        xvals - x-values for plotting
-        xmin - minimum x-value for plotting
-        xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and/or xmax are specified then an array with 1000 elements
-        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
-        *plotting keywords are also accepted (eg. color, linestyle)
+        Parameters
+        ----------
+        show_plot : bool, optional
+            True or False. Default = True
+        plot_components : bool
+            Option to plot the components of the model. True or False. Default = False.
+        xvals : array, list, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
+        kwargs
+            Plotting keywords that are passed directly to matplotlib
+            (e.g. color, linestyle)
 
-        Outputs:
-        yvals - this is the y-values of the plot
+        Returns
+        -------
+        yvals : array
+            The y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
+
+        Notes
+        -----
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters.
         """
         Mixture_Model.__combiner(self, xvals=xvals, xmin=xmin, xmax=xmax)
 
@@ -7331,19 +8376,34 @@ class Mixture_Model:
         """
         Plots the CHF (cumulative hazard function)
 
-        Inputs:
-        plot_components - option to plot the components of the model. Default is False.
-        show_plot - True/False. Default is True
-        xvals - x-values for plotting
-        xmin - minimum x-value for plotting
-        xmax - maximum x-value for plotting
-        *If xvals is specified, it will be used. If xvals is not specified but xmin and/or xmax are specified then an array with 1000 elements
-        will be created using these ranges. If nothing is specified then the range will be based on the distribution's parameters.
-        *plotting keywords are also accepted (eg. color, linestyle)
+        Parameters
+        ----------
+        show_plot : bool, optional
+            True or False. Default = True
+        plot_components : bool
+            Option to plot the components of the model. True or False. Default = False.
+        xvals : array, list, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
+        kwargs
+            Plotting keywords that are passed directly to matplotlib
+            (e.g. color, linestyle)
 
-        Outputs:
-        yvals - this is the y-values of the plot
+        Returns
+        -------
+        yvals : array
+            The y-values of the plot
         The plot will be shown if show_plot is True (which it is by default).
+
+        Notes
+        -----
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters.
         """
         Mixture_Model.__combiner(self, xvals=xvals, xmin=xmin, xmax=xmax)
 
@@ -7386,10 +8446,19 @@ class Mixture_Model:
             return self.__chf
 
     def quantile(self, q):
-        """Quantile calculator
+        """
+        Quantile calculator
 
-        :param q: quantile to be calculated
-        :return: the probability (area under the curve) that a random variable from the distribution is < q
+        Parameters
+        ----------
+        q : float
+            Quantile to be calculated. Must be between 0 and 1.
+
+        Returns
+        -------
+        x : float
+            The inverse of the CDF at q. This is the probability that a random
+            variable from the distribution is < q
         """
         if type(q) in [int, float, np.float64]:
             if q < 0 or q > 1:
@@ -7402,10 +8471,18 @@ class Mixture_Model:
         return self.__xvals_init[np.argmin(abs(self.__cdf_init - q))]
 
     def inverse_SF(self, q):
-        """Inverse survival function calculator
+        """
+        Inverse survival function calculator
 
-        :param q: quantile to be calculated
-        :return: :return: the inverse of the survival function at q
+        Parameters
+        ----------
+        q : float
+            Quantile to be calculated. Must be between 0 and 1.
+
+        Returns
+        -------
+        x : float
+            The inverse of the SF at q.
         """
         if type(q) in [int, float, np.float64]:
             if q < 0 or q > 1:
@@ -7419,8 +8496,18 @@ class Mixture_Model:
 
     def stats(self):
         """
-        Descriptive statistics of the probability distribution. Same as the statistics shown using .plot() but printed to console.
-        No inputs or outputs.
+        Descriptive statistics of the probability distribution.
+        These are the same as the statistics shown using .plot() but printed to
+        the console.
+
+        Parameters
+        ----------
+        None
+
+        Return
+        ------
+        None
+
         """
         print("Descriptive statistics for Mixture Model")
         print("Mean = ", self.mean)
@@ -7437,8 +8524,15 @@ class Mixture_Model:
         """
         Mean Residual Life calculator
 
-        :param t: time at which MRL is to be evaluated
-        :return: MRL
+        Parameters
+        ----------
+        t : int, float
+            Time (x-value) at which mean residual life is to be evaluated
+
+        Returns
+        -------
+        MRL : float
+            The mean residual life
         """
 
         def __subcombiner(
@@ -7492,12 +8586,23 @@ class Mixture_Model:
 
     def random_samples(self, number_of_samples, seed=None):
         """
-        random_samples
         Draws random samples from the probability distribution
 
-        :param number_of_samples: the number of samples to be drawn
-        :param seed: the random seed. Default is None
-        :return: the random samples
+        Parameters
+        ----------
+        number_of_samples : int
+            The number of samples to be drawn. Must be greater than 0.
+        seed : int, optional
+            The random seed passed to numpy. Default = None
+
+        Returns
+        -------
+        samples : array
+            The random samples
+
+        Notes
+        -----
+        This is the same as rvs in scipy.stats
         """
         if type(number_of_samples) != int or number_of_samples < 1:
             raise ValueError("number_of_samples must be an integer greater than 1")
