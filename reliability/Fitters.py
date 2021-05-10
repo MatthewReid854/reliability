@@ -96,7 +96,7 @@ class Fit_Everything:
         'Log-likelihood'. Default is BIC.
     show_probability_plot : bool, optional
         Provides a probability plot of each of the fitted distributions. True or
-         False. Default = True
+        False. Default = True
     show_histogram_plot : bool, optional
         True or False. Default = True. Will show a histogram (scaled to account
         for censored data) with the PDF and CDF of each fitted distribution.
@@ -160,10 +160,14 @@ class Fit_Everything:
     distributions will automatically be excluded.
 
     Example Usage:
+
     X = [5,3,8,6,7,4,5,4,2]
+
     output = Fit_Everything(X)
+
     To extract the parameters of the Weibull distribution from the results
     dataframe, you may access the parameters by name:
+
     print('Weibull Alpha =',output.Weibull_2P_alpha)
     """
 
@@ -1924,23 +1928,42 @@ class Fit_Weibull_2P_grouped:
     all values even if the quantity is 1.
 
     Example of the input dataframe:
-    category  time  quantity
-           F    24         1
-           F    29         1
-           F    34         1
-           F    39         2
-           F    40         1
-           F    42         3
-           F    44         1
-           C    50         3
-           C    55         5
-           C    60        10
 
-    This is easiest to achieve by importing data from excel. An example of this is:
+    +------------+------------+-----------+
+    | category   | time       | quantity  |
+    +============+============+===========+
+    | F          | 24         | 1         |
+    +------------+------------+-----------+
+    | F          | 29         | 1         |
+    +------------+------------+-----------+
+    | F          | 34         | 1         |
+    +------------+------------+-----------+
+    | F          | 39         | 2         |
+    +------------+------------+-----------+
+    | F          | 40         | 1         |
+    +------------+------------+-----------+
+    | F          | 42         | 3         |
+    +------------+------------+-----------+
+    | F          | 44         | 1         |
+    +------------+------------+-----------+
+    | C          | 50         | 3         |
+    +------------+------------+-----------+
+    | C          | 55         | 5         |
+    +------------+------------+-----------+
+    | C          | 60         | 10        |
+    +------------+------------+-----------+
+
+    This is easiest to achieve by importing data from excel. An example of this
+    is:
+
     import pandas as pd
+
     from reliability.Fitters import Fit_Weibull_2P_grouped
+
     filename = 'C:\\Users\\Current User\\Desktop\\data.xlsx'
+
     df = pd.read_excel(io=filename)
+
     Fit_Weibull_2P_grouped(dataframe=df)
     """
 

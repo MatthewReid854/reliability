@@ -6750,10 +6750,10 @@ class Competing_Risks_Model:
     (expressed as probability distributions) that act on a system over time.
     The model is obtained using the product of the survival functions:
 
-    .. math::  SF_total = SF_1 \times SF_2 \times SF_3 \times \dotsc \times SF_n
+    .. math::  {SF}_{total} = {SF}_{1} \times {SF}_{2} \times {SF}_{3} \times \dotsc \times {SF}_{n}
 
     The output API is similar to the other probability distributions (Weibull,
-    Normal, etc.) as shown below:
+    Normal, etc.) as shown below.
 
     Parameters
     ----------
@@ -6765,7 +6765,7 @@ class Competing_Risks_Model:
     -------
     name : str
         'Competing risks'
-    name2 : 'str
+    name2 : str
         'Competing risks using 3 distributions'. The exact name depends on the
         number of distributions used
     mean : float
@@ -7687,10 +7687,10 @@ class Mixture_Model:
     proportion (where the proportions sum to 1). The model is obtained using the
     sum of the cumulative distribution functions:
 
-    .. math:: CDF_total = \left(CDF_1 \times p_1\right) + \left(CDF_2 \times p_2\right) + \left(CDF_3 \times p_3\right) + \dotsc + \left(CDF_n \times p_n\right)
+    .. math:: {CDF}_{total} = \left({CDF}_{1} \times {p}_{1}\right) + \left({CDF}_{2} \times {p}_{2}\right) + \left({CDF}_{3} \times {p}_{3}\right) + \dotsc + \left({CDF}_{n} \times {p}_{n}\right)
 
     The output API is similar to the other probability distributions (Weibull,
-    Normal, etc.) as shown below:
+    Normal, etc.) as shown below.
 
     Parameters
     ----------
@@ -7705,7 +7705,7 @@ class Mixture_Model:
     -------
     name : str
         'Mixture'
-    name2 : 'str
+    name2 : str
         'Mixture using 3 distributions'. The exact name depends on the number of
         distributions used.
     mean : float
