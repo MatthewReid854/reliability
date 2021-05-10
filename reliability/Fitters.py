@@ -80,51 +80,91 @@ pd.options.display.width = 200  # prevents wrapping after default 80 characters
 
 class Fit_Everything:
     """
-    Fit_Everything
-    This function will fit all available distributions (excluding mixture and competing risks) for the data you enter, which may include right censored data.
+    This function will fit all available distributions (excluding mixture and
+    competing risks) to the data provided.
 
-    Inputs:
-    failures - an array or list of the failure times (this does not need to be sorted).
-    right_censored - an array or list of the right failure times (this does not need to be sorted).
-    sort_by - goodness of fit test to sort results by. Must be 'BIC','AICc','AD', or 'Log-likelihood'. Default is BIC.
-    method - 'LS' (least squares) or 'MLE' (maximum likelihood estimation). Default is 'MLE'.
-    optimizer - 'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
-    print_results - True/False. Defaults to True. Will show the results of the fitted parameters and the goodness of fit
-        tests in a dataframe.
-    show_histogram_plot - True/False. Defaults to True. Will show a histogram (scaled to account for censored data) with
-        the PDF and CDF of each fitted distribution
-    show_PP_plot - True/False. Defaults to True.
-        Provides a comparison of parametric vs non-parametric fit using Probability-Probability (PP) plot.
-    show_probability_plot - True/False. Defaults to True. Provides a probability plot of each of the fitted distributions.
-    show_best_distribution_probability_plot - True/False. Defaults to True. Provides a probability plot in a new figure of the best fitting distribution.
-    exclude - list or array of strings specifying which distributions to exclude. Default is None. Options are Weibull_2P, Weibull_3P, Normal_2P,
-        Gamma_2P, Loglogistic_2P, Gamma_3P, Lognormal_2P, Lognormal_3P, Loglogistic_3P, Gumbel_2P, Exponential_2P, Exponential_1P, Beta_2P
+    Parameters
+    ----------
+    failures : array, list
+        The failure data. Must have at least 2 elements for all the 2 parameter
+        distributions to be fitted and 3 elements for all distributions to be
+        fitted.
+    right_censored : array, list, optional
+        The right censored data. Optional input. Default = None.
+    sort_by : str
+        Goodness of fit test to sort results by. Must be 'BIC','AICc','AD', or
+        'Log-likelihood'. Default is BIC.
+    show_probability_plot : bool, optional
+        Provides a probability plot of each of the fitted distributions. True or
+         False. Default = True
+    show_histogram_plot : bool, optional
+        True or False. Default = True. Will show a histogram (scaled to account
+        for censored data) with the PDF and CDF of each fitted distribution.
+    show_PP_plot : bool, optional
+        Provides a comparison of parametric vs non-parametric fit using
+        Probability-Probability (PP) plot. True or False. Default = True.
+    show_best_distribution_probability_plot : bool, optional
+        Provides a probability plot in a new figure of the best fitting
+        distribution. True or False. Default = True.
+    exclude : list, array, optional
+        List or array of strings specifying which distributions to exclude.
+        Default is None. Options are Weibull_2P, Weibull_3P, Normal_2P,
+        Gamma_2P, Loglogistic_2P, Gamma_3P, Lognormal_2P, Lognormal_3P,
+        Loglogistic_3P, Gumbel_2P, Exponential_2P, Exponential_1P, Beta_2P.
+    print_results : bool, optional
+        Will show the results of the fitted parameters and the goodness of fit
+        tests in a dataframe. True/False. Defaults to True.
+    method : str, optional
+        The method used to fit the distribution. Must be either 'MLE' (maximum
+        likelihood estimation), 'LS' (least squares estimation), 'RRX' (Rank
+        regression on X), or 'RRY' (Rank regression on Y). LS will perform both
+        RRX and RRY and return the better one. Default is 'MLE'.
+    optimizer : str, optional
+        The optimisation algorithm used to find the solution. Must be either
+        'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods.
+        If the bounded method fails, 'nelder-mead' will be used. If
+        'nelder-mead' fails then the initial guess will be returned with a
+        warning. For more information on these optimizers see
+        https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
+        Default is 'L-BFGS-B' if the data is <= 97% right censored or 'TNC' if
+        the data is > 97% right censored.
 
-    Outputs:
-    results - the dataframe of results. Fitted parameters in this dataframe may be accessed by name. See below example.
-        In displaying these results, the pandas dataframe is designed to use the common greek letter parametrisations
-        rather than the scale, shape, location , threshold parametrisations which can become confusing for some
-        distributions.
-    best_distribution - a distribution object created based on the parameters of the best fitting distribution
-    best_distribution_name - the name of the best fitting distribution. E.g. 'Weibull_3P'
-    parameters and goodness of fit results for each fitted distribution. For example, the Weibull_3P distribution values are:
-        Weibull_3P_alpha
-        Weibull_3P_beta
-        Weibull_3P_gamma
-        Weibull_3P_BIC
-        Weibull_3P_AICc
-        Weibull_3P_AD
+    Returns
+    -------
+    results : dataframe
+        a pandas dataframe of results. Fitted parameters in this dataframe may
+        be accessed by name. See below example in Notes.
+    best_distribution : object
+        a reliability.Distributions object created based on the parameters of
+        the best fitting distribution.
+    best_distribution_name : str
+        the name of the best fitting distribution. E.g. 'Weibull_3P'
+    parameters and goodness of fit results : float
+        This is provided for each fitted distribution. For example, the
+        Weibull_3P distribution values are Weibull_3P_alpha, Weibull_3P_beta,
+        Weibull_3P_gamma, Weibull_3P_BIC, Weibull_3P_AICc, Weibull_3P_AD,
         Weibull_3P_loglik
-    All parametric models have the number of parameters in the name. For example, Weibull_2P used alpha and beta, whereas Weibull_3P
-    uses alpha, beta, and gamma. This is applied even for Normal_2P for consistency in naming conventions.
-    From the results, the distributions are sorted based on their goodness of fit test results, where the smaller the goodness of fit
+    excluded_distributions : list
+        a list of strings of the excluded distributions.
+
+    Notes
+    -----
+    All parametric models have the number of parameters in the name. For
+    example, Weibull_2P uses alpha and beta, whereas Weibull_3P uses alpha,
+    beta, and gamma. This is applied even for Normal_2P for consistency in
+    naming conventions. From the results, the distributions are sorted based on
+    their goodness of fit test results, where the smaller the goodness of fit
     value, the better the fit of the distribution to the data.
 
+    If the data provided contains only 2 failures, the three parameter
+    distributions will automatically be excluded.
+
     Example Usage:
-    X = [0.95892,1.43249,1.04221,0.67583,3.28411,1.03072,0.05826,1.81387,2.06383,0.59762,5.99005,1.92145,1.35179,0.50391]
+    X = [5,3,8,6,7,4,5,4,2]
     output = Fit_Everything(X)
-    To extract the parameters of the Weibull distribution from the results dataframe, you may access the parameters by name:
-    print('Weibull Alpha =',output.Weibull_2P_alpha,'\nWeibull Beta =',output.Weibull_2P_beta)
+    To extract the parameters of the Weibull distribution from the results
+    dataframe, you may access the parameters by name:
+    print('Weibull Alpha =',output.Weibull_2P_alpha)
     """
 
     def __init__(
@@ -866,19 +906,19 @@ class Fit_Everything:
 
         if show_histogram_plot is True:
             # plotting occurs by default
-            Fit_Everything.histogram_plot(self)
+            Fit_Everything.__histogram_plot(self)
 
         if show_PP_plot is True:
             # plotting occurs by default
-            Fit_Everything.P_P_plot(self)
+            Fit_Everything.__P_P_plot(self)
 
         if show_probability_plot is True:
             # plotting occurs by default
-            Fit_Everything.probability_plot(self)
+            Fit_Everything.__probability_plot(self)
 
         if show_best_distribution_probability_plot is True:
             # plotting occurs by default
-            Fit_Everything.probability_plot(self, best_only=True)
+            Fit_Everything.__probability_plot(self, best_only=True)
 
         if (
             show_histogram_plot is True
@@ -888,7 +928,10 @@ class Fit_Everything:
         ):
             plt.show()
 
-    def probplot_layout(self):
+    def __probplot_layout(self):
+        '''
+        Internal function to provide layout formatting of the plots.
+        '''
         items = len(self.results.index.values)  # number of items that were fitted
         if items == 13:  # ------------------------ w   , h    w , h
             cols, rows, figsize, figsizePP = 5, 3, (17.5, 8), (10, 7.5)
@@ -908,7 +951,10 @@ class Fit_Everything:
             cols, rows, figsize, figsizePP = 1, 1, (7.5, 4), (6, 4)
         return cols, rows, figsize, figsizePP
 
-    def histogram_plot(self):
+    def __histogram_plot(self):
+        '''
+        Generates a histogram plot of PDF and CDF of teh fitted distributions.
+        '''
         X = self.failures
         # define plotting limits
         delta = max(X) - min(X)
@@ -1094,9 +1140,12 @@ class Fit_Everything:
         plt.suptitle("Histogram plot of each fitted distribution")
         plt.subplots_adjust(left=0.07, bottom=0.10, right=0.97, top=0.88, wspace=0.15)
 
-    def P_P_plot(self):  # probability-probability plot of parametric vs non-parametric
+    def __P_P_plot(self):
+        '''
+        Generates a subplot of Probability-Probability plots to compare the
+        parametric vs non-parametric plots of the fitted distributions.
+        '''
         # Kaplan-Meier estimate of quantiles. Used in P-P plot.
-
         nonparametric = KaplanMeier(
             failures=self.failures,
             right_censored=self.right_censored,
@@ -1105,7 +1154,7 @@ class Fit_Everything:
         )
         nonparametric_CDF = 1 - np.array(nonparametric.KM)  # change SF into CDF
 
-        cols, rows, _, figsizePP = Fit_Everything.probplot_layout(self)
+        cols, rows, _, figsizePP = Fit_Everything.__probplot_layout(self)
         plotting_order = self.results[
             "Distribution"
         ].values  # this is the order to plot things which matches the results dataframe
@@ -1258,7 +1307,10 @@ class Fit_Everything:
             subplot_counter += 1
         plt.tight_layout()
 
-    def probability_plot(self, best_only=False):
+    def __probability_plot(self, best_only=False):
+        '''
+        Generates a subplot of all the probability plots
+        '''
         from reliability.Probability_plotting import (
             Weibull_probability_plot,
             Normal_probability_plot,
@@ -1273,7 +1325,7 @@ class Fit_Everything:
 
         plt.figure()
         if best_only is False:
-            cols, rows, figsize, _ = Fit_Everything.probplot_layout(self)
+            cols, rows, figsize, _ = Fit_Everything.__probplot_layout(self)
             # this is the order to plot to match the results dataframe
             plotting_order = self.results["Distribution"].values
             plt.suptitle("Probability plots of each fitted distribution\n\n")
@@ -1759,50 +1811,117 @@ class Fit_Weibull_2P:
 
 class Fit_Weibull_2P_grouped:
     """
-    Fit_Weibull_2P_grouped
+    Fits a two parameter Weibull distribution (alpha,beta) to the data provided.
+    This function is similar to Fit_Weibull_2P however it accepts a dataframe
+    which allows for efficient handling of grouped (repeated) data.
 
-    Fits a 2-parameter Weibull distribution (alpha,beta) to the data provided.
-    The data input is a dataframe which allows for efficient handling of large volumes of grouped data.
-    This is almost identical to Fit_Weibull_2P except for the input format.
-    There may be small differences in results due to the initial guess (scipy or least squares), the optimizer (L-BFGS-B or TNC), and rounding errors when processing very heavily censored data.
+    Parameters
+    ----------
+    dataframe : dataframe
+        a pandas dataframe of the appropriate format. See the example in Notes.
+    show_probability_plot : bool, optional
+        True or False. Default = True
+    print_results : bool, optional
+        Prints a dataframe of the point estimate, standard error, Lower CI and
+        Upper CI for each parameter. True or False. Default = True
+    method : str, optional
+        The method used to fit the distribution. Must be either 'MLE' (maximum
+        likelihood estimation), 'LS' (least squares estimation), 'RRX' (Rank
+        regression on X), or 'RRY' (Rank regression on Y). LS will perform both
+        RRX and RRY and return the better one. Default is 'MLE'.
+    optimizer : str, optional
+        The optimisation algorithm used to find the solution. Must be either
+        'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods.
+        If the bounded method fails, 'nelder-mead' will be used. If
+        'nelder-mead' fails then the initial guess will be returned with a
+        warning. For more information on these optimizers see
+        https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
+        Default is 'L-BFGS-B' if the data is <= 97% right censored or 'TNC' if
+        the data is > 97% right censored.
+    CI : float, optional
+        confidence interval for estimating confidence limits on parameters. Must
+        be between 0 and 1. Default is 0.95 for 95% CI.
+    CI_type : str, None, optional
+        This is the confidence bounds on time or reliability shown on the plot.
+        Use None to turn off the confidence intervals. Must be either 'time',
+        'reliability', or None. Default is 'time'. Some flexibility in names is
+        allowed (eg. 't', 'time', 'r', 'rel', 'reliability' are all valid).
+    force_beta : float, int, optional
+        Used to specify the beta value if you need to force beta to be a certain
+        value. Used in ALT probability plotting. Optional input. If specified it
+        must be > 0.
+    percentiles : bool, str, list, array, None, optional
+        percentiles (y-values) to produce a table of percentiles failed with
+        lower, point, and upper estimates. Default is None which results in no
+        output. To use default array [1, 5, 10,..., 95, 99] set percentiles as
+        either 'auto', True, 'default', 'on'.
+        If an array or list is specified then it will be used instead of the
+        default array. Any array or list specified must contain values between
+        0 and 100.
+    kwargs
+        Plotting keywords that are passed directly to matplotlib for the
+        probability plot (e.g. color, label, linestyle)
 
-    Inputs:
-    dataframe - a pandas dataframe of the appropriate format. See the example below.
-    show_probability_plot - True/False. Defaults to True.
-    print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
-    CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    force_beta - Use this to specify the beta value if you need to force beta to be a certain value. Used in ALT probability plotting. Optional input.
-    method - 'MLE' (maximum likelihood estimation), 'LS' (least squares estimation), 'RRX' (Rank regression on X), 'RRY' (Rank regression on Y). LS will perform both RRX and RRY and return the better one. Default is 'MLE'.
-    optimizer - 'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
-    CI_type - time, reliability, None. Default is time. This is the confidence bounds on time or on reliability. Use None to turn off the confidence intervals.
-    percentiles - percentiles to produce a table of percentiles failed with lower, point, and upper estimates. Default is None which results in no output. True or 'auto' will use default array [1, 5, 10,..., 95, 99]. If an array or list is specified then it will be used instead of the default array.
-    kwargs are accepted for the probability plot (eg. linestyle, label, color)
+    Returns
+    -------
+    alpha : float
+        the fitted Weibull_2P alpha parameter
+    beta : float
+        the fitted Weibull_2P beta parameter
+    loglik : float
+        Log Likelihood (as used in Minitab and Reliasoft)
+    loglik2 : float
+        LogLikelihood*-2 (as used in JMP Pro)
+    AICc : float
+        Akaike Information Criterion
+    BIC : float
+        Bayesian Information Criterion
+    AD : float
+        the Anderson Darling (corrected) statistic (as reported by Minitab)
+    distribution : object
+        a Weibull_Distribution object with the parameters of the fitted
+        distribution
+    alpha_SE : float
+        the standard error (sqrt(variance)) of the parameter
+    beta_SE :float
+        the standard error (sqrt(variance)) of the parameter
+    Cov_alpha_beta : float
+        the covariance between the parameters
+    alpha_upper : float
+        the upper CI estimate of the parameter
+    alpha_lower : float
+        the lower CI estimate of the parameter
+    beta_upper : float
+        the upper CI estimate of the parameter
+    beta_lower : float
+        the lower CI estimate of the parameter
+    results : dataframe
+        a pandas dataframe of the results (point estimate, standard error,
+        lower CI and upper CI for each parameter)
+    goodness_of_fit : dataframe
+        a pandas dataframe of the goodness of fit values (Log-likelihood, AICc,
+        BIC, AD).
+    percentiles : dataframe
+        a pandas dataframe of the percentiles with bounds on time. This is only
+        produced if percentiles is not None. Since percentiles defaults to None,
+        this output is not normally produced.
+    probability_plot : object
+        the axes handle for the probability plot. This is only returned if
+        show_probability_plot = True
 
-    Outputs:
-    alpha - the fitted Weibull_2P alpha parameter
-    beta - the fitted Weibull_2P beta parameter
-    loglik - Log Likelihood (as used in Minitab and Reliasoft)
-    loglik2 - LogLikelihood*-2 (as used in JMP Pro)
-    AICc - Akaike Information Criterion
-    BIC - Bayesian Information Criterion
-    AD - the Anderson Darling (corrected) statistic (as reported by Minitab)
-    distribution - a Weibull_Distribution object with the parameters of the fitted distribution
-    alpha_SE - the standard error (sqrt(variance)) of the parameter
-    beta_SE - the standard error (sqrt(variance)) of the parameter
-    Cov_alpha_beta - the covariance between the parameters
-    alpha_upper - the upper CI estimate of the parameter
-    alpha_lower - the lower CI estimate of the parameter
-    beta_upper - the upper CI estimate of the parameter
-    beta_lower - the lower CI estimate of the parameter
-    results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
-    percentiles - a dataframe of the percentiles with bounds on time. This is only produced if percentiles is 'auto' or a list or array. Since percentiles defaults to None, this output is not normally produced.
-    probability_plot - the axes handle for the probability plot (only returned if show_probability_plot = True)
+    Notes
+    -----
+    If the fitting process encounters a problem a warning will be printed. This
+    may be caused by the chosen distribution being a very poor fit to the data
+    or the data being heavily censored. If a warning is printed, consider trying
+    a different optimiser.
 
     Requirements of the input dataframe:
     The column titles MUST be 'category', 'time', 'quantity'
-    The category values MUST be 'F' for failure or 'C' for censored (right censored).
-    The time values are the failure or right censored times.
-    The quantity is the number of items at that time. This must be specified for all values even if the quantity is 1.
+    The category values MUST be 'F' for failure or 'C' for censored (right
+    censored). The time values are the failure or right censored times.
+    The quantity is the number of items at that time. This must be specified for
+    all values even if the quantity is 1.
 
     Example of the input dataframe:
     category  time  quantity
@@ -2336,46 +2455,118 @@ class Fit_Weibull_2P_grouped:
 
 class Fit_Weibull_3P:
     """
-    Fit_Weibull_3P
-    Fits a 3-parameter Weibull distribution (alpha,beta,gamma) to the data provided.
-    You may also enter right censored data.
+    Fits a three parameter Weibull distribution (alpha,beta,gamma) to the data
+    provided.
 
-    Inputs:
-    failures - an array or list of failure data
-    right_censored - an array or list of right censored data
-    show_probability_plot - True/False. Defaults to True.
-    print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
-    CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    CI_type - 'time' or 'reliability'. Default is time. Used for the probability plot and the distribution object in the output.
-    method - 'MLE' (maximum likelihood estimation), or 'LS' (least squares estimation). LS will perform non-linear least squares estimation. Default is 'MLE'.
-    optimizer - 'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
-    percentiles - percentiles to produce a table of percentiles failed with lower, point, and upper estimates. Default is None which results in no output. True or 'auto' will use default array [1, 5, 10,..., 95, 99]. If an array or list is specified then it will be used instead of the default array.
-    kwargs are accepted for the probability plot (eg. linestyle, label, color)
+    Parameters
+    ----------
+    failures : array, list
+        The failure data. Must have at least 3 elements
+    right_censored : array, list, optional
+        The right censored data. Optional input. Default = None.
+    show_probability_plot : bool, optional
+        True or False. Default = True
+    print_results : bool, optional
+        Prints a dataframe of the point estimate, standard error, Lower CI and
+        Upper CI for each parameter. True or False. Default = True
+    method : str, optional
+        The method used to fit the distribution. Must be either 'MLE' (maximum
+        likelihood estimation), or 'LS' (least squares estimation).
+        Default is 'MLE'.
+    optimizer : str, optional
+        The optimisation algorithm used to find the solution. Must be either
+        'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods.
+        If the bounded method fails, 'nelder-mead' will be used. If
+        'nelder-mead' fails then the initial guess will be returned with a
+        warning. For more information on these optimizers see
+        https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
+        Default is 'L-BFGS-B' if the data is <= 97% right censored or 'TNC' if
+        the data is > 97% right censored.
+    CI : float, optional
+        confidence interval for estimating confidence limits on parameters. Must
+        be between 0 and 1. Default is 0.95 for 95% CI.
+    CI_type : str, None, optional
+        This is the confidence bounds on time or reliability shown on the plot.
+        Use None to turn off the confidence intervals. Must be either 'time',
+        'reliability', or None. Default is 'time'. Some flexibility in names is
+        allowed (eg. 't', 'time', 'r', 'rel', 'reliability' are all valid).
+    percentiles : bool, str, list, array, None, optional
+        percentiles (y-values) to produce a table of percentiles failed with
+        lower, point, and upper estimates. Default is None which results in no
+        output. To use default array [1, 5, 10,..., 95, 99] set percentiles as
+        either 'auto', True, 'default', 'on'.
+        If an array or list is specified then it will be used instead of the
+        default array. Any array or list specified must contain values between
+        0 and 100.
+    kwargs
+        Plotting keywords that are passed directly to matplotlib for the
+        probability plot (e.g. color, label, linestyle)
 
-    Outputs:
-    alpha - the fitted Weibull_3P alpha parameter
-    beta - the fitted Weibull_3P beta parameter
-    gamma - the fitted Weibull_3P gamma parameter
-    loglik - Log Likelihood (as used in Minitab and Reliasoft)
-    loglik2 - LogLikelihood*-2 (as used in JMP Pro)
-    AICc - Akaike Information Criterion
-    BIC - Bayesian Information Criterion
-    AD - the Anderson Darling (corrected) statistic (as reported by Minitab)
-    distribution - a Weibull_Distribution object with the parameters of the fitted distribution
-    alpha_SE - the standard error (sqrt(variance)) of the parameter
-    beta_SE - the standard error (sqrt(variance)) of the parameter
-    gamma_SE - the standard error (sqrt(variance)) of the parameter
-    Cov_alpha_beta - the covariance between the parameters alpha and beta
-    alpha_upper - the upper CI estimate of the parameter
-    alpha_lower - the lower CI estimate of the parameter
-    beta_upper - the upper CI estimate of the parameter
-    beta_lower - the lower CI estimate of the parameter
-    gamma_upper - the upper CI estimate of the parameter
-    gamma_lower - the lower CI estimate of the parameter
-    results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
-    goodness_of_fit - a dataframe of the goodness of fit values (Log-likelihood, AICc, BIC, AD).
-    percentiles - a dataframe of the percentiles with bounds on time. This is only produced if percentiles is 'auto' or a list or array. Since percentiles defaults to None, this output is not normally produced.
-    probability_plot - the axes handle for the probability plot (only returned if show_probability_plot = True)
+    Returns
+    -------
+    alpha : float
+        the fitted Weibull_3P alpha parameter
+    beta : float
+        the fitted Weibull_3P beta parameter
+    gamma : float
+        the fitted Weibull_3P gamma parameter
+    loglik : float
+        Log Likelihood (as used in Minitab and Reliasoft)
+    loglik2 : float
+        LogLikelihood*-2 (as used in JMP Pro)
+    AICc : float
+        Akaike Information Criterion
+    BIC : float
+        Bayesian Information Criterion
+    AD : float
+        the Anderson Darling (corrected) statistic (as reported by Minitab)
+    distribution : object
+        a Weibull_Distribution object with the parameters of the fitted
+        distribution
+    alpha_SE : float
+        the standard error (sqrt(variance)) of the parameter
+    beta_SE :float
+        the standard error (sqrt(variance)) of the parameter
+    gamma_SE :float
+        the standard error (sqrt(variance)) of the parameter
+    Cov_alpha_beta : float
+        the covariance between the parameters
+    alpha_upper : float
+        the upper CI estimate of the parameter
+    alpha_lower : float
+        the lower CI estimate of the parameter
+    beta_upper : float
+        the upper CI estimate of the parameter
+    beta_lower : float
+        the lower CI estimate of the parameter
+    gamma_upper : float
+        the upper CI estimate of the parameter
+    gamma_lower : float
+        the lower CI estimate of the parameter
+    results : dataframe
+        a pandas dataframe of the results (point estimate, standard error,
+        lower CI and upper CI for each parameter)
+    goodness_of_fit : dataframe
+        a pandas dataframe of the goodness of fit values (Log-likelihood, AICc,
+        BIC, AD).
+    percentiles : dataframe
+        a pandas dataframe of the percentiles with bounds on time. This is only
+        produced if percentiles is not None. Since percentiles defaults to None,
+        this output is not normally produced.
+    probability_plot : object
+        the axes handle for the probability plot. This is only returned if
+        show_probability_plot = True
+
+    Notes
+    -----
+    If the fitting process encounters a problem a warning will be printed. This
+    may be caused by the chosen distribution being a very poor fit to the data
+    or the data being heavily censored. If a warning is printed, consider trying
+    a different optimiser.
+
+    If the fitted gamma parameter is less than 0.01, the Weibull_3P results will
+    be discarded and the Weibull_2P distribution will be fitted. The returned
+    values for gamma and gamma_SE will be 0.
     """
 
     def __init__(

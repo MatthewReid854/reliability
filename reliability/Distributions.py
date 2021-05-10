@@ -67,7 +67,7 @@ class Weibull_Distribution:
     name : str
         'Weibull'
     name2 : 'str
-        Weibull_2P' or 'Weibull_3P' depending on the value of the gamma
+        'Weibull_2P' or 'Weibull_3P' depending on the value of the gamma
         parameter
     param_title_long : str
         'Weibull Distribution (α=5,β=2)'
@@ -1712,47 +1712,47 @@ class Normal_Distribution:
 
 class Lognormal_Distribution:
     """
-    Lognormal probability distribution
+    Lognormal probability distribution. Creates a probability distribution object.
 
-    Creates a Distribution object.
+    Parameters
+    ----------
+    mu : float, int
+        Location parameter
+    sigma : float, int
+        Scale parameter. Must be > 0
+    gamma : float, int, optional
+        threshold (offset) parameter. Must be >= 0. Default = 0
 
-    Inputs:
-    mu - location parameter
-    sigma - scale parameter
-    gamma - threshold (offset) parameter. Default = 0
+    Returns
+    -------
+    name : str
+        'Lognormal'
+    name2 : 'str
+        'Lognormal_2P' or 'Lognormal_3P' depending on the value of the gamma
+        parameter
+    param_title_long : str
+        'Lognormal Distribution (μ=5,σ=2)'
+    param_title : str
+        'μ=5,σ=2'
+    parameters : list
+        [mu,sigma,gamma]
+    mu : float
+    sigma : float
+    gamma : float
+    mean : float
+    variance : float
+    standard_deviation : float
+    skewness : float
+    kurtosis : float
+    excess_kurtosis : float
+    median : float
+    mode : float
+    b5 : float
+    b95 : float
 
-    Methods:
-    name - 'Lognormal'
-    name2 - 'Lognormal_2P' or 'Lognormal_3P' depending on the value of the gamma parameter
-    param_title_long - Useful in plot titles, legends and in printing strings. eg. 'Lognormal Distribution (μ=5,σ=2)'
-    param_title - Useful in plot titles, legends and in printing strings. eg. 'μ=5,σ=2'
-    parameters - [mu,sigma,gamma]
-    mu
-    sigma
-    gamma
-    mean
-    variance
-    standard_deviation
-    skewness
-    kurtosis
-    excess_kurtosis
-    median
-    mode
-    b5
-    b95
-    plot() - plots all functions (PDF,CDF,SF,HF,CHF)
-    PDF() - plots the probability density function
-    CDF() - plots the cumulative distribution function
-    SF() - plots the survival function (also known as reliability function)
-    HF() - plots the hazard function
-    CHF() - plots the cumulative hazard function
-    quantile() - Calculates the quantile (time until a fraction has failed) for a given fraction failing.
-                 Also known as b life where b5 is the time at which 5% have failed.
-    inverse_SF() - the inverse of the Survival Function. This is useful when producing QQ plots.
-    mean_residual_life() - Average residual lifetime of an item given that the item has survived up to a given time.
-                           Effectively the mean of the remaining amount (right side) of a distribution at a given time.
-    stats() - prints all the descriptive statistics. Same as the statistics shown using .plot() but printed to console.
-    random_samples() - draws random samples from the distribution to which it is applied. Same as rvs in scipy.stats.
+    Notes
+    -----
+    kwargs are used internally to generate the confidence intervals
     """
 
     def __init__(self, mu=None, sigma=None, gamma=0, **kwargs):
@@ -2563,45 +2563,45 @@ class Lognormal_Distribution:
 
 class Exponential_Distribution:
     """
-    Exponential probability distribution
+    Exponential probability distribution. Creates a probability distribution
+    object.
 
-    Creates a Distribution object.
+    Parameters
+    ----------
+    Lambda : float, int
+        Scale parameter. Must be > 0
+    gamma : float, int, optional
+        threshold (offset) parameter. Must be >= 0. Default = 0
 
-    Inputs:
-    Lambda - scale (rate) parameter
-    gamma - threshold (offset) parameter. Default = 0
+    Returns
+    -------
+    name : str
+        'Exponential'
+    name2 : 'str
+        'Exponential_1P' or 'Exponential_2P' depending on the value of the gamma
+        parameter
+    param_title_long : str
+        'Exponential Distribution (λ=5)'
+    param_title : str
+        'λ=5'
+    parameters : list
+        [Lambda,gamma]
+    Lambda : float
+    gamma : float
+    mean : float
+    variance : float
+    standard_deviation : float
+    skewness : float
+    kurtosis : float
+    excess_kurtosis : float
+    median : float
+    mode : float
+    b5 : float
+    b95 : float
 
-    Methods:
-    name - 'Exponential'
-    name2 - 'Exponential_1P' or 'Exponential_2P' depending on the value of the gamma parameter
-    param_title_long - Useful in plot titles, legends and in printing strings. eg. 'Exponential Distribution (λ=5)'
-    param_title - Useful in plot titles, legends and in printing strings. eg. 'λ=5'
-    parameters - [Lambda,gamma]
-    Lambda
-    gamma
-    mean
-    variance
-    standard_deviation
-    skewness
-    kurtosis
-    excess_kurtosis
-    median
-    mode
-    b5
-    b95
-    plot() - plots all functions (PDF,CDF,SF,HF,CHF)
-    PDF() - plots the probability density function
-    CDF() - plots the cumulative distribution function
-    SF() - plots the survival function (also known as reliability function)
-    HF() - plots the hazard function
-    CHF() - plots the cumulative hazard function
-    quantile() - Calculates the quantile (time until a fraction has failed) for a given fraction failing.
-                 Also known as b life where b5 is the time at which 5% have failed.
-    inverse_SF() - the inverse of the Survival Function. This is useful when producing QQ plots.
-    mean_residual_life() - Average residual lifetime of an item given that the item has survived up to a given time.
-                           Effectively the mean of the remaining amount (right side) of a distribution at a given time.
-    stats() - prints all the descriptive statistics. Same as the statistics shown using .plot() but printed to console.
-    random_samples() - draws random samples from the distribution to which it is applied. Same as rvs in scipy.stats.
+    Notes
+    -----
+    kwargs are used internally to generate the confidence intervals
     """
 
     def __init__(self, Lambda=None, gamma=0, **kwargs):
@@ -3373,47 +3373,47 @@ class Exponential_Distribution:
 
 class Gamma_Distribution:
     """
-    Gamma probability distribution
+    Gamma probability distribution. Creates a probability distribution object.
 
-    Creates a Distribution object.
+    Parameters
+    ----------
+    alpha : float, int
+        Scale parameter. Must be > 0
+    beta : float, int
+        Shape parameter. Must be > 0
+    gamma : float, int, optional
+        threshold (offset) parameter. Must be >= 0. Default = 0
 
-    Inputs:
-    alpha - scale parameter
-    beta - shape parameter
-    gamma - threshold (offset) parameter. Default = 0
+    Returns
+    -------
+    name : str
+        'Gamma'
+    name2 : 'str
+        'Gamma_2P' or 'Gamma_3P' depending on the value of the gamma
+        parameter
+    param_title_long : str
+        'Gamma Distribution (α=5,β=2)'
+    param_title : str
+        'α=5,β=2'
+    parameters : list
+        [alpha,beta,gamma]
+    alpha : float
+    beta : float
+    gamma : float
+    mean : float
+    variance : float
+    standard_deviation : float
+    skewness : float
+    kurtosis : float
+    excess_kurtosis : float
+    median : float
+    mode : float
+    b5 : float
+    b95 : float
 
-    Methods:
-    name - 'Gamma'
-    name2 - 'Gamma_2P' or 'Gamma_3P' depending on the value of the gamma parameter
-    param_title_long - Useful in plot titles, legends and in printing strings. eg. 'Gamma Distribution (α=5,β=2)'
-    param_title - Useful in plot titles, legends and in printing strings. eg. 'α=5,β=2'
-    parameters - [alpha,beta,gamma]
-    alpha
-    beta
-    gamma
-    mean
-    variance
-    standard_deviation
-    skewness
-    kurtosis
-    excess_kurtosis
-    median
-    mode
-    b5
-    b95
-    plot() - plots all functions (PDF,CDF,SF,HF,CHF)
-    PDF() - plots the probability density function
-    CDF() - plots the cumulative distribution function
-    SF() - plots the survival function (also known as reliability function)
-    HF() - plots the hazard function
-    CHF() - plots the cumulative hazard function
-    quantile() - Calculates the quantile (time until a fraction has failed) for a given fraction failing.
-                 Also known as b life where b5 is the time at which 5% have failed.
-    inverse_SF() - the inverse of the Survival Function. This is useful when producing QQ plots.
-    mean_residual_life() - Average residual lifetime of an item given that the item has survived up to a given time.
-                           Effectively the mean of the remaining amount (right side) of a distribution at a given time.
-    stats() - prints all the descriptive statistics. Same as the statistics shown using .plot() but printed to console.
-    random_samples() - draws random samples from the distribution to which it is applied. Same as rvs in scipy.stats.
+    Notes
+    -----
+    kwargs are used internally to generate the confidence intervals
     """
 
     def __init__(self, alpha=None, beta=None, gamma=0, **kwargs):
@@ -4219,45 +4219,44 @@ class Gamma_Distribution:
 
 class Beta_Distribution:
     """
-    Beta probability distribution
+    Beta probability distribution. Creates a probability distribution object.
 
-    Creates a Distribution object in the range 0-1.
+    Parameters
+    ----------
+    alpha : float, int
+        Shape parameter 1. Must be > 0
+    beta : float, int
+        Shape parameter 2. Must be > 0
 
-    Inputs:
-    alpha - shape parameter 1
-    beta - shape parameter 2
+    Returns
+    -------
+    name : str
+        'Beta'
+    name2 : 'str
+        'Beta_2P'
+    param_title_long : str
+        'Beta Distribution (α=5,β=2)'
+    param_title : str
+        'α=5,β=2'
+    parameters : list
+        [alpha,beta]
+    alpha : float
+    beta : float
+    gamma : float
+    mean : float
+    variance : float
+    standard_deviation : float
+    skewness : float
+    kurtosis : float
+    excess_kurtosis : float
+    median : float
+    mode : float
+    b5 : float
+    b95 : float
 
-    Methods:
-    name - 'Beta'
-    name2 - 'Beta_2P'
-    param_title_long - Useful in plot titles, legends and in printing strings. eg. 'Beta Distribution (α=5,β=2)'
-    param_title - Useful in plot titles, legends and in printing strings. eg. 'α=5,β=2'
-    parameters - [alpha,beta]
-    alpha
-    beta
-    mean
-    variance
-    standard_deviation
-    skewness
-    kurtosis
-    excess_kurtosis
-    median
-    mode
-    b5
-    b95
-    plot() - plots all functions (PDF,CDF,SF,HF,CHF)
-    PDF() - plots the probability density function
-    CDF() - plots the cumulative distribution function
-    SF() - plots the survival function (also known as reliability function)
-    HF() - plots the hazard function
-    CHF() - plots the cumulative hazard function
-    quantile() - Calculates the quantile (time until a fraction has failed) for a given fraction failing.
-                 Also known as b life where b5 is the time at which 5% have failed.
-    inverse_SF() - the inverse of the Survival Function. This is useful when producing QQ plots.
-    mean_residual_life() - Average residual lifetime of an item given that the item has survived up to a given time.
-                           Effectively the mean of the remaining amount (right side) of a distribution at a given time.
-    stats() - prints all the descriptive statistics. Same as the statistics shown using .plot() but printed to console.
-    random_samples() - draws random samples from the distribution to which it is applied. Same as rvs in scipy.stats.
+    Notes
+    -----
+    kwargs are used internally to generate the confidence intervals
     """
 
     def __init__(self, alpha=None, beta=None, **kwargs):
@@ -5033,47 +5032,48 @@ class Beta_Distribution:
 
 class Loglogistic_Distribution:
     """
-    Loglogistic probability distribution
+    Loglogistic probability distribution. Creates a probability distribution
+    object.
 
-    Creates a Distribution object.
+    Parameters
+    ----------
+    alpha : float, int
+        Scale parameter. Must be > 0
+    beta : float, int
+        Shape parameter. Must be > 0
+    gamma : float, int, optional
+        threshold (offset) parameter. Must be >= 0. Default = 0
 
-    Inputs:
-    alpha - scale parameter
-    beta - shape parameter
-    gamma - threshold (offset) parameter. Default = 0
+    Returns
+    -------
+    name : str
+        'Loglogistic'
+    name2 : 'str
+        'Loglogistic_2P' or 'Loglogistic_3P' depending on the value of the gamma
+        parameter
+    param_title_long : str
+        'Loglogistic Distribution (α=5,β=2)'
+    param_title : str
+        'α=5,β=2'
+    parameters : list
+        [alpha,beta,gamma]
+    alpha : float
+    beta : float
+    gamma : float
+    mean : float
+    variance : float
+    standard_deviation : float
+    skewness : float
+    kurtosis : float
+    excess_kurtosis : float
+    median : float
+    mode : float
+    b5 : float
+    b95 : float
 
-    Methods:
-    name - 'Loglogistic'
-    name2 - 'Loglogistic_2P' or 'Loglogistic_3P' depending on the value of the gamma parameter
-    param_title_long - Useful in plot titles, legends and in printing strings. eg. 'Loglogistic Distribution (α=5,β=2)'
-    param_title - Useful in plot titles, legends and in printing strings. eg. 'α=5,β=2'
-    parameters - [alpha,beta,gamma]
-    alpha
-    beta
-    gamma
-    mean
-    variance
-    standard_deviation
-    skewness
-    kurtosis
-    excess_kurtosis
-    median
-    mode
-    b5
-    b95
-    plot() - plots all functions (PDF,CDF,SF,HF,CHF)
-    PDF() - plots the probability density function
-    CDF() - plots the cumulative distribution function
-    SF() - plots the survival function (also known as reliability function)
-    HF() - plots the hazard function
-    CHF() - plots the cumulative hazard function
-    quantile() - Calculates the quantile (time until a fraction has failed) for a given fraction failing.
-                 Also known as b life where b5 is the time at which 5% have failed.
-    inverse_SF() - the inverse of the Survival Function. This is useful when producing QQ plots.
-    mean_residual_life() - Average residual lifetime of an item given that the item has survived up to a given time.
-                           Effectively the mean of the remaining amount (right side) of a distribution at a given time.
-    stats() - prints all the descriptive statistics. Same as the statistics shown using .plot() but printed to console.
-    random_samples() - draws random samples from the distribution to which it is applied. Same as rvs in scipy.stats.
+    Notes
+    -----
+    kwargs are used internally to generate the confidence intervals
     """
 
     def __init__(self, alpha=None, beta=None, gamma=0, **kwargs):
@@ -5944,45 +5944,43 @@ class Loglogistic_Distribution:
 
 class Gumbel_Distribution:
     """
-    Gumbel probability distribution
+    Gumbel probability distribution. Creates a probability distribution object.
 
-    Creates a Distribution object.
+    Parameters
+    ----------
+    mu : float, int
+        Location parameter
+    sigma : float, int
+        Scale parameter. Must be > 0
 
-    Inputs:
-    mu - location parameter
-    sigma - scale parameter
+    Returns
+    -------
+    name : str
+        'Gumbel'
+    name2 : 'str
+        'Gumbel_2P'
+    param_title_long : str
+        'Gumbel Distribution (μ=5,σ=2)'
+    param_title : str
+        'μ=5,σ=2'
+    parameters : list
+        [mu,sigma]
+    mu : float
+    sigma : float
+    mean : float
+    variance : float
+    standard_deviation : float
+    skewness : float
+    kurtosis : float
+    excess_kurtosis : float
+    median : float
+    mode : float
+    b5 : float
+    b95 : float
 
-    Methods:
-    name - 'Gumbel'
-    name2 - 'Gumbel_2P'
-    param_title_long - Useful in plot titles, legends and in printing strings. eg. 'Gumbel Distribution (μ=5,σ=2)'
-    param_title - Useful in plot titles, legends and in printing strings. eg. 'μ=5,σ=2'
-    parameters - [mu,sigma]
-    mu
-    sigma
-    mean
-    variance
-    standard_deviation
-    skewness
-    kurtosis
-    excess_kurtosis
-    median
-    mode
-    b5
-    b95
-    plot() - plots all functions (PDF,CDF,SF,HF,CHF)
-    PDF() - plots the probability density function
-    CDF() - plots the cumulative distribution function
-    SF() - plots the survival function (also known as reliability function)
-    HF() - plots the hazard function
-    CHF() - plots the cumulative hazard function
-    quantile() - Calculates the quantile (time until a fraction has failed) for a given fraction failing.
-                 Also known as b life where b5 is the time at which 5% have failed.
-    inverse_SF() - the inverse of the Survival Function. This is useful when producing QQ plots.
-    mean_residual_life() - Average residual lifetime of an item given that the item has survived up to a given time.
-                           Effectively the mean of the remaining amount (right side) of a distribution at a given time.
-    stats() - prints all the descriptive statistics. Same as the statistics shown using .plot() but printed to console.
-    random_samples() - draws random samples from the distribution to which it is applied. Same as rvs in scipy.stats.
+    Notes
+    -----
+    kwargs are used internally to generate the confidence intervals
     """
 
     def __init__(self, mu=None, sigma=None, **kwargs):
@@ -6748,54 +6746,66 @@ class Gumbel_Distribution:
 
 class Competing_Risks_Model:
     """
-    The competing risks model is used to model the effect of multiple risks (expressed as probability distributions) that act on a system over time.
-    The model is obtained using the product of the survival functions: SF_total = SF_1 x SF_2 x SF_3 x ....x SF_n
-    An equivalent form of this model is to sum the hazard or cumulative hazard functions. The result is the same.
-    In this way, we see the CDF, HF, and CHF of the overall model being equal to or higher than any of the constituent distributions.
-    Similarly, the SF of the overall model will always be equal to or lower than any of the constituent distributions.
-    The PDF occurs earlier in time since the earlier risks cause the population to fail sooner leaving less to fail due to the later risks.
+    The competing risks model is used to model the effect of multiple risks
+    (expressed as probability distributions) that act on a system over time.
+    The model is obtained using the product of the survival functions:
 
-    This model should be used when a data set has been divided by failure mode and each failure mode has been modelled separately.
-    The competing risks model can then be used to recombine the constituent distributions into a single model.
-    Unlike the mixture model, there are no proportions as the risks are competing to cause failure rather than being mixed.
+    .. math::  SF_total = SF_1 \times SF_2 \times SF_3 \times \dotsc \times SF_n
 
-    As this process is multiplicative for the survival function, and may accept many distributions of different types, the mathematical formulation quickly gets complex.
-    For this reason, the algorithm combines the models numerically rather than empirically so there are no simple formulas for many of the descriptive statistics (mean, median, etc.)
-    Also, the accuracy of the model is dependent on xvals. If the xvals array is small (<100 values) then the answer will be "blocky" and inaccurate.
-    the variable xvals is only accepted for PDF, CDF, SF, HF, CHF. The other methods (like random samples) use the default xvals for maximum accuracy.
-    The default number of values generated when xvals is not given is 1000. Consider this carefully when specifying xvals in order to avoid inaccuracies in the results.
+    The output API is similar to the other probability distributions (Weibull,
+    Normal, etc.) as shown below:
 
-    The API is similar to the other probability distributions (Weibull, Normal, etc.) and has the following Inputs and Methods:
+    Parameters
+    ----------
+    distributions : list, array
+        a list or array of probability distribution objects used to construct
+        the model
 
-    Inputs:
-    distributions - a list or array of probability distributions used to construct the model
+    Returns
+    -------
+    name : str
+        'Competing risks'
+    name2 : 'str
+        'Competing risks using 3 distributions'. The exact name depends on the
+        number of distributions used
+    mean : float
+    variance : float
+    standard_deviation : float
+    skewness : float
+    kurtosis : float
+    excess_kurtosis : float
+    median : float
+    mode : float
+    b5 : float
+    b95 : float
 
-    Methods:
-    name - 'Competing risks'
-    name2 - 'Competing risks using 3 distributions'
-    mean
-    median
-    mode
-    variance
-    standard_deviation
-    skewness
-    kurtosis
-    excess_kurtosis
-    b5 - The time where 5% have failed. Same as quantile(0.05)
-    b95 - The time where 95% have failed. Same as quantile(0.95)
-    plot() - plots all functions (PDF,CDF,SF,HF,CHF)
-    PDF() - plots the probability density function
-    CDF() - plots the cumulative distribution function
-    SF() - plots the survival function (also known as reliability function)
-    HF() - plots the hazard function
-    CHF() - plots the cumulative hazard function
-    quantile() - Calculates the quantile (time until a fraction has failed) for a given fraction failing.
-                 Also known as b life where b5 is the time at which 5% have failed.
-    inverse_SF() - the inverse of the Survival Function. This is useful when producing QQ plots.
-    mean_residual_life() - Average residual lifetime of an item given that the item has survived up to a given time.
-                           Effectively the mean of the remaining amount (right side) of a distribution at a given time.
-    stats() - prints all the descriptive statistics. Same as the statistics shown using .plot() but printed to console.
-    random_samples() - draws random samples from the distribution to which it is applied.
+    Notes
+    -----
+    An equivalent form of this model is to sum the hazard or cumulative hazard
+    functions which will give the same result. In this way, we see the CDF, HF,
+    and CHF of the overall model being equal to or higher than any of the
+    constituent distributions. Similarly, the SF of the overall model will
+    always be equal to or lower than any of the constituent distributions.
+    The PDF occurs earlier in time since the earlier risks cause the population
+    to fail sooner leaving less to fail due to the later risks.
+
+    This model should be used when a data set has been divided by failure mode
+    and each failure mode has been modelled separately. The competing risks
+    model can then be used to recombine the constituent distributions into a
+    single model. Unlike the mixture model, there are no proportions as the
+    risks are competing to cause failure rather than being mixed.
+
+    As this process is multiplicative for the survival function, and may accept
+    many distributions of different types, the mathematical formulation quickly
+    gets complex. For this reason, the algorithm combines the models numerically
+    rather than empirically so there are no simple formulas for many of the
+    descriptive statistics (mean, median, etc.). Also, the accuracy of the model
+    is dependent on xvals. If the xvals array is small (<100 values) then the
+    answer will be "blocky" and inaccurate. The variable xvals is only accepted
+    for PDF, CDF, SF, HF, CHF. The other methods (like random samples) use the
+    default xvals for maximum accuracy. The default number of values generated
+    when xvals is not given is 1000. Consider this carefully when specifying
+    xvals in order to avoid inaccuracies in the results.
     """
 
     def __init__(self, distributions):
@@ -7597,9 +7607,11 @@ class Competing_Risks_Model:
             The mean residual life
         """
 
-        def __subcombiner(
-            X,
-        ):  # this does what __combiner does but more efficiently and also accepts single values
+        def __subcombiner(X):
+            '''
+            This function does what __combiner does but more efficiently and
+            also accepts single values
+            '''
             if type(X) == np.ndarray:
                 sf = np.ones_like(X)
                 X_positive = X[X >= 0]
@@ -7669,9 +7681,46 @@ class Competing_Risks_Model:
 
 class Mixture_Model:
     """
-    The mixture model is used to create a distribution that contains parts from multiple distributions.
-    This allows for a more complex model to be constructed as the sum of other distributions, each multiplied by a proportion (where the proportions sum to 1)
-    The model is obtained using the sum of the cumulative distribution functions: CDF_total = (CDF_1 x p_1) + (CDF_2 x p2) x (CDF_3 x p3) + .... + (CDF_n x pn)
+    The mixture model is used to create a distribution that contains parts from
+    multiple distributions. This allows for a more complex model to be
+    constructed as the sum of other distributions, each multiplied by a
+    proportion (where the proportions sum to 1). The model is obtained using the
+    sum of the cumulative distribution functions:
+
+    .. math:: CDF_total = \left(CDF_1 \times p_1\right) + \left(CDF_2 \times p_2\right) + \left(CDF_3 \times p_3\right) + \dotsc + \left(CDF_n \times p_n\right)
+
+    The output API is similar to the other probability distributions (Weibull,
+    Normal, etc.) as shown below:
+
+    Parameters
+    ----------
+    distributions : list, array
+        List or array of probability distribution objects used to construct the
+        model.
+    proportions : list, array
+        List or array of floats specifying how much of each distribution to
+        add to the mixture. The sum of proportions must always be 1.
+
+    Returns
+    -------
+    name : str
+        'Mixture'
+    name2 : 'str
+        'Mixture using 3 distributions'. The exact name depends on the number of
+        distributions used.
+    mean : float
+    variance : float
+    standard_deviation : float
+    skewness : float
+    kurtosis : float
+    excess_kurtosis : float
+    median : float
+    mode : float
+    b5 : float
+    b95 : float
+
+    Notes
+    -----
     An equivalent form of this model is to sum the PDF. SF is obtained as 1-CDF. Note that you cannot simply sum the HF or CHF as this method would be equivalent to the competing risks model.
     In this way, we see the mixture model will always lie somewhere between the constituent models.
 
@@ -7683,39 +7732,6 @@ class Mixture_Model:
     Also, the accuracy of the model is dependent on xvals. If the xvals array is small (<100 values) then the answer will be "blocky" and inaccurate.
     the variable xvals is only accepted for PDF, CDF, SF, HF, CHF. The other methods (like random samples) use the default xvals for maximum accuracy.
     The default number of values generated when xvals is not given is 1000. Consider this carefully when specifying xvals in order to avoid inaccuracies in the results.
-
-    The API is similar to the other probability distributions (Weibull, Normal, etc.) and has the following Inputs and Methods:
-
-    Inputs:
-    distributions - a list or array of probability distributions used to construct the model
-    proportions - how much of each distribution to add to the mixture. The sum of proportions must always be 1.
-
-    Methods:
-    name - 'Mixture'
-    name2 - 'Mixture using 3 distributions'
-    mean
-    median
-    mode
-    variance
-    standard_deviation
-    skewness
-    kurtosis
-    excess_kurtosis
-    b5 - The time where 5% have failed. Same as quantile(0.05)
-    b95 - The time where 95% have failed. Same as quantile(0.95)
-    plot() - plots all functions (PDF,CDF,SF,HF,CHF)
-    PDF() - plots the probability density function
-    CDF() - plots the cumulative distribution function
-    SF() - plots the survival function (also known as reliability function)
-    HF() - plots the hazard function
-    CHF() - plots the cumulative hazard function
-    quantile() - Calculates the quantile (time until a fraction has failed) for a given fraction failing.
-                 Also known as b life where b5 is the time at which 5% have failed.
-    inverse_SF() - the inverse of the Survival Function. This is useful when producing QQ plots.
-    mean_residual_life() - Average residual lifetime of an item given that the item has survived up to a given time.
-                           Effectively the mean of the remaining amount (right side) of a distribution at a given time.
-    stats() - prints all the descriptive statistics. Same as the statistics shown using .plot() but printed to console.
-    random_samples() - draws random samples from the distribution to which it is applied.
     """
 
     def __init__(self, distributions, proportions=None):
@@ -8535,9 +8551,11 @@ class Mixture_Model:
             The mean residual life
         """
 
-        def __subcombiner(
-            X,
-        ):  # this does what __combiner does but more efficiently and also accepts single values
+        def __subcombiner(X):
+            '''
+            This function does what __combiner does but more efficiently and
+            also accepts single values.
+            '''
             if type(X) == np.ndarray:
                 cdf = np.zeros_like(X)
                 X_positive = X[X >= 0]
