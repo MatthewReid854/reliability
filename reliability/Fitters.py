@@ -161,14 +161,11 @@ class Fit_Everything:
 
     Example Usage:
 
-    X = [5,3,8,6,7,4,5,4,2]
+    .. code:: python
 
-    output = Fit_Everything(X)
-
-    To extract the parameters of the Weibull distribution from the results
-    dataframe, you may access the parameters by name:
-
-    print('Weibull Alpha =',output.Weibull_2P_alpha)
+        X = [5,3,8,6,7,4,5,4,2]
+        output = Fit_Everything(X)
+        print('Weibull Alpha =',output.Weibull_2P_alpha)
     """
 
     def __init__(
@@ -1956,15 +1953,13 @@ class Fit_Weibull_2P_grouped:
     This is easiest to achieve by importing data from excel. An example of this
     is:
 
-    import pandas as pd
+    .. code:: python
 
-    from reliability.Fitters import Fit_Weibull_2P_grouped
-
-    filename = 'C:\\Users\\Current User\\Desktop\\data.xlsx'
-
-    df = pd.read_excel(io=filename)
-
-    Fit_Weibull_2P_grouped(dataframe=df)
+        import pandas as pd
+        from reliability.Fitters import Fit_Weibull_2P_grouped
+        filename = 'C:\\Users\\Current User\\Desktop\\data.xlsx'
+        df = pd.read_excel(io=filename)
+        Fit_Weibull_2P_grouped(dataframe=df)
     """
 
     def __init__(
