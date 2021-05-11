@@ -6750,11 +6750,9 @@ class Competing_Risks_Model:
     (expressed as probability distributions) that act on a system over time.
     The model is obtained using the product of the survival functions:
 
-    :math:`{\rm SF}_{total} = {\rm SF}_{1}\times {\rm SF}_{2}\times {\rm SF}_{3}\times \dotsc \times {\rm SF}_{n}`
+    :math:`{SF}_{total} = {SF}_{1} x {SF}_{2} x {SF}_{3} x \dotsc x {SF}_{n}`
 
-    :math:`{\rm SF}_{total} = {\rm SF}_{1} x {\rm SF}_{2} x {\rm SF}_{3} x \dotsc x {\rm SF}_{n}`
-
-    :math:`{\rm SF}_{total} = {\rm SF}_{1} * {\rm SF}_{2} * {\rm SF}_{3} * \dotsc * {\rm SF}_{n}`
+    :math:`{SF}_{total} = {SF}_{1} * {SF}_{2} * {SF}_{3} * \dotsc * {SF}_{n}`
 
     The output API is similar to the other probability distributions (Weibull,
     Normal, etc.) as shown below.
@@ -7691,9 +7689,11 @@ class Mixture_Model:
     proportion (where the proportions sum to 1). The model is obtained using the
     sum of the cumulative distribution functions:
 
-    :math:`{CDF}_{total} = ({CDF}_{1} \times {p}_{1}) + ({CDF}_{2} \times {p}_{2}) + ({CDF}_{3} \times {p}_{3}) + \dotsc + ({CDF}_{n} \times {p}_{n})`
+    :math:`{CDF}_{total} = ({CDF}_{1} x {p}_{1}) + ({CDF}_{2} x {p}_{2}) + ({CDF}_{3} x {p}_{3}) + \dotsc + ({CDF}_{n} x {p}_{n})`
 
-    :math:`{CDF}_{total} = ({\rm CDF}_{1} \times {\rm p}_{1}) + ({\rm CDF}_{2} \times {\rm p}_{2}) + ({\rm CDF}_{3} \times {\rm p}_{3}) + \dotsc + ({\rm CDF}_{n} \times {\rm p}_{n})`
+    Second test
+
+    :math:`{CDF}_{total} = ({CDF}_{1} * {p}_{1}) + ({CDF}_{2} * {p}_{2}) + ({CDF}_{3} * {p}_{3}) + \dotsc + ({CDF}_{n} * {p}_{n})`
 
     The output API is similar to the other probability distributions (Weibull,
     Normal, etc.) as shown below.
