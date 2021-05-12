@@ -6750,7 +6750,7 @@ class Competing_Risks_Model:
     (expressed as probability distributions) that act on a system over time.
     The model is obtained using the product of the survival functions:
 
-    :math:`{SF}_{total} = {SF}_{1} * {SF}_{2} * {SF}_{3} * \dotsc * {SF}_{n}`
+    :math:`SF_{total} = SF_1 × SF_2 × SF_3 × ... × SF_n`
 
     The output API is similar to the other probability distributions (Weibull,
     Normal, etc.) as shown below.
@@ -6801,7 +6801,7 @@ class Competing_Risks_Model:
     rather than empirically so there are no simple formulas for many of the
     descriptive statistics (mean, median, etc.). Also, the accuracy of the model
     is dependent on xvals. If the xvals array is small (<100 values) then the
-    answer will be "blocky" and inaccurate. The variable xvals is only accepted
+    answer will be 'blocky' and inaccurate. The variable xvals is only accepted
     for PDF, CDF, SF, HF, CHF. The other methods (like random samples) use the
     default xvals for maximum accuracy. The default number of values generated
     when xvals is not given is 1000. Consider this carefully when specifying
@@ -7608,10 +7608,10 @@ class Competing_Risks_Model:
         """
 
         def __subcombiner(X):
-            '''
+            """
             This function does what __combiner does but more efficiently and
             also accepts single values
-            '''
+            """
             if type(X) == np.ndarray:
                 sf = np.ones_like(X)
                 X_positive = X[X >= 0]
@@ -7687,7 +7687,7 @@ class Mixture_Model:
     proportion (where the proportions sum to 1). The model is obtained using the
     sum of the cumulative distribution functions:
 
-    :math:`{CDF}_{total} = ({CDF}_{1} * {p}_{1}) + ({CDF}_{2} * {p}_{2}) + ({CDF}_{3} * {p}_{3}) + \dotsc + ({CDF}_{n} * {p}_{n})`
+    :math:`CDF_{total} = (CDF_1 × p_1) + (CDF_2 × p_2) + (CDF_3 × p_3) + ... + (CDF_n × p_n)`
 
     The output API is similar to the other probability distributions (Weibull,
     Normal, etc.) as shown below.
@@ -7721,17 +7721,27 @@ class Mixture_Model:
 
     Notes
     -----
-    An equivalent form of this model is to sum the PDF. SF is obtained as 1-CDF. Note that you cannot simply sum the HF or CHF as this method would be equivalent to the competing risks model.
-    In this way, we see the mixture model will always lie somewhere between the constituent models.
+    An equivalent form of this model is to sum the PDF. SF is obtained as 1-CDF.
+    Note that you cannot simply sum the HF or CHF as this method would be
+    equivalent to the competing risks model. In this way, we see the mixture
+    model will always lie somewhere between the constituent models.
 
-    This model should be used when a data set cannot be modelled by a single distribution, as evidenced by the shape of the PDF, CDF or probability plot (points do not form a straight line)
-    Unlike the competing risks model, this model requires the proportions to be supplied.
+    This model should be used when a data set cannot be modelled by a single
+    distribution, as evidenced by the shape of the PDF, CDF or probability plot
+    (points do not form a straight line). Unlike the competing risks model, this
+    model requires the proportions to be supplied.
 
-    As this process is additive for the survival function, and may accept many distributions of different types, the mathematical formulation quickly gets complex.
-    For this reason, the algorithm combines the models numerically rather than empirically so there are no simple formulas for many of the descriptive statistics (mean, median, etc.)
-    Also, the accuracy of the model is dependent on xvals. If the xvals array is small (<100 values) then the answer will be "blocky" and inaccurate.
-    the variable xvals is only accepted for PDF, CDF, SF, HF, CHF. The other methods (like random samples) use the default xvals for maximum accuracy.
-    The default number of values generated when xvals is not given is 1000. Consider this carefully when specifying xvals in order to avoid inaccuracies in the results.
+    As this process is additive for the survival function, and may accept many
+    distributions of different types, the mathematical formulation quickly gets
+    complex. For this reason, the algorithm combines the models numerically
+    ather than empirically so there are no simple formulas for many of the
+    descriptive statistics (mean, median, etc.). Also, the accuracy of the model
+    is dependent on xvals. If the xvals array is small (<100 values) then the
+    answer will be 'blocky' and inaccurate. The variable xvals is only accepted
+    for PDF, CDF, SF, HF, CHF. The other methods (like random samples) use the
+    default xvals for maximum accuracy. The default number of values generated
+    when xvals is not given is 1000. Consider this carefully when specifying
+    xvals in order to avoid inaccuracies in the results.
     """
 
     def __init__(self, distributions, proportions=None):
@@ -8552,10 +8562,10 @@ class Mixture_Model:
         """
 
         def __subcombiner(X):
-            '''
+            """
             This function does what __combiner does but more efficiently and
             also accepts single values.
-            '''
+            """
             if type(X) == np.ndarray:
                 cdf = np.zeros_like(X)
                 X_positive = X[X >= 0]
