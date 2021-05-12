@@ -1384,6 +1384,9 @@ class distribution_explorer:
     @staticmethod
     def __update_distribution(name, self):
         self.name = name
+        x0 = 0.1
+        width = 0.8
+        height = 0.03
         if self.name == "Weibull":
             dist = Weibull_Distribution(alpha=100, beta=2, gamma=0)
             param_names = ["Alpha", "Beta", "Gamma"]
@@ -1397,13 +1400,9 @@ class distribution_explorer:
             self.s1 = Slider(
                 self.ax1, param_names[1], valmin=0.2, valmax=25, valinit=dist.beta
             )
-            try:  # clear the slider axis if it exists
-                plt.sca(self.ax2)
-                plt.cla()
-            except AttributeError:  # if the slider axis does no exist (because it was destroyed by a 2P distribution) then recreate it
-                self.ax2 = plt.axes(
-                    [0.1, 0.05, 0.8, 0.03], facecolor=self.background_color
-                )
+            plt.sca(self.ax2)
+            plt.cla()
+            self.ax2.set_visible(True)
             self.s2 = Slider(
                 self.ax2, param_names[2], valmin=0, valmax=500, valinit=dist.gamma
             )
@@ -1420,13 +1419,9 @@ class distribution_explorer:
             self.s1 = Slider(
                 self.ax1, param_names[1], valmin=0.2, valmax=25, valinit=dist.beta
             )
-            try:  # clear the slider axis if it exists
-                plt.sca(self.ax2)
-                plt.cla()
-            except AttributeError:  # if the slider axis does no exist (because it was destroyed by a 2P distribution) then recreate it
-                self.ax2 = plt.axes(
-                    [0.1, 0.05, 0.8, 0.03], facecolor=self.background_color
-                )
+            plt.sca(self.ax2)
+            plt.cla()
+            self.ax2.set_visible(True)
             self.s2 = Slider(
                 self.ax2, param_names[2], valmin=0, valmax=500, valinit=dist.gamma
             )
@@ -1443,13 +1438,9 @@ class distribution_explorer:
             self.s1 = Slider(
                 self.ax1, param_names[1], valmin=0.2, valmax=50, valinit=dist.beta
             )
-            try:  # clear the slider axis if it exists
-                plt.sca(self.ax2)
-                plt.cla()
-            except AttributeError:  # if the slider axis does no exist (because it was destroyed by a 2P distribution) then recreate it
-                self.ax2 = plt.axes(
-                    [0.1, 0.05, 0.8, 0.03], facecolor=self.background_color
-                )
+            plt.sca(self.ax2)
+            plt.cla()
+            self.ax2.set_visible(True)
             self.s2 = Slider(
                 self.ax2, param_names[2], valmin=0, valmax=500, valinit=dist.gamma
             )
@@ -1466,13 +1457,9 @@ class distribution_explorer:
             self.s1 = Slider(
                 self.ax1, param_names[1], valmin=0.01, valmax=2, valinit=dist.sigma
             )
-            try:  # clear the slider axis if it exists
-                plt.sca(self.ax2)
-                plt.cla()
-            except AttributeError:  # if the slider axis does no exist (because it was destroyed by a 2P distribution) then recreate it
-                self.ax2 = plt.axes(
-                    [0.1, 0.05, 0.8, 0.03], facecolor=self.background_color
-                )
+            plt.sca(self.ax2)
+            plt.cla()
+            self.ax2.set_visible(True)
             self.s2 = Slider(
                 self.ax2, param_names[2], valmin=0, valmax=500, valinit=dist.gamma
             )
@@ -1489,10 +1476,7 @@ class distribution_explorer:
             self.s1 = Slider(
                 self.ax1, param_names[1], valmin=0.01, valmax=20, valinit=dist.sigma
             )
-            try:  # clear the slider axis if it exists
-                self.ax2.remove()  # this will destroy the axes
-            except KeyError:
-                pass
+            self.ax2.set_visible(False)
         elif self.name == "Gumbel":
             dist = Gumbel_Distribution(mu=0, sigma=10)
             param_names = ["Mu", "Sigma", ""]
@@ -1506,10 +1490,7 @@ class distribution_explorer:
             self.s1 = Slider(
                 self.ax1, param_names[1], valmin=0.01, valmax=20, valinit=dist.sigma
             )
-            try:  # clear the slider axis if it exists
-                self.ax2.remove()  # this will destroy the axes
-            except KeyError:
-                pass
+            self.ax2.set_visible(False)
         elif self.name == "Exponential":
             dist = Exponential_Distribution(Lambda=1, gamma=0)
             param_names = ["Lambda", "Gamma", ""]
@@ -1523,10 +1504,7 @@ class distribution_explorer:
             self.s1 = Slider(
                 self.ax1, param_names[1], valmin=0, valmax=500, valinit=dist.gamma
             )
-            try:  # clear the slider axis if it exists
-                self.ax2.remove()  # this will destroy the axes
-            except KeyError:
-                pass
+            self.ax2.set_visible(False)
         elif self.name == "Beta":
             dist = Beta_Distribution(alpha=2, beta=2)
             param_names = ["Alpha", "Beta", ""]
@@ -1540,10 +1518,7 @@ class distribution_explorer:
             self.s1 = Slider(
                 self.ax1, param_names[1], valmin=0.01, valmax=5, valinit=dist.beta
             )
-            try:  # clear the slider axis if it exists
-                self.ax2.remove()  # this will destroy the axes
-            except KeyError:
-                pass
+            self.ax2.set_visible(False)
         else:
             raise ValueError(str(self.name + " is an unknown distribution name"))
         plt.suptitle(dist.param_title_long, fontsize=15)

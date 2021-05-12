@@ -1893,14 +1893,13 @@ class distribution_confidence_intervals:
                     None  # this will not be used but it is required for the output
                 )
         else:
+            # this allows CI_type in the CDF,SF,CHF to override CI_type from
+            # above (either the default of time if unspecified or whatever came
+            # from the probability plot)
             if "CI_type" in kwargs_list:
-                CI_type = kwargs.pop(
-                    "CI_type"
-                )  # this allows CI_type in the CDF,SF,CHF to override CI_type from above (either the default of time if unspecified or whatever came from the probability plot)
-            elif self.CI_type is not None:
-                CI_type = self.CI_type
+                CI_type = kwargs.pop("CI_type")
             else:
-                CI_type = "time"
+                CI_type = self.CI_type
         return CI_type, plot_CI, CI
 
     @staticmethod
@@ -2012,6 +2011,7 @@ class distribution_confidence_intervals:
             and self.Cov_alpha_beta is not None
             and self.Z is not None
             and (plot_CI is True or q is not None)
+            and CI_type is not None
         ):
             if CI_type in ["time", "t", "T", "TIME", "Time"]:
                 CI_type = "time"
@@ -2199,6 +2199,7 @@ class distribution_confidence_intervals:
             and self.Cov_alpha_beta is not None
             and self.Z is not None
             and (plot_CI is True or q is not None)
+            and CI_type is not None
         ):
             if CI_type in ["time", "t", "T", "TIME", "Time"]:
                 CI_type = "time"
@@ -2390,6 +2391,7 @@ class distribution_confidence_intervals:
             and self.Cov_alpha_beta is not None
             and self.Z is not None
             and (plot_CI is True or q is not None)
+            and CI_type is not None
         ):
             if CI_type in ["time", "t", "T", "TIME", "Time"]:
                 CI_type = "time"
@@ -2579,6 +2581,7 @@ class distribution_confidence_intervals:
             and self.Cov_mu_sigma is not None
             and self.Z is not None
             and (plot_CI is True or q is not None)
+            and CI_type is not None
         ):
             if CI_type in ["time", "t", "T", "TIME", "Time"]:
                 CI_type = "time"
@@ -2756,6 +2759,7 @@ class distribution_confidence_intervals:
             and self.Cov_mu_sigma is not None
             and self.Z is not None
             and (plot_CI is True or q is not None)
+            and CI_type is not None
         ):
             if CI_type in ["time", "t", "T", "TIME", "Time"]:
                 CI_type = "time"
@@ -2940,6 +2944,7 @@ class distribution_confidence_intervals:
             and self.Cov_alpha_beta is not None
             and self.Z is not None
             and (plot_CI is True or q is not None)
+            and CI_type is not None
         ):
             if CI_type in ["time", "t", "T", "TIME", "Time"]:
                 CI_type = "time"
@@ -3127,6 +3132,7 @@ class distribution_confidence_intervals:
             and self.Cov_mu_sigma is not None
             and self.Z is not None
             and (plot_CI is True or q is not None)
+            and CI_type is not None
         ):
             if CI_type in ["time", "t", "T", "TIME", "Time"]:
                 CI_type = "time"

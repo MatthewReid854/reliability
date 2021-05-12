@@ -930,9 +930,9 @@ class Fit_Everything:
             plt.show()
 
     def __probplot_layout(self):
-        '''
+        """
         Internal function to provide layout formatting of the plots.
-        '''
+        """
         items = len(self.results.index.values)  # number of items that were fitted
         if items == 13:  # ------------------------ w   , h    w , h
             cols, rows, figsize, figsizePP = 5, 3, (17.5, 8), (10, 7.5)
@@ -953,9 +953,9 @@ class Fit_Everything:
         return cols, rows, figsize, figsizePP
 
     def __histogram_plot(self):
-        '''
+        """
         Generates a histogram plot of PDF and CDF of teh fitted distributions.
-        '''
+        """
         X = self.failures
         # define plotting limits
         delta = max(X) - min(X)
@@ -1142,10 +1142,10 @@ class Fit_Everything:
         plt.subplots_adjust(left=0.07, bottom=0.10, right=0.97, top=0.88, wspace=0.15)
 
     def __P_P_plot(self):
-        '''
+        """
         Generates a subplot of Probability-Probability plots to compare the
         parametric vs non-parametric plots of the fitted distributions.
-        '''
+        """
         # Kaplan-Meier estimate of quantiles. Used in P-P plot.
         nonparametric = KaplanMeier(
             failures=self.failures,
@@ -1309,9 +1309,9 @@ class Fit_Everything:
         plt.tight_layout()
 
     def __probability_plot(self, best_only=False):
-        '''
+        """
         Generates a subplot of all the probability plots
-        '''
+        """
         from reliability.Probability_plotting import (
             Weibull_probability_plot,
             Normal_probability_plot,
@@ -1561,7 +1561,7 @@ class Fit_Weibull_2P:
         method="MLE",
         optimizer=None,
         force_beta=None,
-        **kwargs
+        **kwargs,
     ):
 
         inputs = fitters_input_checking(
@@ -1783,7 +1783,7 @@ class Fit_Weibull_2P:
                 __fitted_dist_params=self,
                 CI=CI,
                 CI_type=CI_type,
-                **kwargs
+                **kwargs,
             )
             self.probability_plot = plt.gca()
 
@@ -1973,7 +1973,7 @@ class Fit_Weibull_2P_grouped:
         method="MLE",
         optimizer=None,
         CI_type="time",
-        **kwargs
+        **kwargs,
     ):
 
         if dataframe is None or type(dataframe) is not pd.core.frame.DataFrame:
@@ -2444,7 +2444,7 @@ class Fit_Weibull_2P_grouped:
                 __fitted_dist_params=self,
                 CI=CI,
                 CI_type=CI_type,
-                **kwargs
+                **kwargs,
             )
             self.probability_plot = plt.gca()
 
@@ -2598,7 +2598,7 @@ class Fit_Weibull_3P:
         CI_type="time",
         optimizer=None,
         method="MLE",
-        **kwargs
+        **kwargs,
     ):
 
         inputs = fitters_input_checking(
@@ -2839,7 +2839,7 @@ class Fit_Weibull_3P:
                 __fitted_dist_params=self,
                 CI=CI,
                 CI_type=CI_type,
-                **kwargs
+                **kwargs,
             )
             if self.gamma < 0.01:
                 # manually change the legend to reflect that Weibull_3P was fitted. The default legend in the probability plot thinks Weibull_2P was fitted when gamma=0
@@ -2874,63 +2874,135 @@ class Fit_Weibull_3P:
 
 class Fit_Weibull_Mixture:
     """
-    Fit_Weibull_Mixture
-    Fits a mixture of 2 x Weibull_2P distributions (this does not fit the gamma parameter).
-    Right censoring is supported, though care should be taken to ensure that there still appears to be two groups when plotting only the failure data.
-    A second group cannot be made from a mostly or totally censored set of samples.
-    Use this model when you think there are multiple failure modes acting to create the failure data.
+    Fits a mixture of two Weibull_2P distributions (this does not fit the gamma
+    parameter). Right censoring is supported, though care should be taken to
+    ensure that there still appears to be two groups when plotting only the
+    failure data. A second group cannot be made from a mostly or totally
+    censored set of samples. Use this model when you think there are multiple
+    failure modes acting to create the failure data.
 
-    This is different to the Weibull Competing Risks as the overall Survival Function is the sum of the individual Survival Functions multiplied by a proportion
-    rather than being the product as is the case in the Weibull Competing Risks Model.
-    Mixture ==> SF_model = (proportion_1 x SF_1) + ((1-proportion_1) x SF_2)
-    Competing Risks ==> SF_model = SF_1 x SF_2
+    Parameters
+    ----------
+    failures : array, list
+        An array or list of the failure data. There must be at least 4 failures,
+        but it is highly recommended to use another model if you have less than
+        20 failures.
+    right_censored : array, list, optional
+        The right censored data. Optional input. Default = None.
+    show_probability_plot : bool, optional
+        True or False. Default = True
+    print_results : bool, optional
+        Prints a dataframe of the point estimate, standard error, Lower CI and
+        Upper CI for each parameter. True or False. Default = True
+    optimizer : str, optional
+        The optimisation algorithm used to find the solution. Must be either
+        'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods.
+        If the bounded method fails, 'nelder-mead' will be used. If
+        'nelder-mead' fails then the initial guess will be returned with a
+        warning. For more information on these optimizers see
+        https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
+        Default is 'L-BFGS-B' if the data is <= 97% right censored or 'TNC' if
+        the data is > 97% right censored.
+    CI : float, optional
+        confidence interval for estimating confidence limits on parameters. Must
+        be between 0 and 1. Default is 0.95 for 95% CI.
+    kwargs
+        Plotting keywords that are passed directly to matplotlib for the
+        probability plot (e.g. color, label, linestyle)
 
-    Similar to the competing risks model, you can use this model when you think there are multiple failure modes acting to create the failure data.
+    Returns
+    -------
+    alpha_1 : float
+        the fitted Weibull_2P alpha parameter for the first (left) group
+    beta_1 : float
+        the fitted Weibull_2P beta parameter for the first (left) group
+    alpha_2 : float
+        the fitted Weibull_2P alpha parameter for the second (right) group
+    beta_2 : float
+        the fitted Weibull_2P beta parameter for the second (right) group
+    proportion_1 : float
+        the fitted proportion of the first (left) group
+    proportion_2 : float
+        the fitted proportion of the second (right) group. Same as
+        1-proportion_1
+    alpha_1_SE : float
+        the standard error (sqrt(variance)) of the parameter
+    beta_1_SE :float
+        the standard error (sqrt(variance)) of the parameter
+    alpha_2_SE : float
+        the standard error (sqrt(variance)) of the parameter
+    beta_2_SE :float
+        the standard error (sqrt(variance)) of the parameter
+    proportion_1_SE : float
+        the standard error (sqrt(variance)) of the parameter
+    alpha_1_upper : float
+        the upper CI estimate of the parameter
+    alpha_1_lower : float
+        the lower CI estimate of the parameter
+    alpha_2_upper : float
+        the upper CI estimate of the parameter
+    alpha_2_lower : float
+        the lower CI estimate of the parameter
+    beta_1_upper : float
+        the upper CI estimate of the parameter
+    beta_1_lower : float
+        the lower CI estimate of the parameter
+    beta_2_upper : float
+        the upper CI estimate of the parameter
+    beta_2_lower : float
+        the lower CI estimate of the parameter
+    proportion_1_upper : float
+        the upper CI estimate of the parameter
+    proportion_1_lower : float
+        the lower CI estimate of the parameter
+    loglik : float
+        Log Likelihood (as used in Minitab and Reliasoft)
+    loglik2 : float
+        LogLikelihood*-2 (as used in JMP Pro)
+    AICc : float
+        Akaike Information Criterion
+    BIC : float
+        Bayesian Information Criterion
+    AD : float
+        the Anderson Darling (corrected) statistic (as reported by Minitab)
+    distribution : object
+        a Mixture_Model object with the parameters of the fitted distribution
+    results : dataframe
+        a pandas dataframe of the results (point estimate, standard error,
+        lower CI and upper CI for each parameter)
+    goodness_of_fit : dataframe
+        a pandas dataframe of the goodness of fit values (Log-likelihood, AICc,
+        BIC, AD).
+    probability_plot : object
+        the axes handle for the probability plot. This is only returned if
+        show_probability_plot = True
 
-    Whilst some failure modes may not be fitted as well by a Weibull distribution as they may be by another distribution, it
-    is unlikely that a mixture of data from two distributions (particularly if they are overlapping) will be fitted
-    noticeably better by other types of mixtures than would be achieved by a Weibull mixture. For this reason, other types
+    Notes
+    -----
+    This is different to the Weibull Competing Risks as the overall Survival
+    Function is the sum of the individual Survival Functions multiplied by a
+    proportion rather than being the product as is the case in the Weibull
+    Competing Risks Model.
+
+    Mixture Model: :math:`{SF}_{model} = {proportion}_1 * {SF}_1) +
+    ((1-{proportion}_1) * {SF}_2)`
+
+    Competing Risks Model: :math:`{SF}_{model} = {SF}_1 * {SF}_2`
+
+    Similar to the competing risks model, you can use this model when you think
+    there are multiple failure modes acting to create the failure data.
+
+    Whilst some failure modes may not be fitted as well by a Weibull
+    distribution as they may be by another distribution, it is unlikely that a
+    mixture of data from two distributions (particularly if they are
+    overlapping) will be fitted noticeably better by other types of mixtures
+    than would be achieved by a Weibull mixture. For this reason, other types
     of mixtures are not implemented.
 
-    Inputs:
-    failures - an array or list of the failure data. There must be at least 4 failures, but it is highly recommended to use another model if you have
-        less than 20 failures.
-    right_censored - an array or list of right censored data
-    print_results - True/False. This will print results to console. Default is True
-    CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - 'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
-    show_probability_plot - True/False. This will show the probability plot with the fitted mixture CDF. Default is True.
-
-    Outputs:
-    alpha_1 - the fitted Weibull_2P alpha parameter for the first (left) group
-    beta_1 - the fitted Weibull_2P beta parameter for the first (left) group
-    alpha_2 - the fitted Weibull_2P alpha parameter for the second (right) group
-    beta_2 - the fitted Weibull_2P beta parameter for the second (right) group
-    proportion_1 - the fitted proportion of the first (left) group
-    proportion_2 - the fitted proportion of the second (right) group. Same as 1-proportion_1
-    alpha_1_SE - the standard error on the parameter
-    beta_1_SE - the standard error on the parameter
-    alpha_2_SE - the standard error on the parameter
-    beta_2_SE - the standard error on the parameter
-    proportion_1_SE - the standard error on the parameter
-    alpha_1_upper - the upper confidence interval estimate of the parameter
-    alpha_1_lower - the lower confidence interval estimate of the parameter
-    beta_1_upper - the upper confidence interval estimate of the parameter
-    beta_1_lower - the lower confidence interval estimate of the parameter
-    alpha_2_upper - the upper confidence interval estimate of the parameter
-    alpha_2_lower - the lower confidence interval estimate of the parameter
-    beta_2_upper - the upper confidence interval estimate of the parameter
-    beta_2_lower - the lower confidence interval estimate of the parameter
-    proportion_1_upper - the upper confidence interval estimate of the parameter
-    proportion_1_lower - the lower confidence interval estimate of the parameter
-    loglik - Log Likelihood (as used in Minitab and Reliasoft)
-    loglik2 - LogLikelihood*-2 (as used in JMP Pro)
-    AICc - Akaike Information Criterion
-    BIC - Bayesian Information Criterion
-    AD - the Anderson Darling (corrected) statistic (as reported by Minitab)
-    results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
-    goodness_of_fit - a dataframe of the goodness of fit values (Log-likelihood, AICc, BIC, AD).
-    probability_plot - the axes handle for the probability plot (only returned if show_probability_plot = True)
+    If the fitting process encounters a problem a warning will be printed. This
+    may be caused by the chosen distribution being a very poor fit to the data
+    or the data being heavily censored. If a warning is printed, consider trying
+    a different optimiser.
     """
 
     def __init__(
@@ -2941,6 +3013,7 @@ class Fit_Weibull_Mixture:
         print_results=True,
         CI=0.95,
         optimizer=None,
+        **kwargs,
     ):
 
         inputs = fitters_input_checking(
@@ -3231,27 +3304,29 @@ class Fit_Weibull_Mixture:
             Weibull_probability_plot(
                 failures=failures, right_censored=rc, show_fitted_distribution=False
             )
-            label_str = str(
-                r"Fitted Weibull MM "
-                + str(round_to_decimals(self.proportion_1, dec))
-                + r" ($\alpha_1=$"
-                + str(round_to_decimals(self.alpha_1, dec))
-                + r", $\beta_1=$"
-                + str(round_to_decimals(self.beta_1, dec))
-                + ")+\n                             "
-                + str(round_to_decimals(self.proportion_2, dec))
-                + r" ($\alpha_2=$"
-                + str(round_to_decimals(self.alpha_2, dec))
-                + r", $\beta_2=$"
-                + str(round_to_decimals(self.beta_2, dec))
-                + ")"
-            )
+            if "label" in kwargs:
+                label_str = kwargs.pop("label")
+            else:
+                label_str = str(
+                    r"Fitted Weibull MM "
+                    + str(round_to_decimals(self.proportion_1, dec))
+                    + r" ($\alpha_1=$"
+                    + str(round_to_decimals(self.alpha_1, dec))
+                    + r", $\beta_1=$"
+                    + str(round_to_decimals(self.beta_1, dec))
+                    + ")+\n                             "
+                    + str(round_to_decimals(self.proportion_2, dec))
+                    + r" ($\alpha_2=$"
+                    + str(round_to_decimals(self.alpha_2, dec))
+                    + r", $\beta_2=$"
+                    + str(round_to_decimals(self.beta_2, dec))
+                    + ")"
+                )
             xvals = np.logspace(
                 np.log10(min(failures)) - 3, np.log10(max(failures)) + 1, 1000
             )
-            self.distribution.CDF(
-                xvals=xvals, label=label_str
-            )  # need to add this manually as Weibull_probability_plot can only add Weibull_2P and Weibull_3P using __fitted_dist_params
+            self.distribution.CDF(xvals=xvals, label=label_str, **kwargs)
+            # need to add this manually as Weibull_probability_plot can only add Weibull_2P and Weibull_3P using __fitted_dist_params
             plt.title("Probability Plot\nWeibull Mixture CDF")
             self.probability_plot = plt.gca()
 
@@ -3282,53 +3357,114 @@ class Fit_Weibull_Mixture:
 
 class Fit_Weibull_CR:
     """
-    Fit_Weibull_CR
-    Fits a Weibull Competing Risks Model consisting of 2 x Weibull_2P distributions (this does not fit the gamma parameter).
-    This is different to the Weibull Mixture model as the overall Survival Function is the product of the individual Survival Functions rather than
+    Fits a Weibull Competing Risks Model consisting of two Weibull_2P
+    distributions (this does not fit the gamma parameter). Similar to the
+    mixture model, you can use this model when you think there are multiple
+    failure modes acting to create the failure data.
+
+    Parameters
+    ----------
+    failures : array, list
+        An array or list of the failure data. There must be at least 4 failures,
+        but it is highly recommended to use another model if you have less than
+        20 failures.
+    right_censored : array, list, optional
+        The right censored data. Optional input. Default = None.
+    show_probability_plot : bool, optional
+        True or False. Default = True
+    print_results : bool, optional
+        Prints a dataframe of the point estimate, standard error, Lower CI and
+        Upper CI for each parameter. True or False. Default = True
+    optimizer : str, optional
+        The optimisation algorithm used to find the solution. Must be either
+        'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods.
+        If the bounded method fails, 'nelder-mead' will be used. If
+        'nelder-mead' fails then the initial guess will be returned with a
+        warning. For more information on these optimizers see
+        https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
+        Default is 'L-BFGS-B' if the data is <= 97% right censored or 'TNC' if
+        the data is > 97% right censored.
+    CI : float, optional
+        confidence interval for estimating confidence limits on parameters. Must
+        be between 0 and 1. Default is 0.95 for 95% CI.
+    kwargs
+        Plotting keywords that are passed directly to matplotlib for the
+        probability plot (e.g. color, label, linestyle)
+
+    Returns
+    -------
+    alpha_1 : float
+        the fitted Weibull_2P alpha parameter for the first distribution
+    beta_1 : float
+        the fitted Weibull_2P beta parameter for the first distribution
+    alpha_2 : float
+        the fitted Weibull_2P alpha parameter for the second distribution
+    beta_2 : float
+        the fitted Weibull_2P beta parameter for the second distribution
+    alpha_1_SE : float
+        the standard error (sqrt(variance)) of the parameter
+    beta_1_SE :float
+        the standard error (sqrt(variance)) of the parameter
+    alpha_2_SE : float
+        the standard error (sqrt(variance)) of the parameter
+    beta_2_SE :float
+        the standard error (sqrt(variance)) of the parameter
+    alpha_1_upper : float
+        the upper CI estimate of the parameter
+    alpha_1_lower : float
+        the lower CI estimate of the parameter
+    alpha_2_upper : float
+        the upper CI estimate of the parameter
+    alpha_2_lower : float
+        the lower CI estimate of the parameter
+    beta_1_upper : float
+        the upper CI estimate of the parameter
+    beta_1_lower : float
+        the lower CI estimate of the parameter
+    beta_2_upper : float
+        the upper CI estimate of the parameter
+    beta_2_lower : float
+        the lower CI estimate of the parameter
+    loglik : float
+        Log Likelihood (as used in Minitab and Reliasoft)
+    loglik2 : float
+        LogLikelihood*-2 (as used in JMP Pro)
+    AICc : float
+        Akaike Information Criterion
+    BIC : float
+        Bayesian Information Criterion
+    AD : float
+        the Anderson Darling (corrected) statistic (as reported by Minitab)
+    distribution : object
+        a Competing_Risks_Model object with the parameters of the fitted
+        distribution
+    results : dataframe
+        a pandas dataframe of the results (point estimate, standard error,
+        lower CI and upper CI for each parameter)
+    goodness_of_fit : dataframe
+        a pandas dataframe of the goodness of fit values (Log-likelihood, AICc,
+        BIC, AD).
+    probability_plot : object
+        the axes handle for the probability plot. This is only returned if
+        show_probability_plot = True
+
+    Notes
+    -----
+    This is different to the Weibull Mixture model as the overall Survival
+    Function is the product of the individual Survival Functions rather than
     being the sum as is the case in the Weibull Mixture Model.
-    Competing Risks ==> SF_model = SF_1 x SF_2
-    Mixture ==> SF_model = (proportion_1 x SF_1) + ((1-proportion_1) x SF_2)
 
-    Similar to the mixture model, you can use this model when you think there are multiple failure modes acting to create the failure data.
+    Mixture Model: :math:`{SF}_{model} = {proportion}_1 * {SF}_1) +
+    ((1-{proportion}_1) * {SF}_2)`
 
-    Whilst some failure modes may not be fitted as well by a Weibull distribution as they may be by another distribution, it is unlikely that data
-    from a competing risks model will be fitted noticeably better by other types of competing risks models than would be achieved by a Weibull
-    Competing Risks model. For this reason, other types of competing risks models are not implemented.
+    Competing Risks Model: :math:`{SF}_{model} = {SF}_1 * {SF}_2`
 
-    Inputs:
-    failures - an array or list of the failure data. There must be at least 4 failures, but it is highly recommended to use another model if you have
-        less than 20 failures.
-    right_censored - an array or list of right censored data
-    print_results - True/False. This will print results to console. Default is True.
-    CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - 'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
-    show_probability_plot - True/False. This will show the probability plot with the fitted Weibull_CR CDF. Default is True.
-
-    Outputs:
-    alpha_1 - the fitted Weibull_2P alpha parameter for the first distribution
-    beta_1 - the fitted Weibull_2P beta parameter for the first distribution
-    alpha_2 - the fitted Weibull_2P alpha parameter for the second distribution
-    beta_2 - the fitted Weibull_2P beta parameter for the second distribution
-    alpha_1_SE - the standard error on the parameter
-    beta_1_SE - the standard error on the parameter
-    alpha_2_SE - the standard error on the parameter
-    beta_2_SE - the standard error on the parameter
-    alpha_1_upper - the upper confidence interval estimate of the parameter
-    alpha_1_lower - the lower confidence interval estimate of the parameter
-    beta_1_upper - the upper confidence interval estimate of the parameter
-    beta_1_lower - the lower confidence interval estimate of the parameter
-    alpha_2_upper - the upper confidence interval estimate of the parameter
-    alpha_2_lower - the lower confidence interval estimate of the parameter
-    beta_2_upper - the upper confidence interval estimate of the parameter
-    beta_2_lower - the lower confidence interval estimate of the parameter
-    loglik - Log Likelihood (as used in Minitab and Reliasoft)
-    loglik2 - LogLikelihood*-2 (as used in JMP Pro)
-    AICc - Akaike Information Criterion
-    BIC - Bayesian Information Criterion
-    AD - the Anderson Darling (corrected) statistic (as reported by Minitab)
-    results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
-    goodness_of_fit - a dataframe of the goodness of fit values (Log-likelihood, AICc, BIC, AD).
-    probability_plot - the axes handle for the probability plot (only returned if show_probability_plot = True)
+    Whilst some failure modes may not be fitted as well by a Weibull
+    distribution as they may be by another distribution, it is unlikely that
+    data from a competing risks model will be fitted noticeably better by other
+    types of competing risks models than would be achieved by a Weibull
+    Competing Risks model. For this reason, other types of competing risks
+    models are not implemented.
     """
 
     def __init__(
@@ -3339,6 +3475,7 @@ class Fit_Weibull_CR:
         print_results=True,
         CI=0.95,
         optimizer=None,
+        **kwargs,
     ):
 
         inputs = fitters_input_checking(
@@ -3578,23 +3715,26 @@ class Fit_Weibull_CR:
             Weibull_probability_plot(
                 failures=failures, right_censored=rc, show_fitted_distribution=False
             )
-            label_str = str(
-                r"Fitted Weibull CR "
-                + r" ($\alpha_1=$"
-                + str(round_to_decimals(self.alpha_1, dec))
-                + r", $\beta_1=$"
-                + str(round_to_decimals(self.beta_1, dec))
-                + ") ×\n                            "
-                + r" ($\alpha_2=$"
-                + str(round_to_decimals(self.alpha_2, dec))
-                + r", $\beta_2=$"
-                + str(round_to_decimals(self.beta_2, dec))
-                + ")"
-            )
+            if "label" in kwargs:
+                label_str = kwargs.pop("label")
+            else:
+                label_str = str(
+                    r"Fitted Weibull CR "
+                    + r" ($\alpha_1=$"
+                    + str(round_to_decimals(self.alpha_1, dec))
+                    + r", $\beta_1=$"
+                    + str(round_to_decimals(self.beta_1, dec))
+                    + ") ×\n                            "
+                    + r" ($\alpha_2=$"
+                    + str(round_to_decimals(self.alpha_2, dec))
+                    + r", $\beta_2=$"
+                    + str(round_to_decimals(self.beta_2, dec))
+                    + ")"
+                )
             xvals = np.logspace(
                 np.log10(min(failures)) - 3, np.log10(max(failures)) + 1, 1000
             )
-            self.distribution.CDF(xvals=xvals, label=label_str)
+            self.distribution.CDF(xvals=xvals, label=label_str, **kwargs)
             plt.title("Probability Plot\nWeibull Competing Risks CDF")
             self.probability_plot = plt.gca()
 
@@ -3666,7 +3806,7 @@ class Fit_Exponential_1P:
         percentiles=None,
         method="MLE",
         optimizer=None,
-        **kwargs
+        **kwargs,
     ):
 
         inputs = fitters_input_checking(
@@ -3846,7 +3986,7 @@ class Fit_Exponential_1P:
                 right_censored=rc,
                 __fitted_dist_params=self,
                 CI=CI,
-                **kwargs
+                **kwargs,
             )
             self.probability_plot = plt.gca()
 
@@ -3920,7 +4060,7 @@ class Fit_Exponential_2P:
         percentiles=None,
         method="MLE",
         optimizer=None,
-        **kwargs
+        **kwargs,
     ):
         # To obtain the confidence intervals of the parameters, the gamma parameter is estimated by optimizing the log-likelihood function but
         # it is assumed as fixed because the variance-covariance matrix of the estimated parameters cannot be determined numerically. By assuming
@@ -4129,7 +4269,7 @@ class Fit_Exponential_2P:
                 right_censored=rc,
                 CI=CI,
                 __fitted_dist_params=self,
-                **kwargs
+                **kwargs,
             )
             self.probability_plot = plt.gca()
 
@@ -4211,7 +4351,7 @@ class Fit_Normal_2P:
         CI_type="time",
         method="MLE",
         force_sigma=None,
-        **kwargs
+        **kwargs,
     ):
 
         inputs = fitters_input_checking(
@@ -4438,7 +4578,7 @@ class Fit_Normal_2P:
                 __fitted_dist_params=self,
                 CI=CI,
                 CI_type=CI_type,
-                **kwargs
+                **kwargs,
             )
             self.probability_plot = plt.gca()
 
@@ -4518,7 +4658,7 @@ class Fit_Gumbel_2P:
         CI_type="time",
         method="MLE",
         optimizer=None,
-        **kwargs
+        **kwargs,
     ):
 
         inputs = fitters_input_checking(
@@ -4715,7 +4855,7 @@ class Fit_Gumbel_2P:
                 __fitted_dist_params=self,
                 CI=CI,
                 CI_type=CI_type,
-                **kwargs
+                **kwargs,
             )
             self.probability_plot = plt.gca()
 
@@ -4787,7 +4927,7 @@ class Fit_Lognormal_2P:
         CI_type="time",
         method="MLE",
         force_sigma=None,
-        **kwargs
+        **kwargs,
     ):
 
         inputs = fitters_input_checking(
@@ -5013,7 +5153,7 @@ class Fit_Lognormal_2P:
                 __fitted_dist_params=self,
                 CI=CI,
                 CI_type=CI_type,
-                **kwargs
+                **kwargs,
             )
             self.probability_plot = plt.gca()
 
@@ -5097,7 +5237,7 @@ class Fit_Lognormal_3P:
         CI_type="time",
         optimizer=None,
         method="MLE",
-        **kwargs
+        **kwargs,
     ):
 
         inputs = fitters_input_checking(
@@ -5343,7 +5483,7 @@ class Fit_Lognormal_3P:
                 __fitted_dist_params=self,
                 CI=CI,
                 CI_type=CI_type,
-                **kwargs
+                **kwargs,
             )
             if self.gamma < 0.01:
                 # manually change the legend to reflect that Lognormal_3P was fitted. The default legend in the probability plot thinks Lognormal_2P was fitted when gamma=0
@@ -5429,7 +5569,7 @@ class Fit_Gamma_2P:
         optimizer=None,
         percentiles=None,
         CI_type="time",
-        **kwargs
+        **kwargs,
     ):
 
         inputs = fitters_input_checking(
@@ -5618,7 +5758,7 @@ class Fit_Gamma_2P:
                 __fitted_dist_params=self,
                 CI_type=CI_type,
                 CI=CI,
-                **kwargs
+                **kwargs,
             )
             self.probability_plot = plt.gca()
 
@@ -5692,7 +5832,7 @@ class Fit_Gamma_3P:
         method="MLE",
         percentiles=None,
         CI_type="time",
-        **kwargs
+        **kwargs,
     ):
 
         inputs = fitters_input_checking(
@@ -5928,7 +6068,7 @@ class Fit_Gamma_3P:
                 __fitted_dist_params=self,
                 CI=CI,
                 CI_type=CI_type,
-                **kwargs
+                **kwargs,
             )
             if self.gamma < 0.01:
                 # manually change the legend to reflect that Gamma_3P was fitted. The default legend in the probability plot thinks Gamma_2P was fitted when gamma=0
@@ -6014,7 +6154,7 @@ class Fit_Beta_2P:
         CI_type="time",
         method="MLE",
         optimizer=None,
-        **kwargs
+        **kwargs,
     ):
 
         inputs = fitters_input_checking(
@@ -6206,7 +6346,7 @@ class Fit_Beta_2P:
                 __fitted_dist_params=self,
                 CI=CI,
                 CI_type=CI_type,
-                **kwargs
+                **kwargs,
             )
             self.probability_plot = plt.gca()
 
@@ -6277,7 +6417,7 @@ class Fit_Loglogistic_2P:
         CI_type="time",
         method="MLE",
         optimizer=None,
-        **kwargs
+        **kwargs,
     ):
 
         inputs = fitters_input_checking(
@@ -6473,7 +6613,7 @@ class Fit_Loglogistic_2P:
                 __fitted_dist_params=self,
                 CI=CI,
                 CI_type=CI_type,
-                **kwargs
+                **kwargs,
             )
             self.probability_plot = plt.gca()
 
@@ -6550,7 +6690,7 @@ class Fit_Loglogistic_3P:
         optimizer=None,
         method="MLE",
         percentiles=None,
-        **kwargs
+        **kwargs,
     ):
 
         inputs = fitters_input_checking(
@@ -6791,7 +6931,7 @@ class Fit_Loglogistic_3P:
                 __fitted_dist_params=self,
                 CI=CI,
                 CI_type=CI_type,
-                **kwargs
+                **kwargs,
             )
             if self.gamma < 0.01:
                 # manually change the legend to reflect that Loglogistic_3P was fitted. The default legend in the probability plot thinks Loglogistic_2P was fitted when gamma=0

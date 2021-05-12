@@ -7689,10 +7689,6 @@ class Mixture_Model:
 
     :math:`{CDF}_{total} = ({CDF}_{1} * {p}_{1}) + ({CDF}_{2} * {p}_{2}) + ({CDF}_{3} * {p}_{3}) + \dotsc + ({CDF}_{n} * {p}_{n})`
 
-    Second test for formatting
-
-    :math:`{CDF}_{total} = ({CDF}_{1} \times {p}_{1}) + ({CDF}_{2} \times {p}_{2}) + ({CDF}_{3} \times {p}_{3}) + \dotsc + ({CDF}_{n} \times {p}_{n})`
-
     The output API is similar to the other probability distributions (Weibull,
     Normal, etc.) as shown below.
 

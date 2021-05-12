@@ -293,9 +293,8 @@ def Weibull_probability_plot(
     plt.xscale("log")
     plt.grid(b=True, which="major", color="k", alpha=0.3, linestyle="-")
     plt.grid(b=True, which="minor", color="k", alpha=0.08, linestyle="-")
-    plt.gcf().set_size_inches(
-        9, 9
-    )  # adjust the figsize. This is done outside of figure creation so that layering of multiple plots is possible
+    # adjust the figsize. This is done outside of figure creation so that layering of multiple plots is possible
+    plt.gcf().set_size_inches(9, 9)
     if show_fitted_distribution is True:
         wbf.CDF(label=label, **kwargs)
         plt.legend(loc="upper left")
