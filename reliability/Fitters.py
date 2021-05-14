@@ -1,7 +1,8 @@
 """
 Fitters
 
-This module contains custom fitting functions for parametric distributions which support complete and right censored data.
+This module contains custom fitting functions for parametric distributions which
+support complete and right censored data.
 The included functions are:
 Fit_Weibull_2P
 Fit_Weibull_3P
@@ -20,12 +21,19 @@ Fit_Weibull_Mixture
 Fit_Weibull_CR
 
 Note that the Beta distribution is only for data in the range 0 < t < 1.
-There is also a Fit_Everything function which will fit all distributions (except the Weibull_Mixture and Weibull_CR models) and will provide plots and a table of values.
+There is also a Fit_Everything function which will fit all distributions (except
+the Weibull_Mixture and Weibull_CR models) and will provide plots and a table of
+values.
 
-All functions in this module work using autograd to find the derivative of the log-likelihood function. In this way, the code only needs to specify
-the log PDF and log SF in order to obtain the fitted parameters. Initial guesses of the parameters are essential for autograd and are obtained
-using scipy or least squares (depending on the function). If the distribution is an extremely bad fit or is heavily censored (>99%) then these guesses may be poor and the fit might not be successful.
-Generally the fit achieved by autograd is highly successful, and whenever it fails the initial guess will be used and a warning will be displayed.
+All functions in this module work using autograd to find the derivative of the
+log-likelihood function. In this way, the code only needs to specify the log PDF
+and log SF in order to obtain the fitted parameters. Initial guesses of the
+parameters are essential for autograd and are obtained using scipy or least
+squares (depending on the function). If the distribution is an extremely bad fit
+or is heavily censored (>99%) then these guesses may be poor and the fit might
+not be successful. Generally the fit achieved by autograd is highly successful,
+and whenever it fails the initial guess will be used and a warning will be
+displayed.
 """
 
 import numpy as np
@@ -1500,19 +1508,6 @@ class Fit_Weibull_2P:
         the fitted Weibull_2P alpha parameter
     beta : float
         the fitted Weibull_2P beta parameter
-    loglik : float
-        Log Likelihood (as used in Minitab and Reliasoft)
-    loglik2 : float
-        LogLikelihood*-2 (as used in JMP Pro)
-    AICc : float
-        Akaike Information Criterion
-    BIC : float
-        Bayesian Information Criterion
-    AD : float
-        the Anderson Darling (corrected) statistic (as reported by Minitab)
-    distribution : object
-        a Weibull_Distribution object with the parameters of the fitted
-        distribution
     alpha_SE : float
         the standard error (sqrt(variance)) of the parameter
     beta_SE :float
@@ -1527,6 +1522,19 @@ class Fit_Weibull_2P:
         the upper CI estimate of the parameter
     beta_lower : float
         the lower CI estimate of the parameter
+    loglik : float
+        Log Likelihood (as used in Minitab and Reliasoft)
+    loglik2 : float
+        LogLikelihood*-2 (as used in JMP Pro)
+    AICc : float
+        Akaike Information Criterion
+    BIC : float
+        Bayesian Information Criterion
+    AD : float
+        the Anderson Darling (corrected) statistic (as reported by Minitab)
+    distribution : object
+        a Weibull_Distribution object with the parameters of the fitted
+        distribution
     results : dataframe
         a pandas dataframe of the results (point estimate, standard error,
         lower CI and upper CI for each parameter)
@@ -1869,19 +1877,6 @@ class Fit_Weibull_2P_grouped:
         the fitted Weibull_2P alpha parameter
     beta : float
         the fitted Weibull_2P beta parameter
-    loglik : float
-        Log Likelihood (as used in Minitab and Reliasoft)
-    loglik2 : float
-        LogLikelihood*-2 (as used in JMP Pro)
-    AICc : float
-        Akaike Information Criterion
-    BIC : float
-        Bayesian Information Criterion
-    AD : float
-        the Anderson Darling (corrected) statistic (as reported by Minitab)
-    distribution : object
-        a Weibull_Distribution object with the parameters of the fitted
-        distribution
     alpha_SE : float
         the standard error (sqrt(variance)) of the parameter
     beta_SE :float
@@ -1896,6 +1891,19 @@ class Fit_Weibull_2P_grouped:
         the upper CI estimate of the parameter
     beta_lower : float
         the lower CI estimate of the parameter
+    loglik : float
+        Log Likelihood (as used in Minitab and Reliasoft)
+    loglik2 : float
+        LogLikelihood*-2 (as used in JMP Pro)
+    AICc : float
+        Akaike Information Criterion
+    BIC : float
+        Bayesian Information Criterion
+    AD : float
+        the Anderson Darling (corrected) statistic (as reported by Minitab)
+    distribution : object
+        a Weibull_Distribution object with the parameters of the fitted
+        distribution
     results : dataframe
         a pandas dataframe of the results (point estimate, standard error,
         lower CI and upper CI for each parameter)
@@ -2528,19 +2536,6 @@ class Fit_Weibull_3P:
         the fitted Weibull_3P beta parameter
     gamma : float
         the fitted Weibull_3P gamma parameter
-    loglik : float
-        Log Likelihood (as used in Minitab and Reliasoft)
-    loglik2 : float
-        LogLikelihood*-2 (as used in JMP Pro)
-    AICc : float
-        Akaike Information Criterion
-    BIC : float
-        Bayesian Information Criterion
-    AD : float
-        the Anderson Darling (corrected) statistic (as reported by Minitab)
-    distribution : object
-        a Weibull_Distribution object with the parameters of the fitted
-        distribution
     alpha_SE : float
         the standard error (sqrt(variance)) of the parameter
     beta_SE :float
@@ -2561,6 +2556,19 @@ class Fit_Weibull_3P:
         the upper CI estimate of the parameter
     gamma_lower : float
         the lower CI estimate of the parameter
+    loglik : float
+        Log Likelihood (as used in Minitab and Reliasoft)
+    loglik2 : float
+        LogLikelihood*-2 (as used in JMP Pro)
+    AICc : float
+        Akaike Information Criterion
+    BIC : float
+        Bayesian Information Criterion
+    AD : float
+        the Anderson Darling (corrected) statistic (as reported by Minitab)
+    distribution : object
+        a Weibull_Distribution object with the parameters of the fitted
+        distribution
     results : dataframe
         a pandas dataframe of the results (point estimate, standard error,
         lower CI and upper CI for each parameter)
@@ -2984,10 +2992,10 @@ class Fit_Weibull_Mixture:
     proportion rather than being the product as is the case in the Weibull
     Competing Risks Model.
 
-    Mixture Model: :math:`{SF}_{model} = {proportion}_1 * {SF}_1) +
-    ((1-{proportion}_1) * {SF}_2)`
+    Mixture Model: :math:`SF_{model} = (proportion_1 × SF_1) +
+    ((1-proportion_1) × SF_2)`
 
-    Competing Risks Model: :math:`{SF}_{model} = {SF}_1 * {SF}_2`
+    Competing Risks Model: :math:`SF_{model} = SF_1 × SF_2`
 
     Similar to the competing risks model, you can use this model when you think
     there are multiple failure modes acting to create the failure data.
@@ -3454,10 +3462,10 @@ class Fit_Weibull_CR:
     Function is the product of the individual Survival Functions rather than
     being the sum as is the case in the Weibull Mixture Model.
 
-    Mixture Model: :math:`{SF}_{model} = {proportion}_1 * {SF}_1) +
-    ((1-{proportion}_1) * {SF}_2)`
+    Mixture Model: :math:`SF_{model} = (proportion_1 × SF_1) +
+    ((1-proportion_1) × SF_2)`
 
-    Competing Risks Model: :math:`{SF}_{model} = {SF}_1 * {SF}_2`
+    Competing Risks Model: :math:`SF_{model} = SF_1 × SF_2`
 
     Whilst some failure modes may not be fitted as well by a Weibull
     distribution as they may be by another distribution, it is unlikely that
@@ -3763,37 +3771,105 @@ class Fit_Weibull_CR:
 
 class Fit_Exponential_1P:
     """
-    Fit_Exponential_1P
-    Fits a 1-parameter Exponential distribution (Lambda) to the data provided.
+    Fits a one parameter Exponential distribution (Lambda) to the data provided.
 
-    Inputs:
-    failures - an array or list of failure data
-    right_censored - an array or list of right censored data
-    show_probability_plot - True/False. Defaults to True.
-    print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
-    CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    percentiles - percentiles to produce a table of percentiles failed with lower, point, and upper estimates. Default is None which results in no output. True or 'auto' will use default array [1, 5, 10,..., 95, 99]. If an array or list is specified then it will be used instead of the default array.
-    method - 'MLE' (maximum likelihood estimation), 'LS' (least squares estimation), 'RRX' (Rank regression on X), 'RRY' (Rank regression on Y). LS will perform both RRX and RRY and return the better one. Default is 'MLE'.
-    optimizer - 'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
-    kwargs are accepted for the probability plot (eg. linestyle, label, color)
+    Parameters
+    ----------
+    failures : array, list
+        The failure data. Must have at least 1 element.
+    right_censored : array, list, optional
+        The right censored data. Optional input. Default = None.
+    show_probability_plot : bool, optional
+        True or False. Default = True
+    print_results : bool, optional
+        Prints a dataframe of the point estimate, standard error, Lower CI and
+        Upper CI for the model's parameter. True or False. Default = True
+    method : str, optional
+        The method used to fit the distribution. Must be either 'MLE' (maximum
+        likelihood estimation), 'LS' (least squares estimation), 'RRX' (Rank
+        regression on X), or 'RRY' (Rank regression on Y). LS will perform both
+        RRX and RRY and return the better one. Default is 'MLE'.
+    optimizer : str, optional
+        The optimisation algorithm used to find the solution. Must be either
+        'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods.
+        If the bounded method fails, 'nelder-mead' will be used. If
+        'nelder-mead' fails then the initial guess will be returned with a
+        warning. For more information on these optimizers see
+        https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
+        Default is 'L-BFGS-B' if the data is <= 97% right censored or 'TNC' if
+        the data is > 97% right censored.
+    CI : float, optional
+        confidence interval for estimating confidence limits on parameters. Must
+        be between 0 and 1. Default is 0.95 for 95% CI.
+    percentiles : bool, str, list, array, None, optional
+        percentiles (y-values) to produce a table of percentiles failed with
+        lower, point, and upper estimates. Default is None which results in no
+        output. To use default array [1, 5, 10,..., 95, 99] set percentiles as
+        either 'auto', True, 'default', 'on'.
+        If an array or list is specified then it will be used instead of the
+        default array. Any array or list specified must contain values between
+        0 and 100.
+    kwargs
+        Plotting keywords that are passed directly to matplotlib for the
+        probability plot (e.g. color, label, linestyle)
 
-    Outputs:
-    Lambda - the fitted Exponential_1P lambda parameter
-    loglik - Log Likelihood (as used in Minitab and Reliasoft)
-    loglik2 - LogLikelihood*-2 (as used in JMP Pro)
-    AICc - Akaike Information Criterion
-    BIC - Bayesian Information Criterion
-    AD - the Anderson Darling (corrected) statistic (as reported by Minitab)
-    distribution - an Exponential_Distribution object with the parameters of the fitted distribution
-    Lambda_SE - the standard error (sqrt(variance)) of the parameter
-    Lambda_upper - the upper CI estimate of the parameter
-    Lambda_lower - the lower CI estimate of the parameter
-    results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for the parameter)
-    goodness_of_fit - a dataframe of the goodness of fit values (Log-likelihood, AICc, BIC, AD).
-    percentiles - a dataframe of the percentiles with bounds on time. This is only produced if percentiles is 'auto' or a list or array. Since percentiles defaults to None, this output is not normally produced.
-    probability_plot - the axes handle for the probability plot (only returned if show_probability_plot = True)
+    Returns
+    -------
+    Lambda : float
+        the fitted Exponential_1P Lambda parameter
+    Lambda_inv : float
+        the inverse of the fitted Exponential_1P Lambda parameter
+    Lambda_SE : float
+        the standard error (sqrt(variance)) of the parameter
+    Lambda_SE_inv : float
+        the standard error (sqrt(variance)) of the inverse of the parameter
+    Lambda_upper : float
+        the upper CI estimate of the parameter
+    Lambda_lower : float
+        the lower CI estimate of the parameter
+    Lambda_upper_inv : float
+        the upper CI estimate of the inverse of the parameter
+    Lambda_lower_inv : float
+        the lower CI estimate of the inverse of the parameter
+    loglik : float
+        Log Likelihood (as used in Minitab and Reliasoft)
+    loglik2 : float
+        LogLikelihood*-2 (as used in JMP Pro)
+    AICc : float
+        Akaike Information Criterion
+    BIC : float
+        Bayesian Information Criterion
+    AD : float
+        the Anderson Darling (corrected) statistic (as reported by Minitab)
+    distribution : object
+        a Exponential_Distribution object with the parameter of the fitted
+        distribution
+    results : dataframe
+        a pandas dataframe of the results (point estimate, standard error,
+        lower CI and upper CI for each parameter)
+    goodness_of_fit : dataframe
+        a pandas dataframe of the goodness of fit values (Log-likelihood, AICc,
+        BIC, AD).
+    percentiles : dataframe
+        a pandas dataframe of the percentiles. This is only produced if
+        percentiles is not None. Since percentiles defaults to None, this output
+        is not normally produced.
+    probability_plot : object
+        the axes handle for the probability plot. This is only returned if
+        show_probability_plot = True
 
-    *Note that this is a 1 parameter distribution but Lambda_inv is also provided as some programs (such as Minitab and scipy.stats) use this instead of Lambda
+    Notes
+    -----
+    This is a one parameter distribution, but the results provide both the
+    parameter (Lambda) as well as the inverse (1/Lambda). This is provided for
+    convenience as some other software (Minitab and scipy.stats) use 1/Lambda
+    instead of Lambda. Lambda_SE_inv, Lambda_upper_inv, and Lambda_lower_inv are
+    also provided for convenience.
+
+    If the fitting process encounters a problem a warning will be printed. This
+    may be caused by the chosen distribution being a very poor fit to the data
+    or the data being heavily censored. If a warning is printed, consider trying
+    a different optimiser.
     """
 
     def __init__(
@@ -3869,14 +3945,19 @@ class Fit_Exponential_1P:
         self.Lambda_SE = abs(covariance_matrix[0][0]) ** 0.5
         self.Lambda_upper = self.Lambda * (np.exp(Z * (self.Lambda_SE / self.Lambda)))
         self.Lambda_lower = self.Lambda * (np.exp(-Z * (self.Lambda_SE / self.Lambda)))
-        SE_inv = abs(1 / self.Lambda * np.log(self.Lambda / self.Lambda_upper) / Z)
+        self.Lambda_inv = 1 / self.Lambda
+        self.Lambda_SE_inv = abs(
+            1 / self.Lambda * np.log(self.Lambda / self.Lambda_upper) / Z
+        )
+        self.Lambda_lower_inv = 1 / self.Lambda_upper
+        self.Lambda_upper_inv = 1 / self.Lambda_lower
 
         results_data = {
             "Parameter": ["Lambda", "1/Lambda"],
-            "Point Estimate": [self.Lambda, 1 / self.Lambda],
-            "Standard Error": [self.Lambda_SE, SE_inv],
-            "Lower CI": [self.Lambda_lower, 1 / self.Lambda_upper],
-            "Upper CI": [self.Lambda_upper, 1 / self.Lambda_lower],
+            "Point Estimate": [self.Lambda, self.Lambda_inv],
+            "Standard Error": [self.Lambda_SE, self.Lambda_SE_inv],
+            "Lower CI": [self.Lambda_lower, self.Lambda_lower_inv],
+            "Upper CI": [self.Lambda_upper, self.Lambda_upper_inv],
         }
         self.results = pd.DataFrame(
             results_data,
@@ -4008,46 +4089,114 @@ class Fit_Exponential_1P:
 
 class Fit_Exponential_2P:
     """
-    Fit_Exponential_2P
-    Fits a 2-parameter Exponential distribution (Lambda,gamma) to the data provided.
-    You may also enter right censored data.
+    Fits a two parameter Exponential distribution (Lambda, gamma) to the data
+    provided.
 
-    Inputs:
-    failures - an array or list of failure data
-    right_censored - an array or list of right censored data
-    show_probability_plot - True/False. Defaults to True.
-    print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
-    CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    percentiles - percentiles to produce a table of percentiles failed with lower, point, and upper estimates. Default is None which results in no output. True or 'auto' will use default array [1, 5, 10,..., 95, 99]. If an array or list is specified then it will be used instead of the default array.
-    method - 'MLE' (maximum likelihood estimation), 'LS' (least squares estimation), 'RRX' (Rank regression on X), 'RRY' (Rank regression on Y). LS will perform both RRX and RRY and return the better one. Default is 'MLE'.
-    optimizer - 'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
-    kwargs are accepted for the probability plot (eg. linestyle, label, color)
+    Parameters
+    ----------
+    failures : array, list
+        The failure data. Must have at least 1 element.
+    right_censored : array, list, optional
+        The right censored data. Optional input. Default = None.
+    show_probability_plot : bool, optional
+        True or False. Default = True
+    print_results : bool, optional
+        Prints a dataframe of the point estimate, standard error, Lower CI and
+        Upper CI for the model's parameter. True or False. Default = True
+    method : str, optional
+        The method used to fit the distribution. Must be either 'MLE' (maximum
+        likelihood estimation), 'LS' (least squares estimation), 'RRX' (Rank
+        regression on X), or 'RRY' (Rank regression on Y). LS will perform both
+        RRX and RRY and return the better one. Default is 'MLE'.
+    optimizer : str, optional
+        The optimisation algorithm used to find the solution. Must be either
+        'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods.
+        If the bounded method fails, 'nelder-mead' will be used. If
+        'nelder-mead' fails then the initial guess will be returned with a
+        warning. For more information on these optimizers see
+        https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
+        Default is 'L-BFGS-B' if the data is <= 97% right censored or 'TNC' if
+        the data is > 97% right censored.
+    CI : float, optional
+        confidence interval for estimating confidence limits on parameters. Must
+        be between 0 and 1. Default is 0.95 for 95% CI.
+    percentiles : bool, str, list, array, None, optional
+        percentiles (y-values) to produce a table of percentiles failed with
+        lower, point, and upper estimates. Default is None which results in no
+        output. To use default array [1, 5, 10,..., 95, 99] set percentiles as
+        either 'auto', True, 'default', 'on'.
+        If an array or list is specified then it will be used instead of the
+        default array. Any array or list specified must contain values between
+        0 and 100.
+    kwargs
+        Plotting keywords that are passed directly to matplotlib for the
+        probability plot (e.g. color, label, linestyle)
 
-    Outputs:
-    Lambda - the fitted Exponential_2P lambda parameter
-    Lambda_inv - the inverse of the Lambda parameter (1/Lambda)
-    gamma - the fitted Exponential_2P gamma parameter
-    loglik - Log Likelihood (as used in Minitab and Reliasoft)
-    loglik2 - LogLikelihood*-2 (as used in JMP Pro)
-    AICc - Akaike Information Criterion
-    BIC - Bayesian Information Criterion
-    AD - the Anderson Darling (corrected) statistic (as reported by Minitab)
-    distribution - an Exponential_Distribution object with the parameters of the fitted distribution
-    Lambda_SE - the standard error (sqrt(variance)) of the parameter
-    Lambda_SE_inv - the standard error of the Lambda_inv parameter
-    gamma_SE - the standard error (sqrt(variance)) of the parameter. This will always be 0.
-    Lambda_upper - the upper CI estimate of the parameter
-    Lambda_lower - the lower CI estimate of the parameter
-    Lambda_upper_inv - the upper CI estimate of the Lambda_inv  parameter
-    Lambda_lower_inv - the lower CI estimate of the Lambda_inv parameter
-    gamma_upper - the upper CI estimate of the parameter
-    gamma_lower - the lower CI estimate of the parameter
-    results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for the parameter)
-    goodness_of_fit - a dataframe of the goodness of fit values (Log-likelihood, AICc, BIC, AD).
-    percentiles - a dataframe of the percentiles with bounds on time. This is only produced if percentiles is 'auto' or a list or array. Since percentiles defaults to None, this output is not normally produced.
-    probability_plot - the axes handle for the probability plot (only returned if show_probability_plot = True)
+    Returns
+    -------
+    Lambda : float
+        the fitted Exponential_1P Lambda parameter
+    Lambda_inv : float
+        the inverse of the fitted Exponential_1P Lambda parameter
+    gamma : float
+        the fitted Exponential_2P gamma parameter
+    Lambda_SE : float
+        the standard error (sqrt(variance)) of the parameter
+    Lambda_SE_inv : float
+        the standard error (sqrt(variance)) of the inverse of the parameter
+    gamma_SE : float
+        the standard error (sqrt(variance)) of the parameter
+    Lambda_upper : float
+        the upper CI estimate of the parameter
+    Lambda_lower : float
+        the lower CI estimate of the parameter
+    Lambda_upper_inv : float
+        the upper CI estimate of the inverse of the parameter
+    Lambda_lower_inv : float
+        the lower CI estimate of the inverse of the parameter
+    gamma_upper : float
+        the upper CI estimate of the parameter
+    gamma_lower : float
+        the lower CI estimate of the parameter
+    loglik : float
+        Log Likelihood (as used in Minitab and Reliasoft)
+    loglik2 : float
+        LogLikelihood*-2 (as used in JMP Pro)
+    AICc : float
+        Akaike Information Criterion
+    BIC : float
+        Bayesian Information Criterion
+    AD : float
+        the Anderson Darling (corrected) statistic (as reported by Minitab)
+    distribution : object
+        a Exponential_Distribution object with the parameters of the fitted
+        distribution
+    results : dataframe
+        a pandas dataframe of the results (point estimate, standard error,
+        lower CI and upper CI for each parameter)
+    goodness_of_fit : dataframe
+        a pandas dataframe of the goodness of fit values (Log-likelihood, AICc,
+        BIC, AD).
+    percentiles : dataframe
+        a pandas dataframe of the percentiles. This is only produced if
+        percentiles is not None. Since percentiles defaults to None, this output
+        is not normally produced.
+    probability_plot : object
+        the axes handle for the probability plot. This is only returned if
+        show_probability_plot = True
 
-    *Note that this is a 2 parameter distribution but Lambda_inv is also provided as some programs (such as Minitab and scipy.stats) use this instead of Lambda
+    Notes
+    -----
+    This is a two parameter distribution (Lambda, gamma), but the results
+    provide both Lambda as well as the inverse (1/Lambda). This is provided for
+    convenience as some other software (Minitab and scipy.stats) use 1/Lambda
+    instead of Lambda. Lambda_SE_inv, Lambda_upper_inv, and Lambda_lower_inv are
+    also provided for convenience.
+
+    If the fitting process encounters a problem a warning will be printed. This
+    may be caused by the chosen distribution being a very poor fit to the data
+    or the data being heavily censored. If a warning is printed, consider trying
+    a different optimiser.
     """
 
     def __init__(
@@ -4299,44 +4448,114 @@ class Fit_Exponential_2P:
 
 class Fit_Normal_2P:
     """
-    Fit_Normal_2P
-    Fits a 2-parameter Normal distribution (mu,sigma) to the data provided.
-    Note that it will return a fit that may be partially in the negative domain (x<0).
-    If you need an entirely positive distribution that is similar to Normal then consider using Weibull.
+    Fits a two parameter Normal distribution (mu,sigma) to the data provided.
+    Note that it will return a fit that may be partially in the negative domain
+    (x<0). If you need an entirely positive distribution that is similar to
+    Normal then consider using Weibull.
 
-    Inputs:
-    failures - an array or list of failure data
-    right_censored - an array or list of right censored data
-    show_probability_plot - True/False. Defaults to True.
-    print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
-    CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    CI_type - time, reliability, None. Default is time. This is the confidence bounds on time or on reliability. Use None to turn off the confidence intervals.
-    percentiles - percentiles to produce a table of percentiles failed with lower, point, and upper estimates. Default is None which results in no output. True or 'auto' will use default array [1, 5, 10,..., 95, 99]. If an array or list is specified then it will be used instead of the default array.
-    method - 'MLE' (maximum likelihood estimation), 'LS' (least squares estimation), 'RRX' (Rank regression on X), 'RRY' (Rank regression on Y). LS will perform both RRX and RRY and return the better one. Default is 'MLE'.
-    optimizer - 'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
-    force_sigma - Use this to specify the sigma value if you need to force sigma to be a certain value. Used in ALT probability plotting. Optional input.
-    kwargs are accepted for the probability plot (eg. linestyle, label, color)
+    Parameters
+    ----------
+    failures : array, list
+        The failure data. Must have at least 2 elements if force_sigma is not
+        specified or at least 1 element if force_sigma is specified.
+    right_censored : array, list, optional
+        The right censored data. Optional input. Default = None.
+    show_probability_plot : bool, optional
+        True or False. Default = True
+    print_results : bool, optional
+        Prints a dataframe of the point estimate, standard error, Lower CI and
+        Upper CI for each parameter. True or False. Default = True
+    method : str, optional
+        The method used to fit the distribution. Must be either 'MLE' (maximum
+        likelihood estimation), 'LS' (least squares estimation), 'RRX' (Rank
+        regression on X), or 'RRY' (Rank regression on Y). LS will perform both
+        RRX and RRY and return the better one. Default is 'MLE'.
+    optimizer : str, optional
+        The optimisation algorithm used to find the solution. Must be either
+        'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods.
+        If the bounded method fails, 'nelder-mead' will be used. If
+        'nelder-mead' fails then the initial guess will be returned with a
+        warning. For more information on these optimizers see
+        https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
+        Default is 'L-BFGS-B' if the data is <= 97% right censored or 'TNC' if
+        the data is > 97% right censored.
+    CI : float, optional
+        confidence interval for estimating confidence limits on parameters. Must
+        be between 0 and 1. Default is 0.95 for 95% CI.
+    CI_type : str, None, optional
+        This is the confidence bounds on time or reliability shown on the plot.
+        Use None to turn off the confidence intervals. Must be either 'time',
+        'reliability', or None. Default is 'time'. Some flexibility in names is
+        allowed (eg. 't', 'time', 'r', 'rel', 'reliability' are all valid).
+    force_sigma : float, int, optional
+        Used to specify the beta value if you need to force sigma to be a
+        certain value. Used in ALT probability plotting. Optional input. If
+        specified it must be > 0.
+    percentiles : bool, str, list, array, None, optional
+        percentiles (y-values) to produce a table of percentiles failed with
+        lower, point, and upper estimates. Default is None which results in no
+        output. To use default array [1, 5, 10,..., 95, 99] set percentiles as
+        either 'auto', True, 'default', 'on'.
+        If an array or list is specified then it will be used instead of the
+        default array. Any array or list specified must contain values between
+        0 and 100.
+    kwargs
+        Plotting keywords that are passed directly to matplotlib for the
+        probability plot (e.g. color, label, linestyle)
 
-    Outputs:
-    mu - the fitted Normal_2P mu parameter
-    sigma - the fitted Normal_2P sigma parameter
-    loglik - Log Likelihood (as used in Minitab and Reliasoft)
-    loglik2 - LogLikelihood*-2 (as used in JMP Pro)
-    AICc - Akaike Information Criterion
-    BIC - Bayesian Information Criterion
-    AD - the Anderson Darling (corrected) statistic (as reported by Minitab)
-    distribution - a Normal_Distribution object with the parameters of the fitted distribution
-    mu_SE - the standard error (sqrt(variance)) of the parameter
-    sigma_SE - the standard error (sqrt(variance)) of the parameter
-    Cov_mu_sigma - the covariance between the parameters
-    mu_upper - the upper CI estimate of the parameter
-    mu_lower - the lower CI estimate of the parameter
-    sigma_upper - the upper CI estimate of the parameter
-    sigma_lower - the lower CI estimate of the parameter
-    results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
-    goodness_of_fit - a dataframe of the goodness of fit values (Log-likelihood, AICc, BIC, AD).
-    percentiles - a dataframe of the percentiles with bounds on time. This is only produced if percentiles is 'auto' or a list or array. Since percentiles defaults to None, this output is not normally produced.
-    probability_plot - the axes handle for the probability plot (only returned if show_probability_plot = True)
+    Returns
+    -------
+    mu : float
+        the fitted Normal_2P mu parameter
+    sigma : float
+        the fitted Normal_2P sigma parameter
+    mu_SE : float
+        the standard error (sqrt(variance)) of the parameter
+    sigma_SE :float
+        the standard error (sqrt(variance)) of the parameter
+    Cov_mu_sigma : float
+        the covariance between the parameters
+    mu_upper : float
+        the upper CI estimate of the parameter
+    mu_lower : float
+        the lower CI estimate of the parameter
+    sigma_upper : float
+        the upper CI estimate of the parameter
+    sigma_lower : float
+        the lower CI estimate of the parameter
+    loglik : float
+        Log Likelihood (as used in Minitab and Reliasoft)
+    loglik2 : float
+        LogLikelihood*-2 (as used in JMP Pro)
+    AICc : float
+        Akaike Information Criterion
+    BIC : float
+        Bayesian Information Criterion
+    AD : float
+        the Anderson Darling (corrected) statistic (as reported by Minitab)
+    distribution : object
+        a Normal_Distribution object with the parameters of the fitted
+        distribution
+    results : dataframe
+        a pandas dataframe of the results (point estimate, standard error,
+        lower CI and upper CI for each parameter)
+    goodness_of_fit : dataframe
+        a pandas dataframe of the goodness of fit values (Log-likelihood, AICc,
+        BIC, AD).
+    percentiles : dataframe
+        a pandas dataframe of the percentiles with bounds on time. This is only
+        produced if percentiles is not None. Since percentiles defaults to None,
+        this output is not normally produced.
+    probability_plot : object
+        the axes handle for the probability plot. This is only returned if
+        show_probability_plot = True
+
+    Notes
+    -----
+    If the fitting process encounters a problem a warning will be printed. This
+    may be caused by the chosen distribution being a very poor fit to the data
+    or the data being heavily censored. If a warning is printed, consider trying
+    a different optimiser.
     """
 
     def __init__(
@@ -4608,43 +4827,112 @@ class Fit_Normal_2P:
 
 class Fit_Gumbel_2P:
     """
-    Fit_Gumbel_2P
-    Fits a 2-parameter Gumbel distribution (mu,sigma) to the data provided.
-    Note that it will return a fit that may be partially in the negative domain (x<0).
-    The Gumbel Distribution is similar to the Normal Distribution, with mu controlling the peak of the distribution between -inf < mu < inf
+    Fits a two parameter Gumbel distribution (mu,sigma) to the data provided.
+    Note that it will return a fit that may be partially in the negative domain
+    (x<0). If you need an entirely positive distribution that is similar to
+    Gumbel then consider using Weibull.
 
-    Inputs:
-    failures - an array or list of failure data
-    right_censored - an array or list of right censored data
-    show_probability_plot - True/False. Defaults to True.
-    print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
-    CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    CI_type - time, reliability, None. Default is time. This is the confidence bounds on time or on reliability. Use None to turn off the confidence intervals.
-    percentiles - percentiles to produce a table of percentiles failed with lower, point, and upper estimates. Default is None which results in no output. True or 'auto' will use default array [1, 5, 10,..., 95, 99]. If an array or list is specified then it will be used instead of the default array.
-    method - 'MLE' (maximum likelihood estimation), 'LS' (least squares estimation), 'RRX' (Rank regression on X), 'RRY' (Rank regression on Y). LS will perform both RRX and RRY and return the better one. Default is 'MLE'.
-    optimizer - 'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
-    kwargs are accepted for the probability plot (eg. linestyle, label, color)
+    Parameters
+    ----------
+    failures : array, list
+        The failure data. Must have at least 2 elements.
+    right_censored : array, list, optional
+        The right censored data. Optional input. Default = None.
+    show_probability_plot : bool, optional
+        True or False. Default = True
+    print_results : bool, optional
+        Prints a dataframe of the point estimate, standard error, Lower CI and
+        Upper CI for each parameter. True or False. Default = True
+    method : str, optional
+        The method used to fit the distribution. Must be either 'MLE' (maximum
+        likelihood estimation), 'LS' (least squares estimation), 'RRX' (Rank
+        regression on X), or 'RRY' (Rank regression on Y). LS will perform both
+        RRX and RRY and return the better one. Default is 'MLE'.
+    optimizer : str, optional
+        The optimisation algorithm used to find the solution. Must be either
+        'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods.
+        If the bounded method fails, 'nelder-mead' will be used. If
+        'nelder-mead' fails then the initial guess will be returned with a
+        warning. For more information on these optimizers see
+        https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
+        Default is 'L-BFGS-B' if the data is <= 97% right censored or 'TNC' if
+        the data is > 97% right censored.
+    CI : float, optional
+        confidence interval for estimating confidence limits on parameters. Must
+        be between 0 and 1. Default is 0.95 for 95% CI.
+    CI_type : str, None, optional
+        This is the confidence bounds on time or reliability shown on the plot.
+        Use None to turn off the confidence intervals. Must be either 'time',
+        'reliability', or None. Default is 'time'. Some flexibility in names is
+        allowed (eg. 't', 'time', 'r', 'rel', 'reliability' are all valid).
+    percentiles : bool, str, list, array, None, optional
+        percentiles (y-values) to produce a table of percentiles failed with
+        lower, point, and upper estimates. Default is None which results in no
+        output. To use default array [1, 5, 10,..., 95, 99] set percentiles as
+        either 'auto', True, 'default', 'on'.
+        If an array or list is specified then it will be used instead of the
+        default array. Any array or list specified must contain values between
+        0 and 100.
+    kwargs
+        Plotting keywords that are passed directly to matplotlib for the
+        probability plot (e.g. color, label, linestyle).
 
-    Outputs:
-    mu - the fitted Gumbel_2P mu parameter
-    sigma - the fitted Gumbel_2P sigma parameter
-    loglik - Log Likelihood (as used in Minitab and Reliasoft)
-    loglik2 - LogLikelihood*-2 (as used in JMP Pro)
-    AICc - Akaike Information Criterion
-    BIC - Bayesian Information Criterion
-    AD - the Anderson Darling (corrected) statistic (as reported by Minitab)
-    distribution - a Gumbel_Distribution object with the parameters of the fitted distribution
-    mu_SE - the standard error (sqrt(variance)) of the parameter
-    sigma_SE - the standard error (sqrt(variance)) of the parameter
-    Cov_mu_sigma - the covariance between the parameters
-    mu_upper - the upper CI estimate of the parameter
-    mu_lower - the lower CI estimate of the parameter
-    sigma_upper - the upper CI estimate of the parameter
-    sigma_lower - the lower CI estimate of the parameter
-    results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
-    goodness_of_fit - a dataframe of the goodness of fit values (Log-likelihood, AICc, BIC, AD).
-    percentiles - a dataframe of the percentiles with bounds on time. This is only produced if percentiles is 'auto' or a list or array. Since percentiles defaults to None, this output is not normally produced.
-    probability_plot - the axes handle for the probability plot (only returned if show_probability_plot = True)
+    Returns
+    -------
+    mu : float
+        the fitted Gumbel_2P mu parameter
+    sigma : float
+        the fitted Gumbel_2P sigma parameter
+    mu_SE : float
+        the standard error (sqrt(variance)) of the parameter
+    sigma_SE :float
+        the standard error (sqrt(variance)) of the parameter
+    Cov_mu_sigma : float
+        the covariance between the parameters
+    mu_upper : float
+        the upper CI estimate of the parameter
+    mu_lower : float
+        the lower CI estimate of the parameter
+    sigma_upper : float
+        the upper CI estimate of the parameter
+    sigma_lower : float
+        the lower CI estimate of the parameter
+    loglik : float
+        Log Likelihood (as used in Minitab and Reliasoft)
+    loglik2 : float
+        LogLikelihood*-2 (as used in JMP Pro)
+    AICc : float
+        Akaike Information Criterion
+    BIC : float
+        Bayesian Information Criterion
+    AD : float
+        the Anderson Darling (corrected) statistic (as reported by Minitab)
+    distribution : object
+        a Gumbel_Distribution object with the parameters of the fitted
+        distribution
+    results : dataframe
+        a pandas dataframe of the results (point estimate, standard error,
+        lower CI and upper CI for each parameter)
+    goodness_of_fit : dataframe
+        a pandas dataframe of the goodness of fit values (Log-likelihood, AICc,
+        BIC, AD).
+    percentiles : dataframe
+        a pandas dataframe of the percentiles with bounds on time. This is only
+        produced if percentiles is not None. Since percentiles defaults to None,
+        this output is not normally produced.
+    probability_plot : object
+        the axes handle for the probability plot. This is only returned if
+        show_probability_plot = True
+
+    Notes
+    -----
+    The Gumbel Distribution is similar to the Normal Distribution, with mu
+    controlling the peak of the distribution between -inf < mu < inf.
+
+    If the fitting process encounters a problem a warning will be printed. This
+    may be caused by the chosen distribution being a very poor fit to the data
+    or the data being heavily censored. If a warning is printed, consider trying
+    a different optimiser.
     """
 
     def __init__(
@@ -4877,42 +5165,111 @@ class Fit_Gumbel_2P:
 
 class Fit_Lognormal_2P:
     """
-    Fit_Lognormal_2P
-    Fits a 2-parameter Lognormal distribution (mu,sigma) to the data provided.
+    Fits a two parameter Lognormal distribution (mu,sigma) to the data provided.
 
-    Inputs:
-    failures - an array or list of failure data
-    right_censored - an array or list of right censored data
-    show_probability_plot - True/False. Defaults to True.
-    print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
-    CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    CI_type - time, reliability, None. Default is time. This is the confidence bounds on time or on reliability. Use None to turn off the confidence intervals.
-    percentiles - percentiles to produce a table of percentiles failed with lower, point, and upper estimates. Default is None which results in no output. True or 'auto' will use default array [1, 5, 10,..., 95, 99]. If an array or list is specified then it will be used instead of the default array.
-    method - 'MLE' (maximum likelihood estimation), 'LS' (least squares estimation), 'RRX' (Rank regression on X), 'RRY' (Rank regression on Y). LS will perform both RRX and RRY and return the better one. Default is 'MLE'.
-    optimizer - 'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
-    force_sigma - Use this to specify the sigma value if you need to force sigma to be a certain value. Used in ALT probability plotting. Optional input.
-    kwargs are accepted for the probability plot (eg. linestyle, label, color)
+    Parameters
+    ----------
+    failures : array, list
+        The failure data. Must have at least 2 elements if force_sigma is not
+        specified or at least 1 element if force_sigma is specified.
+    right_censored : array, list, optional
+        The right censored data. Optional input. Default = None.
+    show_probability_plot : bool, optional
+        True or False. Default = True
+    print_results : bool, optional
+        Prints a dataframe of the point estimate, standard error, Lower CI and
+        Upper CI for each parameter. True or False. Default = True
+    method : str, optional
+        The method used to fit the distribution. Must be either 'MLE' (maximum
+        likelihood estimation), 'LS' (least squares estimation), 'RRX' (Rank
+        regression on X), or 'RRY' (Rank regression on Y). LS will perform both
+        RRX and RRY and return the better one. Default is 'MLE'.
+    optimizer : str, optional
+        The optimisation algorithm used to find the solution. Must be either
+        'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods.
+        If the bounded method fails, 'nelder-mead' will be used. If
+        'nelder-mead' fails then the initial guess will be returned with a
+        warning. For more information on these optimizers see
+        https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
+        Default is 'L-BFGS-B' if the data is <= 97% right censored or 'TNC' if
+        the data is > 97% right censored.
+    CI : float, optional
+        confidence interval for estimating confidence limits on parameters. Must
+        be between 0 and 1. Default is 0.95 for 95% CI.
+    CI_type : str, None, optional
+        This is the confidence bounds on time or reliability shown on the plot.
+        Use None to turn off the confidence intervals. Must be either 'time',
+        'reliability', or None. Default is 'time'. Some flexibility in names is
+        allowed (eg. 't', 'time', 'r', 'rel', 'reliability' are all valid).
+    force_sigma : float, int, optional
+        Used to specify the sigma value if you need to force sigma to be a
+        certain value. Used in ALT probability plotting. Optional input. If
+        specified it must be > 0.
+    percentiles : bool, str, list, array, None, optional
+        percentiles (y-values) to produce a table of percentiles failed with
+        lower, point, and upper estimates. Default is None which results in no
+        output. To use default array [1, 5, 10,..., 95, 99] set percentiles as
+        either 'auto', True, 'default', 'on'.
+        If an array or list is specified then it will be used instead of the
+        default array. Any array or list specified must contain values between
+        0 and 100.
+    kwargs
+        Plotting keywords that are passed directly to matplotlib for the
+        probability plot (e.g. color, label, linestyle).
 
-    Outputs:
-    mu - the fitted Lognormal_2P mu parameter
-    sigma - the fitted Lognormal_2P sigma parameter
-    loglik - Log Likelihood (as used in Minitab and Reliasoft)
-    loglik2 - LogLikelihood*-2 (as used in JMP Pro)
-    AICc - Akaike Information Criterion
-    BIC - Bayesian Information Criterion
-    AD - the Anderson Darling (corrected) statistic (as reported by Minitab)
-    distribution - a Lognormal_Distribution object with the parameters of the fitted distribution
-    mu_SE - the standard error (sqrt(variance)) of the parameter
-    sigma_SE - the standard error (sqrt(variance)) of the parameter
-    Cov_mu_sigma - the covariance between the parameters
-    mu_upper - the upper CI estimate of the parameter
-    mu_lower - the lower CI estimate of the parameter
-    sigma_upper - the upper CI estimate of the parameter
-    sigma_lower - the lower CI estimate of the parameter
-    results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
-    goodness_of_fit - a dataframe of the goodness of fit values (Log-likelihood, AICc, BIC, AD).
-    percentiles - a dataframe of the percentiles with bounds on time. This is only produced if percentiles is 'auto' or a list or array. Since percentiles defaults to None, this output is not normally produced.
-    probability_plot - the axes handle for the probability plot (only returned if show_probability_plot = True)
+    Returns
+    -------
+    mu : float
+        the fitted Lognormal_2P alpha parameter
+    sigma : float
+        the fitted Lognormal_2P beta parameter
+    mu_SE : float
+        the standard error (sqrt(variance)) of the parameter
+    sigma_SE :float
+        the standard error (sqrt(variance)) of the parameter
+    Cov_mu_sigma : float
+        the covariance between the parameters
+    mu_upper : float
+        the upper CI estimate of the parameter
+    mu_lower : float
+        the lower CI estimate of the parameter
+    sigma_upper : float
+        the upper CI estimate of the parameter
+    sigma_lower : float
+        the lower CI estimate of the parameter
+    loglik : float
+        Log Likelihood (as used in Minitab and Reliasoft)
+    loglik2 : float
+        LogLikelihood*-2 (as used in JMP Pro)
+    AICc : float
+        Akaike Information Criterion
+    BIC : float
+        Bayesian Information Criterion
+    AD : float
+        the Anderson Darling (corrected) statistic (as reported by Minitab)
+    distribution : object
+        a Lognormal_Distribution object with the parameters of the fitted
+        distribution
+    results : dataframe
+        a pandas dataframe of the results (point estimate, standard error,
+        lower CI and upper CI for each parameter)
+    goodness_of_fit : dataframe
+        a pandas dataframe of the goodness of fit values (Log-likelihood, AICc,
+        BIC, AD).
+    percentiles : dataframe
+        a pandas dataframe of the percentiles with bounds on time. This is only
+        produced if percentiles is not None. Since percentiles defaults to None,
+        this output is not normally produced.
+    probability_plot : object
+        the axes handle for the probability plot. This is only returned if
+        show_probability_plot = True
+
+    Notes
+    -----
+    If the fitting process encounters a problem a warning will be printed. This
+    may be caused by the chosen distribution being a very poor fit to the data
+    or the data being heavily censored. If a warning is printed, consider trying
+    a different optimiser.
     """
 
     def __init__(
@@ -5185,45 +5542,118 @@ class Fit_Lognormal_2P:
 
 class Fit_Lognormal_3P:
     """
-    Fit_Lognormal_3P
-    Fits a 3-parameter Lognormal distribution (mu,sigma,gamma) to the data provided.
-    You may also enter right censored data.
+    Fits a three parameter Lognormal distribution (mu,sigma,gamma) to the data
+    provided.
 
-    Inputs:
-    failures - an array or list of failure data
-    right_censored - an array or list of right censored data
-    show_probability_plot - True/False. Defaults to True.
-    print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
-    CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    CI_type - time, reliability, None. Default is time. This is the confidence bounds on time or on reliability. Use None to turn off the confidence intervals.
-    percentiles - percentiles to produce a table of percentiles failed with lower, point, and upper estimates. Default is None which results in no output. True or 'auto' will use default array [1, 5, 10,..., 95, 99]. If an array or list is specified then it will be used instead of the default array.
-    method - 'MLE' (maximum likelihood estimation), 'LS' (least squares estimation), 'RRX' (Rank regression on X), 'RRY' (Rank regression on Y). LS will perform both RRX and RRY and return the better one. Default is 'MLE'.
-    optimizer - 'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
-    kwargs are accepted for the probability plot (eg. linestyle, label, color)
+    Parameters
+    ----------
+    failures : array, list
+        The failure data. Must have at least 3 elements.
+    right_censored : array, list, optional
+        The right censored data. Optional input. Default = None.
+    show_probability_plot : bool, optional
+        True or False. Default = True
+    print_results : bool, optional
+        Prints a dataframe of the point estimate, standard error, Lower CI and
+        Upper CI for each parameter. True or False. Default = True
+    method : str, optional
+        The method used to fit the distribution. Must be either 'MLE' (maximum
+        likelihood estimation), or 'LS' (least squares estimation).
+        Default is 'MLE'.
+    optimizer : str, optional
+        The optimisation algorithm used to find the solution. Must be either
+        'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods.
+        If the bounded method fails, 'nelder-mead' will be used. If
+        'nelder-mead' fails then the initial guess will be returned with a
+        warning. For more information on these optimizers see
+        https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
+        Default is 'L-BFGS-B' if the data is <= 97% right censored or 'TNC' if
+        the data is > 97% right censored.
+    CI : float, optional
+        confidence interval for estimating confidence limits on parameters. Must
+        be between 0 and 1. Default is 0.95 for 95% CI.
+    CI_type : str, None, optional
+        This is the confidence bounds on time or reliability shown on the plot.
+        Use None to turn off the confidence intervals. Must be either 'time',
+        'reliability', or None. Default is 'time'. Some flexibility in names is
+        allowed (eg. 't', 'time', 'r', 'rel', 'reliability' are all valid).
+    percentiles : bool, str, list, array, None, optional
+        percentiles (y-values) to produce a table of percentiles failed with
+        lower, point, and upper estimates. Default is None which results in no
+        output. To use default array [1, 5, 10,..., 95, 99] set percentiles as
+        either 'auto', True, 'default', 'on'.
+        If an array or list is specified then it will be used instead of the
+        default array. Any array or list specified must contain values between
+        0 and 100.
+    kwargs
+        Plotting keywords that are passed directly to matplotlib for the
+        probability plot (e.g. color, label, linestyle).
 
-    Outputs:
-    mu - the fitted Lognormal_3P mu parameter
-    sigma - the fitted Lognormal_3P sigma parameter
-    gamma - the fitted Lognormal_3P gamma parameter
-    loglik - Log Likelihood (as used in Minitab and Reliasoft)
-    loglik2 - LogLikelihood*-2 (as used in JMP Pro)
-    AICc - Akaike Information Criterion
-    BIC - Bayesian Information Criterion
-    AD - the Anderson Darling (corrected) statistic (as reported by Minitab)
-    distribution - a Lognormal_Distribution object with the parameters of the fitted distribution
-    mu_SE - the standard error (sqrt(variance)) of the parameter
-    sigma_SE - the standard error (sqrt(variance)) of the parameter
-    gamma_SE - the standard error (sqrt(variance)) of the parameter
-    mu_upper - the upper CI estimate of the parameter
-    mu_lower - the lower CI estimate of the parameter
-    sigma_upper - the upper CI estimate of the parameter
-    sigma_lower - the lower CI estimate of the parameter
-    gamma_upper - the upper CI estimate of the parameter
-    gamma_lower - the lower CI estimate of the parameter
-    results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
-    goodness_of_fit - a dataframe of the goodness of fit values (Log-likelihood, AICc, BIC, AD).
-    percentiles - a dataframe of the percentiles with bounds on time. This is only produced if percentiles is 'auto' or a list or array. Since percentiles defaults to None, this output is not normally produced.
-    probability_plot - the axes handle for the probability plot (only returned if show_probability_plot = True)
+    Returns
+    -------
+    mu : float
+        the fitted Lognormal_3P mu parameter
+    sigma : float
+        the fitted Lognormal_3P sigma parameter
+    gamma : float
+        the fitted Lognormal_3P gamma parameter
+    mu_SE : float
+        the standard error (sqrt(variance)) of the parameter
+    sigma_SE :float
+        the standard error (sqrt(variance)) of the parameter
+    gamma_SE :float
+        the standard error (sqrt(variance)) of the parameter
+    Cov_mu_sigma : float
+        the covariance between the parameters
+    mu_upper : float
+        the upper CI estimate of the parameter
+    mu_lower : float
+        the lower CI estimate of the parameter
+    sigma_upper : float
+        the upper CI estimate of the parameter
+    sigma_lower : float
+        the lower CI estimate of the parameter
+    gamma_upper : float
+        the upper CI estimate of the parameter
+    gamma_lower : float
+        the lower CI estimate of the parameter
+    loglik : float
+        Log Likelihood (as used in Minitab and Reliasoft)
+    loglik2 : float
+        LogLikelihood*-2 (as used in JMP Pro)
+    AICc : float
+        Akaike Information Criterion
+    BIC : float
+        Bayesian Information Criterion
+    AD : float
+        the Anderson Darling (corrected) statistic (as reported by Minitab)
+    distribution : object
+        a Lognormal_Distribution object with the parameters of the fitted
+        distribution
+    results : dataframe
+        a pandas dataframe of the results (point estimate, standard error,
+        lower CI and upper CI for each parameter)
+    goodness_of_fit : dataframe
+        a pandas dataframe of the goodness of fit values (Log-likelihood, AICc,
+        BIC, AD).
+    percentiles : dataframe
+        a pandas dataframe of the percentiles with bounds on time. This is only
+        produced if percentiles is not None. Since percentiles defaults to None,
+        this output is not normally produced.
+    probability_plot : object
+        the axes handle for the probability plot. This is only returned if
+        show_probability_plot = True
+
+    Notes
+    -----
+    If the fitting process encounters a problem a warning will be printed. This
+    may be caused by the chosen distribution being a very poor fit to the data
+    or the data being heavily censored. If a warning is printed, consider trying
+    a different optimiser.
+
+    If the fitted gamma parameter is less than 0.01, the Lognormal_3P results
+    will be discarded and the Lognormal_2P distribution will be fitted. The
+    returned values for gamma and gamma_SE will be 0.
     """
 
     def __init__(
@@ -5521,41 +5951,106 @@ class Fit_Lognormal_3P:
 
 class Fit_Gamma_2P:
     """
-    Fit_Gamma_2P
-    Fits a 2-parameter Gamma distribution (alpha,beta) to the data provided.
+    Fits a two parameter Gamma distribution (alpha,beta) to the data provided.
 
-    Inputs:
-    failures - an array or list of failure data
-    right_censored - an array or list of right censored data
-    show_probability_plot - True/False. Defaults to True.
-    print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
-    CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    CI_type - time, reliability, None. Default is time. This is the confidence bounds on time or on reliability. Use None to turn off the confidence intervals.
-    percentiles - percentiles to produce a table of percentiles failed with lower, point, and upper estimates. Default is None which results in no output. True or 'auto' will use default array [1, 5, 10,..., 95, 99]. If an array or list is specified then it will be used instead of the default array.
-    method - 'MLE' (maximum likelihood estimation), 'LS' (least squares estimation), 'RRX' (Rank regression on X), 'RRY' (Rank regression on Y). LS will perform both RRX and RRY and return the better one. Default is 'MLE'.
-    optimizer - 'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
-    kwargs are accepted for the probability plot (eg. linestyle, label, color)
+    Parameters
+    ----------
+    failures : array, list
+        The failure data. Must have at least 2 elements.
+    right_censored : array, list, optional
+        The right censored data. Optional input. Default = None.
+    show_probability_plot : bool, optional
+        True or False. Default = True
+    print_results : bool, optional
+        Prints a dataframe of the point estimate, standard error, Lower CI and
+        Upper CI for each parameter. True or False. Default = True
+    method : str, optional
+        The method used to fit the distribution. Must be either 'MLE' (maximum
+        likelihood estimation), 'LS' (least squares estimation), 'RRX' (Rank
+        regression on X), or 'RRY' (Rank regression on Y). LS will perform both
+        RRX and RRY and return the better one. Default is 'MLE'.
+    optimizer : str, optional
+        The optimisation algorithm used to find the solution. Must be either
+        'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods.
+        If the bounded method fails, 'nelder-mead' will be used. If
+        'nelder-mead' fails then the initial guess will be returned with a
+        warning. For more information on these optimizers see
+        https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
+        Default is 'L-BFGS-B' if the data is <= 97% right censored or 'TNC' if
+        the data is > 97% right censored.
+    CI : float, optional
+        confidence interval for estimating confidence limits on parameters. Must
+        be between 0 and 1. Default is 0.95 for 95% CI.
+    CI_type : str, None, optional
+        This is the confidence bounds on time or reliability shown on the plot.
+        Use None to turn off the confidence intervals. Must be either 'time',
+        'reliability', or None. Default is 'time'. Some flexibility in names is
+        allowed (eg. 't', 'time', 'r', 'rel', 'reliability' are all valid).
+    percentiles : bool, str, list, array, None, optional
+        percentiles (y-values) to produce a table of percentiles failed with
+        lower, point, and upper estimates. Default is None which results in no
+        output. To use default array [1, 5, 10,..., 95, 99] set percentiles as
+        either 'auto', True, 'default', 'on'.
+        If an array or list is specified then it will be used instead of the
+        default array. Any array or list specified must contain values between
+        0 and 100.
+    kwargs
+        Plotting keywords that are passed directly to matplotlib for the
+        probability plot (e.g. color, label, linestyle)
 
-    Outputs:
-    alpha - the fitted Gamma_2P alpha parameter
-    beta - the fitted Gamma_2P beta parameter
-    loglik - Log Likelihood (as used in Minitab and Reliasoft)
-    loglik2 - LogLikelihood*-2 (as used in JMP Pro)
-    AICc - Akaike Information Criterion
-    BIC - Bayesian Information Criterion
-    AD - the Anderson Darling (corrected) statistic (as reported by Minitab)
-    distribution - a Gamma_Distribution object with the parameters of the fitted distribution
-    alpha_SE - the standard error (sqrt(variance)) of the parameter
-    beta_SE - the standard error (sqrt(variance)) of the parameter
-    Cov_alpha_beta - the covariance between the parameters
-    alpha_upper - the upper CI estimate of the parameter
-    alpha_lower - the lower CI estimate of the parameter
-    beta_upper - the upper CI estimate of the parameter
-    beta_lower - the lower CI estimate of the parameter
-    results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
-    goodness_of_fit - a dataframe of the goodness of fit values (Log-likelihood, AICc, BIC, AD).
-    percentiles - a dataframe of the percentiles with bounds on time. This is only produced if percentiles is 'auto' or a list or array. Since percentiles defaults to None, this output is not normally produced.
-    probability_plot - the axes handle for the probability plot (only returned if show_probability_plot = True)
+    Returns
+    -------
+    alpha : float
+        the fitted Gamma_2P alpha parameter
+    beta : float
+        the fitted Gamma_2P beta parameter
+    alpha_SE : float
+        the standard error (sqrt(variance)) of the parameter
+    beta_SE :float
+        the standard error (sqrt(variance)) of the parameter
+    Cov_alpha_beta : float
+        the covariance between the parameters
+    alpha_upper : float
+        the upper CI estimate of the parameter
+    alpha_lower : float
+        the lower CI estimate of the parameter
+    beta_upper : float
+        the upper CI estimate of the parameter
+    beta_lower : float
+        the lower CI estimate of the parameter
+    loglik : float
+        Log Likelihood (as used in Minitab and Reliasoft)
+    loglik2 : float
+        LogLikelihood*-2 (as used in JMP Pro)
+    AICc : float
+        Akaike Information Criterion
+    BIC : float
+        Bayesian Information Criterion
+    AD : float
+        the Anderson Darling (corrected) statistic (as reported by Minitab)
+    distribution : object
+        a Gamma_Distribution object with the parameters of the fitted
+        distribution
+    results : dataframe
+        a pandas dataframe of the results (point estimate, standard error,
+        lower CI and upper CI for each parameter)
+    goodness_of_fit : dataframe
+        a pandas dataframe of the goodness of fit values (Log-likelihood, AICc,
+        BIC, AD).
+    percentiles : dataframe
+        a pandas dataframe of the percentiles with bounds on time. This is only
+        produced if percentiles is not None. Since percentiles defaults to None,
+        this output is not normally produced.
+    probability_plot : object
+        the axes handle for the probability plot. This is only returned if
+        show_probability_plot = True
+
+    Notes
+    -----
+    If the fitting process encounters a problem a warning will be printed. This
+    may be caused by the chosen distribution being a very poor fit to the data
+    or the data being heavily censored. If a warning is printed, consider trying
+    a different optimiser.
     """
 
     def __init__(
@@ -5780,45 +6275,118 @@ class Fit_Gamma_2P:
 
 class Fit_Gamma_3P:
     """
-    Fit_Gamma_3P
-    Fits a 3-parameter Gamma distribution (alpha,beta,gamma) to the data provided.
-    You may also enter right censored data.
+    Fits a three parameter Gamma distribution (alpha,beta,gamma) to the data
+    provided.
 
-    Inputs:
-    failures - an array or list of failure data
-    right_censored - an array or list of right censored data
-    show_probability_plot - True/False. Defaults to True.
-    print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
-    CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    CI_type - time, reliability, None. Default is time. This is the confidence bounds on time or on reliability. Use None to turn off the confidence intervals.
-    percentiles - percentiles to produce a table of percentiles failed with lower, point, and upper estimates. Default is None which results in no output. True or 'auto' will use default array [1, 5, 10,..., 95, 99]. If an array or list is specified then it will be used instead of the default array.
-    method - 'MLE' (maximum likelihood estimation), or 'LS' (least squares estimation). LS will perform non-linear least squares estimation. Default is 'MLE'.
-    optimizer - 'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
-    kwargs are accepted for the probability plot (eg. linestyle, label, color)
+    Parameters
+    ----------
+    failures : array, list
+        The failure data. Must have at least 3 elements.
+    right_censored : array, list, optional
+        The right censored data. Optional input. Default = None.
+    show_probability_plot : bool, optional
+        True or False. Default = True
+    print_results : bool, optional
+        Prints a dataframe of the point estimate, standard error, Lower CI and
+        Upper CI for each parameter. True or False. Default = True
+    method : str, optional
+        The method used to fit the distribution. Must be either 'MLE' (maximum
+        likelihood estimation), or 'LS' (least squares estimation).
+        Default is 'MLE'.
+    optimizer : str, optional
+        The optimisation algorithm used to find the solution. Must be either
+        'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods.
+        If the bounded method fails, 'nelder-mead' will be used. If
+        'nelder-mead' fails then the initial guess will be returned with a
+        warning. For more information on these optimizers see
+        https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
+        Default is 'L-BFGS-B' if the data is <= 97% right censored or 'TNC' if
+        the data is > 97% right censored.
+    CI : float, optional
+        confidence interval for estimating confidence limits on parameters. Must
+        be between 0 and 1. Default is 0.95 for 95% CI.
+    CI_type : str, None, optional
+        This is the confidence bounds on time or reliability shown on the plot.
+        Use None to turn off the confidence intervals. Must be either 'time',
+        'reliability', or None. Default is 'time'. Some flexibility in names is
+        allowed (eg. 't', 'time', 'r', 'rel', 'reliability' are all valid).
+    percentiles : bool, str, list, array, None, optional
+        percentiles (y-values) to produce a table of percentiles failed with
+        lower, point, and upper estimates. Default is None which results in no
+        output. To use default array [1, 5, 10,..., 95, 99] set percentiles as
+        either 'auto', True, 'default', 'on'.
+        If an array or list is specified then it will be used instead of the
+        default array. Any array or list specified must contain values between
+        0 and 100.
+    kwargs
+        Plotting keywords that are passed directly to matplotlib for the
+        probability plot (e.g. color, label, linestyle)
 
-    Outputs:
-    alpha - the fitted Gamma_3P alpha parameter
-    beta - the fitted Gamma_3P beta parameter
-    gamma - the fitted Gamma_3P gamma parameter
-    loglik - Log Likelihood (as used in Minitab and Reliasoft)
-    loglik2 - LogLikelihood*-2 (as used in JMP Pro)
-    AICc - Akaike Information Criterion
-    BIC - Bayesian Information Criterion
-    AD - the Anderson Darling (corrected) statistic (as reported by Minitab)
-    distribution - a Gamma_Distribution object with the parameters of the fitted distribution
-    alpha_SE - the standard error (sqrt(variance)) of the parameter
-    beta_SE - the standard error (sqrt(variance)) of the parameter
-    gamma_SE - the standard error (sqrt(variance)) of the parameter
-    alpha_upper - the upper CI estimate of the parameter
-    alpha_lower - the lower CI estimate of the parameter
-    beta_upper - the upper CI estimate of the parameter
-    beta_lower - the lower CI estimate of the parameter
-    gamma_upper - the upper CI estimate of the parameter
-    gamma_lower - the lower CI estimate of the parameter
-    results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
-    goodness_of_fit - a dataframe of the goodness of fit values (Log-likelihood, AICc, BIC, AD).
-    percentiles - a dataframe of the percentiles with bounds on time. This is only produced if percentiles is 'auto' or a list or array. Since percentiles defaults to None, this output is not normally produced.
-    probability_plot - the axes handle for the probability plot (only returned if show_probability_plot = True)
+    Returns
+    -------
+    alpha : float
+        the fitted Gamma_3P alpha parameter
+    beta : float
+        the fitted Gamma_3P beta parameter
+    gamma : float
+        the fitted Gamma_3P gamma parameter
+    alpha_SE : float
+        the standard error (sqrt(variance)) of the parameter
+    beta_SE :float
+        the standard error (sqrt(variance)) of the parameter
+    gamma_SE :float
+        the standard error (sqrt(variance)) of the parameter
+    Cov_alpha_beta : float
+        the covariance between the parameters
+    alpha_upper : float
+        the upper CI estimate of the parameter
+    alpha_lower : float
+        the lower CI estimate of the parameter
+    beta_upper : float
+        the upper CI estimate of the parameter
+    beta_lower : float
+        the lower CI estimate of the parameter
+    gamma_upper : float
+        the upper CI estimate of the parameter
+    gamma_lower : float
+        the lower CI estimate of the parameter
+    loglik : float
+        Log Likelihood (as used in Minitab and Reliasoft)
+    loglik2 : float
+        LogLikelihood*-2 (as used in JMP Pro)
+    AICc : float
+        Akaike Information Criterion
+    BIC : float
+        Bayesian Information Criterion
+    AD : float
+        the Anderson Darling (corrected) statistic (as reported by Minitab)
+    distribution : object
+        a Gamma_Distribution object with the parameters of the fitted
+        distribution
+    results : dataframe
+        a pandas dataframe of the results (point estimate, standard error,
+        lower CI and upper CI for each parameter)
+    goodness_of_fit : dataframe
+        a pandas dataframe of the goodness of fit values (Log-likelihood, AICc,
+        BIC, AD).
+    percentiles : dataframe
+        a pandas dataframe of the percentiles with bounds on time. This is only
+        produced if percentiles is not None. Since percentiles defaults to None,
+        this output is not normally produced.
+    probability_plot : object
+        the axes handle for the probability plot. This is only returned if
+        show_probability_plot = True
+
+    Notes
+    -----
+    If the fitting process encounters a problem a warning will be printed. This
+    may be caused by the chosen distribution being a very poor fit to the data
+    or the data being heavily censored. If a warning is printed, consider trying
+    a different optimiser.
+
+    If the fitted gamma parameter is less than 0.01, the Gamma_3P results will
+    be discarded and the Gamma_2P distribution will be fitted. The returned
+    values for gamma and gamma_SE will be 0.
     """
 
     def __init__(
@@ -6105,42 +6673,107 @@ class Fit_Gamma_3P:
 
 class Fit_Beta_2P:
     """
-    Fit_Beta_2P
-    Fits a 2-parameter Beta distribution (alpha,beta) to the data provided.
+    Fits a two parameter Beta distribution (alpha,beta) to the data provided.
     All data must be in the range 0 < x < 1.
 
-    Inputs:
-    failures - an array or list of failure data
-    right_censored - an array or list of right censored data
-    show_probability_plot - True/False. Defaults to True.
-    print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
-    CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    CI_type - time, reliability, None. Default is time. This is the confidence bounds on time or on reliability. Use None to turn off the confidence intervals.
-    percentiles - percentiles to produce a table of percentiles failed with lower, point, and upper estimates. Default is None which results in no output. True or 'auto' will use default array [1, 5, 10,..., 95, 99]. If an array or list is specified then it will be used instead of the default array.
-    method - 'MLE' (maximum likelihood estimation), 'LS' (least squares estimation), 'RRX' (Rank regression on X), 'RRY' (Rank regression on Y). LS will perform both RRX and RRY and return the better one. Default is 'MLE'.
-    optimizer - 'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
-    kwargs are accepted for the probability plot (eg. linestyle, label, color)
+    Parameters
+    ----------
+    failures : array, list
+        The failure data. Must have at least 2 elements.
+    right_censored : array, list, optional
+        The right censored data. Optional input. Default = None.
+    show_probability_plot : bool, optional
+        True or False. Default = True
+    print_results : bool, optional
+        Prints a dataframe of the point estimate, standard error, Lower CI and
+        Upper CI for each parameter. True or False. Default = True
+    method : str, optional
+        The method used to fit the distribution. Must be either 'MLE' (maximum
+        likelihood estimation), 'LS' (least squares estimation), 'RRX' (Rank
+        regression on X), or 'RRY' (Rank regression on Y). LS will perform both
+        RRX and RRY and return the better one. Default is 'MLE'.
+    optimizer : str, optional
+        The optimisation algorithm used to find the solution. Must be either
+        'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods.
+        If the bounded method fails, 'nelder-mead' will be used. If
+        'nelder-mead' fails then the initial guess will be returned with a
+        warning. For more information on these optimizers see
+        https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
+        Default is 'L-BFGS-B' if the data is <= 97% right censored or 'TNC' if
+        the data is > 97% right censored.
+    CI : float, optional
+        confidence interval for estimating confidence limits on parameters. Must
+        be between 0 and 1. Default is 0.95 for 95% CI.
+    CI_type : str, None, optional
+        This is the confidence bounds on time or reliability shown on the plot.
+        Use None to turn off the confidence intervals. Must be either 'time',
+        'reliability', or None. Default is 'time'. Some flexibility in names is
+        allowed (eg. 't', 'time', 'r', 'rel', 'reliability' are all valid).
+    percentiles : bool, str, list, array, None, optional
+        percentiles (y-values) to produce a table of percentiles failed with
+        lower, point, and upper estimates. Default is None which results in no
+        output. To use default array [1, 5, 10,..., 95, 99] set percentiles as
+        either 'auto', True, 'default', 'on'.
+        If an array or list is specified then it will be used instead of the
+        default array. Any array or list specified must contain values between
+        0 and 100.
+    kwargs
+        Plotting keywords that are passed directly to matplotlib for the
+        probability plot (e.g. color, label, linestyle)
 
-    Outputs:
-    alpha - the fitted Beta_2P alpha parameter
-    beta - the fitted Beta_2P beta parameter
-    loglik - Log Likelihood (as used in Minitab and Reliasoft)
-    loglik2 - LogLikelihood*-2 (as used in JMP Pro)
-    AICc - Akaike Information Criterion
-    BIC - Bayesian Information Criterion
-    AD - the Anderson Darling (corrected) statistic (as reported by Minitab)
-    distribution - a Beta_Distribution object with the parameters of the fitted distribution
-    alpha_SE - the standard error (sqrt(variance)) of the parameter
-    beta_SE - the standard error (sqrt(variance)) of the parameter
-    Cov_alpha_beta - the covariance between the parameters
-    alpha_upper - the upper CI estimate of the parameter
-    alpha_lower - the lower CI estimate of the parameter
-    beta_upper - the upper CI estimate of the parameter
-    beta_lower - the lower CI estimate of the parameter
-    results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
-    goodness_of_fit - a dataframe of the goodness of fit values (Log-likelihood, AICc, BIC, AD).
-    percentiles - a dataframe of the percentiles with bounds on time. This is only produced if percentiles is 'auto' or a list or array. Since percentiles defaults to None, this output is not normally produced.
-    probability_plot - the axes handle for the probability plot (only returned if show_probability_plot = True)
+    Returns
+    -------
+    alpha : float
+        the fitted Beta_2P alpha parameter
+    beta : float
+        the fitted Beta_2P beta parameter
+    alpha_SE : float
+        the standard error (sqrt(variance)) of the parameter
+    beta_SE :float
+        the standard error (sqrt(variance)) of the parameter
+    Cov_alpha_beta : float
+        the covariance between the parameters
+    alpha_upper : float
+        the upper CI estimate of the parameter
+    alpha_lower : float
+        the lower CI estimate of the parameter
+    beta_upper : float
+        the upper CI estimate of the parameter
+    beta_lower : float
+        the lower CI estimate of the parameter
+    loglik : float
+        Log Likelihood (as used in Minitab and Reliasoft)
+    loglik2 : float
+        LogLikelihood*-2 (as used in JMP Pro)
+    AICc : float
+        Akaike Information Criterion
+    BIC : float
+        Bayesian Information Criterion
+    AD : float
+        the Anderson Darling (corrected) statistic (as reported by Minitab)
+    distribution : object
+        a Beta_Distribution object with the parameters of the fitted
+        distribution
+    results : dataframe
+        a pandas dataframe of the results (point estimate, standard error,
+        lower CI and upper CI for each parameter)
+    goodness_of_fit : dataframe
+        a pandas dataframe of the goodness of fit values (Log-likelihood, AICc,
+        BIC, AD).
+    percentiles : dataframe
+        a pandas dataframe of the percentiles with bounds on time. This is only
+        produced if percentiles is not None. Since percentiles defaults to None,
+        this output is not normally produced.
+    probability_plot : object
+        the axes handle for the probability plot. This is only returned if
+        show_probability_plot = True
+
+    Notes
+    -----
+    If the fitting process encounters a problem a warning will be printed. This
+    may be caused by the chosen distribution being a very poor fit to the data
+    or the data being heavily censored. If a warning is printed, consider trying
+    a different optimiser.
     """
 
     def __init__(
@@ -6368,42 +7001,107 @@ class Fit_Beta_2P:
 
 class Fit_Loglogistic_2P:
     """
-    Fit_Loglogistic_2P
+    Fits a two parameter Loglogistic distribution (alpha,beta) to the data
+    provided.
 
-    Fits a 2-parameter Loglogistic distribution (alpha,beta) to the data provided.
+    Parameters
+    ----------
+    failures : array, list
+        The failure data. Must have at least 2 elements.
+    right_censored : array, list, optional
+        The right censored data. Optional input. Default = None.
+    show_probability_plot : bool, optional
+        True or False. Default = True
+    print_results : bool, optional
+        Prints a dataframe of the point estimate, standard error, Lower CI and
+        Upper CI for each parameter. True or False. Default = True
+    method : str, optional
+        The method used to fit the distribution. Must be either 'MLE' (maximum
+        likelihood estimation), 'LS' (least squares estimation), 'RRX' (Rank
+        regression on X), or 'RRY' (Rank regression on Y). LS will perform both
+        RRX and RRY and return the better one. Default is 'MLE'.
+    optimizer : str, optional
+        The optimisation algorithm used to find the solution. Must be either
+        'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods.
+        If the bounded method fails, 'nelder-mead' will be used. If
+        'nelder-mead' fails then the initial guess will be returned with a
+        warning. For more information on these optimizers see
+        https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
+        Default is 'L-BFGS-B' if the data is <= 97% right censored or 'TNC' if
+        the data is > 97% right censored.
+    CI : float, optional
+        confidence interval for estimating confidence limits on parameters. Must
+        be between 0 and 1. Default is 0.95 for 95% CI.
+    CI_type : str, None, optional
+        This is the confidence bounds on time or reliability shown on the plot.
+        Use None to turn off the confidence intervals. Must be either 'time',
+        'reliability', or None. Default is 'time'. Some flexibility in names is
+        allowed (eg. 't', 'time', 'r', 'rel', 'reliability' are all valid).
+    percentiles : bool, str, list, array, None, optional
+        percentiles (y-values) to produce a table of percentiles failed with
+        lower, point, and upper estimates. Default is None which results in no
+        output. To use default array [1, 5, 10,..., 95, 99] set percentiles as
+        either 'auto', True, 'default', 'on'.
+        If an array or list is specified then it will be used instead of the
+        default array. Any array or list specified must contain values between
+        0 and 100.
+    kwargs
+        Plotting keywords that are passed directly to matplotlib for the
+        probability plot (e.g. color, label, linestyle)
 
-    Inputs:
-    failures - an array or list of failure data
-    right_censored - an array or list of right censored data
-    show_probability_plot - True/False. Defaults to True.
-    print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
-    method - 'MLE' (maximum likelihood estimation), 'LS' (least squares estimation), 'RRX' (Rank regression on X), 'RRY' (Rank regression on Y). LS will perform both RRX and RRY and return the better one. Default is 'MLE'.
-    optimizer - 'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
-    CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    CI_type - time, reliability, None. Default is time. This is the confidence bounds on time or on reliability. Use None to turn off the confidence intervals.
-    percentiles - percentiles to produce a table of percentiles failed with lower, point, and upper estimates. Default is None which results in no output. True or 'auto' will use default array [1, 5, 10,..., 95, 99]. If an array or list is specified then it will be used instead of the default array.
-    kwargs are accepted for the probability plot (eg. linestyle, label, color)
+    Returns
+    -------
+    alpha : float
+        the fitted Loglogistic_2P alpha parameter
+    beta : float
+        the fitted Loglogistic_2P beta parameter
+    alpha_SE : float
+        the standard error (sqrt(variance)) of the parameter
+    beta_SE :float
+        the standard error (sqrt(variance)) of the parameter
+    Cov_alpha_beta : float
+        the covariance between the parameters
+    alpha_upper : float
+        the upper CI estimate of the parameter
+    alpha_lower : float
+        the lower CI estimate of the parameter
+    beta_upper : float
+        the upper CI estimate of the parameter
+    beta_lower : float
+        the lower CI estimate of the parameter
+    loglik : float
+        Log Likelihood (as used in Minitab and Reliasoft)
+    loglik2 : float
+        LogLikelihood*-2 (as used in JMP Pro)
+    AICc : float
+        Akaike Information Criterion
+    BIC : float
+        Bayesian Information Criterion
+    AD : float
+        the Anderson Darling (corrected) statistic (as reported by Minitab)
+    distribution : object
+        a Loglogistic_Distribution object with the parameters of the fitted
+        distribution
+    results : dataframe
+        a pandas dataframe of the results (point estimate, standard error,
+        lower CI and upper CI for each parameter)
+    goodness_of_fit : dataframe
+        a pandas dataframe of the goodness of fit values (Log-likelihood, AICc,
+        BIC, AD).
+    percentiles : dataframe
+        a pandas dataframe of the percentiles with bounds on time. This is only
+        produced if percentiles is not None. Since percentiles defaults to None,
+        this output is not normally produced.
+    probability_plot : object
+        the axes handle for the probability plot. This is only returned if
+        show_probability_plot = True
 
-    outputs:
-    alpha - the fitted Loglogistic_2P alpha parameter
-    beta - the fitted Loglogistic_2P beta parameter
-    loglik - Log Likelihood (as used in Minitab and Reliasoft)
-    loglik2 - Log Likelihood * -2 (as used in JMP Pro)
-    AICc - Akaike Information Criterion corrected
-    BIC - Bayesian Information Criterion
-    AD - the Anderson Darling (corrected) statistic (as reported by Minitab)
-    distribution - a Loglogistic_Distribution object with the parameters of the fitted distribution
-    alpha_SE - the standard error (sqrt(variance)) of the parameter
-    beta_SE - the standard error (sqrt(variance)) of the parameter
-    Cov_alpha_beta - the covariance between the parameters
-    alpha_upper - the upper CI estimate of the parameter
-    alpha_lower - the lower CI estimate of the parameter
-    beta_upper - the upper CI estimate of the parameter
-    beta_lower - the lower CI estimate of the parameter
-    results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
-    goodness_of_fit - a dataframe of the goodness of fit values (Log-likelihood, AICc, BIC, AD).
-    percentiles - a dataframe of the percentiles with bounds on time. This is only produced if percentiles is 'auto' or a list or array. Since percentiles defaults to None, this output is not normally produced.
-    probability_plot - the axes handle for the probability plot (only returned if show_probability_plot = True)
+    Notes
+    -----
+    If the fitting process encounters a problem a warning will be printed. This
+    may be caused by the chosen distribution being a very poor fit to the data
+    or the data being heavily censored. If a warning is printed, consider trying
+    a different optimiser.
     """
 
     def __init__(
@@ -6637,46 +7335,118 @@ class Fit_Loglogistic_2P:
 
 class Fit_Loglogistic_3P:
     """
-    Fit_Loglogistic_3P
-    Fits a 3-parameter Loglogistic distribution (alpha,beta,gamma) to the data provided.
-    You may also enter right censored data.
+    Fits a three parameter Loglogistic distribution (alpha,beta,gamma) to the
+    data provided.
 
-    Inputs:
-    failures - an array or list of failure data
-    right_censored - an array or list of right censored data
-    show_probability_plot - True/False. Defaults to True.
-    print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
-    CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    CI_type - 'time' or 'reliability'. Default is time. Used for the probability plot and the distribution object in the output.
-    percentiles - percentiles to produce a table of percentiles failed with lower, point, and upper estimates. Default is None which results in no output. True or 'auto' will use default array [1, 5, 10,..., 95, 99]. If an array or list is specified then it will be used instead of the default array.
-    method - 'MLE' (maximum likelihood estimation), or 'LS' (least squares estimation). LS will perform non-linear least squares estimation. Default is 'MLE'.
-    optimizer - 'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
-    kwargs are accepted for the probability plot (eg. linestyle, label, color)
+    Parameters
+    ----------
+    failures : array, list
+        The failure data. Must have at least 3 elements.
+    right_censored : array, list, optional
+        The right censored data. Optional input. Default = None.
+    show_probability_plot : bool, optional
+        True or False. Default = True
+    print_results : bool, optional
+        Prints a dataframe of the point estimate, standard error, Lower CI and
+        Upper CI for each parameter. True or False. Default = True
+    method : str, optional
+        The method used to fit the distribution. Must be either 'MLE' (maximum
+        likelihood estimation), or 'LS' (least squares estimation).
+        Default is 'MLE'.
+    optimizer : str, optional
+        The optimisation algorithm used to find the solution. Must be either
+        'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods.
+        If the bounded method fails, 'nelder-mead' will be used. If
+        'nelder-mead' fails then the initial guess will be returned with a
+        warning. For more information on these optimizers see
+        https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
+        Default is 'L-BFGS-B' if the data is <= 97% right censored or 'TNC' if
+        the data is > 97% right censored.
+    CI : float, optional
+        confidence interval for estimating confidence limits on parameters. Must
+        be between 0 and 1. Default is 0.95 for 95% CI.
+    CI_type : str, None, optional
+        This is the confidence bounds on time or reliability shown on the plot.
+        Use None to turn off the confidence intervals. Must be either 'time',
+        'reliability', or None. Default is 'time'. Some flexibility in names is
+        allowed (eg. 't', 'time', 'r', 'rel', 'reliability' are all valid).
+    percentiles : bool, str, list, array, None, optional
+        percentiles (y-values) to produce a table of percentiles failed with
+        lower, point, and upper estimates. Default is None which results in no
+        output. To use default array [1, 5, 10,..., 95, 99] set percentiles as
+        either 'auto', True, 'default', 'on'.
+        If an array or list is specified then it will be used instead of the
+        default array. Any array or list specified must contain values between
+        0 and 100.
+    kwargs
+        Plotting keywords that are passed directly to matplotlib for the
+        probability plot (e.g. color, label, linestyle)
 
-    Outputs:
-    alpha - the fitted Loglogistic_3P alpha parameter
-    beta - the fitted Loglogistic_3P beta parameter
-    gamma - the fitted Loglogistic_3P gamma parameter
-    loglik - Log Likelihood (as used in Minitab and Reliasoft)
-    loglik2 - LogLikelihood*-2 (as used in JMP Pro)
-    AICc - Akaike Information Criterion
-    BIC - Bayesian Information Criterion
-    AD - the Anderson Darling (corrected) statistic (as reported by Minitab)
-    distribution - a Loglogistic_Distribution object with the parameters of the fitted distribution
-    alpha_SE - the standard error (sqrt(variance)) of the parameter
-    beta_SE - the standard error (sqrt(variance)) of the parameter
-    gamma_SE - the standard error (sqrt(variance)) of the parameter
-    Cov_alpha_beta - the covariance between the parameters alpha and beta
-    alpha_upper - the upper CI estimate of the parameter
-    alpha_lower - the lower CI estimate of the parameter
-    beta_upper - the upper CI estimate of the parameter
-    beta_lower - the lower CI estimate of the parameter
-    gamma_upper - the upper CI estimate of the parameter
-    gamma_lower - the lower CI estimate of the parameter
-    results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
-    goodness_of_fit - a dataframe of the goodness of fit values (Log-likelihood, AICc, BIC, AD).
-    percentiles - a dataframe of the percentiles with bounds on time. This is only produced if percentiles is 'auto' or a list or array. Since percentiles defaults to None, this output is not normally produced.
-    probability_plot - the axes handle for the probability plot (only returned if show_probability_plot = True)
+    Returns
+    -------
+    alpha : float
+        the fitted Loglogistic_3P alpha parameter
+    beta : float
+        the fitted Loglogistic_3P beta parameter
+    gamma : float
+        the fitted Loglogistic_3P gamma parameter
+    alpha_SE : float
+        the standard error (sqrt(variance)) of the parameter
+    beta_SE :float
+        the standard error (sqrt(variance)) of the parameter
+    gamma_SE :float
+        the standard error (sqrt(variance)) of the parameter
+    Cov_alpha_beta : float
+        the covariance between the parameters
+    alpha_upper : float
+        the upper CI estimate of the parameter
+    alpha_lower : float
+        the lower CI estimate of the parameter
+    beta_upper : float
+        the upper CI estimate of the parameter
+    beta_lower : float
+        the lower CI estimate of the parameter
+    gamma_upper : float
+        the upper CI estimate of the parameter
+    gamma_lower : float
+        the lower CI estimate of the parameter
+    loglik : float
+        Log Likelihood (as used in Minitab and Reliasoft)
+    loglik2 : float
+        LogLikelihood*-2 (as used in JMP Pro)
+    AICc : float
+        Akaike Information Criterion
+    BIC : float
+        Bayesian Information Criterion
+    AD : float
+        the Anderson Darling (corrected) statistic (as reported by Minitab)
+    distribution : object
+        a Loglogistic_Distribution object with the parameters of the fitted
+        distribution
+    results : dataframe
+        a pandas dataframe of the results (point estimate, standard error,
+        lower CI and upper CI for each parameter)
+    goodness_of_fit : dataframe
+        a pandas dataframe of the goodness of fit values (Log-likelihood, AICc,
+        BIC, AD).
+    percentiles : dataframe
+        a pandas dataframe of the percentiles with bounds on time. This is only
+        produced if percentiles is not None. Since percentiles defaults to None,
+        this output is not normally produced.
+    probability_plot : object
+        the axes handle for the probability plot. This is only returned if
+        show_probability_plot = True
+
+    Notes
+    -----
+    If the fitting process encounters a problem a warning will be printed. This
+    may be caused by the chosen distribution being a very poor fit to the data
+    or the data being heavily censored. If a warning is printed, consider trying
+    a different optimiser.
+
+    If the fitted gamma parameter is less than 0.01, the Loglogistic_3P results
+    will be discarded and the Loglogistic_2P distribution will be fitted. The
+    returned values for gamma and gamma_SE will be 0.
     """
 
     def __init__(

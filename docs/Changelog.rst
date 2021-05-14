@@ -21,16 +21,19 @@ Version 0.5.7 of `reliability` completes a part of this project that has taken a
 -    Added "dateformat" argument to Other_functions.crosshairs. This provides datetime formatting capability for x axis crosshair labels and annotations. Useful if the plot contains datetime data on the x axis.
 -    Fully deprecated Other_functions.convert_dataframe_to_grouped_lists
 -    Fully deprecated the ALT_probability_plotting module as this was made redundant by the improvements to ALT_Fitters in v0.5.6
+-    Fit_Weibull_Mixture and Fit_Weibull_CR didn't accept kwargs. All kwargs are now passed directly to matplotlib making it possible to change color, label, linestyle, etc on the probability plot of these distributions.
 
 **Bug Fixes**
 
 -    Reliability_testing.reliability_test_planner had an error when solving for number of failures. It gave a number 1 more than it should. The number of failures should ensure the MTBF is always above the minimum requirement.
 -    Incorrect formula for stress strength interference was used. This created negligible difference at small probabilities of failure but when stress.mean > strength.mean the difference was significant. Thanks to Jake Sadie for discovering this.
 -    All fitters that extracted the covariance (eg. Cov_alpha_beta) took the abs value. This was incorrect as covariance can be negative. This may have led to minor errors in some of the confidence intervals on the plots as covariance is used for these confidence intervals.
+-    Other_functions.distribution_explorer had a bug due to a change that matplotlib made to the type of error raised. This caused axes to be removed and not redrawn when the radio buttons were toggled. This has been fixed by hiding the axes rather than removing them.
+-    CI_type of None was not being passed from Fitters resulting in an inability to hide the confidence intervals on the plot as the presence of None resulted in the default of 'time' being used. CI_type=None as a kwarg from fitters will now supress the confidence intervals in the probability plot.
 
 **Other**
 
--    Improvements to API documentation. This is a long term work in progress but now the API documentation formatting for Distributions.Weibull_Distribution is correct the style can be copied across to all functions.
+-    Improvements to API documentation. This is a long term work in progress. At this stage, the API documentation formatting has been completed for `Distributions <https://reliability.readthedocs.io/en/latest/API/Distributions.html>`_ and `Fitters <https://reliability.readthedocs.io/en/latest/API/Fitters.html>`_.
 
 **Version: 0.5.6 --- Released: 7 March 2021**
 '''''''''''''''''''''''''''''''''''''''''''''

@@ -24,8 +24,6 @@ Within each of the above probability plotting functions you may enter failure da
 
 .. note:: Beta and Gamma probability plots have their y-axes scaled based on the distribution's parameters so you will find that when you overlay two Gamma or two Beta distributions on the same Gamma or Beta probability paper, one will be a curved line if they have different shape parameters. This is unavoidable due to the nature of Gamma and Beta probability paper and is the reason why you will never find a hardcopy of such paper and also the reason why these distributions are not used in ALT probability plotting.
 
-.. note:: Confidence intervals will not appear on Gamma or Beta probability plots. These confidence intervals are in development.
-
 Inputs:
 
 - failures - the array or list of failure times

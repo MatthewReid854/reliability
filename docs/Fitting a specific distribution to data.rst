@@ -33,8 +33,6 @@ The available functions are:
 
 .. note:: Heavily censored data (>99.9% censoring) may result in a failure of the optimizer to find a solution. If you have heavily censored data, you may have a limited failure population problem. It is recommended that you do not try fitting one of these standard distributions to such a dataset as your results (while they may have achieved a successful fit) will be a poor description of your overall population statistic and you risk drawing the wrong conclusions when the wrong model is fitted. The limited failure population model is planned for a future release of *reliability*, though development on this model is yet to commence. In the meantime, see JMP Pro's model for `Defective Subpopulations. <https://www.jmp.com/en_my/events/ondemand/statistical-methods-in-reliability/defective-subpopulation-distributions.html>`_
 
-.. note:: The confidence intervals are available for all of the standard distributions except for Fit_Gamma_2P, Fit_Gamma_3P and Fit_Beta_2P. This library is being actively developed and it is likely that Gamma and Beta distributions will have confidence intervals added within the next few months.
-
 If you do not know which distribution you want to fit, then please see the `section <https://reliability.readthedocs.io/en/latest/Fitting%20all%20available%20distributions%20to%20data.html>`_ on using the Fit_Everything function which will find the best distribution to describe your data. It is highly recommended that you always try to fit everything and accept the best fit rather than choosing a particular distribution for subjective reasons.
 
 Each of the fitters listed above (except Fit_Weibull_Mixture, Fit_Weibull_CR, and Fit_Weibull_2P_grouped) has the following inputs and outputs:
