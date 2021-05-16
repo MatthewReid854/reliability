@@ -1161,7 +1161,7 @@ class Fit_Everything:
             print_results=False,
             show_plot=False,
         )
-        nonparametric_CDF = 1 - np.array(nonparametric.KM)  # change SF into CDF
+        nonparametric_CDF = 1 - nonparametric.KM  # change SF into CDF
 
         cols, rows, _, figsizePP = Fit_Everything.__probplot_layout(self)
         plotting_order = self.results[

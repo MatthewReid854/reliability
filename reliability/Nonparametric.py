@@ -1,12 +1,17 @@
 """
-Non-parametric estimates of survival function, cumulative distribution function, and cumulative hazard function
-Two estimation methods are implemented:
-- KaplanMeier
-- NelsonAalen
-- RankAdjustment
-These methods arrive at very similar results but are distinctly different in their approach. Kaplan-Meier is more popular.
-All three methods support failures and right censored data.
-Confidence intervals are provided using the Greenwood formula with Normal approximation (as implemented in Minitab).
+Nonparametric
+
+Provides non-parametric estimates of survival function, cumulative distribution
+function, and cumulative hazard function. Three estimation methods are
+implemented:
+KaplanMeier
+NelsonAalen
+RankAdjustment
+
+These methods arrive at very similar results but are distinctly different in
+their approach. Kaplan-Meier is more popular. All three methods support failures
+and right censored data. Confidence intervals are provided using the Greenwood
+formula with Normal approximation (as implemented in Minitab).
 """
 
 import pandas as pd
@@ -21,42 +26,77 @@ pd.set_option("display.max_columns", 9)  # shows the dataframe without ... trunc
 
 class KaplanMeier:
     """
-    KaplanMeier
+    Uses the Kaplan-Meier estimation method to calculate the reliability from
+    failure data. Right censoring is supported and confidence bounds are
+    provided.
 
-    Uses the Kaplan-Meier estimation method to calculate the reliability from failure data.
-    Right censoring is supported and confidence bounds are provided.
-    The confidence bounds are calculated using the Greenwood formula with Normal approximation, which is the same as
-    featured in Minitab.
-    The Kaplan-Meier method provides the SF. With a little algebra, the CDF and CHF are also obtained from the SF.
-    It is not possible to obtain a useful version of the PDF or HF as the derivative of a stepwise function produces very spikey functions.
+    Parameters
+    ----------
+    failures : array, list
+        The failure data. Must have at least 2 elements.
+    right_censored : array, list, optional
+        The right censored data. Optional input. Default = None.
+    show_plot : bool, optional
+        True or False. Default = True
+    print_results : bool, optional
+        Prints a dataframe of the results. True or False. Default = True
+    plot_type : str
+        Must be either 'SF', 'CDF', or 'CHF'. Default is SF.
+    CI : float, optional
+        confidence interval for estimating confidence limits on parameters. Must
+        be between 0 and 1. Default is 0.95 for 95% CI.
+    plot_CI : bool
+        Shades the upper and lower confidence interval. True or False. Default =
+        True
+    kwargs
+        Plotting keywords that are passed directly to matplotlib for the
+        plot (e.g. color, label, linestyle)
 
-    Inputs:
-    failures - an array or list of failure times. Sorting is automatic so times do not need to be provided in any order.
-    right_censored - an array or list of right censored failure times. Defaults to None.
-    show_plot - True/False. Default is True. Plots the CDF, SF, or CHF as specified by plot_type.
-    plot_type - SF, CDF, or CHF. Default is SF.
-    print_results - True/False. Default is True. Will display a pandas dataframe in the console.
-    plot_CI - shades the upper and lower confidence interval
-    CI - confidence interval between 0 and 1. Default is 0.95 for 95% CI.
+    Returns
+    -------
+    results : dataframe
+        A pandas dataframe of results for the SF
+    KM : array
+        The Kaplan-Meier Estimate column from results dataframe. This column is
+        the non-parametric estimate of the Survival Function (reliability
+        function).
+    xvals : array
+        the x-values to plot the stepwise plot as seen when show_plot=True
+    SF : array
+        survival function stepwise values (these differ from the KM values as
+        there are extra values added in to make the plot into a step plot)
+    CDF : array
+        cumulative distribution function stepwise values
+    CHF : array
+        cumulative hazard function stepwise values
+    SF_lower : array
+        survival function stepwise values for lower CI
+    SF_upper : array
+        survival function stepwise values for upper CI
+    CDF_lower : array
+        cumulative distribution function stepwise values for lower CI
+    CDF_upper : array
+        cumulative distribution function stepwise values for upper CI
+    CHF_lower : array
+        cumulative hazard function stepwise values for lower CI
+    CHF_upper : array
+        cumulative hazard function stepwise values for upper CI
+    data : array
+        the failures and right_censored values sorted. Same as 'Failure times'
+        column from results dataframe
+    censor_codes : array
+        the censoring codes (0 or 1) from the sorted data. Same as 'Censoring
+        code (censored=0)' column from results dataframe
 
-    Outputs:
-    results - dataframe of results for the SF
-    KM - list of Kaplan-Meier column from results dataframe. This column is the non parametric estimate of the Survival Function (reliability function).
-    xvals - the x-values to plot the stepwise plot as seen when show_plot=True
-    SF - survival function stepwise values (these differ from the KM values as there are extra values added in to make the plot into a step plot)
-    CDF - cumulative distribution function stepwise values
-    CHF - cumulative hazard function stepwise values
-    SF_lower - survival function stepwise values for lower CI
-    SF_upper - survival function stepwise values for upper CI
-    CDF_lower - cumulative distribution function stepwise values for lower CI
-    CDF_upper - cumulative distribution function stepwise values for upper CI
-    CHF_lower - cumulative hazard function stepwise values for lower CI
-    CHF_upper - cumulative hazard function stepwise values for upper CI
+    Notes
+    -----
+    The confidence bounds are calculated using the Greenwood formula with
+    Normal approximation, which is the same as featured in Minitab.
 
-    Example Usage:
-    f = [5248,7454,16890,17200,38700,45000,49390,69040,72280,131900]
-    rc = [3961,4007,4734,6054,7298,10190,23060,27160,28690,37100,40060,45670,53000,67000,69630,77350,78470,91680,105700,106300,150400]
-    KaplanMeier(failures = f, right_censored = rc)
+    The Kaplan-Meier method provides the SF. The CDF and CHF are obtained from
+    transformations of the SF. It is not possible to obtain a useful version of
+    the PDF or HF as the derivative of a stepwise function produces
+    discontinuous (jagged) functions.
     """
 
     def __init__(
@@ -163,7 +203,6 @@ class KaplanMeier:
                 "Upper CI bound",
             ],
         )
-        self.KM = KM
 
         KM_x = [0]
         KM_y = [1]  # adds a start point for 100% reliability at 0 time
@@ -203,6 +242,7 @@ class KaplanMeier:
                     KM_y_upper.append(KM_upper[i - 2])
         KM_y_lower.append(KM_y_lower[-1])
         KM_y_upper.append(KM_y_upper[-1])
+        self.KM = np.array(KM)
         self.xvals = np.array(KM_x)
         self.SF = np.array(KM_y)
         self.SF_lower = np.array(KM_y_lower)
@@ -309,42 +349,79 @@ class KaplanMeier:
 
 class NelsonAalen:
     """
-    NelsonAalen
+    Uses the Nelson-Aalen estimation method to calculate the reliability from
+    failure data. Right censoring is supported and confidence bounds are
+    provided.
 
-    Uses the Nelson-Aalen estimation method to calculate the reliability from failure data.
-    Right censoring is supported and confidence bounds are provided.
-    The confidence bounds are calculated using the Greenwood formula with Normal approximation.
-    The Nelson-Aalen method provides the CHF. With a little algebra, the CDF and SF are also obtained from the CHF.
-    It is not possible to obtain a useful version of the PDF or HF as the derivative of a stepwise function produces very spikey functions.
-    Nelson-Aalen does obtain the HF directly which is then used to obtain the CHF, but this function is not smooth and is of little use
+    Parameters
+    ----------
+    failures : array, list
+        The failure data. Must have at least 2 elements.
+    right_censored : array, list, optional
+        The right censored data. Optional input. Default = None.
+    show_plot : bool, optional
+        True or False. Default = True
+    print_results : bool, optional
+        Prints a dataframe of the results. True or False. Default = True
+    plot_type : str
+        Must be either 'SF', 'CDF', or 'CHF'. Default is SF.
+    CI : float, optional
+        confidence interval for estimating confidence limits on parameters. Must
+        be between 0 and 1. Default is 0.95 for 95% CI.
+    plot_CI : bool
+        Shades the upper and lower confidence interval. True or False. Default =
+        True
+    kwargs
+        Plotting keywords that are passed directly to matplotlib for the
+        plot (e.g. color, label, linestyle)
 
-    Inputs:
-    failure - an array or list of failure times. Sorting is automatic so times do not need to be provided in any order.
-    right_censored - an array or list of right censored failure times. Defaults to None.
-    show_plot - True/False. Default is True. Plots the SF.
-    print_results - True/False. Default is True. Will display a pandas dataframe in the console.
-    plot_CI - shades the upper and lower confidence interval
-    CI - confidence interval between 0 and 1. Default is 0.95 for 95% CI.
-    plot_type - SF, CDF, or CHF. Default is SF.
+    Returns
+    -------
+    results : dataframe
+        A pandas dataframe of results for the SF
+    NA : array
+        The Nelson-Aalen Estimate column from results dataframe. This column is
+        the non-parametric estimate of the Survival Function (reliability
+        function).
+    xvals : array
+        the x-values to plot the stepwise plot as seen when show_plot=True
+    SF : array
+        survival function stepwise values (these differ from the NA values as
+        there are extra values added in to make the plot into a step plot)
+    CDF : array
+        cumulative distribution function stepwise values
+    CHF : array
+        cumulative hazard function stepwise values
+    SF_lower : array
+        survival function stepwise values for lower CI
+    SF_upper : array
+        survival function stepwise values for upper CI
+    CDF_lower : array
+        cumulative distribution function stepwise values for lower CI
+    CDF_upper : array
+        cumulative distribution function stepwise values for upper CI
+    CHF_lower : array
+        cumulative hazard function stepwise values for lower CI
+    CHF_upper : array
+        cumulative hazard function stepwise values for upper CI
+    data : array
+        the failures and right_censored values sorted. Same as 'Failure times'
+        column from results dataframe
+    censor_codes : array
+        the censoring codes (0 or 1) from the sorted data. Same as 'Censoring
+        code (censored=0)' column from results dataframe
 
-    Outputs:
-    results - dataframe of results
-    NA - list of Nelson-Aalen column from results dataframe. This column is the non parametric estimate of the Survival Function (reliability function).
-    xvals - the x-values to plot the stepwise plot as seen when show_plot=True
-    SF - survival function stepwise values (these differ from the NA values as there are extra values added in to make the plot into a step plot)
-    CDF - cumulative distribution function stepwise values
-    CHF - cumulative hazard function stepwise values
-    SF_lower - survival function stepwise values for lower CI
-    SF_upper - survival function stepwise values for upper CI
-    CDF_lower - cumulative distribution function stepwise values for lower CI
-    CDF_upper - cumulative distribution function stepwise values for upper CI
-    CHF_lower - cumulative hazard function stepwise values for lower CI
-    CHF_upper - cumulative hazard function stepwise values for upper CI
+    Notes
+    -----
+    The confidence bounds are calculated using the Greenwood formula with
+    Normal approximation, which is the same as featured in Minitab.
 
-    Example Usage:
-    f = [5248,7454,16890,17200,38700,45000,49390,69040,72280,131900]
-    rc = [3961,4007,4734,6054,7298,10190,23060,27160,28690,37100,40060,45670,53000,67000,69630,77350,78470,91680,105700,106300,150400]
-    NelsonAalen(failures = f, right_censored = rc)
+    The Nelson-Aalen method provides the SF. The CDF and CHF are obtained from
+    transformations of the SF. It is not possible to obtain a useful version of
+    the PDF or HF as the derivative of a stepwise function produces
+    discontinuous (jagged) functions. Nelson-Aalen does obtain the HF directly
+    which is then used to obtain the CHF, but this function is not smooth and is
+    of little use.
     """
 
     def __init__(
@@ -450,7 +527,6 @@ class NelsonAalen:
                 "Upper CI bound",
             ],
         )
-        self.NA = NA
 
         NA_x = [0]
         NA_y = [1]  # adds a start point for 100% reliability at 0 time
@@ -491,6 +567,7 @@ class NelsonAalen:
         NA_y_lower.append(NA_y_lower[-1])
         NA_y_upper.append(NA_y_upper[-1])
         self.xvals = np.array(NA_x)
+        self.NA = np.array(NA)
         self.SF = np.array(NA_y)
         self.SF_lower = np.array(NA_y_lower)
         self.SF_upper = np.array(NA_y_upper)
@@ -596,46 +673,88 @@ class NelsonAalen:
 
 class RankAdjustment:
     """
-    RankAdjustment
+    Uses the rank-adjustment estimation method to calculate the reliability from
+    failure data. Right censoring is supported and confidence bounds are
+    provided.
 
-    Uses the rank-adjustment estimation method to calculate the reliability from failure data.
-    Right censoring is supported and confidence bounds are provided.
-    The confidence bounds are calculated using the Greenwood formula with Normal approximation, which is the same as
-    featured in Minitab.
-    The rank-adjustment method provides the SF. With a little algebra, the CDF and CHF are also obtained from the SF.
-    It is not possible to obtain a useful version of the PDF or HF as the derivative of a stepwise function produces very spikey functions.
-    The Rank-adjustment algorithm is the same as is used in Probability_plotting.plotting_positions to obtain y-values for the scatter plot.
-    As with plotting_positions, the heuristic constant "a" is accepted, with the default being 0.3 for median ranks.
+    Parameters
+    ----------
+    failures : array, list
+        The failure data. Must have at least 2 elements.
+    right_censored : array, list, optional
+        The right censored data. Optional input. Default = None.
+    show_plot : bool, optional
+        True or False. Default = True
+    print_results : bool, optional
+        Prints a dataframe of the results. True or False. Default = True
+    plot_type : str
+        Must be either 'SF', 'CDF', or 'CHF'. Default is SF.
+    CI : float, optional
+        confidence interval for estimating confidence limits on parameters. Must
+        be between 0 and 1. Default is 0.95 for 95% CI.
+    plot_CI : bool
+        Shades the upper and lower confidence interval. True or False. Default =
+        True
+    a - int,float,optional
+        The heuristic constant for plotting positions of the form
+        (k-a)/(n+1-2a). Optional input. Default is a=0.3 which is the median
+        rank method (same as the default in Minitab). Must be in the range 0 to
+        1. For more heuristics, see:
+        https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics
+    kwargs
+        Plotting keywords that are passed directly to matplotlib for the
+        plot (e.g. color, label, linestyle)
 
-    Inputs:
-    failures - an array or list of failure times. Sorting is automatic so times do not need to be provided in any order.
-    right_censored - an array or list of right censored failure times. Defaults to None.
-    show_plot - True/False. Default is True. Plots the CDF, SF, or CHF as specified by plot_type.
-    plot_type - SF, CDF, or CHF. Default is SF.
-    print_results - True/False. Default is True. Will display a pandas dataframe in the console.
-    plot_CI - shades the upper and lower confidence interval
-    CI - confidence interval between 0 and 1. Default is 0.95 for 95% CI.
-    a - the heuristic constant for plotting positions of the form (k-a)/(n+1-2a). Default is a=0.3 which is the median rank method (same as the default in Minitab).
-        Must be in the range 0 to 1. For more heuristics, see: https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics
+    Returns
+    -------
+    results : dataframe
+        A pandas dataframe of results for the SF
+    RA : array
+        The Rank Adjustment Estimate column from results dataframe. This column
+        is the non-parametric estimate of the Survival Function (reliability
+        function).
+    xvals : array
+        the x-values to plot the stepwise plot as seen when show_plot=True
+    SF : array
+        survival function stepwise values (these differ from the RA values as
+        there are extra values added in to make the plot into a step plot)
+    CDF : array
+        cumulative distribution function stepwise values
+    CHF : array
+        cumulative hazard function stepwise values
+    SF_lower : array
+        survival function stepwise values for lower CI
+    SF_upper : array
+        survival function stepwise values for upper CI
+    CDF_lower : array
+        cumulative distribution function stepwise values for lower CI
+    CDF_upper : array
+        cumulative distribution function stepwise values for upper CI
+    CHF_lower : array
+        cumulative hazard function stepwise values for lower CI
+    CHF_upper : array
+        cumulative hazard function stepwise values for upper CI
+    data : array
+        the failures and right_censored values sorted. Same as 'Failure times'
+        column from results dataframe
+    censor_codes : array
+        the censoring codes (0 or 1) from the sorted data. Same as 'Censoring
+        code (censored=0)' column from results dataframe
 
-    Outputs:
-    results - dataframe of results for the SF
-    RA - list of rank-adjustment column from results dataframe. This column is the non parametric estimate of the Survival Function (reliability function).
-    xvals - the x-values to plot the stepwise plot as seen when show_plot=True
-    SF - survival function stepwise values (these differ from the RA values as there are extra values added in to make the plot into a step plot)
-    CDF - cumulative distribution function stepwise values
-    CHF - cumulative hazard function stepwise values
-    SF_lower - survival function stepwise values for lower CI
-    SF_upper - survival function stepwise values for upper CI
-    CDF_lower - cumulative distribution function stepwise values for lower CI
-    CDF_upper - cumulative distribution function stepwise values for upper CI
-    CHF_lower - cumulative hazard function stepwise values for lower CI
-    CHF_upper - cumulative hazard function stepwise values for upper CI
+    Notes
+    -----
+    The confidence bounds are calculated using the Greenwood formula with
+    Normal approximation, which is the same as featured in Minitab.
 
-    Example Usage:
-    f = [5248,7454,16890,17200,38700,45000,49390,69040,72280,131900]
-    rc = [3961,4007,4734,6054,7298,10190,23060,27160,28690,37100,40060,45670,53000,67000,69630,77350,78470,91680,105700,106300,150400]
-    RankAdjustment(failures = f, right_censored = rc)
+    The rank-adjustment method provides the SF. The CDF and CHF are obtained from
+    transformations of the SF. It is not possible to obtain a useful version of
+    the PDF or HF as the derivative of a stepwise function produces
+    discontinuous (jagged) functions.
+
+    The Rank-adjustment algorithm is the same as is used in
+    Probability_plotting.plotting_positions to obtain y-values for the scatter
+    plot. As with plotting_positions, the heuristic constant "a" is accepted,
+    with the default being 0.3 for median ranks.
     """
 
     def __init__(
@@ -762,8 +881,9 @@ class RankAdjustment:
             RA_y_lower = RA_y_lower[0:-1]
             RA_y_upper = RA_y_upper[0:-1]
 
-        self.RA = RA  # these are the values from the dataframe. 1 value for each time (failure or right censored). RA is for "rank adjustment" just as KM is "Kaplan-Meier"
         self.xvals = x_array
+        # RA are the values from the dataframe. 1 value for each time (failure or right censored). RA is for "rank adjustment" just as KM is "Kaplan-Meier"
+        self.RA = np.array(RA)
         self.SF = 1 - np.array(y_array)  # these are the stepwise values for the plot.
         self.SF_lower = np.array(RA_y_lower)
         self.SF_upper = np.array(RA_y_upper)

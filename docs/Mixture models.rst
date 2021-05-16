@@ -31,41 +31,11 @@ Creating a mixture model
 
 Within `reliability.Distributions` is the Mixture_Model. This function accepts an array or list of standard distribution objects created using the `reliability.Distributions` module (available distributions are Exponential, Weibull, Gumbel, Normal, Lognormal, Loglogistic, Gamma, Beta). There is no limit to the number of components you can add to the mixture, but is is generally preferable to use as few as are required to fit the data appropriately (typically 2 or 3). In addition to the distributions, you can specify the proportions contributed by each distribution in the mixture. These proportions must sum to 1. If not specified the proportions will be set as equal for each component.
 
-As this process is additive for the survival function, and may accept many distributions of different types, the mathematical formulation quickly gets complex.
-For this reason, the algorithm combines the models numerically rather than empirically so there are no simple formulas for many of the descriptive statistics (mean, median, etc.). Also, the accuracy of the model is dependent on xvals. If the xvals array is small (<100 values) then the answer will be "blocky" and inaccurate. The variable xvals is only accepted for PDF, CDF, SF, HF, and CHF. The other methods (like random samples) use the default xvals for maximum accuracy. The default number of values generated when xvals is not given is 1000. Consider this carefully when specifying xvals in order to avoid inaccuracies in the results.
+As this process is additive for the survival function, and may accept many distributions of different types, the mathematical formulation quickly gets complex. For this reason, the algorithm combines the models numerically rather than empirically so there are no simple formulas for many of the descriptive statistics (mean, median, etc.). Also, the accuracy of the model is dependent on xvals. If the xvals array is small (<100 values) then the answer will be "blocky" and inaccurate. The variable xvals is only accepted for PDF, CDF, SF, HF, and CHF. The other methods (like random samples) use the default xvals for maximum accuracy. The default number of values generated when xvals is not given is 200. Consider this carefully when specifying xvals in order to avoid inaccuracies in the results.
 
-The API is similar to the other probability distributions (Weibull, Normal, etc.) and has the following inputs and methods:
+.. admonition:: API Reference
 
-Inputs:
-
--    distributions - a list or array of probability distributions used to construct the model.
--    proportions - how much of each distribution to add to the mixture. The sum of proportions must always be 1.
-
-Methods:
-
--    name - 'Mixture'
--    name2 - 'Mixture using 3 distributions'
--    mean
--    median
--    mode
--    variance
--    standard_deviation
--    skewness
--    kurtosis
--    excess_kurtosis
--    b5 - The time where 5% have failed. Same as quantile(0.05)
--    b95 - The time where 95% have failed. Same as quantile(0.95)
--    plot() - plots all functions (PDF,CDF,SF,HF,CHF)
--    PDF() - plots the probability density function
--    CDF() - plots the cumulative distribution function
--    SF() - plots the survival function (also known as reliability function)
--    HF() - plots the hazard function
--    CHF() - plots the cumulative hazard function
--    quantile() - Calculates the quantile (time until a fraction has failed) for a given fraction failing. Also known as b life where b5 is the time at which 5% have failed.
--    inverse_SF() - the inverse of the Survival Function. This is useful when producing QQ plots.
--    mean_residual_life() - Average residual lifetime of an item given that the item has survived up to a given time. Effectively the mean of the remaining amount (right side) of a distribution at a given time.
--    stats() - prints all the descriptive statistics. Same as the statistics shown using .plot() but printed to console.
--    random_samples() - draws random samples from the distribution to which it is applied.
+   For inputs and outputs see the `API reference <https://reliability.readthedocs.io/en/latest/API/Distributions/Mixture_Model.html>`_.
 
 Example 1
 ---------
@@ -113,46 +83,10 @@ Fitting a mixture model
 Within `reliability.Fitters` is Fit_Weibull_Mixture. This function will fit a Weibull Mixture Model consisting of 2 x Weibull_2P distributions (this does not fit the gamma parameter). Just as with all of the other distributions in `reliability.Fitters`, right censoring is supported, though care should be taken to ensure that there still appears to be two groups when plotting only the failure data. A second group cannot be made from a mostly or totally censored set of samples.
 
 Whilst some failure modes may not be fitted as well by a Weibull distribution as they may be by another distribution, it is unlikely that a mixture of data from two distributions (particularly if they are overlapping) will be fitted noticeably better by other types of mixtures than would be achieved by a Weibull mixture. For this reason, other types of mixtures are not implemented.
- 
-Inputs:
 
--   failures - an array or list of the failure data. There must be at least 4 failures, but it is highly recommended to use another model if you have less than 20 failures.
--   right_censored - an array or list of right censored failure data. Optional input.
--   print_results - True/False. This will print results to console. Default is True
--   CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
--   optimizer - 'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see `scipy <https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize>`_.
--   show_probability_plot - True/False. This will show the probability plot with the fitted mixture CDF. Default is True.
- 
-Outputs:
+.. admonition:: API Reference
 
--   alpha_1 - the fitted Weibull_2P alpha parameter for the first (left) group
--   beta_1 - the fitted Weibull_2P beta parameter for the first (left) group
--   alpha_2 - the fitted Weibull_2P alpha parameter for the second (right) group
--   beta_2 - the fitted Weibull_2P beta parameter for the second (right) group
--   proportion_1 - the fitted proportion of the first (left) group
--   proportion_2 - the fitted proportion of the second (right) group. Same as 1-proportion_1
--   alpha_1_SE - the standard error on the parameter
--   beta_1_SE - the standard error on the parameter
--   alpha_2_SE - the standard error on the parameter
--   beta_2_SE - the standard error on the parameter
--   proportion_1_SE - the standard error on the parameter
--   alpha_1_upper - the upper confidence interval estimate of the parameter
--   alpha_1_lower - the lower confidence interval estimate of the parameter
--   beta_1_upper - the upper confidence interval estimate of the parameter
--   beta_1_lower - the lower confidence interval estimate of the parameter
--   alpha_2_upper - the upper confidence interval estimate of the parameter
--   alpha_2_lower - the lower confidence interval estimate of the parameter
--   beta_2_upper - the upper confidence interval estimate of the parameter
--   beta_2_lower - the lower confidence interval estimate of the parameter
--   proportion_1_upper - the upper confidence interval estimate of the parameter
--   proportion_1_lower - the lower confidence interval estimate of the parameter
--   loglik - Log Likelihood (as used in Minitab and Reliasoft)
--   loglik2 - LogLikelihood*-2 (as used in JMP Pro)
--   AICc - Akaike Information Criterion
--   BIC - Bayesian Information Criterion
--   AD - Anderson-Darling goodness of fit statistic
--   results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
--   goodness_of_fit - a dataframe of the goodness of fit values (Log-likelihood, AICc, BIC, AD).
+   For inputs and outputs see the `API reference <https://reliability.readthedocs.io/en/latest/API/Fitters/Fit_Weibull_Mixture.html>`_.
 
 Example 2
 ---------

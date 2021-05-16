@@ -16,7 +16,14 @@ There are 8 standard probability `distributions <https://reliability.readthedocs
 -   Gumbel Distribution (μ, σ)
 -   Beta Distribution (α, β)
 
+.. admonition:: API Reference
+
+   For inputs and outputs see the `API reference <https://reliability.readthedocs.io/en/latest/API/Distributions.html>`_.
+
+Probability distributions within *reliability* are Python objects, which allows us to specify just the type of distribution and its parameters. Once the distribution object is created, we can access a large number of methods (such as PDF() or plot()). Some of the methods require additional input and some have optional inputs.
+
 In all of the distributions which use γ, the γ parameter is used to location shift the distribution to the right. If used, the γ parameter must be greater than or equal to 0.
+
 The Beta distribution is only defined in the range 0 to 1. All distributions except the Normal and Gumbel distributions are defined in the positive domain only (x>0).
 
 Example 1
@@ -48,38 +55,6 @@ Just as easily as we plotted the PDF in the above example, we can plot any of th
     dist.plot()
 
 .. image:: images/Lognormal_plot2.png
-
-Probability distributions within *reliability* are Python objects, which allows us to specify just the type of distribution and its parameters. Once the distribution object is created, we can access a large number of methods (such as PDF or plot as we did above). Some of the methods require additional input and some have optional inputs.
-
-The following methods are available for all distributions:
-
--   name - a string of the distribution name. Eg. 'Weibull'
--   name2 - a string of the distribution name including the number of parameters. Eg. 'Weibull_2P'
--   param_title_long - Useful in plot titles, legends and in printing strings. Varies by distribution. eg. 'Weibull Distribution (α=5,β=2)'
--   param_title - Useful in plot titles, legends and in printing strings. Varies by distribution. eg. 'α=5,β=2'
--   parameters - returns an array of parameters. These are in the order specified in the bullet points above, so for Lognormal it would return [mu,sigma,gamma].
--   alpha, beta, gamma, Lambda, mu, sigma - these vary by distribution but will return the value of their respective parameter. Eg. dist.mu would return 2 in the above example.
--   mean
--   variance
--   standard_deviation
--   skewness
--   kurtosis
--   excess_kurtosis
--   median
--   mode
--   b5 - the time at which 5% of units have failed. Same as dist.quantile(0.05)
--   b95 - the time at which 95% of units have failed. Same as dist.quantile(0.95)
--   plot() - plots all functions (PDF, CDF, SF, HF, CHF). Also accepts xvals, xmin, xmax.
--   PDF() - plots the probability density function. Also accepts xvals, xmin, xmax, show_plot, and plot keywords (eg. color).
--   CDF() - plots the cumulative distribution function. Also accepts xvals, xmin, xmax, show_plot, and plot keywords (eg. color).
--   SF() - plots the survival function (also known as reliability function). Also accepts xvals, xmin, xmax, show_plot, and plot keywords (eg. color).
--   HF() - plots the hazard function. Also accepts xvals, xmin, xmax, show_plot, and plot keywords (eg. color).
--   CHF() - plots the cumulative hazard function. Also accepts xvals, xmin, xmax, show_plot, and plot keywords (eg. color).
--   quantile() - Calculates the quantile (time until a fraction has failed) for a given fraction failing. Also known as 'b' life where b5 is the time at which 5% have failed. You must specify the y-value at which to calculate the quantile. Eg. dist.quantile(0.05) will give the b5 life.
--   inverse_SF() - Calculates the inverse of the survival function. Useful when producing QQ plots. You must specify the y-value at which to calculate the inverse SF. Eg. dist.inverse_SF(0.8) will give the time at which 80% have not failed.
--   mean_residual_life() - Average residual lifetime of an item given that the item has survived up to a given time. Effectively the mean of the remaining amount (right side) of a distribution at a given time. You must specify the x-value at which to calculate MRL. Eg. dist.mean_residual_life(10)
--   stats() - prints all the descriptive statistics. Same as the statistics shown using .plot() but printed to console. No arguments are accepted.
--   random_samples() - draws random samples from the distribution to which it is applied. Same as rvs in scipy.stats. You must specify the number of samples. Eg. data = dist.random_samples(100) will set data as a list of 100 random samples from the distribution. If you want repeatability, specify the seed E.g data = dist.random_samples(100, seed=1).
 
 For all of the individual plotting functions (PDF, CDF, SF, HF, CHF), all standard matplotlib plotting keywords (such as label, color, linestyle, etc.) are accepted and used. If not specified they are preset. In specifying the plotting positions for the x-axis, there are optional keywords to be used. The first of these is 'xvals' which accepts a list of x-values to use for the horizontal axis. Alternatively, the user may specify 'xmin' and/or 'xmax' if there is a desired minimum or maximum value. If left unspecified these will be set automatically. xvals overrides xmin and xmax.
 
@@ -130,7 +105,7 @@ On the topic of the Bathtub curve generated in Example 4, it is important to und
 
 .. image:: images/bathtub_not_so_common.png
 
-Further detail about all of the functions is available using the help function within Python. Simply type:
+If you would like access the API Reference programatically, you can use the help function within Python. Simply type:
 
 .. code:: python
 

@@ -5,73 +5,44 @@
 Fitting a specific distribution to data
 '''''''''''''''''''''''''''''''''''''''
 
-The module `reliability.Fitters` provides many probability distribution fitting functions. These functions can be thought of in three categories; non-location shifted distributions [eg. Weibull (α,β)], location shifted distributions [eg. Weibull (α,β,γ)], and special distributions (e.g. Weibull Mixture model). All of the distributions can be fitted to both complete and incomplete (right censored) data. All distributions in the Fitters module are named with their number of parameters (eg. Fit_Weibull_2P uses α,β, whereas Fit_Weibull_3P uses α,β,γ). This is intended to remove ambiguity about what distribution you are fitting.
+.. admonition:: API Reference
 
-Distributions are fitted simply by using the desired function and specifying the data as failures or right_censored data. You must have at least as many failures as there are distribution parameters or the fit would be under-constrained. It is generally advisable to have at least 4 data points as the accuracy of the fit is proportional to the amount of data. Once fitted, the results are assigned to an object and the fitted parameters can be accessed by name, as shown in the examples below. The goodness of fit criterions are also available as AICc (Akaike Information Criterion corrected), BIC (Bayesian Information Criterion), AD (Anderson-Darling), and loglik (log-likelihood), though these are more useful when comparing the fit of multiple distributions such as in the `Fit_Everything <https://reliability.readthedocs.io/en/latest/Fitting%20all%20available%20distributions%20to%20data.html>`_ function. As a matter of convenience, each of the modules in Fitters also generates a distribution object that has the parameters of the fitted distribution.
+   For inputs and outputs see the `API reference <https://reliability.readthedocs.io/en/latest/API/Fitters.html>`_.
 
-The available functions are:
+The module `reliability.Fitters` provides many probability distribution fitting functions as shown below.
 
--   Fit_Weibull_2P
--   Fit_Weibull_3P
+Functions for fitting non-location shifted distributions:
+
 -   Fit_Exponential_1P
--   Fit_Exponential_2P
+-   Fit_Weibull_2P
 -   Fit_Gamma_2P
--   Fit_Gamma_3P
 -   Fit_Lognormal_2P
--   Fit_Lognormal_3P
 -   Fit_Loglogistic_2P
--   Fit_Loglogistic_3P
 -   Fit_Normal_2P
 -   Fit_Gumbel_2P
 -   Fit_Beta_2P
--   Fit_Weibull_Mixture (see the `section <https://reliability.readthedocs.io/en/latest/Mixture%20models.html>`_ on this)
--   Fit_Weibull_CR (see the `section <https://reliability.readthedocs.io/en/latest/Competing%20risk%20models.html>`_ on this)
 
-.. note:: The Beta distribution is only for data in the range 0 to 1. Specifying data outside of this range will cause an error.
+Functions for fitting location shifted distributions:
 
-.. note:: If you have a very large amount of data (>100000 samples) then it is likely that your computer will take significant time to compute the results. This is a limitation of interpreted languages like Python compared to compiled languages like C++ which many commerial reliability software packages are written in. If you have very large volumes of data, you may want to consider using commercial software for faster computation time. The function Fit_Weibull_2P_grouped is designed to accept a dataframe which has multiple occurrences of some values (eg. multiple values all right censored to the same value when the test was ended). Depending on the size of the data set and the amount of grouping in your data, Fit_Weibull_2P_grouped may be much faster than Fit_Weibull_2P and achieve the same level of accuracy. This difference is not noticable if you have less than 10000 samples. For more information, see the example below on `using Fit_Weibull_2P_grouped <https://reliability.readthedocs.io/en/latest/Fitting%20a%20specific%20distribution%20to%20data.html#using-fit-weibull-2p-grouped-for-large-data-sets>`_.
+-   Fit_Exponential_2P
+-   Fit_Weibull_3P
+-   Fit_Gamma_3P
+-   Fit_Lognormal_3P
+-   Fit_Loglogistic_3P
 
-.. note:: Heavily censored data (>99.9% censoring) may result in a failure of the optimizer to find a solution. If you have heavily censored data, you may have a limited failure population problem. It is recommended that you do not try fitting one of these standard distributions to such a dataset as your results (while they may have achieved a successful fit) will be a poor description of your overall population statistic and you risk drawing the wrong conclusions when the wrong model is fitted. The limited failure population model is planned for a future release of *reliability*, though development on this model is yet to commence. In the meantime, see JMP Pro's model for `Defective Subpopulations. <https://www.jmp.com/en_my/events/ondemand/statistical-methods-in-reliability/defective-subpopulation-distributions.html>`_
+All of the distributions can be fitted to both complete and incomplete (right censored) data. All distributions in the Fitters module are named with their number of parameters (eg. Fit_Weibull_2P uses α,β, whereas Fit_Weibull_3P uses α,β,γ). This is intended to remove ambiguity about what distribution you are fitting.
+
+Distributions are fitted simply by using the desired function and specifying the data as failures or right_censored data. You must have at least as many failures as there are distribution parameters or the fit would be under-constrained. It is generally advisable to have at least 4 data points as the accuracy of the fit is proportional to the amount of data. Once fitted, the results are assigned to an object and the fitted parameters can be accessed by name, as shown in the examples below. The goodness of fit criterions are also available as AICc (Akaike Information Criterion corrected), BIC (Bayesian Information Criterion), AD (Anderson-Darling), and loglik (log-likelihood), though these are more useful when comparing the fit of multiple distributions such as in the `Fit_Everything <https://reliability.readthedocs.io/en/latest/Fitting%20all%20available%20distributions%20to%20data.html>`_ function. As a matter of convenience, each of the modules in Fitters also generates a distribution object that has the parameters of the fitted distribution.
+
+The Beta distribution is only for data in the range 0 to 1. Specifying data outside of this range will cause an error.
+
+If you have a very large amount of data (>100000 samples) then it is likely that your computer will take significant time to compute the results. This is a limitation of interpreted languages like Python compared to compiled languages like C++ which many commerial reliability software packages are written in. If you have very large volumes of data, you may want to consider using commercial software for faster computation time. The function Fit_Weibull_2P_grouped is designed to accept a dataframe which has multiple occurrences of some values (eg. multiple values all right censored to the same value when the test was ended). Depending on the size of the data set and the amount of grouping in your data, Fit_Weibull_2P_grouped may be much faster than Fit_Weibull_2P and achieve the same level of accuracy. This difference is not noticable if you have less than 10000 samples. For more information, see the example below on `using Fit_Weibull_2P_grouped <https://reliability.readthedocs.io/en/latest/Fitting%20a%20specific%20distribution%20to%20data.html#using-fit-weibull-2p-grouped-for-large-data-sets>`_.
+
+Heavily censored data (>99.9% censoring) may result in a failure of the optimizer to find a solution. If you have heavily censored data, you may have a limited failure population problem. It is recommended that you do not try fitting one of these standard distributions to such a dataset as your results (while they may have achieved a successful fit) will be a poor description of your overall population statistic and you risk drawing the wrong conclusions when the wrong model is fitted. The limited failure population model is planned for a future release of *reliability*, though development on this model is yet to commence. In the meantime, see JMP Pro's model for `Defective Subpopulations. <https://www.jmp.com/en_my/events/ondemand/statistical-methods-in-reliability/defective-subpopulation-distributions.html>`_
 
 If you do not know which distribution you want to fit, then please see the `section <https://reliability.readthedocs.io/en/latest/Fitting%20all%20available%20distributions%20to%20data.html>`_ on using the Fit_Everything function which will find the best distribution to describe your data. It is highly recommended that you always try to fit everything and accept the best fit rather than choosing a particular distribution for subjective reasons.
 
-Each of the fitters listed above (except Fit_Weibull_Mixture, Fit_Weibull_CR, and Fit_Weibull_2P_grouped) has the following inputs and outputs:
-
-Inputs:
-
--   failures - an array or list of failure data
--   right_censored - an array or list of right censored data. Optional input
--   show_probability_plot - True/False. Defaults to True. Produces a probability plot of the failure data and fitted distribution.
--   print_results - True/False. Defaults to True. Prints a dataframe of the point estimate, standard error, Lower CI and Upper CI for each parameter.
--   method - 'MLE' (maximum likelihood estimation), 'LS' (least squares estimation), 'RRX' (Rank regression on X), 'RRY' (Rank regression on Y). LS will perform both RRX and RRY and return the better one. Default is 'MLE'.
--   optimizer - 'L-BFGS-B', 'TNC', or 'powell'. Default for <97% censored data is L-BFGS-B and for above 97% censored data the default optimizer is TNC. These are all bound constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see `scipy <https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize>`_.
--   CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
--   CI_type - time, reliability, None. Default is time. This is the confidence bounds on time or on reliability. Use None to turn off the confidence intervals.
--   percentiles - True/False (for default list) or specified list or array of percentiles (0 to 100) to print with the results. These are the percentiles on time based on the specified CI. Not available for Fit_Gamma_2P, Fit_Gamma_3P and Fit_Beta_2P due to confidence intervals not yet implemented.
--   force_beta (in Fit_Weibull_2P) or force_sigma (in Fit_Normal_2P and Fit_Lognormal_2P). This allows the user to force the shape parameter to be a set value. Useful for ALT probability plotting. Optional input and only available for Fit_Weibull_2P, Fit_Normal_2P and Fit_Lognormal_2P as these are the distributions typically used in ALT probability plotting.
--   keyword argumets are also accepted for the probability plot (eg. color, linestyle, marker)
-
-Outputs (the following example outputs are for the Fit_Weibull_2P distribution but for other distributions the parameter names may be different from alpha and beta):
-
--   alpha - the fitted Weibull_2P alpha parameter
--   beta - the fitted Weibull_2P beta parameter
--   loglik - Log-Likelihood (as used in Minitab and Reliasoft)
--   loglik2 - Log-Likelihood*-2 (as used in JMP Pro)
--   AICc - Akaike Information Criterion (goodness of fit statistic)
--   BIC - Bayesian Information Criterion (goodness of fit statistic)
--   AD - the Anderson-Darling goodness of fit statistic (uses the same formula as Minitab)
--   distribution - a Distribution object with the parameters of the fitted distribution
--   alpha_SE - the standard error (sqrt(variance)) of the parameter
--   beta_SE - the standard error (sqrt(variance)) of the parameter. This will be '' if the shape parameter has been forced to a set value.
--   Cov_alpha_beta - the covariance between the parameters. This will be '' for Fit_Expon_1P or if the shape parameter has been forced to a set value.
--   alpha_upper - the upper CI estimate of the parameter
--   alpha_lower - the lower CI estimate of the parameter
--   beta_upper - the upper CI estimate of the parameter. This will be '' if the shape parameter has been forced to a set value.
--   beta_lower - the lower CI estimate of the parameter. This will be '' if the shape parameter has been forced to a set value.
--   results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
--   goodness_of_fit - a dataframe of the goodness of fit values (Log-likelihood, AICc, BIC, AD).
--   percentiles - a dataframe of the percentiles.
--   probability_plot - the axes handle for the probability plot (only returned if show_probability_plot = True).
+If you have tried fitting multiple distributions and nothing seems to work well, or you can see the scatter points on the probability plot have an S-shape or a bend, then you may have data from a mixture of sources. In this case consider fitting a `Mixture model <https://reliability.readthedocs.io/en/latest/Mixture%20models.html>`_ or a `Competing Risks Model <https://reliability.readthedocs.io/en/latest/Competing%20risk%20models.html>`_.
 
 Example 1
 ---------
@@ -315,11 +286,11 @@ To obtain details of the percentiles (lower estimate, point estimate, upper esti
 Using Fit_Weibull_2P_grouped for large data sets
 ------------------------------------------------
 
-The function Fit_Weibull_2P_grouped is effectively the same as Fit_Weibull_2P, except for a few small differences that make it more efficient at handling grouped data sets. Grouped data sets are typically found in very large data that may be heavily censored. The function includes a choice between two optimizers and a choice between two initial guess methods for the initial guess that is given to the optimizer. These help in cases where the data is very heavily censored (>99.9%). The defaults for these options are usually the best but you may want to try different options to see which one gives you the lowest log-likelihood. The inputs and outputs are the same as for Fit_Weibull_2P except for the following:
+The function Fit_Weibull_2P_grouped is effectively the same as Fit_Weibull_2P, except for a few small differences that make it more efficient at handling grouped data sets. Grouped data sets are typically found in very large data that may be heavily censored. The function includes a choice between two optimizers and a choice between two initial guess methods for the initial guess that is given to the optimizer. These help in cases where the data is very heavily censored (>99.9%). The defaults for these options are usually the best but you may want to try different options to see which one gives you the lowest log-likelihood.
 
-- initial_guess_method - 'scipy' OR 'least squares'. Default is 'least squares'. Both do not take into account censored data but scipy uses MLE, and least squares is least squares regression of the plotting positions. Least squares proved more accurate during testing.
-- optimizer - 'L-BFGS-B' or 'TNC'. These are both bound-constrained methods. If the bounded method fails, nelder-mead will be used. If nelder-mead fails then the initial guess will be returned with a warning. For more information on optimizers see the `scipy documentation <https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize>`_.
-- dataframe - a pandas dataframe of the appropriate format. The requirements of the input dataframe are: The column titles MUST be 'category', 'time', 'quantity'. The category values MUST be 'F' for failure or 'C' for censored (right censored). The time values are the failure or right censored times. The quantity is the number of items at that time. The quantity must be specified for all values even if the quantity is 1.
+.. admonition:: API Reference
+
+   For inputs and outputs see the `API reference <https://reliability.readthedocs.io/en/latest/API/Fitters/Fit_Weibull_2P_grouped.html>`_.
 
 Example 6
 ---------

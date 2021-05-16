@@ -5,38 +5,15 @@
 Nelson-Aalen
 ''''''''''''
 
+.. admonition:: API Reference
+
+   For inputs and outputs see the `API reference <https://reliability.readthedocs.io/en/latest/API/Nonparametric/NelsonAalen.html>`_.
+
 The Nelson-Aalen estimator provides a method to estimate the hazard function of a population without assuming that the data comes from a particular distribution. From the hazard function, the Nelson-Aalen method obtains the cumulative hazard function, which is then used to obtain the survival function. Due to the lack of parameters required in this model, it is a non-parametric method of obtaining the survival function. As with the Kaplan-Meier estimator, once we have the survival function (SF), then we also have the cumulative hazard function (CHF) and the cumulative distribution function (CDF). It is not possible to obtain a useful version of the probability density function (PDF) or hazard function (HF). While the hazard function is obtained directly by the Nelson-Aalen method, it is a useless function on its own as it is a very spikey plot due to the non-continuous nature of the hazard. It is only when we smooth the results out using the cumulative hazard function that we obtain some utility from the results.
 
 The Nelson-Aalen estimator is very similar in result (but quite different in method) to the `Kaplan-Meier estimator <https://reliability.readthedocs.io/en/latest/Kaplan-Meier.html>`_ and `Rank Adjustment estimator <https://reliability.readthedocs.io/en/latest/Rank%20Adjustment.html>`_. While none of the three have been proven to be more accurate than the others, the Kaplan-Meier estimator is generally more popular as a non-parametric means of estimating the SF. Confidence intervals are provided using the `Greenwood method <https://support.minitab.com/en-us/minitab/18/help-and-how-to/modeling-statistics/reliability/how-to/nonparametric-distribution-analysis-right-censoring/methods-and-formulas/estimation-methods/#confidence-intervals>`_ with Normal approximation.
 
 The Nelson-Aalen estimator can be used with both complete and right censored data. This function can be accessed from `reliability.Nonparametric.NelsonAalen` as shown in the examples below.
-
-Inputs:
-
--   failures - an array or list of failure times.
--   right_censored - an array or list of right censored failure times. Defaults to None.
--   show_plot - True/False. Default is True. Plots the SF.
--   print_results - True/False. Default is True. Will display a pandas dataframe of results in the console.
--   plot_CI - shades the upper and lower confidence interval
--   CI - confidence interval between 0 and 1. Default is 0.95 for 95% CI.
--   plot_type - 'SF', 'CDF', or 'CHF'. Default is 'SF'.
-
-Outputs:
-
--    results - dataframe of results
--    NA - list of Nelson-Aalen column from results dataframe. This column is the non parametric estimate of the Survival Function (reliability function).
--    xvals - the x-values to plot the stepwise plot as seen when show_plot=True
--    SF - survival function stepwise values (these differ from the NA values as there are extra values added in to make the plot into a step plot)
--    CDF - cumulative distribution function stepwise values
--    CHF - cumulative hazard function stepwise values
--    SF_lower - survival function stepwise values for lower CI
--    SF_upper - survival function stepwise values for upper CI
--    CDF_lower - cumulative distribution function stepwise values for lower CI
--    CDF_upper - cumulative distribution function stepwise values for upper CI
--    CHF_lower - cumulative hazard function stepwise values for lower CI
--    CHF_upper - cumulative hazard function stepwise values for upper CI
-
-Other plotting keywords (such as color, label, linestyle, etc.) are accepted and used on the point estimate line. The color of the confidence intervals is matched automatically to the point estimate line, but no other keywords are carried across to the confidence interval plot as it is only a shaded region.
 
 Example 1
 ---------
