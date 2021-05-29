@@ -985,10 +985,8 @@ class make_ALT_data:
     seed : int, optional
         The random seed for repeatability. Default = None.
 
-    Returns
-    -------
-    If using a single stress model:
-
+    Returns (if using a single stress model):
+    -----------------------------------------
     failures : list
         The failure data.
     failure_stresses : list
@@ -999,8 +997,8 @@ class make_ALT_data:
         The failure stresses that are paired with the right censored data.This
         is only provided if fraction_censored > 0.
 
-    If using a dual stress model:
-
+    Returns (if using a dual stress model):
+    ---------------------------------------
     failures : list
         The failure data.
     failure_stresses_1 : list
