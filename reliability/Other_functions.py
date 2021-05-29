@@ -985,34 +985,33 @@ class make_ALT_data:
     seed : int, optional
         The random seed for repeatability. Default = None.
 
-    Returns (if using a single stress model):
-    -----------------------------------------
+    Returns
+    -------
     failures : list
         The failure data.
     failure_stresses : list
-        The failure stresses that are paired with the failue data.
+        The failure stresses that are paired with the failue data. Only provided
+        if using a single stress model.
+    failure_stresses_1 : list
+        The failure stresses for stress_1 that are paired with the failure data.
+        Only provided if using a dual stress model.
+    failure_stresses_2 : list
+        The failure stresses for stress_2 that are paired with the failure data.
+        Only provided if using a dual stress model.
     right_censored : list
         The right censored data. This is only provided if fraction_censored > 0.
     right_censored_stresses : list
-        The failure stresses that are paired with the right censored data.This
-        is only provided if fraction_censored > 0.
-
-    Returns (if using a dual stress model):
-    ---------------------------------------
-    failures : list
-        The failure data.
-    failure_stresses_1 : list
-        The failure stresses for stress_1 that are paired with the failure data.
-    failure_stresses_2 : list
-        The failure stresses for stress_2 that are paired with the failure data.
-    right_censored : list
-        The right censored data. This is only provided if fraction_censored > 0.
+        The failure stresses that are paired with the right censored data. This
+        is only provided if fraction_censored > 0. Only provided if using a
+        single stress model.
     right_censored_stresses_1 : list
         The failure stresses that are paired with the right censored data.This
-        is only provided if fraction_censored > 0.
+        is only provided if fraction_censored > 0. Only provided if using a
+        dual stress model.
     right_censored_stresses_2 : list
         The failure stresses that are paired with the right censored data.This
-        is only provided if fraction_censored > 0.
+        is only provided if fraction_censored > 0. Only provided if using a
+        dual stress model.
     mean_life_at_use_stress : float
         This is only provided if use_level_stress is provided.
     """
