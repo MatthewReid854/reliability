@@ -20,13 +20,13 @@ Inputs:
 
 -   stress - a Normal probability distribution from the Distributions module
 -   strength - a Normal probability distribution from the Distributions module
--   show_distribution_plot - True/False (default is True)
+-   show_plot - True/False (default is True)
 -   print_results - True/False (default is True)
 
 Outputs:
 
 -   the probability of failure
--   the distribution plot (only shown if show_distribution_plot=True)
+-   the distribution plot (only shown if show_plot=True)
 -   results printed to console (only shown if print_results=True)
 
 Example 1
@@ -69,14 +69,14 @@ Inputs:
 
 -   stress - a probability distribution from the Distributions module
 -   strength - a probability distribution from the Distributions module
--   show_distribution_plot - True/False (default is True)
+-   show_plot - True/False (default is True)
 -   print_results - True/False (default is True)
 -   warn - a warning will be issued if both stress and strength are Normal as you should use stress_strength_normal. A warning will also be issued if stress.mean > strength.mean to alert the user they may have assigned the stress and strength distributions in reverse. You can supress all warnings using warn=False
 
 Outputs:
 
 -   the probability of failure
--   the distribution plot (only shown if show_distribution_plot=True)
+-   the distribution plot (only shown if show_plot=True)
 -   results printed to console (only shown if print_results=True)
 
 Example 2

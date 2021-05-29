@@ -9,13 +9,13 @@ rtol = 1e-7
 def test_stress_strength():
     stress = Weibull_Distribution(alpha=40, beta=4)
     strength = Lognormal_Distribution(mu=1.8, sigma=0.25, gamma=50)
-    result = stress_strength(stress=stress, strength=strength, print_results=False, show_distribution_plot=False)
+    result = stress_strength(stress=stress, strength=strength, print_results=False, show_plot=False)
     assert_allclose(result,0.021559141113795574,rtol=rtol,atol=atol)
 
 def test_stress_strength_normal():
     stress = Normal_Distribution(mu=50, sigma=5)
     strength = Normal_Distribution(mu=80, sigma=7)
-    result = stress_strength_normal(stress=stress, strength=strength, print_results=False, show_distribution_plot=False)
+    result = stress_strength_normal(stress=stress, strength=strength, print_results=False, show_plot=False)
     assert_allclose(result,0.00024384404803800858,rtol=rtol,atol=atol)
 
 def test_similar_distributions():

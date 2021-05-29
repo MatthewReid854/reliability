@@ -1791,6 +1791,21 @@ def fill_no_autoscale(xlower, xupper, ylower, yupper, plot_type="CDF", **kwargs)
         yupper = yupper[0:idx_xupper]
         xupper = xupper[0:idx_xupper]
 
+    # this trims the y arrays free of 1's since the probability plot can't handle 1 as it's equivalent to inf. This should not be applied for the CHF.
+    if plot_type.upper() in ["CDF", "SF"]:
+        if max(ylower) >= 1:
+            idx_ylower_1 = np.where(ylower >= 1)[0][0]
+            ylower = ylower[0:idx_ylower_1]
+            xlower = xlower[0:idx_ylower_1]
+            yupper = yupper[0:idx_ylower_1]
+            xupper = xupper[0:idx_ylower_1]
+        if max(yupper) >= 1:
+            idx_yupper_1 = np.where(yupper >= 1)[0][0]
+            ylower = ylower[0:idx_yupper_1]
+            xlower = xlower[0:idx_yupper_1]
+            yupper = yupper[0:idx_yupper_1]
+            xupper = xupper[0:idx_yupper_1]
+
     if (
         len(xlower) != len(xupper)
         or len(xlower) != len(yupper)
@@ -1802,34 +1817,13 @@ def fill_no_autoscale(xlower, xupper, ylower, yupper, plot_type="CDF", **kwargs)
             text_color="red",
         )
     else:
-        # this trims the y arrays free of 1's since the probability plot can't handle 1 as it's equivalent to inf. This should not be applied for the CHF.
-        if plot_type.upper() in ["CDF", "SF"]:
-            if max(ylower) >= 1:
-                idx_ylower_1 = np.where(ylower >= 1)[0][0]
-                ylower = ylower[0:idx_ylower_1]
-                xlower = xlower[0:idx_ylower_1]
-            if max(yupper) >= 1:
-                idx_yupper_1 = np.where(yupper >= 1)[0][0]
-                yupper = yupper[0:idx_yupper_1]
-                xupper = xupper[0:idx_yupper_1]
-
-        if (
-            len(xlower) != len(xupper)
-            or len(xlower) != len(yupper)
-            or len(xlower) != len(ylower)
-            or len(xlower) < 2
-        ):
-            colorprint(
-                "ERROR in fill_no_autoscale: Confidence intervals could not be plotted due to the presence of too many NaNs in the arrays.",
-                text_color="red",
-            )
-        else:
-            # generate the polygon
-            polygon = np.column_stack(
-                [np.hstack([xlower, xupper[::-1]]), np.hstack([ylower, yupper[::-1]])]
-            )  # this is equivalent to fill as it makes a polygon
-            col = PolyCollection([polygon], **kwargs)
-            plt.gca().add_collection(col, autolim=False)
+        # generate the polygon
+        polygon = np.column_stack(
+            [np.hstack([xlower, xupper[::-1]]), np.hstack([ylower, yupper[::-1]])]
+        )
+        # this is equivalent to fill as it makes a polygon
+        col = PolyCollection([polygon], **kwargs)
+        plt.gca().add_collection(col, autolim=False)
 
 
 def line_no_autoscale(x, y, **kwargs):
@@ -2427,10 +2421,10 @@ class distribution_confidence_intervals:
             plt.subplots_adjust(top=0.81)
 
             def u(t, alpha, beta):  # u = R
-                return 1-abetainc(alpha,beta, t)
+                return 1 - abetainc(alpha, beta, t)
 
             def v(R, alpha, beta):  # v = t
-                return abetaincinv(alpha,beta, 1-R)
+                return abetaincinv(alpha, beta, 1 - R)
 
             du_da = jac(u, 1)  # derivative wrt alpha (bounds on reliability)
             du_db = jac(u, 2)  # derivative wrt beta (bounds on reliability)

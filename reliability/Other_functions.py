@@ -1,16 +1,24 @@
 """
 Other Functions
 
-This is a collection of several other functions that did not otherwise fit within their own module.
-Included functions are:
-stress_strength - stress-strength interference for any distributions (uses numerical integration).
-stress_strength_normal - stress-strength interference two normal distributions (uses empirical method).
-similar_distributions - finds the parameters of distributions that are similar to the input distribution and plots the results.
-make_right_censored_data - a simple tool to right censor a complete dataset based on a threshold. Primarily used for testing Fitters when some right censored data is needed.
-make_ALT_data - a tool to generate data for fitting ALT models. Primarily used for testing ALT_Fitters.
-histogram - generates a histogram with optimal bin width and has an option to shade some bins white above a chosen threshold.
+This is a collection of several other functions that did not otherwise fit
+within their own module. Included functions are:
+stress_strength - stress-strength interference for any distributions (uses
+    numerical integration).
+stress_strength_normal - stress-strength interference two normal distributions
+    (uses empirical method).
+similar_distributions - finds the parameters of distributions that are similar
+    to the input distribution and plots the results.
+make_right_censored_data - a simple tool to right censor a complete dataset
+    based on a threshold. Primarily used for testing Fitters when some right
+    censored data is needed.
+make_ALT_data - a tool to generate data for fitting ALT models. Primarily used
+    for testing ALT_Fitters.
+histogram - generates a histogram with optimal bin width and has an option to
+    shade some bins white above a chosen threshold.
 crosshairs - adds x,y crosshairs to plots based on mouse position
-distribution_explorer - generates an interactive window to explore probability distributions using sliders for their parameters
+distribution_explorer - generates an interactive window to explore probability
+    distributions using sliders for their parameters
 """
 
 import matplotlib.pyplot as plt
@@ -35,31 +43,45 @@ import scipy.stats as ss
 import time
 
 
-def stress_strength(
-    stress, strength, show_distribution_plot=True, print_results=True, warn=True
-):
+def stress_strength(stress, strength, show_plot=True, print_results=True, warn=True):
     """
-    Stress - Strength Interference
-    Given the probability distributions for stress and strength, this module will find the probability of failure due to stress-strength interference.
-    Failure is defined as when stress>strength.
-    The calculation is achieved using numerical integration.
+    Given the probability distributions for stress and strength, this module
+    will find the probability of failure due to stress-strength interference.
+    Failure is defined as when stress>strength. The calculation is achieved
+    using numerical integration.
 
-    Inputs:
-    stress - a probability distribution from the Distributions module
-    strength - a probability distribution from the Distributions module
-    show_distribution_plot - True/False (default is True)
-    print_results - True/False (default is True)
-    warn - a warning will be issued if both stress and strength are Normal as you should use stress_strength_normal. You can supress this using warn=False
-         - a warning will be issued if the stress.mean > strength.mean as the user may have assigned the distributions to the wrong variables. You can supress this using warn=False
+    Parameters
+    ----------
+    stress : object
+        A probability distribution from the Distributions module
+    strength : object
+        A probability distribution from the Distributions module
+    show_plot : bool, optional
+        If True the distribution plot will be shown. Default = True.
+    print_results : bool, optional
+        If True, the results will be printed to console. Default = True.
+    warn : bool, optional
+        A warning will be issued if both stress and strength are Normal as you
+        should use stress_strength_normal. You can supress this using warn=False
+        A warning will be issued if the stress.mean > strength.mean as the user
+        may have assigned the distributions to the wrong variables. You can
+        supress this using warn=False. Default = True
 
-    Returns:
-    probability of failure
+    Returns
+    -------
+    probability_of_failure : float
+        The probability of failure due to stress-strength interference
 
-    Example use:
-    from reliability.Distributions import Weibull_Distribution, Gamma_Distribution
-    stress = Weibull_Distribution(alpha=2,beta=3,gamma=1)
-    strength = Gamma_Distribution(alpha=2,beta=3,gamma=3)
-    stress_strength(stress=stress, strength=strength)
+    Notes
+    -----
+    Example usage:
+
+    .. code:: python
+
+        from reliability.Distributions import Weibull_Distribution, Gamma_Distribution
+        stress = Weibull_Distribution(alpha=2,beta=3,gamma=1)
+        strength = Gamma_Distribution(alpha=2,beta=3,gamma=3)
+        stress_strength(stress=stress, strength=strength)
     """
 
     if type(stress) not in [
@@ -108,7 +130,7 @@ def stress_strength(
         strength.PDF(x, show_plot=False) * stress.SF(x, show_plot=False), x
     )
 
-    if show_distribution_plot is True:
+    if show_plot is True:
         xlims = plt.xlim(auto=None)
         xmin = stress.quantile(0.00001)
         xmax = strength.quantile(0.99999)
@@ -182,23 +204,35 @@ def stress_strength(
 
 
 def stress_strength_normal(
-    stress, strength, show_distribution_plot=True, print_results=True, warn=True
+    stress, strength, show_plot=True, print_results=True, warn=True
 ):
     """
-    Stress - Strength Interference for two Normal Distributions
-    Given the probability distributions for stress and strength, this module will find the probability of failure due to stress-strength interference.
-    Failure is defined as when stress>strength.
-    Uses the exact formula method which is only valid for two Normal Distributions.
+    Given the probability distributions for stress and strength, this module
+    will find the probability of failure due to stress-strength interference.
+    Failure is defined as when stress>strength. Uses the exact formula method
+    which is only valid for two Normal Distributions. If you have distributions
+    that are not both Normal Distributions, use the function stress_strength.
 
-    Inputs:
-    stress - a probability distribution from the Distributions module
-    strength - a probability distribution from the Distributions module
-    show_distribution_plot - True/False (default is True)
-    print_results - True/False (default is True)
-    warn - a warning will be issued if the stress.mean > strength.mean as the user may have assigned the distributions to the wrong variables. You can supress this using warn=False
+    Parameters
+    ----------
+    stress : object
+        A probability distribution from the Distributions module
+    strength : object
+        A probability distribution from the Distributions module
+    show_plot : bool, optional
+        If True the distribution plot will be shown. Default = True.
+    print_results : bool, optional
+        If True, the results will be printed to console. Default = True.
+    warn : bool, optional
+        A warning will be issued if the stress.mean > strength.mean as the user
+        may have assigned the distributions to the wrong variables. You can
+        supress this using warn=False. Default = True
 
-    Returns:
-    the probability of failure
+    Returns
+    -------
+    probability_of_failure : float
+        The probability of failure due to stress-strength interference
+
     """
     if type(stress) is not Normal_Distribution:
         raise ValueError(
@@ -222,7 +256,7 @@ def stress_strength_normal(
         -(mu_strength - mu_stress) / ((sigma_strength ** 2 + sigma_stress ** 2) ** 0.5)
     )
 
-    if show_distribution_plot is True:
+    if show_plot is True:
         xlims = plt.xlim(auto=None)
         xmin = stress.quantile(0.00001)
         xmax = strength.quantile(0.99999)
@@ -291,28 +325,49 @@ def stress_strength_normal(
 
 class similar_distributions:
     """
-    similar_distributions
+    This is a tool to find similar distributions when given an input
+    distribution. It is useful to see how similar one distribution is to
+    another. For example, you may look at a Weibull distribution and think it
+    looks like a Normal distribution. Using this tool you can determine the
+    parameters of the Normal distribution that most closely matches your Weibull
+    distribution.
 
-    This is a tool to find similar distributions when given an input distribution.
-    It is useful to see how similar one distribution is to another. For example, you may look at a Weibull distribution and think it looks like a Normal distribution.
-    Using this tool you can determine the parameters of the Normal distribution that most closely matches your Weibull distribution.
+    Parameters
+    ----------
+    distribution : object
+        A distribution object created using the reliability.Distributions
+        module.
+    include_location_shifted : bool, optional
+        When set to True it will include Weibull_3P, Lognormal_3P, Gamma_3P,
+        Exponential_2P, and Loglogistic_3P. Default = True
+    show_plot : bool, optional
+        If True it will show the PDF and CDF of the input distributions and the
+        most similar distributions. Default = True.
+    print_results : bool, optional
+        If True the results will be printed to the console. Default = True.
+    number_of_distributions_to_show : int, optional
+        The number of similar distributions to show. Default = 3. If the number
+        specified exceeds the number available (typically 10), then the number
+        specified will automatically be reduced. Must be > 1.
 
-    Inputs:
-    distribution - a distribution object created using the reliability.Distributions module
-    include_location_shifted - True/False. Default is True. When set to True it will include Weibull_3P, Lognormal_3P, Gamma_3P, Exponential_2P, Loglogistic_3P
-    show_plot - True/False. Default is True
-    print_results - True/False. Default is True
-    number_of_distributions_to_show - the number of similar distributions to show. Default is 3. If the number specified exceeds the number available (typically 10), then the number specified will automatically be reduced.
+    Returns
+    -------
+    results : array
+        An array of distributions objects ranked in order of best fit.
+    most_similar_distribution : object
+        A distribution object. This is the first item from results.
 
-    Outputs:
-    results - an array of distributions objects ranked in order of best fit.
-    most_similar_distribution - a distribution object. This is the first item from results.
+    Notes
+    -----
+    The following example shows the distributions most similar to the input
+    Weibull Distribution.
 
-    Example usage:
-    from reliability.Distributions import Weibull_Distribution
-    from reliability.Other_functions import similar_distributions
-    dist = Weibull_Distribution(alpha=50,beta=3.3)
-    similar_distributions(distribution=dist)
+    .. code:: python
+
+        from reliability.Distributions import Weibull_Distribution
+        from reliability.Other_functions import similar_distributions
+        dist = Weibull_Distribution(alpha=50,beta=3.3)
+        similar_distributions(distribution=dist)
     """
 
     def __init__(
@@ -338,10 +393,17 @@ class similar_distributions:
                 "distribution must be a probability distribution object from the reliability.Distributions module. First define the distribution using Reliability.Distributions.___"
             )
 
+        if (
+            type(number_of_distributions_to_show) is not int
+            or number_of_distributions_to_show < 2
+        ):
+            raise ValueError(
+                "number_of_distributions_to_show must be an integer greater than 1"
+            )
+
         # sample the CDF from 0.001 to 0.999. These samples will be used to fit all other distributions.
-        RVS = distribution.quantile(
-            np.linspace(0.001, 0.999, 698)
-        )  # 698 samples is the ideal number for the points to align. Evidenced using plot_points.
+        RVS = distribution.quantile(np.linspace(0.001, 0.999, 698))
+        # 698 samples is the ideal number for the points to align. Evidenced using plot_points.
 
         # filter out negative values
         RVS_filtered = []
@@ -351,6 +413,12 @@ class similar_distributions:
                 RVS_filtered.append(item)
             else:
                 negative_values_error = True
+
+        if len(RVS_filtered) < 175:
+            raise ValueError(
+                "The input distribution has more than 75% of its area in the negative domain (x<0). Comparison with distributions bounded by the positive domain (x>0) is not possible."
+            )
+
         if negative_values_error is True:
             colorprint(
                 "WARNING: The input distribution has non-negligible area for x<0. Samples from this region have been discarded to enable other distributions to be fitted.",
@@ -628,7 +696,7 @@ class similar_distributions:
                         )
 
         number_of_distributions_fitted = len(ranked_distributions_objects)
-        self.results = ranked_distributions_objects
+        self.results = np.array(ranked_distributions_objects)
         self.most_similar_distribution = ranked_distributions_objects[0]
         if print_results is True:
             colorprint("Results from similar_distributions:", bold=True, underline=True)
@@ -700,19 +768,36 @@ def histogram(
     data, white_above=None, bins=None, density=True, cumulative=False, **kwargs
 ):
     """
-    histogram
+    Plots a histogram using the data specified. This is similar to plt.hist
+    except that it sets better defaults and also shades the bins white above a
+    specified value (white_above). This is useful for representing complete data
+    as right censored data in a histogram.
 
-    plots a histogram using the data specified
-    This is similar to plt.hist except that it sets better defaults and also shades the bins white above a specified value (white_above).
-    This is useful for representing complete data as right censored data in a histogram.
+    Parameters
+    ----------
+    data : array, list
+        The data to plot in the histogram.
+    white_above : float, int, optional
+        Bins above this value will be shaded white to represent right censored
+        data. Default = None.
+    bins : array, string, optional
+        An array of bin edges or a string to specify how to calculate the bin
+        edges. Acceptable strings are 'auto','fd','doane','scott','stone',
+        'rice','sturges','sqrt'. Default = 'auto'. For more information on these
+        methods, see the numpy documentation:
+        https://numpy.org/doc/stable/reference/generated/numpy.histogram_bin_edges.html
+    density : bool, optional
+        Determines whether to plot a density histogram or a count histogram.
+        Default = True which is required when plotting a PDF or CDF.
+    cumulative : bool, optional
+        Use False for PDF and True for CDF. Default = False.
+    kwargs
+        Plotting kwargs for the histogram (color, alpha, etc.) which are passed
+        to matplotlib.
 
-    Inputs:
-    data - the data to plot. Array or list.
-    white_above - bins above this value will be shaded white
-    bins - array of bin edges or string in ['auto','fd','doane','scott','stone','rice','sturges','sqrt']. Default is 'auto'. See https://numpy.org/doc/stable/reference/generated/numpy.histogram_bin_edges.html
-    density - True/False. Default is True. Always use True if plotting with a probability distribution.
-    cumulative - True/False. Default is False. Use False for PDF and True for CDF.
-    kwargs - plotting kwargs for the histogram (color, alpha, etc.)
+    Returns
+    -------
+    None
     """
 
     if type(data) not in [np.ndarray, list]:
@@ -758,28 +843,52 @@ def histogram(
     )  # plots the histogram of the data
 
     if white_above is not None:
-        for i in range(
-            np.argmin(abs(np.array(bins_out) - white_above)), len(patches)
-        ):  # this is to shade part of the histogram as white
+        for i in range(np.argmin(abs(np.array(bins_out) - white_above)), len(patches)):
+            # this is to shade part of the histogram as white
             patches[i].set_facecolor("white")
 
 
 class make_right_censored_data:
     """
-    make_right_censored_data
-    Right censors data based on specified threshold or fraction to censor
+    This function is used to create right censored data from complete data. It
+    will right censor the data based on a specified threshold or fraction to
+    censor.
 
-    Inputs:
-    data - list or array of data
-    threshold - number or None. Default is None. If number this is the point to right censor (right censoring is done if data > threshold). This is known as "singly censored data" as everything is censored at a single point.
-    fraction_censored - number between 0 and 1. Deafult is 0.5. Censoring is done randomly. This is known as "multiply censored data" as there are multiple times at which censoring occurs.
-        If both threshold and fraction_censored are None, fraction_censored will default to 0.5 to produce multiply censored data.
-        If both threshold and fraction_censored are specified, an error will be raised since these methods conflict.
-    seed - sets the random seed. This is used for multiply censored data (i.e. when threshold is None). The data is shuffled to remove censoring bias that may be caused by any pre-sorting. Specifying the seed ensures a repeatable random shuffle.
+    Parameters
+    ----------
+    data : list, array
+        The complete data.
+    threshold : int, float, optional
+        This is the point to right censor (right censoring is done if data >
+        threshold). This is known as "singly censored data" as everything is
+        censored at a single point. Default is None in which case the
+        fraction_censored will be used. See the notes below.
+    fraction_censored : float, optional
+        Must be between 0 and 1. Default = 0.5. Censoring is done randomly. This
+        is known as "multiply censored data" as there are multiple times at
+        which censoring occurs. See the notes below.
+    seed : int, optional
+        Sets the random seed. This is used for multiply censored data (i.e. when
+        threshold is None). The data is shuffled to remove censoring bias that
+        may be caused by any pre-sorting. Specifying the seed ensures a
+        repeatable random shuffle. Default is None which will result in a
+        different censoring each time. The seed is only used when threshold is
+        not specified and the data is being multiply censored based on the
+        fraction_censored.
 
-    Outputs:
-    failures - array of failure data
-    right_censored - array of right_censored data
+    Returns
+    -------
+    failures : array
+        The array of failure data
+    right_censored : array
+        The array of right censored data
+
+    Notes
+    -----
+    If both threshold and fraction_censored are None, fraction_censored will
+    default to 0.5 to produce multiply censored data. If both threshold and
+    fraction_censored are specified, an error will be raised since these methods
+    conflict.
     """
 
     def __init__(self, data, threshold=None, fraction_censored=None, seed=None):
@@ -831,43 +940,83 @@ class make_right_censored_data:
 
 class make_ALT_data:
     """
-    make_ALT_data
+    Generates Accelerated Life Test (ALT) data based on model parameters. This
+    function is primarily used when testing the functions in ALT_fitters.
 
-    Generates Accelerated Life Test (ALT) data
-    Primarily used when testing the functions in ALT_fitters
+    Parameters
+    ----------
+    distribution : str
+        Must be either "Weibull", "Exponential", "Lognormal", or "Normal".
+    life_stress_model : str
+        Must be either "Exponential", "Eyring", "Power", "Dual_Exponential",
+        "Power_Exponential", or "Dual_Power"
+    stress_1 : array, list
+        The stresses for the ALT data. eg. [100,50,10].
+    stress_2 : array, list
+        The stresses for the ALT data. eg. [0.8,0.6,0.4]. Required only if using
+        a dual stress model. Must match the length of stress_1.
+    a : float, int
+        Parameter from all models.
+    b : float, int, optional
+        Parameter from Exponential and Dual_Exponential models.
+    c : float, int, optional
+        Parameter from Eyring, Dual_Exponential, Power_Exponential, and
+        Dual_Power models.
+    n : float, int, optional
+        Parameter from Power, Power_Exponential, and Dual_Power models.
+    m : float, int, optional
+        Parameter from Dual_Power model.
+    beta : float, int, optional
+        Shape parameter for Weibull distribution.
+    sigma : float, int, optional
+        Shape parameter for Normal or Lognormal distributions.
+    use_level_stress : float, int, list, array, optional
+        A float or int (if single stress) or a list or array (if dual stress).
+        Optional input. Default = None.
+    number_of_samples : int, optional
+        The number of samples to generate for each stress. Default = 100. The
+        total data points will be equal to the number of samples x number of
+        stress levels
+    fraction_censored : int, float, optional
+        Use 0 for no censoring or specify a float between 0 and 1 for right
+        censoring. Censoring is "multiply censored" meaning that there is no
+        threshold above which all the right censored values will occur. Default
+        = 0.5.
+    seed : int, optional
+        The random seed for repeatability. Default = None.
 
-    Inputs:
-    distribution - "Weibull", "Exponential", "Lognormal", or "Normal"
-    life_stress_model - "Exponential", "Eyring", "Power", "Dual_Exponential", "Power_Exponential", "Dual_Power"
-    stress_1 - array or list of the stresses. eg. [100,50,10].
-    stress_2 - array or list of the stresses. eg. [0.8,0.6,0.4]. Required only if using a dual stress model. Must match the length of stress_1.
-    a - parameter from all models
-    b - parameter from Exponential and Dual_Exponential models
-    c - parameter from Eyring, Dual_Exponential, Power_Exponential, and Dual_Power models
-    n - parameter from Power, Power_Exponential, and Dual_Power models
-    m - parameter from Dual_Power model
-    beta - shape parameter for Weibull distributon
-    sigma - shape parameter for Normal or Lognormal distributions
-    use_level_stress - Optional input. A number (if single stress) or list or array (if dual stress)
-    number_of_samples - the number of samples to generate for each stress. Default is 100. The total data points will be equal to the number of samples x number of stress levels
-    fraction_censored - 0 for no censoring or between 0 and 1 for right censoring. Censoring is "multiply censored" meaning that there is no threshold above which all the right censored values will occur.
-    seed - random seed for repeatability
-
-    Outputs:
+    Returns
+    -------
     If using a single stress model:
-    failures - list
-    failure_stresses - list
-    right_censored - list (only provided if fraction_censored > 0)
-    right_censored_stresses - list (only provided if fraction_censored > 0)
+
+    failures : list
+        The failure data.
+    failure_stresses : list
+        The failure stresses that are paired with the failue data.
+    right_censored : list
+        The right censored data. This is only provided if fraction_censored > 0.
+    right_censored_stresses : list
+        The failure stresses that are paired with the right censored data.This
+        is only provided if fraction_censored > 0.
 
     If using a dual stress model:
-    failures - list
-    failure_stresses_1 - list
-    failure_stresses_2 - list
-    right_censored - list (only provided if fraction_censored > 0)
-    right_censored_stresses_1 - list (only provided if fraction_censored > 0)
-    right_censored_stresses_2 - list (only provided if fraction_censored > 0)
-    mean_life_at_use_stress - float (only provided if use_level_stress is provided)
+
+    failures : list
+        The failure data.
+    failure_stresses_1 : list
+        The failure stresses for stress_1 that are paired with the failure data.
+    failure_stresses_2 : list
+        The failure stresses for stress_2 that are paired with the failure data.
+    right_censored : list
+        The right censored data. This is only provided if fraction_censored > 0.
+    right_censored_stresses_1 : list
+        The failure stresses that are paired with the right censored data.This
+        is only provided if fraction_censored > 0.
+    right_censored_stresses_2 : list
+        The failure stresses that are paired with the right censored data.This
+        is only provided if fraction_censored > 0.
+    mean_life_at_use_stress : float
+        This is only provided if use_level_stress is provided.
     """
 
     def __init__(
@@ -1094,9 +1243,12 @@ class crosshairs:
     decimals : int, optional
         The number of decimals for rounding. Default is 2.
     dateformat : str, optional
-        The datetime format. If specified the x crosshair and label will be formatted as a date using the format provided. Default is None which results in no date format being used on x.
+        The datetime format. If specified the x crosshair and label will be
+        formatted as a date using the format provided. Default is None which
+        results in no date format being used on x.
     kwargs : optional
-        plotting kwargs to change the style of the crosshairs (eg. color, linestyle, etc.).
+        plotting kwargs to change the style of the crosshairs (eg. color,
+        linestyle, etc.).
 
     Returns
     -------
@@ -1104,35 +1256,51 @@ class crosshairs:
 
     Notes
     -----
-    Ensure this is used after you plot everything as anything plotted after crosshairs() is called will not be recognised by the snap-to feature.
-    For a list of acceptable dateformat strings see https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes
+    Ensure this is used after you plot everything as anything plotted after
+    crosshairs() is called will not be recognised by the snap-to feature. For a
+    list of acceptable dateformat strings see
+    https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes
     """
 
-    def __init__(self, xlabel=None, ylabel=None, decimals=2, dateformat=None ,**kwargs):
+    def __init__(self, xlabel=None, ylabel=None, decimals=2, dateformat=None, **kwargs):
 
         if type(dateformat) not in [str, type(None)]:
-            raise ValueError('dateformat type must be str or None. For acceptable strings see https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes')
+            raise ValueError(
+                "dateformat type must be str or None. For acceptable strings see https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes"
+            )
         if type(decimals) is not int:
-            raise ValueError('decimals must be int')
+            raise ValueError("decimals must be int")
         if type(xlabel) not in [str, type(None)]:
-            raise ValueError('xlabel must be string or None')
+            raise ValueError("xlabel must be string or None")
         if type(ylabel) not in [str, type(None)]:
-            raise ValueError('ylabel must be string or None')
+            raise ValueError("ylabel must be string or None")
 
-        warnings.simplefilter("ignore")  # required when using fill_between due to warning in mplcursors: "UserWarning: Pick support for PolyCollection is missing."
+        warnings.simplefilter(
+            "ignore"
+        )  # required when using fill_between due to warning in mplcursors: "UserWarning: Pick support for PolyCollection is missing."
         ch = cursor(hover=True)
-        add_lines_and_text_with_kwargs = (lambda _: crosshairs.__add_lines_and_text_to_crosshairs(_, decimals,dateformat, **kwargs))  # adds the line's kwargs before connecting it to cursor
+        add_lines_and_text_with_kwargs = (
+            lambda _: crosshairs.__add_lines_and_text_to_crosshairs(
+                _, decimals, dateformat, **kwargs
+            )
+        )  # adds the line's kwargs before connecting it to cursor
         ch.connect("add", add_lines_and_text_with_kwargs)
-        plt.gcf().canvas.mpl_connect("axes_leave_event", crosshairs.__hide_crosshairs)  # hide the crosshairs and text when the mouse leaves the axes
+        plt.gcf().canvas.mpl_connect(
+            "axes_leave_event", crosshairs.__hide_crosshairs
+        )  # hide the crosshairs and text when the mouse leaves the axes
 
         # this does the annotation part
         if xlabel is None:
             xlabel = "x"
         if ylabel is None:
             ylabel = "y"
-        warnings.simplefilter("ignore")  # required when using fill_between due to warning in mplcursors: "UserWarning: Pick support for PolyCollection is missing."
+        warnings.simplefilter(
+            "ignore"
+        )  # required when using fill_between due to warning in mplcursors: "UserWarning: Pick support for PolyCollection is missing."
         annot = cursor(multiple=True, bindings={"toggle_visible": "h"})
-        format_annotation_labeled = lambda _: crosshairs.__format_annotation(_, decimals,dateformat, [xlabel, ylabel])  # adds the labels to the 'format_annotation' function before connecting it to cursor
+        format_annotation_labeled = lambda _: crosshairs.__format_annotation(
+            _, decimals, dateformat, [xlabel, ylabel]
+        )  # adds the labels to the 'format_annotation' function before connecting it to cursor
         annot.connect("add", format_annotation_labeled)
 
     @staticmethod
@@ -1280,11 +1448,26 @@ class crosshairs:
 
 class distribution_explorer:
     """
-    distribution_explorer
+    Generates an interactive plot of PDF, CDF, SF, HF, CHF for the selected
+    distribution. Parameters can be changed using slider widgets. Distributions
+    can be changed using radio button widget.
 
-    Generates an interactive plot of PDF, CDF, SF, HF, CHF for the selected distribution
-    Parameters can be changed using slider widgets
-    Distributions can be changed using radio button widget
+    Parameters
+    ----------
+    None
+
+    Returns
+    -------
+    None
+
+    Notes
+    -----
+    Example usage:
+
+    .. code:: python
+
+        from reliability.Other_functions import distribution_explorer
+        distribution_explorer()
     """
 
     def __init__(self):
@@ -1384,9 +1567,6 @@ class distribution_explorer:
     @staticmethod
     def __update_distribution(name, self):
         self.name = name
-        x0 = 0.1
-        width = 0.8
-        height = 0.03
         if self.name == "Weibull":
             dist = Weibull_Distribution(alpha=100, beta=2, gamma=0)
             param_names = ["Alpha", "Beta", "Gamma"]

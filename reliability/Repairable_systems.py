@@ -1,13 +1,18 @@
 """
 Repairable systems
-This is a collection of functions used for repairable systems.
 
-Currently included functions are:
-reliability_growth - uses the Duane method to find the instantaneous MTBF and produce a reliability growth plot.
-optimal_replacement_time - Calculates the cost model to determine how cost varies with replacement time. The cost model may be NHPP (as good as old) or HPP (as good as new). Default is HPP.
-ROCOF - rate of occurrence of failures. Uses the Laplace test to determine if there is a trend in the failure times.
-MCF_nonparametric - Mean CUmulative Function Non-parametric. Used to determine if a repairable system (or collection of identical systems) is improving, constant, or worsening based on the rate of failures over time.
-MCF_parametric - Mean Cumulative Function Parametric. Fits a parametric model to the data obtained from MCF_nonparametric
+reliability_growth - uses the Duane method to find the instantaneous MTBF and
+    produce a reliability growth plot.
+optimal_replacement_time - Calculates the cost model to determine how cost
+    varies with replacement time. The cost model may be NHPP (as good as old)
+    or HPP (as good as new).
+ROCOF - rate of occurrence of failures. Uses the Laplace test to determine if
+    there is a trend in the failure times.
+MCF_nonparametric - Mean CUmulative Function Non-parametric. Used to determine
+    if a repairable system (or collection of identical systems) is improving,
+    constant, or worsening based on the rate of failures over time.
+MCF_parametric - Mean Cumulative Function Parametric. Fits a parametric model to
+    the data obtained from MCF_nonparametric
 """
 
 import numpy as np
@@ -21,21 +26,40 @@ from reliability.Utils import colorprint, round_to_decimals
 
 class reliability_growth:
     """
-    Uses the Duane method to find the instantaneous MTBF and produce a reliability growth plot.
+    Uses the Duane method to find the instantaneous MTBF and produce a
+    reliability growth plot.
 
-    Inputs:
-    times - array or list of failure times
-    xmax - xlim to plot up to. Default is 1.5*max(times)
-    target_MTBF - specify the target MTBF to obtain the total time on test required to reach it.
-    show_plot - True/False. Defaults to true. Other keyword arguments are passed to the plot for style
-    print_results - True/False. Defaults to True.
+    Parameters
+    ----------
+    times : list, array
+        The failure times.
+    xmax : int, float, optional
+        The xlim to plot up to. Default is 1.5*max(times)
+    target_MTBF : int, float, optional
+        Specify the target MTBF to obtain the total time on test required to
+        reach it. Default = None
+    show_plot : bool, optional
+        If True the plot will be produced. Default is True.
+    print_results : bool, optional
+        If True the results will be printed to console. Default = True.
+    kwargs
+        Plotting keywords that are passed directly to matplotlib (e.g. color,
+        label, linestyle).
 
-    Outputs:
-    If print_results is True it will print a summary of the results
-    Lambda - the lambda parameter from the Duane model
-    Beta - the beta parameter from the Duane model
-    time_to_target - Time to target is only returned if target_MTBF is specified.
-    If show_plot is True, it will plot the reliability growth. Use plt.show() to show the plot.
+    Returns
+    -------
+    Lambda : float
+        The lambda parameter from the Duane model
+    Beta : float
+        The beta parameter from the Duane model
+    time_to_target : float
+        The time to reach the target is only returned if target_MTBF is
+        specified.
+
+    Notes
+    -----
+    If show_plot is True, the reliability growth plot will be produced. Use
+    plt.show() to show the plot.
     """
 
     def __init__(
@@ -118,22 +142,43 @@ class reliability_growth:
 class optimal_replacement_time:
     """
     Calculates the cost model to determine how cost varies with replacement time.
-    The cost model may be HPP (good as new replacement) or NHPP (as good as old replacement). Default is HPP.
+    The cost model may be HPP (good as new replacement) or NHPP (as good as old
+    replacement). Default is HPP.
 
-    Inputs:
-    Cost_PM - cost of preventative maintenance (must be smaller than Cost_CM)
-    Cost_CM - cost of corrective maintenance (must be larger than Cost_PM)
-    weibull_alpha - scale parameter of the underlying Weibull distribution
-    weibull_beta - shape parameter of the underlying Weibull distribution. Should be greater than 1 otherwise conducting PM is not economical.
-    q - restoration factor. q=1 is Power Law NHPP (as good as old), q=0 is HPP (as good as new). Default is q=0 (as good as new).
-    show_plot - True/False. Defaults to True. Other plotting keywords are also accepted and used.
-    print_results - True/False. Defaults to True
+    Parameters
+    ----------
+    Cost_PM : int, float
+        The cost of preventative maintenance (must be smaller than Cost_CM)
+    Cost_CM : int, float
+        The cost of corrective maintenance (must be larger than Cost_PM)
+    weibull_alpha : int, float
+        The scale parameter of the underlying Weibull distribution.
+    weibull_beta : int, float
+        The shape parameter of the underlying Weibull distribution. Should be
+        greater than 1 otherwise conducting PM is not economical.
+    q : int, optional
+        The restoration factor. Must be 0 or 1. Use q=1 for Power Law NHPP
+        (as good as old) or q=0 for HPP (as good as new). Default is q=0 (as
+        good as new).
+    show_plot : bool, optional
+        If True the plot will be produced. Default is True.
+    print_results : bool, optional
+        If True the results will be printed to console. Default = True.
+    kwargs
+        Plotting keywords that are passed directly to matplotlib (e.g. color,
+        label, linestyle).
 
-    Outputs:
-    ORT - the optimal replacement time
-    min_cost - the minimum cost per unit time
-    Plot of cost model if show_plot is set to True. Use plt.show() to display it.
-    Printed results if print_results is set to True.
+    Returns
+    -------
+    ORT : float
+        The optimal replacement time
+    min_cost : float
+        The minimum cost per unit time
+
+    Notes
+    -----
+    If show_plot is True, the cost vs time plot will be produced. Use plt.show()
+    to show the plot.
     """
 
     def __init__(
@@ -232,30 +277,69 @@ class optimal_replacement_time:
 
 class ROCOF:
     """
-    Uses the failure times or failure interarrival times to determine if there is a trend in those times.
-    The test for statistical significance is the Laplace test which compares the Laplace test statistic (U) with the z value (z_crit) from the standard normal distribution
-    If there is a statistically significant trend, the parameters of the model (Lambda_hat and Beta_hat) are calculated.
-    By default the results are printed and a plot of the times and MTBF is plotted.
+    Uses the failure times or failure interarrival times to determine if there
+    is a trend in those times. The test for statistical significance is the
+    Laplace test which compares the Laplace test statistic (U) with the z value
+    (z_crit) from the standard normal distribution. If there is a statistically
+    significant trend, the parameters of the model (Lambda_hat and Beta_hat) are
+    calculated. By default the results are printed and a plot of the times and
+    MTBF is plotted.
 
-    Inputs:
-    times_between_failures - these are the failure interarrival times.
-    failure_times - these are the actual failure times.
-        Note 1: You can specify either times_between_failures OR failure_times but not both. Both options are provided for convenience so the conversion between the two is done internally. failure_times should be the same as np.cumsum(times_between_failures).
-        Note 2: The repair time is assumed to be negligible. If the repair times are not negligibly small then you will need to manually adjust your input to factor in the repair times.
-    test_end - use this to specify the end of the test if the test did not end at the time of the last failure.
-    CI - the confidence interval for the Laplace test. Default is 0.95 for 95% CI.
-    show_plot - True/False. Default is True. Plotting keywords are also accepted (eg. color, linestyle).
-    print_results - True/False. Default is True
+    Parameters
+    ----------
+    times_between_failures : array, list, optional
+        The failure interarrival times. See the Notes below.
+    failure_times : array, list, optional
+        The actual failure times. See the Notes below.
+    test_end : int, float, optional
+        Use this to specify the end of the test if the test did not end at the
+        time of the last failure. Default = None which will result in the last
+        failure being treated as the end of the test.
+    CI : float
+        The confidence interval for the Laplace test. Must be between 0 and 1.
+        Default is 0.95 for 95% CI.
+    show_plot : bool, optional
+        If True the plot will be produced. Default = True.
+    print_results : bool, optional
+        If True the results will be printed to console. Default = True.
+    kwargs
+        Plotting keywords that are passed directly to matplotlib (e.g. color,
+        label, linestyle).
 
-    Outputs:
-    U - The Laplace test statistic
-    z_crit - (lower,upper) bound on z value. This is based on the CI.
-    trend - 'improving','worsening','constant'. This is based on the comparison of U with z_crit
-    Beta_hat - the Beta parameter for the NHPP Power Law model. Only calculated if the trend is not constant.
-    Lambda_hat - the Lambda parameter for the NHPP Power Law model. Only calculated if the trend is not constant.
-    ROCOF - the Rate of OCcurrence Of Failures. Only calculated if the trend is constant. If trend is not constant then ROCOF changes over time in accordance with Beta_hat and Lambda_hat.
-    printed results. Only printed if print_results is True.
-    plotted results. Only plotted of plot_results is True. Use plt.show() to display it.
+    Returns
+    -------
+    U : float
+        The Laplace test statistic
+    z_crit : tuple
+        (lower,upper) bound on z value. This is based on the CI.
+    trend : str
+        'improving','worsening','constant'. This is based on the comparison of U
+        with z_crit
+    Beta_hat : float, str
+        The Beta parameter for the NHPP Power Law model. Only calculated if the
+        trend is not constant, else a string is returned.
+    Lambda_hat : float, str
+        The Lambda parameter for the NHPP Power Law model. Only calculated if
+        the trend is not constant.
+    ROCOF : float, str
+        The Rate of OCcurrence Of Failures. Only calculated if the trend is
+        constant. If trend is not constant then ROCOF changes over time in
+        accordance with Beta_hat and Lambda_hat. In this case a string will be
+        returned.
+
+    Notes
+    -----
+    You can specify either times_between_failures OR failure_times but not both.
+    Both options are provided for convenience so the conversion between the two
+    is done internally. failure_times should be the same as
+    np.cumsum(times_between_failures).
+
+    The repair time is assumed to be negligible. If the repair times are not
+    negligibly small then you will need to manually adjust your input to factor
+    in the repair times.
+
+    If show_plot is True, the ROCOF plot will be produced. Use plt.show() to
+    show the plot.
     """
 
     def __init__(
@@ -438,52 +522,100 @@ class ROCOF:
 
 class MCF_nonparametric:
     """
-    MCF_nonparametric
+    The Mean Cumulative Function (MCF) is a cumulative history function that
+    shows the cumulative number of recurrences of an event, such as repairs over
+    time. In the context of repairs over time, the value of the MCF can be
+    thought of as the average number of repairs that each system will have
+    undergone after a certain time. It is only applicable to repairable systems
+    and assumes that each event (repair) is identical, but it does not assume
+    that each system's MCF is identical (which is an assumption of the
+    parametric MCF). The non-parametric estimate of the MCF provides both the
+    estimate of the MCF and the confidence bounds at a particular time.
 
-    The Mean Cumulative Function (MCF) is a cumulative history function that shows the cumulative number of recurrences of an event, such as repairs over time.
-    In the context of repairs over time, the value of the MCF can be thought of as the average number of repairs that each system will have undergone after a
-    certain time. It is only applicable to repairable systems and assumes that each event (repair) is identical, but it does not assume that each system's MCF is
-    identical (which is an assumption of the parametric MCF). The non-parametric estimate of the MCF provides both the estimate of the MCF and the confidence
-    bounds at a particular time.
-    The shape of the MCF is a key indicator that shows whether the systems are improving, worsening, or staying the same over time. If the MCF is concave down
-    (appearing to level out) then the system is improving. A straight line (constant increase) indicates it is staying the same. Concave up (getting steeper)
-    shows the system is worsening as repairs are required more frequently as time progresses.
+    The shape of the MCF is a key indicator that shows whether the systems are
+    improving, worsening, or staying the same over time. If the MCF is concave
+    down (appearing to level out) then the system is improving. A straight line
+    (constant increase) indicates it is staying the same. Concave up (getting
+    steeper) shows the system is worsening as repairs are required more
+    frequently as time progresses.
 
-    Inputs:
-    data - the repair times for each system. Format this as a list of lists. eg. data=[[4,7,9],[3,8,12]] would be the data for 2 systems.
-        The largest time for each system is assumed to be the retirement time and is treated as a right censored value.
-        If the system was retired immediately after the last repair then you must include a repeated value at the end as this will be used to indicate a right
-        censored value. eg. A system that had repairs at 4, 7, and 9 then was retired after the last repair would be entered as data = [4,7,9,9] since the last
-        value is treated as a right censored value. If you only have data from 1 system you may enter the data in a single list as data = [3,7,12] and it will be
-        nested within another list automatically.
-    print_results - prints the table of MCF results (state, time, MCF_lower, MCF, MCF_upper, variance)
-    CI - Confidence interval. Default is 0.95 for 95% CI (one sided).
-    show_plot - if True the plot will be shown. Default is True. Use plt.show() to show it.
-    plot_CI - the plot will include the confidence intervals. Default is True.
+    Parameters
+    ----------
+    data : list
+        The repair times for each system. Format this as a list of lists. eg.
+        data=[[4,7,9],[3,8,12]] would be the data for 2 systems. The largest
+        time for each system is assumed to be the retirement time and is treated
+        as a right censored value. If the system was retired immediately after
+        the last repair then you must include a repeated value at the end as
+        this will be used to indicate a right censored value. eg. A system that
+        had repairs at 4, 7, and 9 then was retired after the last repair would
+        be entered as data = [4,7,9,9] since the last value is treated as a
+        right censored value. If you only have data from 1 system you may enter
+        the data in a single list as data = [3,7,12] and it will be nested
+        within another list automatically.
+    print_results : bool, optional
+        Prints the table of MCF results (state, time, MCF_lower, MCF, MCF_upper,
+        variance). Default = True.
+    CI : float, optional
+        Confidence interval. Must be between 0 and 1. Default = 0.95 for 95% CI
+        (one sided).
+    show_plot : bool, optional
+        If True the plot will be shown. Default = True. Use plt.show() to show
+        it.
+    plot_CI : bool, optional
+        If True, the plot will include the confidence intervals. Default = True.
+        Set as False to remove the confidence intervals from the plot.
+    kwargs
+        Plotting keywords that are passed directly to matplotlib (e.g. color,
+        label, linestyle).
 
-    Outputs:
-    If print_results is True, a table of the results will be printed showing state, time, MCF_lower, MCF, MCF_upper, variance. In this table state is F for failure or C for right censored (retirement).
-    If show_plot is True, the MCF plot will be shown.
-    results - this is a dataframe of the results that are printed. It includes the blank lines for censored values
-    time - this is the time column from results. Blank lines for censored values are removed
-    MCF - this is the MCF column from results. Blank lines for censored values are removed
-    variance - this is the Variance column from results. Blank lines for censored values are removed
-    lower - this is the MCF_lower column from results. Blank lines for censored values are removed
-    upper - this is the MCF_upper column from results. Blank lines for censored values are removed
+    Returns
+    -------
+    results : dataframe
+        This is a dataframe of the results that are printed. It includes the
+        blank lines for censored values.
+    time : array
+        This is the time column from results. Blank lines for censored values
+        are removed.
+    MCF : array
+        This is the MCF column from results. Blank lines for censored values are
+        removed.
+    variance : array
+        This is the Variance column from results. Blank lines for censored
+        values are removed.
+    lower : array
+        This is the MCF_lower column from results. Blank lines for censored
+        values are removed.
+    upper : array
+        This is the MCF_upper column from results. Blank lines for censored
+        values are removed
 
-    Example:
-    This example is taken from Reliasoft's example (available at http://reliawiki.org/index.php/Recurrent_Event_Data_Analysis).
-    The failure times and retirement times (retirement time is indicated by +) of 5 systems are:
-    System  Times
-    1       5,10,15,17+
-    2       6,13,17,19+
-    3       12,20,25,26+
-    4       13,15,24+
-    5       16,22,25,28+
+    Notes
+    -----
+    This example is taken from Reliasoft's example (available at
+    http://reliawiki.org/index.php/Recurrent_Event_Data_Analysis). The failure
+    times and retirement times (retirement time is indicated by +) of 5 systems
+    are:
 
-    from reliability.Repairable_systems import MCF_nonparametric
-    times = [[5, 10, 15, 17], [6, 13, 17, 19], [12, 20, 25, 26], [13, 15, 24], [16, 22, 25, 28]]
-    MCF_nonparametric(data=times)
+    +------------+--------------+
+    | System     | Times        |
+    +------------+--------------+
+    | 1          | 5,10,15,17+  |
+    +------------+--------------+
+    | 2          | 6,13,17,19+  |
+    +------------+--------------+
+    | 3          | 12,20,25,26+ |
+    +------------+--------------+
+    | 4          | 13,15,24+    |
+    +------------+--------------+
+    | 5          | 16,22,25,28+ |
+    +------------+--------------+
+
+    .. code:: python
+
+        from reliability.Repairable_systems import MCF_nonparametric
+        times = [[5, 10, 15, 17], [6, 13, 17, 19], [12, 20, 25, 26], [13, 15, 24], [16, 22, 25, 28]]
+        MCF_nonparametric(data=times)
     """
 
     def __init__(
@@ -647,7 +779,6 @@ class MCF_nonparametric:
         printable_results = pd.DataFrame(
             data, columns=["state", "time", "MCF_lower", "MCF", "MCF_upper", "variance"]
         )
-        self.results = printable_results
 
         indices_to_drop = printable_results[printable_results["state"] == "C"].index
         plotting_results = printable_results.drop(indices_to_drop, inplace=False)
@@ -657,11 +788,12 @@ class MCF_nonparametric:
         RESULTS_lower = plotting_results.MCF_lower.values
         RESULTS_upper = plotting_results.MCF_upper.values
 
-        self.time = list(RESULTS_time)
-        self.MCF = list(RESULTS_MCF)
-        self.lower = list(RESULTS_lower)
-        self.upper = list(RESULTS_upper)
-        self.variance = list(RESULTS_variance)
+        self.results = printable_results
+        self.time = RESULTS_time
+        self.MCF = RESULTS_MCF
+        self.lower = RESULTS_lower
+        self.upper = RESULTS_upper
+        self.variance = RESULTS_variance
 
         CI_rounded = CI * 100
         if CI_rounded % 1 == 0:
@@ -730,57 +862,107 @@ class MCF_nonparametric:
 
 class MCF_parametric:
     """
-    MCF_parametric
+    The Mean Cumulative Function (MCF) is a cumulative history function that
+    shows the cumulative number of recurrences of an event, such as repairs over
+    time. In the context of repairs over time, the value of the MCF can be
+    thought of as the average number of repairs that each system will have
+    undergone after a certain time. It is only applicable to repairable systems
+    and assumes that each event (repair) is identical. In the case of the fitted
+    paramertic MCF, it is assumed that each system's MCF is identical.
 
-    The Mean Cumulative Function (MCF) is a cumulative history function that shows the cumulative number of recurrences of an event, such as repairs over time.
-    In the context of repairs over time, the value of the MCF can be thought of as the average number of repairs that each system will have undergone after a
-    certain time. It is only applicable to repairable systems and assumes that each event (repair) is identical. In the case of the fitted paramertic MCF, it
-    is assumed that each system's MCF is identical.
-    The shape (beta parameter) of the MCF is a key indicator that shows whether the systems are improving (beta<1), worsening (beta>1), or staying the same
-    (beta=1) over time. If the MCF is concave down (appearing to level out) then the system is improving. A straight line (constant increase) indicates it is
-    staying the same. Concave up (getting steeper) shows the system is worsening as repairs are required more frequently as time progresses.
+    The shape (beta parameter) of the MCF is a key indicator that shows whether
+    the systems are improving (beta<1), worsening (beta>1), or staying the same
+    (beta=1) over time. If the MCF is concave down (appearing to level out) then
+    the system is improving. A straight line (constant increase) indicates it is
+    staying the same. Concave up (getting steeper) shows the system is worsening
+    as repairs are required more frequently as time progresses.
 
-    Inputs:
-    data - the repair times for each system. If you have data from multiple systems, format this as a list of lists.
-        eg. data=[[4,7,9],[3,8,12]] would be the data for 2 systems.
-        The largest time for each system is assumed to be the retirement time and is treated as a right censored value.
-        If the system was retired immediately after the last failure/repair then you must include a repeated value at the end as this will be used to indicate a right
-        censored value. eg. A system that had repairs at 4, 7, and 9 then was retired after the last repair would be entered as data = [4,7,9,9] since the last
-        value is treated as a right censored value. If you only have data from 1 system you may enter the data in a single list as data = [3,7,12] and it will be
-        nested within another list automatically.
-    CI - the confidence interval. Default is 0.95 for 95% CI.
-    print_results - prints the fitted parameters (alpha and beta) of the parametric MCF model.
-    show_plot - if True the plot will be shown. Default is True. Use plt.show() to show it.
-    plot_CI - True/False. Plots the confidence intervals. Default is True.
+    Parameters
+    ----------
+    data : list
+        The repair times for each system. Format this as a list of lists. eg.
+        data=[[4,7,9],[3,8,12]] would be the data for 2 systems. The largest
+        time for each system is assumed to be the retirement time and is treated
+        as a right censored value. If the system was retired immediately after
+        the last repair then you must include a repeated value at the end as
+        this will be used to indicate a right censored value. eg. A system that
+        had repairs at 4, 7, and 9 then was retired after the last repair would
+        be entered as data = [4,7,9,9] since the last value is treated as a
+        right censored value. If you only have data from 1 system you may enter
+        the data in a single list as data = [3,7,12] and it will be nested
+        within another list automatically.
+    print_results : bool, optional
+        Prints the table of MCF results (state, time, MCF_lower, MCF, MCF_upper,
+        variance). Default = True.
+    CI : float, optional
+        Confidence interval. Must be between 0 and 1. Default = 0.95 for 95% CI
+        (one sided).
+    show_plot : bool, optional
+        If True the plot will be shown. Default = True. Use plt.show() to show
+        it.
+    plot_CI : bool, optional
+        If True, the plot will include the confidence intervals. Default = True.
+        Set as False to remove the confidence intervals from the plot.
+    kwargs
+        Plotting keywords that are passed directly to matplotlib (e.g. color,
+        label, linestyle).
 
-    Outputs:
-    If print_results is True, the model parameters will be printed along with a brief diagnosis of the long term health of the system based on the beta parameter.
-    times - this is the times (x values) from the scatter plot. This value is calculated using MCF_nonparametric.
-    MCF - this is the MCF (y values) from the scatter plot. This value is calculated using MCF_nonparametric.
-    alpha - the calculated alpha parameter from MCF = (t/alpha)^beta
-    beta - the calculated beta parameter from MCF = (t/alpha)^beta
-    alpha_SE - the standard error in the alpha parameter
-    beta_SE - the standard error in the beta parameter
-    cov_alpha_beta - the covariance between the parameters
-    alpha_upper - the upper CI estimate of the parameter
-    alpha_lower - the lower CI estimate of the parameter
-    beta_upper - the upper CI estimate of the parameter
-    beta_lower - the lower CI estimate of the parameter
-    results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
+    Returns
+    -------
+    times : array
+        This is the times (x values) from the scatter plot. This value is
+        calculated using MCF_nonparametric.
+    MCF : array
+        This is the MCF (y values) from the scatter plot. This value is
+        calculated using MCF_nonparametric.
+    alpha : float
+        The calculated alpha parameter from MCF = (t/alpha)^beta
+    beta : float
+        The calculated beta parameter from MCF = (t/alpha)^beta
+    alpha_SE : float
+        The standard error in the alpha parameter
+    beta_SE : float
+        The standard error in the beta parameter
+    cov_alpha_beta : float
+        The covariance between the parameters
+    alpha_upper : float
+        The upper CI estimate of the parameter
+    alpha_lower : float
+        The lower CI estimate of the parameter
+    beta_upper : float
+        The upper CI estimate of the parameter
+    beta_lower : float
+        The lower CI estimate of the parameter
+    results : dataframe
+        A dataframe of the results (point estimate, standard error, Lower CI and
+        Upper CI for each parameter)
 
-    Example:
-    This example is taken from Reliasoft's example (available at http://reliawiki.org/index.php/Recurrent_Event_Data_Analysis).
-    The failure times and retirement times (retirement time is indicated by +) of 5 systems are:
-    System  Times
-    1       5,10,15,17+
-    2       6,13,17,19+
-    3       12,20,25,26+
-    4       13,15,24+
-    5       16,22,25,28+
+    Notes
+    -----
+    This example is taken from Reliasoft's example (available at
+    http://reliawiki.org/index.php/Recurrent_Event_Data_Analysis). The failure
+    times and retirement times (retirement time is indicated by +) of 5 systems
+    are:
 
-    from reliability.Repairable_systems import MCF_parametric
-    times = [[5, 10, 15, 17], [6, 13, 17, 19], [12, 20, 25, 26], [13, 15, 24], [16, 22, 25, 28]]
-    MCF_parametric(data=times)
+    +------------+--------------+
+    | System     | Times        |
+    +------------+--------------+
+    | 1          | 5,10,15,17+  |
+    +------------+--------------+
+    | 2          | 6,13,17,19+  |
+    +------------+--------------+
+    | 3          | 12,20,25,26+ |
+    +------------+--------------+
+    | 4          | 13,15,24+    |
+    +------------+--------------+
+    | 5          | 16,22,25,28+ |
+    +------------+--------------+
+
+    .. code:: python
+
+        from reliability.Repairable_systems import MCF_parametric
+        times = [[5, 10, 15, 17], [6, 13, 17, 19], [12, 20, 25, 26], [13, 15, 24], [16, 22, 25, 28]]
+        MCF_parametric(data=times)
     """
 
     def __init__(
@@ -799,8 +981,9 @@ class MCF_parametric:
         self.MCF = MCF_NP.MCF
 
         # initial guess using least squares regression of linearised function
-        ln_x = np.log(self.times)
-        ln_y = np.log(self.MCF)
+        # we must convert this back to list due to an issue within numpy dealing with the log of floats
+        ln_x = np.log(list(self.times))
+        ln_y = np.log(list(self.MCF))
         guess_fit = np.polyfit(ln_x, ln_y, deg=1)
         beta_guess = guess_fit[0]
         alpha_guess = np.exp(-guess_fit[1] / beta_guess)

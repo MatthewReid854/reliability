@@ -1,26 +1,39 @@
 """
 Probability plotting
 
-This module contains the functions required to generate linearized probability plots of the 8 standard distributions included in reliability.
-The most common use of these type of probability plots is to assess goodness of fit.
-Also included in this module are probability-probability (PP) plots and quantile-quantile (QQ) plots.
+This module contains the functions required to generate linearized probability
+plots of the 8 standard distributions included in reliability. The most common
+use of these type of probability plots is to assess goodness of fit. Also
+included in this module are probability-probability (PP) plots and
+quantile-quantile (QQ) plots.
 
 The functions in this module are:
-plotting_positions - using the median rank method, this function generates an empirical estimate of the CDF
-Weibull_probability_plot - used for Weibull_2P and Weibull_3P plotting.
-Loglogistic_probability_plot - used for Loglogistic_2P and Loglogistic_3P plotting.
-Normal_probability_plot - used for Normal_2P plotting.
-Lognormal_probability_plot - used for Lognormal_2P plotting.
-Exponential_probability_plot - used for Exponential_1P and Exponential_2P plotting.
-Exponential_probability_plot_Weibull_Scale - used for Exponential_1P and Exponential_2P plotting with Weibull Scale makes multiple plots with different Lambda parameters be parallel.
-Beta_probability_plot - used for Beta_2P plotting.
-Gamma_probability_plot - used for Gamma_2P and Gamma_3P plotting.
-Gumbel_probability_plot - used for Gumbel_2P plotting.
-QQ_plot_parametric - quantile-quantile plot. Compares two parametric distributions using shared quantiles. Useful for Field-to-Test conversions in ALT.
-QQ_plot_semiparametric - quantile-quantile plot. Compares failure data with a hypothesised parametric distribution. Useful to assess goodness of fit.
-PP_plot_parametric - probability-probability plot. Compares two parametric distributions using their CDFs. Useful to understand the differences between the quantiles of the distributions.
-PP_plot_semiparametric - probability-probability plot. Compares failure data with a hypothesised parametric distribution. Useful to assess goodness of fit.
-plot_points - plots the failure points on a scatter plot. Useful to overlay the points with CDF, SF, or CHF. Does not scale the axis so can be used with methods like dist.SF()
+plotting_positions - generates an empirical estimate of the CDF
+Weibull_probability_plot - Weibull_2P and Weibull_3P
+Loglogistic_probability_plot - Loglogistic_2P and Loglogistic_3P
+Normal_probability_plot - Normal_2P
+Lognormal_probability_plot - Lognormal_2P and Lognormal_3P
+Exponential_probability_plot - Exponential_1P and Exponential_2P
+Exponential_probability_plot_Weibull_Scale - Exponential_1P and Exponential_2P
+    with Weibull Scale makes multiple plots with different Lambda parameters
+    be parallel.
+Beta_probability_plot - Beta_2P
+Gamma_probability_plot - Gamma_2P and Gamma_3P
+Gumbel_probability_plot - Gumbel_2P
+QQ_plot_parametric - quantile-quantile plot. Compares two parametric
+    distributions using shared quantiles. Useful for Field-to-Test conversions
+    in ALT.
+QQ_plot_semiparametric - quantile-quantile plot. Compares failure data with a
+    hypothesised parametric distribution. Useful to assess goodness of fit.
+PP_plot_parametric - probability-probability plot. Compares two parametric
+    distributions using their CDFs. Useful to understand the differences
+    between the quantiles of the distributions.
+PP_plot_semiparametric - probability-probability plot. Compares failure data
+    with a hypothesised parametric distribution. Useful to assess goodness of
+    fit.
+plot_points - plots the failure points on a scatter plot. Useful to overlay
+    the points with CDF, SF, or CHF. Does not scale the axis so can be used
+    with methods like dist.SF()
 """
 
 import matplotlib.pyplot as plt
@@ -52,18 +65,32 @@ dec = 3  # number of decimals to use when rounding fitted parameters in labels
 
 def plotting_positions(failures=None, right_censored=None, a=None):
     """
-    Calculates the plotting positions for plotting on probability paper
-    This function is primarily used by the probability plotting functions.
-    The order of the input data is preserved (not sorted).
+    Calculates the plotting positions for plotting on probability paper.
 
-    Inputs:
-    failures - the array or list of failure times
-    right_censored - the array or list of right censored failure times
-    a - the heuristic constant for plotting positions of the form (k-a)/(n+1-2a). Default is a=0.3 which is the median rank method (same as the default in Minitab and Reliasoft).
-        Must be in the range 0 to 1. For more heuristics, see: https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics
+    Parameters
+    ----------
+    failures : array, list
+        The failure data. Must have at least 1 element.
+    right_censored : array, list, optional
+        The right censored failure data. Optional input. Default = None.
+    a : float, int, optional
+        The heuristic constant for plotting positions of the form
+        (k-a)/(n+1-2a) where k is the rank and n is the number of points.
+        Optional input. Default is a = 0.3 which is the median rank method
+        (same as the default in Minitab and Reliasoft). Must be in the range 0
+        to 1. For more heuristics, see:
+        https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics
 
-    Outputs:
-    x,y - the x and y plotting positions as lists
+    Returns:
+    (array(x),array(y)) : tuple
+        a tuple of two arrays. The arrays provide the x and y plotting
+        positions. The x array will match the failures parameter while the y
+        array will be the empirical estimate of the CDF at each of the failures.
+
+    Notes
+    -----
+    This function is primarily used by the probability plotting functions. The
+    order of the input data is preserved (not sorted).
     """
 
     # error checking the input
@@ -144,26 +171,63 @@ def Weibull_probability_plot(
     **kwargs
 ):
     """
-    Weibull probability plot
+    Generates a probability plot on Weibull scaled probability paper so that the
+    CDF of the distribution appears linear. This function can be used to show
+    Weibull_2P or Weibull_3P distributions.
 
-    Generates a probability plot on Weibull scaled probability paper so that the distribution appears linear.
-    Inputs:
-    failures - the array or list of failure times
-    right_censored - the array or list of right censored failure times
-    fit_gamma - True/False. Default is False. Specify this as True in order to fit the Weibull_3P distribution and scale the x-axis to time - gamma.
-    show_fitted_distribution - True/False. If True, the fitted distribution will be plotted on the probability plot. Defaults to True
-    show_scatter_points - True/False. If True, the plot will include the scatter points from the failure times. Defaults to True.
-    a - the heuristic constant for plotting positions of the form (k-a)/(n+1-2a). Default is a=0.3 which is the median rank method (same as the default in Minitab).
-        For more heuristics, see: https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics
-    CI - the confidence interval for the bounds. Default is 0.95 for 95% CI.
-    CI_type - time, reliability, None. Default is time. This is the type of CI bounds. i.e. bounds on time or bounds on reliability. Use None to turn off the confidence intervals.
-    kwargs are accepted for the fitted line (eg. linestyle, label, color)
+    Parameters
+    ----------
+    failures : array, list
+        The failure data. Must have at least 2 elements.
+    right_censored : array, list, optional
+        The right censored data. Optional input. Default = None.
+    fit_gamma : bool, optional
+        Specify this as True in order to fit the Weibull_3P distribution and
+        scale the x-axis to time - gamma. Default = False.
+    show_fitted_distribution : bool, optional
+        If True, the fitted distribution will be plotted on the probability
+        plot. Defaults = True.
+    show_scatter_points : bool, optional
+        If True, the plot will include the scatter points from the failure
+        times. Defaults = True.
+    a : float, int, optional
+        The heuristic constant for plotting positions of the form
+        (k-a)/(n+1-2a). Default = 0.3 which is the median rank method (same as
+        the default in Minitab). For more heuristics, see:
+        https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics
+    CI : float, optional
+        The confidence interval for the bounds. Must be between 0 and 1.
+        Optional input. Default = 0.95 for 95% CI.
+    CI_type : str, None, optional
+        This is the confidence bounds on time or reliability shown on the plot.
+        Use None to turn off the confidence intervals. Must be either 'time',
+        'reliability', or None. Default is 'time'. Some flexibility in names is
+        allowed (eg. 't', 'time', 'r', 'rel', 'reliability' are all valid).
+    kwargs
+        Plotting keywords that are passed directly to matplotlib (e.g. color,
+        label, linestyle).
 
-    Outputs:
-    The plot is the only output. Use plt.show() to show it.
+    Returns
+    -------
+    figure : object
+        The figure handle of the probability plot is returned as an object
+
+    Notes
+    -----
+    There is a hidden parameter called __fitted_dist_params which is used to
+    specify the parameters of the distribution that has already been fitted.
+    Passing a distribution object to this parameter will bypass the fitting
+    process and use the parameters of the distribution provided. When this is
+    done the minimum length of failures can be 1. The distribution object must
+    contain the SE and Cov of the parameters so it needs to be generated by the
+    Fitters module.
+
+    If your plot does not appear automatically, use plt.show() to show it.
     """
     # ensure the input data is arrays
-    if len(failures) < 2 and __fitted_dist_params is None:
+    if failures is None or len(failures) == 0:
+        raise ValueError("failures must be a list or array of the failure data.")
+    elif len(failures) < 2 and __fitted_dist_params is None:
         raise ValueError(
             "Insufficient data to fit a distribution. Minimum number of points is 2"
         )
@@ -322,27 +386,63 @@ def Loglogistic_probability_plot(
     **kwargs
 ):
     """
-    Loglogistic probability plot
+    Generates a probability plot on Loglogistically scaled probability paper so
+    that the CDF of the distribution appears linear. This function can be used
+    to show Loglogistic_2P or Loglogistic_3P distributions.
 
-    Generates a probability plot on Loglogistically scaled probability paper so that the distribution appears linear.
-    Inputs:
-    failures - the array or list of failure times
-    right_censored - the array or list of right censored failure times
-    fit_gamma - True/False. Default is False. Specify this as True in order to fit the Loglogistic_3P distribution and scale the x-axis to time - gamma.
-    show_fitted_distribution - True/False. If True, the fitted distribution will be plotted on the probability plot. Defaults to True
-    show_scatter_points - True/False. If True, the plot will include the scatter points from the failure times. Defaults to True.
-    a - the heuristic constant for plotting positions of the form (k-a)/(n+1-2a). Default is a=0.3 which is the median rank method (same as the default in Minitab).
-        For more heuristics, see: https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics
-    CI - the confidence interval for the bounds. Default is 0.95 for 95% CI.
-    CI_type - time, reliability, None. Default is time. This is the type of CI bounds. i.e. bounds on time or bounds on reliability. Use None to turn off the confidence intervals.
-    kwargs are accepted for the fitted line (eg. linestyle, label, color)
+    Parameters
+    ----------
+    failures : array, list
+        The failure data. Must have at least 2 elements.
+    right_censored : array, list, optional
+        The right censored data. Optional input. Default = None.
+    fit_gamma : bool, optional
+        Specify this as True in order to fit the Loglogistic_3P distribution and
+        scale the x-axis to time - gamma. Default = False.
+    show_fitted_distribution : bool, optional
+        If True, the fitted distribution will be plotted on the probability
+        plot. Defaults = True.
+    show_scatter_points : bool, optional
+        If True, the plot will include the scatter points from the failure
+        times. Defaults = True.
+    a : float, int, optional
+        The heuristic constant for plotting positions of the form
+        (k-a)/(n+1-2a). Default = 0.3 which is the median rank method (same as
+        the default in Minitab). For more heuristics, see:
+        https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics
+    CI : float, optional
+        The confidence interval for the bounds. Must be between 0 and 1.
+        Optional input. Default = 0.95 for 95% CI.
+    CI_type : str, None, optional
+        This is the confidence bounds on time or reliability shown on the plot.
+        Use None to turn off the confidence intervals. Must be either 'time',
+        'reliability', or None. Default is 'time'. Some flexibility in names is
+        allowed (eg. 't', 'time', 'r', 'rel', 'reliability' are all valid).
+    kwargs
+        Plotting keywords that are passed directly to matplotlib (e.g. color,
+        label, linestyle).
 
-    Outputs:
-    The plot is the only output. Use plt.show() to show it.
+    Returns
+    -------
+    figure : object
+        The figure handle of the probability plot is returned as an object
+
+    Notes
+    -----
+    There is a hidden parameter called __fitted_dist_params which is used to
+    specify the parameters of the distribution that has already been fitted.
+    Passing a distribution object to this parameter will bypass the fitting
+    process and use the parameters of the distribution provided. When this is
+    done the minimum length of failures can be 1. The distribution object must
+    contain the SE and Cov of the parameters so it needs to be generated by the
+    Fitters module.
+
+    If your plot does not appear automatically, use plt.show() to show it.
     """
     # ensure the input data is arrays
-
-    if len(failures) < 2 and __fitted_dist_params is None:
+    if failures is None or len(failures) == 0:
+        raise ValueError("failures must be a list or array of the failure data.")
+    elif len(failures) < 2 and __fitted_dist_params is None:
         raise ValueError(
             "Insufficient data to fit a distribution. Minimum number of points is 2"
         )
@@ -503,30 +603,71 @@ def Exponential_probability_plot_Weibull_Scale(
     **kwargs
 ):
     """
-    Exponential probability plot Weibull Scale
-
-    Generates an Exponential probability plot on Weibull scaled probability paper so that the distribution appears linear.
-    This differs from the Exponential probability plot on Exponential scaled probability paper as the Weibull paper will make multiple distributions with different lambda parameters appear as parallel lines rather than as lines radiating from the origin.
+    Generates a probability plot on Weibull scaled probability paper so that the
+    CDF of the distribution appears linear. This differs from the Exponential
+    probability plot on Exponential scaled probability paper as the Weibull
+    paper will make multiple distributions with different Lambda parameters
+    appear as parallel lines rather than as lines radiating from the origin.
     This change in scale has applications in ALT probability plotting.
+    This function can be used to show Exponential_1P or Exponential_2P
+    distributions.
 
-    Inputs:
-    failures - the array or list of failure times
-    right_censored - the array or list of right censored failure times
-    fit_gamma - True/False. Default is False. Specify this as True in order to fit the Exponential_2P distribution and scale the x-axis to time - gamma.
-    show_fitted_distribution - True/False. If True, the fitted distribution will be plotted on the probability plot. Defaults to True
-    show_scatter_points - True/False. If True, the plot will include the scatter points from the failure times. Defaults to True.
-    a - the heuristic constant for plotting positions of the form (k-a)/(n+1-2a). Default is a=0.3 which is the median rank method (same as the default in Minitab).
-        For more heuristics, see: https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics
-    CI - the confidence interval for the bounds. Default is 0.95 for 95% CI.
-    kwargs are accepted for the fitted line (eg. linestyle, label, color)
+    Parameters
+    ----------
+    failures : array, list
+        The failure data. Must have at least 1 element.
+    right_censored : array, list, optional
+        The right censored data. Optional input. Default = None.
+    fit_gamma : bool, optional
+        Specify this as True in order to fit the Exponential_2P distribution and
+        scale the x-axis to time - gamma. Default = False.
+    show_fitted_distribution : bool, optional
+        If True, the fitted distribution will be plotted on the probability
+        plot. Defaults = True.
+    show_scatter_points : bool, optional
+        If True, the plot will include the scatter points from the failure
+        times. Defaults = True.
+    a : float, int, optional
+        The heuristic constant for plotting positions of the form
+        (k-a)/(n+1-2a). Default = 0.3 which is the median rank method (same as
+        the default in Minitab). For more heuristics, see:
+        https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics
+    CI : float, optional
+        The confidence interval for the bounds. Must be between 0 and 1.
+        Optional input. Default = 0.95 for 95% CI.
+    kwargs
+        Plotting keywords that are passed directly to matplotlib (e.g. color,
+        label, linestyle).
 
-    Outputs:
-    The plot is the only output. Use plt.show() to show it.
+    Returns
+    -------
+    figure : object
+        The figure handle of the probability plot is returned as an object
+
+    Notes
+    -----
+    This function works because a Weibull Distribution with alpha = x and
+    beta = 1 is identical to an Exponential Distribution with Lambda = 1/x.
+
+    There is a hidden parameter called __fitted_dist_params which is used to
+    specify the parameters of the distribution that has already been fitted.
+    Passing a distribution object to this parameter will bypass the fitting
+    process and use the parameters of the distribution provided. When this is
+    done the minimum length of failures can be 1. The distribution object must
+    contain the SE and Cov of the parameters so it needs to be generated by the
+    Fitters module.
+
+    CI_type is not required as the Exponential distribution has the same
+    confidence interval bounds on both time and reliability.
+
+    If your plot does not appear automatically, use plt.show() to show it.
     """
     # ensure the input data is arrays
-    if len(failures) < 2 and __fitted_dist_params is None:
+    if failures is None or len(failures) == 0:
+        raise ValueError("failures must be a list or array of the failure data.")
+    elif len(failures) < 1 and __fitted_dist_params is None:
         raise ValueError(
-            "Insufficient data to fit a distribution. Minimum number of points is 2"
+            "Insufficient data to fit a distribution. Minimum number of points is 1"
         )
 
     if type(failures) not in [np.ndarray, list]:
@@ -663,24 +804,58 @@ def Gumbel_probability_plot(
     **kwargs
 ):
     """
-    Gumbel probability plot
+    Generates a probability plot on Gumbel scaled probability paper so that the
+    CDF of the distribution appears linear.
 
-    Generates a probability plot on Gumbel scaled probability paper so that the distribution appears linear.
-    Inputs:
-    failures - the array or list of failure times
-    right_censored - the array or list of right censored failure times
-    show_fitted_distribution - True/False. If True, the fitted distribution will be plotted on the probability plot. Defaults to True
-    show_scatter_points - True/False. If True, the plot will include the scatter points from the failure times. Defaults to True.
-    a - the heuristic constant for plotting positions of the form (k-a)/(n+1-2a). Default is a=0.3 which is the median rank method (same as the default in Minitab).
-        For more heuristics, see: https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics
-    CI - the confidence interval for the bounds. Default is 0.95 for 95% CI.
-    CI_type - time, reliability, None. Default is time. This is the type of CI bounds. i.e. bounds on time or bounds on reliability. Use None to turn off the confidence intervals.
-    kwargs are accepted for the fitted line (eg. linestyle, label, color)
+    Parameters
+    ----------
+    failures : array, list
+        The failure data. Must have at least 2 elements.
+    right_censored : array, list, optional
+        The right censored data. Optional input. Default = None.
+    show_fitted_distribution : bool, optional
+        If True, the fitted distribution will be plotted on the probability
+        plot. Defaults = True.
+    show_scatter_points : bool, optional
+        If True, the plot will include the scatter points from the failure
+        times. Defaults = True.
+    a : float, int, optional
+        The heuristic constant for plotting positions of the form
+        (k-a)/(n+1-2a). Default = 0.3 which is the median rank method (same as
+        the default in Minitab). For more heuristics, see:
+        https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics
+    CI : float, optional
+        The confidence interval for the bounds. Must be between 0 and 1.
+        Optional input. Default = 0.95 for 95% CI.
+    CI_type : str, None, optional
+        This is the confidence bounds on time or reliability shown on the plot.
+        Use None to turn off the confidence intervals. Must be either 'time',
+        'reliability', or None. Default is 'time'. Some flexibility in names is
+        allowed (eg. 't', 'time', 'r', 'rel', 'reliability' are all valid).
+    kwargs
+        Plotting keywords that are passed directly to matplotlib (e.g. color,
+        label, linestyle).
 
-    Outputs:
-    The plot is the only output. Use plt.show() to show it.
+    Returns
+    -------
+    figure : object
+        The figure handle of the probability plot is returned as an object
+
+    Notes
+    -----
+    There is a hidden parameter called __fitted_dist_params which is used to
+    specify the parameters of the distribution that has already been fitted.
+    Passing a distribution object to this parameter will bypass the fitting
+    process and use the parameters of the distribution provided. When this is
+    done the minimum length of failures can be 1. The distribution object must
+    contain the SE and Cov of the parameters so it needs to be generated by the
+    Fitters module.
+
+    If your plot does not appear automatically, use plt.show() to show it.
     """
-    if len(failures) < 2 and __fitted_dist_params is None:
+    if failures is None or len(failures) == 0:
+        raise ValueError("failures must be a list or array of the failure data.")
+    elif len(failures) < 2 and __fitted_dist_params is None:
         raise ValueError(
             "Insufficient data to fit a distribution. Minimum number of points is 2"
         )
@@ -781,24 +956,58 @@ def Normal_probability_plot(
     **kwargs
 ):
     """
-    Normal probability plot
+    Generates a probability plot on Normal scaled probability paper so that the
+    CDF of the distribution appears linear.
 
-    Generates a probability plot on Normal scaled probability paper so that the distribution appears linear.
-    Inputs:
-    failures - the array or list of failure times
-    right_censored - the array or list of right censored failure times
-    show_fitted_distribution - True/False. If True, the fitted distribution will be plotted on the probability plot. Defaults to True
-    show_scatter_points - True/False. If True, the plot will include the scatter points from the failure times. Defaults to True.
-    a - the heuristic constant for plotting positions of the form (k-a)/(n+1-2a). Default is a=0.3 which is the median rank method (same as the default in Minitab).
-        For more heuristics, see: https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics
-    CI - the confidence interval for the bounds. Default is 0.95 for 95% CI.
-    CI_type - time, reliability, None. Default is time. This is the type of CI bounds. i.e. bounds on time or bounds on reliability. Use None to turn off the confidence intervals.
-    kwargs are accepted for the fitted line (eg. linestyle, label, color)
+    Parameters
+    ----------
+    failures : array, list
+        The failure data. Must have at least 2 elements.
+    right_censored : array, list, optional
+        The right censored data. Optional input. Default = None.
+    show_fitted_distribution : bool, optional
+        If True, the fitted distribution will be plotted on the probability
+        plot. Defaults = True.
+    show_scatter_points : bool, optional
+        If True, the plot will include the scatter points from the failure
+        times. Defaults = True.
+    a : float, int, optional
+        The heuristic constant for plotting positions of the form
+        (k-a)/(n+1-2a). Default = 0.3 which is the median rank method (same as
+        the default in Minitab). For more heuristics, see:
+        https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics
+    CI : float, optional
+        The confidence interval for the bounds. Must be between 0 and 1.
+        Optional input. Default = 0.95 for 95% CI.
+    CI_type : str, None, optional
+        This is the confidence bounds on time or reliability shown on the plot.
+        Use None to turn off the confidence intervals. Must be either 'time',
+        'reliability', or None. Default is 'time'. Some flexibility in names is
+        allowed (eg. 't', 'time', 'r', 'rel', 'reliability' are all valid).
+    kwargs
+        Plotting keywords that are passed directly to matplotlib (e.g. color,
+        label, linestyle).
 
-    Outputs:
-    The plot is the only output. Use plt.show() to show it.
+    Returns
+    -------
+    figure : object
+        The figure handle of the probability plot is returned as an object
+
+    Notes
+    -----
+    There is a hidden parameter called __fitted_dist_params which is used to
+    specify the parameters of the distribution that has already been fitted.
+    Passing a distribution object to this parameter will bypass the fitting
+    process and use the parameters of the distribution provided. When this is
+    done the minimum length of failures can be 1. The distribution object must
+    contain the SE and Cov of the parameters so it needs to be generated by the
+    Fitters module.
+
+    If your plot does not appear automatically, use plt.show() to show it.
     """
-    if len(failures) < 2 and __fitted_dist_params is None:
+    if failures is None or len(failures) == 0:
+        raise ValueError("failures must be a list or array of the failure data.")
+    elif len(failures) < 2 and __fitted_dist_params is None:
         raise ValueError(
             "Insufficient data to fit a distribution. Minimum number of points is 2"
         )
@@ -900,27 +1109,62 @@ def Lognormal_probability_plot(
     **kwargs
 ):
     """
-    Lognormal probability plot
+    Generates a probability plot on Lognormal scaled probability paper so that
+    the CDF of the distribution appears linear. This function can be used to
+    show Lognormal_2P or Lognormal_3P distributions.
 
-    Generates a probability plot on Lognormal scaled probability paper so that the distribution appears linear.
-    Inputs:
-    failures - the array or list of failure times
-    right_censored - the array or list of right censored failure times
-    fit_gamma - True/False. Default is False. Specify this as True in order to fit the Lognormal_3P distribution and scale the x-axis to time - gamma.
-    show_fitted_distribution - True/False. If True, the fitted distribution will be plotted on the probability plot. Defaults to True
-    show_scatter_points - True/False. If True, the plot will include the scatter points from the failure times. Defaults to True.
-    a - the heuristic constant for plotting positions of the form (k-a)/(n+1-2a). Default is a=0.3 which is the median rank method (same as the default in Minitab).
-        For more heuristics, see: https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics
-    CI - the confidence interval for the bounds. Default is 0.95 for 95% CI.
-    CI_type - time, reliability, None. Default is time. This is the type of CI bounds. i.e. bounds on time or bounds on reliability. Use None to turn off the confidence intervals.
-    kwargs are accepted for the fitted line (eg. linestyle, label, color)
+    Parameters
+    ----------
+    failures : array, list
+        The failure data. Must have at least 2 elements.
+    right_censored : array, list, optional
+        The right censored data. Optional input. Default = None.
+    fit_gamma : bool, optional
+        Specify this as True in order to fit the Lognormal_3P distribution and
+        scale the x-axis to time - gamma. Default = False.
+    show_fitted_distribution : bool, optional
+        If True, the fitted distribution will be plotted on the probability
+        plot. Defaults = True.
+    show_scatter_points : bool, optional
+        If True, the plot will include the scatter points from the failure
+        times. Defaults = True.
+    a : float, int, optional
+        The heuristic constant for plotting positions of the form
+        (k-a)/(n+1-2a). Default = 0.3 which is the median rank method (same as
+        the default in Minitab). For more heuristics, see:
+        https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics
+    CI : float, optional
+        The confidence interval for the bounds. Must be between 0 and 1.
+        Optional input. Default = 0.95 for 95% CI.
+    CI_type : str, None, optional
+        This is the confidence bounds on time or reliability shown on the plot.
+        Use None to turn off the confidence intervals. Must be either 'time',
+        'reliability', or None. Default is 'time'. Some flexibility in names is
+        allowed (eg. 't', 'time', 'r', 'rel', 'reliability' are all valid).
+    kwargs
+        Plotting keywords that are passed directly to matplotlib (e.g. color,
+        label, linestyle).
 
-    Outputs:
-    The plot is the only output. Use plt.show() to show it.
+    Returns
+    -------
+    figure : object
+        The figure handle of the probability plot is returned as an object
 
-    Note that fit_gamma is not an option as the Fit_Lognormal_3P is not yet implemented.
+    Notes
+    -----
+    There is a hidden parameter called __fitted_dist_params which is used to
+    specify the parameters of the distribution that has already been fitted.
+    Passing a distribution object to this parameter will bypass the fitting
+    process and use the parameters of the distribution provided. When this is
+    done the minimum length of failures can be 1. The distribution object must
+    contain the SE and Cov of the parameters so it needs to be generated by the
+    Fitters module.
+
+    If your plot does not appear automatically, use plt.show() to show it.
     """
-    if len(failures) < 2 and __fitted_dist_params is None:
+    if failures is None or len(failures) == 0:
+        raise ValueError("failures must be a list or array of the failure data.")
+    elif len(failures) < 2 and __fitted_dist_params is None:
         raise ValueError(
             "Insufficient data to fit a distribution. Minimum number of points is 2"
         )
@@ -1074,24 +1318,62 @@ def Beta_probability_plot(
     **kwargs
 ):
     """
-    Beta probability plot
+    Generates a probability plot on Beta scaled probability paper so that the
+    CDF of the distribution appears linear.
 
-    Generates a probability plot on Beta scaled probability paper so that the distribution appears linear.
-    Inputs:
-    failures - the array or list of failure times
-    right_censored - the array or list of right censored failure times
-    show_fitted_distribution - True/False. If True, the fitted distribution will be plotted on the probability plot. Defaults to True
-    show_scatter_points - True/False. If True, the plot will include the scatter points from the failure times. Defaults to True.
-    a - the heuristic constant for plotting positions of the form (k-a)/(n+1-2a). Default is a=0.3 which is the median rank method (same as the default in Minitab).
-        For more heuristics, see: https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics
-    CI - the confidence interval for the bounds. Default is 0.95 for 95% CI.
-    CI_type - time, reliability, None. Default is time. This is the type of CI bounds. i.e. bounds on time or bounds on reliability. Use None to turn off the confidence intervals.
-    kwargs are accepted for the fitted line (eg. linestyle, label, color)
+    Parameters
+    ----------
+    failures : array, list
+        The failure data. Must have at least 2 elements.
+    right_censored : array, list, optional
+        The right censored data. Optional input. Default = None.
+    show_fitted_distribution : bool, optional
+        If True, the fitted distribution will be plotted on the probability
+        plot. Defaults = True.
+    show_scatter_points : bool, optional
+        If True, the plot will include the scatter points from the failure
+        times. Defaults = True.
+    a : float, int, optional
+        The heuristic constant for plotting positions of the form
+        (k-a)/(n+1-2a). Default = 0.3 which is the median rank method (same as
+        the default in Minitab). For more heuristics, see:
+        https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics
+    CI : float, optional
+        The confidence interval for the bounds. Must be between 0 and 1.
+        Optional input. Default = 0.95 for 95% CI.
+    CI_type : str, None, optional
+        This is the confidence bounds on time or reliability shown on the plot.
+        Use None to turn off the confidence intervals. Must be either 'time',
+        'reliability', or None. Default is 'time'. Some flexibility in names is
+        allowed (eg. 't', 'time', 'r', 'rel', 'reliability' are all valid).
+    kwargs
+        Plotting keywords that are passed directly to matplotlib (e.g. color,
+        label, linestyle).
 
-    Outputs:
-    The plot is the only output. Use plt.show() to show it.
+    Returns
+    -------
+    figure : object
+        The figure handle of the probability plot is returned as an object
+
+    Notes
+    -----
+    There is a hidden parameter called __fitted_dist_params which is used to
+    specify the parameters of the distribution that has already been fitted.
+    Passing a distribution object to this parameter will bypass the fitting
+    process and use the parameters of the distribution provided. When this is
+    done the minimum length of failures can be 1. The distribution object must
+    contain the SE and Cov of the parameters so it needs to be generated by the
+    Fitters module.
+
+    Both parameters of a Beta Distribution affect the axes scaling such that
+    when two different Beta Distributions are plotted on the same Beta
+    probability paper, one of them will always appear curved.
+
+    If your plot does not appear automatically, use plt.show() to show it.
     """
-    if len(failures) < 2 and __fitted_dist_params is None:
+    if failures is None or len(failures) == 0:
+        raise ValueError("failures must be a list or array of the failure data.")
+    elif len(failures) < 2 and __fitted_dist_params is None:
         raise ValueError(
             "Insufficient data to fit a distribution. Minimum number of points is 2"
         )
@@ -1196,26 +1478,67 @@ def Gamma_probability_plot(
     **kwargs
 ):
     """
-    Gamma probability plot
+    Generates a probability plot on Gamma scaled probability paper so that the
+    CDF of the distribution appears linear. This function can be used to show
+    Gamma_2P or Gamma_3P distributions.
 
-    Generates a probability plot on Gamma scaled probability paper so that the distribution appears linear.
-    Inputs:
-    failures - the array or list of failure times
-    right_censored - the array or list of right censored failure times
-    fit_gamma - True/False. Default is False. Specify this as True in order to fit the Gamma_3P distribution and scale the x-axis to time - gamma.
-    show_fitted_distribution - True/False. If True, the fitted distribution will be plotted on the probability plot. Defaults to True
-    show_scatter_points - True/False. If True, the plot will include the scatter points from the failure times. Defaults to True.
-    a - the heuristic constant for plotting positions of the form (k-a)/(n+1-2a). Default is a=0.3 which is the median rank method (same as the default in Minitab).
-        For more heuristics, see: https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics
-    CI - the confidence interval for the bounds. Default is 0.95 for 95% CI.
-    CI_type - time, reliability, None. Default is time. This is the type of CI bounds. i.e. bounds on time or bounds on reliability. Use None to turn off the confidence intervals.
-    kwargs are accepted for the fitted line (eg. linestyle, label, color)
+    Parameters
+    ----------
+    failures : array, list
+        The failure data. Must have at least 2 elements.
+    right_censored : array, list, optional
+        The right censored data. Optional input. Default = None.
+    fit_gamma : bool, optional
+        Specify this as True in order to fit the Gamma_3P distribution and
+        scale the x-axis to time - gamma. Default = False.
+    show_fitted_distribution : bool, optional
+        If True, the fitted distribution will be plotted on the probability
+        plot. Defaults = True.
+    show_scatter_points : bool, optional
+        If True, the plot will include the scatter points from the failure
+        times. Defaults = True.
+    a : float, int, optional
+        The heuristic constant for plotting positions of the form
+        (k-a)/(n+1-2a). Default = 0.3 which is the median rank method (same as
+        the default in Minitab). For more heuristics, see:
+        https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics
+    CI : float, optional
+        The confidence interval for the bounds. Must be between 0 and 1.
+        Optional input. Default = 0.95 for 95% CI.
+    CI_type : str, None, optional
+        This is the confidence bounds on time or reliability shown on the plot.
+        Use None to turn off the confidence intervals. Must be either 'time',
+        'reliability', or None. Default is 'time'. Some flexibility in names is
+        allowed (eg. 't', 'time', 'r', 'rel', 'reliability' are all valid).
+    kwargs
+        Plotting keywords that are passed directly to matplotlib (e.g. color,
+        label, linestyle).
 
-    Outputs:
-    The plot is the only output. Use plt.show() to show it.
+    Returns
+    -------
+    figure : object
+        The figure handle of the probability plot is returned as an object
+
+    Notes
+    -----
+    There is a hidden parameter called __fitted_dist_params which is used to
+    specify the parameters of the distribution that has already been fitted.
+    Passing a distribution object to this parameter will bypass the fitting
+    process and use the parameters of the distribution provided. When this is
+    done the minimum length of failures can be 1. The distribution object must
+    contain the SE and Cov of the parameters so it needs to be generated by the
+    Fitters module.
+
+    The beta parameter of a Gamma Distribution affects the axes scaling such
+    that when two Gamma Distributions with different beta paameters are plotted
+    on the same Gamma probability paper, one of them will always appear curved.
+
+    If your plot does not appear automatically, use plt.show() to show it.
     """
     # ensure the input data is arrays
-    if len(failures) < 2 and __fitted_dist_params is None:
+    if failures is None or len(failures) == 0:
+        raise ValueError("failures must be a list or array of the failure data.")
+    elif len(failures) < 2 and __fitted_dist_params is None:
         raise ValueError(
             "Insufficient data to fit a distribution. Minimum number of points is 2"
         )
@@ -1371,26 +1694,67 @@ def Exponential_probability_plot(
     **kwargs
 ):
     """
-    Exponential probability plot
+    Generates a probability plot on Exponentially scaled probability paper so
+    that the CDF of the distribution appears linear. This differs from the
+    Exponential_probability_plot_Weibull_Scale as Exponential paper will make
+    multiple distributions with different Lambda parameters appear as lines
+    radiating from the origin rather than as parallel lines. The parallel form
+    is more convenient so the Weibull Scale is more commonly used than the
+    Exponential Scale when plotting Exponential Distributions. This function can
+    be used to show Exponential_1P or Exponential_2P distributions.
 
-    Generates a probability plot on Exponential scaled probability paper so that the distribution appears linear.
-    Inputs:
-    failures - the array or list of failure times
-    right_censored - the array or list of right censored failure times
-    fit_gamma - True/False. Default is False. Specify this as True in order to fit the Exponential_2P distribution and scale the x-axis to time - gamma.
-    show_fitted_distribution - True/False. If True, the fitted distribution will be plotted on the probability plot. Defaults to True
-    show_scatter_points - True/False. If True, the plot will include the scatter points from the failure times. Defaults to True.
-    a - the heuristic constant for plotting positions of the form (k-a)/(n+1-2a). Default is a=0.3 which is the median rank method (same as the default in Minitab).
-        For more heuristics, see: https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics
-    CI - the confidence interval for the bounds. Default is 0.95 for 95% CI.
-    kwargs are accepted for the fitted line (eg. linestyle, label, color)
+    Parameters
+    ----------
+    failures : array, list
+        The failure data. Must have at least 1 element.
+    right_censored : array, list, optional
+        The right censored data. Optional input. Default = None.
+    fit_gamma : bool, optional
+        Specify this as True in order to fit the Exponential_2P distribution and
+        scale the x-axis to time - gamma. Default = False.
+    show_fitted_distribution : bool, optional
+        If True, the fitted distribution will be plotted on the probability
+        plot. Defaults = True.
+    show_scatter_points : bool, optional
+        If True, the plot will include the scatter points from the failure
+        times. Defaults = True.
+    a : float, int, optional
+        The heuristic constant for plotting positions of the form
+        (k-a)/(n+1-2a). Default = 0.3 which is the median rank method (same as
+        the default in Minitab). For more heuristics, see:
+        https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics
+    CI : float, optional
+        The confidence interval for the bounds. Must be between 0 and 1.
+        Optional input. Default = 0.95 for 95% CI.
+    kwargs
+        Plotting keywords that are passed directly to matplotlib (e.g. color,
+        label, linestyle).
 
-    Outputs:
-    The plot is the only output. Use plt.show() to show it.
+    Returns
+    -------
+    figure : object
+        The figure handle of the probability plot is returned as an object
+
+    Notes
+    -----
+    There is a hidden parameter called __fitted_dist_params which is used to
+    specify the parameters of the distribution that has already been fitted.
+    Passing a distribution object to this parameter will bypass the fitting
+    process and use the parameters of the distribution provided. When this is
+    done the minimum length of failures can be 1. The distribution object must
+    contain the SE and Cov of the parameters so it needs to be generated by the
+    Fitters module.
+
+    CI_type is not required as the Exponential distribution has the same
+    confidence interval bounds on both time and reliability.
+
+    If your plot does not appear automatically, use plt.show() to show it.
     """
-    if len(failures) < 2 and __fitted_dist_params is None:
+    if failures is None or len(failures) == 0:
+        raise ValueError("failures must be a list or array of the failure data.")
+    elif len(failures) < 1 and __fitted_dist_params is None:
         raise ValueError(
-            "Insufficient data to fit a distribution. Minimum number of points is 2"
+            "Insufficient data to fit a distribution. Minimum number of points is 1"
         )
 
     if type(failures) not in [np.ndarray, list]:
@@ -1521,18 +1885,43 @@ def PP_plot_parametric(
     **kwargs
 ):
     """
-    A PP_Plot is a probability-probability plot that consists of plotting the CDF of one distribution against the CDF of another distribution. If the distributions are similar, the PP_Plot will lie on the diagonal.
-    This version of a PP_Plot is the fully parametric form in which we plot one distribution against another distribution. There is also a semi-parametric form offered in PP_plot_semiparametric.
+    The PP plot (probability-probability plot) consists of plotting the CDF of
+    one distribution against the CDF of another distribution. If the
+    distributions are similar, the PP plot will lie on the diagonal. This
+    version of a PP plot is the fully parametric form in which we plot one
+    distribution against another distribution. There is also a semi-parametric
+    form offered in PP_plot_semiparametric.
 
-    Inputs:
-    X_dist - a probability distribution. The CDF of this distribution will be plotted along the X-axis.
-    Y_dist - a probability distribution. The CDF of this distribution will be plotted along the Y-axis.
-    y_quantile_lines - starting points for the trace lines to find the X equivalent of the Y-quantile. Optional input. Must be list or array.
-    x_quantile_lines - starting points for the trace lines to find the Y equivalent of the X-quantile. Optional input. Must be list or array.
-    show_diagonal_line - True/False. Default is False. If True the diagonal line will be shown on the plot.
+    Parameters
+    ----------
+    X_dist : object
+        A probability distribution object created using the
+        reliability.Distributions module. The CDF of this distribution will be
+        plotted along the X-axis.
+    Y_dist : object
+        A probability distribution object created using the
+        reliability.Distributions module. The CDF of this distribution will be
+        plotted along the Y-axis.
+    y_quantile_lines : array, list, optional
+        Starting points for the trace lines to find the X equivalent of the
+        Y-quantile. Optional input. Default = None
+    x_quantile_lines : array, list, optional
+        Starting points for the trace lines to find the Y equivalent of the
+        X-quantile. Optional input. Default = None
+    show_diagonal_line : bool, optional
+        If True the diagonal line will be shown on the plot. Default = False
+    kwargs
+        Plotting keywords that are passed directly to matplotlib (e.g. color,
+        label, linestyle).
 
-    Outputs:
-    The PP_plot is the only output. Use plt.show() to show it.
+    Returns
+    -------
+    figure : object
+        The figure handle of the PP plot is returned as an object
+
+    Notes
+    -----
+    If your plot does not appear automatically, use plt.show() to show it.
     """
 
     if X_dist is None or Y_dist is None:
@@ -1635,20 +2024,46 @@ def QQ_plot_parametric(
     X_dist=None, Y_dist=None, show_fitted_lines=True, show_diagonal_line=False, **kwargs
 ):
     """
-    A QQ plot is a quantile-quantile plot which consists of plotting failure units vs failure units for shared quantiles. A quantile is simply the fraction failing (ranging from 0 to 1).
-    To generate this plot we calculate the failure units (these may be units of time, strength, cycles, landings, etc.) at which a certain fraction has failed (0.01,0.02,0.03...0.99) for each distribution and plot them together.
-    The time (or any other failure unit) at which a given fraction has failed is found using the inverse survival function. If the distributions are similar in shape, then the QQ_plot should be a reasonably straight line.
-    By plotting the failure times at equal quantiles for each distribution we can obtain a conversion between the two distributions which is useful for Field-to-Test conversions that are necessary during accelerated life testing (ALT).
+    A QQ plot (quantile-quantile plot) consists of plotting failure units vs
+    failure units for shared quantiles. A quantile is simply the fraction
+    failing (ranging from 0 to 1). To generate this plot we calculate the
+    failure units (these may be units of time, strength, cycles, landings, etc.)
+    at which a certain fraction has failed (0.01,0.02,0.03...0.99) for each
+    distribution and plot them together. The time (or any other failure unit) at
+    which a given fraction has failed is found using the inverse survival
+    function. If the distributions are similar in shape, then the QQ plot should
+    be a reasonably straight line. By plotting the failure times at equal
+    quantiles for each distribution we can obtain a conversion between the two
+    distributions which is useful for Field-to-Test conversions that are
+    necessary during accelerated life testing (ALT).
 
-    Inputs:
-    X_dist - a probability distribution. The failure times at given quantiles from this distribution will be plotted along the X-axis.
-    Y_dist - a probability distribution. The failure times at given quantiles from this distribution will be plotted along the Y-axis.
-    show_fitted_lines - True/False. Default is True. These are the Y=mX and Y=mX+c lines of best fit.
-    show_diagonal_line - True/False. Default is False. If True the diagonal line will be shown on the plot.
+    Parameters
+    ----------
+    X_dist : object
+        A probability distribution object created using the
+        reliability.Distributions module. The failure times at given quantiles
+        from this distribution will be plotted along the X-axis.
+    Y_dist : object
+        A probability distribution object created using the
+        reliability.Distributions module. The failure times at given quantiles
+        from this distribution will be plotted along the Y-axis.
+    show_fitted_lines : bool
+        Default = True. These are the Y=mX and Y=mX+c lines of best fit.
+    show_diagonal_line : bool
+        Default = False. If True the diagonal line will be shown on the plot.
+    kwargs
+        Plotting keywords that are passed directly to matplotlib (e.g. color,
+        label, linestyle).
 
-    Outputs:
-    The QQ_plot will always be output. Use plt.show() to show it.
-    [m,m1,c1] - these are the values for the lines of best fit. m is used in Y=mX, and m1 and c1 are used in Y=m1X+c1
+    Returns
+    -------
+    model_parameters : list
+        [m,m1,c1] - these are the values for the lines of best fit. m is used in
+        Y=m.X, and m1 and c1 are used in Y=m1.X+c1
+
+    Notes
+    -----
+    If your plot does not appear automatically, use plt.show() to show it.
     """
 
     if X_dist is None or Y_dist is None:
@@ -1756,22 +2171,50 @@ def PP_plot_semiparametric(
     **kwargs
 ):
     """
-    A PP_Plot is a probability-probability plot that consists of plotting the CDF of one distribution against the CDF of another distribution. If we have both distributions we can use PP_plot_parametric.
-    This function is for when we want to compare a fitted distribution to an empirical distribution for a given set of data.
-    If the fitted distribution is a good fit the PP_Plot will lie on the diagonal line. Assessing goodness of fit in a graphical way is the main purpose of this type of plot.
-    To create a semi-parametric PP_plot, we must provide the failure data and the method ('KM' for Kaplan-Meier, 'NA' for Nelson-Aalen, 'RA' for Rank Adjustment) to estimate the empirical CDF, and we must also provide the parametric distribution for the parametric CDF.
-    The failure times are the limiting values here so the parametric CDF is only calculated at the failure times since that is the result from the empirical CDF.
-    Note that the empirical CDF also accepts X_data_right_censored just as Kaplan-Meier, Nelson-Aalen, and Rank Adjustment will also accept right censored data.
+    A PP plot (probability-probability plot) consists of plotting the CDF of one
+    distribution against the CDF of another distribution. If we have both
+    distributions we can use the function PP_plot_parametric. This function is
+    for when we want to compare a fitted distribution to an empirical
+    distribution for a given set of data. If the fitted distribution is a good
+    fit the PP plot will lie on the diagonal line. The main purpose of this type
+    of plot is to assess the goodness of fit in a graphical way. To create a
+    semi-parametric PP plot, we must provide the failure data and the method
+    ('KM' for Kaplan-Meier, 'NA' for Nelson-Aalen, 'RA' for Rank Adjustment) to
+    estimate the empirical CDF, and we must also provide the parametric
+    distribution for the parametric CDF. The failure times are the limiting
+    values here so the parametric CDF is only calculated at the failure times
+    since that is the result from the empirical CDF.
 
-    Inputs:
-    X_data_failures - the failure times in an array or list
-    X_data_right_censored - the right censored failure times in an array or list. Optional input.
-    Y_dist - a probability distribution. The CDF of this distribution will be plotted along the Y-axis.
-    method - must be 'KM','NA',or 'RA' for Kaplan-Meier, Nelson-Aalen, and Rank Adjustment respectively. Default is 'KM'
-    show_diagonal_line - True/False. Default is True. If True the diagonal line will be shown on the plot.
+    Parameters
+    ----------
+    X_data_failures : array, list
+        The failure times.
+    X_data_right_censored : array, list, optional
+        The right censored failure times. Optional input.
+    Y_dist : object
+        A probability distribution created using the
+        reliability.Distributions module. The CDF of this distribution will be
+        plotted along the Y-axis.
+    method : str, optional
+        Must be 'KM', 'NA', or 'RA' for Kaplan-Meier, Nelson-Aalen, and Rank
+        Adjustment respectively. Default = 'KM'.
+    show_diagonal_line : bool
+        Default = True. If True the diagonal line will be shown on the plot.
+    kwargs
+        Plotting keywords that are passed directly to matplotlib (e.g. color,
+        label, linestyle).
 
-    Outputs:
-    The PP_plot is the only output. Use plt.show() to show it.
+    Returns
+    -------
+    figure : object
+        The figure handle of the PP plot is returned as an object
+
+    Notes
+    -----
+    The empirical CDF also accepts X_data_right_censored just as Kaplan-Meier,
+    Nelson-Aalen, and Rank Adjustment will also accept right censored data.
+
+    If your plot does not appear automatically, use plt.show() to show it.
     """
 
     if X_data_failures is None or Y_dist is None:
@@ -1891,24 +2334,54 @@ def QQ_plot_semiparametric(
     **kwargs
 ):
     """
-    A QQ plot is a quantile-quantile plot which consists of plotting failure units vs failure units for shared quantiles. A quantile is simply the fraction failing (ranging from 0 to 1).
-    When we have two parametric distributions we can plot the failure times for common quanitles against one another using QQ_plot_parametric. QQ_plot_semiparametric is a semiparametric form of a QQ_plot in which we obtain theoretical quantiles using a non-parametric estimate and a specified distribution.
-    To generate this plot we begin with the failure units (these may be units of time, strength, cycles, landings, etc.). We then obtain an emprical CDF using either Kaplan-Meier, Nelson-Aalen, or Rank Adjustment. The empirical CDF gives us the quantiles we will use to equate the actual and theoretical failure times.
-    Once we have the empirical CDF, we use the inverse survival function of the specified distribution to obtain the theoretical failure times and then plot the actual and theoretical failure times together.
-    If the specified distribution is a good fit, then the QQ_plot should be a reasonably straight line along the diagonal.
-    The primary purpose of this plot is as a graphical goodness of fit test.
+    A QQ plot (quantile-quantile plot) consists of plotting failure units vs
+    failure units for shared quantiles. A quantile is simply the fraction
+    failing (ranging from 0 to 1). When we have two parametric distributions we
+    can plot the failure times for common quanitles against one another using
+    QQ_plot_parametric. QQ_plot_semiparametric is a semiparametric form of a
+    QQ plot in which we obtain theoretical quantiles using a non-parametric
+    estimate and a specified distribution. To generate this plot we begin with
+    the failure units (these may be units of time, strength, cycles, landings,
+    etc.). We then obtain an emprical CDF using either Kaplan-Meier,
+    Nelson-Aalen, or Rank Adjustment. The empirical CDF gives us the quantiles
+    we will use to equate the actual and theoretical failure times. Once we have
+    the empirical CDF, we use the inverse survival function of the specified
+    distribution to obtain the theoretical failure times and then plot the
+    actual and theoretical failure times together. If the specified distribution
+    is a good fit, then the QQ plot should be a reasonably straight line along
+    the diagonal. The primary purpose of this plot is as a graphical goodness of
+    fit test.
 
-    Inputs:
-    X_data_failures - the failure times in an array or list. These will be plotted along the X-axis.
-    X_data_right_censored - the right censored failure times in an array or list. Optional input.
-    Y_dist - a probability distribution. The quantiles of this distribution will be plotted along the Y-axis.
-    method - 'KM', 'NA', or 'RA' for Kaplan-Meier, Nelson-Aalen, and Rank-Adjustment respectively. Default is 'KM'
-    show_fitted_lines - True/False. Default is True. These are the Y=mX and Y=mX+c lines of best fit.
-    show_diagonal_line - True/False. Default is False. If True the diagonal line will be shown on the plot.
+    Parameters
+    ----------
+    X_data_failures : list, array
+        The failure times. These will be plotted along the X-axis.
+    X_data_right_censored : list, array, optional
+        The right censored failure times. Optional input.
+    Y_dist : object
+        A probability distribution created using the reliability.Distributions
+        module. The quantiles of this distribution will be plotted along the
+        Y-axis.
+    method : str
+        Must be either 'KM', 'NA', or 'RA' for Kaplan-Meier, Nelson-Aalen, and
+        Rank-Adjustment respectively. Default = 'KM'.
+    show_fitted_lines : bool
+        Default = True. These are the Y=m.X and Y=m.X+c lines of best fit.
+    show_diagonal_line : bool
+        Default = False. If True the diagonal line will be shown on the plot.
+    kwargs
+        Plotting keywords that are passed directly to matplotlib (e.g. color,
+        label, linestyle).
 
-    Outputs:
-    The QQ_plot will always be output. Use plt.show() to show it.
-    [m,m1,c1] - these are the values for the lines of best fit. m is used in Y=mX, and m1 and c1 are used in Y=m1X+c1
+    Returns
+    -------
+    model_parameters : list
+        [m,m1,c1] - these are the values for the lines of best fit. m is used in
+        Y=m.X, and m1 and c1 are used in Y=m1.X+c1
+
+    Notes
+    -----
+    If your plot does not appear automatically, use plt.show() to show it.
     """
 
     if X_data_failures is None or Y_dist is None:
@@ -2064,35 +2537,52 @@ def QQ_plot_semiparametric(
 
 def plot_points(failures=None, right_censored=None, func="CDF", a=None, **kwargs):
     """
-    plot_points
-
     Plots the failure points as a scatter plot based on the plotting positions.
-    This is similar to a probability plot, just without the axes scaling or the fitted distribution.
-    It may be used to overlay the failure points with a fitted distribution on either the PDF, CDF, SF, HF, or CHF.
-    If you choose to plot the points for PDF or HF the points will not form a smooth curve as this process requires integration of discrete points which leads to a disjointed plot.
-    The PDF and HF points are correct but not as useful as CDF, SF, and CHF.
+    This is similar to a probability plot, just without the axes scaling or the
+    fitted distribution. It may be used to overlay the failure points with a
+    fitted distribution on either the PDF, CDF, SF, HF, or CHF. If you choose to
+    plot the points for PDF or HF the points will not form a smooth curve as
+    this process requires integration of discrete points which leads to a
+    discontinuous plot. The PDF and HF points are correct but not as useful as
+    CDF, SF, and CHF.
 
-    Inputs:
-    failures - an array or list of the failure times. Minimum number of points allowed is 1.
-    right_censored -  an array or list of the right censored failure times.
-    func - The distribution function to plot. Choose either 'PDF,'CDF','SF','HF','CHF'. Default is 'CDF'
-    a - the heuristic constant for plotting positions of the form (k-a)/(n+1-2a). Default is a=0.3 which is the median rank method (same as the default in Minitab).
-        For more heuristics, see: https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics
-    kwargs - keyword arguments for the scatter plot. Defaults are set for color='k' and marker='.' These defaults can be changed using kwargs.
+    Parameters
+    ----------
+    failures : array, list
+        The failure times. Minimum number of points allowed is 1.
+    right_censored : array, list, optional
+        The right censored failure times. Optional input.
+    func : str
+        The distribution function to plot. Choose either 'PDF,'CDF','SF','HF',
+        or 'CHF'. Default = 'CDF'.
+    a : float, int
+        The heuristic constant for plotting positions of the form
+        (k-a)/(n+1-2a). Default is a=0.3 which is the median rank method (same
+        as the default in Minitab). For more heuristics, see:
+        https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics
+    kwargs
+        Keyword arguments for the scatter plot. Defaults are set for color='k'
+        and marker='.' These defaults can be changed using kwargs.
 
-    Outputs:
-    The scatter plot is the only output. Use plt.show to show it.
-    It is recommended that plot_points be used in conjunction with one of the plotting methods from a distribution (see the example below).
+    Returns
+    -------
+    None
 
-    Example usage:
-    from reliability.Fitters import Fit_Lognormal_2P
-    from reliability.Probability_plotting import plot_points
-    import matplotlib.pyplot as plt
-    data = [8.0, 10.2, 7.1, 5.3, 8.5, 15.4, 17.7, 5.4, 5.8, 11.7, 4.4, 18.1, 8.5, 6.6, 9.7, 13.7, 8.2, 15.3, 2.9, 4.3]
-    fitted_dist = Fit_Lognormal_2P(failures=data,show_probability_plot=False,print_results=False) #fit the Lognormal distribution to the failure data
-    plot_points(failures=data,func='SF') #plot the failure points on the scatter plot
-    fitted_dist.distribution.SF() #plot the distribution
-    plt.show()
+    Notes
+    -----
+    It is recommended that plot_points be used in conjunction with one of the
+    plotting methods from a distribution (see the example below).
+
+    .. code:: python
+
+        from reliability.Fitters import Fit_Lognormal_2P
+        from reliability.Probability_plotting import plot_points
+        import matplotlib.pyplot as plt
+        data = [8.0, 10.2, 7.1, 5.3, 8.5, 15.4, 17.7, 5.4, 5.8, 11.7, 4.4, 18.1, 8.5, 6.6, 9.7, 13.7, 8.2, 15.3, 2.9, 4.3]
+        fitted_dist = Fit_Lognormal_2P(failures=data,show_probability_plot=False,print_results=False) #fit the Lognormal distribution to the failure data
+        plot_points(failures=data,func='SF') #plot the failure points on the scatter plot
+        fitted_dist.distribution.SF() #plot the distribution
+        plt.show()
     """
     if failures is None or len(failures) < 1:
         raise ValueError(

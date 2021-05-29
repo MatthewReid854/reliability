@@ -901,7 +901,7 @@ class Weibull_Distribution:
         This is the same as rvs in scipy.stats
         """
         if type(number_of_samples) != int or number_of_samples < 1:
-            raise ValueError("number_of_samples must be an integer greater than 1")
+            raise ValueError("number_of_samples must be an integer greater than 0")
         if seed is not None:
             np.random.seed(seed)
         RVS = ss.weibull_min.rvs(
@@ -1703,7 +1703,7 @@ class Normal_Distribution:
         This is the same as rvs in scipy.stats
         """
         if type(number_of_samples) != int or number_of_samples < 1:
-            raise ValueError("number_of_samples must be an integer greater than 1")
+            raise ValueError("number_of_samples must be an integer greater than 0")
         if seed is not None:
             np.random.seed(seed)
         RVS = ss.norm.rvs(loc=self.mu, scale=self.sigma, size=number_of_samples)
@@ -2552,7 +2552,7 @@ class Lognormal_Distribution:
         This is the same as rvs in scipy.stats
         """
         if type(number_of_samples) != int or number_of_samples < 1:
-            raise ValueError("number_of_samples must be an integer greater than 1")
+            raise ValueError("number_of_samples must be an integer greater than 0")
         if seed is not None:
             np.random.seed(seed)
         RVS = ss.lognorm.rvs(
@@ -3362,7 +3362,7 @@ class Exponential_Distribution:
         This is the same as rvs in scipy.stats
         """
         if type(number_of_samples) != int or number_of_samples < 1:
-            raise ValueError("number_of_samples must be an integer greater than 1")
+            raise ValueError("number_of_samples must be an integer greater than 0")
         if seed is not None:
             np.random.seed(seed)
         RVS = ss.expon.rvs(
@@ -4208,7 +4208,7 @@ class Gamma_Distribution:
         This is the same as rvs in scipy.stats
         """
         if type(number_of_samples) != int or number_of_samples < 1:
-            raise ValueError("number_of_samples must be an integer greater than 1")
+            raise ValueError("number_of_samples must be an integer greater than 0")
         if seed is not None:
             np.random.seed(seed)
         RVS = ss.gamma.rvs(
@@ -5023,7 +5023,7 @@ class Beta_Distribution:
         This is the same as rvs in scipy.stats
         """
         if type(number_of_samples) != int or number_of_samples < 1:
-            raise ValueError("number_of_samples must be an integer greater than 1")
+            raise ValueError("number_of_samples must be an integer greater than 0")
         if seed is not None:
             np.random.seed(seed)
         RVS = ss.beta.rvs(self.alpha, self.beta, 0, 1, size=number_of_samples)
@@ -5933,7 +5933,7 @@ class Loglogistic_Distribution:
         This is the same as rvs in scipy.stats
         """
         if type(number_of_samples) != int or number_of_samples < 1:
-            raise ValueError("number_of_samples must be an integer greater than 1")
+            raise ValueError("number_of_samples must be an integer greater than 0")
         if seed is not None:
             np.random.seed(seed)
         RVS = ss.fisk.rvs(
@@ -6737,7 +6737,7 @@ class Gumbel_Distribution:
         This is the same as rvs in scipy.stats
         """
         if type(number_of_samples) != int or number_of_samples < 1:
-            raise ValueError("number_of_samples must be an integer greater than 1")
+            raise ValueError("number_of_samples must be an integer greater than 0")
         if seed is not None:
             np.random.seed(seed)
         RVS = ss.gumbel_l.rvs(loc=self.mu, scale=self.sigma, size=number_of_samples)
@@ -7669,7 +7669,7 @@ class Competing_Risks_Model:
         This is the same as rvs in scipy.stats
         """
         if type(number_of_samples) != int or number_of_samples < 1:
-            raise ValueError("number_of_samples must be an integer greater than 1")
+            raise ValueError("number_of_samples must be an integer greater than 0")
         if seed is not None:
             np.random.seed(seed)
         return np.random.choice(
@@ -8633,7 +8633,7 @@ class Mixture_Model:
         This is the same as rvs in scipy.stats
         """
         if type(number_of_samples) != int or number_of_samples < 1:
-            raise ValueError("number_of_samples must be an integer greater than 1")
+            raise ValueError("number_of_samples must be an integer greater than 0")
         if seed is not None:
             np.random.seed(seed)
         return np.random.choice(
