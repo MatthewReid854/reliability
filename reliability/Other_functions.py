@@ -990,8 +990,8 @@ class make_ALT_data:
     failures : list
         The failure data.
     failure_stresses : list
-        The failure stresses that are paired with the failue data. Only provided
-        if using a single stress model.
+        The failure stresses that are paired with the failure data. Only
+        provided if using a single stress model.
     failure_stresses_1 : list
         The failure stresses for stress_1 that are paired with the failure data.
         Only provided if using a dual stress model.
@@ -1005,11 +1005,11 @@ class make_ALT_data:
         is only provided if fraction_censored > 0. Only provided if using a
         single stress model.
     right_censored_stresses_1 : list
-        The failure stresses that are paired with the right censored data.This
+        The failure stresses that are paired with the right censored data. This
         is only provided if fraction_censored > 0. Only provided if using a
         dual stress model.
     right_censored_stresses_2 : list
-        The failure stresses that are paired with the right censored data.This
+        The failure stresses that are paired with the right censored data. This
         is only provided if fraction_censored > 0. Only provided if using a
         dual stress model.
     mean_life_at_use_stress : float

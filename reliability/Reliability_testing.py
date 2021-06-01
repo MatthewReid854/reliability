@@ -3,14 +3,25 @@ Reliability_testing
 
 This is a collection of several statistical tests and reliability test planners.
 Included functions are:
-one_sample_proportion - Calculates the upper and lower bounds of reliability for a given number of trials and successes.
-two_proportion_test - Calculates whether the difference in test results between two samples is statistically significant.
-sample_size_no_failures - used to determine the sample size required for a test in which no failures are expected, and the desired outcome is the lower bound on the reliability based on the sample size and desired confidence interval.
-sequential_sampling_chart - plots the accept/reject boundaries for a given set of quality and risk levels. If supplied, the test results are also plotted on the chart.
-reliability_test_planner - Finds the lower confidence bound on MTBF for a given test duration, number of failures, and specified confidence interval.
-reliability_test_duration - Finds the duration of a reliability test based on producers and consumers risk, and the MTBF design and MTBF required.
-chi2test - performs the chi-squared goodness of fit test to determine if we can accept or reject the hypothesis that data is from a distribution.
-KStest - performs the Kolmogorov-Smirnov goodness of fit test to determine if we can accept or reject the hypothesis that data is from a distribution.
+one_sample_proportion - Calculates the upper and lower bounds of reliability for
+    a given number of trials and successes.
+two_proportion_test - Calculates whether the difference in test results between
+    two samples is statistically significant.
+sample_size_no_failures - used to determine the sample size required for a test
+    in which no failures are expected, and the desired outcome is the lower
+    bound on the reliability based on the sample size and desired confidence
+    interval.
+sequential_sampling_chart - plots the accept/reject boundaries for a given set
+    of quality and risk levels. If supplied, the test results are also plotted
+    on the chart.
+reliability_test_planner - Finds the lower confidence bound on MTBF for a given
+    test duration, number of failures, and specified confidence interval.
+reliability_test_duration - Finds the duration of a reliability test based on
+    producers and consumers risk, and the MTBF design and MTBF required.
+chi2test - performs the chi-squared goodness of fit test to determine if we can
+    accept or reject the hypothesis that data is from a distribution.
+KStest - performs the Kolmogorov-Smirnov goodness of fit test to determine if we
+    can accept or reject the hypothesis that data is from a distribution.
 """
 
 import scipy.stats as ss
@@ -36,15 +47,25 @@ pd.set_option("display.max_rows", 200)  # prevents ... compression of rows
 
 def one_sample_proportion(trials=None, successes=None, CI=0.95, print_results=True):
     """
-    Calculates the upper and lower bounds of reliability for a given number of trials and successes.
+    Calculates the upper and lower bounds of reliability for a given number of
+    trials and successes.
 
-    inputs:
-    trials - the number of trials which were conducted
-    successes - the number of trials which were successful
-    CI - the desired confidence interval. Defaults to 0.95 for 95% CI.
-    print_results - if True the results will be printed to the console.
+    Parameters
+    ----------
+    trials : int
+        The number of trials which were conducted.
+    successes : int
+        The number of trials which were successful.
+    CI : float, optional
+        The desired confidence interval. Must be between 0 and 1. Default = 0.95
+        for 95% CI.
+    print_results : bool, optional
+        If True the results will be printed to the console. Default = True.
 
-    returns: lower, upper - Confidence interval limits.
+    Returns
+    -------
+    limits : tuple
+        The confidence interval limits in the form (lower,upper).
     """
     if trials is None or successes is None:
         raise ValueError("You must specify the number of trials and successes.")
@@ -54,6 +75,11 @@ def one_sample_proportion(trials=None, successes=None, CI=0.95, print_results=Tr
         n = 1
     else:
         n = 2
+    if type(trials) is not int:
+        raise ValueError('trials must be an integer')
+    if type(successes) is not int:
+        raise ValueError('successes must be an integer')
+
     V1_lower = 2 * successes
     V2_lower = 2 * (trials - successes + 1)
     alpha_lower = (1 - CI) / n
@@ -107,20 +133,36 @@ def two_proportion_test(
     print_results=True,
 ):
     """
-    Calculates whether the difference in test results between two samples is statistically significant. For example, assume we have
-    a poll of respondents in which 27/40 people agreed, and another poll in which 42/80 agreed. This test will determine if the difference
-    is statistically significant for the given sample sizes at the specified confidence level.
+    Calculates whether the difference in test results between two samples is
+    statistically significant.
 
-    inputs:
-    sample_1_trials - number of trials in the first sample
-    sample_1_successes - number of successes in the first sample
-    sample_2_trials - number of trials in the second sample
-    sample_2_successes - number of successes in the second sample
-    CI - desired confidence interval. Defaults to 0.95 for 95% CI.
-    print_results - if True the results will be printed to the console.
+    For example, assume we have a poll of respondents in which 27/40 people
+    agreed, and another poll in which 42/80 agreed. This test will determine if
+    the difference is statistically significant for the given sample sizes at
+    the specified confidence level.
 
-    returns:
-    lower,upper,result - lower and upper are bounds on the difference. If the bounds do not include 0 then it is a statistically significant difference.
+    Parameters
+    ----------
+    sample_1_trials : int
+        The number of trials in the first sample.
+    sample_1_successes : int
+        The number of successes in the first sample.
+    sample_2_trials : int
+        The number of trials in the second sample.
+    sample_2_successes : int
+        The number of successes in the second sample.
+    CI : float, optional
+        The desired confidence interval. Must be between 0 and 1. Default = 0.95
+        for 95% CI.
+    print_results : bool, optional
+        If True the results will be printed to the console. Default = True.
+
+    Returns
+    -------
+    lower,upper,result : tuple
+        The lower and upper are bounds on the difference. The result is either
+        'significant' or 'non-significant'. If the bounds do not include 0 then
+        it is a statistically significant difference.
     """
     if CI < 0.5 or CI >= 1:
         raise ValueError("CI must be between 0.5 and 1. Default is 0.95")
@@ -188,21 +230,35 @@ def sample_size_no_failures(
     reliability, CI=0.95, lifetimes=1, weibull_shape=1, print_results=True
 ):
     """
-    This is used to determine the sample size required for a test in which no failures are expected, and the desired
-    outcome is the lower bound on the reliability based on the sample size and desired confidence interval.
+    This is used to determine the sample size required for a test in which no
+    failures are expected, and the desired outcome is the lower bound on the
+    reliability based on the sample size and desired confidence interval.
 
-    inputs:
-    reliability - lower bound on product reliability (between 0 and 1)
-    CI - confidence interval of result (between 0.5 and 1). Defaults to 0.95 for 95% CI.
-    lifetimes - if testing the product for multiple lifetimes then more failures are expected so a smaller sample
-        size will be required to demonstrate the desired reliability (assuming no failures). Conversely, if testing for
-        less than one full lifetime then a larger sample size will be required. Default is 1.
-    weibull_shape - if the weibull shape (beta) of the failure mode is known, specify it here. Otherwise leave the
-        default of 1 for the exponential distribution.
-    print_results - if True the results will be printed to the console.
+    Parameters
+    ----------
+    reliability : float
+        The lower bound on product reliability. Must be between 0 and 1.
+    CI : float, optional
+        The confidence interval of the result. Must be between 0.5 and 1 since
+        a confidence less than 50% is not meaningful. Default = 0.95 for 95% CI.
+    lifetimes : int, float, optional
+        If testing the product for multiple lifetimes then more failures are
+        expected so a smaller sample size will be required to demonstrate the
+        desired reliability (assuming no failures). Conversely, if testing for
+        less than one full lifetime then a larger sample size will be required.
+        Default = 1. Must be greater than 0. No more than 5 is recommended due
+        to test feasibility.
+    weibull_shape : int, float, optional
+        If the weibull shape (beta) of the failure mode is known, specify it
+        here. Otherwise leave the default of 1 for the exponential distribution.
+    print_results : bool, optional
+        If True the results will be printed to the console. Default = True.
 
-    returns:
-    number of items required in the test. This will always be an integer (rounded up).
+    Returns
+    -------
+    n : int
+        The number of items required in the test. This will always be an integer
+        (rounded up).
     """
     if CI < 0.5 or CI >= 1:
         raise ValueError("CI must be between 0.5 and 1")
@@ -271,44 +327,82 @@ def sequential_samling_chart(
     max_samples=100,
 ):
     """
-    sequential_sampling_chart
+    This function plots the accept/reject boundaries for a given set of quality
+    and risk levels. If supplied, the test results are also plotted on the
+    chart.
 
-    This function plots the accept/reject boundaries for a given set of quality and risk levels. If supplied, the test results are also
-    plotted on the chart.
+    A sequential sampling chart provides decision boundaries so that a
+    success/failure test may be stopped as soon as there have been enough
+    successes or enough failures to exceed the decision boundary. The decision
+    boundary is calculated based on four parameters; producer's quality,
+    consumer's quality, producer's risk, and consumer's risk. Producer's risk
+    is the chance that the consumer rejects a batch when they should have
+    accepted it. Consumer's risk is the chance that the consumer accepts a batch
+    when they should have rejected it. We can also consider the producer's and
+    consumer's quality to be the desired reliability of the sample, and the
+    producer's and consumer's risk to be 1-confidence interval that the sample
+    test result matches the population test result.
 
-    A sequential sampling chart provides decision boundaries so that a success/failure test may be stopped as soon as there have been
-    enough successes or enough failures to exceed the decision boundary. The decision boundary is calculated based on four parameters;
-    producer's quality, consumer's quality, producer's risk, and consumer's risk. Producer's risk is the chance that the consumer rejects
-    a batch when they should have accepted it. Consumer's risk is the chance that the consumer accepts a batch when they should have
-    rejected it. We can also consider the producer's and consumer's quality to be the desired reliability of the sample, and the
-    producer's and consumer's risk to be 1-confidence interval that the sample test result matches the population test result.
+    Parameters
+    ----------
+    p1 : float
+        The producer's quality. This is the acceptable failure rate for the
+        producer. Must be between 0 and 1 but is usually very small, typically
+        around 0.01.
+    p2 : float
+        The consumer's quality. This is the acceptable failure rate for the
+        consumer. Must be between 0 and 1 but is usually very small, typically
+        around 0.1.
+    alpha : float
+        The producer's risk. The probability of accepting a batch when it should
+        have been rejected. Producer's CI = 1-alpha. Must be between 0 and 1 but
+        is usually very small, typically 0.05.
+    beta : float
+        The consumer's risk. The probability of the consumer rejecting a batch
+        when it should have been accepted. Consumer's CI = 1-beta. Must be
+        between 0 and 1 but is usually very small, typically 0.1.
+    test_results : array, list, optional
+        The binary test results. eg. [0,0,0,1] represents 3 successes and 1
+        failure. Default=None. Use 0 for success and 1 for failure as this test
+        is counting the number of failures.
+    show_plot : bool, optional
+        If True the plot will be produced. Default = True.
+    print_results : bool, optional
+        If True the results will be printed to the console. Default = True.
+    max_samples : int, optional
+        The upper x-limit of the plot. Default = 100.
 
-    Inputs:
-    p1 - producer_quality. The acceptable failure rate for the producer (typical around 0.01)
-    p2 - consumer_quality. The acceptable failure rate for the consumer (typical around 0.1)
-    alpha - producer_risk. Producer's CI = 1-alpha (typically 0.05)
-    beta - consumer_risk. Consumer's CI = 1-beta (typically 0.1)
-    test_results - array or list of binary test results. eg. [0,0,0,1] for 3 successes and 1 failure. Default=None
-    show_plot - True/False. Defaults to True.
-    print_results - True/False. Defaults to True.
-    max_samples - the x_lim of the plot. optional input. Default=100.
+    Returns
+    -------
+    results : dataframe
+        A dataframe of tabulated decision results with the columns "Samples",
+        "Failures to accept", "Failures to reject". This is independent of the
+        test_results provided.
 
-    Outputs:
-    The sequential sampling chart - A plot of sequential sampling chart with decision boundaries. test_results are only plotted on the chart
-    if provided as an input.
-    results - a dataframe of tabulated decision results.
-
+    Notes
+    -----
+    If show_plot is True, the sequential sampling chart with decision boundaries
+    will be produced. The test_results are only plotted on the chart if provided
+    as an input. The chart will display automatically so plt.show() is not
+    required.
     """
-    if type(test_results) == list:
-        F = np.array(test_results)
-    elif type(test_results) == np.ndarray:
-        F = test_results
+    if type(test_results) in [list, np.ndarray]:
+        F = np.asarray(test_results)
     elif test_results is None:
         F = None
     else:
         raise ValueError(
-            "test_results must be a binary array or list with 1 as failures and 0 as successes. eg. [0 0 0 1] for 3 successes and 1 failure."
+            "test_results must be a binary array or list with 1 as failures and 0 as successes. eg. [0 0 0 1] represents 3 successes and 1 failure."
         )
+
+    if alpha <=0 or alpha >= 1:
+        raise ValueError('alpha must be between 0 and 1')
+    if beta <=0 or beta >= 1:
+        raise ValueError('beta must be between 0 and 1')
+    if p1 <=0 or p1 >= 1:
+        raise ValueError('p1 must be between 0 and 1')
+    if p2 <=0 or p2 >= 1:
+        raise ValueError('p2 must be between 0 and 1')
 
     a = 1 - alpha
     b = 1 - beta
@@ -324,15 +418,13 @@ def sequential_samling_chart(
 
     upper_line = np.ones_like(xvals) * (s * max_samples - h1)
     lower_line_range = np.linspace(-h2 / s, max_samples, max_samples + 1)
-    acceptance_line2 = (
-        s * lower_line_range + h2
-    )  # this is the visible part of the line that starts beyond x=0
+    acceptance_line2 = (s * lower_line_range + h2)
+    # this is the visible part of the line that starts beyond x=0
 
     acceptance_array = np.asarray(np.floor(s * xvals + h2), dtype=int)
     rejection_array = np.asarray(np.ceil(s * xvals - h1), dtype=int)
-    for i, x in enumerate(
-        xvals
-    ):  # this replaces cases where the criteria exceeds the number of samples
+    for i, x in enumerate(xvals):
+        # this replaces cases where the criteria exceeds the number of samples
         if rejection_array[i] > x:
             rejection_array[i] = -1
 
@@ -354,10 +446,6 @@ def sequential_samling_chart(
     if show_plot is True:
         # plots the results of tests if they are specified
         if type(F) == np.ndarray:
-            if all(F) not in [0, 1]:
-                raise ValueError(
-                    "test_results must be a binary array or list with 0 as failures and 1 as successes. eg. [0, 0, 0, 1] for 3 successes and 1 failure."
-                )
             nx = []
             ny = []
             failure_count = 0
@@ -376,7 +464,7 @@ def sequential_samling_chart(
                     ny.append(failure_count)
                 else:
                     raise ValueError(
-                        "test_results must be a binary array or list with 0 as failures and 1 as successes. eg. [0 0 0 1] for 3 successes and 1 failure."
+                        "test_results must be an array or list with 0 as failures and 1 as successes. eg. [0 0 0 1] represents 3 successes and 1 failure."
                     )
             plt.plot(nx, ny, label="test results")
 
@@ -419,40 +507,75 @@ def sequential_samling_chart(
 
 class reliability_test_planner:
     """
-    reliability_test_planner
+    The function reliability_test_planner is used to solves for unknown test
+    planning variables, given known variables. The Chi-squared distribution is
+    used to find the lower confidence bound on MTBF for a given test duration,
+    number of failures, and specified confidence interval. The equation for
+    time-terminated tests is:
 
-    Solves for unknown test planner variables, given known variables.
-    The Chi-squared distribution is used to find the lower confidence bound on MTBF for a given test duration, number of failures, and specified confidence interval.
-    The equation for time-terminated tests is: MTBF = (2*test_duration)/(chisquared_inverse(CI, 2*number_of_failures+2))
-    The equation for failure-terminated tests is: MTBF = (2*test_duration)/(chisquared_inverse(CI, 2*number_of_failures))
-    This equation can be rearranged to solve for any of the 4 variables. For example, you may want to know how many failures you are allowed to have in a given test duration to achieve a particular MTBF.
-    The user must specify any 3 out of the 4 variables (not including one_sided, print_results, or time_terminated) and the remaining variable will be calculated.
+    :math:`MTBF = \frac{2 × test_duration}{\chi^{2}\left(CI, 2 × number_of_failures + p\right)}`
 
-    Inputs:
-    MTBF - mean time between failures. This is the lower confidence bound on the MTBF. Units given in same units as the test_duration.
-    number_of_failures - the number of failures recorded (or allowed) to achieve the MTBF. Must be an integer.
-    test_duration - the amount of time on test required (or performed) to achieve the MTBF. May also be distance, rounds fires, cycles, etc. Units given in same units as MTBF.
-    CI - the confidence interval at which the lower confidence bound on the MTBF is given. Must be between 0.5 and 1. For example, specify 0.95 for 95% confidence interval.
-    print_results - True/False. Default is True.
-    one_sided - True/False. Default is True. If set to False, the two sided confidence interval will be returned.
-    time_terminated - True/False. Default is True. If set to False, the formula for the failure-terminated test will be used.
+    This equation can be rearranged to solve for any of the 4 variables, given
+    the other 3. For example, you may want to know how many failures you are
+    allowed to have in a given test duration to achieve a particular MTBF. The
+    user must specify any 3 out of the 4 variables (not including one_sided,
+    print_results, or time_terminated) and the remaining variable will be
+    calculated.
 
-    Outputs:
-    If print_results is True, all the variables will be printed.
-    An output object is also returned with the same values as the inputs and the remaining value also calculated.
+    Parameters
+    ----------
+    MTBF : float, int, optional
+        Mean Time Between Failures. This is the lower confidence bound on the
+        MTBF. Units given in same units as the test_duration.
+    number_of_failures : int, optional
+        The number of failures recorded (or allowed) to achieve the MTBF. Must
+        be >= 0.
+    test_duration : float, int, optional
+        The amount of time on test required (or performed) to achieve the MTBF.
+        May also be distance, rounds fires, cycles, etc. Units given in same
+        units as MTBF.
+    CI : float, optional
+        The confidence interval at which the lower confidence bound on the MTBF
+        is given. Must be between 0.5 and 1. For example, specify 0.95 for 95%
+        confidence interval.
+    print_results : bool, optional
+        If True the results will be printed. Default = True.
+    one_sided : bool, optional
+        Use True for one-sided confidence interval and False for two-sided
+        confidence interval. Default = True.
+    time_terminated : bool, optional
+        Use True for time-terminated test and False for failure-terminated test.
+        Default = True.
 
-    Examples:
-    reliability_test_planner(test_duration=19520,CI=0.8,number_of_failures=7)
-        Reliability Test Planner results for time-terminated test
-        Solving for MTBF
-        Test duration: 19520
-        MTBF (lower confidence bound): 1658.3248534993454
-        Number of failures: 7
-        Confidence interval (2 sided):0.8
+    Returns
+    -------
+    MTBF : float
+        The lower bound on the MTBF.
+    number_of_failures : int
+        The number of failures allowed to achieve the MTBF at the specified CI
+        and test_duration
+    test_duration : float
+        The required test duration
+    CI : float
+        The confidence interval.
 
-    output = reliability_test_planner(number_of_failures=6,test_duration=10000,CI=0.8, print_results=False)
-    print(output.MTBF)
-        949.4807763260345
+    Notes
+    -----
+    The returned values will match the input values with the exception of the
+    input that was not provided.
+
+    The following example demonstrates how the MTBF is calculated:
+
+    .. code:: python
+
+        from reliability.Reliability_testing import reliability_test_planner
+        reliability_test_planner(test_duration=19520, CI=0.8, number_of_failures=7)
+        >>> Reliability Test Planner results for time-terminated test
+        >>> Solving for MTBF
+        >>> Test duration: 19520
+        >>> MTBF (lower confidence bound): 1907.6398111904953
+        >>> Number of failures: 7
+        >>> Confidence interval (2 sided):0.8
     """
 
     def __init__(
@@ -622,23 +745,48 @@ def reliability_test_duration(
     print_results=True,
 ):
     """
-    reliability_test_duration
+    This function calculates the required duration for a reliability test to
+    achieve the specified producers and consumers risks. This is done based on
+    the specified MTBF required and MTBF design. For details please see the
+    `algorithm <https://reliability.readthedocs.io/en/latest/Reliability%20test%20duration.html#how-does-the-algorithm-work>`_.
 
-    Calculates the required duration for a reliability test to achieve the specified producers and consumers risks.
-    This is done based on the specified MTBF required and MTBF design.
+    Parameters
+    ----------
+    MTBF_required : float, int
+        The required MTBF that the equipment must demonstrate during the test.
+    MTBF_design : float, int
+        The design target for the MTBF that the producer aims to achieve.
+    consumer_risk : float
+        The risk the consumer is accepting. This is the probability that a bad
+        product will be accepted as a good product by the consumer.
+    producer_risk : float
+        The risk the producer is accepting. This is the probability that a good
+        product will be rejected as a bad product by the consumer.
+    one_sided : bool, optional
+        The risk is analogous to the confidence interval, and the confidence
+        interval can be one sided or two sided. Default = True.
+    time_terminated : bool, optional
+        Whether the test is time terminated or failure terminated. Typically it
+        will be time terminated if the required test duration is sought.
+        Default = True
+    show_plot : bool
+        If True, this will create a plot of the risk vs test duration. Default =
+        True.
+    print_results : bool, optional
+        If True, this will print the results to the console. Default = True.
 
-    Inputs:
-    MTBF_required - the required MTBF that the equipment must demonstrate during the test
-    MTBF_design - the design target for the MTBF that the producer aims to achieve
-    consumer_risk - the risk the consumer is accepting. This is the probability that a bad product will be accepted as a good product by the consumer.
-    producer_risk - the risk the producer is accepting. This is the probability that a good product will be rejected as a bad product by the consumer.
-    one_sided - default is True. The risk is analogous to the confidence interval, and the confidence interval can be one sided or two sided.
-    time_terminated - default is True. whether the test is time terminated or failure terminated. Typically it will be time terminated if the required test duration is sought.
-    show_plot - True/False. Default is True. This will create a plot of the risk vs test duration. Use plt.show() to show it.
-    print_results - True/False. Default is True. This will print the results to the console.
+    Returns
+    -------
+    test_duration : float
+        The required test duration to meet the input parameters.
 
-    Returns:
-    test_duration
+    Notes
+    -----
+    The number of failures allowed is calculated but not provided by this
+    function since the test will determine the actual number of failures so any
+    prediction of number of failures ahead of time is not practical.
+
+    If the plot does not show automatically, use plt.show() to show it.
     """
 
     if consumer_risk <= 0 or consumer_risk > 0.5:
@@ -747,25 +895,56 @@ def reliability_test_duration(
 
 class chi2test:
     """
-    chi2test
+    Performs the Chi-squared test for goodness of fit to determine whether we
+    can accept or reject the hypothesis that the data is from the specified
+    distribution at the specified level of significance.
 
-    Performs the Chi-squared test for goodness of fit to determine whether we can accept or reject the hypothesis that the data is from the specified distribution at the specified level of significance.
-    This method is not a means of comparing distributions (which can be done with AICc, BIC, and AD), but instead allows us to accept or reject a hypothesis that data come from a distribution.
-    Note that the result is sensitive to the bins. For this reason, it is recommended to leave bins as the default value.
+    This method is not a means of comparing distributions (which can be done
+    with AICc, BIC, and AD), but instead allows us to accept or reject a
+    hypothesis that data come from a distribution.
 
-    Inputs:
-    distribution - a distribution object created using the reliability.Distributions module
-    data - an array or list of data that are hypothesised to come from the distribution
-    significance - This is the complement of confidence. 0.05 significance is the same as 95% confidence. Must be between 0 and 0.5. Default is 0.05.
-    bins - an array or list of the bin edges from which to group the data OR a string for the bin edge method from numpy. String options are auto, fd, doane, scott, stone, rice, sturges, or sqrt. For more information see the numpy documentation on numpy.histogram_bin_edges. Default is auto.
-    print_results - if True the results will be printed. Default is True
-    show_plot - if True a plot of the distribution and histogram will be shown. Default is True.
+    Parameters
+    ----------
+    distribution : object
+        A distribution object created using the reliability.Distributions
+        module.
+    data : array, list
+        The data that are hypothesised to come from the distribution.
+    significance : float, optional
+        This is the complement of confidence. 0.05 significance is the same as
+        95% confidence. Must be between 0 and 0.5. Default = 0.05.
+    bins : array, list, string, optional
+        An array or list of the bin edges from which to group the data OR a
+        string for the bin edge method from numpy. String options are 'auto',
+        'fd', 'doane', 'scott', 'stone', 'rice', 'sturges', or 'sqrt'. Default =
+        'auto'. For more information on these methods, see the numpy
+        documentation:
+        https://numpy.org/doc/stable/reference/generated/numpy.histogram_bin_edges.html
+    print_results : bool, optional
+        If True the results will be printed. Default = True
+    show_plot : bool, optional
+        If True a plot of the distribution and histogram will be shown. Default
+         = True.
 
-    Outputs:
-    chisquared_statistic - the chi-squared statistic
-    chisquared_critical_value - the chi-squared critical value
-    hypothesis - 'ACCEPT' or 'REJECT'. If chisquared_statistic < chisquared_critical_value then we can accept the hypothesis that the data is from the specified distribution
-    bin_edges - the bin edges used. If bins is a list or array then bin_edges = bins. If bins is a string then you can find the bin_edges that were calculated using this output.
+    Returns
+    -------
+    chisquared_statistic : float
+        The chi-squared statistic.
+    chisquared_critical_value : float
+        The chi-squared critical value.
+    hypothesis : string
+        'ACCEPT' or 'REJECT'. If chisquared_statistic <
+        chisquared_critical_value then we can accept the hypothesis that the
+        data is from the specified distribution
+    bin_edges : array
+        The bin edges used. If bins is a list or array then bin_edges = bins. If
+        bins is a string then you can find the bin_edges that were calculated
+        using this output.
+
+    Notes
+    -----
+    The result is sensitive to the bins. For this reason, it is recommended to
+    leave bins as the default value.
     """
 
     def __init__(
@@ -931,22 +1110,39 @@ class chi2test:
 
 class KStest:
     """
-    KStest
+    Performs the Kolmogorov-Smirnov goodness of fit test to determine whether we
+    can accept or reject the hypothesis that the data is from the specified
+    distribution at the specified level of significance.
 
-    Performs the Kolmogorov-Smirnov goodness of fit test to determine whether we can accept or reject the hypothesis that the data is from the specified distribution at the specified level of significance.
-    This method is not a means of comparing distributions (which can be done with AICc, BIC, and AD), but instead allows us to accept or reject a hypothesis that data come from a distribution.
+    This method is not a means of comparing distributions (which can be done
+    with AICc, BIC, and AD), but instead allows us to accept or reject a
+    hypothesis that data come from a distribution.
 
-    Inputs:
-    distribution - a distribution object created using the reliability.Distributions module
-    data - an array or list of data that are hypothesised to come from the distribution
-    significance - This is the complement of confidence. 0.05 significance is the same as 95% confidence. Must be between 0 and 0.5. Default is 0.05.
-    print_results - if True the results will be printed. Default is True
-    show_plot - if True a plot of the distribution CDF and empirical CDF will be shown. Default is True.
+    Parameters
+    ----------
+    distribution : object
+        A distribution object created using the reliability.Distributions
+        module.
+    data : array, list
+        The data that are hypothesised to come from the distribution.
+    significance : float
+        This is the complement of confidence. 0.05 significance is the same as
+        95% confidence. Must be between 0 and 0.5. Default = 0.05.
+    print_results : bool, optional
+        If True the results will be printed. Default = True
+    show_plot : bool, optional
+        If True a plot of the distribution CDF and empirical CDF will be shown.
+        Default = True.
 
-    Outputs:
-    KS_statistic - the Kolmogorov-Smirnov statistic
-    KS_critical_value - the Kolmogorov-Smirnov critical value
-    hypothesis - 'ACCEPT' or 'REJECT'. If KS_statistic < KS_critical_value then we can accept the hypothesis that the data is from the specified distribution
+    Returns
+    -------
+    KS_statistic : float
+        The Kolmogorov-Smirnov statistic.
+    KS_critical_value : float
+        The Kolmogorov-Smirnov critical value.
+    hypothesis : string
+        'ACCEPT' or 'REJECT'. If KS_statistic < KS_critical_value then we can
+        accept the hypothesis that the data is from the specified distribution.
     """
 
     def __init__(
