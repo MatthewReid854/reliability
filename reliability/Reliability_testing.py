@@ -316,7 +316,7 @@ def sample_size_no_failures(
     return n
 
 
-def sequential_samling_chart(
+def sequential_sampling_chart(
     p1,
     p2,
     alpha,
@@ -510,17 +510,13 @@ class reliability_test_planner:
     The function reliability_test_planner is used to solves for unknown test
     planning variables, given known variables. The Chi-squared distribution is
     used to find the lower confidence bound on MTBF for a given test duration,
-    number of failures, and specified confidence interval. The equation for
-    time-terminated tests is:
+    number of failures, and specified confidence interval.
 
-    :math:`MTBF = \frac{2 × test_duration}{\chi^{2}\left(CI, 2 × number_of_failures + p\right)}`
-
-    This equation can be rearranged to solve for any of the 4 variables, given
-    the other 3. For example, you may want to know how many failures you are
-    allowed to have in a given test duration to achieve a particular MTBF. The
-    user must specify any 3 out of the 4 variables (not including one_sided,
-    print_results, or time_terminated) and the remaining variable will be
-    calculated.
+    The function will solve for any of the 4 variables, given the other 3. For
+    example, you may want to know how many failures you are allowed to have in a
+    given test duration to achieve a particular MTBF. The user must specify any
+    3 out of the 4 variables (not including one_sided, print_results, or
+    time_terminated) and the remaining variable will be calculated.
 
     Parameters
     ----------
@@ -561,6 +557,9 @@ class reliability_test_planner:
 
     Notes
     -----
+    Please see the documentation <https://reliability.readthedocs.io/en/latest/Reliability%20test%20planner.html>`_
+    for more detail on the equations used.
+
     The returned values will match the input values with the exception of the
     input that was not provided.
 
@@ -923,8 +922,8 @@ class chi2test:
     print_results : bool, optional
         If True the results will be printed. Default = True
     show_plot : bool, optional
-        If True a plot of the distribution and histogram will be shown. Default
-         = True.
+        If True a plot of the distribution and histogram will be shown.
+        Default = True.
 
     Returns
     -------
