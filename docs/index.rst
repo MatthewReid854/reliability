@@ -121,8 +121,9 @@ Contents:
   
   Changelog
   Development roadmap
+  Copyright information
   Citing reliability in your work
-  How to request or contribute a new feature
+  Contributing
   How to get help
   How to donate to the project
   About the author
