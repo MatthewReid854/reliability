@@ -12,17 +12,9 @@ Parametric Probability-Probability plot
 
 To generate this plot we simply plot the CDF of one distribution vs the CDF of another distribution. If the distributions are very similar, the points will lie on the 45 degree diagonal. Any deviation from this diagonal indicates that one distribution is leading or lagging the other. Fully parametric PP plots are rarely used as their utility is limited to providing a graphical comparison of the similarity between two CDFs. To aide this comparison, the PP_plot_parametric function accepts x and y quantile lines that will be traced across to the other distribution.
 
-Inputs:
+.. admonition:: API Reference
 
--   X_dist - a probability distribution. The CDF of this distribution will be plotted along the X-axis.
--   Y_dist - a probability distribution. The CDF of this distribution will be plotted along the Y-axis.
--   y_quantile_lines - starting points for the trace lines to find the X equivalent of the Y-quantile. Optional input. Must be list or array.
--   x_quantile_lines - starting points for the trace lines to find the Y equivalent of the X-quantile. Optional input. Must be list or array.
--   show_diagonal_line - True/False. Default is False. If True the diagonal line will be shown on the plot.
-
-Outputs:
-
--   The PP_plot is the only output. Use plt.show() to show it.
+   For inputs and outputs see the `API reference <https://reliability.readthedocs.io/en/latest/API/Probability_plotting/PP_plot_parametric.html>`_.
 
 Example 1
 ---------
@@ -46,17 +38,9 @@ Semiparametric Probability-Probability plot
 
 A semiparametric PP plot is still a probability-probability plot, but since we only have one parametric distribution to give us the CDF, we must use the failure data to obtain the non-parametric estimate of the empirical CDF. To create a semiparametric PP plot, we must provide the failure data and the non-parametric method ('KM','NA','RA' for Kaplan-Meier, Nelson-Aalen, and Rank Adjustment respectively) to estimate the empirical CDF, and we must also provide the parametric distribution for the parametric CDF. The failure units (times, cycles, rounds fired, strength units, etc.) are the limiting values here so the parametric CDF is only calculated at the failure units since that is the result we get from the empirical CDF. Note that the empirical CDF also accepts X_data_right_censored just as KaplanMeier, NelsonAalen and RankAdjustment will also accept right censored data. If the fitted distribution is a good fit the PP plot will follow the 45 degree diagonal line. Assessing goodness of fit in a graphical way is the main purpose of this type of plot. The `Fit_everything <https://reliability.readthedocs.io/en/latest/Fitting%20all%20available%20distributions%20to%20data.html>`_ function also uses a semiparametric PP plot to show the goodness of fit in a graphical way.
 
-Inputs:
+.. admonition:: API Reference
 
--   X_data_failures - the failure times in an array or list. The empirical CDF of this data will be plotted along the X-axis.
--   X_data_right_censored - the right censored failure times in an array or list. This is an optional input.
--   Y_dist - a probability distribution. The CDF of this distribution will be plotted along the Y-axis.
--   method - 'KM', 'NA', or 'RA' for Kaplan-Meier, Nelson-Aalen, or Rank Adjustment. Default is 'KM'
--   show_diagonal_line - True/False. Default is True. If True the diagonal line will be shown on the plot.
-
-Outputs:
-
--   The PP_plot is the only output. Use plt.show() to show it.
+   For inputs and outputs see the `API reference <https://reliability.readthedocs.io/en/latest/API/Probability_plotting/PP_plot_semiparametric.html>`_.
 
 Example 2
 ---------

@@ -7,17 +7,9 @@ Make right censored data
 
 This function is a tool to convert complete data to complete and right censored data. Two methods are available which enable the production of either singly-censored or multiply-censored data. This function is often used in testing of the Fitters or Nonparametric functions when some right censored data is needed.
 
-Inputs:
+.. admonition:: API Reference
 
--   data - list or array of data
--   threshold - number or None. Default is None. If number this is the point to right censor (right censoring is done if data > threshold). This is known as "singly censored data" as everything is censored at a single point.
--   fraction_censored - number between 0 and 1. Deafult is 0.5. Censoring is done randomly. This is known as "multiply censored data" as there are multiple times at which censoring occurs. If both threshold and fraction_censored are None, fraction_censored will default to 0.5 to produce multiply censored data. If both threshold and fraction_censored are specified, an error will be raised since these methods conflict.
--   seed - sets the random seed. This is used for multiply censored data (i.e. when threshold is None). The data is shuffled to remove censoring bias that may be caused by any pre-sorting. Specifying the seed ensures a repeatable random shuffle.
-
-Outputs:
-
--   failures - array of failure data
--   right_censored - array of right_censored data
+   For inputs and outputs see the `API reference <https://reliability.readthedocs.io/en/latest/API/Other_functions/make_right_censored_data.html>`_.
 
 Example 1
 ---------

@@ -7,41 +7,9 @@ Make ALT data
 
 This function is used to generate accelerated life testing (ALT) data. It is primarily used for testing the functions within ALT_fitters. The function `Other_functions.make_ALT_data` accepts the life distribution (Weibull, Lognormal, Normal, Exponential) and the life-stress model (Exponential, Eyring, Power, Dual_Exponential, Dual_Power, Power_Exponential), along with the parameters of the model and will create an object with the data in the correct format for the ALT models contained within `reliability.ALT_fitters`. The function contains many more inputs than are required and these inputs will only be used if they are part of the model. Please see the `equations <https://reliability.readthedocs.io/en/latest/Equations%20of%20ALT%20models.html>`_ of the ALT model you are using to determine what parameters are required. The function is designed to automatically censor a fraction of the data using the input fraction_censored.
 
-Inputs:
+.. admonition:: API Reference
 
--    distribution - "Weibull", "Exponential", "Lognormal", or "Normal"
--    life_stress_model - "Exponential", "Eyring", "Power", "Dual_Exponential", "Power_Exponential", "Dual_Power"
--    stress_1 - array or list of the stresses. eg. [100,50,10].
--    stress_2 - array or list of the stresses. eg. [0.8,0.6,0.4]. Required only if using a dual stress model. Must match the length of stress_1.
--    a - parameter from all models
--    b - parameter from Exponential and Dual_Exponential models
--    c - parameter from Eyring, Dual_Exponential, Power_Exponential, and Dual_Power models
--    n - parameter from Power, Power_Exponential, and Dual_Power models
--    m - parameter from Dual_Power model
--    beta - shape parameter for Weibull distributon
--    sigma - shape parameter for Normal or Lognormal distributions
--    use_level_stress - a number (if single stress) or list or array (if dual stress). Optional input.
--    number_of_samples - the number of samples to generate for each stress. Default is 100. The total data points will be equal to the number of samples x number of stress levels
--    fraction_censored - 0 for no censoring or between 0 and 1 for right censoring. Censoring is "multiply censored" meaning that there is no threshold above which all the right censored values will occur.
--    seed - random seed for repeatability
-
-Outputs if using a single stress model:
-
--    failures - list
--    failure_stresses - list
--    right_censored - list (only provided if fraction_censored > 0)
--    right_censored_stresses - list (only provided if fraction_censored > 0)
--    mean_life_at_use_stress - float (only provided if use_level_stress is provided)
-
-Outputs if using a dual stress model:
-
--    failures - list
--    failure_stresses_1 - list
--    failure_stresses_2 - list
--    right_censored - list (only provided if fraction_censored > 0)
--    right_censored_stresses_1 - list (only provided if fraction_censored > 0)
--    right_censored_stresses_2 - list (only provided if fraction_censored > 0)
--    mean_life_at_use_stress - float (only provided if use_level_stress is provided)
+   For inputs and outputs see the `API reference <https://reliability.readthedocs.io/en/latest/API/Other_functions/make_ALT_data.html>`_.
 
 Example 1
 ---------

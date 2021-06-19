@@ -9,19 +9,9 @@ The Kolmogorov-Smirnov test is a statistical test for goodness of fit to determi
 
 The procedure for the test involves comparing the fitted CDF (from a hypothesised distribution) against the empirical CDF (calculated using a rank order of the data of the form i/n). The difference between the fitted CDF and the empirical CDF is used to find the Kolmogorov-Smirnov statistic. The specified level of significance (analogous to confidence level) and the number of data points is used to obtain the Kolmogorov-Smirnov critical value from the Kolmogorov-Smirnov distribution. By comparing the Kolmogorov-Smirnov statistic with the Kolmogorov-Smirnov critical value, we can determine whether the hypothesis (that the data are from the specified distribution) should be rejected or accepted. The acceptance criteria is when the the Kolmogorov-Smirnov statistic is below the critical value.
 
-Inputs:
+.. admonition:: API Reference
 
--   distribution - a distribution object created using the reliability.Distributions module
--   data - an array or list of data that are hypothesised to come from the distribution
--   significance - This is the complement of confidence. 0.05 significance is the same as 95% confidence. Must be between 0 and 0.5. Default is 0.05.
--   print_results - if True the results will be printed. Default is True
--   show_plot - if True a plot of the distribution CDF and empirical CDF will be shown. Default is True.
-
-Outputs:
-
--   KS_statistic - the Kolmogorov-Smirnov statistic
--   KS_critical_value - the Kolmogorov-Smirnov critical value
--   hypothesis - 'ACCEPT' or 'REJECT'. If KS_statistic < KS_critical_value then we can accept the hypothesis that the data is from the specified distribution
+   For inputs and outputs see the `API reference <https://reliability.readthedocs.io/en/latest/API/Reliability_testing/KStest.html>`_.
 
 In the example below we import a dataset called mileage which contains 100 values that appear to be normally distributed. Using the function KStest we can determine whether we should accept the hypothesis that the data are from a Normal distribution with parameters mu=30011 and sigma=10472.
 

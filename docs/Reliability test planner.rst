@@ -24,20 +24,9 @@ The above formula can be rearranged, or solved iteratively to determine any of t
 
 A similar calculator is available in the `reliability analytics toolkit <https://reliabilityanalyticstoolkit.appspot.com/confidence_limits_exponential_distribution>`_.
 
-Inputs:
+.. admonition:: API Reference
 
--   MTBF - mean time between failures. This is the lower confidence bound on the MTBF. Units given in same units as the test_duration.
--   number_of_failures - the number of failures recorded (or allowed) to achieve the MTBF. Must be an integer.
--   test_duration - the amount of time on test required (or performed) to achieve the MTBF. May also be distance, rounds fires, cycles, etc. Units given in same units as MTBF.
--   CI - the confidence interval at which the lower confidence bound on the MTBF is given. Must be between 0.5 and 1. For example, specify 0.95 for 95% confidence interval.
--   print_results - True/False. Default is True.
--   one_sided - True/False. Default is True. If set to False, the two sided confidence interval will be returned.
--   time_terminated - True/False. Default is True. If set to False, the formula for the failure-terminated test will be used.
-
-Outputs:
-
--   If print_results is True, all the variables will be printed.
--   An output object is also returned with the same values as the inputs and the remaining value also calculated. This allows for any of the outputs to be called by name.
+   For inputs and outputs see the `API reference <https://reliability.readthedocs.io/en/latest/API/Reliability_testing/reliability_test_planner.html>`_.
 
 Example 1
 ---------

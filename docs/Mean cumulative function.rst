@@ -18,24 +18,9 @@ Non-parametric MCF
 
 The non-parametric estimate of the MCF provides both the estimate of the MCF and the confidence bounds at a particular time. The procedure to obtain the non-parametric MCF is outlined `here <http://reliawiki.org/index.php/Recurrent_Event_Data_Analysis#Example:_Mean_Cumulative_Function>`_. The confidence bounds are the one-sided bounds as this was chosen to align with the method used by Reliasoft.
 
-Inputs:
+.. admonition:: API Reference
 
--   data - the repair times for each system. Format this as a list of lists. eg. data=[[4,7,9],[3,8,12]] would be the data for 2 systems. The largest time for each system is assumed to be the retirement time and is treated as a right censored value. If the system was retired immediately after the last repair then you must include a repeated value at the end as this will be used to indicate a right censored value. eg. A system that had repairs at 4, 7, and 9 then was retired after the last repair would be entered as data = [4,7,9,9] since the last value is treated as a right censored value. If you only have data from 1 system you may enter the data in a single list as data = [3,7,12] and it will be nested within another list automatically.
--   print_results - prints the table of MCF results (state, time, MCF_lower, MCF, MCF_upper, variance)
--   CI - Confidence interval. Default is 0.95 for 95% CI (one sided).
--   show_plot - if True the plot will be shown. Default is True. Use plt.show() to show it.
--   plot_CI - the plot will include the confidence intervals. Default is True.
-
-Outputs:
-
--   If print_results is True, a table of the results will be printed showing state, time, MCF_lower, MCF, MCF_upper, variance. In this table state is F for failure or C for right censored (retirement).
--   If show_plot is True, the MCF plot will be shown.
--   results - this is a dataframe of the results that are printed. It includes the blank lines for censored values
--   time - this is the time column from results. Blank lines for censored values are removed
--   MCF - this is the MCF column from results. Blank lines for censored values are removed
--   variance - this is the Variance column from results. Blank lines for censored values are removed
--   lower - this is the MCF_lower column from results. Blank lines for censored values are removed
--   upper - this is the MCF_upper column from results. Blank lines for censored values are removed
+   For inputs and outputs see the `API reference <https://reliability.readthedocs.io/en/latest/API/Repairable_systems/MCF_nonparametric.html>`_.
 
 Example 1
 ---------
@@ -93,29 +78,9 @@ The purpose of fitting a parametric model is to obtain the shape parameter (β) 
 
 Many methods exist for fitting the model to the data. Within reliability, `scipy.optimize.curve_fit <https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.curve_fit.html>`_ is used which returns the covariance matrix and allows for the confidence intervals to be calculated using the appropriate `formulas <https://support.minitab.com/en-us/minitab/18/help-and-how-to/modeling-statistics/reliability/how-to/parametric-growth-curve/methods-and-formulas/mean-cumulative-function-mcf-and-failure-rate-rocof/>`_.
 
-Inputs:
+.. admonition:: API Reference
 
--   data - the repair times for each system. Format this as a list of lists. eg. data=[[4,7,9],[3,8,12]] would be the data for 2 systems. The largest time for each system is assumed to be the retirement time and is treated as a right censored value. If the system was retired immediately after the last repair then you must include a repeated value at the end as this will be used to indicate a right censored value. eg. A system that had repairs at 4, 7, and 9 then was retired after the last repair would be entered as data = [4,7,9,9] since the last value is treated as a right censored value. If you only have data from 1 system you may enter the data in a single list as data = [3,7,12] and it will be nested within another list automatically.
--   CI - the confidence interval. Default is 0.95 for 95% CI.
--   print_results - prints the fitted parameters (alpha and beta) of the parametric MCF model.
--   show_plot - if True the plot will be shown. Default is True. Use plt.show() to show it.
--   plot_CI - True/False. Plots the confidence intervals. Default is True.
-
-Outputs:
-
--   If print_results is True, the model parameters will be printed along with a brief diagnosis of the long term health of the system based on the beta parameter.
--   times - this is the times (x values) from the scatter plot. This value is calculated using MCF_nonparametric.
--   MCF - this is the MCF (y values) from the scatter plot. This value is calculated using MCF_nonparametric.
--   alpha - the calculated alpha parameter
--   beta - the calculated beta parameter
--   alpha_SE - the standard error in the alpha parameter
--   beta_SE - the standard error in the beta parameter
--   cov_alpha_beta - the covariance between the parameters
--   alpha_upper - the upper CI estimate of the parameter
--   alpha_lower - the lower CI estimate of the parameter
--   beta_upper - the upper CI estimate of the parameter
--   beta_lower - the lower CI estimate of the parameter
--   results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
+   For inputs and outputs see the `API reference <https://reliability.readthedocs.io/en/latest/API/Repairable_systems/MCF_parametric.html>`_.
 
 Example 2
 ---------

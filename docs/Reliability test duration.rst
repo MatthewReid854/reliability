@@ -9,22 +9,9 @@ This function is an extension of the `reliability_test_planner <https://reliabil
 
 This type of determination must be made when organisations looking to test an item are uncertain of how much testing is required, but they know the amount of risk they are willing to accept as well as the MTBF required and the MTBF to which the item has been designed.
 
-Inputs:
+.. admonition:: API Reference
 
--   MTBF_required - the required MTBF that the equipment must demonstrate during the test.
--   MTBF_design - the design target for the MTBF that the producer aims to achieve.
--   consumer_risk - the risk the consumer is accepting. This is the probability that a bad product will be accepted as a good product by the consumer.
--   producer_risk - the risk the producer is accepting. This is the probability that a good product will be rejected as a bad product by the consumer.
--   one_sided - default is True. The risk is analogous to the confidence interval, and the confidence interval can be one sided or two sided.
--   time_terminated - default is True. whether the test is time terminated or failure terminated. Typically it will be time terminated if the required test duration is sought.
--   show_plot - True/False. Default is True. This will create a plot of the risk vs test duration. Use plt.show() to show it.
--   print_results - True/False. Default is True. This will print the results to the console.
-
-Outputs:
-
--   test duration
--   If print_results is True, all the variables will be printed to the console.
--   If show_plot is True a plot of producer's and consumer's risk Vs test duration will be generated. Use plt.show() to display it.
+   For inputs and outputs see the `API reference <https://reliability.readthedocs.io/en/latest/API/Reliability_testing/reliability_test_duration.html>`_.
 
 Example 1
 *********

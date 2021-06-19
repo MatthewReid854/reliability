@@ -8,20 +8,9 @@ Similar Distributions
 The function `similar_distributions` is a tool for finding the probability distributions that are most similar to an input distribution.
 It samples the CDF of an input distribution and then fits all other distributions to those samples to determine the best fitting and therefore most similar distributions.
 
-Inputs:
+.. admonition:: API Reference
 
--   distribution - a distribution object created using the reliability.Distributions module
--   include_location_shifted - True/False. Default is True. When set to True it will include Weibull_3P, Lognormal_3P, Gamma_3P, Expon_2P
--   show_plot - True/False. Default is True
--   print_results - True/False. Default is True
--   number_of_distributions_to_show - the number of similar distributions to show. Default is 3. If the number specified exceeds the number available (typically 8), then the number specified will automatically be reduced.
-
-Outputs:
-
--   If show_plot is True then the plot of PDF and CDF will automatically be shown.
--   If print_results is True then the parameters of the most similar distributions will be printed.
--   results - an array of distributions objects ranked in order of best fit.
--   most_similar_distribution - a distribution object. This is the first item from results.
+   For inputs and outputs see the `API reference <https://reliability.readthedocs.io/en/latest/API/Other_functions/similar_distributions.html>`_.
 
 In the example below, we create a Weibull Distribution object using the reliability.Distributions module. We then provide the Weibull Distribution as input to `similar_distributions` and the output reveals the top 3 most similar distributions. The optional input of include_location_shifted has been set to False.
 

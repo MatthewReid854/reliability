@@ -16,18 +16,9 @@ The probability of failure for two Normal distributions is found using the equat
 
 Where :math:`\Phi` is the standard Normal CDF with :math:`\mu=0` and :math:`\sigma=1` 
 
-Inputs:
+.. admonition:: API Reference
 
--   stress - a Normal probability distribution from the Distributions module
--   strength - a Normal probability distribution from the Distributions module
--   show_plot - True/False (default is True)
--   print_results - True/False (default is True)
-
-Outputs:
-
--   the probability of failure
--   the distribution plot (only shown if show_plot=True)
--   results printed to console (only shown if print_results=True)
+   For inputs and outputs see the `API reference <https://reliability.readthedocs.io/en/latest/API/Other_functions/stress_strength_normal.html>`_.
 
 Example 1
 *********
@@ -65,19 +56,9 @@ The equation to find the probability of failure any two distributions is:
 
 Where :math:`f` is the PDF and :math:`R` is the SF. The above integral can be evaluated using the trapz function in numpy: ``probability of failure = np.trapz(strength.PDF(x) * stress.SF(x), x)``
 
-Inputs:
+.. admonition:: API Reference
 
--   stress - a probability distribution from the Distributions module
--   strength - a probability distribution from the Distributions module
--   show_plot - True/False (default is True)
--   print_results - True/False (default is True)
--   warn - a warning will be issued if both stress and strength are Normal as you should use stress_strength_normal. A warning will also be issued if stress.mean > strength.mean to alert the user they may have assigned the stress and strength distributions in reverse. You can supress all warnings using warn=False
-
-Outputs:
-
--   the probability of failure
--   the distribution plot (only shown if show_plot=True)
--   results printed to console (only shown if print_results=True)
+   For inputs and outputs see the `API reference <https://reliability.readthedocs.io/en/latest/API/Other_functions/stress_strength.html>`_.
 
 Example 2
 *********

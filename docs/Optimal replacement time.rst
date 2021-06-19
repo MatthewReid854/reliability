@@ -9,22 +9,9 @@ When conducting maintenance planning, we must optimise the frequency of preventa
 
 Cost in the above context should include all associated costs of PM and CM. These are not just the costs associated with parts and labor but may also include other costs such as system downtime (which may vary between PM and CM), loss of production output, customer satisfaction, etc. Some of these costs are difficult to quantify but organisations should strive to quantify all the costs of PM and system failure (requiring CM) if they want to accurately optimise their maintenance schedule.
 
-Inputs:
+.. admonition:: API Reference
 
--   cost_PM - cost of preventative maintenance (must be smaller than cost_CM)
--   cost_CM - cost of corrective maintenance (must be larger than cost_PM)
--   weibull_alpha - scale parameter of the underlying Weibull distribution
--   weibull_beta - shape parameter of the underlying Weibull distribution. Should be greater than 1 otherwise conducting PM is not economical.
--   q - restoration factor (0 or 1). q=1 is Power Law NHPP (as good as old), q=0 is HPP (as good as new). Default is q=0 (as good as new).
--   show_plot - True/False. Defaults to True. Other plotting keywords are also accepted and used.
--   print_results - True/False. Defaults to True
-
-Outputs:
-
--   ORT - the optimal replacement time
--   min_cost - the minimum cost per unit time
--   plot of cost model if show_plot is set to True. Use plt.show() to display it.
--   printed results if print_results is set to True.
+   For inputs and outputs see the `API reference <https://reliability.readthedocs.io/en/latest/API/Repairable_systems/optimal_replacement_time.html>`_.
 
 In the example below, we provide the cost of preventative maintenance (cost_PM), and the cost of corrective maintenance (cost_CM), as well as the Weibull parameters of the failure distribution. Leaving the default outputs, we obtain a plot of the cost per unit time and the printed results. This example is based of the example provided on the `reliasoft article <http://www.reliawiki.org/index.php/Optimum_Replacement_Time_Example>`_.
 

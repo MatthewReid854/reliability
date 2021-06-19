@@ -12,17 +12,9 @@ Parametric Quantile-Quantile plot
 
 To generate this plot we calculate the failure units (these may be units of time, strength, cycles, landings, rounds fired, etc.) at which a certain fraction has failed (0.01,0.02,0.03...0.99). We do this for each distribution so we have an array of failure units and then we plot these failure units against each other. The time (or any other failure unit) at which a given fraction has failed is found using the inverse survival function. If the distributions are identical then the QQ plot will be a straight line at 45 degrees. If the distributions are similar in shape, then the QQ plot should be a reasonably straight line (but not necessarily a 45 degree line) indicating the failure rates are proportional but not identical. By plotting the failure times at equal quantiles for each distribution (and finding the gradient of the line) we can obtain a conversion between the two distributions. Such conversions are useful for accelerated life testing (ALT) to easily convert field time to test time.
 
-Inputs:
+.. admonition:: API Reference
 
--   X_dist - a probability distribution. The failure times at given quantiles from this distribution will be plotted along the X-axis.
--   Y_dist - a probability distribution. The failure times at given quantiles from this distribution will be plotted along the Y-axis.
--   show_fitted_lines - True/False. Default is True. These are the Y=mX and Y=mX+c lines of best fit.
--   show_diagonal_line - True/False. Default is False. If True the diagonal line will be shown on the plot.
-
-Outputs:
-
--   The QQ_plot will always be output. Use plt.show() to show it.
--   [m,m1,c1] - these are the values for the lines of best fit. m is used in Y=m.X, and m1 and c1 are used in Y=m1.X+c1
+   For inputs and outputs see the `API reference <https://reliability.readthedocs.io/en/latest/API/Probability_plotting/QQ_plot_parametric.html>`_.
 
 Example 1
 ---------
@@ -47,19 +39,9 @@ Semiparametric Quantile-Quantile plot
 This plot is still a Quantile-Quantile plot (plotting failure units vs failure units for shared quantiles), but instead of using two parametric distributions, we use the failure data directly as one set of quantiles. We then estimate what the quantiles of the parametric distribution would be and plot the parametric (theoretical) failure units against the actual failure units.
 To generate this plot we begin with the failure units (these may be units of time, strength, cycles, landings, etc.). We then obtain an emprical CDF using either Kaplan-Meier, Nelson-Aalen, or Rank Adjustment. The empirical CDF gives us the quantiles we will use to equate the actual and theoretical failure times. Once we have the empirical CDF, we use the inverse survival function of the specified distribution to obtain the theoretical failure units and then plot the actual and theoretical failure units together. The primary purpose of this plot is as a graphical goodness of fit test. If the specified distribution is a good fit to the data then the QQ plot should be a reasonably straight line along the diagonal.
 
-Inputs:
+.. admonition:: API Reference
 
--   X_data_failures - the failure times in an array or list. These will be plotted along the X-axis.
--   X_data_right_censored - the right censored failure times in an array or list. Optional input.
--   Y_dist - a probability distribution. The quantiles of this distribution will be plotted along the Y-axis.
--   method - 'KM', 'NA', or 'RA' for Kaplan-Meier, Nelson-Aalen, or Rank Adjustment. Default is 'KM'
--   show_fitted_lines - True/False. Default is True. These are the Y=mX and Y=mX+c lines of best fit.
--   show_diagonal_line - True/False. Default is False. If True the diagonal line will be shown on the plot.
-
-Outputs:
-
--   The QQ_plot will always be output. Use plt.show() to show it.
--   [m,m1,c1] - these are the values for the lines of best fit. m is used in Y=mX, and m1 and c1 are used in Y=m1X+c1
+   For inputs and outputs see the `API reference <https://reliability.readthedocs.io/en/latest/API/Probability_plotting/QQ_plot_semiparametric.html>`_.
 
 Example 2
 ---------

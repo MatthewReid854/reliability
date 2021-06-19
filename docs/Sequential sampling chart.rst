@@ -7,21 +7,9 @@ Sequential sampling chart
 
 A sequential sampling chart provides decision boundaries so that a success/failure test may be stopped as soon as there have been enough successes or enough failures to exceed the decision boundary. The decision boundary is calculated based on four parameters; producer's quality, consumer's quality, producer's risk, and consumer's risk. Producer's risk is the chance that the consumer rejects a batch when they should have accepted it. Consumer's risk is the chance that the consumer accepts a batch when they should have rejected it. We can also consider the producer's and consumer's quality to be the desired reliability of the sample, and the producer's and consumer's risk to be 1-confidence interval that the sample test result matches the population test result.
 
-Inputs:
+.. admonition:: API Reference
 
--   p1 - producer_quality. The acceptable failure rate for the producer (typical around 0.01)
--   p2 - consumer_quality. The acceptable failure rate for the consumer (typical around 0.1)
--   alpha - producer_risk. Producer's CI = 1-alpha (typically 0.05)
--   beta - consumer_risk. Consumer's CI = 1-beta (typically 0.1)
--   test_results - array or list of binary test results. eg. [0,0,0,1] for 3 successes and 1 failure. Default=None
--   show_plot - True/False. Defaults to True.
--   print_results - True/False. Defaults to True.
--   max_samples - the x_lim of the plot. Default=100.
-
-Outputs:
-
--   The sequential sampling chart - A plot of sequential sampling chart with decision boundaries. test_results are only plotted on the chart if provided as an input.
--   results - a dataframe of tabulated decision results. These will be printed if print_results=True
+   For inputs and outputs see the `API reference <https://reliability.readthedocs.io/en/latest/API/Reliability_testing/sequential_sampling_chart.html>`_.
 
 In the example below, we use the inputs p1=0.01, p2=0.10, alpha=0.05, beta=0.10. The resulting decision boundaries are plotted, and the test results that we have supplied are also plotted as a stepped line. The plot shows that after our 3rd failure, the test should be stopped as the batch can be rejected. The dataframe of results is also printed by default. In this dataframe, the value of x is used to replace impossible numbers, ie. we cannot reject 2 failures if we have only conducted 1 inspection. This example is based on an example in the `Engineering statistics handbook <https://itl.nist.gov/div898/handbook/pmc/section2/pmc26.htm>`_ published online by NIST.
 

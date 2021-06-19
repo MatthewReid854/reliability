@@ -11,13 +11,11 @@ Note that crosshairs should be called after everything is added to the plot (but
 
 If your interactive development environment does not generate the plot in its own window then your plot is not interactive and this will not work. For iPython notebook users, the interactive window should be available by typing "%matplotlib qt" after importing matplotlib as described `here <https://stackoverflow.com/questions/14261903/how-can-i-open-the-interactive-matplotlib-window-in-ipython-notebook>`_.
 
-There are some customisable attributes of the crosshairs and annotations using the following inputs:
+There are some customisable attributes of the crosshairs and annotations as described in the API reference.
 
--   xlabel - the x-label for the annotation. Default is x.
--   ylabel - the y-label for the annotation. Default is y.
--   decimals - the number of decimals to use when rounding values in the crosshairs and in the annotation. Default is 2.
--   dateformat - the datetime format. If specified the x crosshair and label will be formatted as a date using the format provided. Default is None which results in no date format being used on x. For a list of acceptable dateformat strings see `strftime <https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes>`_.
--   plotting kwargs are also accepted. eg. color, linestyle, etc.
+.. admonition:: API Reference
+
+   For inputs and outputs see the `API reference <https://reliability.readthedocs.io/en/latest/API/Other_functions/crosshairs.html>`_.
 
 In the following example, we see the crosshairs being used to display the value of the Weibull CDF. The dynamic nature of this feature is shown in the video at the bottom of this page.
 

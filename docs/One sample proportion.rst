@@ -7,16 +7,9 @@ One sample proportion
 
 This function calculates the upper and lower bounds of reliability for a given number of trials and successes. It is most applicable to analysis of test results in which there are only success/failure results and the analyst wants to know the reliability of the batch given those sample results.
 
-Inputs:
+.. admonition:: API Reference
 
--   trials - the number of trials which were conducted
--   successes - the number of trials which were successful
--   CI - the desired confidence interval. Defaults to 0.95 for 95% CI.
--   print_results - True/False. This will print the results if True. Defaults to True.
-
-Outputs:
-
--   (lower, upper) - Tuple of the confidence interval limits. Note that this will return 0 for lower or 1 for upper if the one sided CI is calculated (ie. when successes=0 or successes=trials)
+   For inputs and outputs see the `API reference <https://reliability.readthedocs.io/en/latest/API/Reliability_testing/one_sample_proportion.html>`_.
 
 In this example, consider a scenario in which we have a large batch of items that we need to test for their reliability. The batch is large and testing is expensive so we will conduct the test on 30 samples. From those 30 samples, 29 passed the test. If the batch needs at least 85% reliability with a 95% confidence, then should we accept or reject the batch?
 

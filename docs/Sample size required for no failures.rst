@@ -5,17 +5,10 @@
 Sample size required for no failures
 ''''''''''''''''''''''''''''''''''''
 The function `sample_size_no_failures` is used to determine the minimum sample size required for a test in which no failures are expected, and the desired outcome is the lower bound on the reliability based on the sample size and desired confidence interval.
-    
-Inputs:
 
--   reliability - lower bound on product reliability (between 0 and 1)
--   CI - confidence interval of result (between 0.5 and 1). Defaults to 0.95 for 95% CI.
--   lifetimes - if testing the product for multiple lifetimes then more failures are expected so a smaller sample size will be required to demonstrate the desired reliability (assuming no failures). Conversely, if testing for less than one full lifetime then a larger sample size will be required. Default is 1.
--   weibull_shape - if the weibull shape (beta) of the failure mode is known, specify it here. Otherwise leave the default of 1 for the exponential distribution.
-    
-Outputs:
+.. admonition:: API Reference
 
--   number of items required in the test. This will always be an integer (rounded up).
+   For inputs and outputs see the `API reference <https://reliability.readthedocs.io/en/latest/API/Reliability_testing/sample_size_no_failures.html>`_.
 
 As an example, consider a scenario in which we want to be sure that a batch of LEDs meets the reliability target for on/off cycles. Testing is for the planned lifetime (1 million cycles) and tested items will have most or all of their lifetime used up during testing so we can't test everything. How many items from the batch do we need to test to ensure we achieve 99.9% reliability with a 95% confidence interval?
 
