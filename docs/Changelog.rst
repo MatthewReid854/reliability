@@ -10,11 +10,11 @@ Changelog
 
 **Summary of changes**
 
-Version 0.5.7 of `reliability` completes a part of this project that has taken almost one year by providing confidence intervals for all standard distributions. This release now incorporates confidence intervals for the Gamma_2P, Gamma_3P, and Beta_2P distributions which were the last remaining to be implemented and proved quite a mathematical challenge. In addition to these enhancements, version 0.5.7 contains numerous minor bug fixes.
+Version 0.5.7 of `reliability` completes a part of this project that has taken almost one year by providing confidence intervals for all standard distributions (except Beta_2P). This release now incorporates confidence intervals for the Gamma_2P and Gamma_3P distributions which were the last remaining to be implemented and proved quite a mathematical challenge. In addition to these enhancements, version 0.5.7 contains numerous minor bug fixes.
 
 **New features**
 
--    Gamma and Beta distributions now have confidence intervals implemented. This involved changes to Distributions, Utils, Fitters, and Probability_plotting modules.
+-    Fit_Gamma_2P and Fit_Gamma_3P now have confidence intervals implemented. This involved changes to Distributions, Utils, Fitters, and Probability_plotting modules.
 
 **API Changes**
 
@@ -33,6 +33,7 @@ Version 0.5.7 of `reliability` completes a part of this project that has taken a
 -    Other_functions.distribution_explorer had a bug due to a change that matplotlib made to the type of error raised. This caused axes to be removed and not redrawn when the radio buttons were toggled. This has been fixed by hiding the axes rather than removing them.
 -    CI_type of None was not being passed from Fitters resulting in an inability to hide the confidence intervals on the plot as the presence of None resulted in the default of 'time' being used. CI_type=None as a kwarg from fitters will now supress the confidence intervals in the probability plot.
 -    Exponential_probability_plot and Exponential_probability_plot_Weibull_Scale now allow fitting with 1 failure. Previously required 2 failures. This change was made because Fit_Exponential_1P only requires 1 failure so the limitation was rule based not a mathematical limitation.
+-    Minor fixes to how the confidence intervals are prepared to ensure the arrays are cleaned of illegal values caused by precision errors.
 
 **Other**
 

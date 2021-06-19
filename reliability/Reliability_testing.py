@@ -557,7 +557,7 @@ class reliability_test_planner:
 
     Notes
     -----
-    Please see the documentation <https://reliability.readthedocs.io/en/latest/Reliability%20test%20planner.html>`_
+    Please see the `documentation <https://reliability.readthedocs.io/en/latest/Reliability%20test%20planner.html>`_
     for more detail on the equations used.
 
     The returned values will match the input values with the exception of the

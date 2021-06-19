@@ -386,6 +386,7 @@ class Fit_Everything:
             )
             self.Gamma_3P_alpha = self.__Gamma_3P_params.alpha
             self.Gamma_3P_beta = self.__Gamma_3P_params.beta
+            self.Gamma_3P_mu = self.__Gamma_3P_params.mu
             self.Gamma_3P_gamma = self.__Gamma_3P_params.gamma
             self.Gamma_3P_loglik = self.__Gamma_3P_params.loglik
             self.Gamma_3P_BIC = self.__Gamma_3P_params.BIC
@@ -635,6 +636,7 @@ class Fit_Everything:
             )
             self.Gamma_2P_alpha = self.__Gamma_2P_params.alpha
             self.Gamma_2P_beta = self.__Gamma_2P_params.beta
+            self.Gamma_2P_mu = self.__Gamma_2P_params.mu
             self.Gamma_2P_gamma = 0
             self.Gamma_2P_loglik = self.__Gamma_2P_params.loglik
             self.Gamma_2P_BIC = self.__Gamma_2P_params.BIC
@@ -6004,11 +6006,18 @@ class Fit_Gamma_2P:
         the fitted Gamma_2P alpha parameter
     beta : float
         the fitted Gamma_2P beta parameter
+    mu : float
+        mu = ln(alpha). Alternate parametrisation (mu, beta) used for the
+        confidence intervals.
     alpha_SE : float
         the standard error (sqrt(variance)) of the parameter
     beta_SE :float
         the standard error (sqrt(variance)) of the parameter
+    mu_SE : float
+        the standard error (sqrt(variance)) of the parameter
     Cov_alpha_beta : float
+        the covariance between the parameters
+    Cov_mu_beta : float
         the covariance between the parameters
     alpha_upper : float
         the upper CI estimate of the parameter
@@ -6017,6 +6026,10 @@ class Fit_Gamma_2P:
     beta_upper : float
         the upper CI estimate of the parameter
     beta_lower : float
+        the lower CI estimate of the parameter
+    mu_upper : float
+        the upper CI estimate of the parameter
+    mu_lower : float
         the lower CI estimate of the parameter
     loglik : float
         Log Likelihood (as used in Minitab and Reliasoft)
@@ -6051,6 +6064,17 @@ class Fit_Gamma_2P:
     may be caused by the chosen distribution being a very poor fit to the data
     or the data being heavily censored. If a warning is printed, consider trying
     a different optimiser.
+
+    This is a two parameter distribution but it has two parametrisations. These
+    are alpha,beta and mu,beta. The alpha,beta parametrisation is reported in
+    the results table while the mu,beta parametrisation is accessible from the
+    results by name. The reason for this is because the most common
+    parametrisation (alpha,beta) should be reported while the less common
+    parametrisation (mu,beta) is used by some other software so is provided
+    for convenience of comparison. The mu = ln(alpha) relationship is simple
+    but this relationship does not extend to the variances or covariances so the
+    optimisation problem must be run twice to find both solutions. The mu,beta
+    parametrisation is used for the confidence intervals as it is more stable.
     """
 
     def __init__(
@@ -6089,7 +6113,7 @@ class Fit_Gamma_2P:
         # Obtain least squares estimates
         LS_results = LS_optimisation(
             func_name="Gamma_2P",
-            LL_func=Fit_Gamma_2P.LL,
+            LL_func=Fit_Gamma_2P.LL_ab,
             failures=failures,
             right_censored=right_censored,
             method="LS",
@@ -6098,39 +6122,55 @@ class Fit_Gamma_2P:
         # least squares method
         if method in ["LS", "RRX", "RRY"]:
             self.alpha = LS_results.guess[0]
+            self.mu = np.log(self.alpha)
             self.beta = LS_results.guess[1]
             self.method = str("Least Squares Estimation (" + LS_results.method + ")")
 
         # maximum likelihood method
         elif method == "MLE":
-            MLE_results = MLE_optimisation(
+            MLE_results_ab = MLE_optimisation(
                 func_name="Gamma_2P",
-                LL_func=Fit_Gamma_2P.LL,
+                LL_func=Fit_Gamma_2P.LL_ab,
                 initial_guess=[LS_results.guess[0], LS_results.guess[1]],
                 failures=failures,
                 right_censored=right_censored,
                 optimizer=optimizer,
             )
-            self.alpha = MLE_results.scale
-            self.beta = MLE_results.shape
+            self.alpha = MLE_results_ab.scale
+            self.mu = np.log(MLE_results_ab.scale)
+            self.beta = MLE_results_ab.shape
             self.method = "Maximum Likelihood Estimation (MLE)"
 
         # confidence interval estimates of parameters
+        # this needs to be done in terms of alpha beta (ab) parametrisation
+        # and mu beta (mb) parametrisation
         Z = -ss.norm.ppf((1 - CI) / 2)
-        params = [self.alpha, self.beta]
-        hessian_matrix = hessian(Fit_Gamma_2P.LL)(
-            np.array(tuple(params)),
+        params_ab = [self.alpha, self.beta]
+        hessian_matrix_ab = hessian(Fit_Gamma_2P.LL_ab)(
+            np.array(tuple(params_ab)),
             np.array(tuple(failures)),
             np.array(tuple(right_censored)),
         )
-        covariance_matrix = np.linalg.inv(hessian_matrix)
-        self.alpha_SE = abs(covariance_matrix[0][0]) ** 0.5
-        self.beta_SE = abs(covariance_matrix[1][1]) ** 0.5
-        self.Cov_alpha_beta = covariance_matrix[0][1]
+        covariance_matrix_ab = np.linalg.inv(hessian_matrix_ab)
+        self.alpha_SE = abs(covariance_matrix_ab[0][0]) ** 0.5
+        self.beta_SE = abs(covariance_matrix_ab[1][1]) ** 0.5
+        self.Cov_alpha_beta = covariance_matrix_ab[0][1]
         self.alpha_upper = self.alpha * (np.exp(Z * (self.alpha_SE / self.alpha)))
         self.alpha_lower = self.alpha * (np.exp(-Z * (self.alpha_SE / self.alpha)))
         self.beta_upper = self.beta * (np.exp(Z * (self.beta_SE / self.beta)))
         self.beta_lower = self.beta * (np.exp(-Z * (self.beta_SE / self.beta)))
+
+        params_mb = [self.mu, self.beta]
+        hessian_matrix_mb = hessian(Fit_Gamma_2P.LL_mb)(
+            np.array(tuple(params_mb)),
+            np.array(tuple(failures)),
+            np.array(tuple(right_censored)),
+        )
+        covariance_matrix_mb = np.linalg.inv(hessian_matrix_mb)
+        self.mu_SE = abs(covariance_matrix_mb[0][0]) ** 0.5
+        self.Cov_mu_beta = covariance_matrix_mb[0][1]
+        self.mu_upper = self.mu * (np.exp(Z * (self.mu_SE / self.mu)))
+        self.mu_lower = self.mu * (np.exp(-Z * (self.mu_SE / self.mu)))
 
         results_data = {
             "Parameter": ["Alpha", "Beta"],
@@ -6151,10 +6191,13 @@ class Fit_Gamma_2P:
         )
         self.distribution = Gamma_Distribution(
             alpha=self.alpha,
+            mu=self.mu,
             beta=self.beta,
             alpha_SE=self.alpha_SE,
+            mu_SE=self.mu_SE,
             beta_SE=self.beta_SE,
             Cov_alpha_beta=self.Cov_alpha_beta,
+            Cov_mu_beta=self.Cov_mu_beta,
             CI=CI,
             CI_type=CI_type,
         )
@@ -6187,7 +6230,7 @@ class Fit_Gamma_2P:
         # goodness of fit measures
         n = len(failures) + len(right_censored)
         k = 2
-        LL2 = 2 * Fit_Gamma_2P.LL(params, failures, right_censored)
+        LL2 = 2 * Fit_Gamma_2P.LL_ab(params_ab, failures, right_censored)
         self.loglik2 = LL2
         self.loglik = LL2 * -0.5
         if n - k - 1 > 0:
@@ -6258,18 +6301,37 @@ class Fit_Gamma_2P:
             self.probability_plot = plt.gca()
 
     @staticmethod
-    def logf(t, a, b):  # Log PDF (2 parameter Gamma)
+    def logf_ab(t, a, b):  # Log PDF (2 parameter Gamma) - alpha, beta parametrisation
         return anp.log(t ** (b - 1)) - anp.log((a ** b) * agamma(b)) - (t / a)
 
     @staticmethod
-    def logR(t, a, b):  # Log SF (2 parameter Gamma)
+    def logR_ab(t, a, b):  # Log SF (2 parameter Gamma) - alpha, beta parametrisation
         return anp.log(gammaincc(b, t / a))
 
     @staticmethod
-    def LL(params, T_f, T_rc):
-        # log likelihood function (2 parameter Gamma)
-        LL_f = Fit_Gamma_2P.logf(T_f, params[0], params[1]).sum()
-        LL_rc = Fit_Gamma_2P.logR(T_rc, params[0], params[1]).sum()
+    def LL_ab(params, T_f, T_rc):
+        # log likelihood function (2 parameter Gamma) - alpha, beta parametrisation
+        LL_f = Fit_Gamma_2P.logf_ab(T_f, params[0], params[1]).sum()
+        LL_rc = Fit_Gamma_2P.logR_ab(T_rc, params[0], params[1]).sum()
+        return -(LL_f + LL_rc)
+
+    @staticmethod
+    def logf_mb(t, m, b):  # Log PDF (2 parameter Gamma) - mu, beta parametrisation
+        return (
+            anp.log(t ** (b - 1))
+            - anp.log((anp.exp(m) ** b) * agamma(b))
+            - (t / anp.exp(m))
+        )
+
+    @staticmethod
+    def logR_mb(t, m, b):  # Log SF (2 parameter Gamma) - mu, beta parametrisation
+        return anp.log(gammaincc(b, t / anp.exp(m)))
+
+    @staticmethod
+    def LL_mb(params, T_f, T_rc):
+        # log likelihood function (2 parameter Gamma) - mu, beta parametrisation
+        LL_f = Fit_Gamma_2P.logf_mb(T_f, params[0], params[1]).sum()
+        LL_rc = Fit_Gamma_2P.logR_mb(T_rc, params[0], params[1]).sum()
         return -(LL_f + LL_rc)
 
 
@@ -6328,15 +6390,22 @@ class Fit_Gamma_3P:
         the fitted Gamma_3P alpha parameter
     beta : float
         the fitted Gamma_3P beta parameter
+    mu : float
+        mu = ln(alpha). Alternate parametrisation (mu, beta) used for the
+        confidence intervals.
     gamma : float
         the fitted Gamma_3P gamma parameter
     alpha_SE : float
         the standard error (sqrt(variance)) of the parameter
     beta_SE :float
         the standard error (sqrt(variance)) of the parameter
+    mu_SE : float
+        the standard error (sqrt(variance)) of the parameter
     gamma_SE :float
         the standard error (sqrt(variance)) of the parameter
     Cov_alpha_beta : float
+        the covariance between the parameters
+    Cov_mu_beta : float
         the covariance between the parameters
     alpha_upper : float
         the upper CI estimate of the parameter
@@ -6345,6 +6414,10 @@ class Fit_Gamma_3P:
     beta_upper : float
         the upper CI estimate of the parameter
     beta_lower : float
+        the lower CI estimate of the parameter
+    mu_upper : float
+        the upper CI estimate of the parameter
+    mu_lower : float
         the lower CI estimate of the parameter
     gamma_upper : float
         the upper CI estimate of the parameter
@@ -6387,6 +6460,18 @@ class Fit_Gamma_3P:
     If the fitted gamma parameter is less than 0.01, the Gamma_3P results will
     be discarded and the Gamma_2P distribution will be fitted. The returned
     values for gamma and gamma_SE will be 0.
+
+    This is a three parameter distribution but it has two parametrisations.
+    These are alpha,beta,gamma and mu,beta,gamma. The alpha,beta,gamma
+    parametrisation is reported in the results table while the mu,beta,gamma
+    parametrisation is accessible from the results by name. The reason for this
+    is because the most common parametrisation (alpha,beta,gamma) should be
+    reported while the less common parametrisation (mu,beta,gamma) is used by
+    some other software so is provided for convenience of comparison. The
+    mu = ln(alpha) relationship is simple but this relationship does not extend
+    to the variances or covariances so additional calculations are required to
+    find both solutions. The mu,beta,gamma parametrisation is used for the
+    confidence intervals as it is more stable.
     """
 
     def __init__(
@@ -6428,7 +6513,7 @@ class Fit_Gamma_3P:
             LS_method = method
         LS_results = LS_optimisation(
             func_name="Gamma_3P",
-            LL_func=Fit_Gamma_3P.LL,
+            LL_func=Fit_Gamma_3P.LL_abg,
             failures=failures,
             right_censored=right_censored,
             method=LS_method,
@@ -6437,15 +6522,16 @@ class Fit_Gamma_3P:
         # least squares method
         if method in ["LS", "RRX", "RRY"]:
             self.alpha = LS_results.guess[0]
+            self.mu = np.log(self.alpha)
             self.beta = LS_results.guess[1]
             self.gamma = LS_results.guess[2]
             self.method = str("Least Squares Estimation (" + LS_results.method + ")")
 
         # maximum likelihood method
         elif method == "MLE":
-            MLE_results = MLE_optimisation(
+            MLE_results_abg = MLE_optimisation(
                 func_name="Gamma_3P",
-                LL_func=Fit_Gamma_3P.LL,
+                LL_func=Fit_Gamma_3P.LL_abg,
                 initial_guess=[
                     LS_results.guess[0],
                     LS_results.guess[1],
@@ -6455,9 +6541,10 @@ class Fit_Gamma_3P:
                 right_censored=right_censored,
                 optimizer=optimizer,
             )
-            self.alpha = MLE_results.scale
-            self.beta = MLE_results.shape
-            self.gamma = MLE_results.gamma
+            self.alpha = MLE_results_abg.scale
+            self.mu = np.log(MLE_results_abg.scale)
+            self.beta = MLE_results_abg.shape
+            self.gamma = MLE_results_abg.gamma
             self.method = "Maximum Likelihood Estimation (MLE)"
 
         if (
@@ -6472,43 +6559,63 @@ class Fit_Gamma_3P:
             )
             self.alpha = gamma_2P_results.alpha
             self.beta = gamma_2P_results.beta
+            self.mu = gamma_2P_results.mu
             self.gamma = 0
             self.alpha_SE = gamma_2P_results.alpha_SE
             self.beta_SE = gamma_2P_results.beta_SE
+            self.mu_SE = gamma_2P_results.mu_SE
             self.gamma_SE = 0
             self.Cov_alpha_beta = gamma_2P_results.Cov_alpha_beta
+            self.Cov_mu_beta = gamma_2P_results.Cov_mu_beta
             self.alpha_upper = gamma_2P_results.alpha_upper
             self.alpha_lower = gamma_2P_results.alpha_lower
             self.beta_upper = gamma_2P_results.beta_upper
             self.beta_lower = gamma_2P_results.beta_lower
+            self.mu_upper = gamma_2P_results.mu_upper
+            self.mu_lower = gamma_2P_results.mu_lower
             self.gamma_upper = 0
             self.gamma_lower = 0
-            params_3P = [self.alpha, self.beta, self.gamma]
+            params_3P_abg = [self.alpha, self.beta, self.gamma]
+            params_3P_mbg = [self.mu, self.beta, self.gamma]
         else:
             # confidence interval estimates of parameters
             Z = -ss.norm.ppf((1 - CI) / 2)
-            params_2P = [self.alpha, self.beta]
-            params_3P = [self.alpha, self.beta, self.gamma]
+            params_2P_ab = [self.alpha, self.beta]
+            params_2P_mb = [self.mu, self.beta]
+            params_3P_abg = [self.alpha, self.beta, self.gamma]
+            params_3P_mbg = [self.mu, self.beta, self.gamma]
             # here we need to get alpha_SE and beta_SE from the Gamma_2P by providing an adjusted dataset (adjusted for gamma)
-            hessian_matrix = hessian(Fit_Gamma_2P.LL)(
-                np.array(tuple(params_2P)),
+            hessian_matrix_ab = hessian(Fit_Gamma_2P.LL_ab)(
+                np.array(tuple(params_2P_ab)),
                 np.array(tuple(failures - self.gamma)),
                 np.array(tuple(right_censored - self.gamma)),
             )
-            covariance_matrix = np.linalg.inv(hessian_matrix)
+            covariance_matrix_ab = np.linalg.inv(hessian_matrix_ab)
+            hessian_matrix_mb = hessian(Fit_Gamma_2P.LL_mb)(
+                np.array(tuple(params_2P_mb)),
+                np.array(tuple(failures - self.gamma)),
+                np.array(tuple(right_censored - self.gamma)),
+            )
+            covariance_matrix_mb = np.linalg.inv(hessian_matrix_mb)
+
             # this is to get the gamma_SE. Unfortunately this approach for alpha_SE and beta_SE give SE values that are very large resulting in incorrect CI plots. This is the same method used by Reliasoft
-            hessian_matrix_for_gamma = hessian(Fit_Gamma_3P.LL)(
-                np.array(tuple(params_3P)),
+            hessian_matrix_for_gamma = hessian(Fit_Gamma_3P.LL_abg)(
+                np.array(tuple(params_3P_abg)),
                 np.array(tuple(failures)),
                 np.array(tuple(right_censored)),
             )
             covariance_matrix_for_gamma = np.linalg.inv(hessian_matrix_for_gamma)
-            self.alpha_SE = abs(covariance_matrix[0][0]) ** 0.5
-            self.beta_SE = abs(covariance_matrix[1][1]) ** 0.5
+
+            self.alpha_SE = abs(covariance_matrix_ab[0][0]) ** 0.5
+            self.beta_SE = abs(covariance_matrix_ab[1][1]) ** 0.5
+            self.mu_SE = abs(covariance_matrix_mb[0][0]) ** 0.5
             self.gamma_SE = abs(covariance_matrix_for_gamma[2][2]) ** 0.5
-            self.Cov_alpha_beta = covariance_matrix[0][1]
+            self.Cov_alpha_beta = covariance_matrix_ab[0][1]
+            self.Cov_mu_beta = covariance_matrix_mb[0][1]
             self.alpha_upper = self.alpha * (np.exp(Z * (self.alpha_SE / self.alpha)))
             self.alpha_lower = self.alpha * (np.exp(-Z * (self.alpha_SE / self.alpha)))
+            self.mu_upper = self.mu * (np.exp(Z * (self.mu_SE / self.mu)))
+            self.mu_lower = self.mu * (np.exp(-Z * (self.mu_SE / self.mu)))
             self.beta_upper = self.beta * (np.exp(Z * (self.beta_SE / self.beta)))
             self.beta_lower = self.beta * (np.exp(-Z * (self.beta_SE / self.beta)))
             self.gamma_upper = self.gamma * (np.exp(Z * (self.gamma_SE / self.gamma)))
@@ -6534,10 +6641,13 @@ class Fit_Gamma_3P:
         self.distribution = Gamma_Distribution(
             alpha=self.alpha,
             beta=self.beta,
+            mu=self.mu,
             gamma=self.gamma,
             alpha_SE=self.alpha_SE,
+            mu_SE=self.mu_SE,
             beta_SE=self.beta_SE,
             Cov_alpha_beta=self.Cov_alpha_beta,
+            Cov_mu_beta=self.Cov_mu_beta,
             CI=CI,
             CI_type=CI_type,
         )
@@ -6570,7 +6680,7 @@ class Fit_Gamma_3P:
         # goodness of fit measures
         n = len(failures) + len(right_censored)
         k = 3
-        LL2 = 2 * Fit_Gamma_3P.LL(params_3P, failures, right_censored)
+        LL2 = 2 * Fit_Gamma_3P.LL_abg(params_3P_abg, failures, right_censored)
         self.loglik2 = LL2
         self.loglik = LL2 * -0.5
         if n - k - 1 > 0:
@@ -6654,20 +6764,39 @@ class Fit_Gamma_3P:
             self.probability_plot = plt.gca()
 
     @staticmethod
-    def logf(t, a, b, g):  # Log PDF (3 parameter Gamma)
+    def logf_abg(t, a, b, g):  # Log PDF (3 parameter Gamma) - alpha,beta,gamma
         return (
             anp.log((t - g) ** (b - 1)) - anp.log((a ** b) * agamma(b)) - ((t - g) / a)
         )
 
     @staticmethod
-    def logR(t, a, b, g):  # Log SF (3 parameter Gamma)
+    def logR_abg(t, a, b, g):  # Log SF (3 parameter Gamma) - alpha,beta,gamma
         return anp.log(gammaincc(b, (t - g) / a))
 
     @staticmethod
-    def LL(params, T_f, T_rc):
-        # log likelihood function (3 parameter Gamma)
-        LL_f = Fit_Gamma_3P.logf(T_f, params[0], params[1], params[2]).sum()
-        LL_rc = Fit_Gamma_3P.logR(T_rc, params[0], params[1], params[2]).sum()
+    def LL_abg(params, T_f, T_rc):
+        # log likelihood function (3 parameter Gamma) - alpha,beta,gamma
+        LL_f = Fit_Gamma_3P.logf_abg(T_f, params[0], params[1], params[2]).sum()
+        LL_rc = Fit_Gamma_3P.logR_abg(T_rc, params[0], params[1], params[2]).sum()
+        return -(LL_f + LL_rc)
+
+    @staticmethod
+    def logf_mbg(t, m, b, g):  # Log PDF (3 parameter Gamma) - mu,beta,gamma
+        return (
+            anp.log((t - g) ** (b - 1))
+            - anp.log((anp.exp(m) ** b) * agamma(b))
+            - ((t - g) / anp.exp(m))
+        )
+
+    @staticmethod
+    def logR_mbg(t, m, b, g):  # Log SF (3 parameter Gamma) - mu,beta,gamma
+        return anp.log(gammaincc(b, (t - g) / anp.exp(m)))
+
+    @staticmethod
+    def LL_mbg(params, T_f, T_rc):
+        # log likelihood function (3 parameter Gamma) - mu,beta,gamma
+        LL_f = Fit_Gamma_3P.logf_mbg(T_f, params[0], params[1], params[2]).sum()
+        LL_rc = Fit_Gamma_3P.logR_mbg(T_rc, params[0], params[1], params[2]).sum()
         return -(LL_f + LL_rc)
 
 
@@ -6704,11 +6833,6 @@ class Fit_Beta_2P:
     CI : float, optional
         confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
-    CI_type : str, None, optional
-        This is the confidence bounds on time or reliability shown on the plot.
-        Use None to turn off the confidence intervals. Must be either 'time',
-        'reliability', or None. Default is 'time'. Some flexibility in names is
-        allowed (eg. 't', 'time', 'r', 'rel', 'reliability' are all valid).
     percentiles : bool, str, list, array, None, optional
         percentiles (y-values) to produce a table of percentiles failed with
         lower, point, and upper estimates. Default is None which results in no
@@ -6774,6 +6898,8 @@ class Fit_Beta_2P:
     may be caused by the chosen distribution being a very poor fit to the data
     or the data being heavily censored. If a warning is printed, consider trying
     a different optimiser.
+
+    Confidence intervals on the plots are not provided.
     """
 
     def __init__(
@@ -6784,7 +6910,6 @@ class Fit_Beta_2P:
         print_results=True,
         CI=0.95,
         percentiles=None,
-        CI_type="time",
         method="MLE",
         optimizer=None,
         **kwargs,
@@ -6798,7 +6923,6 @@ class Fit_Beta_2P:
             optimizer=optimizer,
             CI=CI,
             percentiles=percentiles,
-            CI_type=CI_type,
         )
         failures = inputs.failures
         right_censored = inputs.right_censored
@@ -6806,7 +6930,6 @@ class Fit_Beta_2P:
         method = inputs.method
         optimizer = inputs.optimizer
         percentiles = inputs.percentiles
-        CI_type = inputs.CI_type
 
         # Obtain least squares estimates
         if method == "MLE":
@@ -6878,35 +7001,19 @@ class Fit_Beta_2P:
         self.distribution = Beta_Distribution(
             alpha=self.alpha,
             beta=self.beta,
-            alpha_SE=self.alpha_SE,
-            beta_SE=self.beta_SE,
-            Cov_alpha_beta=self.Cov_alpha_beta,
-            CI=CI,
-            CI_type=CI_type,
         )
 
         if percentiles is not None:
             point_estimate = self.distribution.quantile(q=percentiles / 100)
-            lower_estimate, upper_estimate = distribution_confidence_intervals.beta_CI(
-                self=self.distribution,
-                func="CDF",
-                CI_type="time",
-                CI=CI,
-                q=1 - (percentiles / 100),
-            )
             percentile_data = {
                 "Percentile": percentiles,
-                "Lower Estimate": lower_estimate,
                 "Point Estimate": point_estimate,
-                "Upper Estimate": upper_estimate,
             }
             self.percentiles = pd.DataFrame(
                 percentile_data,
                 columns=[
                     "Percentile",
-                    "Lower Estimate",
                     "Point Estimate",
-                    "Upper Estimate",
                 ],
             )
 
@@ -6977,8 +7084,6 @@ class Fit_Beta_2P:
                 failures=failures,
                 right_censored=rc,
                 __fitted_dist_params=self,
-                CI=CI,
-                CI_type=CI_type,
                 **kwargs,
             )
             self.probability_plot = plt.gca()

@@ -3478,6 +3478,14 @@ class Gamma_Distribution:
         self.b95 = ss.gamma.ppf(0.95, self.beta, scale=self.alpha, loc=self.gamma)
 
         # extracts values for confidence interval plotting
+        if "mu" in kwargs:
+            self.mu = kwargs.pop("mu")
+        else:
+            self.mu = np.log(self.alpha)
+        if "mu_SE" in kwargs:
+            self.mu_SE = kwargs.pop("mu_SE")
+        else:
+            self.mu_SE = None
         if "alpha_SE" in kwargs:
             self.alpha_SE = kwargs.pop("alpha_SE")
         else:
@@ -3486,6 +3494,10 @@ class Gamma_Distribution:
             self.beta_SE = kwargs.pop("beta_SE")
         else:
             self.beta_SE = None
+        if "Cov_mu_beta" in kwargs:
+            self.Cov_mu_beta = kwargs.pop("Cov_mu_beta")
+        else:
+            self.Cov_mu_beta = None
         if "Cov_alpha_beta" in kwargs:
             self.Cov_alpha_beta = kwargs.pop("Cov_alpha_beta")
         else:
@@ -4256,10 +4268,10 @@ class Beta_Distribution:
 
     Notes
     -----
-    kwargs are used internally to generate the confidence intervals
+    kwargs are not accepted
     """
 
-    def __init__(self, alpha=None, beta=None, **kwargs):
+    def __init__(self, alpha=None, beta=None):
         self.name = "Beta"
         self.name2 = "Beta_2P"
         if alpha is None or beta is None:
@@ -4298,38 +4310,6 @@ class Beta_Distribution:
         )
         self.b5 = ss.beta.ppf(0.05, self.alpha, self.beta, 0, 1)
         self.b95 = ss.beta.ppf(0.95, self.alpha, self.beta, 0, 1)
-
-        # extracts values for confidence interval plotting
-        if "alpha_SE" in kwargs:
-            self.alpha_SE = kwargs.pop("alpha_SE")
-        else:
-            self.alpha_SE = None
-        if "beta_SE" in kwargs:
-            self.beta_SE = kwargs.pop("beta_SE")
-        else:
-            self.beta_SE = None
-        if "Cov_alpha_beta" in kwargs:
-            self.Cov_alpha_beta = kwargs.pop("Cov_alpha_beta")
-        else:
-            self.Cov_alpha_beta = None
-        if "CI" in kwargs:
-            CI = kwargs.pop("CI")
-            self.Z = -ss.norm.ppf((1 - CI) / 2)
-        else:
-            self.Z = None
-        if "CI_type" in kwargs:
-            self.CI_type = kwargs.pop("CI_type")
-        else:
-            self.CI_type = "time"
-        for item in kwargs.keys():
-            colorprint(
-                str(
-                    "WARNING: "
-                    + item
-                    + " is not recognised as an appropriate entry in kwargs. Appropriate entries are alpha_SE, beta_SE, Cov_alpha_beta, CI, and CI_type"
-                ),
-                text_color="red",
-            )
 
         # the pdf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
         self._pdf0 = ss.beta.pdf(0, self.alpha, self.beta, 0, 1)
@@ -4611,10 +4591,6 @@ class Beta_Distribution:
         if show_plot == False:
             return cdf
         else:
-            CI_type, plot_CI, CI = distribution_confidence_intervals.CI_kwarg_handler(
-                self, kwargs
-            )
-
             limits = get_axes_limits()
 
             p = plt.plot(X, cdf, **kwargs)
@@ -4638,16 +4614,6 @@ class Beta_Distribution:
                 xvals=xvals,
                 xmin=xmin,
                 xmax=xmax,
-            )
-
-            distribution_confidence_intervals.beta_CI(
-                self,
-                func="CDF",
-                CI_type=CI_type,
-                plot_CI=plot_CI,
-                CI=CI,
-                text_title=text_title,
-                color=p[0].get_color(),
             )
 
             return cdf
@@ -4700,10 +4666,6 @@ class Beta_Distribution:
         if show_plot == False:
             return sf
         else:
-            CI_type, plot_CI, CI = distribution_confidence_intervals.CI_kwarg_handler(
-                self, kwargs
-            )
-
             limits = get_axes_limits()
 
             p = plt.plot(X, sf, **kwargs)
@@ -4724,16 +4686,6 @@ class Beta_Distribution:
                 xvals=xvals,
                 xmin=xmin,
                 xmax=xmax,
-            )
-
-            distribution_confidence_intervals.beta_CI(
-                self,
-                func="SF",
-                CI_type=CI_type,
-                plot_CI=plot_CI,
-                CI=CI,
-                text_title=text_title,
-                color=p[0].get_color(),
             )
 
             return sf
@@ -4862,10 +4814,6 @@ class Beta_Distribution:
         if show_plot == False:
             return chf
         else:
-            CI_type, plot_CI, CI = distribution_confidence_intervals.CI_kwarg_handler(
-                self, kwargs
-            )
-
             limits = get_axes_limits()
 
             p = plt.plot(X, chf, **kwargs)
@@ -4889,16 +4837,6 @@ class Beta_Distribution:
                 xvals=xvals,
                 xmin=xmin,
                 xmax=xmax,
-            )
-
-            distribution_confidence_intervals.beta_CI(
-                self,
-                func="CHF",
-                CI_type=CI_type,
-                plot_CI=plot_CI,
-                CI=CI,
-                text_title=text_title,
-                color=p[0].get_color(),
             )
 
             return chf
@@ -5027,6 +4965,23 @@ class Beta_Distribution:
         if seed is not None:
             np.random.seed(seed)
         RVS = ss.beta.rvs(self.alpha, self.beta, 0, 1, size=number_of_samples)
+
+        # this section is for resampling so that we always get numbers below 1.
+        # For a Beta Distribution, 1 should be impossible, but scipy.stats will
+        # still return 1's for Beta Distributions skewed towards 1 such as when
+        # alpha = 0.01, beta = 0.01. This causes the fitters to fail since it
+        # cannot handle 0 or 1 for a Beta Distribution.
+        checked = False
+        while checked is False:
+            RVS = RVS[RVS < 1]  # remove 1's
+            if len(RVS) < number_of_samples:  # resample if required
+                resamples = ss.beta.rvs(
+                    self.alpha, self.beta, 0, 1, size=number_of_samples - len(RVS)
+                )
+                RVS = np.append(RVS, resamples)  # append the new samples
+            else:
+                checked = True
+
         return RVS
 
 

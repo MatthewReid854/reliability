@@ -1312,7 +1312,6 @@ def Beta_probability_plot(
     __fitted_dist_params=None,
     a=None,
     CI=0.95,
-    CI_type="time",
     show_fitted_distribution=True,
     show_scatter_points=True,
     **kwargs
@@ -1341,11 +1340,6 @@ def Beta_probability_plot(
     CI : float, optional
         The confidence interval for the bounds. Must be between 0 and 1.
         Optional input. Default = 0.95 for 95% CI.
-    CI_type : str, None, optional
-        This is the confidence bounds on time or reliability shown on the plot.
-        Use None to turn off the confidence intervals. Must be either 'time',
-        'reliability', or None. Default is 'time'. Some flexibility in names is
-        allowed (eg. 't', 'time', 'r', 'rel', 'reliability' are all valid).
     kwargs
         Plotting keywords that are passed directly to matplotlib (e.g. color,
         label, linestyle).
@@ -1370,6 +1364,8 @@ def Beta_probability_plot(
     probability paper, one of them will always appear curved.
 
     If your plot does not appear automatically, use plt.show() to show it.
+
+    Confidence intervals are not included for the Beta distribution.
     """
     if failures is None or len(failures) == 0:
         raise ValueError("failures must be a list or array of the failure data.")
@@ -1431,11 +1427,6 @@ def Beta_probability_plot(
     bf = Beta_Distribution(
         alpha=alpha,
         beta=beta,
-        alpha_SE=alpha_SE,
-        beta_SE=beta_SE,
-        Cov_alpha_beta=Cov_alpha_beta,
-        CI=CI,
-        CI_type=CI_type,
     )
 
     x, y = plotting_positions(failures=failures, right_censored=right_censored, a=a)
@@ -1580,7 +1571,9 @@ def Gamma_probability_plot(
             beta = __fitted_dist_params.beta
             alpha_SE = __fitted_dist_params.alpha_SE
             beta_SE = __fitted_dist_params.beta_SE
+            mu_SE = __fitted_dist_params.mu_SE
             Cov_alpha_beta = __fitted_dist_params.Cov_alpha_beta
+            Cov_mu_beta = __fitted_dist_params.Cov_mu_beta
         else:
             from reliability.Fitters import Fit_Gamma_2P
 
@@ -1594,7 +1587,9 @@ def Gamma_probability_plot(
             beta = fit.beta
             alpha_SE = fit.alpha_SE
             beta_SE = fit.beta_SE
+            mu_SE = fit.mu_SE
             Cov_alpha_beta = fit.Cov_alpha_beta
+            Cov_mu_beta = fit.Cov_mu_beta
 
         if "label" in kwargs:
             label = kwargs.pop("label")
@@ -1613,7 +1608,9 @@ def Gamma_probability_plot(
             gamma = __fitted_dist_params.gamma
             alpha_SE = __fitted_dist_params.alpha_SE
             beta_SE = __fitted_dist_params.beta_SE
+            mu_SE = __fitted_dist_params.mu_SE
             Cov_alpha_beta = __fitted_dist_params.Cov_alpha_beta
+            Cov_mu_beta = __fitted_dist_params.Cov_mu_beta
         else:
             from reliability.Fitters import Fit_Gamma_3P
 
@@ -1628,7 +1625,9 @@ def Gamma_probability_plot(
             gamma = fit.gamma
             alpha_SE = fit.alpha_SE
             beta_SE = fit.beta_SE
+            mu_SE = fit.mu_SE
             Cov_alpha_beta = fit.Cov_alpha_beta
+            Cov_mu_beta = fit.Cov_mu_beta
 
         if "label" in kwargs:
             label = kwargs.pop("label")
@@ -1651,7 +1650,9 @@ def Gamma_probability_plot(
         beta=beta,
         alpha_SE=alpha_SE,
         beta_SE=beta_SE,
+        mu_SE=mu_SE,
         Cov_alpha_beta=Cov_alpha_beta,
+        Cov_mu_beta=Cov_mu_beta,
         CI=CI,
         CI_type=CI_type,
     )

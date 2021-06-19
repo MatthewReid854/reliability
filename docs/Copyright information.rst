@@ -5,17 +5,16 @@
 Copyright information
 '''''''''''''''''''''
 
-`reliability` is licenced under the `LGPLv3 <https://www.gnu.org/licenses/lgpl-3.0.en.html>`_.
+`reliability` is licensed under the `LGPLv3 <https://www.gnu.org/licenses/lgpl-3.0.en.html>`_.
 Some FAQs on the GPL and LGPL are answered `here <https://www.gnu.org/licenses/gpl-faq.html>`_.
-The LGPL applies to individuals and businesses with the primary distinction being whether they intend to make a profit through the sale of software that uses `reliability` to perform any function.
 
-Using `reliability` is FREE and unrestricted for both individuals and commercial users.
+Under the LGPLv3 license, the use of `reliability` is FREE and unrestricted for both individuals and commercial users.
 
 Individuals and commercial users are FREE to incorporate `reliability` as a part of their own software, subject to the following conditions:
 
 - If linked dynamically (see below):
 
-	- Your software licence is unaffected
+	- Your software license is unaffected
 	- No credit / attribution is required
 	- No changes are permitted (or possible since it is dynamically linked)
 	- You must not in any way suggest that the licensor endorses you or your use.
@@ -23,13 +22,13 @@ Individuals and commercial users are FREE to incorporate `reliability` as a part
 
 - If linked statically (see below):
 
-	- Your software must also be released under the LGPLv3 and you must provide a link to the license.
+	- Your software must also be released under the LGPLv3 license and you must provide a link to the license.
 	- You must give appropriate credit / attribution to the author of `reliability` and the version you have copied.
 	- You must indicate any changes that were made.
 	- You must not in any way suggest that the licensor endorses you or your use.
 	- You must not sell your software.
 
-The major limitation imposed by the LGPL is that individuals and commercial users must not incorporate `reliability` into their own software (either in part or as a whole, either statically or dynamically), and then sell their software.
+The major limitation imposed by the LGPLv3 license is that individuals and commercial users must not incorporate `reliability` into their own software (either in part or as a whole, either statically or dynamically), and then sell their software.
 If you or your company is looking to use `reliability` as part of your software, and you intend to sell your software, then this use falls under a Commercial License and will attract a small fee to permit redistribution.
 Please contact alpha.reliability@gmail.com if you believe your usage falls under the Commercial License.
 
@@ -43,7 +42,7 @@ Dynamic linking is where your software (typically another Python library or repo
 In dynamic linking you are not redistributing any of the source code from `reliability` and are simply using it as an external tool.
 Dynamic linking is encouraged as it enables users to use the most recent version of `reliability` which benefits from improvements and bug fixes.
 
-The Licence
+The License
 -----------
 
 .. image:: images/lgplv3.png
