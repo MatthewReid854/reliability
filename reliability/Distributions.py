@@ -4593,7 +4593,7 @@ class Beta_Distribution:
         else:
             limits = get_axes_limits()
 
-            p = plt.plot(X, cdf, **kwargs)
+            plt.plot(X, cdf, **kwargs)
             plt.xlabel("x values")
             plt.ylabel("Fraction failing")
             text_title = str(
@@ -4668,7 +4668,7 @@ class Beta_Distribution:
         else:
             limits = get_axes_limits()
 
-            p = plt.plot(X, sf, **kwargs)
+            plt.plot(X, sf, **kwargs)
             plt.xlabel("x values")
             plt.ylabel("Fraction surviving")
             text_title = str(
@@ -4816,7 +4816,7 @@ class Beta_Distribution:
         else:
             limits = get_axes_limits()
 
-            p = plt.plot(X, chf, **kwargs)
+            plt.plot(X, chf, **kwargs)
             plt.xlabel("x values")
             plt.ylabel("Cumulative hazard")
             text_title = str(

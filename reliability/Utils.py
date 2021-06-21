@@ -33,10 +33,7 @@ from matplotlib.collections import PolyCollection, LineCollection
 from matplotlib import ticker, gridspec, colors
 from autograd import jacobian as jac
 from autograd_gamma import gammainccinv as agammainccinv
-from autograd_gamma import gammaincinv as agammaincinv
 from autograd_gamma import gammaincc as agammaincc
-from autograd_gamma import betainc as abetainc
-from autograd_gamma import betaincinv as abetaincinv
 from autograd import value_and_grad
 import autograd.numpy as anp
 from scipy.special import gammainc, betainc, erf

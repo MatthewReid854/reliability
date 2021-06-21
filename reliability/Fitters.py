@@ -6072,8 +6072,8 @@ class Fit_Gamma_2P:
     parametrisation (alpha,beta) should be reported while the less common
     parametrisation (mu,beta) is used by some other software so is provided
     for convenience of comparison. The mu = ln(alpha) relationship is simple
-    but this relationship does not extend to the variances or covariances so the
-    optimisation problem must be run twice to find both solutions. The mu,beta
+    but this relationship does not extend to the variances or covariances so
+    additional calculations are required to find both solutions. The mu,beta
     parametrisation is used for the confidence intervals as it is more stable.
     """
 
@@ -6576,14 +6576,12 @@ class Fit_Gamma_3P:
             self.gamma_upper = 0
             self.gamma_lower = 0
             params_3P_abg = [self.alpha, self.beta, self.gamma]
-            params_3P_mbg = [self.mu, self.beta, self.gamma]
         else:
             # confidence interval estimates of parameters
             Z = -ss.norm.ppf((1 - CI) / 2)
             params_2P_ab = [self.alpha, self.beta]
             params_2P_mb = [self.mu, self.beta]
             params_3P_abg = [self.alpha, self.beta, self.gamma]
-            params_3P_mbg = [self.mu, self.beta, self.gamma]
             # here we need to get alpha_SE and beta_SE from the Gamma_2P by providing an adjusted dataset (adjusted for gamma)
             hessian_matrix_ab = hessian(Fit_Gamma_2P.LL_ab)(
                 np.array(tuple(params_2P_ab)),

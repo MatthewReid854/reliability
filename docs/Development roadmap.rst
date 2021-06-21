@@ -9,15 +9,15 @@ The following development roadmap is the current task list and implementation pl
 
 **Planned for version 0.5.7 (around July 2021)**
 
--    Make tests for everything that doesn't have a test yet.
--    Add plotting to all things that can plot in order to increase test coverage.
 -    Provide ax argument so that plots which normally make a new figure (such as in Fit_Everything and ALT_Fitters) will instead plot on the axes they are given. This will enable subplots of things that normally occur in their own figure.
 
 **Planned for version 0.5.8 (around October 2021)**
 
--    Correct the formatting in the API docs for every function.
+-    Correct the formatting in the API docs for every function - still need to do ALT_fitters, Convert_data, Datasets, PoF, Utils
 -    DSZI Distribution along with its associated fitters and probability plots. DSZI is a combination of DS (`Defective Subpopulation Distribution <https://www.jmp.com/support/help/14-2/distributions-2.shtml>`_. This is for when the CDF does not reach 1 due to a lot of right censored data) and ZI (`Zero Inflated Distribution <https://www.jmp.com/support/help/14-2/distributions-2.shtml>`_. This is for when the CDF starts above 0 due to a lot of 'dead on arrival' products in the dataset). A DSZI distribution may include features of both the DS and ZI distributions.
 -    Improvement to the online documentation for how some of these methods work, including the addition of more formulas, algorithms, and better referencing.
+-    Make tests for everything that doesn't have a test yet.
+-    Add plotting to all things that can plot in order to increase test coverage.
 
 **Planned for version 0.5.9 (around December 2021)**
 

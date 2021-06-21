@@ -1397,9 +1397,6 @@ def Beta_probability_plot(
     if __fitted_dist_params is not None:
         alpha = __fitted_dist_params.alpha
         beta = __fitted_dist_params.beta
-        alpha_SE = __fitted_dist_params.alpha_SE
-        beta_SE = __fitted_dist_params.beta_SE
-        Cov_alpha_beta = __fitted_dist_params.Cov_alpha_beta
     else:
         from reliability.Fitters import Fit_Beta_2P
 
@@ -1411,9 +1408,6 @@ def Beta_probability_plot(
         )
         alpha = fit.alpha
         beta = fit.beta
-        alpha_SE = fit.alpha_SE
-        beta_SE = fit.beta_SE
-        Cov_alpha_beta = fit.Cov_alpha_beta
     if "label" in kwargs:
         label = kwargs.pop("label")
     else:
