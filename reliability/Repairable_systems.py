@@ -22,6 +22,7 @@ import pandas as pd
 import scipy.stats as ss
 from scipy.optimize import curve_fit
 from reliability.Utils import colorprint, round_to_decimals
+from matplotlib.axes import SubplotBase
 
 
 class reliability_growth:
@@ -160,8 +161,16 @@ class optimal_replacement_time:
         The restoration factor. Must be 0 or 1. Use q=1 for Power Law NHPP
         (as good as old) or q=0 for HPP (as good as new). Default is q=0 (as
         good as new).
-    show_plot : bool, optional
-        If True the plot will be produced. Default is True.
+    show_time_plot : bool, axes, optional
+        If True the plot of replacment time vs cost per unit time will be
+        produced in a new figure. If an axes subclass is passed then the plot
+        be generated in that axes. If False then no plot will be generated.
+        Default is True.
+    show_ratio_plot : bool, axes, optional
+        If True the plot of cost ratio vs replacement interval will be
+        produced in a new figure. If an axes subclass is passed then the plot
+        be generated in that axes. If False then no plot will be generated.
+        Default is True.
     print_results : bool, optional
         If True the results will be printed to console. Default = True.
     kwargs
@@ -174,11 +183,6 @@ class optimal_replacement_time:
         The optimal replacement time
     min_cost : float
         The minimum cost per unit time
-
-    Notes
-    -----
-    If show_plot is True, the cost vs time plot will be produced. Use plt.show()
-    to show the plot.
     """
 
     def __init__(
@@ -187,7 +191,8 @@ class optimal_replacement_time:
         cost_CM,
         weibull_alpha,
         weibull_beta,
-        show_plot=True,
+        show_time_plot=True,
+        show_ratio_plot=True,
         print_results=True,
         q=0,
         **kwargs
@@ -207,7 +212,7 @@ class optimal_replacement_time:
             )
 
         if q == 1:  # as good as old
-            alpha_multiple = 4  # just used for plot limits
+            alpha_multiple = 4
             t = np.linspace(1, weibull_alpha * alpha_multiple, 100000)
             CPUT = ((cost_PM * (t / weibull_alpha) ** weibull_beta) + cost_CM) / t
             ORT = weibull_alpha * (
@@ -219,15 +224,23 @@ class optimal_replacement_time:
         elif q == 0:  # as good as new
             alpha_multiple = 3
             t = np.linspace(1, weibull_alpha * alpha_multiple, 10000)
-            CPUT = []  # cost per unit time
-            R = lambda x: np.exp(-((x / weibull_alpha) ** weibull_beta))
-            for T in t:
-                SF = np.exp(-((T / weibull_alpha) ** weibull_beta))
-                integral_R, error = integrate.quad(R, 0, T)
-                CPUT.append((cost_PM * SF + cost_CM * (1 - SF)) / integral_R)
-                idx = np.argmin(CPUT)
-                min_cost = CPUT[idx]  # minimum cost per unit time
-                ORT = t[idx]  # optimal replacement time
+
+            # survival function and its integral
+            calc_SF = lambda x: np.exp(-((x / weibull_alpha) ** weibull_beta))
+            integrate_SF = lambda x: integrate.quad(calc_SF, 0, x)[0]
+
+            # vectorize them
+            calc_SFv = np.vectorize(calc_SF)
+            integrate_SFv = np.vectorize(integrate_SF)
+
+            # calculate the SF and intergral at each time
+            sf = calc_SFv(t)
+            integral = integrate_SFv(t)
+
+            CPUT = (cost_PM * sf + cost_CM * (1 - sf)) / integral
+            idx = np.argmin(CPUT)
+            min_cost = CPUT[idx]  # minimum cost per unit time
+            ORT = t[idx]  # optimal replacement time
         else:
             raise ValueError(
                 'q must be 0 or 1. Default is 0. Use 0 for "as good as new" and use 1 for "as good as old".'
@@ -258,7 +271,14 @@ class optimal_replacement_time:
                 ORT_rounded,
             )
 
-        if show_plot is True:
+        if (
+            show_time_plot is True
+            or issubclass(type(show_time_plot), SubplotBase) is True
+        ):
+            if issubclass(type(show_time_plot), SubplotBase) is True:
+                plt.sca(ax=show_time_plot)  # use the axes passed
+            else:
+                plt.figure()  # if no axes is passed, make a new figure
             plt.plot(t, CPUT, color=c, **kwargs)
             plt.plot(ORT, min_cost, "o", color=c)
             text_str = str(
@@ -273,6 +293,65 @@ class optimal_replacement_time:
             plt.title("Optimal replacement time estimation")
             plt.ylim([0, min_cost * 2])
             plt.xlim([0, weibull_alpha * alpha_multiple])
+
+        if (
+            show_ratio_plot is True
+            or issubclass(type(show_ratio_plot), SubplotBase) is True
+        ):
+            if issubclass(type(show_ratio_plot), SubplotBase) is True:
+                plt.sca(ax=show_ratio_plot)  # use the axes passed
+            else:
+                plt.figure()  # if no axes is passed, make a new figure
+            xupper = np.round(cost_CM / cost_PM, 0) * 2
+            CC_CP = np.linspace(1, xupper, 200)  # cost unscheduled / cost preventative
+            CC = CC_CP * cost_PM
+            ORT_array = []
+
+            if q == 1:
+                for _cost_CM in CC:
+                    CPUT = (
+                        (cost_PM * (t / weibull_alpha) ** weibull_beta) + _cost_CM
+                    ) / t
+                    ORT = weibull_alpha * (
+                        (_cost_CM / (cost_PM * (weibull_beta - 1)))
+                        ** (1 / weibull_beta)
+                    )
+                    ORT_array.append(ORT)
+            else:  # q = 0
+                for _cost_CM in CC:
+                    CPUT = (cost_PM * sf + _cost_CM * (1 - sf)) / integral
+                    idx = np.argmin(CPUT)
+                    ORT = t[idx]  # optimal replacement time
+                    ORT_array.append(ORT)
+
+            plt.plot(CC_CP, ORT_array)
+            plt.xlim(0, xupper)
+            plt.ylim(0, self.ORT * 2)
+            plt.scatter(cost_CM / cost_PM, self.ORT)
+            # vertical alignment based on plot increasing or decreasing
+            if ORT_array[50] > ORT_array[40]:
+                va = "top"
+                mult = 0.95
+            else:
+                va = "bottom"
+                mult = 1.05
+            plt.text(
+                s=str(
+                    "$cost_{CM} = $"
+                    + str(cost_CM)
+                    + "\n$cost_{PM} = $"
+                    + str(cost_PM)
+                    + "\nInterval = "
+                    + str(round(self.ORT, 2))
+                ),
+                x=cost_CM / cost_PM * 1.05,
+                y=self.ORT * mult,
+                ha="left",
+                va=va,
+            )
+            plt.xlabel(r"Cost ratio $\left(\frac{CM}{PM}\right)$")
+            plt.ylabel("Replacement Interval")
+            plt.title("Optimal replacement interval\nacross a range of CM costs")
 
 
 class ROCOF:

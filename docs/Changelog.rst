@@ -24,6 +24,7 @@ Version 0.5.7 of `reliability` completes a part of this project that has taken a
 -    Fit_Weibull_Mixture and Fit_Weibull_CR didn't accept kwargs. All kwargs are now passed directly to matplotlib making it possible to change color, label, linestyle, etc on the probability plot of these distributions.
 -    In stress_strength and stress_strength_normal the argument show_distribution_plot has been changed to show_plot. This is done for simplicity and standardisation.
 -    The outputs from all nonparametric functions (.KM, .RA, .NA) are now arrays. Previously these were lists.
+-    Repairable_systems.optimal_replacement_time argument "show_plot" has been changed to "show_time_plot". There is another argument "show_ratio_plot" which has been added. While normally expecting True/False, these arguments will also accept axes subclasses if you want them to plot on a specific axes.
 
 **Bug Fixes**
 
@@ -38,6 +39,7 @@ Version 0.5.7 of `reliability` completes a part of this project that has taken a
 **Other**
 
 -    Improvements to API documentation. This has been a long term work in progress, but is nearly finished.
+-    Speed enhancement (x10) to Repairable_systems.optimal_replacement_time and the addition of a new plot (cost ratio vs replacement interval). Thanks to Ed Burrows for contributing the speed enhancement.
 
 **Version: 0.5.6 --- Released: 7 March 2021**
 '''''''''''''''''''''''''''''''''''''''''''''

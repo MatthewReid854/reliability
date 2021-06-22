@@ -21,7 +21,6 @@ In the example below, we provide the cost of preventative maintenance (cost_PM),
     import matplotlib.pyplot as plt
     optimal_replacement_time(cost_PM=1, cost_CM=5, weibull_alpha=1000, weibull_beta=2.5,q=0)
     plt.show()
-    # Runtime for this code is approximately 10 seconds due to the speed of the optimisation routine
 
     '''
     Results from optimal_replacement_time:
@@ -31,3 +30,5 @@ In the example below, we provide the cost of preventative maintenance (cost_PM),
     '''
 
 .. image:: images/optimal_replacement_time.png
+
+.. image:: images/optimal_replacement_interval.png
