@@ -20,10 +20,12 @@ In the example below we import a dataset called mileage which contains 100 value
     from reliability.Datasets import mileage
     from reliability.Distributions import Normal_Distribution
     from reliability.Reliability_testing import KStest
+    import matplotlib.pyplot as plt
 
     data = mileage().failures
     dist = Normal_Distribution(mu=30011, sigma=10472)
     KStest(distribution=dist, data=data)
+    plt.show()
     
     '''
     Results from Kolmogorov-Smirnov test:

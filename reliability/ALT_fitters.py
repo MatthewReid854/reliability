@@ -2,6 +2,7 @@ import numpy as np
 import scipy.stats as ss
 import pandas as pd
 import matplotlib.pyplot as plt
+from matplotlib.axes import SubplotBase
 import autograd.numpy as anp
 from autograd.scipy.special import erf
 from autograd.differential_operators import hessian
@@ -163,15 +164,15 @@ class Fit_Everything_ALT:
 
         if print_results not in [True, False]:
             raise ValueError(
-                "print_results must be either True or False. Defaults to True."
+                "print_results must be either True or False. Defaults is True."
             )
         if show_probability_plot not in [True, False]:
             raise ValueError(
-                "show_probability_plot must be either True or False. Defaults to True."
+                "show_probability_plot must be either True or False. Default is True."
             )
         if show_best_distribution_probability_plot not in [True, False]:
             raise ValueError(
-                "show_best_distribution_probability_plot must be either True or False. Defaults to True."
+                "show_best_distribution_probability_plot must be either True or False. Default is True."
             )
 
         single_stress_ALT_models_list = [
@@ -1555,7 +1556,6 @@ class Fit_Everything_ALT:
             Fit_Everything_ALT.probability_plot(self)
 
         if show_best_distribution_probability_plot is True:
-            # plotting occurs by default
             Fit_Everything_ALT.probability_plot(self, best_only=True)
 
         if (
@@ -1596,9 +1596,11 @@ class Fit_Everything_ALT:
         else:
             # plots the best model only
             plotting_order = [self.results["ALT_model"].values[0]]
+            rows, cols, subplot_counter = 1, 1, 1
+
         for item in plotting_order:
-            if best_only is False:
-                plt.subplot(rows, cols, subplot_counter)
+            ax = plt.subplot(rows, cols, subplot_counter)
+
             if item == "Weibull_Exponential":
 
                 def life_func(S1):
@@ -1632,6 +1634,7 @@ class Fit_Everything_ALT:
                     scale_for_change_df=scale_for_change_df,
                     shape_for_change_df=shape_for_change_df,
                     use_level_stress=use_level_stress,
+                    ax=ax,
                 )
             elif item == "Weibull_Eyring":
 
@@ -1668,6 +1671,7 @@ class Fit_Everything_ALT:
                     scale_for_change_df=scale_for_change_df,
                     shape_for_change_df=shape_for_change_df,
                     use_level_stress=use_level_stress,
+                    ax=ax,
                 )
             elif item == "Weibull_Power":
 
@@ -1700,6 +1704,7 @@ class Fit_Everything_ALT:
                     scale_for_change_df=scale_for_change_df,
                     shape_for_change_df=shape_for_change_df,
                     use_level_stress=use_level_stress,
+                    ax=ax,
                 )
             elif item == "Lognormal_Exponential":
 
@@ -1734,6 +1739,7 @@ class Fit_Everything_ALT:
                     scale_for_change_df=scale_for_change_df,
                     shape_for_change_df=shape_for_change_df,
                     use_level_stress=use_level_stress,
+                    ax=ax,
                 )
             elif item == "Lognormal_Eyring":
 
@@ -1772,6 +1778,7 @@ class Fit_Everything_ALT:
                     scale_for_change_df=scale_for_change_df,
                     shape_for_change_df=shape_for_change_df,
                     use_level_stress=use_level_stress,
+                    ax=ax,
                 )
             elif item == "Lognormal_Power":
 
@@ -1804,6 +1811,7 @@ class Fit_Everything_ALT:
                     scale_for_change_df=scale_for_change_df,
                     shape_for_change_df=shape_for_change_df,
                     use_level_stress=use_level_stress,
+                    ax=ax,
                 )
             elif item == "Normal_Exponential":
 
@@ -1838,6 +1846,7 @@ class Fit_Everything_ALT:
                     scale_for_change_df=scale_for_change_df,
                     shape_for_change_df=shape_for_change_df,
                     use_level_stress=use_level_stress,
+                    ax=ax,
                 )
             elif item == "Normal_Eyring":
 
@@ -1874,6 +1883,7 @@ class Fit_Everything_ALT:
                     scale_for_change_df=scale_for_change_df,
                     shape_for_change_df=shape_for_change_df,
                     use_level_stress=use_level_stress,
+                    ax=ax,
                 )
             elif item == "Normal_Power":
 
@@ -1906,6 +1916,7 @@ class Fit_Everything_ALT:
                     scale_for_change_df=scale_for_change_df,
                     shape_for_change_df=shape_for_change_df,
                     use_level_stress=use_level_stress,
+                    ax=ax,
                 )
             elif item == "Exponential_Exponential":
 
@@ -1940,6 +1951,7 @@ class Fit_Everything_ALT:
                     scale_for_change_df=scale_for_change_df,
                     shape_for_change_df=shape_for_change_df,
                     use_level_stress=use_level_stress,
+                    ax=ax,
                 )
             elif item == "Exponential_Eyring":
 
@@ -1981,6 +1993,7 @@ class Fit_Everything_ALT:
                     scale_for_change_df=scale_for_change_df,
                     shape_for_change_df=shape_for_change_df,
                     use_level_stress=use_level_stress,
+                    ax=ax,
                 )
             elif item == "Exponential_Power":
 
@@ -2013,6 +2026,7 @@ class Fit_Everything_ALT:
                     scale_for_change_df=scale_for_change_df,
                     shape_for_change_df=shape_for_change_df,
                     use_level_stress=use_level_stress,
+                    ax=ax,
                 )
 
             elif item == "Weibull_Dual_Exponential":
@@ -2049,6 +2063,7 @@ class Fit_Everything_ALT:
                     scale_for_change_df=scale_for_change_df,
                     shape_for_change_df=shape_for_change_df,
                     use_level_stress=use_level_stress,
+                    ax=ax,
                 )
 
             elif item == "Weibull_Power_Exponential":
@@ -2086,6 +2101,7 @@ class Fit_Everything_ALT:
                     scale_for_change_df=scale_for_change_df,
                     shape_for_change_df=shape_for_change_df,
                     use_level_stress=use_level_stress,
+                    ax=ax,
                 )
 
             elif item == "Weibull_Dual_Power":
@@ -2123,6 +2139,7 @@ class Fit_Everything_ALT:
                     scale_for_change_df=scale_for_change_df,
                     shape_for_change_df=shape_for_change_df,
                     use_level_stress=use_level_stress,
+                    ax=ax,
                 )
 
             elif item == "Lognormal_Dual_Exponential":
@@ -2159,6 +2176,7 @@ class Fit_Everything_ALT:
                     scale_for_change_df=scale_for_change_df,
                     shape_for_change_df=shape_for_change_df,
                     use_level_stress=use_level_stress,
+                    ax=ax,
                 )
 
             elif item == "Lognormal_Power_Exponential":
@@ -2196,6 +2214,7 @@ class Fit_Everything_ALT:
                     scale_for_change_df=scale_for_change_df,
                     shape_for_change_df=shape_for_change_df,
                     use_level_stress=use_level_stress,
+                    ax=ax,
                 )
 
             elif item == "Lognormal_Dual_Power":
@@ -2233,6 +2252,7 @@ class Fit_Everything_ALT:
                     scale_for_change_df=scale_for_change_df,
                     shape_for_change_df=shape_for_change_df,
                     use_level_stress=use_level_stress,
+                    ax=ax,
                 )
 
             elif item == "Normal_Dual_Exponential":
@@ -2269,6 +2289,7 @@ class Fit_Everything_ALT:
                     scale_for_change_df=scale_for_change_df,
                     shape_for_change_df=shape_for_change_df,
                     use_level_stress=use_level_stress,
+                    ax=ax,
                 )
 
             elif item == "Normal_Power_Exponential":
@@ -2306,6 +2327,7 @@ class Fit_Everything_ALT:
                     scale_for_change_df=scale_for_change_df,
                     shape_for_change_df=shape_for_change_df,
                     use_level_stress=use_level_stress,
+                    ax=ax,
                 )
 
             elif item == "Normal_Dual_Power":
@@ -2343,6 +2365,7 @@ class Fit_Everything_ALT:
                     scale_for_change_df=scale_for_change_df,
                     shape_for_change_df=shape_for_change_df,
                     use_level_stress=use_level_stress,
+                    ax=ax,
                 )
 
             elif item == "Exponential_Dual_Exponential":
@@ -2379,6 +2402,7 @@ class Fit_Everything_ALT:
                     scale_for_change_df=scale_for_change_df,
                     shape_for_change_df=shape_for_change_df,
                     use_level_stress=use_level_stress,
+                    ax=ax,
                 )
 
             elif item == "Exponential_Power_Exponential":
@@ -2416,6 +2440,7 @@ class Fit_Everything_ALT:
                     scale_for_change_df=scale_for_change_df,
                     shape_for_change_df=shape_for_change_df,
                     use_level_stress=use_level_stress,
+                    ax=ax,
                 )
 
             elif item == "Exponential_Dual_Power":
@@ -2453,6 +2478,7 @@ class Fit_Everything_ALT:
                     scale_for_change_df=scale_for_change_df,
                     shape_for_change_df=shape_for_change_df,
                     use_level_stress=use_level_stress,
+                    ax=ax,
                 )
 
             else:
@@ -2460,7 +2486,6 @@ class Fit_Everything_ALT:
 
             if best_only is False:
                 plt.title(item)
-                ax = plt.gca()
                 ax.set_yticklabels([], minor=False)
                 ax.set_xticklabels([], minor=False)
                 ax.set_yticklabels([], minor=True)
@@ -2491,8 +2516,8 @@ class Fit_Weibull_Exponential:
     right_censored_stress - an array or list of the corresponding stresses (such as temperature) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
     use_level_stress - The use level stress at which you want to know the mean life. Optional input.
     print_results - True/False. Default is True
-    show_probability_plot - True/False. Default is True
-    show_life_stress_plot - True/False. Default is True
+    show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
+    show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
     optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
 
@@ -2797,30 +2822,29 @@ class Fit_Weibull_Exponential:
                     )
                 )
 
-        if show_probability_plot is True:
-            plt.figure()
-            self.probability_plot = ALT_prob_plot(
-                dist="Weibull",
-                model="Exponential",
-                stresses_for_groups=stresses_for_groups,
-                failure_groups=failure_groups,
-                right_censored_groups=right_censored_groups,
-                life_func=life_func,
-                shape=self.beta,
-                scale_for_change_df=alphas_for_change_df,
-                shape_for_change_df=betas_for_change_df,
-                use_level_stress=use_level_stress,
-            )
+        self.probability_plot = ALT_prob_plot(
+            dist="Weibull",
+            model="Exponential",
+            stresses_for_groups=stresses_for_groups,
+            failure_groups=failure_groups,
+            right_censored_groups=right_censored_groups,
+            life_func=life_func,
+            shape=self.beta,
+            scale_for_change_df=alphas_for_change_df,
+            shape_for_change_df=betas_for_change_df,
+            use_level_stress=use_level_stress,
+            ax=show_probability_plot,
+        )
 
-        if show_life_stress_plot is True:
-            self.life_stress_plot = life_stress_plot(
-                dist="Weibull",
-                model="Exponential",
-                life_func=life_func,
-                failure_groups=failure_groups,
-                stresses_for_groups=stresses_for_groups,
-                use_level_stress=use_level_stress,
-            )
+        self.life_stress_plot = life_stress_plot(
+            dist="Weibull",
+            model="Exponential",
+            life_func=life_func,
+            failure_groups=failure_groups,
+            stresses_for_groups=stresses_for_groups,
+            use_level_stress=use_level_stress,
+            ax=show_life_stress_plot,
+        )
 
     @staticmethod
     def logf(t, T, a, b, beta):  # Log PDF
@@ -2861,8 +2885,8 @@ class Fit_Weibull_Eyring:
     right_censored_stress - an array or list of the corresponding stresses (such as temperature) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
     use_level_stress - The use level stress at which you want to know the mean life. Optional input.
     print_results - True/False. Default is True
-    show_probability_plot - True/False. Default is True
-    show_life_stress_plot - True/False. Default is True
+    show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
+    show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
     optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
 
@@ -3158,30 +3182,29 @@ class Fit_Weibull_Eyring:
                     )
                 )
 
-        if show_probability_plot is True:
-            plt.figure()
-            self.probability_plot = ALT_prob_plot(
-                dist="Weibull",
-                model="Eyring",
-                stresses_for_groups=stresses_for_groups,
-                failure_groups=failure_groups,
-                right_censored_groups=right_censored_groups,
-                life_func=life_func,
-                shape=self.beta,
-                scale_for_change_df=alphas_for_change_df,
-                shape_for_change_df=betas_for_change_df,
-                use_level_stress=use_level_stress,
-            )
+        self.probability_plot = ALT_prob_plot(
+            dist="Weibull",
+            model="Eyring",
+            stresses_for_groups=stresses_for_groups,
+            failure_groups=failure_groups,
+            right_censored_groups=right_censored_groups,
+            life_func=life_func,
+            shape=self.beta,
+            scale_for_change_df=alphas_for_change_df,
+            shape_for_change_df=betas_for_change_df,
+            use_level_stress=use_level_stress,
+            ax=show_probability_plot,
+        )
 
-        if show_life_stress_plot is True:
-            self.life_stress_plot = life_stress_plot(
-                dist="Weibull",
-                model="Eyring",
-                life_func=life_func,
-                failure_groups=failure_groups,
-                stresses_for_groups=stresses_for_groups,
-                use_level_stress=use_level_stress,
-            )
+        self.life_stress_plot = life_stress_plot(
+            dist="Weibull",
+            model="Eyring",
+            life_func=life_func,
+            failure_groups=failure_groups,
+            stresses_for_groups=stresses_for_groups,
+            use_level_stress=use_level_stress,
+            ax=show_life_stress_plot,
+        )
 
     @staticmethod
     def logf(t, T, a, c, beta):  # Log PDF
@@ -3220,8 +3243,8 @@ class Fit_Weibull_Power:
     right_censored_stress - an array or list of the corresponding stresses (such as load) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
     use_level_stress - The use level stress at which you want to know the mean life. Optional input.
     print_results - True/False. Default is True
-    show_probability_plot - True/False. Default is True
-    show_life_stress_plot - True/False. Default is True
+    show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
+    show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
     optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
 
@@ -3517,30 +3540,29 @@ class Fit_Weibull_Power:
                     )
                 )
 
-        if show_probability_plot is True:
-            plt.figure()
-            self.probability_plot = ALT_prob_plot(
-                dist="Weibull",
-                model="Power",
-                stresses_for_groups=stresses_for_groups,
-                failure_groups=failure_groups,
-                right_censored_groups=right_censored_groups,
-                life_func=life_func,
-                shape=self.beta,
-                scale_for_change_df=alphas_for_change_df,
-                shape_for_change_df=betas_for_change_df,
-                use_level_stress=use_level_stress,
-            )
+        self.probability_plot = ALT_prob_plot(
+            dist="Weibull",
+            model="Power",
+            stresses_for_groups=stresses_for_groups,
+            failure_groups=failure_groups,
+            right_censored_groups=right_censored_groups,
+            life_func=life_func,
+            shape=self.beta,
+            scale_for_change_df=alphas_for_change_df,
+            shape_for_change_df=betas_for_change_df,
+            use_level_stress=use_level_stress,
+            ax=show_probability_plot,
+        )
 
-        if show_life_stress_plot is True:
-            self.life_stress_plot = life_stress_plot(
-                dist="Weibull",
-                model="Power",
-                life_func=life_func,
-                failure_groups=failure_groups,
-                stresses_for_groups=stresses_for_groups,
-                use_level_stress=use_level_stress,
-            )
+        self.life_stress_plot = life_stress_plot(
+            dist="Weibull",
+            model="Power",
+            life_func=life_func,
+            failure_groups=failure_groups,
+            stresses_for_groups=stresses_for_groups,
+            use_level_stress=use_level_stress,
+            ax=show_life_stress_plot,
+        )
 
     @staticmethod
     def logf(t, T, a, n, beta):  # Log PDF
@@ -3581,8 +3603,8 @@ class Fit_Weibull_Dual_Exponential:
     right_censored_stress_2 - an array or list of the corresponding stress 1 (such as humidity) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
     use_level_stress - [stress_1, stress_2]. A two element list or array of the use level stresses at which you want to know the mean life. Optional input.
     print_results - True/False. Default is True
-    show_probability_plot - True/False. Default is True
-    show_life_stress_plot - True/False. Default is True
+    show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
+    show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
     optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
 
@@ -3930,30 +3952,29 @@ class Fit_Weibull_Dual_Exponential:
                     )
                 )
 
-        if show_probability_plot is True:
-            plt.figure()
-            self.probability_plot = ALT_prob_plot(
-                dist="Weibull",
-                model="Dual_Exponential",
-                stresses_for_groups=stresses_for_groups,
-                failure_groups=failure_groups,
-                right_censored_groups=right_censored_groups,
-                life_func=life_func,
-                shape=self.beta,
-                scale_for_change_df=alphas_for_change_df,
-                shape_for_change_df=betas_for_change_df,
-                use_level_stress=use_level_stress,
-            )
+        self.probability_plot = ALT_prob_plot(
+            dist="Weibull",
+            model="Dual_Exponential",
+            stresses_for_groups=stresses_for_groups,
+            failure_groups=failure_groups,
+            right_censored_groups=right_censored_groups,
+            life_func=life_func,
+            shape=self.beta,
+            scale_for_change_df=alphas_for_change_df,
+            shape_for_change_df=betas_for_change_df,
+            use_level_stress=use_level_stress,
+            ax=show_probability_plot,
+        )
 
-        if show_life_stress_plot is True:
-            self.life_stress_plot = life_stress_plot(
-                dist="Weibull",
-                model="Dual_Exponential",
-                life_func=life_func,
-                failure_groups=failure_groups,
-                stresses_for_groups=stresses_for_groups,
-                use_level_stress=use_level_stress,
-            )
+        self.life_stress_plot = life_stress_plot(
+            dist="Weibull",
+            model="Dual_Exponential",
+            life_func=life_func,
+            failure_groups=failure_groups,
+            stresses_for_groups=stresses_for_groups,
+            use_level_stress=use_level_stress,
+            ax=show_life_stress_plot,
+        )
 
     @staticmethod
     def logf(t, S1, S2, a, b, c, beta):  # Log PDF
@@ -3997,8 +4018,8 @@ class Fit_Weibull_Power_Exponential:
     right_censored_stress_2 - an array or list of the corresponding stress 1 (non-thermal stress) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
     use_level_stress - [stress_1, stress_2]. A two element list or array of the use level stresses at which you want to know the mean life. Optional input.
     print_results - True/False. Default is True
-    show_probability_plot - True/False. Default is True
-    show_life_stress_plot - True/False. Default is True
+    show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
+    show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
     optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
 
@@ -4346,30 +4367,29 @@ class Fit_Weibull_Power_Exponential:
                     )
                 )
 
-        if show_probability_plot is True:
-            plt.figure()
-            self.probability_plot = ALT_prob_plot(
-                dist="Weibull",
-                model="Power_Exponential",
-                stresses_for_groups=stresses_for_groups,
-                failure_groups=failure_groups,
-                right_censored_groups=right_censored_groups,
-                life_func=life_func,
-                shape=self.beta,
-                scale_for_change_df=alphas_for_change_df,
-                shape_for_change_df=betas_for_change_df,
-                use_level_stress=use_level_stress,
-            )
+        self.probability_plot = ALT_prob_plot(
+            dist="Weibull",
+            model="Power_Exponential",
+            stresses_for_groups=stresses_for_groups,
+            failure_groups=failure_groups,
+            right_censored_groups=right_censored_groups,
+            life_func=life_func,
+            shape=self.beta,
+            scale_for_change_df=alphas_for_change_df,
+            shape_for_change_df=betas_for_change_df,
+            use_level_stress=use_level_stress,
+            ax=show_probability_plot,
+        )
 
-        if show_life_stress_plot is True:
-            self.life_stress_plot = life_stress_plot(
-                dist="Weibull",
-                model="Power_Exponential",
-                life_func=life_func,
-                failure_groups=failure_groups,
-                stresses_for_groups=stresses_for_groups,
-                use_level_stress=use_level_stress,
-            )
+        self.life_stress_plot = life_stress_plot(
+            dist="Weibull",
+            model="Power_Exponential",
+            life_func=life_func,
+            failure_groups=failure_groups,
+            stresses_for_groups=stresses_for_groups,
+            use_level_stress=use_level_stress,
+            ax=show_life_stress_plot,
+        )
 
     @staticmethod
     def logf(t, S1, S2, a, c, n, beta):  # Log PDF
@@ -4410,8 +4430,8 @@ class Fit_Weibull_Dual_Power:
     right_censored_stress_2 - an array or list of the corresponding stress 1 (such as load) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
     use_level_stress - [stress_1, stress_2]. A two element list or array of the use level stresses at which you want to know the mean life. Optional input.
     print_results - True/False. Default is True
-    show_probability_plot - True/False. Default is True
-    show_life_stress_plot - True/False. Default is True
+    show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
+    show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
     optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
 
@@ -4757,30 +4777,29 @@ class Fit_Weibull_Dual_Power:
                     )
                 )
 
-        if show_probability_plot is True:
-            plt.figure()
-            self.probability_plot = ALT_prob_plot(
-                dist="Weibull",
-                model="Dual_Power",
-                stresses_for_groups=stresses_for_groups,
-                failure_groups=failure_groups,
-                right_censored_groups=right_censored_groups,
-                life_func=life_func,
-                shape=self.beta,
-                scale_for_change_df=alphas_for_change_df,
-                shape_for_change_df=betas_for_change_df,
-                use_level_stress=use_level_stress,
-            )
+        self.probability_plot = ALT_prob_plot(
+            dist="Weibull",
+            model="Dual_Power",
+            stresses_for_groups=stresses_for_groups,
+            failure_groups=failure_groups,
+            right_censored_groups=right_censored_groups,
+            life_func=life_func,
+            shape=self.beta,
+            scale_for_change_df=alphas_for_change_df,
+            shape_for_change_df=betas_for_change_df,
+            use_level_stress=use_level_stress,
+            ax=show_probability_plot,
+        )
 
-        if show_life_stress_plot is True:
-            self.life_stress_plot = life_stress_plot(
-                dist="Weibull",
-                model="Dual_Power",
-                life_func=life_func,
-                failure_groups=failure_groups,
-                stresses_for_groups=stresses_for_groups,
-                use_level_stress=use_level_stress,
-            )
+        self.life_stress_plot = life_stress_plot(
+            dist="Weibull",
+            model="Dual_Power",
+            life_func=life_func,
+            failure_groups=failure_groups,
+            stresses_for_groups=stresses_for_groups,
+            use_level_stress=use_level_stress,
+            ax=show_life_stress_plot,
+        )
 
     @staticmethod
     def logf(t, S1, S2, c, m, n, beta):  # Log PDF
@@ -4822,8 +4841,8 @@ class Fit_Lognormal_Exponential:
     right_censored_stress - an array or list of the corresponding stresses (such as temperature) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
     use_level_stress - The use level stress at which you want to know the mean life. Optional input.
     print_results - True/False. Default is True
-    show_probability_plot - True/False. Default is True
-    show_life_stress_plot - True/False. Default is True
+    show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
+    show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
     optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
 
@@ -5132,30 +5151,29 @@ class Fit_Lognormal_Exponential:
                     )
                 )
 
-        if show_probability_plot is True:
-            plt.figure()
-            self.probability_plot = ALT_prob_plot(
-                dist="Lognormal",
-                model="Exponential",
-                stresses_for_groups=stresses_for_groups,
-                failure_groups=failure_groups,
-                right_censored_groups=right_censored_groups,
-                life_func=life_func,
-                shape=self.sigma,
-                scale_for_change_df=mus_for_change_df,
-                shape_for_change_df=sigmas_for_change_df,
-                use_level_stress=use_level_stress,
-            )
+        self.probability_plot = ALT_prob_plot(
+            dist="Lognormal",
+            model="Exponential",
+            stresses_for_groups=stresses_for_groups,
+            failure_groups=failure_groups,
+            right_censored_groups=right_censored_groups,
+            life_func=life_func,
+            shape=self.sigma,
+            scale_for_change_df=mus_for_change_df,
+            shape_for_change_df=sigmas_for_change_df,
+            use_level_stress=use_level_stress,
+            ax=show_probability_plot,
+        )
 
-        if show_life_stress_plot is True:
-            self.life_stress_plot = life_stress_plot(
-                dist="Lognormal",
-                model="Exponential",
-                life_func=life_func,
-                failure_groups=failure_groups,
-                stresses_for_groups=stresses_for_groups,
-                use_level_stress=use_level_stress,
-            )
+        self.life_stress_plot = life_stress_plot(
+            dist="Lognormal",
+            model="Exponential",
+            life_func=life_func,
+            failure_groups=failure_groups,
+            stresses_for_groups=stresses_for_groups,
+            use_level_stress=use_level_stress,
+            ax=show_life_stress_plot,
+        )
 
     @staticmethod
     def logf(t, T, a, b, sigma):  # Log PDF
@@ -5199,8 +5217,8 @@ class Fit_Lognormal_Eyring:
     right_censored_stress - an array or list of the corresponding stresses (such as temperature) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
     use_level_stress - The use level stress at which you want to know the mean life. Optional input.
     print_results - True/False. Default is True
-    show_probability_plot - True/False. Default is True
-    show_life_stress_plot - True/False. Default is True
+    show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
+    show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
     optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
 
@@ -5500,30 +5518,29 @@ class Fit_Lognormal_Eyring:
                     )
                 )
 
-        if show_probability_plot is True:
-            plt.figure()
-            self.probability_plot = ALT_prob_plot(
-                dist="Lognormal",
-                model="Eyring",
-                stresses_for_groups=stresses_for_groups,
-                failure_groups=failure_groups,
-                right_censored_groups=right_censored_groups,
-                life_func=life_func,
-                shape=self.sigma,
-                scale_for_change_df=mus_for_change_df,
-                shape_for_change_df=sigmas_for_change_df,
-                use_level_stress=use_level_stress,
-            )
+        self.probability_plot = ALT_prob_plot(
+            dist="Lognormal",
+            model="Eyring",
+            stresses_for_groups=stresses_for_groups,
+            failure_groups=failure_groups,
+            right_censored_groups=right_censored_groups,
+            life_func=life_func,
+            shape=self.sigma,
+            scale_for_change_df=mus_for_change_df,
+            shape_for_change_df=sigmas_for_change_df,
+            use_level_stress=use_level_stress,
+            ax=show_probability_plot,
+        )
 
-        if show_life_stress_plot is True:
-            self.life_stress_plot = life_stress_plot(
-                dist="Lognormal",
-                model="Eyring",
-                life_func=life_func,
-                failure_groups=failure_groups,
-                stresses_for_groups=stresses_for_groups,
-                use_level_stress=use_level_stress,
-            )
+        self.life_stress_plot = life_stress_plot(
+            dist="Lognormal",
+            model="Eyring",
+            life_func=life_func,
+            failure_groups=failure_groups,
+            stresses_for_groups=stresses_for_groups,
+            use_level_stress=use_level_stress,
+            ax=show_life_stress_plot,
+        )
 
     @staticmethod
     def logf(t, T, a, c, sigma):  # Log PDF
@@ -5567,8 +5584,8 @@ class Fit_Lognormal_Power:
     right_censored_stress - an array or list of the corresponding stresses (such as load) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
     use_level_stress - The use level stress at which you want to know the mean life. Optional input.
     print_results - True/False. Default is True
-    show_probability_plot - True/False. Default is True
-    show_life_stress_plot - True/False. Default is True
+    show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
+    show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
     optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
 
@@ -5868,30 +5885,29 @@ class Fit_Lognormal_Power:
                     )
                 )
 
-        if show_probability_plot is True:
-            plt.figure()
-            self.probability_plot = ALT_prob_plot(
-                dist="Lognormal",
-                model="Power",
-                stresses_for_groups=stresses_for_groups,
-                failure_groups=failure_groups,
-                right_censored_groups=right_censored_groups,
-                life_func=life_func,
-                shape=self.sigma,
-                scale_for_change_df=mus_for_change_df,
-                shape_for_change_df=sigmas_for_change_df,
-                use_level_stress=use_level_stress,
-            )
+        self.probability_plot = ALT_prob_plot(
+            dist="Lognormal",
+            model="Power",
+            stresses_for_groups=stresses_for_groups,
+            failure_groups=failure_groups,
+            right_censored_groups=right_censored_groups,
+            life_func=life_func,
+            shape=self.sigma,
+            scale_for_change_df=mus_for_change_df,
+            shape_for_change_df=sigmas_for_change_df,
+            use_level_stress=use_level_stress,
+            ax=show_probability_plot,
+        )
 
-        if show_life_stress_plot is True:
-            self.life_stress_plot = life_stress_plot(
-                dist="Lognormal",
-                model="Power",
-                life_func=life_func,
-                failure_groups=failure_groups,
-                stresses_for_groups=stresses_for_groups,
-                use_level_stress=use_level_stress,
-            )
+        self.life_stress_plot = life_stress_plot(
+            dist="Lognormal",
+            model="Power",
+            life_func=life_func,
+            failure_groups=failure_groups,
+            stresses_for_groups=stresses_for_groups,
+            use_level_stress=use_level_stress,
+            ax=show_life_stress_plot,
+        )
 
     @staticmethod
     def logf(t, T, a, n, sigma):  # Log PDF
@@ -5935,8 +5951,8 @@ class Fit_Lognormal_Dual_Exponential:
     right_censored_stress_2 - an array or list of the corresponding stress 1 (such as humidity) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
     use_level_stress - [stress_1, stress_2]. A two element list or array of the use level stresses at which you want to know the mean life. Optional input.
     print_results - True/False. Default is True
-    show_probability_plot - True/False. Default is True
-    show_life_stress_plot - True/False. Default is True
+    show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
+    show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
     optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
 
@@ -6284,30 +6300,29 @@ class Fit_Lognormal_Dual_Exponential:
                     )
                 )
 
-        if show_probability_plot is True:
-            plt.figure()
-            self.probability_plot = ALT_prob_plot(
-                dist="Lognormal",
-                model="Dual_Exponential",
-                stresses_for_groups=stresses_for_groups,
-                failure_groups=failure_groups,
-                right_censored_groups=right_censored_groups,
-                life_func=life_func,
-                shape=self.sigma,
-                scale_for_change_df=mus_for_change_df,
-                shape_for_change_df=sigmas_for_change_df,
-                use_level_stress=use_level_stress,
-            )
+        self.probability_plot = ALT_prob_plot(
+            dist="Lognormal",
+            model="Dual_Exponential",
+            stresses_for_groups=stresses_for_groups,
+            failure_groups=failure_groups,
+            right_censored_groups=right_censored_groups,
+            life_func=life_func,
+            shape=self.sigma,
+            scale_for_change_df=mus_for_change_df,
+            shape_for_change_df=sigmas_for_change_df,
+            use_level_stress=use_level_stress,
+            ax=show_probability_plot,
+        )
 
-        if show_life_stress_plot is True:
-            self.life_stress_plot = life_stress_plot(
-                dist="Lognormal",
-                model="Dual_Exponential",
-                life_func=life_func,
-                failure_groups=failure_groups,
-                stresses_for_groups=stresses_for_groups,
-                use_level_stress=use_level_stress,
-            )
+        self.life_stress_plot = life_stress_plot(
+            dist="Lognormal",
+            model="Dual_Exponential",
+            life_func=life_func,
+            failure_groups=failure_groups,
+            stresses_for_groups=stresses_for_groups,
+            use_level_stress=use_level_stress,
+            ax=show_life_stress_plot,
+        )
 
     @staticmethod
     def logf(t, S1, S2, a, b, c, sigma):  # Log PDF
@@ -6352,8 +6367,8 @@ class Fit_Lognormal_Power_Exponential:
     right_censored_stress_2 - an array or list of the corresponding stress 1 (non-thermal stress) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
     use_level_stress - [stress_1, stress_2]. A two element list or array of the use level stresses at which you want to know the mean life. Optional input.
     print_results - True/False. Default is True
-    show_probability_plot - True/False. Default is True
-    show_life_stress_plot - True/False. Default is True
+    show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
+    show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
     optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
 
@@ -6701,30 +6716,29 @@ class Fit_Lognormal_Power_Exponential:
                     )
                 )
 
-        if show_probability_plot is True:
-            plt.figure()
-            self.probability_plot = ALT_prob_plot(
-                dist="Lognormal",
-                model="Power_Exponential",
-                stresses_for_groups=stresses_for_groups,
-                failure_groups=failure_groups,
-                right_censored_groups=right_censored_groups,
-                life_func=life_func,
-                shape=self.sigma,
-                scale_for_change_df=mus_for_change_df,
-                shape_for_change_df=sigmas_for_change_df,
-                use_level_stress=use_level_stress,
-            )
+        self.probability_plot = ALT_prob_plot(
+            dist="Lognormal",
+            model="Power_Exponential",
+            stresses_for_groups=stresses_for_groups,
+            failure_groups=failure_groups,
+            right_censored_groups=right_censored_groups,
+            life_func=life_func,
+            shape=self.sigma,
+            scale_for_change_df=mus_for_change_df,
+            shape_for_change_df=sigmas_for_change_df,
+            use_level_stress=use_level_stress,
+            ax=show_probability_plot,
+        )
 
-        if show_life_stress_plot is True:
-            self.life_stress_plot = life_stress_plot(
-                dist="Lognormal",
-                model="Power_Exponential",
-                life_func=life_func,
-                failure_groups=failure_groups,
-                stresses_for_groups=stresses_for_groups,
-                use_level_stress=use_level_stress,
-            )
+        self.life_stress_plot = life_stress_plot(
+            dist="Lognormal",
+            model="Power_Exponential",
+            life_func=life_func,
+            failure_groups=failure_groups,
+            stresses_for_groups=stresses_for_groups,
+            use_level_stress=use_level_stress,
+            ax=show_life_stress_plot,
+        )
 
     @staticmethod
     def logf(t, S1, S2, a, c, n, sigma):  # Log PDF
@@ -6768,8 +6782,8 @@ class Fit_Lognormal_Dual_Power:
     right_censored_stress_2 - an array or list of the corresponding stress 1 (such as load) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
     use_level_stress - [stress_1, stress_2]. A two element list or array of the use level stresses at which you want to know the mean life. Optional input.
     print_results - True/False. Default is True
-    show_probability_plot - True/False. Default is True
-    show_life_stress_plot - True/False. Default is True
+    show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
+    show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
     optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
 
@@ -7117,30 +7131,29 @@ class Fit_Lognormal_Dual_Power:
                     )
                 )
 
-        if show_probability_plot is True:
-            plt.figure()
-            self.probability_plot = ALT_prob_plot(
-                dist="Lognormal",
-                model="Dual_Power",
-                stresses_for_groups=stresses_for_groups,
-                failure_groups=failure_groups,
-                right_censored_groups=right_censored_groups,
-                life_func=life_func,
-                shape=self.sigma,
-                scale_for_change_df=mus_for_change_df,
-                shape_for_change_df=sigmas_for_change_df,
-                use_level_stress=use_level_stress,
-            )
+        self.probability_plot = ALT_prob_plot(
+            dist="Lognormal",
+            model="Dual_Power",
+            stresses_for_groups=stresses_for_groups,
+            failure_groups=failure_groups,
+            right_censored_groups=right_censored_groups,
+            life_func=life_func,
+            shape=self.sigma,
+            scale_for_change_df=mus_for_change_df,
+            shape_for_change_df=sigmas_for_change_df,
+            use_level_stress=use_level_stress,
+            ax=show_probability_plot,
+        )
 
-        if show_life_stress_plot is True:
-            self.life_stress_plot = life_stress_plot(
-                dist="Lognormal",
-                model="Dual_Power",
-                life_func=life_func,
-                failure_groups=failure_groups,
-                stresses_for_groups=stresses_for_groups,
-                use_level_stress=use_level_stress,
-            )
+        self.life_stress_plot = life_stress_plot(
+            dist="Lognormal",
+            model="Dual_Power",
+            life_func=life_func,
+            failure_groups=failure_groups,
+            stresses_for_groups=stresses_for_groups,
+            use_level_stress=use_level_stress,
+            ax=show_life_stress_plot,
+        )
 
     @staticmethod
     def logf(t, S1, S2, c, m, n, sigma):  # Log PDF
@@ -7185,8 +7198,8 @@ class Fit_Normal_Exponential:
     right_censored_stress - an array or list of the corresponding stresses (such as temperature) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
     use_level_stress - The use level stress at which you want to know the mean life. Optional input.
     print_results - True/False. Default is True
-    show_probability_plot - True/False. Default is True
-    show_life_stress_plot - True/False. Default is True
+    show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
+    show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
     optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
 
@@ -7494,30 +7507,29 @@ class Fit_Normal_Exponential:
                     )
                 )
 
-        if show_probability_plot is True:
-            plt.figure()
-            self.probability_plot = ALT_prob_plot(
-                dist="Normal",
-                model="Exponential",
-                stresses_for_groups=stresses_for_groups,
-                failure_groups=failure_groups,
-                right_censored_groups=right_censored_groups,
-                life_func=life_func,
-                shape=self.sigma,
-                scale_for_change_df=mus_for_change_df,
-                shape_for_change_df=sigmas_for_change_df,
-                use_level_stress=use_level_stress,
-            )
+        self.probability_plot = ALT_prob_plot(
+            dist="Normal",
+            model="Exponential",
+            stresses_for_groups=stresses_for_groups,
+            failure_groups=failure_groups,
+            right_censored_groups=right_censored_groups,
+            life_func=life_func,
+            shape=self.sigma,
+            scale_for_change_df=mus_for_change_df,
+            shape_for_change_df=sigmas_for_change_df,
+            use_level_stress=use_level_stress,
+            ax=show_probability_plot,
+        )
 
-        if show_life_stress_plot is True:
-            self.life_stress_plot = life_stress_plot(
-                dist="Normal",
-                model="Exponential",
-                life_func=life_func,
-                failure_groups=failure_groups,
-                stresses_for_groups=stresses_for_groups,
-                use_level_stress=use_level_stress,
-            )
+        self.life_stress_plot = life_stress_plot(
+            dist="Normal",
+            model="Exponential",
+            life_func=life_func,
+            failure_groups=failure_groups,
+            stresses_for_groups=stresses_for_groups,
+            use_level_stress=use_level_stress,
+            ax=show_life_stress_plot,
+        )
 
     @staticmethod
     def logf(t, T, a, b, sigma):  # Log PDF
@@ -7558,8 +7570,8 @@ class Fit_Normal_Eyring:
     right_censored_stress - an array or list of the corresponding stresses (such as temperature) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
     use_level_stress - The use level stress at which you want to know the mean life. Optional input.
     print_results - True/False. Default is True
-    show_probability_plot - True/False. Default is True
-    show_life_stress_plot - True/False. Default is True
+    show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
+    show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
     optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
 
@@ -7859,30 +7871,29 @@ class Fit_Normal_Eyring:
                     )
                 )
 
-        if show_probability_plot is True:
-            plt.figure()
-            self.probability_plot = ALT_prob_plot(
-                dist="Normal",
-                model="Eyring",
-                stresses_for_groups=stresses_for_groups,
-                failure_groups=failure_groups,
-                right_censored_groups=right_censored_groups,
-                life_func=life_func,
-                shape=self.sigma,
-                scale_for_change_df=mus_for_change_df,
-                shape_for_change_df=sigmas_for_change_df,
-                use_level_stress=use_level_stress,
-            )
+        self.probability_plot = ALT_prob_plot(
+            dist="Normal",
+            model="Eyring",
+            stresses_for_groups=stresses_for_groups,
+            failure_groups=failure_groups,
+            right_censored_groups=right_censored_groups,
+            life_func=life_func,
+            shape=self.sigma,
+            scale_for_change_df=mus_for_change_df,
+            shape_for_change_df=sigmas_for_change_df,
+            use_level_stress=use_level_stress,
+            ax=show_probability_plot,
+        )
 
-        if show_life_stress_plot is True:
-            self.life_stress_plot = life_stress_plot(
-                dist="Normal",
-                model="Eyring",
-                life_func=life_func,
-                failure_groups=failure_groups,
-                stresses_for_groups=stresses_for_groups,
-                use_level_stress=use_level_stress,
-            )
+        self.life_stress_plot = life_stress_plot(
+            dist="Normal",
+            model="Eyring",
+            life_func=life_func,
+            failure_groups=failure_groups,
+            stresses_for_groups=stresses_for_groups,
+            use_level_stress=use_level_stress,
+            ax=show_life_stress_plot,
+        )
 
     @staticmethod
     def logf(t, T, a, c, sigma):  # Log PDF
@@ -7921,8 +7932,8 @@ class Fit_Normal_Power:
     right_censored_stress - an array or list of the corresponding stresses (such as load) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
     use_level_stress - The use level stress at which you want to know the mean life. Optional input.
     print_results - True/False. Default is True
-    show_probability_plot - True/False. Default is True
-    show_life_stress_plot - True/False. Default is True
+    show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
+    show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
     optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
 
@@ -8222,30 +8233,29 @@ class Fit_Normal_Power:
                     )
                 )
 
-        if show_probability_plot is True:
-            plt.figure()
-            self.probability_plot = ALT_prob_plot(
-                dist="Normal",
-                model="Power",
-                stresses_for_groups=stresses_for_groups,
-                failure_groups=failure_groups,
-                right_censored_groups=right_censored_groups,
-                life_func=life_func,
-                shape=self.sigma,
-                scale_for_change_df=mus_for_change_df,
-                shape_for_change_df=sigmas_for_change_df,
-                use_level_stress=use_level_stress,
-            )
+        self.probability_plot = ALT_prob_plot(
+            dist="Normal",
+            model="Power",
+            stresses_for_groups=stresses_for_groups,
+            failure_groups=failure_groups,
+            right_censored_groups=right_censored_groups,
+            life_func=life_func,
+            shape=self.sigma,
+            scale_for_change_df=mus_for_change_df,
+            shape_for_change_df=sigmas_for_change_df,
+            use_level_stress=use_level_stress,
+            ax=show_probability_plot,
+        )
 
-        if show_life_stress_plot is True:
-            self.life_stress_plot = life_stress_plot(
-                dist="Normal",
-                model="Power",
-                life_func=life_func,
-                failure_groups=failure_groups,
-                stresses_for_groups=stresses_for_groups,
-                use_level_stress=use_level_stress,
-            )
+        self.life_stress_plot = life_stress_plot(
+            dist="Normal",
+            model="Power",
+            life_func=life_func,
+            failure_groups=failure_groups,
+            stresses_for_groups=stresses_for_groups,
+            use_level_stress=use_level_stress,
+            ax=show_life_stress_plot,
+        )
 
     @staticmethod
     def logf(t, T, a, n, sigma):  # Log PDF
@@ -8284,8 +8294,8 @@ class Fit_Normal_Dual_Exponential:
     right_censored_stress_2 - an array or list of the corresponding stress 1 (such as humidity) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
     use_level_stress - [stress_1, stress_2]. A two element list or array of the use level stresses at which you want to know the mean life. Optional input.
     print_results - True/False. Default is True
-    show_probability_plot - True/False. Default is True
-    show_life_stress_plot - True/False. Default is True
+    show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
+    show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
     optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
 
@@ -8633,30 +8643,29 @@ class Fit_Normal_Dual_Exponential:
                     )
                 )
 
-        if show_probability_plot is True:
-            plt.figure()
-            self.probability_plot = ALT_prob_plot(
-                dist="Normal",
-                model="Dual_Exponential",
-                stresses_for_groups=stresses_for_groups,
-                failure_groups=failure_groups,
-                right_censored_groups=right_censored_groups,
-                life_func=life_func,
-                shape=self.sigma,
-                scale_for_change_df=mus_for_change_df,
-                shape_for_change_df=sigmas_for_change_df,
-                use_level_stress=use_level_stress,
-            )
+        self.probability_plot = ALT_prob_plot(
+            dist="Normal",
+            model="Dual_Exponential",
+            stresses_for_groups=stresses_for_groups,
+            failure_groups=failure_groups,
+            right_censored_groups=right_censored_groups,
+            life_func=life_func,
+            shape=self.sigma,
+            scale_for_change_df=mus_for_change_df,
+            shape_for_change_df=sigmas_for_change_df,
+            use_level_stress=use_level_stress,
+            ax=show_probability_plot,
+        )
 
-        if show_life_stress_plot is True:
-            self.life_stress_plot = life_stress_plot(
-                dist="Normal",
-                model="Dual_Exponential",
-                life_func=life_func,
-                failure_groups=failure_groups,
-                stresses_for_groups=stresses_for_groups,
-                use_level_stress=use_level_stress,
-            )
+        self.life_stress_plot = life_stress_plot(
+            dist="Normal",
+            model="Dual_Exponential",
+            life_func=life_func,
+            failure_groups=failure_groups,
+            stresses_for_groups=stresses_for_groups,
+            use_level_stress=use_level_stress,
+            ax=show_life_stress_plot,
+        )
 
     @staticmethod
     def logf(t, S1, S2, a, b, c, sigma):  # Log PDF
@@ -8700,8 +8709,8 @@ class Fit_Normal_Power_Exponential:
     right_censored_stress_2 - an array or list of the corresponding stress 1 (non-thermal stress) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
     use_level_stress - [stress_1, stress_2]. A two element list or array of the use level stresses at which you want to know the mean life. Optional input.
     print_results - True/False. Default is True
-    show_probability_plot - True/False. Default is True
-    show_life_stress_plot - True/False. Default is True
+    show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
+    show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
     optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
 
@@ -9049,30 +9058,29 @@ class Fit_Normal_Power_Exponential:
                     )
                 )
 
-        if show_probability_plot is True:
-            plt.figure()
-            self.probability_plot = ALT_prob_plot(
-                dist="Normal",
-                model="Power_Exponential",
-                stresses_for_groups=stresses_for_groups,
-                failure_groups=failure_groups,
-                right_censored_groups=right_censored_groups,
-                life_func=life_func,
-                shape=self.sigma,
-                scale_for_change_df=mus_for_change_df,
-                shape_for_change_df=sigmas_for_change_df,
-                use_level_stress=use_level_stress,
-            )
+        self.probability_plot = ALT_prob_plot(
+            dist="Normal",
+            model="Power_Exponential",
+            stresses_for_groups=stresses_for_groups,
+            failure_groups=failure_groups,
+            right_censored_groups=right_censored_groups,
+            life_func=life_func,
+            shape=self.sigma,
+            scale_for_change_df=mus_for_change_df,
+            shape_for_change_df=sigmas_for_change_df,
+            use_level_stress=use_level_stress,
+            ax=show_probability_plot,
+        )
 
-        if show_life_stress_plot is True:
-            self.life_stress_plot = life_stress_plot(
-                dist="Normal",
-                model="Power_Exponential",
-                life_func=life_func,
-                failure_groups=failure_groups,
-                stresses_for_groups=stresses_for_groups,
-                use_level_stress=use_level_stress,
-            )
+        self.life_stress_plot = life_stress_plot(
+            dist="Normal",
+            model="Power_Exponential",
+            life_func=life_func,
+            failure_groups=failure_groups,
+            stresses_for_groups=stresses_for_groups,
+            use_level_stress=use_level_stress,
+            ax=show_life_stress_plot,
+        )
 
     @staticmethod
     def logf(t, S1, S2, a, c, n, sigma):  # Log PDF
@@ -9115,8 +9123,8 @@ class Fit_Normal_Dual_Power:
     right_censored_stress_2 - an array or list of the corresponding stress 1 (such as load) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
     use_level_stress - [stress_1, stress_2]. A two element list or array of the use level stresses at which you want to know the mean life. Optional input.
     print_results - True/False. Default is True
-    show_probability_plot - True/False. Default is True
-    show_life_stress_plot - True/False. Default is True
+    show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
+    show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
     optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
 
@@ -9462,30 +9470,29 @@ class Fit_Normal_Dual_Power:
                     )
                 )
 
-        if show_probability_plot is True:
-            plt.figure()
-            self.probability_plot = ALT_prob_plot(
-                dist="Normal",
-                model="Dual_Power",
-                stresses_for_groups=stresses_for_groups,
-                failure_groups=failure_groups,
-                right_censored_groups=right_censored_groups,
-                life_func=life_func,
-                shape=self.sigma,
-                scale_for_change_df=mus_for_change_df,
-                shape_for_change_df=sigmas_for_change_df,
-                use_level_stress=use_level_stress,
-            )
+        self.probability_plot = ALT_prob_plot(
+            dist="Normal",
+            model="Dual_Power",
+            stresses_for_groups=stresses_for_groups,
+            failure_groups=failure_groups,
+            right_censored_groups=right_censored_groups,
+            life_func=life_func,
+            shape=self.sigma,
+            scale_for_change_df=mus_for_change_df,
+            shape_for_change_df=sigmas_for_change_df,
+            use_level_stress=use_level_stress,
+            ax=show_probability_plot,
+        )
 
-        if show_life_stress_plot is True:
-            self.life_stress_plot = life_stress_plot(
-                dist="Normal",
-                model="Dual_Power",
-                life_func=life_func,
-                failure_groups=failure_groups,
-                stresses_for_groups=stresses_for_groups,
-                use_level_stress=use_level_stress,
-            )
+        self.life_stress_plot = life_stress_plot(
+            dist="Normal",
+            model="Dual_Power",
+            life_func=life_func,
+            failure_groups=failure_groups,
+            stresses_for_groups=stresses_for_groups,
+            use_level_stress=use_level_stress,
+            ax=show_life_stress_plot,
+        )
 
     @staticmethod
     def logf(t, S1, S2, c, m, n, sigma):  # Log PDF
@@ -9525,8 +9532,8 @@ class Fit_Exponential_Exponential:
     right_censored_stress - an array or list of the corresponding stresses (such as temperature) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
     use_level_stress - The use level stress at which you want to know the mean life. Optional input.
     print_results - True/False. Default is True
-    show_probability_plot - True/False. Default is True
-    show_life_stress_plot - True/False. Default is True
+    show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
+    show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
     optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
 
@@ -9819,30 +9826,29 @@ class Fit_Exponential_Exponential:
                     )
                 )
 
-        if show_probability_plot is True:
-            plt.figure()
-            self.probability_plot = ALT_prob_plot(
-                dist="Exponential",
-                model="Exponential",
-                stresses_for_groups=stresses_for_groups,
-                failure_groups=failure_groups,
-                right_censored_groups=right_censored_groups,
-                life_func=life_func,
-                shape=None,
-                scale_for_change_df=alphas_for_change_df,
-                shape_for_change_df=betas_for_change_df,
-                use_level_stress=use_level_stress,
-            )
+        self.probability_plot = ALT_prob_plot(
+            dist="Exponential",
+            model="Exponential",
+            stresses_for_groups=stresses_for_groups,
+            failure_groups=failure_groups,
+            right_censored_groups=right_censored_groups,
+            life_func=life_func,
+            shape=None,
+            scale_for_change_df=alphas_for_change_df,
+            shape_for_change_df=betas_for_change_df,
+            use_level_stress=use_level_stress,
+            ax=show_probability_plot,
+        )
 
-        if show_life_stress_plot is True:
-            self.life_stress_plot = life_stress_plot(
-                dist="Exponential",
-                model="Exponential",
-                life_func=life_func,
-                failure_groups=failure_groups,
-                stresses_for_groups=stresses_for_groups,
-                use_level_stress=use_level_stress,
-            )
+        self.life_stress_plot = life_stress_plot(
+            dist="Exponential",
+            model="Exponential",
+            life_func=life_func,
+            failure_groups=failure_groups,
+            stresses_for_groups=stresses_for_groups,
+            use_level_stress=use_level_stress,
+            ax=show_life_stress_plot,
+        )
 
     @staticmethod
     def logf(t, T, a, b):  # Log PDF
@@ -9877,8 +9883,8 @@ class Fit_Exponential_Eyring:
     right_censored_stress - an array or list of the corresponding stresses (such as temperature) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
     use_level_stress - The use level stress at which you want to know the mean life. Optional input.
     print_results - True/False. Default is True
-    show_probability_plot - True/False. Default is True
-    show_life_stress_plot - True/False. Default is True
+    show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
+    show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
     optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
 
@@ -10163,30 +10169,29 @@ class Fit_Exponential_Eyring:
                     )
                 )
 
-        if show_probability_plot is True:
-            plt.figure()
-            self.probability_plot = ALT_prob_plot(
-                dist="Exponential",
-                model="Eyring",
-                stresses_for_groups=stresses_for_groups,
-                failure_groups=failure_groups,
-                right_censored_groups=right_censored_groups,
-                life_func=life_func,
-                shape=None,
-                scale_for_change_df=alphas_for_change_df,
-                shape_for_change_df=betas_for_change_df,
-                use_level_stress=use_level_stress,
-            )
+        self.probability_plot = ALT_prob_plot(
+            dist="Exponential",
+            model="Eyring",
+            stresses_for_groups=stresses_for_groups,
+            failure_groups=failure_groups,
+            right_censored_groups=right_censored_groups,
+            life_func=life_func,
+            shape=None,
+            scale_for_change_df=alphas_for_change_df,
+            shape_for_change_df=betas_for_change_df,
+            use_level_stress=use_level_stress,
+            ax=show_probability_plot,
+        )
 
-        if show_life_stress_plot is True:
-            self.life_stress_plot = life_stress_plot(
-                dist="Exponential",
-                model="Eyring",
-                life_func=life_func,
-                failure_groups=failure_groups,
-                stresses_for_groups=stresses_for_groups,
-                use_level_stress=use_level_stress,
-            )
+        self.life_stress_plot = life_stress_plot(
+            dist="Exponential",
+            model="Eyring",
+            life_func=life_func,
+            failure_groups=failure_groups,
+            stresses_for_groups=stresses_for_groups,
+            use_level_stress=use_level_stress,
+            ax=show_life_stress_plot,
+        )
 
     @staticmethod
     def logf(t, T, a, c):  # Log PDF
@@ -10221,8 +10226,8 @@ class Fit_Exponential_Power:
     right_censored_stress - an array or list of the corresponding stresses (such as load) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
     use_level_stress - The use level stress at which you want to know the mean life. Optional input.
     print_results - True/False. Default is True
-    show_probability_plot - True/False. Default is True
-    show_life_stress_plot - True/False. Default is True
+    show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
+    show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
     optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
 
@@ -10507,30 +10512,29 @@ class Fit_Exponential_Power:
                     )
                 )
 
-        if show_probability_plot is True:
-            plt.figure()
-            self.probability_plot = ALT_prob_plot(
-                dist="Exponential",
-                model="Power",
-                stresses_for_groups=stresses_for_groups,
-                failure_groups=failure_groups,
-                right_censored_groups=right_censored_groups,
-                life_func=life_func,
-                shape=None,
-                scale_for_change_df=alphas_for_change_df,
-                shape_for_change_df=betas_for_change_df,
-                use_level_stress=use_level_stress,
-            )
+        self.probability_plot = ALT_prob_plot(
+            dist="Exponential",
+            model="Power",
+            stresses_for_groups=stresses_for_groups,
+            failure_groups=failure_groups,
+            right_censored_groups=right_censored_groups,
+            life_func=life_func,
+            shape=None,
+            scale_for_change_df=alphas_for_change_df,
+            shape_for_change_df=betas_for_change_df,
+            use_level_stress=use_level_stress,
+            ax=show_probability_plot,
+        )
 
-        if show_life_stress_plot is True:
-            self.life_stress_plot = life_stress_plot(
-                dist="Exponential",
-                model="Power",
-                life_func=life_func,
-                failure_groups=failure_groups,
-                stresses_for_groups=stresses_for_groups,
-                use_level_stress=use_level_stress,
-            )
+        self.life_stress_plot = life_stress_plot(
+            dist="Exponential",
+            model="Power",
+            life_func=life_func,
+            failure_groups=failure_groups,
+            stresses_for_groups=stresses_for_groups,
+            use_level_stress=use_level_stress,
+            ax=show_life_stress_plot,
+        )
 
     @staticmethod
     def logf(t, T, a, n):  # Log PDF
@@ -10567,8 +10571,8 @@ class Fit_Exponential_Dual_Exponential:
     right_censored_stress_2 - an array or list of the corresponding stress 1 (such as humidity) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
     use_level_stress - [stress_1, stress_2]. A two element list or array of the use level stresses at which you want to know the mean life. Optional input.
     print_results - True/False. Default is True
-    show_probability_plot - True/False. Default is True
-    show_life_stress_plot - True/False. Default is True
+    show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
+    show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
     optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
 
@@ -10902,30 +10906,29 @@ class Fit_Exponential_Dual_Exponential:
                     )
                 )
 
-        if show_probability_plot is True:
-            plt.figure()
-            self.probability_plot = ALT_prob_plot(
-                dist="Exponential",
-                model="Dual_Exponential",
-                stresses_for_groups=stresses_for_groups,
-                failure_groups=failure_groups,
-                right_censored_groups=right_censored_groups,
-                life_func=life_func,
-                shape=None,
-                scale_for_change_df=alphas_for_change_df,
-                shape_for_change_df=betas_for_change_df,
-                use_level_stress=use_level_stress,
-            )
+        self.probability_plot = ALT_prob_plot(
+            dist="Exponential",
+            model="Dual_Exponential",
+            stresses_for_groups=stresses_for_groups,
+            failure_groups=failure_groups,
+            right_censored_groups=right_censored_groups,
+            life_func=life_func,
+            shape=None,
+            scale_for_change_df=alphas_for_change_df,
+            shape_for_change_df=betas_for_change_df,
+            use_level_stress=use_level_stress,
+            ax=show_probability_plot,
+        )
 
-        if show_life_stress_plot is True:
-            self.life_stress_plot = life_stress_plot(
-                dist="Exponential",
-                model="Dual_Exponential",
-                life_func=life_func,
-                failure_groups=failure_groups,
-                stresses_for_groups=stresses_for_groups,
-                use_level_stress=use_level_stress,
-            )
+        self.life_stress_plot = life_stress_plot(
+            dist="Exponential",
+            model="Dual_Exponential",
+            life_func=life_func,
+            failure_groups=failure_groups,
+            stresses_for_groups=stresses_for_groups,
+            use_level_stress=use_level_stress,
+            ax=show_life_stress_plot,
+        )
 
     @staticmethod
     def logf(t, S1, S2, a, b, c):  # Log PDF
@@ -10967,8 +10970,8 @@ class Fit_Exponential_Power_Exponential:
     right_censored_stress_2 - an array or list of the corresponding stress 1 (non-thermal stress) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
     use_level_stress - [stress_1, stress_2]. A two element list or array of the use level stresses at which you want to know the mean life. Optional input.
     print_results - True/False. Default is True
-    show_probability_plot - True/False. Default is True
-    show_life_stress_plot - True/False. Default is True
+    show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
+    show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
     optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
 
@@ -11302,30 +11305,29 @@ class Fit_Exponential_Power_Exponential:
                     )
                 )
 
-        if show_probability_plot is True:
-            plt.figure()
-            self.probability_plot = ALT_prob_plot(
-                dist="Exponential",
-                model="Power_Exponential",
-                stresses_for_groups=stresses_for_groups,
-                failure_groups=failure_groups,
-                right_censored_groups=right_censored_groups,
-                life_func=life_func,
-                shape=None,
-                scale_for_change_df=alphas_for_change_df,
-                shape_for_change_df=betas_for_change_df,
-                use_level_stress=use_level_stress,
-            )
+        self.probability_plot = ALT_prob_plot(
+            dist="Exponential",
+            model="Power_Exponential",
+            stresses_for_groups=stresses_for_groups,
+            failure_groups=failure_groups,
+            right_censored_groups=right_censored_groups,
+            life_func=life_func,
+            shape=None,
+            scale_for_change_df=alphas_for_change_df,
+            shape_for_change_df=betas_for_change_df,
+            use_level_stress=use_level_stress,
+            ax=show_probability_plot,
+        )
 
-        if show_life_stress_plot is True:
-            self.life_stress_plot = life_stress_plot(
-                dist="Exponential",
-                model="Power_Exponential",
-                life_func=life_func,
-                failure_groups=failure_groups,
-                stresses_for_groups=stresses_for_groups,
-                use_level_stress=use_level_stress,
-            )
+        self.life_stress_plot = life_stress_plot(
+            dist="Exponential",
+            model="Power_Exponential",
+            life_func=life_func,
+            failure_groups=failure_groups,
+            stresses_for_groups=stresses_for_groups,
+            use_level_stress=use_level_stress,
+            ax=show_life_stress_plot,
+        )
 
     @staticmethod
     def logf(t, S1, S2, a, c, n):  # Log PDF
@@ -11366,8 +11368,8 @@ class Fit_Exponential_Dual_Power:
     right_censored_stress_2 - an array or list of the corresponding stress 1 (such as load) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
     use_level_stress - [stress_1, stress_2]. A two element list or array of the use level stresses at which you want to know the mean life. Optional input.
     print_results - True/False. Default is True
-    show_probability_plot - True/False. Default is True
-    show_life_stress_plot - True/False. Default is True
+    show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
+    show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
     optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
 
@@ -11701,30 +11703,29 @@ class Fit_Exponential_Dual_Power:
                     )
                 )
 
-        if show_probability_plot is True:
-            plt.figure()
-            self.probability_plot = ALT_prob_plot(
-                dist="Exponential",
-                model="Dual_Power",
-                stresses_for_groups=stresses_for_groups,
-                failure_groups=failure_groups,
-                right_censored_groups=right_censored_groups,
-                life_func=life_func,
-                shape=None,
-                scale_for_change_df=alphas_for_change_df,
-                shape_for_change_df=betas_for_change_df,
-                use_level_stress=use_level_stress,
-            )
+        self.probability_plot = ALT_prob_plot(
+            dist="Exponential",
+            model="Dual_Power",
+            stresses_for_groups=stresses_for_groups,
+            failure_groups=failure_groups,
+            right_censored_groups=right_censored_groups,
+            life_func=life_func,
+            shape=None,
+            scale_for_change_df=alphas_for_change_df,
+            shape_for_change_df=betas_for_change_df,
+            use_level_stress=use_level_stress,
+            ax=show_probability_plot,
+        )
 
-        if show_life_stress_plot is True:
-            self.life_stress_plot = life_stress_plot(
-                dist="Exponential",
-                model="Dual_Power",
-                life_func=life_func,
-                failure_groups=failure_groups,
-                stresses_for_groups=stresses_for_groups,
-                use_level_stress=use_level_stress,
-            )
+        self.life_stress_plot = life_stress_plot(
+            dist="Exponential",
+            model="Dual_Power",
+            life_func=life_func,
+            failure_groups=failure_groups,
+            stresses_for_groups=stresses_for_groups,
+            use_level_stress=use_level_stress,
+            ax=show_life_stress_plot,
+        )
 
     @staticmethod
     def logf(t, S1, S2, c, m, n):  # Log PDF

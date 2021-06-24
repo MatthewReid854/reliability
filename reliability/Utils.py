@@ -29,6 +29,7 @@ least_squares - provides parameter estimates for distributions using the method 
 import numpy as np
 import scipy.stats as ss
 import matplotlib.pyplot as plt
+from matplotlib.axes import SubplotBase
 from matplotlib.collections import PolyCollection, LineCollection
 from matplotlib import ticker, gridspec, colors
 from autograd import jacobian as jac
@@ -4970,352 +4971,409 @@ def ALT_prob_plot(
     scale_for_change_df,
     shape_for_change_df,
     use_level_stress,
+    ax=True,
 ):
     """
     Generates an ALT probability plot using the inputs provided.
     """
 
-    from reliability.Probability_plotting import plotting_positions
+    if ax is True or issubclass(type(ax), SubplotBase) is True:
+        if issubclass(type(ax), SubplotBase) is True:
+            plt.sca(ax=ax)  # use the axes passed
+        else:
+            plt.figure()  # if no axes is passed, make a new figure
 
-    if dist == "Weibull":
-        from reliability.Probability_plotting import (
-            Weibull_probability_plot as probplot,
-        )
-        from reliability.Distributions import Weibull_Distribution as Distribution
-    elif dist == "Lognormal":
-        from reliability.Probability_plotting import (
-            Lognormal_probability_plot as probplot,
-        )
-        from reliability.Distributions import Lognormal_Distribution as Distribution
-    elif dist == "Normal":
-        from reliability.Probability_plotting import Normal_probability_plot as probplot
-        from reliability.Distributions import Normal_Distribution as Distribution
-    elif dist == "Exponential":
-        from reliability.Probability_plotting import (
-            Exponential_probability_plot_Weibull_Scale as probplot,
-        )
-        from reliability.Distributions import Exponential_Distribution as Distribution
-    else:
-        raise ValueError("dist must be either Weibull, Lognormal, Normal, Exponential")
+        from reliability.Probability_plotting import plotting_positions
 
-    if model in ["Dual_Exponential", "Power_Exponential", "Dual_Power"]:
-        dual_stress = True
-    elif model in ["Exponential", "Eyring", "Power"]:
-        dual_stress = False
-    else:
-        raise ValueError(
-            "model must be one of Exponential, Eyring, Power, Dual_Exponential, Power_Exponential, Dual_Power"
-        )
-
-    color_cycle = plt.rcParams["axes.prop_cycle"].by_key()[
-        "color"
-    ]  # gets the default color cycle
-    x_array = []
-    y_array = []
-    if dual_stress is True:
-        for i, stress in enumerate(stresses_for_groups):
-            f = failure_groups[i]
-            if right_censored_groups is None:
-                rc = None
-            else:
-                rc = right_censored_groups[i]
-            # get the plotting positions so they can be given to probability_plot_xylims for autoscaling
-            x, y = plotting_positions(failures=f, right_censored=rc)
-            x_array.extend(x)
-            y_array.extend(y)
-            # generate the probability plot and the line from the life-stress model
-            fitted_dist_params = make_fitted_dist_params_for_ALT_probplots(
-                dist=dist, params=[life_func(S1=stress[0], S2=stress[1]), shape]
+        if dist == "Weibull":
+            from reliability.Probability_plotting import (
+                Weibull_probability_plot as probplot,
             )
-            probplot(
-                failures=f,
-                right_censored=rc,
-                __fitted_dist_params=fitted_dist_params,
-                color=color_cycle[i],
-                label=str(
-                    str(round_to_decimals(stress[0]))
-                    + ", "
-                    + str(round_to_decimals(stress[1]))
-                ),
+            from reliability.Distributions import Weibull_Distribution as Distribution
+        elif dist == "Lognormal":
+            from reliability.Probability_plotting import (
+                Lognormal_probability_plot as probplot,
             )
-            # plot the original fitted line
-            if dist == "Exponential":
-                if scale_for_change_df[i] != "":
-                    Distribution(1 / scale_for_change_df[i]).CDF(
-                        linestyle="--", alpha=0.5, color=color_cycle[i]
+            from reliability.Distributions import Lognormal_Distribution as Distribution
+        elif dist == "Normal":
+            from reliability.Probability_plotting import (
+                Normal_probability_plot as probplot,
+            )
+            from reliability.Distributions import Normal_Distribution as Distribution
+        elif dist == "Exponential":
+            from reliability.Probability_plotting import (
+                Exponential_probability_plot_Weibull_Scale as probplot,
+            )
+            from reliability.Distributions import (
+                Exponential_Distribution as Distribution,
+            )
+        else:
+            raise ValueError(
+                "dist must be either Weibull, Lognormal, Normal, Exponential"
+            )
+
+        if model in ["Dual_Exponential", "Power_Exponential", "Dual_Power"]:
+            dual_stress = True
+        elif model in ["Exponential", "Eyring", "Power"]:
+            dual_stress = False
+        else:
+            raise ValueError(
+                "model must be one of Exponential, Eyring, Power, Dual_Exponential, Power_Exponential, Dual_Power"
+            )
+
+        color_cycle = plt.rcParams["axes.prop_cycle"].by_key()[
+            "color"
+        ]  # gets the default color cycle
+        x_array = []
+        y_array = []
+        if dual_stress is True:
+            for i, stress in enumerate(stresses_for_groups):
+                f = failure_groups[i]
+                if right_censored_groups is None:
+                    rc = None
+                else:
+                    rc = right_censored_groups[i]
+                # get the plotting positions so they can be given to probability_plot_xylims for autoscaling
+                x, y = plotting_positions(failures=f, right_censored=rc)
+                x_array.extend(x)
+                y_array.extend(y)
+                # generate the probability plot and the line from the life-stress model
+                fitted_dist_params = make_fitted_dist_params_for_ALT_probplots(
+                    dist=dist, params=[life_func(S1=stress[0], S2=stress[1]), shape]
+                )
+                probplot(
+                    failures=f,
+                    right_censored=rc,
+                    __fitted_dist_params=fitted_dist_params,
+                    color=color_cycle[i],
+                    label=str(
+                        str(round_to_decimals(stress[0]))
+                        + ", "
+                        + str(round_to_decimals(stress[1]))
+                    ),
+                )
+                # plot the original fitted line
+                if dist == "Exponential":
+                    if scale_for_change_df[i] != "":
+                        Distribution(1 / scale_for_change_df[i]).CDF(
+                            linestyle="--", alpha=0.5, color=color_cycle[i]
+                        )
+                else:
+                    if scale_for_change_df[i] != "":
+                        Distribution(
+                            scale_for_change_df[i], shape_for_change_df[i]
+                        ).CDF(linestyle="--", alpha=0.5, color=color_cycle[i])
+
+            if use_level_stress is not None:
+                if dist in ["Weibull", "Normal"]:
+                    distribution_at_use_stress = Distribution(
+                        life_func(S1=use_level_stress[0], S2=use_level_stress[1]), shape
                     )
-            else:
-                if scale_for_change_df[i] != "":
-                    Distribution(scale_for_change_df[i], shape_for_change_df[i]).CDF(
-                        linestyle="--", alpha=0.5, color=color_cycle[i]
+                elif dist == "Lognormal":
+                    distribution_at_use_stress = Distribution(
+                        np.log(
+                            life_func(S1=use_level_stress[0], S2=use_level_stress[1])
+                        ),
+                        shape,
                     )
-
-        if use_level_stress is not None:
-            if dist in ["Weibull", "Normal"]:
-                distribution_at_use_stress = Distribution(
-                    life_func(S1=use_level_stress[0], S2=use_level_stress[1]), shape
-                )
-            elif dist == "Lognormal":
-                distribution_at_use_stress = Distribution(
-                    np.log(life_func(S1=use_level_stress[0], S2=use_level_stress[1])),
-                    shape,
-                )
-            elif dist == "Exponential":
-                distribution_at_use_stress = Distribution(
-                    1 / life_func(S1=use_level_stress[0], S2=use_level_stress[1])
-                )
-            distribution_at_use_stress.CDF(
-                color=color_cycle[i + 1],
-                label=str(
-                    str(round_to_decimals(use_level_stress[0]))
-                    + ", "
-                    + str(round_to_decimals(use_level_stress[1]))
-                    + " (use stress)"
-                ),
-            )
-            x_array.extend(
-                [
-                    distribution_at_use_stress.quantile(min(y_array)),
-                    distribution_at_use_stress.quantile(max(y_array)),
-                ]
-            )  # this ensures the plot limits include the use stress distribution
-
-        plt.legend(title="     Stress 1, Stress 2")
-
-    else:
-        for i, stress in enumerate(stresses_for_groups):
-            f = failure_groups[i]
-            if right_censored_groups is None:
-                rc = None
-            else:
-                rc = right_censored_groups[i]
-            # get the plotting positions so they can be given to probability_plot_xylims for autoscaling
-            x, y = plotting_positions(failures=f, right_censored=rc)
-            x_array.extend(x)
-            y_array.extend(y)
-            # generate the probability plot and the line from the life-stress model
-            fitted_dist_params = make_fitted_dist_params_for_ALT_probplots(
-                dist=dist, params=[life_func(S1=stress), shape]
-            )
-            probplot(
-                failures=f,
-                right_censored=rc,
-                __fitted_dist_params=fitted_dist_params,
-                color=color_cycle[i],
-                label=round_to_decimals(stress),
-            )
-            # plot the original fitted line
-            if dist == "Exponential":
-                if scale_for_change_df[i] != "":
-                    Distribution(1 / scale_for_change_df[i]).CDF(
-                        linestyle="--", alpha=0.5, color=color_cycle[i]
+                elif dist == "Exponential":
+                    distribution_at_use_stress = Distribution(
+                        1 / life_func(S1=use_level_stress[0], S2=use_level_stress[1])
                     )
-            else:
-                if scale_for_change_df[i] != "":
-                    Distribution(scale_for_change_df[i], shape_for_change_df[i]).CDF(
-                        linestyle="--", alpha=0.5, color=color_cycle[i]
+                distribution_at_use_stress.CDF(
+                    color=color_cycle[i + 1],
+                    label=str(
+                        str(round_to_decimals(use_level_stress[0]))
+                        + ", "
+                        + str(round_to_decimals(use_level_stress[1]))
+                        + " (use stress)"
+                    ),
+                )
+                x_array.extend(
+                    [
+                        distribution_at_use_stress.quantile(min(y_array)),
+                        distribution_at_use_stress.quantile(max(y_array)),
+                    ]
+                )  # this ensures the plot limits include the use stress distribution
+
+            plt.legend(title="     Stress 1, Stress 2")
+
+        else:
+            for i, stress in enumerate(stresses_for_groups):
+                f = failure_groups[i]
+                if right_censored_groups is None:
+                    rc = None
+                else:
+                    rc = right_censored_groups[i]
+                # get the plotting positions so they can be given to probability_plot_xylims for autoscaling
+                x, y = plotting_positions(failures=f, right_censored=rc)
+                x_array.extend(x)
+                y_array.extend(y)
+                # generate the probability plot and the line from the life-stress model
+                fitted_dist_params = make_fitted_dist_params_for_ALT_probplots(
+                    dist=dist, params=[life_func(S1=stress), shape]
+                )
+                probplot(
+                    failures=f,
+                    right_censored=rc,
+                    __fitted_dist_params=fitted_dist_params,
+                    color=color_cycle[i],
+                    label=round_to_decimals(stress),
+                )
+                # plot the original fitted line
+                if dist == "Exponential":
+                    if scale_for_change_df[i] != "":
+                        Distribution(1 / scale_for_change_df[i]).CDF(
+                            linestyle="--", alpha=0.5, color=color_cycle[i]
+                        )
+                else:
+                    if scale_for_change_df[i] != "":
+                        Distribution(
+                            scale_for_change_df[i], shape_for_change_df[i]
+                        ).CDF(linestyle="--", alpha=0.5, color=color_cycle[i])
+
+            if use_level_stress is not None:
+                if dist in ["Weibull", "Normal"]:
+                    distribution_at_use_stress = Distribution(
+                        life_func(S1=use_level_stress), shape
                     )
-
-        if use_level_stress is not None:
-            if dist in ["Weibull", "Normal"]:
-                distribution_at_use_stress = Distribution(
-                    life_func(S1=use_level_stress), shape
+                elif dist == "Lognormal":
+                    distribution_at_use_stress = Distribution(
+                        np.log(life_func(S1=use_level_stress)), shape
+                    )
+                elif dist == "Exponential":
+                    distribution_at_use_stress = Distribution(
+                        1 / life_func(S1=use_level_stress)
+                    )
+                distribution_at_use_stress.CDF(
+                    color=color_cycle[i + 1],
+                    label=str(
+                        str(round_to_decimals(use_level_stress)) + " (use stress)"
+                    ),
                 )
-            elif dist == "Lognormal":
-                distribution_at_use_stress = Distribution(
-                    np.log(life_func(S1=use_level_stress)), shape
-                )
-            elif dist == "Exponential":
-                distribution_at_use_stress = Distribution(
-                    1 / life_func(S1=use_level_stress)
-                )
-            distribution_at_use_stress.CDF(
-                color=color_cycle[i + 1],
-                label=str(str(round_to_decimals(use_level_stress)) + " (use stress)"),
-            )
-            x_array.extend(
-                [
-                    distribution_at_use_stress.quantile(min(y_array)),
-                    distribution_at_use_stress.quantile(max(y_array)),
-                ]
-            )  # this ensures the plot limits include the use stress distribution
+                x_array.extend(
+                    [
+                        distribution_at_use_stress.quantile(min(y_array)),
+                        distribution_at_use_stress.quantile(max(y_array)),
+                    ]
+                )  # this ensures the plot limits include the use stress distribution
 
-        plt.legend(title="Stress")
+            plt.legend(title="Stress")
 
-    probplot_type = dist.lower()
-    if dist == "Exponential":
-        probplot_type = "weibull"
+        probplot_type = dist.lower()
+        if dist == "Exponential":
+            probplot_type = "weibull"
 
-    probability_plot_xylims(x=x_array, y=y_array, dist=probplot_type, spacing=0.1)
-    probability_plot_xyticks()
-    plt.title("Probability plot\n" + dist + "_" + model + " Model")
-    plt.tight_layout()
-    return plt.gca()
+        probability_plot_xylims(x=x_array, y=y_array, dist=probplot_type, spacing=0.1)
+        probability_plot_xyticks()
+        plt.title("Probability plot\n" + dist + "_" + model + " Model")
+        plt.tight_layout()
+        return plt.gca()
 
 
 def life_stress_plot(
-    model, dist, life_func, failure_groups, stresses_for_groups, use_level_stress
+    model,
+    dist,
+    life_func,
+    failure_groups,
+    stresses_for_groups,
+    use_level_stress,
+    ax=True,
 ):
     """
     Generates a life stress plot using the inputs provided. The life stress plot is an output from each of the ALT_fitters.
     """
-    color_cycle = plt.rcParams["axes.prop_cycle"].by_key()[
-        "color"
-    ]  # gets the default color cycle
-    if model in ["Dual_Exponential", "Power_Exponential", "Dual_Power"]:
-        dual_stress = True
-    elif model in ["Exponential", "Eyring", "Power"]:
-        dual_stress = False
-    else:
-        raise ValueError(
-            "model must be one of Exponential, Eyring, Power, Dual_Exponential, Power_Exponential, Dual_Power"
-        )
-
-    if dist == "Weibull":
-        line_label = r"$\alpha$"
-    elif dist == "Lognormal":
-        line_label = r"$ln(\sigma)$"
-    elif dist == "Normal":
-        line_label = r"$\sigma$"
-    elif dist == "Exponential":
-        line_label = r"$1/\lambda$"
-    else:
-        raise ValueError("dist must be either Weibull, Lognormal, Normal, Exponential")
-
-    fig = plt.figure(figsize=(10, 8))
-    if dual_stress is True:
-        # gridspec allows the plot to be placed off centre. This is not possible with subplots since the 3d plot's subplot is more than half the canvas
-        gridspec.GridSpec(nrows=1, ncols=7, figure=fig)
-        ax = plt.subplot2grid(
-            shape=(1, 7), loc=(0, 1), rowspan=1, colspan=7, projection="3d"
-        )
-        # collect all the stresses so we can find their min and max
-        stress_1_array0 = []
-        stress_2_array0 = []
-        for stress in stresses_for_groups:
-            stress_1_array0.append(stress[0])
-            stress_2_array0.append(stress[1])
-        if use_level_stress is not None:
-            stress_1_array0.append(use_level_stress[0])
-            stress_2_array0.append(use_level_stress[1])
-        min_stress_1 = min(stress_1_array0)
-        max_stress_1 = max(stress_1_array0)
-        min_stress_2 = min(stress_2_array0)
-        max_stress_2 = max(stress_2_array0)
-        # find the upper and lower limits so we can generate the grid of points for the surface
-        stress_1_delta_log = np.log(max_stress_1) - np.log(min_stress_1)
-        stress_2_delta_log = np.log(max_stress_2) - np.log(min_stress_2)
-        stress_1_array_lower = np.exp(np.log(min_stress_1) - stress_1_delta_log * 0.2)
-        stress_2_array_lower = np.exp(np.log(min_stress_2) - stress_2_delta_log * 0.2)
-        stress_1_array_upper = np.exp(np.log(max_stress_1) + stress_1_delta_log * 0.2)
-        stress_2_array_upper = np.exp(np.log(max_stress_2) + stress_2_delta_log * 0.2)
-        stress_1_array = np.linspace(stress_1_array_lower, stress_1_array_upper, 50)
-        stress_2_array = np.linspace(stress_2_array_lower, stress_2_array_upper, 50)
-        X, Y = np.meshgrid(stress_1_array, stress_2_array)
-        Z = life_func(S1=X, S2=Y)
-        # plot the surface showing stress_1 and stress_2 vs life
-        normalized_colors = colors.LogNorm(vmin=Z.min(), vmax=Z.max())
-        ax.plot_surface(
-            X,
-            Y,
-            Z,
-            cmap="jet_r",
-            norm=normalized_colors,
-            linewidth=1,
-            antialiased=False,
-            alpha=0.5,
-        )
-        for i, stress in enumerate(stresses_for_groups):
-            # plot the failures as a scatter plot
-            ax.scatter(
-                stress[0],
-                stress[1],
-                failure_groups[i],
-                color=color_cycle[i],
-                s=30,
-                label=str(
-                    "Failures at stress of "
-                    + str(round_to_decimals(stress[0]))
-                    + ", "
-                    + str(round_to_decimals(stress[1]))
-                ),
-            )
-        if use_level_stress is not None:
-            # plot the use level stress
-            ax.scatter(
-                use_level_stress[0],
-                use_level_stress[1],
-                life_func(S1=use_level_stress[0], S2=use_level_stress[1]),
-                color=color_cycle[i + 1],
-                s=30,
-                label=str(
-                    "Use stress of "
-                    + str(round_to_decimals(use_level_stress[0]))
-                    + ", "
-                    + str(round_to_decimals(use_level_stress[1]))
-                ),
-                marker="^",
-            )
-        ax.set_zlabel("Life")
-        ax.set_zlim(bottom=0)
-        plt.xlabel("Stress 1")
-        plt.ylabel("Stress 2")
-        plt.xlim(min(stress_1_array), max(stress_1_array))
-        plt.ylim(min(stress_2_array), max(stress_2_array))
-        plt.legend(
-            bbox_to_anchor=(0.02, 1)
-        )  # the bbox argument places the legend outside of the plot
-        plt.title("Life-stress plot\n" + dist + "_" + model + " model")
-
-    else:  # single stress model
-        if use_level_stress is not None:
-            min_stress = min(min(stresses_for_groups), use_level_stress)
+    if ax is True or issubclass(type(ax), SubplotBase) is True:
+        if model in ["Dual_Exponential", "Power_Exponential", "Dual_Power"]:
+            dual_stress = True
+        elif model in ["Exponential", "Eyring", "Power"]:
+            dual_stress = False
         else:
-            min_stress = min(stresses_for_groups)
-        max_stress = max(stresses_for_groups)
-        stress_delta_log = np.log(max_stress) - np.log(min_stress)
-        # lower and upper lim
-        stress_array_lower = np.exp(np.log(min_stress) - stress_delta_log * 0.2)
-        stress_array_upper = np.exp(np.log(max_stress) + stress_delta_log * 0.2)
-        # array for the life-stress line
-        stress_array = np.linspace(1, stress_array_upper * 10, 1000)
-        life_array = life_func(S1=stress_array)
-        plt.plot(
-            stress_array,
-            life_array,
-            label=str("Characteristic life (" + line_label + ")"),
-            color="k",
-        )
-        plt.ylabel("Life")
-        plt.xlabel("Stress")
-        for i, stress in enumerate(stresses_for_groups):
-            failure_points = failure_groups[i]
-            stress_points = np.ones_like(failure_points) * stress
-            plt.scatter(
-                stress_points,
-                failure_points,
-                color=color_cycle[i],
-                alpha=0.7,
-                label=str("Failures at stress of " + str(round_to_decimals(stress))),
+            raise ValueError(
+                "model must be one of Exponential, Eyring, Power, Dual_Exponential, Power_Exponential, Dual_Power"
             )
-        if use_level_stress is not None:
-            alpha_at_use_stress = life_func(S1=use_level_stress)
+
+        if issubclass(type(ax), SubplotBase) is True:
+            if dual_stress is False:
+                if hasattr(ax, "get_zlim") is False:
+                    plt.sca(ax=ax)  # use the axes passed if 2d
+                else:
+                    colorprint(
+                        "WARNING: The axes passed to the life_stress_plot has been ignored as it contains 3d projection. Only specify 3d projection in life stress plots for dual stress models.",
+                        text_color="red",
+                    )
+                    fig = plt.figure(figsize=(9, 9))
+            else:  # dual stress models require 3d projection
+                if hasattr(ax, "get_zlim") is True:
+                    plt.sca(ax=ax)  # use the axes passed if 3d
+                else:
+                    colorprint(
+                        "WARNING: The axes passed to the life_stress_plot has been ignored as it does not have 3d projection. This is a requirement of life stress plots for all dual stress models.",
+                        text_color="red",
+                    )
+                    fig = plt.figure(figsize=(9, 9))
+                    ax = fig.add_subplot(111, projection="3d")
+        else:
+            fig = plt.figure(figsize=(9, 9))  # if no axes is passed, make a new figure
+            if dual_stress is True:
+                ax = fig.add_subplot(111, projection="3d")
+
+        color_cycle = plt.rcParams["axes.prop_cycle"].by_key()[
+            "color"
+        ]  # gets the default color cycle
+
+        if dist == "Weibull":
+            line_label = r"$\alpha$"
+        elif dist == "Lognormal":
+            line_label = r"$ln(\sigma)$"
+        elif dist == "Normal":
+            line_label = r"$\sigma$"
+        elif dist == "Exponential":
+            line_label = r"$1/\lambda$"
+        else:
+            raise ValueError(
+                "dist must be either Weibull, Lognormal, Normal, Exponential"
+            )
+
+        if dual_stress is True:
+            # collect all the stresses so we can find their min and max
+            stress_1_array0 = []
+            stress_2_array0 = []
+            for stress in stresses_for_groups:
+                stress_1_array0.append(stress[0])
+                stress_2_array0.append(stress[1])
+            if use_level_stress is not None:
+                stress_1_array0.append(use_level_stress[0])
+                stress_2_array0.append(use_level_stress[1])
+            min_stress_1 = min(stress_1_array0)
+            max_stress_1 = max(stress_1_array0)
+            min_stress_2 = min(stress_2_array0)
+            max_stress_2 = max(stress_2_array0)
+            # find the upper and lower limits so we can generate the grid of points for the surface
+            stress_1_delta_log = np.log(max_stress_1) - np.log(min_stress_1)
+            stress_2_delta_log = np.log(max_stress_2) - np.log(min_stress_2)
+            stress_1_array_lower = np.exp(
+                np.log(min_stress_1) - stress_1_delta_log * 0.2
+            )
+            stress_2_array_lower = np.exp(
+                np.log(min_stress_2) - stress_2_delta_log * 0.2
+            )
+            stress_1_array_upper = np.exp(
+                np.log(max_stress_1) + stress_1_delta_log * 0.2
+            )
+            stress_2_array_upper = np.exp(
+                np.log(max_stress_2) + stress_2_delta_log * 0.2
+            )
+            stress_1_array = np.linspace(stress_1_array_lower, stress_1_array_upper, 50)
+            stress_2_array = np.linspace(stress_2_array_lower, stress_2_array_upper, 50)
+            X, Y = np.meshgrid(stress_1_array, stress_2_array)
+            Z = life_func(S1=X, S2=Y)
+            # plot the surface showing stress_1 and stress_2 vs life
+            normalized_colors = colors.LogNorm(vmin=Z.min(), vmax=Z.max())
+            ax.plot_surface(
+                X,
+                Y,
+                Z,
+                cmap="jet_r",
+                norm=normalized_colors,
+                linewidth=1,
+                antialiased=False,
+                alpha=0.5,
+            )
+            for i, stress in enumerate(stresses_for_groups):
+                # plot the failures as a scatter plot
+                ax.scatter(
+                    stress[0],
+                    stress[1],
+                    failure_groups[i],
+                    color=color_cycle[i],
+                    s=30,
+                    label=str(
+                        "Failures at stress of "
+                        + str(round_to_decimals(stress[0]))
+                        + ", "
+                        + str(round_to_decimals(stress[1]))
+                    ),
+                )
+            if use_level_stress is not None:
+                # plot the use level stress
+                ax.scatter(
+                    use_level_stress[0],
+                    use_level_stress[1],
+                    life_func(S1=use_level_stress[0], S2=use_level_stress[1]),
+                    color=color_cycle[i + 1],
+                    s=30,
+                    label=str(
+                        "Use stress of "
+                        + str(round_to_decimals(use_level_stress[0]))
+                        + ", "
+                        + str(round_to_decimals(use_level_stress[1]))
+                    ),
+                    marker="^",
+                )
+            ax.set_zlabel("Life")
+            ax.set_zlim(bottom=0)
+            plt.xlabel("Stress 1")
+            plt.ylabel("Stress 2")
+            plt.xlim(min(stress_1_array), max(stress_1_array))
+            plt.ylim(min(stress_2_array), max(stress_2_array))
+            plt.legend(loc="upper right")
+            plt.title("Life-stress plot\n" + dist + "_" + model + " model")
+
+        else:  # single stress model
+            if use_level_stress is not None:
+                min_stress = min(min(stresses_for_groups), use_level_stress)
+            else:
+                min_stress = min(stresses_for_groups)
+            max_stress = max(stresses_for_groups)
+            stress_delta_log = np.log(max_stress) - np.log(min_stress)
+            # lower and upper lim
+            stress_array_lower = np.exp(np.log(min_stress) - stress_delta_log * 0.2)
+            stress_array_upper = np.exp(np.log(max_stress) + stress_delta_log * 0.2)
+            # array for the life-stress line
+            stress_array = np.linspace(1, stress_array_upper * 10, 1000)
+            life_array = life_func(S1=stress_array)
             plt.plot(
-                [use_level_stress, use_level_stress, plt.xlim()[0]],
-                [-1e20, alpha_at_use_stress, alpha_at_use_stress],
-                label=str("Use stress of " + str(round_to_decimals(use_level_stress))),
-                color=color_cycle[i + 1],
+                stress_array,
+                life_array,
+                label=str("Characteristic life (" + line_label + ")"),
+                color="k",
             )
-        # this is a list comprehension to flatten the list of lists. np.ravel won't work here
-        flattened_failure_groups = [
-            item for sublist in failure_groups for item in sublist
-        ]
-        plt.ylim(
-            0,
-            1.2 * max(life_func(S1=stress_array_lower), max(flattened_failure_groups)),
-        )
-        plt.xlim(stress_array_lower, stress_array_upper)
-        plt.legend(loc="upper right")
-        plt.title("Life-stress plot\n" + dist + "-" + model + " model")
-        plt.tight_layout()
-    return plt.gca()
+            plt.ylabel("Life")
+            plt.xlabel("Stress")
+            for i, stress in enumerate(stresses_for_groups):
+                failure_points = failure_groups[i]
+                stress_points = np.ones_like(failure_points) * stress
+                plt.scatter(
+                    stress_points,
+                    failure_points,
+                    color=color_cycle[i],
+                    alpha=0.7,
+                    label=str(
+                        "Failures at stress of " + str(round_to_decimals(stress))
+                    ),
+                )
+            if use_level_stress is not None:
+                alpha_at_use_stress = life_func(S1=use_level_stress)
+                plt.plot(
+                    [use_level_stress, use_level_stress, plt.xlim()[0]],
+                    [-1e20, alpha_at_use_stress, alpha_at_use_stress],
+                    label=str(
+                        "Use stress of " + str(round_to_decimals(use_level_stress))
+                    ),
+                    color=color_cycle[i + 1],
+                )
+            # this is a list comprehension to flatten the list of lists. np.ravel won't work here
+            flattened_failure_groups = [
+                item for sublist in failure_groups for item in sublist
+            ]
+            plt.ylim(
+                0,
+                1.2
+                * max(life_func(S1=stress_array_lower), max(flattened_failure_groups)),
+            )
+            plt.xlim(stress_array_lower, stress_array_upper)
+            plt.legend(loc="upper right")
+            plt.title("Life-stress plot\n" + dist + "-" + model + " model")
+            plt.tight_layout()
+        return plt.gca()

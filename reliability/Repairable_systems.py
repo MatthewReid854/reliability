@@ -230,12 +230,12 @@ class optimal_replacement_time:
             integrate_SF = lambda x: integrate.quad(calc_SF, 0, x)[0]
 
             # vectorize them
-            calc_SFv = np.vectorize(calc_SF)
-            integrate_SFv = np.vectorize(integrate_SF)
+            vcalc_SF = np.vectorize(calc_SF)
+            vintegrate_SF = np.vectorize(integrate_SF)
 
             # calculate the SF and intergral at each time
-            sf = calc_SFv(t)
-            integral = integrate_SFv(t)
+            sf = vcalc_SF(t)
+            integral = vintegrate_SF(t)
 
             CPUT = (cost_PM * sf + cost_CM * (1 - sf)) / integral
             idx = np.argmin(CPUT)
@@ -247,14 +247,8 @@ class optimal_replacement_time:
             )
         self.ORT = ORT
         self.min_cost = min_cost
-
-        if min_cost < 1:
-            min_cost_rounded = round(
-                min_cost, -int(np.floor(np.log10(abs(min_cost)))) + 1
-            )  # this rounds to exactly 2 sigfigs no matter the number of preceding zeros
-        else:
-            min_cost_rounded = round(min_cost, 2)
-        ORT_rounded = round(ORT, 2)
+        min_cost_rounded = round_to_decimals(min_cost, 2)
+        ORT_rounded = round_to_decimals(ORT, 2)
 
         if print_results is True:
             colorprint(
@@ -287,7 +281,7 @@ class optimal_replacement_time:
                 + "\nOptimal replacement time is "
                 + str(ORT_rounded)
             )
-            plt.text(ORT, min_cost, text_str, verticalalignment="top")
+            plt.text(ORT, min_cost, text_str, va="top")
             plt.xlabel("Replacement time")
             plt.ylabel("Cost per unit time")
             plt.title("Optimal replacement time estimation")
@@ -303,29 +297,25 @@ class optimal_replacement_time:
             else:
                 plt.figure()  # if no axes is passed, make a new figure
             xupper = np.round(cost_CM / cost_PM, 0) * 2
-            CC_CP = np.linspace(1, xupper, 200)  # cost unscheduled / cost preventative
+            CC_CP = np.linspace(1, xupper, 200)  # cost CM / cost PM
             CC = CC_CP * cost_PM
-            ORT_array = []
+            ORT_array = []  # optimal replacement time
 
+            # get the ORT from the minimum CPUT for each CC
             if q == 1:
-                for _cost_CM in CC:
-                    CPUT = (
-                        (cost_PM * (t / weibull_alpha) ** weibull_beta) + _cost_CM
-                    ) / t
-                    ORT = weibull_alpha * (
-                        (_cost_CM / (cost_PM * (weibull_beta - 1)))
-                        ** (1 / weibull_beta)
-                    )
-                    ORT_array.append(ORT)
+                calc_ORT = lambda x: weibull_alpha * (
+                    (x / (cost_PM * (weibull_beta - 1))) ** (1 / weibull_beta)
+                )
             else:  # q = 0
-                for _cost_CM in CC:
-                    CPUT = (cost_PM * sf + _cost_CM * (1 - sf)) / integral
-                    idx = np.argmin(CPUT)
-                    ORT = t[idx]  # optimal replacement time
-                    ORT_array.append(ORT)
+                calc_ORT = lambda x: t[
+                    np.argmin((cost_PM * sf + x * (1 - sf)) / integral)
+                ]
+
+            vcalc_ORT = np.vectorize(calc_ORT)
+            ORT_array = vcalc_ORT(CC)
 
             plt.plot(CC_CP, ORT_array)
-            plt.xlim(0, xupper)
+            plt.xlim(1, xupper)
             plt.ylim(0, self.ORT * 2)
             plt.scatter(cost_CM / cost_PM, self.ORT)
             # vertical alignment based on plot increasing or decreasing
@@ -342,7 +332,7 @@ class optimal_replacement_time:
                     + "\n$cost_{PM} = $"
                     + str(cost_PM)
                     + "\nInterval = "
-                    + str(round(self.ORT, 2))
+                    + str(round_to_decimals(self.ORT, 2))
                 ),
                 x=cost_CM / cost_PM * 1.05,
                 y=self.ORT * mult,

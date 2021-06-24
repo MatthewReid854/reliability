@@ -15,3 +15,4 @@ During the process of writing *reliability* there have been many problems that I
 - `Thomas Enzinger <https://github.com/TEFEdotCC>`_ for help in improving the method of finding the area in stress-strength interference between any two distributions. Previously this was done using a monte-carlo method, but Thomas' method is much more accurate and always consistent. This is incorporated in Version 0.5.0.
 - `Karthick Mani <https://www.linkedin.com/in/manikarthick/>`_ for help implementing the Loglogistic and Gumbel Distributions including implementation of these distributions in Fitters and Probability_plotting.
 - Jake Sadie for identifying an error in the formula used for stress-strength interference of any two distributions. This error has been corrected in version 0.5.7.
+- Ed Burrows for x10 speed improvement to optimal_replacement_time by using numpy.vectorize.

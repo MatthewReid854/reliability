@@ -10,7 +10,7 @@ Changelog
 
 **Summary of changes**
 
-Version 0.5.7 of `reliability` completes a part of this project that has taken almost one year by providing confidence intervals for all standard distributions (except Beta_2P). This release now incorporates confidence intervals for the Gamma_2P and Gamma_3P distributions which were the last remaining to be implemented and proved quite a mathematical challenge. In addition to these enhancements, version 0.5.7 contains numerous minor bug fixes.
+Version 0.5.7 of `reliability` completes a part of this project that has taken almost one year by providing confidence intervals for all standard distributions (except Beta_2P). This release now incorporates confidence intervals for the Gamma_2P and Gamma_3P distributions which were the last remaining to be implemented and proved quite a mathematical challenge. In addition to these enhancements, version 0.5.7 contains numerous minor bug fixes and API changes.
 
 **New features**
 
@@ -25,6 +25,7 @@ Version 0.5.7 of `reliability` completes a part of this project that has taken a
 -    In stress_strength and stress_strength_normal the argument show_distribution_plot has been changed to show_plot. This is done for simplicity and standardisation.
 -    The outputs from all nonparametric functions (.KM, .RA, .NA) are now arrays. Previously these were lists.
 -    Repairable_systems.optimal_replacement_time argument "show_plot" has been changed to "show_time_plot". There is another argument "show_ratio_plot" which has been added. While normally expecting True/False, these arguments will also accept axes subclasses if you want them to plot on a specific axes.
+-    All of the ALT_Fitters (except Fit_Everything_ALT) will now accept an axes object into their show_probability_plot and show_life_stress_plot arguments. If an axes object is passed, the plot will be added to the axes specified. This enables the plots to be placed in subplots rather than always being in their own figures.
 
 **Bug Fixes**
 
@@ -40,6 +41,7 @@ Version 0.5.7 of `reliability` completes a part of this project that has taken a
 
 -    Improvements to API documentation. This has been a long term work in progress, but is nearly finished.
 -    Speed enhancement (x10) to Repairable_systems.optimal_replacement_time and the addition of a new plot (cost ratio vs replacement interval). Thanks to Ed Burrows for contributing the speed enhancement.
+-    chi2test and KStest will no longer produce their own figure and show the plot automatically. This now enables the plot to be added to an existing figure as a subplot. If not part of a subplot the behaviour is unchanged except that you now need to use plt.show() to show the plot.
 
 **Version: 0.5.6 --- Released: 7 March 2021**
 '''''''''''''''''''''''''''''''''''''''''''''

@@ -36,8 +36,8 @@ Inputs:
 -    right_censored_stress_2 - an array or list of the corresponding stress 1 (such as humidity) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
 -    use_level_stress - [stress_1, stress_2]. A two element list or array of the use level stresses at which you want to know the mean life. Optional input.
 -    print_results - True/False. Default is True
--    show_probability_plot - True/False. Default is True
--    show_life_stress_plot - True/False. Default is True
+-    show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
+-    show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
 -    CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
 -    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
 

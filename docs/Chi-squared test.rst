@@ -21,11 +21,13 @@ In the example below we import a dataset called mileage which contains 100 value
     from reliability.Distributions import Normal_Distribution
     from reliability.Reliability_testing import chi2test
     import numpy as np
+    import matplotlib.pyplot as plt
 
     data = mileage().failures
     dist = Normal_Distribution(mu=30011, sigma=10472)
     bins = [0, 13417, 18104, 22791, 27478, 32165, 36852, 41539, 46226, np.inf] #it is not necessary to specify the bins and leaving them unspecified is usually best
     chi2test(distribution=dist, data=data, bins=bins)
+    plt.show()
     
     '''
     Results from Chi-squared test:
