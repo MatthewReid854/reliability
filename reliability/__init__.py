@@ -15,7 +15,7 @@ from reliability import Utils
 from reliability import Convert_data
 
 __title__ = 'reliability'
-__version__ = "0.5.7"
+__version__ = "0.5.8"
 __description__ = 'A Python library for reliability engineering'
 __url__ = 'https://reliability.readthedocs.io/en/latest/index.html'
 __author__ = 'Matthew Reid'
