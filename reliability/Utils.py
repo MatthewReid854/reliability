@@ -6,24 +6,37 @@ Functions have been placed here as to declutter the dropdown lists of your IDE a
 It is not expected that users will be using any utils directly.
 
 Included functions are:
-round_to_decimals - applies different rounding rules to numbers above and below 1 so that small numbers do not get rounded to 0.
-transform_spaced - Creates linearly spaced array (in transform space) based on a specified transform. This is like np.logspace but it can make an array that is weibull spaced, normal spaced, etc.
+ALT_MLE_optimisation - performs optimisation for the ALT_Fitters
+ALT_fitters_input_checking - performs input checking for the ALT_Fitters
+ALT_least_squares - least squares estimation for ALT_Fitters
+ALT_prob_plot - probability plotting for ALT_Fitters
+LS_optimisation - least squares optimisation for Fitters
+MLE_optimisation - maximum likelihood estimation optimisation for Fitters
+anderson_darling - calculated the anderson darling (AD) goodness of fit statistic
 axes_transforms - Custom scale functions used in Probability_plotting
-get_axes_limits - gets the current axes limits
-restore_axes_limits - restores the axes limits based on values from get_axes_limits()
+clean_CI_arrays - cleans the CI arrays of nan and illegal values
+colorprint - prints to the console in color, bold, italic, and underline
+distribution_confidence_intervals - calculates and plots the confidence intervals for the distributions
+fill_no_autoscale - creates a shaded region without adding it to the global list of objects to consider when autoscale is calculated
+fitters_input_checking - error checking and default values for all the fitters
 generate_X_array - generates the X values for all distributions
-zeroise_below_gamma - sets all y values to zero when x < gamma. Used when the HF and CHF equations are specified
-xy_transform - provides conversions between spatial (-inf,inf) and axes coordinates (0,1).
+get_axes_limits - gets the current axes limits
+least_squares - provides parameter estimates for distributions using the method of least squares. Used extensively by Fitters.
+life_stress_plot - generates the life stress plot for ALT_Fitters
+line_no_autoscale - creates a line without adding it to the global list of objects to consider when autoscale is calculated
+linear_regression - given x and y data it will return slope and intercept of line of best fit. Includes options to specify slope or intercept.
+make_fitted_dist_params_for_ALT_probplots - creates a class structure for the ALT probability plots to give to Probability_plotting
+no_reverse - corrects for reversals in confidence intervals
 probability_plot_xylims - sets the x and y limits on probability plots
 probability_plot_xyticks - sets the x and y ticks on probability plots
-anderson_darling - calculates the Anderson-Darling goodness of fit statistic
-colorprint - prints to the console in color, bold, italic, and underline
-fitters_input_checking - error checking and default values for all the fitters
-fill_no_autoscale - creates a shaded region without adding it to the global list of objects to consider when autoscale is calculated
-line_no_autoscale - creates a line without adding it to the global list of objects to consider when autoscale is calculated
-distribution_confidence_intervals - calculated and plots the confidence intervals for the distributions
-linear_regression - given x and y data it will return slope and intercept of line of best fit. Includes options to specify slope or intercept.
-least_squares - provides parameter estimates for distributions using the method of least squares. Used extensively by Fitters.
+removeNaNs - removes nan
+restore_axes_limits - restores the axes limits based on values from get_axes_limits()
+round_to_decimals - applies different rounding rules to numbers above and below 1 so that small numbers do not get rounded to 0.
+transform_spaced - Creates linearly spaced array (in transform space) based on a specified transform. This is like np.logspace but it can make an array that is weibull spaced, normal spaced, etc.
+validate_CI_params - checks that the confidence intervals have all the right parameters to be generated
+write_df_to_xlsx - converts a dataframe to an xlsx file
+xy_transform - provides conversions between spatial (-inf,inf) and axes coordinates (0,1).
+zeroise_below_gamma - sets all y values to zero when x < gamma. Used when the HF and CHF equations are specified
 """
 
 import numpy as np
@@ -31,7 +44,7 @@ import scipy.stats as ss
 import matplotlib.pyplot as plt
 from matplotlib.axes import SubplotBase
 from matplotlib.collections import PolyCollection, LineCollection
-from matplotlib import ticker, gridspec, colors
+from matplotlib import ticker, colors
 from autograd import jacobian as jac
 from autograd_gamma import gammainccinv as agammainccinv
 from autograd_gamma import gammaincc as agammaincc
@@ -5202,7 +5215,7 @@ def life_stress_plot(
                         "WARNING: The axes passed to the life_stress_plot has been ignored as it contains 3d projection. Only specify 3d projection in life stress plots for dual stress models.",
                         text_color="red",
                     )
-                    fig = plt.figure(figsize=(9, 9))
+                    plt.figure(figsize=(9, 9))
             else:  # dual stress models require 3d projection
                 if hasattr(ax, "get_zlim") is True:
                     plt.sca(ax=ax)  # use the axes passed if 3d

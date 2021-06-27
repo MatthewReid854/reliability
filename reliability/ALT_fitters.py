@@ -2,7 +2,6 @@ import numpy as np
 import scipy.stats as ss
 import pandas as pd
 import matplotlib.pyplot as plt
-from matplotlib.axes import SubplotBase
 import autograd.numpy as anp
 from autograd.scipy.special import erf
 from autograd.differential_operators import hessian
