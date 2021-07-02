@@ -11,7 +11,6 @@ The following development roadmap is the current task list and implementation pl
 
 -    Correct the formatting in the API docs for every function - still need to do ALT_fitters, Convert_data, Datasets, PoF, Utils
 -    DSZI Distribution along with its associated fitters and probability plots. DSZI is a combination of DS (`Defective Subpopulation Distribution <https://www.jmp.com/support/help/14-2/distributions-2.shtml>`_. This is for when the CDF does not reach 1 due to a lot of right censored data) and ZI (`Zero Inflated Distribution <https://www.jmp.com/support/help/14-2/distributions-2.shtml>`_. This is for when the CDF starts above 0 due to a lot of 'dead on arrival' products in the dataset). A DSZI distribution may include features of both the DS and ZI distributions.
--    Changes to the default optimiser to take advantage of scipy enabling nelder-mead to accept bounds. This will require scipy>=1.7.0
 -    Improvement to the online documentation for how some of these methods work, including the addition of more formulas, algorithms, and better referencing.
 -    Make tests for everything that doesn't have a test yet.
 -    Add plotting to all things that can plot in order to increase test coverage.

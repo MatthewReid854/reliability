@@ -6,12 +6,12 @@ Functions have been placed here as to declutter the dropdown lists of your IDE a
 It is not expected that users will be using any utils directly.
 
 Included functions are:
-ALT_MLE_optimisation - performs optimisation for the ALT_Fitters
+ALT_MLE_optimization - performs optimization for the ALT_Fitters
 ALT_fitters_input_checking - performs input checking for the ALT_Fitters
 ALT_least_squares - least squares estimation for ALT_Fitters
 ALT_prob_plot - probability plotting for ALT_Fitters
-LS_optimisation - least squares optimisation for Fitters
-MLE_optimisation - maximum likelihood estimation optimisation for Fitters
+LS_optimization - least squares optimization for Fitters
+MLE_optimization - maximum likelihood estimation optimization for Fitters
 anderson_darling - calculated the anderson darling (AD) goodness of fit statistic
 axes_transforms - Custom scale functions used in Probability_plotting
 clean_CI_arrays - cleans the CI arrays of nan and illegal values
@@ -1301,21 +1301,32 @@ class fitters_input_checking:
             )
 
         # error checking for optimizer
-        if optimizer is None:
-            frac_cens = len(right_censored) / (len(failures) + len(right_censored))
-            if frac_cens > 0.97:
-                optimizer = "TNC"  # default optimizer above 97% right censored data
-            else:
-                optimizer = (
-                    "L-BFGS-B"  # default optimizer below 97% right censored data
+        if optimizer is not None:
+            if type(optimizer) is not str:
+                raise ValueError(
+                    'optimizer must be either "TNC", "L-BFGS-B", "nelder-mead", "powell", "best" or None. For more detail see the documentation: https://reliability.readthedocs.io/en/latest/Optimizers.html'
                 )
-        elif optimizer.upper() not in ["L-BFGS-B", "TNC", "POWELL"]:
-            raise ValueError(
-                'optimizer must be either "L-BFGS-B", "TNC", or "powell". Default is "L-BFGS-B" below 97% censored data and "TNC" above 97% censored data.'
-            )
+            if optimizer.upper() == "TNC":
+                optimizer = "TNC"
+            elif optimizer.upper() == "POWELL":
+                optimizer = "powell"
+            elif optimizer.upper() in ["L-BFGS-B", "LBFGSB"]:
+                optimizer = "L-BFGS-B"
+            elif optimizer.upper() in ["NELDER-MEAD", "NELDERMEAD", "NM"]:
+                optimizer = "nelder-mead"
+            elif optimizer.upper() in ["ALL", "BEST"]:
+                optimizer = "best"
+            else:
+                raise ValueError(
+                    'optimizer must be either "TNC", "L-BFGS-B", "nelder-mead", "powell", "best" or None. For more detail see the documentation: https://reliability.readthedocs.io/en/latest/Optimizers.html'
+                )
 
         # error checking for method
         if method is not None:
+            if type(method) is not str:
+                raise ValueError(
+                    'method must be either "MLE" (maximum likelihood estimation), "LS" (least squares), "RRX" (rank regression on X), or "RRY" (rank regression on Y).'
+                )
             if method.upper() == "RRX":
                 method = "RRX"
             elif method.upper() == "RRY":
@@ -1622,9 +1633,23 @@ class ALT_fitters_input_checking:
 
         # error checking for optimizer
         if optimizer is not None:
-            if optimizer.upper() not in ["L-BFGS-B", "TNC", "POWELL"]:
+            if type(optimizer) is not str:
                 raise ValueError(
-                    'optimizer must be either "L-BFGS-B", "TNC", or "powell"'
+                    'optimizer must be either "TNC", "L-BFGS-B", "nelder-mead", "powell", "best" or None. For more detail see the documentation: https://reliability.readthedocs.io/en/latest/Optimizers.html'
+                )
+            if optimizer.upper() == "TNC":
+                optimizer = "TNC"
+            elif optimizer.upper() == "POWELL":
+                optimizer = "powell"
+            elif optimizer.upper() in ["L-BFGS-B", "LBFGSB"]:
+                optimizer = "L-BFGS-B"
+            elif optimizer.upper() in ["NELDER-MEAD", "NELDERMEAD", "NM"]:
+                optimizer = "nelder-mead"
+            elif optimizer.upper() in ["ALL", "BEST"]:
+                optimizer = "best"
+            else:
+                raise ValueError(
+                    'optimizer must be either "TNC", "L-BFGS-B", "nelder-mead", "powell", "best" or None. For more detail see the documentation: https://reliability.readthedocs.io/en/latest/Optimizers.html'
                 )
 
         # check the number of unique stresses
@@ -2047,8 +2072,9 @@ class distribution_confidence_intervals:
                 xlower=t, xupper=t, ylower=Y_lower, yupper=Y_upper, plot_type=func
             )
             # artificially correct for any reversals
-            Y_lower = no_reverse(Y_lower, CI_type=None, plot_type=func)
-            Y_upper = no_reverse(Y_upper, CI_type=None, plot_type=func)
+            if len(Y_lower) > 2 and len(Y_upper) > 2:
+                Y_lower = no_reverse(Y_lower, CI_type=None, plot_type=func)
+                Y_upper = no_reverse(Y_upper, CI_type=None, plot_type=func)
 
             if func == "CDF":
                 yy_upper = 1 - Y_upper
@@ -2203,7 +2229,7 @@ class distribution_confidence_intervals:
                     xlower=t_lower, xupper=t_upper, ylower=Y, yupper=Y, plot_type=func
                 )
                 # artificially correct for any reversals
-                if q is None:
+                if q is None and len(t_lower) > 2 and len(t_upper) > 2:
                     t_lower = no_reverse(t_lower, CI_type=CI_type, plot_type=func)
                     t_upper = no_reverse(t_upper, CI_type=CI_type, plot_type=func)
 
@@ -2260,8 +2286,9 @@ class distribution_confidence_intervals:
                     xlower=t, xupper=t, ylower=Y_lower, yupper=Y_upper, plot_type=func
                 )
                 # artificially correct for any reversals
-                Y_lower = no_reverse(Y_lower, CI_type=CI_type, plot_type=func)
-                Y_upper = no_reverse(Y_upper, CI_type=CI_type, plot_type=func)
+                if len(Y_lower) > 2 and len(Y_upper) > 2:
+                    Y_lower = no_reverse(Y_lower, CI_type=CI_type, plot_type=func)
+                    Y_upper = no_reverse(Y_upper, CI_type=CI_type, plot_type=func)
 
                 if func == "CDF":
                     yy_lower = 1 - Y_lower
@@ -2413,7 +2440,7 @@ class distribution_confidence_intervals:
                     xlower=t_lower, xupper=t_upper, ylower=Y, yupper=Y, plot_type=func
                 )
                 # artificially correct for any reversals
-                if q is None:
+                if q is None and len(t_lower) > 2 and len(t_upper) > 2:
                     t_lower = no_reverse(t_lower, CI_type=CI_type, plot_type=func)
                     t_upper = no_reverse(t_upper, CI_type=CI_type, plot_type=func)
 
@@ -2473,8 +2500,9 @@ class distribution_confidence_intervals:
                     xlower=t, xupper=t, ylower=Y_lower, yupper=Y_upper, plot_type=func
                 )
                 # artificially correct for any reversals
-                Y_lower = no_reverse(Y_lower, CI_type=CI_type, plot_type=func)
-                Y_upper = no_reverse(Y_upper, CI_type=CI_type, plot_type=func)
+                if len(Y_lower) > 2 and len(Y_upper) > 2:
+                    Y_lower = no_reverse(Y_lower, CI_type=CI_type, plot_type=func)
+                    Y_upper = no_reverse(Y_upper, CI_type=CI_type, plot_type=func)
 
                 if func == "CDF":
                     yy_lower = 1 - Y_lower
@@ -2616,7 +2644,7 @@ class distribution_confidence_intervals:
                     xlower=t_lower, xupper=t_upper, ylower=Y, yupper=Y, plot_type=func
                 )
                 # artificially correct for any reversals
-                if q is None:
+                if q is None and len(t_lower) > 2 and len(t_upper) > 2:
                     t_lower = no_reverse(t_lower, CI_type=CI_type, plot_type=func)
                     t_upper = no_reverse(t_upper, CI_type=CI_type, plot_type=func)
 
@@ -2665,8 +2693,9 @@ class distribution_confidence_intervals:
                     xlower=t, xupper=t, ylower=Y_lower, yupper=Y_upper, plot_type=func
                 )
                 # artificially correct for any reversals
-                Y_lower = no_reverse(Y_lower, CI_type=CI_type, plot_type=func)
-                Y_upper = no_reverse(Y_upper, CI_type=CI_type, plot_type=func)
+                if len(Y_lower) > 2 and len(Y_upper) > 2:
+                    Y_lower = no_reverse(Y_lower, CI_type=CI_type, plot_type=func)
+                    Y_upper = no_reverse(Y_upper, CI_type=CI_type, plot_type=func)
 
                 if func == "CDF":
                     yy_lower = 1 - Y_lower
@@ -2810,7 +2839,7 @@ class distribution_confidence_intervals:
                     xlower=t_lower, xupper=t_upper, ylower=Y, yupper=Y, plot_type=func
                 )
                 # artificially correct for any reversals
-                if q is None:
+                if q is None and len(t_lower) > 2 and len(t_upper) > 2:
                     t_lower = no_reverse(t_lower, CI_type=CI_type, plot_type=func)
                     t_upper = no_reverse(t_upper, CI_type=CI_type, plot_type=func)
 
@@ -2866,8 +2895,9 @@ class distribution_confidence_intervals:
                     xlower=t, xupper=t, ylower=Y_lower, yupper=Y_upper, plot_type=func
                 )
                 # artificially correct for any reversals
-                Y_lower = no_reverse(Y_lower, CI_type=CI_type, plot_type=func)
-                Y_upper = no_reverse(Y_upper, CI_type=CI_type, plot_type=func)
+                if len(Y_lower) > 2 and len(Y_upper) > 2:
+                    Y_lower = no_reverse(Y_lower, CI_type=CI_type, plot_type=func)
+                    Y_upper = no_reverse(Y_upper, CI_type=CI_type, plot_type=func)
 
                 if func == "CDF":
                     yy_lower = 1 - Y_lower
@@ -3012,7 +3042,7 @@ class distribution_confidence_intervals:
                     xlower=t_lower, xupper=t_upper, ylower=Y, yupper=Y, plot_type=func
                 )
                 # artificially correct for any reversals
-                if q is None:
+                if q is None and len(t_lower) > 2 and len(t_upper) > 2:
                     t_lower = no_reverse(t_lower, CI_type=CI_type, plot_type=func)
                     t_upper = no_reverse(t_upper, CI_type=CI_type, plot_type=func)
 
@@ -3070,8 +3100,9 @@ class distribution_confidence_intervals:
                     xlower=t, xupper=t, ylower=Y_lower, yupper=Y_upper, plot_type=func
                 )
                 # artificially correct for any reversals
-                Y_lower = no_reverse(Y_lower, CI_type=CI_type, plot_type=func)
-                Y_upper = no_reverse(Y_upper, CI_type=CI_type, plot_type=func)
+                if len(Y_lower) > 2 and len(Y_upper) > 2:
+                    Y_lower = no_reverse(Y_lower, CI_type=CI_type, plot_type=func)
+                    Y_upper = no_reverse(Y_upper, CI_type=CI_type, plot_type=func)
 
                 if func == "CDF":
                     yy_lower = 1 - Y_lower
@@ -3212,7 +3243,7 @@ class distribution_confidence_intervals:
                     xlower=t_lower, xupper=t_upper, ylower=Y, yupper=Y, plot_type=func
                 )
                 # artificially correct for any reversals
-                if q is None:
+                if q is None and len(t_lower) > 2 and len(t_upper) > 2:
                     t_lower = no_reverse(t_lower, CI_type=CI_type, plot_type=func)
                     t_upper = no_reverse(t_upper, CI_type=CI_type, plot_type=func)
 
@@ -3261,8 +3292,9 @@ class distribution_confidence_intervals:
                     xlower=t, xupper=t, ylower=Y_lower, yupper=Y_upper, plot_type=func
                 )
                 # artificially correct for any reversals
-                Y_lower = no_reverse(Y_lower, CI_type=CI_type, plot_type=func)
-                Y_upper = no_reverse(Y_upper, CI_type=CI_type, plot_type=func)
+                if len(Y_lower) > 2 and len(Y_upper) > 2:
+                    Y_lower = no_reverse(Y_lower, CI_type=CI_type, plot_type=func)
+                    Y_upper = no_reverse(Y_upper, CI_type=CI_type, plot_type=func)
 
                 if func == "CDF":
                     yy_lower = 1 - Y_lower
@@ -3412,7 +3444,7 @@ class distribution_confidence_intervals:
     #                 xlower=t_lower, xupper=t_upper, ylower=Y, yupper=Y, plot_type=func
     #             )
     #             # artificially correct for any reversals
-    #             if q is None:
+    #             if q is None and len(t_lower) > 2 and len(t_upper)>2:
     #                 t_lower = no_reverse(t_lower, CI_type=CI_type, plot_type=func)
     #                 t_upper = no_reverse(t_upper, CI_type=CI_type, plot_type=func)
     #
@@ -3471,8 +3503,9 @@ class distribution_confidence_intervals:
     #                 xlower=t, xupper=t, ylower=Y_lower, yupper=Y_upper, plot_type=func
     #             )
     #             # artificially correct for any reversals
-    #             Y_lower = no_reverse(Y_lower, CI_type=CI_type, plot_type=func)
-    #             Y_upper = no_reverse(Y_upper, CI_type=CI_type, plot_type=func)
+    #             if len(Y_lower) > 2 and len(Y_upper) > 2:
+    #                 Y_lower = no_reverse(Y_lower, CI_type=CI_type, plot_type=func)
+    #                 Y_upper = no_reverse(Y_upper, CI_type=CI_type, plot_type=func)
     #
     #             if func == "CDF":
     #                 yy_lower = 1 - Y_lower
@@ -4131,10 +4164,10 @@ def ALT_least_squares(model, failures, stress_1_array, stress_2_array=None):
     return output
 
 
-class LS_optimisation:
+class LS_optimization:
     """
-    Performs optimisation using least squares regression.
-    There is no actual "optimisation" done here, with the exception of checking which method (RRX or RRY) gave the better solution.
+    Performs optimization using least squares regression.
+    There is no actual "optimization" done here, with the exception of checking which method (RRX or RRY) gave the better solution.
     This function is used be each of the Fitters.
     """
 
@@ -4214,10 +4247,10 @@ class LS_optimisation:
         self.method = LS_method
 
 
-class MLE_optimisation:
+class MLE_optimization:
     """
     This function performs the heavy lifting of finding the optimal parameters using the method of maximum likelihood expectation (MLE).
-    This functions is used be each of the fitters.
+    This functions is used by each of the fitters.
     """
 
     def __init__(
@@ -4231,9 +4264,65 @@ class MLE_optimisation:
         force_shape=None,
         LL_func_force=None,
     ):
+        # this sub-function does the actual optimization. It is called each time a new optimizer is tried
+        def loglik_optimizer(
+            LL_func,
+            guess,
+            failures,
+            right_censored,
+            bounds,
+            optimizer,
+            force_shape,
+            LL_func_force,
+        ):
+            delta_LL = 1
+            LL_array = [1000000]
+            runs = 0
 
+            if force_shape is None:
+                while (
+                    delta_LL > 0.001 and runs < 5
+                ):  # exits after LL convergence or 5 iterations
+                    runs += 1
+                    result = minimize(
+                        value_and_grad(LL_func),
+                        guess,
+                        args=(failures, right_censored),
+                        jac=True,
+                        method=optimizer,
+                        bounds=bounds,
+                    )
+                    guess = result.x
+                    LL2 = 2 * LL_func(guess, failures, right_censored)
+                    LL_array.append(np.abs(LL2))
+                    delta_LL = abs(LL_array[-1] - LL_array[-2])
+                    guess = result.x  # update the guess each iteration
+            else:  # this will only be run for Weibull_2P, Normal_2P, and Lognormal_2P so the guess is structured with this in mind
+                bounds = [bounds[0]]
+                guess = [guess[0]]
+                while (
+                    delta_LL > 0.001 and runs < 5
+                ):  # exits after LL convergence or 5 iterations
+                    runs += 1
+                    result = minimize(
+                        value_and_grad(LL_func_force),
+                        guess,
+                        args=(failures, right_censored, force_shape),
+                        jac=True,
+                        method=optimizer,
+                        bounds=bounds,
+                    )
+                    guess = result.x
+                    LL2 = 2 * LL_func_force(
+                        guess, failures, right_censored, force_shape
+                    )
+                    LL_array.append(np.abs(LL2))
+                    delta_LL = abs(LL_array[-1] - LL_array[-2])
+                    guess = result.x  # update the guess each iteration
+            return result.success, LL_array[-1], result.x
+
+        # generate the bounds on the solution
         gamma0 = max(0, min(np.hstack([failures, right_censored])) - 0.0001)
-
         if func_name in ["Weibull_2P", "Gamma_2P", "Beta_2P", "Loglogistic_2P"]:
             bounds = [(0, None), (0, None)]
         elif func_name in ["Weibull_3P", "Gamma_3P", "Loglogistic_3P"]:
@@ -4261,53 +4350,132 @@ class MLE_optimisation:
                 'func_name is not recognised. Use the correct name e.g. "Weibull_2P"'
             )
 
-        n = len(failures) + len(right_censored)
-        delta_BIC = 1
-        BIC_array = [1000000]
-        runs = 0
-        guess = initial_guess  # set the current guess as the initial guess and then update the current guess each iteration
-        if force_shape is None:
-            k = len(bounds)
-            while (
-                delta_BIC > 0.001 and runs < 5
-            ):  # exits after BIC convergence or 5 iterations
-                runs += 1
-                result = minimize(
-                    value_and_grad(LL_func),
-                    guess,
-                    args=(failures, right_censored),
-                    jac=True,
-                    method=optimizer,
-                    bounds=bounds,
+        # determine which optimizers to use
+        stop_after_success = False
+        if (
+            optimizer is None
+        ):  # default is to try in this order but stop after one succeeds
+            optimizers_to_try = ["TNC", "L-BFGS-B", "nelder-mead", "powell"]
+            stop_after_success = True
+        else:
+            if optimizer in [
+                "best",
+                "BEST",
+                "all",
+                "ALL",
+            ]:  # try all of the bounded optimizers
+                optimizers_to_try = ["TNC", "L-BFGS-B", "nelder-mead", "powell"]
+            elif optimizer.upper() == "TNC":
+                optimizers_to_try = ["TNC"]
+            elif optimizer.upper() in ["L-BFGS-B", "LBFGSB"]:
+                optimizers_to_try = ["L-BFGS-B"]
+            elif optimizer.upper() == "POWELL":
+                optimizers_to_try = ["powell"]
+            elif optimizer.upper() in ["NELDER-MEAD", "NELDERMEAD"]:
+                optimizers_to_try = ["nelder-mead"]
+            else:
+                raise ValueError(
+                    str(
+                        str(optimizer)
+                        + ' is not a valid optimizer. Please specify either "TNC", "L-BFGS-B", "nelder-mead", "powell" or "best".'
+                    )
                 )
-                guess = result.x
-                LL2 = 2 * LL_func(guess, failures, right_censored)
-                BIC_array.append(np.log(n) * k + LL2)
-                delta_BIC = abs(BIC_array[-1] - BIC_array[-2])
-        else:  # this will only be run for Weibull_2P, Normal_2P, and Lognormal_2P so the guess is structured with this in mind
-            bounds = [bounds[0]]  # bounds on the solution. Helps a lot with stability
-            guess = [guess[0]]
-            k = 1
-            while (
-                delta_BIC > 0.001 and runs < 5
-            ):  # exits after BIC convergence or 5 iterations
-                runs += 1
-                result = minimize(
-                    value_and_grad(LL_func_force),
-                    guess,
-                    args=(failures, right_censored, force_shape),
-                    jac=True,
-                    method=optimizer,
-                    bounds=bounds,
-                )
-                guess = result.x
-                LL2 = 2 * LL_func_force(guess, failures, right_censored, force_shape)
-                BIC_array.append(np.log(n) * k + LL2)
-                delta_BIC = abs(BIC_array[-1] - BIC_array[-2])
 
-        if result.success is True:
-            params = result.x
+        # use each of the optimizers specified
+        ALL_successes = []
+        ALL_loglik = []
+        ALL_results = []
+        ALL_opt_names = []
+        optimizers_tried_str = "Optimizers tried:"
+        for opt in optimizers_to_try:
+            optim_results = loglik_optimizer(
+                LL_func,
+                initial_guess,
+                failures,
+                right_censored,
+                bounds,
+                opt,
+                force_shape,
+                LL_func_force,
+            )
+            ALL_successes.append(optim_results[0])
+            ALL_loglik.append(optim_results[1])
+            ALL_results.append(optim_results[2])
+            ALL_opt_names.append(opt)
+            optimizers_tried_str = optimizers_tried_str + " " + opt + ","
+            if optim_results[0] is True and stop_after_success is True:
+                break  # stops after it finds one that works
+        optimizers_tried_str = optimizers_tried_str[0:-1]  # remove the last comma
+        # extract the results
+        if True not in ALL_successes:
+            # everything failed, need to return the initial guess
+            self.success = False
+            self.optimizer = None
+            if func_name == "Weibull_mixture":
+                colorprint(
+                    "WARNING: MLE estimates failed for Weibull_mixture. The initial estimates have been returned. These results may not be as accurate as MLE. "
+                    + optimizers_tried_str,
+                    text_color="red",
+                )
+                self.alpha_1 = initial_guess[0]
+                self.beta_1 = initial_guess[1]
+                self.alpha_2 = initial_guess[2]
+                self.beta_2 = initial_guess[3]
+                self.proportion_1 = initial_guess[4]
+                self.proportion_2 = 1 - initial_guess[4]
+            elif func_name == "Weibull_CR":
+                colorprint(
+                    "WARNING: MLE estimates failed for Weibull_CR. The initial estimates have been returned. These results may not be as accurate as MLE. "
+                    + optimizers_tried_str,
+                    text_color="red",
+                )
+                self.alpha_1 = initial_guess[0]
+                self.beta_1 = initial_guess[1]
+                self.alpha_2 = initial_guess[2]
+                self.beta_2 = initial_guess[3]
+            else:
+                colorprint(
+                    str(
+                        "WARNING: MLE estimates failed for "
+                        + func_name
+                        + ". The least squares estimates have been returned. These results may not be as accurate as MLE. "
+                        + optimizers_tried_str
+                    ),
+                    text_color="red",
+                )
+                if force_shape is None:
+                    self.scale = initial_guess[0]  # alpha, mu, Lambda
+                    if func_name not in ["Exponential_1P", "Exponential_2P"]:
+                        self.shape = initial_guess[1]  # beta, sigma
+                    else:
+                        if func_name == "Exponential_2P":
+                            self.gamma = initial_guess[1]  # gamma for Exponential_2P
+                    if func_name in [
+                        "Weibull_3P",
+                        "Gamma_3P",
+                        "Loglogistic_3P",
+                        "Lognormal_3P",
+                    ]:
+                        # gamma for Weibull_3P, Gamma_3P, Loglogistic_3P, Lognormal_3P
+                        self.gamma = initial_guess[2]
+                # this will only be reached for Weibull_2P, Normal_2P and Lognormal_2P so the scale and shape extraction is fine for these
+                else:
+                    self.scale = initial_guess[0]
+                    self.shape = force_shape
+        else:
+            # at least one optimizer succeeded. Need to drop the failed ones then get the best of the successes
+            items = np.arange(0, len(ALL_successes))[::-1]
+            for i in items:
+                if ALL_successes[i] is not True:
+                    ALL_successes.pop(i)
+                    ALL_loglik.pop(i)
+                    ALL_results.pop(i)
+                    ALL_opt_names.pop(i)
+            idx_best = ALL_loglik.index(min(ALL_loglik))
+            params = ALL_results[idx_best]
+            self.optimizer = ALL_opt_names[idx_best]
             self.success = True
+
             if func_name == "Weibull_mixture":
                 self.alpha_1 = params[0]
                 self.beta_1 = params[1]
@@ -4340,119 +4508,13 @@ class MLE_optimisation:
                 else:  # this will only be reached for Weibull_2P, Normal_2P and Lognormal_2P so the scale and shape extraction is fine for these
                     self.scale = params[0]
                     self.shape = force_shape
-        else:  # if the bounded optimizer (L-BFGS-B, TNC, powell) fails then we have a second attempt using the slower but slightly more reliable nelder-mead optimizer.
-            if force_shape is None:
-                guess = initial_guess
-                result = minimize(
-                    value_and_grad(LL_func),
-                    guess,
-                    args=(failures, right_censored),
-                    jac=True,
-                    tol=1e-4,
-                    method="nelder-mead",
-                )
-            else:
-                guess = [initial_guess[0]]
-                result = minimize(
-                    value_and_grad(LL_func_force),
-                    guess,
-                    args=(failures, right_censored, force_shape),
-                    jac=True,
-                    tol=1e-4,
-                    method="nelder-mead",
-                )
-            if result.success is True:
-                params = result.x
-                if func_name == "Weibull_mixture":
-                    self.alpha_1 = params[0]
-                    self.beta_1 = params[1]
-                    self.alpha_2 = params[2]
-                    self.beta_2 = params[3]
-                    self.proportion_1 = params[4]
-                    self.proportion_2 = 1 - params[4]
-                elif func_name == "Weibull_CR":
-                    self.alpha_1 = params[0]
-                    self.beta_1 = params[1]
-                    self.alpha_2 = params[2]
-                    self.beta_2 = params[3]
-                else:
-                    if force_shape is None:
-                        self.scale = params[0]  # alpha, mu, Lambda
-                        if func_name not in ["Exponential_1P", "Exponential_2P"]:
-                            self.shape = params[1]  # beta, sigma
-                        else:
-                            if func_name == "Exponential_2P":
-                                self.gamma = params[1]  # gamma for Exponential_2P
-                        if func_name in [
-                            "Weibull_3P",
-                            "Gamma_3P",
-                            "Loglogistic_3P",
-                            "Lognormal_3P",
-                        ]:
-                            self.gamma = params[
-                                2
-                            ]  # gamma for Weibull_3P, Gamma_3P, Loglogistic_3P, Lognormal_3P
-                    else:  # this will only be reached for Weibull_2P, Normal_2P and Lognormal_2P so the scale and shape extraction is fine for these
-                        self.scale = params[0]
-                        self.shape = force_shape
-            else:
-                if func_name == "Weibull_mixture":
-                    colorprint(
-                        "WARNING: MLE estimates failed for Weibull_mixture. The initial estimates have been returned. These results may not be as accurate as MLE.",
-                        text_color="red",
-                    )
-                    self.alpha_1 = initial_guess[0]
-                    self.beta_1 = initial_guess[1]
-                    self.alpha_2 = initial_guess[2]
-                    self.beta_2 = initial_guess[3]
-                    self.proportion_1 = initial_guess[4]
-                    self.proportion_2 = 1 - initial_guess[4]
-                elif func_name == "Weibull_CR":
-                    colorprint(
-                        "WARNING: MLE estimates failed for Weibull_CR. The initial estimates have been returned. These results may not be as accurate as MLE.",
-                        text_color="red",
-                    )
-                    self.alpha_1 = initial_guess[0]
-                    self.beta_1 = initial_guess[1]
-                    self.alpha_2 = initial_guess[2]
-                    self.beta_2 = initial_guess[3]
-                else:
-                    colorprint(
-                        str(
-                            "WARNING: MLE estimates failed for "
-                            + func_name
-                            + ". The least squares estimates have been returned. These results may not be as accurate as MLE."
-                        ),
-                        text_color="red",
-                    )
-                    if force_shape is None:
-                        self.scale = initial_guess[0]  # alpha, mu, Lambda
-                        if func_name not in ["Exponential_1P", "Exponential_2P"]:
-                            self.shape = initial_guess[1]  # beta, sigma
-                        else:
-                            if func_name == "Exponential_2P":
-                                self.gamma = initial_guess[
-                                    1
-                                ]  # gamma for Exponential_2P
-                        if func_name in [
-                            "Weibull_3P",
-                            "Gamma_3P",
-                            "Loglogistic_3P",
-                            "Lognormal_3P",
-                        ]:
-                            self.gamma = initial_guess[
-                                2
-                            ]  # gamma for Weibull_3P, Gamma_3P, Loglogistic_3P, Lognormal_3P
-                    else:  # this will only be reached for Weibull_2P, Normal_2P and Lognormal_2P so the scale and shape extraction is fine for these
-                        self.scale = initial_guess[0]
-                        self.shape = force_shape
 
 
-class ALT_MLE_optimisation:
+class ALT_MLE_optimization:
     """
     This performs the MLE method to find the parameters.
-    If the optimizer is None then multiple optimisers will be tried and the best result (lowest LL) will be returned.
-    If the optimiser is specified then it will be used. If it fails then nelder-mead will be used. If nelder-mead fails then the initial guess and a warning will be returned.
+    If the optimizer is None then all bounded optimizers will be tried and the best result (lowest log-likelihood) will be returned.
+    If the optimizer is specified then it will be used. If it fails then the initial guess will be returned with a warning.
     """
 
     def __init__(
@@ -4469,6 +4531,80 @@ class ALT_MLE_optimisation:
         right_censored_stress_1=None,
         right_censored_stress_2=None,
     ):
+        # this sub-function does the actual optimization. It is called each time a new optimizer is tried
+        def loglik_optimizer(
+            initial_guess,
+            dual_stress,
+            LL_func,
+            failures,
+            right_censored,
+            failure_stress_1,
+            failure_stress_2,
+            right_censored_stress_1,
+            right_censored_stress_2,
+            bounds,
+            optimizer,
+        ):
+            delta_LL = 1
+            LL_array = [1000000]
+            runs = 0
+            guess = initial_guess  # set the current guess as the initial guess and then update the current guess each iteration
+            while (
+                delta_LL > 0.001 and runs < 5
+            ):  # exits after BIC convergence or 5 iterations
+                runs += 1
+                # single stress model
+                if dual_stress is False:
+                    result = minimize(
+                        value_and_grad(LL_func),
+                        guess,
+                        args=(
+                            failures,
+                            right_censored,
+                            failure_stress_1,
+                            right_censored_stress_1,
+                        ),
+                        jac=True,
+                        method=optimizer,
+                        bounds=bounds,
+                    )
+                    LL2 = -LL_func(
+                        result.x,
+                        failures,
+                        right_censored,
+                        failure_stress_1,
+                        right_censored_stress_1,
+                    )
+                else:
+                    # dual stress model
+                    result = minimize(
+                        value_and_grad(LL_func),
+                        guess,
+                        args=(
+                            failures,
+                            right_censored,
+                            failure_stress_1,
+                            failure_stress_2,
+                            right_censored_stress_1,
+                            right_censored_stress_2,
+                        ),
+                        jac=True,
+                        method=optimizer,
+                        bounds=bounds,
+                    )
+                    LL2 = -LL_func(
+                        result.x,
+                        failures,
+                        right_censored,
+                        failure_stress_1,
+                        failure_stress_2,
+                        right_censored_stress_1,
+                        right_censored_stress_2,
+                    )
+                LL_array.append(np.abs(LL2))
+                delta_LL = abs(LL_array[-1] - LL_array[-2])
+                guess = result.x  # update the guess each iteration
+            return result.success, LL_array[-1], result.x
 
         if model == "Exponential":
             bounds = [(None, None), (0, None), (0, None)]  # a, b, shape
@@ -4522,193 +4658,129 @@ class ALT_MLE_optimisation:
             right_censored_stress_1 = []
             right_censored_stress_2 = []
 
-        def loglik_optimiser(
-            initial_guess,
-            dual_stress,
-            LL_func,
-            failures,
-            right_censored,
-            failure_stress_1,
-            failure_stress_2,
-            right_censored_stress_1,
-            right_censored_stress_2,
-            bounds,
-            optimizer,
-        ):
-            delta_LL = 1
-            LL_array = [1000000]
-            runs = 0
-            guess = initial_guess  # set the current guess as the initial guess and then update the current guess each iteration
-            while (
-                delta_LL > 0.001 and runs < 5
-            ):  # exits after BIC convergence or 5 iterations
-                runs += 1
-                if dual_stress is False:
-                    result = minimize(
-                        value_and_grad(LL_func),
-                        guess,
-                        args=(
-                            failures,
-                            right_censored,
-                            failure_stress_1,
-                            right_censored_stress_1,
-                        ),
-                        jac=True,
-                        method=optimizer,
-                        bounds=bounds,
+        # determine which optimizers to use
+        stop_after_success = False
+        if (
+            optimizer is None
+        ):  # default is to try in this order but stop after one succeeds
+            optimizers_to_try = ["TNC", "L-BFGS-B", "nelder-mead", "powell"]
+            stop_after_success = True
+        else:
+            if optimizer in [
+                "best",
+                "BEST",
+                "all",
+                "ALL",
+            ]:  # try all of the bounded optimizers
+                optimizers_to_try = ["TNC", "L-BFGS-B", "nelder-mead", "powell"]
+            elif optimizer.upper() == "TNC":
+                optimizers_to_try = ["TNC"]
+            elif optimizer.upper() in ["L-BFGS-B", "LBFGSB"]:
+                optimizers_to_try = ["L-BFGS-B"]
+            elif optimizer.upper() == "POWELL":
+                optimizers_to_try = ["powell"]
+            elif optimizer.upper() in ["NELDER-MEAD", "NELDERMEAD"]:
+                optimizers_to_try = ["nelder-mead"]
+            else:
+                raise ValueError(
+                    str(
+                        str(optimizer)
+                        + ' is not a valid optimizer. Please specify either "TNC", "L-BFGS-B", "nelder-mead", "powell" or "best".'
                     )
-                    LL2 = -LL_func(
-                        result.x,
-                        failures,
-                        right_censored,
-                        failure_stress_1,
-                        right_censored_stress_1,
-                    )
-                else:
-                    result = minimize(
-                        value_and_grad(LL_func),
-                        guess,
-                        args=(
-                            failures,
-                            right_censored,
-                            failure_stress_1,
-                            failure_stress_2,
-                            right_censored_stress_1,
-                            right_censored_stress_2,
-                        ),
-                        jac=True,
-                        method=optimizer,
-                        bounds=bounds,
-                    )
-                    LL2 = -LL_func(
-                        result.x,
-                        failures,
-                        right_censored,
-                        failure_stress_1,
-                        failure_stress_2,
-                        right_censored_stress_1,
-                        right_censored_stress_2,
-                    )
-                LL_array.append(np.abs(LL2))
-                delta_LL = abs(LL_array[-1] - LL_array[-2])
-                guess = result.x  # update the guess each iteration
-            return result.success, LL_array[-1], result.x
-
-        success = True  # this will be overwritten later if all optimizers failed
-        if optimizer is None:  # try TNC and L-BFGS-B
-            LL_optim_TNC = loglik_optimiser(
-                initial_guess,
-                dual_stress,
-                LL_func,
-                failures,
-                right_censored,
-                failure_stress_1,
-                failure_stress_2,
-                right_censored_stress_1,
-                right_censored_stress_2,
-                bounds,
-                optimizer="TNC",
-            )
-            LL_optim_LBFGSB = loglik_optimiser(
-                initial_guess,
-                dual_stress,
-                LL_func,
-                failures,
-                right_censored,
-                failure_stress_1,
-                failure_stress_2,
-                right_censored_stress_1,
-                right_censored_stress_2,
-                bounds,
-                optimizer="L-BFGS-B",
-            )
-            if LL_optim_TNC[0] is True and LL_optim_LBFGSB[0] is True:  # both worked
-                if LL_optim_TNC[1] < LL_optim_LBFGSB[1]:  # TNC wins
-                    params = LL_optim_TNC[2]
-                else:  # L-BFGS-B wins
-                    params = LL_optim_LBFGSB[2]
-            elif (
-                LL_optim_TNC[0] is True and LL_optim_LBFGSB[0] is False
-            ):  # only TNC worked
-                params = LL_optim_TNC[2]
-            elif (
-                LL_optim_TNC[0] is False and LL_optim_LBFGSB[0] is True
-            ):  # only L-BFGS-B worked
-                params = LL_optim_LBFGSB[2]
-            else:  # neither worked, try powell
-                LL_optim_powell = loglik_optimiser(
-                    initial_guess,
-                    dual_stress,
-                    LL_func,
-                    failures,
-                    right_censored,
-                    failure_stress_1,
-                    failure_stress_2,
-                    right_censored_stress_1,
-                    right_censored_stress_2,
-                    bounds,
-                    optimizer="powell",
                 )
-                if LL_optim_powell[0] is True:
-                    params = LL_optim_powell[2]  # powell worked
-                else:
-                    success = False  # powell failed. nelder-mead will be tried
-        elif optimizer == "L-BFGS-B":
-            LL_optim_LBFGSB = loglik_optimiser(
-                initial_guess,
-                dual_stress,
-                LL_func,
-                failures,
-                right_censored,
-                failure_stress_1,
-                failure_stress_2,
-                right_censored_stress_1,
-                right_censored_stress_2,
-                bounds,
-                optimizer="L-BFGS-B",
-            )
-            if LL_optim_LBFGSB[0] is True:
-                params = LL_optim_LBFGSB[2]
-            else:
-                success = False
-        elif optimizer == "TNC":
-            LL_optim_TNC = loglik_optimiser(
-                initial_guess,
-                dual_stress,
-                LL_func,
-                failures,
-                right_censored,
-                failure_stress_1,
-                failure_stress_2,
-                right_censored_stress_1,
-                right_censored_stress_2,
-                bounds,
-                optimizer="TNC",
-            )
-            if LL_optim_TNC[0] is True:
-                params = LL_optim_TNC[2]
-            else:
-                success = False
-        elif optimizer == "powell":
-            LL_optim_powell = loglik_optimiser(
-                initial_guess,
-                dual_stress,
-                LL_func,
-                failures,
-                right_censored,
-                failure_stress_1,
-                failure_stress_2,
-                right_censored_stress_1,
-                right_censored_stress_2,
-                bounds,
-                optimizer="powell",
-            )
-            if LL_optim_powell[0] is True:
-                params = LL_optim_powell[2]
-            else:
-                success = False
 
-        if success is True:
+        # use each of the optimizers specified
+        ALL_successes = []
+        ALL_loglik = []
+        ALL_results = []
+        ALL_opt_names = []
+        optimizers_tried_str = "Optimizers tried:"
+        for opt in optimizers_to_try:
+            optim_results = loglik_optimizer(
+                initial_guess,
+                dual_stress,
+                LL_func,
+                failures,
+                right_censored,
+                failure_stress_1,
+                failure_stress_2,
+                right_censored_stress_1,
+                right_censored_stress_2,
+                bounds,
+                opt,
+            )
+            ALL_successes.append(optim_results[0])
+            ALL_loglik.append(optim_results[1])
+            ALL_results.append(optim_results[2])
+            ALL_opt_names.append(opt)
+            optimizers_tried_str = optimizers_tried_str + " " + opt + ","
+            if optim_results[0] is True and stop_after_success is True:
+                break  # stops after it finds one that works
+        optimizers_tried_str = optimizers_tried_str[0:-1]  # remove the last comma
+
+        # extract the results
+        if True not in ALL_successes:
+            # everything failed, need to return the initial guess
+            self.success = False
+            self.optimizer = None
+            colorprint(
+                str(
+                    "WARNING: MLE estimates failed for "
+                    + dist
+                    + " "
+                    + model
+                    + ". The least squares estimates have been returned. These results may not be as accurate as MLE."
+                    + optimizers_tried_str
+                ),
+                text_color="red",
+            )
+
+            if model == "Exponential":
+                self.a = initial_guess[0]
+                self.b = initial_guess[1]
+            elif model == "Eyring":
+                self.a = initial_guess[0]
+                self.c = initial_guess[1]
+            elif model == "Power":
+                self.a = initial_guess[0]
+                self.n = initial_guess[1]
+            elif model == "Dual_Exponential":
+                self.a = initial_guess[0]
+                self.b = initial_guess[1]
+                self.c = initial_guess[2]
+            elif model == "Power_Exponential":
+                self.a = initial_guess[0]
+                self.c = initial_guess[1]
+                self.n = initial_guess[2]
+            elif model == "Dual_Power":
+                self.c = initial_guess[0]
+                self.m = initial_guess[1]
+                self.n = initial_guess[2]
+
+            if dual_stress is False:
+                if dist == "Weibull":
+                    self.beta = initial_guess[2]
+                elif dist in ["Lognormal", "Normal"]:
+                    self.sigma = initial_guess[2]
+            else:
+                if dist == "Weibull":
+                    self.beta = initial_guess[3]
+                elif dist in ["Lognormal", "Normal"]:
+                    self.sigma = initial_guess[3]
+        else:
+            # at least one optimizer succeeded. Need to drop the failed ones then get the best of the successes
+            items = np.arange(0, len(ALL_successes))[::-1]
+            for i in items:
+                if ALL_successes[i] is not True:
+                    ALL_successes.pop(i)
+                    ALL_loglik.pop(i)
+                    ALL_results.pop(i)
+                    ALL_opt_names.pop(i)
+            idx_best = ALL_loglik.index(min(ALL_loglik))
+            params = ALL_results[idx_best]
+            self.optimizer = ALL_opt_names[idx_best]
+            self.success = True
+
             if model == "Exponential":
                 self.a = params[0]
                 self.b = params[1]
@@ -4741,121 +4813,6 @@ class ALT_MLE_optimisation:
                     self.beta = params[3]
                 elif dist in ["Lognormal", "Normal"]:
                     self.sigma = params[3]
-
-        else:  # if the bounded optimizer (L-BFGS-B, TNC, powell) fails then we have a second attempt using the slower but slightly more reliable nelder-mead optimizer.
-            guess = initial_guess
-            if dual_stress is False:
-                result = minimize(
-                    value_and_grad(LL_func),
-                    guess,
-                    args=(
-                        failures,
-                        right_censored,
-                        failure_stress_1,
-                        right_censored_stress_1,
-                    ),
-                    jac=True,
-                    tol=1e-4,
-                    method="nelder-mead",
-                )
-            else:
-                result = minimize(
-                    value_and_grad(LL_func),
-                    guess,
-                    args=(
-                        failures,
-                        right_censored,
-                        failure_stress_1,
-                        failure_stress_2,
-                        right_censored_stress_1,
-                        right_censored_stress_2,
-                    ),
-                    jac=True,
-                    tol=1e-4,
-                    method="nelder-mead",
-                )
-
-            if result.success is True:
-                params = result.x
-                if model == "Exponential":
-                    self.a = params[0]
-                    self.b = params[1]
-                elif model == "Eyring":
-                    self.a = params[0]
-                    self.c = params[1]
-                elif model == "Power":
-                    self.a = params[0]
-                    self.n = params[1]
-                elif model == "Dual_Exponential":
-                    self.a = params[0]
-                    self.b = params[1]
-                    self.c = params[2]
-                elif model == "Power_Exponential":
-                    self.a = params[0]
-                    self.c = params[1]
-                    self.n = params[2]
-                elif model == "Dual_Power":
-                    self.c = params[0]
-                    self.m = params[1]
-                    self.n = params[2]
-
-                if dual_stress is False:
-                    if dist == "Weibull":
-                        self.beta = params[2]
-                    elif dist in ["Lognormal", "Normal"]:
-                        self.sigma = params[2]
-                else:
-                    if dist == "Weibull":
-                        self.beta = params[3]
-                    elif dist in ["Lognormal", "Normal"]:
-                        self.sigma = params[3]
-
-            else:
-                success = False  # everything failed
-                colorprint(
-                    str(
-                        "WARNING: MLE estimates failed for "
-                        + dist
-                        + " "
-                        + model
-                        + ". The least squares estimates have been returned. These results may not be as accurate as MLE."
-                    ),
-                    text_color="red",
-                )
-
-                if model == "Exponential":
-                    self.a = initial_guess[0]
-                    self.b = initial_guess[1]
-                elif model == "Eyring":
-                    self.a = initial_guess[0]
-                    self.c = initial_guess[1]
-                elif model == "Power":
-                    self.a = initial_guess[0]
-                    self.n = initial_guess[1]
-                elif model == "Dual_Exponential":
-                    self.a = initial_guess[0]
-                    self.b = initial_guess[1]
-                    self.c = initial_guess[2]
-                elif model == "Power_Exponential":
-                    self.a = initial_guess[0]
-                    self.c = initial_guess[1]
-                    self.n = initial_guess[2]
-                elif model == "Dual_Power":
-                    self.c = initial_guess[0]
-                    self.m = initial_guess[1]
-                    self.n = initial_guess[2]
-
-                if dual_stress is False:
-                    if dist == "Weibull":
-                        self.beta = initial_guess[2]
-                    elif dist in ["Lognormal", "Normal"]:
-                        self.sigma = initial_guess[2]
-                else:
-                    if dist == "Weibull":
-                        self.beta = initial_guess[3]
-                    elif dist in ["Lognormal", "Normal"]:
-                        self.sigma = initial_guess[3]
-        self.success = success
 
 
 def write_df_to_xlsx(df, path, **kwargs):

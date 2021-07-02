@@ -28,12 +28,12 @@ values.
 All functions in this module work using autograd to find the derivative of the
 log-likelihood function. In this way, the code only needs to specify the log PDF
 and log SF in order to obtain the fitted parameters. Initial guesses of the
-parameters are essential for autograd and are obtained using scipy or least
-squares (depending on the function). If the distribution is an extremely bad fit
-or is heavily censored (>99%) then these guesses may be poor and the fit might
-not be successful. Generally the fit achieved by autograd is highly successful,
-and whenever it fails the initial guess will be used and a warning will be
-displayed.
+parameters are essential for autograd and are obtained using least squares or
+non-linear least squares (depending on the function). If the distribution is an
+extremely bad fit or is heavily censored (>99%) then these guesses may be poor
+and the fit might not be successful. Generally the fit achieved by autograd is
+highly successful, and whenever it fails the initial guess will be used and a
+warning will be displayed.
 """
 
 import numpy as np
@@ -63,8 +63,8 @@ from reliability.Utils import (
     fitters_input_checking,
     colorprint,
     least_squares,
-    MLE_optimisation,
-    LS_optimisation,
+    MLE_optimization,
+    LS_optimization,
 )
 import autograd.numpy as anp
 from autograd import value_and_grad
@@ -128,14 +128,15 @@ class Fit_Everything:
         regression on X), or 'RRY' (Rank regression on Y). LS will perform both
         RRX and RRY and return the better one. Default is 'MLE'.
     optimizer : str, optional
-        The optimisation algorithm used to find the solution. Must be either
-        'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods.
-        If the bounded method fails, 'nelder-mead' will be used. If
-        'nelder-mead' fails then the initial guess will be returned with a
-        warning. For more information on these optimizers see
-        https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
-        Default is 'L-BFGS-B' if the data is <= 97% right censored or 'TNC' if
-        the data is > 97% right censored.
+        The optimization algorithm used to find the solution. Must be either
+        'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'. Specifying the optimizer
+        will result in that optimizer being used. To use all of these specify
+        'best' and the best result will be returned. The default behaviour is to
+        try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and
+        'powell') and stop once one of the optimizers finds a solution. If the
+        optimizer fails, the initial guess will be returned.
+        For more detail see the `documentation
+        <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
 
     Returns
     -------
@@ -336,6 +337,7 @@ class Fit_Everything:
                 "AICc",
                 "BIC",
                 "AD",
+                "optimizer",
             ]
         )
         # Fit the parametric models and extract the fitted parameters
@@ -355,6 +357,7 @@ class Fit_Everything:
             self.Weibull_3P_BIC = self.__Weibull_3P_params.BIC
             self.Weibull_3P_AICc = self.__Weibull_3P_params.AICc
             self.Weibull_3P_AD = self.__Weibull_3P_params.AD
+            self.Weibull_3P_optimizer = self.__Weibull_3P_params.optimizer
             self._parametric_CDF_Weibull_3P = self.__Weibull_3P_params.distribution.CDF(
                 xvals=d, show_plot=False
             )
@@ -371,6 +374,7 @@ class Fit_Everything:
                     "AICc": self.Weibull_3P_AICc,
                     "BIC": self.Weibull_3P_BIC,
                     "AD": self.Weibull_3P_AD,
+                    "optimizer": self.Weibull_3P_optimizer,
                 },
                 ignore_index=True,
             )
@@ -392,6 +396,7 @@ class Fit_Everything:
             self.Gamma_3P_BIC = self.__Gamma_3P_params.BIC
             self.Gamma_3P_AICc = self.__Gamma_3P_params.AICc
             self.Gamma_3P_AD = self.__Gamma_3P_params.AD
+            self.Gamma_3P_optimizer = self.__Gamma_3P_params.optimizer
             self._parametric_CDF_Gamma_3P = self.__Gamma_3P_params.distribution.CDF(
                 xvals=d, show_plot=False
             )
@@ -408,6 +413,7 @@ class Fit_Everything:
                     "AICc": self.Gamma_3P_AICc,
                     "BIC": self.Gamma_3P_BIC,
                     "AD": self.Gamma_3P_AD,
+                    "optimizer": self.Gamma_3P_optimizer,
                 },
                 ignore_index=True,
             )
@@ -427,6 +433,7 @@ class Fit_Everything:
             self.Exponential_2P_BIC = self.__Exponential_2P_params.BIC
             self.Exponential_2P_AICc = self.__Exponential_2P_params.AICc
             self.Exponential_2P_AD = self.__Exponential_2P_params.AD
+            self.Exponential_2P_optimizer = self.__Exponential_2P_params.optimizer
             self._parametric_CDF_Exponential_2P = (
                 self.__Exponential_2P_params.distribution.CDF(xvals=d, show_plot=False)
             )
@@ -443,6 +450,7 @@ class Fit_Everything:
                     "AICc": self.Exponential_2P_AICc,
                     "BIC": self.Exponential_2P_BIC,
                     "AD": self.Exponential_2P_AD,
+                    "optimizer": self.Exponential_2P_optimizer,
                 },
                 ignore_index=True,
             )
@@ -463,6 +471,7 @@ class Fit_Everything:
             self.Lognormal_3P_BIC = self.__Lognormal_3P_params.BIC
             self.Lognormal_3P_AICc = self.__Lognormal_3P_params.AICc
             self.Lognormal_3P_AD = self.__Lognormal_3P_params.AD
+            self.Lognormal_3P_optimizer = self.__Lognormal_3P_params.optimizer
             self._parametric_CDF_Lognormal_3P = (
                 self.__Lognormal_3P_params.distribution.CDF(xvals=d, show_plot=False)
             )
@@ -479,6 +488,7 @@ class Fit_Everything:
                     "AICc": self.Lognormal_3P_AICc,
                     "BIC": self.Lognormal_3P_BIC,
                     "AD": self.Lognormal_3P_AD,
+                    "optimizer": self.Lognormal_3P_optimizer,
                 },
                 ignore_index=True,
             )
@@ -498,6 +508,7 @@ class Fit_Everything:
             self.Normal_2P_BIC = self.__Normal_2P_params.BIC
             self.Normal_2P_AICc = self.__Normal_2P_params.AICc
             self.Normal_2P_AD = self.__Normal_2P_params.AD
+            self.Normal_2P_optimizer = self.__Normal_2P_params.optimizer
             self._parametric_CDF_Normal_2P = self.__Normal_2P_params.distribution.CDF(
                 xvals=d, show_plot=False
             )
@@ -514,6 +525,7 @@ class Fit_Everything:
                     "AICc": self.Normal_2P_AICc,
                     "BIC": self.Normal_2P_BIC,
                     "AD": self.Normal_2P_AD,
+                    "optimizer": self.Normal_2P_optimizer,
                 },
                 ignore_index=True,
             )
@@ -534,6 +546,7 @@ class Fit_Everything:
             self.Lognormal_2P_BIC = self.__Lognormal_2P_params.BIC
             self.Lognormal_2P_AICc = self.__Lognormal_2P_params.AICc
             self.Lognormal_2P_AD = self.__Lognormal_2P_params.AD
+            self.Lognormal_2P_optimizer = self.__Lognormal_2P_params.optimizer
             self._parametric_CDF_Lognormal_2P = (
                 self.__Lognormal_2P_params.distribution.CDF(xvals=d, show_plot=False)
             )
@@ -550,6 +563,7 @@ class Fit_Everything:
                     "AICc": self.Lognormal_2P_AICc,
                     "BIC": self.Lognormal_2P_BIC,
                     "AD": self.Lognormal_2P_AD,
+                    "optimizer": self.Lognormal_2P_optimizer,
                 },
                 ignore_index=True,
             )
@@ -569,6 +583,7 @@ class Fit_Everything:
             self.Gumbel_2P_BIC = self.__Gumbel_2P_params.BIC
             self.Gumbel_2P_AICc = self.__Gumbel_2P_params.AICc
             self.Gumbel_2P_AD = self.__Gumbel_2P_params.AD
+            self.Gumbel_2P_optimizer = self.__Gumbel_2P_params.optimizer
             self._parametric_CDF_Gumbel_2P = self.__Gumbel_2P_params.distribution.CDF(
                 xvals=d, show_plot=False
             )
@@ -585,6 +600,7 @@ class Fit_Everything:
                     "AICc": self.Gumbel_2P_AICc,
                     "BIC": self.Gumbel_2P_BIC,
                     "AD": self.Gumbel_2P_AD,
+                    "optimizer": self.Gumbel_2P_optimizer,
                 },
                 ignore_index=True,
             )
@@ -605,6 +621,7 @@ class Fit_Everything:
             self.Weibull_2P_BIC = self.__Weibull_2P_params.BIC
             self.Weibull_2P_AICc = self.__Weibull_2P_params.AICc
             self.Weibull_2P_AD = self.__Weibull_2P_params.AD
+            self.Weibull_2P_optimizer = self.__Weibull_2P_params.optimizer
             self._parametric_CDF_Weibull_2P = self.__Weibull_2P_params.distribution.CDF(
                 xvals=d, show_plot=False
             )
@@ -621,6 +638,7 @@ class Fit_Everything:
                     "AICc": self.Weibull_2P_AICc,
                     "BIC": self.Weibull_2P_BIC,
                     "AD": self.Weibull_2P_AD,
+                    "optimizer": self.Weibull_2P_optimizer,
                 },
                 ignore_index=True,
             )
@@ -642,6 +660,7 @@ class Fit_Everything:
             self.Gamma_2P_BIC = self.__Gamma_2P_params.BIC
             self.Gamma_2P_AICc = self.__Gamma_2P_params.AICc
             self.Gamma_2P_AD = self.__Gamma_2P_params.AD
+            self.Gamma_2P_optimizer = self.__Gamma_2P_params.optimizer
             self._parametric_CDF_Gamma_2P = self.__Gamma_2P_params.distribution.CDF(
                 xvals=d, show_plot=False
             )
@@ -658,6 +677,7 @@ class Fit_Everything:
                     "AICc": self.Gamma_2P_AICc,
                     "BIC": self.Gamma_2P_BIC,
                     "AD": self.Gamma_2P_AD,
+                    "optimizer": self.Gamma_2P_optimizer,
                 },
                 ignore_index=True,
             )
@@ -677,6 +697,7 @@ class Fit_Everything:
             self.Exponential_1P_BIC = self.__Exponential_1P_params.BIC
             self.Exponential_1P_AICc = self.__Exponential_1P_params.AICc
             self.Exponential_1P_AD = self.__Exponential_1P_params.AD
+            self.Exponential_1P_optimizer = self.__Exponential_1P_params.optimizer
             self._parametric_CDF_Exponential_1P = (
                 self.__Exponential_1P_params.distribution.CDF(xvals=d, show_plot=False)
             )
@@ -693,6 +714,7 @@ class Fit_Everything:
                     "AICc": self.Exponential_1P_AICc,
                     "BIC": self.Exponential_1P_BIC,
                     "AD": self.Exponential_1P_AD,
+                    "optimizer": self.Exponential_1P_optimizer,
                 },
                 ignore_index=True,
             )
@@ -713,6 +735,7 @@ class Fit_Everything:
             self.Loglogistic_2P_BIC = self.__Loglogistic_2P_params.BIC
             self.Loglogistic_2P_AICc = self.__Loglogistic_2P_params.AICc
             self.Loglogistic_2P_AD = self.__Loglogistic_2P_params.AD
+            self.Loglogistic_2P_optimizer = self.__Loglogistic_2P_params.optimizer
             self._parametric_CDF_Loglogistic_2P = (
                 self.__Loglogistic_2P_params.distribution.CDF(xvals=d, show_plot=False)
             )
@@ -729,6 +752,7 @@ class Fit_Everything:
                     "AICc": self.Loglogistic_2P_AICc,
                     "BIC": self.Loglogistic_2P_BIC,
                     "AD": self.Loglogistic_2P_AD,
+                    "optimizer": self.Loglogistic_2P_optimizer,
                 },
                 ignore_index=True,
             )
@@ -749,6 +773,7 @@ class Fit_Everything:
             self.Loglogistic_3P_BIC = self.__Loglogistic_3P_params.BIC
             self.Loglogistic_3P_AICc = self.__Loglogistic_3P_params.AICc
             self.Loglogistic_3P_AD = self.__Loglogistic_3P_params.AD
+            self.Loglogistic_3P_optimizer = self.__Loglogistic_3P_params.optimizer
             self._parametric_CDF_Loglogistic_3P = (
                 self.__Loglogistic_3P_params.distribution.CDF(xvals=d, show_plot=False)
             )
@@ -765,6 +790,7 @@ class Fit_Everything:
                     "AICc": self.Loglogistic_3P_AICc,
                     "BIC": self.Loglogistic_3P_BIC,
                     "AD": self.Loglogistic_3P_AD,
+                    "optimizer": self.Loglogistic_3P_optimizer,
                 },
                 ignore_index=True,
             )
@@ -784,6 +810,7 @@ class Fit_Everything:
             self.Beta_2P_BIC = self.__Beta_2P_params.BIC
             self.Beta_2P_AICc = self.__Beta_2P_params.AICc
             self.Beta_2P_AD = self.__Beta_2P_params.AD
+            self.Beta_2P_optimizer = self.__Beta_2P_params.optimizer
             self._parametric_CDF_Beta_2P = self.__Beta_2P_params.distribution.CDF(
                 xvals=d, show_plot=False
             )
@@ -800,6 +827,7 @@ class Fit_Everything:
                     "AICc": self.Beta_2P_AICc,
                     "BIC": self.Beta_2P_BIC,
                     "AD": self.Beta_2P_AD,
+                    "optimizer": self.Beta_2P_optimizer,
                 },
                 ignore_index=True,
             )
@@ -1472,14 +1500,15 @@ class Fit_Weibull_2P:
         regression on X), or 'RRY' (Rank regression on Y). LS will perform both
         RRX and RRY and return the better one. Default is 'MLE'.
     optimizer : str, optional
-        The optimisation algorithm used to find the solution. Must be either
-        'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods.
-        If the bounded method fails, 'nelder-mead' will be used. If
-        'nelder-mead' fails then the initial guess will be returned with a
-        warning. For more information on these optimizers see
-        https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
-        Default is 'L-BFGS-B' if the data is <= 97% right censored or 'TNC' if
-        the data is > 97% right censored.
+        The optimization algorithm used to find the solution. Must be either
+        'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'. Specifying the optimizer
+        will result in that optimizer being used. To use all of these specify
+        'best' and the best result will be returned. The default behaviour is to
+        try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and
+        'powell') and stop once one of the optimizers finds a solution. If the
+        optimizer fails, the initial guess will be returned.
+        For more detail see the `documentation
+        <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
     CI : float, optional
         confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
@@ -1556,7 +1585,7 @@ class Fit_Weibull_2P:
     If the fitting process encounters a problem a warning will be printed. This
     may be caused by the chosen distribution being a very poor fit to the data
     or the data being heavily censored. If a warning is printed, consider trying
-    a different optimiser.
+    a different optimizer.
     """
 
     def __init__(
@@ -1600,7 +1629,7 @@ class Fit_Weibull_2P:
             LS_method = "LS"
         else:
             LS_method = method
-        LS_results = LS_optimisation(
+        LS_results = LS_optimization(
             func_name="Weibull_2P",
             LL_func=Fit_Weibull_2P.LL,
             failures=failures,
@@ -1615,10 +1644,10 @@ class Fit_Weibull_2P:
             self.alpha = LS_results.guess[0]
             self.beta = LS_results.guess[1]
             self.method = str("Least Squares Estimation (" + LS_results.method + ")")
-
+            self.optimizer = None
         # maximum likelihood method
         elif method == "MLE":
-            MLE_results = MLE_optimisation(
+            MLE_results = MLE_optimization(
                 func_name="Weibull_2P",
                 LL_func=Fit_Weibull_2P.LL,
                 initial_guess=[LS_results.guess[0], LS_results.guess[1]],
@@ -1631,6 +1660,7 @@ class Fit_Weibull_2P:
             self.alpha = MLE_results.scale
             self.beta = MLE_results.shape
             self.method = "Maximum Likelihood Estimation (MLE)"
+            self.optimizer = MLE_results.optimizer
 
         # confidence interval estimates of parameters. This uses the Fisher Matrix so it can be applied to both MLE and LS estimates.
         Z = -ss.norm.ppf((1 - CI) / 2)
@@ -1761,6 +1791,8 @@ class Fit_Weibull_2P:
                 underline=True,
             )
             print("Analysis method:", self.method)
+            if self.optimizer is not None:
+                print("Optimizer:", self.optimizer)
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
@@ -1841,14 +1873,11 @@ class Fit_Weibull_2P_grouped:
         regression on X), or 'RRY' (Rank regression on Y). LS will perform both
         RRX and RRY and return the better one. Default is 'MLE'.
     optimizer : str, optional
-        The optimisation algorithm used to find the solution. Must be either
-        'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods.
-        If the bounded method fails, 'nelder-mead' will be used. If
-        'nelder-mead' fails then the initial guess will be returned with a
-        warning. For more information on these optimizers see
-        https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
-        Default is 'L-BFGS-B' if the data is <= 97% right censored or 'TNC' if
-        the data is > 97% right censored.
+        The optimization algorithm used to find the solution. Must be either
+        'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'. The default optimizer is
+        'TNC'. The option to use all these optimizers is not available (as it is
+        in all the other Fitters). If the optimizer fails, the initial guess
+        will be returned.
     CI : float, optional
         confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
@@ -1925,7 +1954,7 @@ class Fit_Weibull_2P_grouped:
     If the fitting process encounters a problem a warning will be printed. This
     may be caused by the chosen distribution being a very poor fit to the data
     or the data being heavily censored. If a warning is printed, consider trying
-    a different optimiser.
+    a different optimizer.
 
     Requirements of the input dataframe:
     The column titles MUST be 'category', 'time', 'quantity'
@@ -2053,6 +2082,8 @@ class Fit_Weibull_2P_grouped:
         force_beta = inputs.force_beta
         CI_type = inputs.CI_type
         self.gamma = 0
+        if optimizer not in ["L-BFGS-B", "TNC", "powell", "nelder-mead"]:
+            optimizer = "TNC"  # temporary correction for "best" and "all"
 
         if method == "RRX":
             guess = least_squares(
@@ -2131,8 +2162,10 @@ class Fit_Weibull_2P_grouped:
             self.alpha = guess[0]
             self.beta = guess[1]
             self.method = str("Least Squares Estimation (" + LS_method + ")")
+            self.optimizer = None
         elif method == "MLE":
             self.method = "Maximum Likelihood Estimation (MLE)"
+            self.optimizer = optimizer
             n = sum(failure_qty) + sum(right_censored_qty)
             k = len(guess)
             initial_guess = guess
@@ -2212,6 +2245,7 @@ class Fit_Weibull_2P_grouped:
                     BIC_array.append(np.log(n) * k + LL2)
                     delta_BIC = abs(BIC_array[-1] - BIC_array[-2])
 
+            # check if the optimizer was successful. If it failed then return the initial guess with a warning
             if result.success is True:
                 params = result.x
                 if force_beta is None:
@@ -2220,59 +2254,19 @@ class Fit_Weibull_2P_grouped:
                 else:
                     self.alpha = params[0]
                     self.beta = force_beta
-            else:  # if the L-BFGS-B or TNC optimizer fails then we have a second attempt using the slower but slightly more reliable nelder-mead optimizer
+            else:  # return the initial guess with a warning
+                colorprint(
+                    str(
+                        "WARNING: MLE estimates failed for Fit_Weibull_2P_grouped. The least squares estimates have been returned. These results may not be as accurate as MLE. You may want to try another optimzer from 'L-BFGS-B','TNC','powell','nelder-mead'."
+                    ),
+                    text_color="red",
+                )
                 if force_beta is None:
-                    guess = initial_guess
-                    result = minimize(
-                        value_and_grad(Fit_Weibull_2P_grouped.LL),
-                        guess,
-                        args=(
-                            failure_times,
-                            right_censored_times,
-                            failure_qty,
-                            right_censored_qty,
-                        ),
-                        jac=True,
-                        tol=1e-4,
-                        method="nelder-mead",
-                    )
+                    self.alpha = initial_guess[0]
+                    self.beta = initial_guess[1]
                 else:
-                    guess = initial_guess[0]
-                    result = minimize(
-                        value_and_grad(Fit_Weibull_2P_grouped.LL_fb),
-                        guess,
-                        args=(
-                            failure_times,
-                            right_censored_times,
-                            failure_qty,
-                            right_censored_qty,
-                            force_beta,
-                        ),
-                        jac=True,
-                        tol=1e-4,
-                        method="nelder-mead",
-                    )
-                if result.success is True:
-                    params = result.x
-                    if force_beta is None:
-                        self.alpha = params[0]
-                        self.beta = params[1]
-                    else:
-                        self.alpha = params[0]
-                        self.beta = force_beta
-                else:
-                    colorprint(
-                        str(
-                            "WARNING: MLE estimates failed for Weibull_2P_grouped. The least squares estimates have been returned. These results may not be as accurate as MLE."
-                        ),
-                        text_color="red",
-                    )
-                    if force_beta is None:
-                        self.alpha = initial_guess[0]
-                        self.beta = initial_guess[1]
-                    else:
-                        self.alpha = initial_guess[0]
-                        self.beta = force_beta
+                    self.alpha = initial_guess[0]
+                    self.beta = force_beta
 
         # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
@@ -2422,6 +2416,8 @@ class Fit_Weibull_2P_grouped:
                 underline=True,
             )
             print("Analysis method:", self.method)
+            if self.optimizer is not None:
+                print("Optimizer:", self.optimizer)
             print(
                 "Failures / Right censored:",
                 str(str(sum(failure_qty)) + "/" + str(sum(right_censored_qty))),
@@ -2502,14 +2498,15 @@ class Fit_Weibull_3P:
         likelihood estimation), or 'LS' (least squares estimation).
         Default is 'MLE'.
     optimizer : str, optional
-        The optimisation algorithm used to find the solution. Must be either
-        'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods.
-        If the bounded method fails, 'nelder-mead' will be used. If
-        'nelder-mead' fails then the initial guess will be returned with a
-        warning. For more information on these optimizers see
-        https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
-        Default is 'L-BFGS-B' if the data is <= 97% right censored or 'TNC' if
-        the data is > 97% right censored.
+        The optimization algorithm used to find the solution. Must be either
+        'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'. Specifying the optimizer
+        will result in that optimizer being used. To use all of these specify
+        'best' and the best result will be returned. The default behaviour is to
+        try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and
+        'powell') and stop once one of the optimizers finds a solution. If the
+        optimizer fails, the initial guess will be returned.
+        For more detail see the `documentation
+        <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
     CI : float, optional
         confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
@@ -2590,7 +2587,7 @@ class Fit_Weibull_3P:
     If the fitting process encounters a problem a warning will be printed. This
     may be caused by the chosen distribution being a very poor fit to the data
     or the data being heavily censored. If a warning is printed, consider trying
-    a different optimiser.
+    a different optimizer.
 
     If the fitted gamma parameter is less than 0.01, the Weibull_3P results will
     be discarded and the Weibull_2P distribution will be fitted. The returned
@@ -2634,7 +2631,7 @@ class Fit_Weibull_3P:
             LS_method = "LS"
         else:
             LS_method = method
-        LS_results = LS_optimisation(
+        LS_results = LS_optimization(
             func_name="Weibull_3P",
             LL_func=Fit_Weibull_3P.LL,
             failures=failures,
@@ -2648,10 +2645,10 @@ class Fit_Weibull_3P:
             self.beta = LS_results.guess[1]
             self.gamma = LS_results.guess[2]
             self.method = str("Least Squares Estimation (" + LS_results.method + ")")
-
+            self.optimizer = None
         # maximum likelihood method
         elif method == "MLE":
-            MLE_results = MLE_optimisation(
+            MLE_results = MLE_optimization(
                 func_name="Weibull_3P",
                 LL_func=Fit_Weibull_3P.LL,
                 initial_guess=[
@@ -2667,6 +2664,7 @@ class Fit_Weibull_3P:
             self.beta = MLE_results.shape
             self.gamma = MLE_results.gamma
             self.method = "Maximum Likelihood Estimation (MLE)"
+            self.optimizer = MLE_results.optimizer
 
         if (
             self.gamma < 0.01
@@ -2817,6 +2815,8 @@ class Fit_Weibull_3P:
                 underline=True,
             )
             print("Analysis method:", self.method)
+            if self.optimizer is not None:
+                print("Optimizer:", self.optimizer)
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
@@ -2905,14 +2905,15 @@ class Fit_Weibull_Mixture:
         Prints a dataframe of the point estimate, standard error, Lower CI and
         Upper CI for each parameter. True or False. Default = True
     optimizer : str, optional
-        The optimisation algorithm used to find the solution. Must be either
-        'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods.
-        If the bounded method fails, 'nelder-mead' will be used. If
-        'nelder-mead' fails then the initial guess will be returned with a
-        warning. For more information on these optimizers see
-        https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
-        Default is 'L-BFGS-B' if the data is <= 97% right censored or 'TNC' if
-        the data is > 97% right censored.
+        The optimization algorithm used to find the solution. Must be either
+        'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'. Specifying the optimizer
+        will result in that optimizer being used. To use all of these specify
+        'best' and the best result will be returned. The default behaviour is to
+        try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and
+        'powell') and stop once one of the optimizers finds a solution. If the
+        optimizer fails, the initial guess will be returned.
+        For more detail see the `documentation
+        <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
     CI : float, optional
         confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
@@ -3012,7 +3013,7 @@ class Fit_Weibull_Mixture:
     If the fitting process encounters a problem a warning will be printed. This
     may be caused by the chosen distribution being a very poor fit to the data
     or the data being heavily censored. If a warning is printed, consider trying
-    a different optimiser.
+    a different optimizer.
     """
 
     def __init__(
@@ -3119,7 +3120,7 @@ class Fit_Weibull_Mixture:
         ]  # A1,B1,A2,B2,P
 
         # solve it
-        MLE_results = MLE_optimisation(
+        MLE_results = MLE_optimization(
             func_name="Weibull_mixture",
             LL_func=Fit_Weibull_Mixture.LL,
             initial_guess=guess,
@@ -3133,6 +3134,7 @@ class Fit_Weibull_Mixture:
         self.beta_2 = MLE_results.beta_2
         self.proportion_1 = MLE_results.proportion_1
         self.proportion_2 = MLE_results.proportion_2
+        self.optimizer = MLE_results.optimizer
         dist_1 = Weibull_Distribution(alpha=self.alpha_1, beta=self.beta_1)
         dist_2 = Weibull_Distribution(alpha=self.alpha_2, beta=self.beta_2)
         self.distribution = Mixture_Model(
@@ -3172,7 +3174,7 @@ class Fit_Weibull_Mixture:
             self.beta_2_SE = abs(covariance_matrix[3][3]) ** 0.5
             self.proportion_1_SE = abs(covariance_matrix[4][4]) ** 0.5
         except LinAlgError:
-            # this exception is rare but can occur with some optimisers
+            # this exception is rare but can occur with some optimizers
             colorprint(
                 str(
                     "WARNING: The hessian matrix obtained using the "
@@ -3294,7 +3296,9 @@ class Fit_Weibull_Mixture:
                 bold=True,
                 underline=True,
             )
-            print("Analysis method: MLE")
+            print("Analysis method: Maximum Likelihood Estimation (MLE)")
+            if self.optimizer is not None:
+                print("Optimizer:", self.optimizer)
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
@@ -3386,14 +3390,15 @@ class Fit_Weibull_CR:
         Prints a dataframe of the point estimate, standard error, Lower CI and
         Upper CI for each parameter. True or False. Default = True
     optimizer : str, optional
-        The optimisation algorithm used to find the solution. Must be either
-        'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods.
-        If the bounded method fails, 'nelder-mead' will be used. If
-        'nelder-mead' fails then the initial guess will be returned with a
-        warning. For more information on these optimizers see
-        https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
-        Default is 'L-BFGS-B' if the data is <= 97% right censored or 'TNC' if
-        the data is > 97% right censored.
+        The optimization algorithm used to find the solution. Must be either
+        'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'. Specifying the optimizer
+        will result in that optimizer being used. To use all of these specify
+        'best' and the best result will be returned. The default behaviour is to
+        try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and
+        'powell') and stop once one of the optimizers finds a solution. If the
+        optimizer fails, the initial guess will be returned.
+        For more detail see the `documentation
+        <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
     CI : float, optional
         confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
@@ -3574,7 +3579,7 @@ class Fit_Weibull_CR:
         ]  # A1,B1,A2,B2
 
         # solve it
-        MLE_results = MLE_optimisation(
+        MLE_results = MLE_optimization(
             func_name="Weibull_CR",
             LL_func=Fit_Weibull_CR.LL,
             initial_guess=guess,
@@ -3586,6 +3591,7 @@ class Fit_Weibull_CR:
         self.beta_1 = MLE_results.beta_1
         self.alpha_2 = MLE_results.alpha_2
         self.beta_2 = MLE_results.beta_2
+        self.optimizer = MLE_results.optimizer
         dist_1 = Weibull_Distribution(alpha=self.alpha_1, beta=self.beta_1)
         dist_2 = Weibull_Distribution(alpha=self.alpha_2, beta=self.beta_2)
         self.distribution = Competing_Risks_Model(distributions=[dist_1, dist_2])
@@ -3615,7 +3621,7 @@ class Fit_Weibull_CR:
             self.alpha_2_SE = abs(covariance_matrix[2][2]) ** 0.5
             self.beta_2_SE = abs(covariance_matrix[3][3]) ** 0.5
         except LinAlgError:
-            # this exception is rare but can occur with some optimisers
+            # this exception is rare but can occur with some optimizers
             colorprint(
                 str(
                     "WARNING: The hessian matrix obtained using the "
@@ -3705,7 +3711,9 @@ class Fit_Weibull_CR:
                 bold=True,
                 underline=True,
             )
-            print("Analysis method: MLE")
+            print("Analysis method: Maximum Likelihood Estimation (MLE)")
+            if self.optimizer is not None:
+                print("Optimizer:", self.optimizer)
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
@@ -3792,14 +3800,15 @@ class Fit_Exponential_1P:
         regression on X), or 'RRY' (Rank regression on Y). LS will perform both
         RRX and RRY and return the better one. Default is 'MLE'.
     optimizer : str, optional
-        The optimisation algorithm used to find the solution. Must be either
-        'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods.
-        If the bounded method fails, 'nelder-mead' will be used. If
-        'nelder-mead' fails then the initial guess will be returned with a
-        warning. For more information on these optimizers see
-        https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
-        Default is 'L-BFGS-B' if the data is <= 97% right censored or 'TNC' if
-        the data is > 97% right censored.
+        The optimization algorithm used to find the solution. Must be either
+        'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'. Specifying the optimizer
+        will result in that optimizer being used. To use all of these specify
+        'best' and the best result will be returned. The default behaviour is to
+        try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and
+        'powell') and stop once one of the optimizers finds a solution. If the
+        optimizer fails, the initial guess will be returned.
+        For more detail see the `documentation
+        <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
     CI : float, optional
         confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
@@ -3871,7 +3880,7 @@ class Fit_Exponential_1P:
     If the fitting process encounters a problem a warning will be printed. This
     may be caused by the chosen distribution being a very poor fit to the data
     or the data being heavily censored. If a warning is printed, consider trying
-    a different optimiser.
+    a different optimizer.
     """
 
     def __init__(
@@ -3909,7 +3918,7 @@ class Fit_Exponential_1P:
             LS_method = "LS"
         else:
             LS_method = method
-        LS_results = LS_optimisation(
+        LS_results = LS_optimization(
             func_name="Exponential_1P",
             LL_func=Fit_Exponential_1P.LL,
             failures=failures,
@@ -3921,10 +3930,10 @@ class Fit_Exponential_1P:
         if method in ["LS", "RRX", "RRY"]:
             self.Lambda = LS_results.guess[0]
             self.method = str("Least Squares Estimation (" + LS_results.method + ")")
-
+            self.optimizer = None
         # maximum likelihood method
         elif method == "MLE":
-            MLE_results = MLE_optimisation(
+            MLE_results = MLE_optimization(
                 func_name="Exponential_1P",
                 LL_func=Fit_Exponential_1P.LL,
                 initial_guess=[LS_results.guess[0]],
@@ -3934,6 +3943,7 @@ class Fit_Exponential_1P:
             )
             self.Lambda = MLE_results.scale
             self.method = "Maximum Likelihood Estimation (MLE)"
+            self.optimizer = MLE_results.optimizer
 
         # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
@@ -4036,6 +4046,8 @@ class Fit_Exponential_1P:
                 underline=True,
             )
             print("Analysis method:", self.method)
+            if self.optimizer is not None:
+                print("Optimizer:", self.optimizer)
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
@@ -4111,14 +4123,15 @@ class Fit_Exponential_2P:
         regression on X), or 'RRY' (Rank regression on Y). LS will perform both
         RRX and RRY and return the better one. Default is 'MLE'.
     optimizer : str, optional
-        The optimisation algorithm used to find the solution. Must be either
-        'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods.
-        If the bounded method fails, 'nelder-mead' will be used. If
-        'nelder-mead' fails then the initial guess will be returned with a
-        warning. For more information on these optimizers see
-        https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
-        Default is 'L-BFGS-B' if the data is <= 97% right censored or 'TNC' if
-        the data is > 97% right censored.
+        The optimization algorithm used to find the solution. Must be either
+        'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'. Specifying the optimizer
+        will result in that optimizer being used. To use all of these specify
+        'best' and the best result will be returned. The default behaviour is to
+        try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and
+        'powell') and stop once one of the optimizers finds a solution. If the
+        optimizer fails, the initial guess will be returned.
+        For more detail see the `documentation
+        <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
     CI : float, optional
         confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
@@ -4198,7 +4211,7 @@ class Fit_Exponential_2P:
     If the fitting process encounters a problem a warning will be printed. This
     may be caused by the chosen distribution being a very poor fit to the data
     or the data being heavily censored. If a warning is printed, consider trying
-    a different optimiser.
+    a different optimizer.
     """
 
     def __init__(
@@ -4216,7 +4229,7 @@ class Fit_Exponential_2P:
         # To obtain the confidence intervals of the parameters, the gamma parameter is estimated by optimizing the log-likelihood function but
         # it is assumed as fixed because the variance-covariance matrix of the estimated parameters cannot be determined numerically. By assuming
         # the standard error in gamma is zero, we can use Exponential_1P to obtain the confidence intervals for Lambda. This is the same procedure
-        # performed by both Reliasoft and Minitab. You may find the results are slightly different to Minitab and this is because the optimisation
+        # performed by both Reliasoft and Minitab. You may find the results are slightly different to Minitab and this is because the optimization
         # of gamma is done more efficiently here than Minitab does it. This is evidenced by comparing the log-likelihood for the same data input.
 
         inputs = fitters_input_checking(
@@ -4240,7 +4253,7 @@ class Fit_Exponential_2P:
             LS_method = "LS"
         else:
             LS_method = method
-        LS_results = LS_optimisation(
+        LS_results = LS_optimization(
             func_name="Exponential_2P",
             LL_func=Fit_Exponential_2P.LL,
             failures=failures,
@@ -4253,13 +4266,13 @@ class Fit_Exponential_2P:
             self.Lambda = LS_results.guess[0]
             self.gamma = LS_results.guess[1]
             self.method = str("Least Squares Estimation (" + LS_results.method + ")")
-
+            self.optimizer = None
         # maximum likelihood method
         elif method == "MLE":
             if (
                 LS_results.guess[0] < 1
             ):  # The reason for having an inverted and non-inverted cases is due to the gradient being too shallow in some cases. If Lambda<1 we invert it so it's bigger. This prevents the gradient getting too shallow for the optimizer to find the correct minimum.
-                MLE_results = MLE_optimisation(
+                MLE_results = MLE_optimization(
                     func_name="Exponential_2P",
                     LL_func=Fit_Exponential_2P.LL_inv,
                     initial_guess=[1 / LS_results.guess[0], LS_results.guess[1]],
@@ -4269,7 +4282,7 @@ class Fit_Exponential_2P:
                 )
                 self.Lambda = 1 / MLE_results.scale
             else:
-                MLE_results = MLE_optimisation(
+                MLE_results = MLE_optimization(
                     func_name="Exponential_2P",
                     LL_func=Fit_Exponential_2P.LL,
                     initial_guess=[LS_results.guess[0], LS_results.guess[1]],
@@ -4280,6 +4293,7 @@ class Fit_Exponential_2P:
                 self.Lambda = MLE_results.scale
             self.gamma = MLE_results.gamma
             self.method = "Maximum Likelihood Estimation (MLE)"
+            self.optimizer = MLE_results.optimizer
 
         # confidence interval estimates of parameters. Uses Exponential_1P because gamma (while optimized) cannot be used in the MLE solution as the solution is unbounded
         Z = -ss.norm.ppf((1 - CI) / 2)
@@ -4387,6 +4401,8 @@ class Fit_Exponential_2P:
                 underline=True,
             )
             print("Analysis method:", self.method)
+            if self.optimizer is not None:
+                print("Optimizer:", self.optimizer)
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
@@ -4473,14 +4489,15 @@ class Fit_Normal_2P:
         regression on X), or 'RRY' (Rank regression on Y). LS will perform both
         RRX and RRY and return the better one. Default is 'MLE'.
     optimizer : str, optional
-        The optimisation algorithm used to find the solution. Must be either
-        'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods.
-        If the bounded method fails, 'nelder-mead' will be used. If
-        'nelder-mead' fails then the initial guess will be returned with a
-        warning. For more information on these optimizers see
-        https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
-        Default is 'L-BFGS-B' if the data is <= 97% right censored or 'TNC' if
-        the data is > 97% right censored.
+        The optimization algorithm used to find the solution. Must be either
+        'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'. Specifying the optimizer
+        will result in that optimizer being used. To use all of these specify
+        'best' and the best result will be returned. The default behaviour is to
+        try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and
+        'powell') and stop once one of the optimizers finds a solution. If the
+        optimizer fails, the initial guess will be returned.
+        For more detail see the `documentation
+        <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
     CI : float, optional
         confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
@@ -4557,7 +4574,7 @@ class Fit_Normal_2P:
     If the fitting process encounters a problem a warning will be printed. This
     may be caused by the chosen distribution being a very poor fit to the data
     or the data being heavily censored. If a warning is printed, consider trying
-    a different optimiser.
+    a different optimizer.
     """
 
     def __init__(
@@ -4600,7 +4617,7 @@ class Fit_Normal_2P:
             LS_method = "LS"
         else:
             LS_method = method
-        LS_results = LS_optimisation(
+        LS_results = LS_optimization(
             func_name="Normal_2P",
             LL_func=Fit_Normal_2P.LL,
             failures=failures,
@@ -4615,10 +4632,10 @@ class Fit_Normal_2P:
             self.mu = LS_results.guess[0]
             self.sigma = LS_results.guess[1]
             self.method = str("Least Squares Estimation (" + LS_results.method + ")")
-
+            self.optimizer = None
         # maximum likelihood method
         elif method == "MLE":
-            MLE_results = MLE_optimisation(
+            MLE_results = MLE_optimization(
                 func_name="Normal_2P",
                 LL_func=Fit_Normal_2P.LL,
                 initial_guess=[LS_results.guess[0], LS_results.guess[1]],
@@ -4631,6 +4648,7 @@ class Fit_Normal_2P:
             self.mu = MLE_results.scale
             self.sigma = MLE_results.shape
             self.method = "Maximum Likelihood Estimation (MLE)"
+            self.optimizer = MLE_results.optimizer
 
         # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
@@ -4767,6 +4785,8 @@ class Fit_Normal_2P:
                 underline=True,
             )
             print("Analysis method:", self.method)
+            if self.optimizer is not None:
+                print("Optimizer:", self.optimizer)
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
@@ -4851,14 +4871,15 @@ class Fit_Gumbel_2P:
         regression on X), or 'RRY' (Rank regression on Y). LS will perform both
         RRX and RRY and return the better one. Default is 'MLE'.
     optimizer : str, optional
-        The optimisation algorithm used to find the solution. Must be either
-        'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods.
-        If the bounded method fails, 'nelder-mead' will be used. If
-        'nelder-mead' fails then the initial guess will be returned with a
-        warning. For more information on these optimizers see
-        https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
-        Default is 'L-BFGS-B' if the data is <= 97% right censored or 'TNC' if
-        the data is > 97% right censored.
+        The optimization algorithm used to find the solution. Must be either
+        'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'. Specifying the optimizer
+        will result in that optimizer being used. To use all of these specify
+        'best' and the best result will be returned. The default behaviour is to
+        try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and
+        'powell') and stop once one of the optimizers finds a solution. If the
+        optimizer fails, the initial guess will be returned.
+        For more detail see the `documentation
+        <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
     CI : float, optional
         confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
@@ -4934,7 +4955,7 @@ class Fit_Gumbel_2P:
     If the fitting process encounters a problem a warning will be printed. This
     may be caused by the chosen distribution being a very poor fit to the data
     or the data being heavily censored. If a warning is printed, consider trying
-    a different optimiser.
+    a different optimizer.
     """
 
     def __init__(
@@ -4974,7 +4995,7 @@ class Fit_Gumbel_2P:
             LS_method = "LS"
         else:
             LS_method = method
-        LS_results = LS_optimisation(
+        LS_results = LS_optimization(
             func_name="Gumbel_2P",
             LL_func=Fit_Gumbel_2P.LL,
             failures=failures,
@@ -4987,10 +5008,10 @@ class Fit_Gumbel_2P:
             self.mu = LS_results.guess[0]
             self.sigma = LS_results.guess[1]
             self.method = str("Least Squares Estimation (" + LS_results.method + ")")
-
+            self.optimizer = None
         # maximum likelihood method
         elif method == "MLE":
-            MLE_results = MLE_optimisation(
+            MLE_results = MLE_optimization(
                 func_name="Gumbel_2P",
                 LL_func=Fit_Gumbel_2P.LL,
                 initial_guess=[LS_results.guess[0], LS_results.guess[1]],
@@ -5001,6 +5022,7 @@ class Fit_Gumbel_2P:
             self.mu = MLE_results.scale
             self.sigma = MLE_results.shape
             self.method = "Maximum Likelihood Estimation (MLE)"
+            self.optimizer = MLE_results.optimizer
 
         # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
@@ -5113,6 +5135,8 @@ class Fit_Gumbel_2P:
                 underline=True,
             )
             print("Analysis method:", self.method)
+            if self.optimizer is not None:
+                print("Optimizer:", self.optimizer)
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
@@ -5187,14 +5211,15 @@ class Fit_Lognormal_2P:
         regression on X), or 'RRY' (Rank regression on Y). LS will perform both
         RRX and RRY and return the better one. Default is 'MLE'.
     optimizer : str, optional
-        The optimisation algorithm used to find the solution. Must be either
-        'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods.
-        If the bounded method fails, 'nelder-mead' will be used. If
-        'nelder-mead' fails then the initial guess will be returned with a
-        warning. For more information on these optimizers see
-        https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
-        Default is 'L-BFGS-B' if the data is <= 97% right censored or 'TNC' if
-        the data is > 97% right censored.
+        The optimization algorithm used to find the solution. Must be either
+        'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'. Specifying the optimizer
+        will result in that optimizer being used. To use all of these specify
+        'best' and the best result will be returned. The default behaviour is to
+        try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and
+        'powell') and stop once one of the optimizers finds a solution. If the
+        optimizer fails, the initial guess will be returned.
+        For more detail see the `documentation
+        <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
     CI : float, optional
         confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
@@ -5271,7 +5296,7 @@ class Fit_Lognormal_2P:
     If the fitting process encounters a problem a warning will be printed. This
     may be caused by the chosen distribution being a very poor fit to the data
     or the data being heavily censored. If a warning is printed, consider trying
-    a different optimiser.
+    a different optimizer.
     """
 
     def __init__(
@@ -5315,7 +5340,7 @@ class Fit_Lognormal_2P:
             LS_method = "LS"
         else:
             LS_method = method
-        LS_results = LS_optimisation(
+        LS_results = LS_optimization(
             func_name="Lognormal_2P",
             LL_func=Fit_Lognormal_2P.LL,
             failures=failures,
@@ -5330,10 +5355,10 @@ class Fit_Lognormal_2P:
             self.mu = LS_results.guess[0]
             self.sigma = LS_results.guess[1]
             self.method = str("Least Squares Estimation (" + LS_results.method + ")")
-
+            self.optimizer = None
         # maximum likelihood method
         elif method == "MLE":
-            MLE_results = MLE_optimisation(
+            MLE_results = MLE_optimization(
                 func_name="Lognormal_2P",
                 LL_func=Fit_Lognormal_2P.LL,
                 initial_guess=[LS_results.guess[0], LS_results.guess[1]],
@@ -5346,6 +5371,7 @@ class Fit_Lognormal_2P:
             self.mu = MLE_results.scale
             self.sigma = MLE_results.shape
             self.method = "Maximum Likelihood Estimation (MLE)"
+            self.optimizer = MLE_results.optimizer
 
         # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
@@ -5480,6 +5506,8 @@ class Fit_Lognormal_2P:
                 underline=True,
             )
             print("Analysis method:", self.method)
+            if self.optimizer is not None:
+                print("Optimizer:", self.optimizer)
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
@@ -5563,14 +5591,15 @@ class Fit_Lognormal_3P:
         likelihood estimation), or 'LS' (least squares estimation).
         Default is 'MLE'.
     optimizer : str, optional
-        The optimisation algorithm used to find the solution. Must be either
-        'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods.
-        If the bounded method fails, 'nelder-mead' will be used. If
-        'nelder-mead' fails then the initial guess will be returned with a
-        warning. For more information on these optimizers see
-        https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
-        Default is 'L-BFGS-B' if the data is <= 97% right censored or 'TNC' if
-        the data is > 97% right censored.
+        The optimization algorithm used to find the solution. Must be either
+        'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'. Specifying the optimizer
+        will result in that optimizer being used. To use all of these specify
+        'best' and the best result will be returned. The default behaviour is to
+        try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and
+        'powell') and stop once one of the optimizers finds a solution. If the
+        optimizer fails, the initial guess will be returned.
+        For more detail see the `documentation
+        <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
     CI : float, optional
         confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
@@ -5651,7 +5680,7 @@ class Fit_Lognormal_3P:
     If the fitting process encounters a problem a warning will be printed. This
     may be caused by the chosen distribution being a very poor fit to the data
     or the data being heavily censored. If a warning is printed, consider trying
-    a different optimiser.
+    a different optimizer.
 
     If the fitted gamma parameter is less than 0.01, the Lognormal_3P results
     will be discarded and the Lognormal_2P distribution will be fitted. The
@@ -5695,7 +5724,7 @@ class Fit_Lognormal_3P:
             LS_method = "LS"
         else:
             LS_method = method
-        LS_results = LS_optimisation(
+        LS_results = LS_optimization(
             func_name="Lognormal_3P",
             LL_func=Fit_Lognormal_3P.LL,
             failures=failures,
@@ -5709,10 +5738,10 @@ class Fit_Lognormal_3P:
             self.sigma = LS_results.guess[1]
             self.gamma = LS_results.guess[2]
             self.method = str("Least Squares Estimation (" + LS_results.method + ")")
-
+            self.optimizer = None
         # maximum likelihood method
         elif method == "MLE":
-            MLE_results = MLE_optimisation(
+            MLE_results = MLE_optimization(
                 func_name="Lognormal_3P",
                 LL_func=Fit_Lognormal_3P.LL,
                 initial_guess=[
@@ -5728,6 +5757,7 @@ class Fit_Lognormal_3P:
             self.sigma = MLE_results.shape
             self.gamma = MLE_results.gamma
             self.method = "Maximum Likelihood Estimation (MLE)"
+            self.optimizer = MLE_results.optimizer
 
         if (
             self.gamma < 0.01
@@ -5883,6 +5913,8 @@ class Fit_Lognormal_3P:
                 underline=True,
             )
             print("Analysis method:", self.method)
+            if self.optimizer is not None:
+                print("Optimizer:", self.optimizer)
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
@@ -5972,14 +6004,15 @@ class Fit_Gamma_2P:
         regression on X), or 'RRY' (Rank regression on Y). LS will perform both
         RRX and RRY and return the better one. Default is 'MLE'.
     optimizer : str, optional
-        The optimisation algorithm used to find the solution. Must be either
-        'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods.
-        If the bounded method fails, 'nelder-mead' will be used. If
-        'nelder-mead' fails then the initial guess will be returned with a
-        warning. For more information on these optimizers see
-        https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
-        Default is 'L-BFGS-B' if the data is <= 97% right censored or 'TNC' if
-        the data is > 97% right censored.
+        The optimization algorithm used to find the solution. Must be either
+        'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'. Specifying the optimizer
+        will result in that optimizer being used. To use all of these specify
+        'best' and the best result will be returned. The default behaviour is to
+        try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and
+        'powell') and stop once one of the optimizers finds a solution. If the
+        optimizer fails, the initial guess will be returned.
+        For more detail see the `documentation
+        <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
     CI : float, optional
         confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
@@ -6063,7 +6096,7 @@ class Fit_Gamma_2P:
     If the fitting process encounters a problem a warning will be printed. This
     may be caused by the chosen distribution being a very poor fit to the data
     or the data being heavily censored. If a warning is printed, consider trying
-    a different optimiser.
+    a different optimizer.
 
     This is a two parameter distribution but it has two parametrisations. These
     are alpha,beta and mu,beta. The alpha,beta parametrisation is reported in
@@ -6111,7 +6144,7 @@ class Fit_Gamma_2P:
         self.gamma = 0
 
         # Obtain least squares estimates
-        LS_results = LS_optimisation(
+        LS_results = LS_optimization(
             func_name="Gamma_2P",
             LL_func=Fit_Gamma_2P.LL_ab,
             failures=failures,
@@ -6125,10 +6158,10 @@ class Fit_Gamma_2P:
             self.mu = np.log(self.alpha)
             self.beta = LS_results.guess[1]
             self.method = str("Least Squares Estimation (" + LS_results.method + ")")
-
+            self.optimizer = None
         # maximum likelihood method
         elif method == "MLE":
-            MLE_results_ab = MLE_optimisation(
+            MLE_results_ab = MLE_optimization(
                 func_name="Gamma_2P",
                 LL_func=Fit_Gamma_2P.LL_ab,
                 initial_guess=[LS_results.guess[0], LS_results.guess[1]],
@@ -6140,6 +6173,7 @@ class Fit_Gamma_2P:
             self.mu = np.log(MLE_results_ab.scale)
             self.beta = MLE_results_ab.shape
             self.method = "Maximum Likelihood Estimation (MLE)"
+            self.optimizer = MLE_results_ab.optimizer
 
         # confidence interval estimates of parameters
         # this needs to be done in terms of alpha beta (ab) parametrisation
@@ -6264,6 +6298,8 @@ class Fit_Gamma_2P:
                 underline=True,
             )
             print("Analysis method:", self.method)
+            if self.optimizer is not None:
+                print("Optimizer:", self.optimizer)
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
@@ -6356,14 +6392,15 @@ class Fit_Gamma_3P:
         likelihood estimation), or 'LS' (least squares estimation).
         Default is 'MLE'.
     optimizer : str, optional
-        The optimisation algorithm used to find the solution. Must be either
-        'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods.
-        If the bounded method fails, 'nelder-mead' will be used. If
-        'nelder-mead' fails then the initial guess will be returned with a
-        warning. For more information on these optimizers see
-        https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
-        Default is 'L-BFGS-B' if the data is <= 97% right censored or 'TNC' if
-        the data is > 97% right censored.
+        The optimization algorithm used to find the solution. Must be either
+        'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'. Specifying the optimizer
+        will result in that optimizer being used. To use all of these specify
+        'best' and the best result will be returned. The default behaviour is to
+        try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and
+        'powell') and stop once one of the optimizers finds a solution. If the
+        optimizer fails, the initial guess will be returned.
+        For more detail see the `documentation
+        <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
     CI : float, optional
         confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
@@ -6455,7 +6492,7 @@ class Fit_Gamma_3P:
     If the fitting process encounters a problem a warning will be printed. This
     may be caused by the chosen distribution being a very poor fit to the data
     or the data being heavily censored. If a warning is printed, consider trying
-    a different optimiser.
+    a different optimizer.
 
     If the fitted gamma parameter is less than 0.01, the Gamma_3P results will
     be discarded and the Gamma_2P distribution will be fitted. The returned
@@ -6511,7 +6548,7 @@ class Fit_Gamma_3P:
             LS_method = "LS"
         else:
             LS_method = method
-        LS_results = LS_optimisation(
+        LS_results = LS_optimization(
             func_name="Gamma_3P",
             LL_func=Fit_Gamma_3P.LL_abg,
             failures=failures,
@@ -6526,10 +6563,10 @@ class Fit_Gamma_3P:
             self.beta = LS_results.guess[1]
             self.gamma = LS_results.guess[2]
             self.method = str("Least Squares Estimation (" + LS_results.method + ")")
-
+            self.optimizer = None
         # maximum likelihood method
         elif method == "MLE":
-            MLE_results_abg = MLE_optimisation(
+            MLE_results_abg = MLE_optimization(
                 func_name="Gamma_3P",
                 LL_func=Fit_Gamma_3P.LL_abg,
                 initial_guess=[
@@ -6546,6 +6583,7 @@ class Fit_Gamma_3P:
             self.beta = MLE_results_abg.shape
             self.gamma = MLE_results_abg.gamma
             self.method = "Maximum Likelihood Estimation (MLE)"
+            self.optimizer = MLE_results_abg.optimizer
 
         if (
             self.gamma < 0.01
@@ -6712,6 +6750,8 @@ class Fit_Gamma_3P:
                 underline=True,
             )
             print("Analysis method:", self.method)
+            if self.optimizer is not None:
+                print("Optimizer:", self.optimizer)
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
@@ -6820,14 +6860,15 @@ class Fit_Beta_2P:
         regression on X), or 'RRY' (Rank regression on Y). LS will perform both
         RRX and RRY and return the better one. Default is 'MLE'.
     optimizer : str, optional
-        The optimisation algorithm used to find the solution. Must be either
-        'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods.
-        If the bounded method fails, 'nelder-mead' will be used. If
-        'nelder-mead' fails then the initial guess will be returned with a
-        warning. For more information on these optimizers see
-        https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
-        Default is 'L-BFGS-B' if the data is <= 97% right censored or 'TNC' if
-        the data is > 97% right censored.
+        The optimization algorithm used to find the solution. Must be either
+        'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'. Specifying the optimizer
+        will result in that optimizer being used. To use all of these specify
+        'best' and the best result will be returned. The default behaviour is to
+        try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and
+        'powell') and stop once one of the optimizers finds a solution. If the
+        optimizer fails, the initial guess will be returned.
+        For more detail see the `documentation
+        <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
     CI : float, optional
         confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
@@ -6895,7 +6936,7 @@ class Fit_Beta_2P:
     If the fitting process encounters a problem a warning will be printed. This
     may be caused by the chosen distribution being a very poor fit to the data
     or the data being heavily censored. If a warning is printed, consider trying
-    a different optimiser.
+    a different optimizer.
 
     Confidence intervals on the plots are not provided.
     """
@@ -6934,7 +6975,7 @@ class Fit_Beta_2P:
             LS_method = "LS"
         else:
             LS_method = method
-        LS_results = LS_optimisation(
+        LS_results = LS_optimization(
             func_name="Beta_2P",
             LL_func=Fit_Beta_2P.LL,
             failures=failures,
@@ -6947,10 +6988,10 @@ class Fit_Beta_2P:
             self.alpha = LS_results.guess[0]
             self.beta = LS_results.guess[1]
             self.method = str("Least Squares Estimation (" + LS_results.method + ")")
-
+            self.optimizer = None
         # maximum likelihood method
         elif method == "MLE":
-            MLE_results = MLE_optimisation(
+            MLE_results = MLE_optimization(
                 func_name="Beta_2P",
                 LL_func=Fit_Beta_2P.LL,
                 initial_guess=[LS_results.guess[0], LS_results.guess[1]],
@@ -6961,6 +7002,7 @@ class Fit_Beta_2P:
             self.alpha = MLE_results.scale
             self.beta = MLE_results.shape
             self.method = "Maximum Likelihood Estimation (MLE)"
+            self.optimizer = MLE_results.optimizer
 
         # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
@@ -7052,6 +7094,8 @@ class Fit_Beta_2P:
                 underline=True,
             )
             print("Analysis method:", self.method)
+            if self.optimizer is not None:
+                print("Optimizer:", self.optimizer)
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
@@ -7124,14 +7168,15 @@ class Fit_Loglogistic_2P:
         regression on X), or 'RRY' (Rank regression on Y). LS will perform both
         RRX and RRY and return the better one. Default is 'MLE'.
     optimizer : str, optional
-        The optimisation algorithm used to find the solution. Must be either
-        'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods.
-        If the bounded method fails, 'nelder-mead' will be used. If
-        'nelder-mead' fails then the initial guess will be returned with a
-        warning. For more information on these optimizers see
-        https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
-        Default is 'L-BFGS-B' if the data is <= 97% right censored or 'TNC' if
-        the data is > 97% right censored.
+        The optimization algorithm used to find the solution. Must be either
+        'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'. Specifying the optimizer
+        will result in that optimizer being used. To use all of these specify
+        'best' and the best result will be returned. The default behaviour is to
+        try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and
+        'powell') and stop once one of the optimizers finds a solution. If the
+        optimizer fails, the initial guess will be returned.
+        For more detail see the `documentation
+        <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
     CI : float, optional
         confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
@@ -7204,7 +7249,7 @@ class Fit_Loglogistic_2P:
     If the fitting process encounters a problem a warning will be printed. This
     may be caused by the chosen distribution being a very poor fit to the data
     or the data being heavily censored. If a warning is printed, consider trying
-    a different optimiser.
+    a different optimizer.
     """
 
     def __init__(
@@ -7245,7 +7290,7 @@ class Fit_Loglogistic_2P:
             LS_method = "LS"
         else:
             LS_method = method
-        LS_results = LS_optimisation(
+        LS_results = LS_optimization(
             func_name="Loglogistic_2P",
             LL_func=Fit_Loglogistic_2P.LL,
             failures=failures,
@@ -7258,10 +7303,10 @@ class Fit_Loglogistic_2P:
             self.alpha = LS_results.guess[0]
             self.beta = LS_results.guess[1]
             self.method = str("Least Squares Estimation (" + LS_results.method + ")")
-
+            self.optimizer = None
         # maximum likelihood method
         elif method == "MLE":
-            MLE_results = MLE_optimisation(
+            MLE_results = MLE_optimization(
                 func_name="Loglogistic_2P",
                 LL_func=Fit_Loglogistic_2P.LL,
                 initial_guess=[LS_results.guess[0], LS_results.guess[1]],
@@ -7272,6 +7317,7 @@ class Fit_Loglogistic_2P:
             self.alpha = MLE_results.scale
             self.beta = MLE_results.shape
             self.method = "Maximum Likelihood Estimation (MLE)"
+            self.optimizer = MLE_results.optimizer
 
         # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
@@ -7382,6 +7428,8 @@ class Fit_Loglogistic_2P:
                 underline=True,
             )
             print("Analysis method:", self.method)
+            if self.optimizer is not None:
+                print("Optimizer:", self.optimizer)
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
@@ -7457,14 +7505,15 @@ class Fit_Loglogistic_3P:
         likelihood estimation), or 'LS' (least squares estimation).
         Default is 'MLE'.
     optimizer : str, optional
-        The optimisation algorithm used to find the solution. Must be either
-        'L-BFGS-B', 'TNC', or 'powell'. These are all bound constrained methods.
-        If the bounded method fails, 'nelder-mead' will be used. If
-        'nelder-mead' fails then the initial guess will be returned with a
-        warning. For more information on these optimizers see
-        https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize
-        Default is 'L-BFGS-B' if the data is <= 97% right censored or 'TNC' if
-        the data is > 97% right censored.
+        The optimization algorithm used to find the solution. Must be either
+        'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'. Specifying the optimizer
+        will result in that optimizer being used. To use all of these specify
+        'best' and the best result will be returned. The default behaviour is to
+        try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and
+        'powell') and stop once one of the optimizers finds a solution. If the
+        optimizer fails, the initial guess will be returned.
+        For more detail see the `documentation
+        <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
     CI : float, optional
         confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
@@ -7545,7 +7594,7 @@ class Fit_Loglogistic_3P:
     If the fitting process encounters a problem a warning will be printed. This
     may be caused by the chosen distribution being a very poor fit to the data
     or the data being heavily censored. If a warning is printed, consider trying
-    a different optimiser.
+    a different optimizer.
 
     If the fitted gamma parameter is less than 0.01, the Loglogistic_3P results
     will be discarded and the Loglogistic_2P distribution will be fitted. The
@@ -7589,7 +7638,7 @@ class Fit_Loglogistic_3P:
             LS_method = "LS"
         else:
             LS_method = method
-        LS_results = LS_optimisation(
+        LS_results = LS_optimization(
             func_name="Loglogistic_3P",
             LL_func=Fit_Lognormal_3P.LL,
             failures=failures,
@@ -7603,10 +7652,10 @@ class Fit_Loglogistic_3P:
             self.beta = LS_results.guess[1]
             self.gamma = LS_results.guess[2]
             self.method = str("Least Squares Estimation (" + LS_results.method + ")")
-
+            self.optimizer = None
         # maximum likelihood method
         elif method == "MLE":
-            MLE_results = MLE_optimisation(
+            MLE_results = MLE_optimization(
                 func_name="Loglogistic_3P",
                 LL_func=Fit_Loglogistic_3P.LL,
                 initial_guess=[
@@ -7622,6 +7671,7 @@ class Fit_Loglogistic_3P:
             self.beta = MLE_results.shape
             self.gamma = MLE_results.gamma
             self.method = "Maximum Likelihood Estimation (MLE)"
+            self.optimizer = MLE_results.optimizer
 
         if (
             self.gamma < 0.01
@@ -7772,6 +7822,8 @@ class Fit_Loglogistic_3P:
                 underline=True,
             )
             print("Analysis method:", self.method)
+            if self.optimizer is not None:
+                print("Optimizer:", self.optimizer)
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),

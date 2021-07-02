@@ -141,12 +141,12 @@ def test_Fit_Weibull_Power():
     warnings.filterwarnings(action="ignore", category=RuntimeWarning)
     data = make_ALT_data(distribution='Weibull',life_stress_model='Power',a=5e15,n=-4,beta=2.5,stress_1=[500,400,350],number_of_samples=100,fraction_censored=0.2,seed=1)
     model = Fit_Weibull_Power(failures=data.failures, failure_stress=data.failure_stresses, right_censored=data.right_censored, right_censored_stress=data.right_censored_stresses, use_level_stress=300, show_life_stress_plot=False, show_probability_plot=False, print_results=False)
-    assert_allclose(model.a, 3925605570237214.5, rtol=rtol, atol=atol)
-    assert_allclose(model.n, -3.9652234855813573, rtol=rtol, atol=atol)
-    assert_allclose(model.beta, 2.3255321818860417, rtol=rtol, atol=atol)
-    assert_allclose(model.AICc, 6037.469208963296, rtol=rtol, atol=atol)
-    assert_allclose(model.BIC, 6048.499475306184, rtol=rtol, atol=atol)
-    assert_allclose(model.loglik, -3015.6940639411077, rtol=rtol, atol=atol)
+    assert_allclose(model.a, 1970769936973045.8, rtol=rtol, atol=atol)
+    assert_allclose(model.n, -3.8508765831753586, rtol=rtol, atol=atol)
+    assert_allclose(model.beta, 2.3300112383377285, rtol=rtol, atol=atol)
+    assert_allclose(model.AICc, 6037.00210532498, rtol=rtol, atol=atol)
+    assert_allclose(model.BIC, 6048.032371667868, rtol=rtol, atol=atol)
+    assert_allclose(model.loglik, -3015.4605121219497, rtol=rtol, atol=atol)
 
 
 def test_Fit_Lognormal_Power():
@@ -426,12 +426,12 @@ def test_Fit_Everything_ALT_single_stress():
     assert_allclose(model.Lognormal_Power_BIC, 3733.6413086492744, rtol=rtol, atol=atol)
     assert_allclose(model.Lognormal_Power_loglik, -1858.2649806126528, rtol=rtol, atol=atol)
 
-    assert_allclose(model.Normal_Power_a, 5382471637730783.0, rtol=rtol_big, atol=atol)  # larger due to variation in python versions
-    assert_allclose(model.Normal_Power_n, -4.844657942648189, rtol=rtol_big, atol=atol) # larger due to variation in python versions
-    assert_allclose(model.Normal_Power_sigma, 705.2782926967965, rtol=rtol, atol=atol)
-    assert_allclose(model.Normal_Power_AICc, 3884.6006939979784, rtol=rtol, atol=atol)
-    assert_allclose(model.Normal_Power_BIC, 3895.630960340866, rtol=rtol, atol=atol)
-    assert_allclose(model.Normal_Power_loglik, -1939.2598064584486, rtol=rtol, atol=atol)
+    assert_allclose(model.Normal_Power_a, 5350572055767004.0, rtol=rtol_big, atol=atol)  # larger due to variation in python versions
+    assert_allclose(model.Normal_Power_n, -4.843649500858671, rtol=rtol_big, atol=atol) # larger due to variation in python versions
+    assert_allclose(model.Normal_Power_sigma, 705.299688412471, rtol=rtol, atol=atol)
+    assert_allclose(model.Normal_Power_AICc, 3884.601866981538, rtol=rtol, atol=atol)
+    assert_allclose(model.Normal_Power_BIC, 3895.6321333244255, rtol=rtol, atol=atol)
+    assert_allclose(model.Normal_Power_loglik, -1939.2603929502284, rtol=rtol, atol=atol)
 
     assert_allclose(model.Exponential_Power_a, 3210488760191281.5, rtol=rtol, atol=atol)
     assert_allclose(model.Exponential_Power_n, -4.744177818025859, rtol=rtol, atol=atol)

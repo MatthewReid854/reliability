@@ -17,7 +17,7 @@ from reliability.Utils import (
     round_to_decimals,
     ALT_fitters_input_checking,
     ALT_least_squares,
-    ALT_MLE_optimisation,
+    ALT_MLE_optimization,
     life_stress_plot,
     ALT_prob_plot,
 )
@@ -55,7 +55,12 @@ class Fit_Everything_ALT:
     show_probability_plot - True/False. Default is True. Provides a probability plot of each of the fitted ALT model.
     show_best_distribution_probability_plot - True/False. Defaults to True. Provides a probability plot in a new figure of the best ALT model.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
+    optimizer - The optimization algorithm used to find the solution. Must be either 'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'.
+        Specifying the optimizer will result in that optimizer being used.
+        To use all of these specify 'best' and the best result will be returned.
+        The default behaviour is to try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and 'powell') and stop once one of the optimizers finds a solution.
+        If the optimizer fails, the initial guess will be returned.
+        For more detail see the `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
     sort_by - goodness of fit test to sort results by. Must be 'BIC','AICc', or 'Log-likelihood'. Default is BIC.
     exclude - list or array of strings specifying which distributions to exclude. Default is None. Options are:
         Weibull_Exponential
@@ -250,6 +255,7 @@ class Fit_Everything_ALT:
                     "Log-likelihood",
                     "AICc",
                     "BIC",
+                    "optimizer",
                 ]
             )
         else:  # same df but without column m
@@ -265,6 +271,7 @@ class Fit_Everything_ALT:
                     "Log-likelihood",
                     "AICc",
                     "BIC",
+                    "optimizer",
                 ]
             )
 
@@ -288,6 +295,7 @@ class Fit_Everything_ALT:
             self.Weibull_Exponential_loglik = self.__Weibull_Exponential_params.loglik
             self.Weibull_Exponential_BIC = self.__Weibull_Exponential_params.BIC
             self.Weibull_Exponential_AICc = self.__Weibull_Exponential_params.AICc
+            self.Weibull_Exponential_optimizer = self.__Weibull_Exponential_params.optimizer
 
             df = df.append(
                 {
@@ -301,6 +309,7 @@ class Fit_Everything_ALT:
                     "Log-likelihood": self.Weibull_Exponential_loglik,
                     "AICc": self.Weibull_Exponential_AICc,
                     "BIC": self.Weibull_Exponential_BIC,
+                    "optimizer": self.Weibull_Exponential_optimizer,
                 },
                 ignore_index=True,
             )
@@ -324,6 +333,8 @@ class Fit_Everything_ALT:
             self.Weibull_Eyring_loglik = self.__Weibull_Eyring_params.loglik
             self.Weibull_Eyring_BIC = self.__Weibull_Eyring_params.BIC
             self.Weibull_Eyring_AICc = self.__Weibull_Eyring_params.AICc
+            self.Weibull_Eyring_optimizer = self.__Weibull_Eyring_params.optimizer
+
 
             df = df.append(
                 {
@@ -337,6 +348,7 @@ class Fit_Everything_ALT:
                     "Log-likelihood": self.Weibull_Eyring_loglik,
                     "AICc": self.Weibull_Eyring_AICc,
                     "BIC": self.Weibull_Eyring_BIC,
+                    "optimizer": self.Weibull_Eyring_optimizer,
                 },
                 ignore_index=True,
             )
@@ -360,6 +372,8 @@ class Fit_Everything_ALT:
             self.Weibull_Power_loglik = self.__Weibull_Power_params.loglik
             self.Weibull_Power_BIC = self.__Weibull_Power_params.BIC
             self.Weibull_Power_AICc = self.__Weibull_Power_params.AICc
+            self.Weibull_Power_optimizer = self.__Weibull_Power_params.optimizer
+
 
             df = df.append(
                 {
@@ -373,6 +387,7 @@ class Fit_Everything_ALT:
                     "Log-likelihood": self.Weibull_Power_loglik,
                     "AICc": self.Weibull_Power_AICc,
                     "BIC": self.Weibull_Power_BIC,
+                    "optimizer": self.Weibull_Power_optimizer,
                 },
                 ignore_index=True,
             )
@@ -398,6 +413,7 @@ class Fit_Everything_ALT:
             )
             self.Lognormal_Exponential_BIC = self.__Lognormal_Exponential_params.BIC
             self.Lognormal_Exponential_AICc = self.__Lognormal_Exponential_params.AICc
+            self.Lognormal_Exponential_optimizer = self.__Lognormal_Exponential_params.optimizer
 
             df = df.append(
                 {
@@ -411,6 +427,7 @@ class Fit_Everything_ALT:
                     "Log-likelihood": self.Lognormal_Exponential_loglik,
                     "AICc": self.Lognormal_Exponential_AICc,
                     "BIC": self.Lognormal_Exponential_BIC,
+                    "optimizer": self.Lognormal_Exponential_optimizer,
                 },
                 ignore_index=True,
             )
@@ -434,6 +451,7 @@ class Fit_Everything_ALT:
             self.Lognormal_Eyring_loglik = self.__Lognormal_Eyring_params.loglik
             self.Lognormal_Eyring_BIC = self.__Lognormal_Eyring_params.BIC
             self.Lognormal_Eyring_AICc = self.__Lognormal_Eyring_params.AICc
+            self.Lognormal_Eyring_optimizer = self.__Lognormal_Eyring_params.optimizer
 
             df = df.append(
                 {
@@ -447,6 +465,7 @@ class Fit_Everything_ALT:
                     "Log-likelihood": self.Lognormal_Eyring_loglik,
                     "AICc": self.Lognormal_Eyring_AICc,
                     "BIC": self.Lognormal_Eyring_BIC,
+                    "optimizer": self.Lognormal_Eyring_optimizer,
                 },
                 ignore_index=True,
             )
@@ -470,6 +489,7 @@ class Fit_Everything_ALT:
             self.Lognormal_Power_loglik = self.__Lognormal_Power_params.loglik
             self.Lognormal_Power_BIC = self.__Lognormal_Power_params.BIC
             self.Lognormal_Power_AICc = self.__Lognormal_Power_params.AICc
+            self.Lognormal_Power_optimizer = self.__Lognormal_Power_params.optimizer
 
             df = df.append(
                 {
@@ -483,6 +503,7 @@ class Fit_Everything_ALT:
                     "Log-likelihood": self.Lognormal_Power_loglik,
                     "AICc": self.Lognormal_Power_AICc,
                     "BIC": self.Lognormal_Power_BIC,
+                    "optimizer": self.Lognormal_Power_optimizer,
                 },
                 ignore_index=True,
             )
@@ -506,6 +527,7 @@ class Fit_Everything_ALT:
             self.Normal_Exponential_loglik = self.__Normal_Exponential_params.loglik
             self.Normal_Exponential_BIC = self.__Normal_Exponential_params.BIC
             self.Normal_Exponential_AICc = self.__Normal_Exponential_params.AICc
+            self.Normal_Exponential_optimizer = self.__Normal_Exponential_params.optimizer
 
             df = df.append(
                 {
@@ -519,6 +541,7 @@ class Fit_Everything_ALT:
                     "Log-likelihood": self.Normal_Exponential_loglik,
                     "AICc": self.Normal_Exponential_AICc,
                     "BIC": self.Normal_Exponential_BIC,
+                    "optimizer": self.Normal_Exponential_optimizer,
                 },
                 ignore_index=True,
             )
@@ -542,6 +565,7 @@ class Fit_Everything_ALT:
             self.Normal_Eyring_loglik = self.__Normal_Eyring_params.loglik
             self.Normal_Eyring_BIC = self.__Normal_Eyring_params.BIC
             self.Normal_Eyring_AICc = self.__Normal_Eyring_params.AICc
+            self.Normal_Eyring_optimizer = self.__Normal_Eyring_params.optimizer
 
             df = df.append(
                 {
@@ -555,6 +579,7 @@ class Fit_Everything_ALT:
                     "Log-likelihood": self.Normal_Eyring_loglik,
                     "AICc": self.Normal_Eyring_AICc,
                     "BIC": self.Normal_Eyring_BIC,
+                    "optimizer": self.Normal_Eyring_optimizer,
                 },
                 ignore_index=True,
             )
@@ -578,6 +603,7 @@ class Fit_Everything_ALT:
             self.Normal_Power_loglik = self.__Normal_Power_params.loglik
             self.Normal_Power_BIC = self.__Normal_Power_params.BIC
             self.Normal_Power_AICc = self.__Normal_Power_params.AICc
+            self.Normal_Power_optimizer = self.__Normal_Power_params.optimizer
 
             df = df.append(
                 {
@@ -591,6 +617,7 @@ class Fit_Everything_ALT:
                     "Log-likelihood": self.Normal_Power_loglik,
                     "AICc": self.Normal_Power_AICc,
                     "BIC": self.Normal_Power_BIC,
+                    "optimizer": self.Normal_Power_optimizer,
                 },
                 ignore_index=True,
             )
@@ -614,9 +641,8 @@ class Fit_Everything_ALT:
                 self.__Exponential_Exponential_params.loglik
             )
             self.Exponential_Exponential_BIC = self.__Exponential_Exponential_params.BIC
-            self.Exponential_Exponential_AICc = (
-                self.__Exponential_Exponential_params.AICc
-            )
+            self.Exponential_Exponential_AICc = self.__Exponential_Exponential_params.AICc
+            self.Exponential_Exponential_optimizer = self.__Exponential_Exponential_params.optimizer
 
             df = df.append(
                 {
@@ -630,6 +656,7 @@ class Fit_Everything_ALT:
                     "Log-likelihood": self.Exponential_Exponential_loglik,
                     "AICc": self.Exponential_Exponential_AICc,
                     "BIC": self.Exponential_Exponential_BIC,
+                    "optimizer": self.Exponential_Exponential_optimizer,
                 },
                 ignore_index=True,
             )
@@ -652,6 +679,7 @@ class Fit_Everything_ALT:
             self.Exponential_Eyring_loglik = self.__Exponential_Eyring_params.loglik
             self.Exponential_Eyring_BIC = self.__Exponential_Eyring_params.BIC
             self.Exponential_Eyring_AICc = self.__Exponential_Eyring_params.AICc
+            self.Exponential_Eyring_optimizer = self.__Exponential_Eyring_params.optimizer
 
             df = df.append(
                 {
@@ -665,6 +693,7 @@ class Fit_Everything_ALT:
                     "Log-likelihood": self.Exponential_Eyring_loglik,
                     "AICc": self.Exponential_Eyring_AICc,
                     "BIC": self.Exponential_Eyring_BIC,
+                    "optimizer": self.Exponential_Eyring_optimizer,
                 },
                 ignore_index=True,
             )
@@ -687,6 +716,7 @@ class Fit_Everything_ALT:
             self.Exponential_Power_loglik = self.__Exponential_Power_params.loglik
             self.Exponential_Power_BIC = self.__Exponential_Power_params.BIC
             self.Exponential_Power_AICc = self.__Exponential_Power_params.AICc
+            self.Exponential_Power_optimizer = self.__Exponential_Power_params.optimizer
 
             df = df.append(
                 {
@@ -700,6 +730,7 @@ class Fit_Everything_ALT:
                     "Log-likelihood": self.Exponential_Power_loglik,
                     "AICc": self.Exponential_Power_AICc,
                     "BIC": self.Exponential_Power_BIC,
+                    "optimizer": self.Exponential_Power_optimizer,
                 },
                 ignore_index=True,
             )
@@ -734,6 +765,7 @@ class Fit_Everything_ALT:
             self.Weibull_Dual_Exponential_AICc = (
                 self.__Weibull_Dual_Exponential_params.AICc
             )
+            self.Weibull_Dual_Exponential_optimizer = self.__Weibull_Dual_Exponential_params.optimizer
 
             df = df.append(
                 {
@@ -748,6 +780,7 @@ class Fit_Everything_ALT:
                     "Log-likelihood": self.Weibull_Dual_Exponential_loglik,
                     "AICc": self.Weibull_Dual_Exponential_AICc,
                     "BIC": self.Weibull_Dual_Exponential_BIC,
+                    "optimizer": self.Weibull_Dual_Exponential_optimizer,
                 },
                 ignore_index=True,
             )
@@ -782,6 +815,7 @@ class Fit_Everything_ALT:
             self.Weibull_Power_Exponential_AICc = (
                 self.__Weibull_Power_Exponential_params.AICc
             )
+            self.Weibull_Power_Exponential_optimizer = self.__Weibull_Power_Exponential_params.optimizer
 
             df = df.append(
                 {
@@ -796,6 +830,7 @@ class Fit_Everything_ALT:
                     "Log-likelihood": self.Weibull_Power_Exponential_loglik,
                     "AICc": self.Weibull_Power_Exponential_AICc,
                     "BIC": self.Weibull_Power_Exponential_BIC,
+                    "optimizer": self.Weibull_Power_Exponential_optimizer,
                 },
                 ignore_index=True,
             )
@@ -822,6 +857,7 @@ class Fit_Everything_ALT:
             self.Weibull_Dual_Power_loglik = self.__Weibull_Dual_Power_params.loglik
             self.Weibull_Dual_Power_BIC = self.__Weibull_Dual_Power_params.BIC
             self.Weibull_Dual_Power_AICc = self.__Weibull_Dual_Power_params.AICc
+            self.Weibull_Dual_Power_optimizer = self.__Weibull_Dual_Power_params.optimizer
 
             df = df.append(
                 {
@@ -836,6 +872,7 @@ class Fit_Everything_ALT:
                     "Log-likelihood": self.Weibull_Dual_Power_loglik,
                     "AICc": self.Weibull_Dual_Power_AICc,
                     "BIC": self.Weibull_Dual_Power_BIC,
+                    "optimizer": self.Weibull_Dual_Power_optimizer,
                 },
                 ignore_index=True,
             )
@@ -876,6 +913,7 @@ class Fit_Everything_ALT:
             self.Lognormal_Dual_Exponential_AICc = (
                 self.__Lognormal_Dual_Exponential_params.AICc
             )
+            self.Lognormal_Dual_Exponential_optimizer = self.__Lognormal_Dual_Exponential_params.optimizer
 
             df = df.append(
                 {
@@ -890,6 +928,7 @@ class Fit_Everything_ALT:
                     "Log-likelihood": self.Lognormal_Dual_Exponential_loglik,
                     "AICc": self.Lognormal_Dual_Exponential_AICc,
                     "BIC": self.Lognormal_Dual_Exponential_BIC,
+                    "optimizer": self.Lognormal_Dual_Exponential_optimizer,
                 },
                 ignore_index=True,
             )
@@ -930,6 +969,7 @@ class Fit_Everything_ALT:
             self.Lognormal_Power_Exponential_AICc = (
                 self.__Lognormal_Power_Exponential_params.AICc
             )
+            self.Lognormal_Power_Exponential_optimizer = self.__Lognormal_Power_Exponential_params.optimizer
 
             df = df.append(
                 {
@@ -944,6 +984,7 @@ class Fit_Everything_ALT:
                     "Log-likelihood": self.Lognormal_Power_Exponential_loglik,
                     "AICc": self.Lognormal_Power_Exponential_AICc,
                     "BIC": self.Lognormal_Power_Exponential_BIC,
+                    "optimizer": self.Lognormal_Power_Exponential_optimizer,
                 },
                 ignore_index=True,
             )
@@ -970,6 +1011,7 @@ class Fit_Everything_ALT:
             self.Lognormal_Dual_Power_loglik = self.__Lognormal_Dual_Power_params.loglik
             self.Lognormal_Dual_Power_BIC = self.__Lognormal_Dual_Power_params.BIC
             self.Lognormal_Dual_Power_AICc = self.__Lognormal_Dual_Power_params.AICc
+            self.Lognormal_Dual_Power_optimizer = self.__Lognormal_Dual_Power_params.optimizer
 
             df = df.append(
                 {
@@ -984,6 +1026,7 @@ class Fit_Everything_ALT:
                     "Log-likelihood": self.Lognormal_Dual_Power_loglik,
                     "AICc": self.Lognormal_Dual_Power_AICc,
                     "BIC": self.Lognormal_Dual_Power_BIC,
+                    "optimizer": self.Lognormal_Dual_Power_optimizer,
                 },
                 ignore_index=True,
             )
@@ -1016,6 +1059,7 @@ class Fit_Everything_ALT:
             self.Normal_Dual_Exponential_AICc = (
                 self.__Normal_Dual_Exponential_params.AICc
             )
+            self.Normal_Dual_Exponential_optimizer = self.__Normal_Dual_Exponential_params.optimizer
 
             df = df.append(
                 {
@@ -1030,6 +1074,7 @@ class Fit_Everything_ALT:
                     "Log-likelihood": self.Normal_Dual_Exponential_loglik,
                     "AICc": self.Normal_Dual_Exponential_AICc,
                     "BIC": self.Normal_Dual_Exponential_BIC,
+                    "optimizer": self.Normal_Dual_Exponential_optimizer,
                 },
                 ignore_index=True,
             )
@@ -1064,6 +1109,7 @@ class Fit_Everything_ALT:
             self.Normal_Power_Exponential_AICc = (
                 self.__Normal_Power_Exponential_params.AICc
             )
+            self.Normal_Power_Exponential_optimizer = self.__Normal_Power_Exponential_params.optimizer
 
             df = df.append(
                 {
@@ -1078,6 +1124,7 @@ class Fit_Everything_ALT:
                     "Log-likelihood": self.Normal_Power_Exponential_loglik,
                     "AICc": self.Normal_Power_Exponential_AICc,
                     "BIC": self.Normal_Power_Exponential_BIC,
+                    "optimizer": self.Normal_Power_Exponential_optimizer,
                 },
                 ignore_index=True,
             )
@@ -1104,6 +1151,7 @@ class Fit_Everything_ALT:
             self.Normal_Dual_Power_loglik = self.__Normal_Dual_Power_params.loglik
             self.Normal_Dual_Power_BIC = self.__Normal_Dual_Power_params.BIC
             self.Normal_Dual_Power_AICc = self.__Normal_Dual_Power_params.AICc
+            self.Normal_Dual_Power_optimizer = self.__Normal_Dual_Power_params.optimizer
 
             df = df.append(
                 {
@@ -1118,6 +1166,7 @@ class Fit_Everything_ALT:
                     "Log-likelihood": self.Normal_Dual_Power_loglik,
                     "AICc": self.Normal_Dual_Power_AICc,
                     "BIC": self.Normal_Dual_Power_BIC,
+                    "optimizer": self.Normal_Dual_Power_optimizer,
                 },
                 ignore_index=True,
             )
@@ -1157,6 +1206,7 @@ class Fit_Everything_ALT:
             self.Exponential_Dual_Exponential_AICc = (
                 self.__Exponential_Dual_Exponential_params.AICc
             )
+            self.Exponential_Dual_Exponential_optimizer = self.__Exponential_Dual_Exponential_params.optimizer
 
             df = df.append(
                 {
@@ -1171,6 +1221,7 @@ class Fit_Everything_ALT:
                     "Log-likelihood": self.Exponential_Dual_Exponential_loglik,
                     "AICc": self.Exponential_Dual_Exponential_AICc,
                     "BIC": self.Exponential_Dual_Exponential_BIC,
+                    "optimizer": self.Exponential_Dual_Exponential_optimizer,
                 },
                 ignore_index=True,
             )
@@ -1210,6 +1261,7 @@ class Fit_Everything_ALT:
             self.Exponential_Power_Exponential_AICc = (
                 self.__Exponential_Power_Exponential_params.AICc
             )
+            self.Exponential_Power_Exponential_optimizer = self.__Exponential_Power_Exponential_params.optimizer
 
             df = df.append(
                 {
@@ -1224,6 +1276,7 @@ class Fit_Everything_ALT:
                     "Log-likelihood": self.Exponential_Power_Exponential_loglik,
                     "AICc": self.Exponential_Power_Exponential_AICc,
                     "BIC": self.Exponential_Power_Exponential_BIC,
+                    "optimizer": self.Exponential_Power_Exponential_optimizer,
                 },
                 ignore_index=True,
             )
@@ -1251,6 +1304,7 @@ class Fit_Everything_ALT:
             )
             self.Exponential_Dual_Power_BIC = self.__Exponential_Dual_Power_params.BIC
             self.Exponential_Dual_Power_AICc = self.__Exponential_Dual_Power_params.AICc
+            self.Exponential_Dual_Power_optimizer = self.__Exponential_Dual_Power_params.optimizer
 
             df = df.append(
                 {
@@ -1265,6 +1319,7 @@ class Fit_Everything_ALT:
                     "Log-likelihood": self.Exponential_Dual_Power_loglik,
                     "AICc": self.Exponential_Dual_Power_AICc,
                     "BIC": self.Exponential_Dual_Power_BIC,
+                    "optimizer": self.Exponential_Dual_Power_optimizer,
                 },
                 ignore_index=True,
             )
@@ -2518,7 +2573,12 @@ class Fit_Weibull_Exponential:
     show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
+    optimizer - The optimization algorithm used to find the solution. Must be either 'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'.
+        Specifying the optimizer will result in that optimizer being used.
+        To use all of these specify 'best' and the best result will be returned.
+        The default behaviour is to try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and 'powell') and stop once one of the optimizers finds a solution.
+        If the optimizer fails, the initial guess will be returned.
+        For more detail see the `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
 
     Outputs:
     a - fitted parameter from the Exponential model
@@ -2625,7 +2685,7 @@ class Fit_Weibull_Exponential:
         guess = [life_stress_guess[0], life_stress_guess[1], common_beta]  # a, b, beta
 
         # fit the model using the MLE method
-        MLE_results = ALT_MLE_optimisation(
+        MLE_results = ALT_MLE_optimization(
             model="Exponential",
             dist="Weibull",
             LL_func=LL_func,
@@ -2640,6 +2700,7 @@ class Fit_Weibull_Exponential:
         self.b = MLE_results.b
         self.beta = MLE_results.beta
         self.success = MLE_results.success
+        self.optimizer = MLE_results.optimizer
 
         # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
@@ -2787,6 +2848,8 @@ class Fit_Weibull_Exponential:
                 underline=True,
             )
             print("Analysis method: Maximum Likelihood Estimation (MLE)")
+            if self.optimizer is not None:
+                print("Optimizer:", self.optimizer)
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
@@ -2887,7 +2950,12 @@ class Fit_Weibull_Eyring:
     show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
+    optimizer - The optimization algorithm used to find the solution. Must be either 'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'.
+        Specifying the optimizer will result in that optimizer being used.
+        To use all of these specify 'best' and the best result will be returned.
+        The default behaviour is to try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and 'powell') and stop once one of the optimizers finds a solution.
+        If the optimizer fails, the initial guess will be returned.
+        For more detail see the `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
 
     Outputs:
     a - fitted parameter from the Eyring model
@@ -2994,7 +3062,7 @@ class Fit_Weibull_Eyring:
         guess = [life_stress_guess[0], life_stress_guess[1], common_beta]  # a, c, beta
 
         # fit the model using the MLE method
-        MLE_results = ALT_MLE_optimisation(
+        MLE_results = ALT_MLE_optimization(
             model="Eyring",
             dist="Weibull",
             LL_func=LL_func,
@@ -3009,6 +3077,7 @@ class Fit_Weibull_Eyring:
         self.c = MLE_results.c
         self.beta = MLE_results.beta
         self.success = MLE_results.success
+        self.optimizer = MLE_results.optimizer
 
         # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
@@ -3152,6 +3221,8 @@ class Fit_Weibull_Eyring:
                 underline=True,
             )
             print("Analysis method: Maximum Likelihood Estimation (MLE)")
+            if self.optimizer is not None:
+                print("Optimizer:", self.optimizer)
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
@@ -3245,7 +3316,12 @@ class Fit_Weibull_Power:
     show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
+    optimizer - The optimization algorithm used to find the solution. Must be either 'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'.
+        Specifying the optimizer will result in that optimizer being used.
+        To use all of these specify 'best' and the best result will be returned.
+        The default behaviour is to try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and 'powell') and stop once one of the optimizers finds a solution.
+        If the optimizer fails, the initial guess will be returned.
+        For more detail see the `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
 
     Outputs:
     a - fitted parameter from the Power model
@@ -3352,7 +3428,7 @@ class Fit_Weibull_Power:
         guess = [life_stress_guess[0], life_stress_guess[1], common_beta]  # a, n, beta
 
         # fit the model using the MLE method
-        MLE_results = ALT_MLE_optimisation(
+        MLE_results = ALT_MLE_optimization(
             model="Power",
             dist="Weibull",
             LL_func=LL_func,
@@ -3367,6 +3443,7 @@ class Fit_Weibull_Power:
         self.n = MLE_results.n
         self.beta = MLE_results.beta
         self.success = MLE_results.success
+        self.optimizer = MLE_results.optimizer
 
         # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
@@ -3510,6 +3587,8 @@ class Fit_Weibull_Power:
                 underline=True,
             )
             print("Analysis method: Maximum Likelihood Estimation (MLE)")
+            if self.optimizer is not None:
+                print("Optimizer:", self.optimizer)
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
@@ -3605,7 +3684,12 @@ class Fit_Weibull_Dual_Exponential:
     show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
+    optimizer - The optimization algorithm used to find the solution. Must be either 'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'.
+        Specifying the optimizer will result in that optimizer being used.
+        To use all of these specify 'best' and the best result will be returned.
+        The default behaviour is to try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and 'powell') and stop once one of the optimizers finds a solution.
+        If the optimizer fails, the initial guess will be returned.
+        For more detail see the `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
 
     Outputs:
     a - fitted parameter from the Dual_Exponential model
@@ -3730,7 +3814,7 @@ class Fit_Weibull_Dual_Exponential:
         ]  # a, b, c, beta
 
         # fit the model using the MLE method
-        MLE_results = ALT_MLE_optimisation(
+        MLE_results = ALT_MLE_optimization(
             model="Dual_Exponential",
             dist="Weibull",
             LL_func=LL_func,
@@ -3748,6 +3832,7 @@ class Fit_Weibull_Dual_Exponential:
         self.c = MLE_results.c
         self.beta = MLE_results.beta
         self.success = MLE_results.success
+        self.optimizer = MLE_results.optimizer
 
         # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
@@ -3920,6 +4005,8 @@ class Fit_Weibull_Dual_Exponential:
                 underline=True,
             )
             print("Analysis method: Maximum Likelihood Estimation (MLE)")
+            if self.optimizer is not None:
+                print("Optimizer:", self.optimizer)
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
@@ -4020,7 +4107,12 @@ class Fit_Weibull_Power_Exponential:
     show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
+    optimizer - The optimization algorithm used to find the solution. Must be either 'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'.
+        Specifying the optimizer will result in that optimizer being used.
+        To use all of these specify 'best' and the best result will be returned.
+        The default behaviour is to try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and 'powell') and stop once one of the optimizers finds a solution.
+        If the optimizer fails, the initial guess will be returned.
+        For more detail see the `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
 
     Outputs:
     a - fitted parameter from the Power_Exponential model
@@ -4145,7 +4237,7 @@ class Fit_Weibull_Power_Exponential:
         ]  # a, c, n, beta
 
         # fit the model using the MLE method
-        MLE_results = ALT_MLE_optimisation(
+        MLE_results = ALT_MLE_optimization(
             model="Power_Exponential",
             dist="Weibull",
             LL_func=LL_func,
@@ -4163,6 +4255,7 @@ class Fit_Weibull_Power_Exponential:
         self.n = MLE_results.n
         self.beta = MLE_results.beta
         self.success = MLE_results.success
+        self.optimizer = MLE_results.optimizer
 
         # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
@@ -4335,6 +4428,8 @@ class Fit_Weibull_Power_Exponential:
                 underline=True,
             )
             print("Analysis method: Maximum Likelihood Estimation (MLE)")
+            if self.optimizer is not None:
+                print("Optimizer:", self.optimizer)
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
@@ -4432,7 +4527,12 @@ class Fit_Weibull_Dual_Power:
     show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
+    optimizer - The optimization algorithm used to find the solution. Must be either 'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'.
+        Specifying the optimizer will result in that optimizer being used.
+        To use all of these specify 'best' and the best result will be returned.
+        The default behaviour is to try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and 'powell') and stop once one of the optimizers finds a solution.
+        If the optimizer fails, the initial guess will be returned.
+        For more detail see the `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
 
     Outputs:
     c - fitted parameter from the Dual_Power model
@@ -4557,7 +4657,7 @@ class Fit_Weibull_Dual_Power:
         ]  # c, m, n, beta
 
         # fit the model using the MLE method
-        MLE_results = ALT_MLE_optimisation(
+        MLE_results = ALT_MLE_optimization(
             model="Dual_Power",
             dist="Weibull",
             LL_func=LL_func,
@@ -4575,6 +4675,7 @@ class Fit_Weibull_Dual_Power:
         self.n = MLE_results.n
         self.beta = MLE_results.beta
         self.success = MLE_results.success
+        self.optimizer = MLE_results.optimizer
 
         # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
@@ -4745,6 +4846,8 @@ class Fit_Weibull_Dual_Power:
                 underline=True,
             )
             print("Analysis method: Maximum Likelihood Estimation (MLE)")
+            if self.optimizer is not None:
+                print("Optimizer:", self.optimizer)
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
@@ -4843,7 +4946,12 @@ class Fit_Lognormal_Exponential:
     show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
+    optimizer - The optimization algorithm used to find the solution. Must be either 'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'.
+        Specifying the optimizer will result in that optimizer being used.
+        To use all of these specify 'best' and the best result will be returned.
+        The default behaviour is to try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and 'powell') and stop once one of the optimizers finds a solution.
+        If the optimizer fails, the initial guess will be returned.
+        For more detail see the `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
 
     Outputs:
     a - fitted parameter from the Exponential model
@@ -4954,7 +5062,7 @@ class Fit_Lognormal_Exponential:
         ]  # a, b, sigma
 
         # fit the model using the MLE method
-        MLE_results = ALT_MLE_optimisation(
+        MLE_results = ALT_MLE_optimization(
             model="Exponential",
             dist="Lognormal",
             LL_func=LL_func,
@@ -4969,6 +5077,7 @@ class Fit_Lognormal_Exponential:
         self.b = MLE_results.b
         self.sigma = MLE_results.sigma
         self.success = MLE_results.success
+        self.optimizer = MLE_results.optimizer
 
         # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
@@ -5116,6 +5225,8 @@ class Fit_Lognormal_Exponential:
                 underline=True,
             )
             print("Analysis method: Maximum Likelihood Estimation (MLE)")
+            if self.optimizer is not None:
+                print("Optimizer:", self.optimizer)
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
@@ -5219,7 +5330,12 @@ class Fit_Lognormal_Eyring:
     show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
+    optimizer - The optimization algorithm used to find the solution. Must be either 'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'.
+        Specifying the optimizer will result in that optimizer being used.
+        To use all of these specify 'best' and the best result will be returned.
+        The default behaviour is to try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and 'powell') and stop once one of the optimizers finds a solution.
+        If the optimizer fails, the initial guess will be returned.
+        For more detail see the `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
 
     Outputs:
     a - fitted parameter from the Eyring model
@@ -5330,7 +5446,7 @@ class Fit_Lognormal_Eyring:
         ]  # a, c, sigma
 
         # fit the model using the MLE method
-        MLE_results = ALT_MLE_optimisation(
+        MLE_results = ALT_MLE_optimization(
             model="Eyring",
             dist="Lognormal",
             LL_func=LL_func,
@@ -5345,6 +5461,7 @@ class Fit_Lognormal_Eyring:
         self.c = MLE_results.c
         self.sigma = MLE_results.sigma
         self.success = MLE_results.success
+        self.optimizer = MLE_results.optimizer
 
         # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
@@ -5488,6 +5605,8 @@ class Fit_Lognormal_Eyring:
                 underline=True,
             )
             print("Analysis method: Maximum Likelihood Estimation (MLE)")
+            if self.optimizer is not None:
+                print("Optimizer:", self.optimizer)
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
@@ -5586,7 +5705,12 @@ class Fit_Lognormal_Power:
     show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
+    optimizer - The optimization algorithm used to find the solution. Must be either 'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'.
+        Specifying the optimizer will result in that optimizer being used.
+        To use all of these specify 'best' and the best result will be returned.
+        The default behaviour is to try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and 'powell') and stop once one of the optimizers finds a solution.
+        If the optimizer fails, the initial guess will be returned.
+        For more detail see the `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
 
     Outputs:
     a - fitted parameter from the Power model
@@ -5697,7 +5821,7 @@ class Fit_Lognormal_Power:
         ]  # a, n, sigma
 
         # fit the model using the MLE method
-        MLE_results = ALT_MLE_optimisation(
+        MLE_results = ALT_MLE_optimization(
             model="Power",
             dist="Lognormal",
             LL_func=LL_func,
@@ -5712,6 +5836,7 @@ class Fit_Lognormal_Power:
         self.n = MLE_results.n
         self.sigma = MLE_results.sigma
         self.success = MLE_results.success
+        self.optimizer = MLE_results.optimizer
 
         # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
@@ -5855,6 +5980,8 @@ class Fit_Lognormal_Power:
                 underline=True,
             )
             print("Analysis method: Maximum Likelihood Estimation (MLE)")
+            if self.optimizer is not None:
+                print("Optimizer:", self.optimizer)
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
@@ -5953,7 +6080,12 @@ class Fit_Lognormal_Dual_Exponential:
     show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
+    optimizer - The optimization algorithm used to find the solution. Must be either 'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'.
+        Specifying the optimizer will result in that optimizer being used.
+        To use all of these specify 'best' and the best result will be returned.
+        The default behaviour is to try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and 'powell') and stop once one of the optimizers finds a solution.
+        If the optimizer fails, the initial guess will be returned.
+        For more detail see the `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
 
     Outputs:
     a - fitted parameter from the Dual_Exponential model
@@ -6078,7 +6210,7 @@ class Fit_Lognormal_Dual_Exponential:
         ]  # a, b, c, sigma
 
         # fit the model using the MLE method
-        MLE_results = ALT_MLE_optimisation(
+        MLE_results = ALT_MLE_optimization(
             model="Dual_Exponential",
             dist="Lognormal",
             LL_func=LL_func,
@@ -6096,6 +6228,7 @@ class Fit_Lognormal_Dual_Exponential:
         self.c = MLE_results.c
         self.sigma = MLE_results.sigma
         self.success = MLE_results.success
+        self.optimizer = MLE_results.optimizer
 
         # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
@@ -6268,6 +6401,8 @@ class Fit_Lognormal_Dual_Exponential:
                 underline=True,
             )
             print("Analysis method: Maximum Likelihood Estimation (MLE)")
+            if self.optimizer is not None:
+                print("Optimizer:", self.optimizer)
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
@@ -6369,7 +6504,12 @@ class Fit_Lognormal_Power_Exponential:
     show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
+    optimizer - The optimization algorithm used to find the solution. Must be either 'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'.
+        Specifying the optimizer will result in that optimizer being used.
+        To use all of these specify 'best' and the best result will be returned.
+        The default behaviour is to try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and 'powell') and stop once one of the optimizers finds a solution.
+        If the optimizer fails, the initial guess will be returned.
+        For more detail see the `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
 
     Outputs:
     a - fitted parameter from the Power_Exponential model
@@ -6494,7 +6634,7 @@ class Fit_Lognormal_Power_Exponential:
         ]  # a, c, n, sigma
 
         # fit the model using the MLE method
-        MLE_results = ALT_MLE_optimisation(
+        MLE_results = ALT_MLE_optimization(
             model="Power_Exponential",
             dist="Lognormal",
             LL_func=LL_func,
@@ -6512,6 +6652,7 @@ class Fit_Lognormal_Power_Exponential:
         self.n = MLE_results.n
         self.sigma = MLE_results.sigma
         self.success = MLE_results.success
+        self.optimizer = MLE_results.optimizer
 
         # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
@@ -6684,6 +6825,8 @@ class Fit_Lognormal_Power_Exponential:
                 underline=True,
             )
             print("Analysis method: Maximum Likelihood Estimation (MLE)")
+            if self.optimizer is not None:
+                print("Optimizer:", self.optimizer)
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
@@ -6784,7 +6927,12 @@ class Fit_Lognormal_Dual_Power:
     show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
+    optimizer - The optimization algorithm used to find the solution. Must be either 'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'.
+        Specifying the optimizer will result in that optimizer being used.
+        To use all of these specify 'best' and the best result will be returned.
+        The default behaviour is to try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and 'powell') and stop once one of the optimizers finds a solution.
+        If the optimizer fails, the initial guess will be returned.
+        For more detail see the `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
 
     Outputs:
     c - fitted parameter from the Dual_Power model
@@ -6909,7 +7057,7 @@ class Fit_Lognormal_Dual_Power:
         ]  # c, m, n, sigma
 
         # fit the model using the MLE method
-        MLE_results = ALT_MLE_optimisation(
+        MLE_results = ALT_MLE_optimization(
             model="Dual_Power",
             dist="Lognormal",
             LL_func=LL_func,
@@ -6927,6 +7075,7 @@ class Fit_Lognormal_Dual_Power:
         self.n = MLE_results.n
         self.sigma = MLE_results.sigma
         self.success = MLE_results.success
+        self.optimizer = MLE_results.optimizer
 
         # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
@@ -7099,6 +7248,8 @@ class Fit_Lognormal_Dual_Power:
                 underline=True,
             )
             print("Analysis method: Maximum Likelihood Estimation (MLE)")
+            if self.optimizer is not None:
+                print("Optimizer:", self.optimizer)
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
@@ -7200,8 +7351,12 @@ class Fit_Normal_Exponential:
     show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
-
+    optimizer - The optimization algorithm used to find the solution. Must be either 'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'.
+        Specifying the optimizer will result in that optimizer being used.
+        To use all of these specify 'best' and the best result will be returned.
+        The default behaviour is to try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and 'powell') and stop once one of the optimizers finds a solution.
+        If the optimizer fails, the initial guess will be returned.
+        For more detail see the `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
 
     Outputs:
     a - fitted parameter from the Exponential model
@@ -7312,7 +7467,7 @@ class Fit_Normal_Exponential:
         ]  # a, b, sigma
 
         # fit the model using the MLE method
-        MLE_results = ALT_MLE_optimisation(
+        MLE_results = ALT_MLE_optimization(
             model="Exponential",
             dist="Normal",
             LL_func=LL_func,
@@ -7327,6 +7482,7 @@ class Fit_Normal_Exponential:
         self.b = MLE_results.b
         self.sigma = MLE_results.sigma
         self.success = MLE_results.success
+        self.optimizer = MLE_results.optimizer
 
         # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
@@ -7472,6 +7628,8 @@ class Fit_Normal_Exponential:
                 underline=True,
             )
             print("Analysis method: Maximum Likelihood Estimation (MLE)")
+            if self.optimizer is not None:
+                print("Optimizer:", self.optimizer)
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
@@ -7572,7 +7730,12 @@ class Fit_Normal_Eyring:
     show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
+    optimizer - The optimization algorithm used to find the solution. Must be either 'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'.
+        Specifying the optimizer will result in that optimizer being used.
+        To use all of these specify 'best' and the best result will be returned.
+        The default behaviour is to try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and 'powell') and stop once one of the optimizers finds a solution.
+        If the optimizer fails, the initial guess will be returned.
+        For more detail see the `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
 
     Outputs:
     a - fitted parameter from the Eyring model
@@ -7683,7 +7846,7 @@ class Fit_Normal_Eyring:
         ]  # a, c, sigma
 
         # fit the model using the MLE method
-        MLE_results = ALT_MLE_optimisation(
+        MLE_results = ALT_MLE_optimization(
             model="Eyring",
             dist="Normal",
             LL_func=LL_func,
@@ -7698,6 +7861,7 @@ class Fit_Normal_Eyring:
         self.c = MLE_results.c
         self.sigma = MLE_results.sigma
         self.success = MLE_results.success
+        self.optimizer = MLE_results.optimizer
 
         # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
@@ -7841,6 +8005,8 @@ class Fit_Normal_Eyring:
                 underline=True,
             )
             print("Analysis method: Maximum Likelihood Estimation (MLE)")
+            if self.optimizer is not None:
+                print("Optimizer:", self.optimizer)
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
@@ -7934,7 +8100,12 @@ class Fit_Normal_Power:
     show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
+    optimizer - The optimization algorithm used to find the solution. Must be either 'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'.
+        Specifying the optimizer will result in that optimizer being used.
+        To use all of these specify 'best' and the best result will be returned.
+        The default behaviour is to try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and 'powell') and stop once one of the optimizers finds a solution.
+        If the optimizer fails, the initial guess will be returned.
+        For more detail see the `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
 
     Outputs:
     a - fitted parameter from the Power model
@@ -8045,7 +8216,7 @@ class Fit_Normal_Power:
         ]  # a, n, sigma
 
         # fit the model using the MLE method
-        MLE_results = ALT_MLE_optimisation(
+        MLE_results = ALT_MLE_optimization(
             model="Power",
             dist="Normal",
             LL_func=LL_func,
@@ -8060,6 +8231,7 @@ class Fit_Normal_Power:
         self.n = MLE_results.n
         self.sigma = MLE_results.sigma
         self.success = MLE_results.success
+        self.optimizer = MLE_results.optimizer
 
         # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
@@ -8203,6 +8375,8 @@ class Fit_Normal_Power:
                 underline=True,
             )
             print("Analysis method: Maximum Likelihood Estimation (MLE)")
+            if self.optimizer is not None:
+                print("Optimizer:", self.optimizer)
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
@@ -8296,7 +8470,12 @@ class Fit_Normal_Dual_Exponential:
     show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
+    optimizer - The optimization algorithm used to find the solution. Must be either 'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'.
+        Specifying the optimizer will result in that optimizer being used.
+        To use all of these specify 'best' and the best result will be returned.
+        The default behaviour is to try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and 'powell') and stop once one of the optimizers finds a solution.
+        If the optimizer fails, the initial guess will be returned.
+        For more detail see the `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
 
     Outputs:
     a - fitted parameter from the Dual_Exponential model
@@ -8421,7 +8600,7 @@ class Fit_Normal_Dual_Exponential:
         ]  # a, b, c, sigma
 
         # fit the model using the MLE method
-        MLE_results = ALT_MLE_optimisation(
+        MLE_results = ALT_MLE_optimization(
             model="Dual_Exponential",
             dist="Normal",
             LL_func=LL_func,
@@ -8439,6 +8618,7 @@ class Fit_Normal_Dual_Exponential:
         self.c = MLE_results.c
         self.sigma = MLE_results.sigma
         self.success = MLE_results.success
+        self.optimizer = MLE_results.optimizer
 
         # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
@@ -8611,6 +8791,8 @@ class Fit_Normal_Dual_Exponential:
                 underline=True,
             )
             print("Analysis method: Maximum Likelihood Estimation (MLE)")
+            if self.optimizer is not None:
+                print("Optimizer:", self.optimizer)
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
@@ -8711,7 +8893,12 @@ class Fit_Normal_Power_Exponential:
     show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
+    optimizer - The optimization algorithm used to find the solution. Must be either 'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'.
+        Specifying the optimizer will result in that optimizer being used.
+        To use all of these specify 'best' and the best result will be returned.
+        The default behaviour is to try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and 'powell') and stop once one of the optimizers finds a solution.
+        If the optimizer fails, the initial guess will be returned.
+        For more detail see the `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
 
     Outputs:
     a - fitted parameter from the Power_Exponential model
@@ -8836,7 +9023,7 @@ class Fit_Normal_Power_Exponential:
         ]  # a, c, n, sigma
 
         # fit the model using the MLE method
-        MLE_results = ALT_MLE_optimisation(
+        MLE_results = ALT_MLE_optimization(
             model="Power_Exponential",
             dist="Normal",
             LL_func=LL_func,
@@ -8854,6 +9041,7 @@ class Fit_Normal_Power_Exponential:
         self.n = MLE_results.n
         self.sigma = MLE_results.sigma
         self.success = MLE_results.success
+        self.optimizer = MLE_results.optimizer
 
         # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
@@ -9026,6 +9214,8 @@ class Fit_Normal_Power_Exponential:
                 underline=True,
             )
             print("Analysis method: Maximum Likelihood Estimation (MLE)")
+            if self.optimizer is not None:
+                print("Optimizer:", self.optimizer)
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
@@ -9125,7 +9315,12 @@ class Fit_Normal_Dual_Power:
     show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
+    optimizer - The optimization algorithm used to find the solution. Must be either 'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'.
+        Specifying the optimizer will result in that optimizer being used.
+        To use all of these specify 'best' and the best result will be returned.
+        The default behaviour is to try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and 'powell') and stop once one of the optimizers finds a solution.
+        If the optimizer fails, the initial guess will be returned.
+        For more detail see the `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
 
     Outputs:
     c - fitted parameter from the Dual_Power model
@@ -9250,7 +9445,7 @@ class Fit_Normal_Dual_Power:
         ]  # c, m, n, sigma
 
         # fit the model using the MLE method
-        MLE_results = ALT_MLE_optimisation(
+        MLE_results = ALT_MLE_optimization(
             model="Dual_Power",
             dist="Normal",
             LL_func=LL_func,
@@ -9268,6 +9463,7 @@ class Fit_Normal_Dual_Power:
         self.n = MLE_results.n
         self.sigma = MLE_results.sigma
         self.success = MLE_results.success
+        self.optimizer = MLE_results.optimizer
 
         # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
@@ -9438,6 +9634,8 @@ class Fit_Normal_Dual_Power:
                 underline=True,
             )
             print("Analysis method: Maximum Likelihood Estimation (MLE)")
+            if self.optimizer is not None:
+                print("Optimizer:", self.optimizer)
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
@@ -9534,8 +9732,12 @@ class Fit_Exponential_Exponential:
     show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
-
+    optimizer - The optimization algorithm used to find the solution. Must be either 'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'.
+        Specifying the optimizer will result in that optimizer being used.
+        To use all of these specify 'best' and the best result will be returned.
+        The default behaviour is to try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and 'powell') and stop once one of the optimizers finds a solution.
+        If the optimizer fails, the initial guess will be returned.
+        For more detail see the `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
 
     Outputs:
     a - fitted parameter from the Exponential model
@@ -9634,7 +9836,7 @@ class Fit_Exponential_Exponential:
         guess = [life_stress_guess[0], life_stress_guess[1]]  # a, b
 
         # fit the model using the MLE method
-        MLE_results = ALT_MLE_optimisation(
+        MLE_results = ALT_MLE_optimization(
             model="Exponential",
             dist="Exponential",
             LL_func=LL_func,
@@ -9648,6 +9850,7 @@ class Fit_Exponential_Exponential:
         self.a = MLE_results.a
         self.b = MLE_results.b
         self.success = MLE_results.success
+        self.optimizer = MLE_results.optimizer
 
         # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
@@ -9791,6 +9994,8 @@ class Fit_Exponential_Exponential:
                 underline=True,
             )
             print("Analysis method: Maximum Likelihood Estimation (MLE)")
+            if self.optimizer is not None:
+                print("Optimizer:", self.optimizer)
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
@@ -9885,7 +10090,12 @@ class Fit_Exponential_Eyring:
     show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
+    optimizer - The optimization algorithm used to find the solution. Must be either 'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'.
+        Specifying the optimizer will result in that optimizer being used.
+        To use all of these specify 'best' and the best result will be returned.
+        The default behaviour is to try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and 'powell') and stop once one of the optimizers finds a solution.
+        If the optimizer fails, the initial guess will be returned.
+        For more detail see the `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
 
     Outputs:
     a - fitted parameter from the Eyring model
@@ -9984,7 +10194,7 @@ class Fit_Exponential_Eyring:
         guess = [life_stress_guess[0], life_stress_guess[1]]  # a, c
 
         # fit the model using the MLE method
-        MLE_results = ALT_MLE_optimisation(
+        MLE_results = ALT_MLE_optimization(
             model="Eyring",
             dist="Exponential",
             LL_func=LL_func,
@@ -9998,6 +10208,7 @@ class Fit_Exponential_Eyring:
         self.a = MLE_results.a
         self.c = MLE_results.c
         self.success = MLE_results.success
+        self.optimizer = MLE_results.optimizer
 
         # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
@@ -10139,6 +10350,8 @@ class Fit_Exponential_Eyring:
                 underline=True,
             )
             print("Analysis method: Maximum Likelihood Estimation (MLE)")
+            if self.optimizer is not None:
+                print("Optimizer:", self.optimizer)
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
@@ -10228,7 +10441,12 @@ class Fit_Exponential_Power:
     show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
+    optimizer - The optimization algorithm used to find the solution. Must be either 'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'.
+        Specifying the optimizer will result in that optimizer being used.
+        To use all of these specify 'best' and the best result will be returned.
+        The default behaviour is to try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and 'powell') and stop once one of the optimizers finds a solution.
+        If the optimizer fails, the initial guess will be returned.
+        For more detail see the `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
 
     Outputs:
     a - fitted parameter from the Power model
@@ -10327,7 +10545,7 @@ class Fit_Exponential_Power:
         guess = [life_stress_guess[0], life_stress_guess[1]]  # a, n
 
         # fit the model using the MLE method
-        MLE_results = ALT_MLE_optimisation(
+        MLE_results = ALT_MLE_optimization(
             model="Power",
             dist="Exponential",
             LL_func=LL_func,
@@ -10341,6 +10559,7 @@ class Fit_Exponential_Power:
         self.a = MLE_results.a
         self.n = MLE_results.n
         self.success = MLE_results.success
+        self.optimizer = MLE_results.optimizer
 
         # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
@@ -10482,6 +10701,8 @@ class Fit_Exponential_Power:
                 underline=True,
             )
             print("Analysis method: Maximum Likelihood Estimation (MLE)")
+            if self.optimizer is not None:
+                print("Optimizer:", self.optimizer)
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
@@ -10573,7 +10794,12 @@ class Fit_Exponential_Dual_Exponential:
     show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
+    optimizer - The optimization algorithm used to find the solution. Must be either 'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'.
+        Specifying the optimizer will result in that optimizer being used.
+        To use all of these specify 'best' and the best result will be returned.
+        The default behaviour is to try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and 'powell') and stop once one of the optimizers finds a solution.
+        If the optimizer fails, the initial guess will be returned.
+        For more detail see the `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
 
     Outputs:
     a - fitted parameter from the Dual_Exponential model
@@ -10689,7 +10915,7 @@ class Fit_Exponential_Dual_Exponential:
         ]  # a, b, c
 
         # fit the model using the MLE method
-        MLE_results = ALT_MLE_optimisation(
+        MLE_results = ALT_MLE_optimization(
             model="Dual_Exponential",
             dist="Exponential",
             LL_func=LL_func,
@@ -10706,6 +10932,7 @@ class Fit_Exponential_Dual_Exponential:
         self.b = MLE_results.b
         self.c = MLE_results.c
         self.success = MLE_results.success
+        self.optimizer = MLE_results.optimizer
 
         # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
@@ -10874,6 +11101,8 @@ class Fit_Exponential_Dual_Exponential:
                 underline=True,
             )
             print("Analysis method: Maximum Likelihood Estimation (MLE)")
+            if self.optimizer is not None:
+                print("Optimizer:", self.optimizer)
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
@@ -10972,7 +11201,12 @@ class Fit_Exponential_Power_Exponential:
     show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
+    optimizer - The optimization algorithm used to find the solution. Must be either 'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'.
+        Specifying the optimizer will result in that optimizer being used.
+        To use all of these specify 'best' and the best result will be returned.
+        The default behaviour is to try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and 'powell') and stop once one of the optimizers finds a solution.
+        If the optimizer fails, the initial guess will be returned.
+        For more detail see the `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
 
     Outputs:
     a - fitted parameter from the Power_Exponential model
@@ -11088,7 +11322,7 @@ class Fit_Exponential_Power_Exponential:
         ]  # a, c, n
 
         # fit the model using the MLE method
-        MLE_results = ALT_MLE_optimisation(
+        MLE_results = ALT_MLE_optimization(
             model="Power_Exponential",
             dist="Exponential",
             LL_func=LL_func,
@@ -11105,6 +11339,7 @@ class Fit_Exponential_Power_Exponential:
         self.c = MLE_results.c
         self.n = MLE_results.n
         self.success = MLE_results.success
+        self.optimizer = MLE_results.optimizer
 
         # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
@@ -11273,6 +11508,8 @@ class Fit_Exponential_Power_Exponential:
                 underline=True,
             )
             print("Analysis method: Maximum Likelihood Estimation (MLE)")
+            if self.optimizer is not None:
+                print("Optimizer:", self.optimizer)
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
@@ -11370,7 +11607,12 @@ class Fit_Exponential_Dual_Power:
     show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
     CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - 'TNC', 'L-BFGS-B', 'powell'. Default is 'TNC'. These are all bound constrained methods. If the bound constrained method fails, nelder-mead will be used. If nelder-mead fails the initial guess (using least squares) will be returned with a warning.
+    optimizer - The optimization algorithm used to find the solution. Must be either 'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'.
+        Specifying the optimizer will result in that optimizer being used.
+        To use all of these specify 'best' and the best result will be returned.
+        The default behaviour is to try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and 'powell') and stop once one of the optimizers finds a solution.
+        If the optimizer fails, the initial guess will be returned.
+        For more detail see the `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
 
     Outputs:
     c - fitted parameter from the Dual_Power model
@@ -11486,7 +11728,7 @@ class Fit_Exponential_Dual_Power:
         ]  # c, m, n
 
         # fit the model using the MLE method
-        MLE_results = ALT_MLE_optimisation(
+        MLE_results = ALT_MLE_optimization(
             model="Dual_Power",
             dist="Exponential",
             LL_func=LL_func,
@@ -11503,6 +11745,7 @@ class Fit_Exponential_Dual_Power:
         self.m = MLE_results.m
         self.n = MLE_results.n
         self.success = MLE_results.success
+        self.optimizer = MLE_results.optimizer
 
         # confidence interval estimates of parameters
         Z = -ss.norm.ppf((1 - CI) / 2)
@@ -11671,6 +11914,8 @@ class Fit_Exponential_Dual_Power:
                 underline=True,
             )
             print("Analysis method: Maximum Likelihood Estimation (MLE)")
+            if self.optimizer is not None:
+                print("Optimizer:", self.optimizer)
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),

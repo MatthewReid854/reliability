@@ -2,6 +2,7 @@ from reliability.Distributions import Weibull_Distribution, Lognormal_Distributi
 from reliability.Other_functions import stress_strength, stress_strength_normal, similar_distributions, make_right_censored_data, crosshairs, distribution_explorer, histogram
 from numpy.testing import assert_allclose
 import matplotlib.pyplot as plt
+import warnings
 
 atol = 1e-8
 rtol = 1e-7
@@ -19,15 +20,17 @@ def test_stress_strength_normal():
     assert_allclose(result,0.00024384404803800858,rtol=rtol,atol=atol)
 
 def test_similar_distributions():
+    # ignores the runtime warning from scipy when the nelder-mean or powell optimizers are used and jac is not required
+    warnings.filterwarnings(action="ignore", category=RuntimeWarning)
     dist = Weibull_Distribution(alpha=50, beta=3.3)
     results = similar_distributions(distribution=dist, include_location_shifted=True, show_plot=False, print_results=False)
-    assert_allclose(results.results[0].alpha, 49.22635661916984, rtol=rtol, atol=atol)
-    assert_allclose(results.results[0].beta, 3.2573154824967254, rtol=rtol, atol=atol)
-    assert_allclose(results.results[0].gamma, 0.723515074225681, rtol=rtol, atol=atol)
-    assert_allclose(results.results[1].mu, 44.84713832685586, rtol=rtol, atol=atol)
-    assert_allclose(results.results[1].sigma, 14.922616880719513, rtol=rtol, atol=atol)
-    assert_allclose(results.results[2].alpha, 5.760745623490939, rtol=rtol, atol=atol)
-    assert_allclose(results.results[2].beta, 7.7849536438935685, rtol=rtol, atol=atol)
+    assert_allclose(results.results[0].alpha, 49.22622520639563, rtol=rtol, atol=atol)
+    assert_allclose(results.results[0].beta, 3.2573074120881964, rtol=rtol, atol=atol)
+    assert_allclose(results.results[0].gamma, 0.7236421159037678, rtol=rtol, atol=atol)
+    assert_allclose(results.results[1].mu, 44.847138326837566, rtol=rtol, atol=atol)
+    assert_allclose(results.results[1].sigma, 14.922616862230697, rtol=rtol, atol=atol)
+    assert_allclose(results.results[2].alpha, 5.760746660148767, rtol=rtol, atol=atol)
+    assert_allclose(results.results[2].beta, 7.784952297226461, rtol=rtol, atol=atol)
     assert_allclose(results.results[2].gamma, 0, rtol=rtol, atol=atol)
 
 def test_make_right_censored_data():

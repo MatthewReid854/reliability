@@ -2,12 +2,15 @@ from reliability.Fitters import Fit_Weibull_2P, Fit_Weibull_3P, Fit_Gamma_2P, Fi
 from reliability.Distributions import Weibull_Distribution, Gamma_Distribution, Lognormal_Distribution, Loglogistic_Distribution, Normal_Distribution, Exponential_Distribution, Beta_Distribution, Gumbel_Distribution, Mixture_Model, Competing_Risks_Model
 from reliability.Other_functions import make_right_censored_data
 from numpy.testing import assert_allclose
+import warnings
 
 # I would like to make these smaller but the slight differences in different python versions (3.6-3.9) mean that tight tolerances result in test failures
 atol = 1e-3
 rtol = 1e-3
 
 def test_Fit_Weibull_2P():
+    # ignores the runtime warning from scipy when the nelder-mean or powell optimizers are used and jac is not required
+    warnings.filterwarnings(action="ignore", category=RuntimeWarning)
     dist = Weibull_Distribution(alpha=50, beta=2)
     rawdata = dist.random_samples(20, seed=5)
     data = make_right_censored_data(data=rawdata, threshold=dist.mean)
@@ -34,19 +37,21 @@ def test_Fit_Weibull_2P():
 
 
 def test_Fit_Weibull_3P():
+    # ignores the runtime warning from scipy when the nelder-mean or powell optimizers are used and jac is not required
+    warnings.filterwarnings(action="ignore", category=RuntimeWarning)
     dist = Weibull_Distribution(alpha=50, beta=2, gamma=500)
     rawdata = dist.random_samples(20, seed=5)
     data = make_right_censored_data(data=rawdata, threshold=dist.mean)
 
     MLE = Fit_Weibull_3P(failures=data.failures, right_censored=data.right_censored, method='MLE', show_probability_plot=False, print_results=False)
-    assert_allclose(MLE.alpha, 33.012333115455654, rtol=rtol, atol=atol)
-    assert_allclose(MLE.beta, 1.3273429690012193, rtol=rtol, atol=atol)
-    assert_allclose(MLE.gamma, 513.7219668227023, rtol=rtol, atol=atol)
-    assert_allclose(MLE.AICc, 116.53275812088592, rtol=rtol, atol=atol)
-    assert_allclose(MLE.BIC, 118.0199549415479, rtol=rtol, atol=atol)
-    assert_allclose(MLE.loglik, -54.51637906044296, rtol=rtol, atol=atol)
-    assert_allclose(MLE.AD, 55.6067996515715, rtol=rtol, atol=atol)
-    assert_allclose(MLE.Cov_alpha_beta, -0.7687692976797089, rtol=rtol, atol=atol)
+    assert_allclose(MLE.alpha, 33.0123537701021, rtol=rtol, atol=atol)
+    assert_allclose(MLE.beta, 1.327313848890964, rtol=rtol, atol=atol)
+    assert_allclose(MLE.gamma, 513.7220829514334, rtol=rtol, atol=atol)
+    assert_allclose(MLE.AICc, 116.5327581203968, rtol=rtol, atol=atol)
+    assert_allclose(MLE.BIC, 118.01995494105878, rtol=rtol, atol=atol)
+    assert_allclose(MLE.loglik, -54.5163790601984, rtol=rtol, atol=atol)
+    assert_allclose(MLE.AD, 55.606805028079016, rtol=rtol, atol=atol)
+    assert_allclose(MLE.Cov_alpha_beta, -0.7687781958569139, rtol=rtol, atol=atol)
 
     LS = Fit_Weibull_3P(failures=data.failures, right_censored=data.right_censored, method='LS', show_probability_plot=False, print_results=False)
     assert_allclose(LS.alpha, 32.639290779819824, rtol=rtol, atol=atol)
@@ -60,6 +65,8 @@ def test_Fit_Weibull_3P():
 
 
 def test_Fit_Gamma_2P():
+    # ignores the runtime warning from scipy when the nelder-mean or powell optimizers are used and jac is not required
+    warnings.filterwarnings(action="ignore", category=RuntimeWarning)
     dist = Gamma_Distribution(alpha=50, beta=2)
     rawdata = dist.random_samples(20, seed=5)
     data = make_right_censored_data(data=rawdata, threshold=dist.mean)
@@ -86,6 +93,8 @@ def test_Fit_Gamma_2P():
 
 
 def test_Fit_Gamma_3P():
+    # ignores the runtime warning from scipy when the nelder-mean or powell optimizers are used and jac is not required
+    warnings.filterwarnings(action="ignore", category=RuntimeWarning)
     dist = Gamma_Distribution(alpha=50, beta=2, gamma=500)
     rawdata = dist.random_samples(20, seed=5)
     data = make_right_censored_data(data=rawdata, threshold=dist.mean)
@@ -112,6 +121,8 @@ def test_Fit_Gamma_3P():
 
 
 def test_Fit_Lognormal_2P():
+    # ignores the runtime warning from scipy when the nelder-mean or powell optimizers are used and jac is not required
+    warnings.filterwarnings(action="ignore", category=RuntimeWarning)
     dist = Lognormal_Distribution(mu=1,sigma=0.5)
     rawdata = dist.random_samples(20, seed=5)
     data = make_right_censored_data(data=rawdata, threshold=dist.mean)
@@ -138,6 +149,8 @@ def test_Fit_Lognormal_2P():
 
 
 def test_Fit_Lognormal_3P():
+    # ignores the runtime warning from scipy when the nelder-mean or powell optimizers are used and jac is not required
+    warnings.filterwarnings(action="ignore", category=RuntimeWarning)
     dist = Lognormal_Distribution(mu=1,sigma=0.5, gamma=500)
     rawdata = dist.random_samples(20, seed=5)
     data = make_right_censored_data(data=rawdata, threshold=dist.mean)
@@ -164,6 +177,8 @@ def test_Fit_Lognormal_3P():
 
 
 def test_Fit_Loglogistic_2P():
+    # ignores the runtime warning from scipy when the nelder-mean or powell optimizers are used and jac is not required
+    warnings.filterwarnings(action="ignore", category=RuntimeWarning)
     dist = Loglogistic_Distribution(alpha=50, beta=8)
     rawdata = dist.random_samples(200, seed=5)
     data = make_right_censored_data(data=rawdata, threshold=dist.mean)
@@ -190,19 +205,21 @@ def test_Fit_Loglogistic_2P():
 
 
 def test_Fit_Loglogistic_3P():
+    # ignores the runtime warning from scipy when the nelder-mean or powell optimizers are used and jac is not required
+    warnings.filterwarnings(action="ignore", category=RuntimeWarning)
     dist = Loglogistic_Distribution(alpha=50, beta=8, gamma=500)
     rawdata = dist.random_samples(200, seed=5)
     data = make_right_censored_data(data=rawdata, threshold=dist.mean)
 
     MLE = Fit_Loglogistic_3P(failures=data.failures, right_censored=data.right_censored, method='MLE', show_probability_plot=False, print_results=False)
-    assert_allclose(MLE.alpha, 62.33031514341089, rtol=rtol, atol=atol)
-    assert_allclose(MLE.beta, 10.105811228561391, rtol=rtol, atol=atol)
-    assert_allclose(MLE.gamma, 487.8907948039738, rtol=rtol, atol=atol)
-    assert_allclose(MLE.AICc, 943.8128239547301, rtol=rtol, atol=atol)
-    assert_allclose(MLE.BIC, 953.5853270747824, rtol=rtol, atol=atol)
-    assert_allclose(MLE.loglik, -468.84518748756915, rtol=rtol, atol=atol)
-    assert_allclose(MLE.AD, 582.5424432519599, rtol=rtol, atol=atol)
-    assert_allclose(MLE.Cov_alpha_beta, -0.18172584774539235, rtol=rtol, atol=atol)
+    assert_allclose(MLE.alpha, 64.53821169314404, rtol=rtol, atol=atol)
+    assert_allclose(MLE.beta, 10.5120425994396, rtol=rtol, atol=atol)
+    assert_allclose(MLE.gamma, 485.67966960645543, rtol=rtol, atol=atol)
+    assert_allclose(MLE.AICc, 943.8101901503343, rtol=rtol, atol=atol)
+    assert_allclose(MLE.BIC, 953.5826932703866, rtol=rtol, atol=atol)
+    assert_allclose(MLE.loglik, -468.84387058537123, rtol=rtol, atol=atol)
+    assert_allclose(MLE.AD, 582.5422181701142, rtol=rtol, atol=atol)
+    assert_allclose(MLE.Cov_alpha_beta, -0.18810779930161473, rtol=rtol, atol=atol)
 
     LS = Fit_Loglogistic_3P(failures=data.failures, right_censored=data.right_censored, method='LS', show_probability_plot=False, print_results=False)
     assert_allclose(LS.alpha, 62.356306952705054, rtol=rtol, atol=atol)
@@ -216,6 +233,8 @@ def test_Fit_Loglogistic_3P():
 
 
 def test_Fit_Normal_2P():
+    # ignores the runtime warning from scipy when the nelder-mean or powell optimizers are used and jac is not required
+    warnings.filterwarnings(action="ignore", category=RuntimeWarning)
     dist = Normal_Distribution(mu=50,sigma=8)
     rawdata = dist.random_samples(20, seed=5)
     data = make_right_censored_data(data=rawdata, threshold=dist.mean)
@@ -239,6 +258,8 @@ def test_Fit_Normal_2P():
 
 
 def test_Fit_Gumbel_2P():
+    # ignores the runtime warning from scipy when the nelder-mean or powell optimizers are used and jac is not required
+    warnings.filterwarnings(action="ignore", category=RuntimeWarning)
     dist = Gumbel_Distribution(mu=50,sigma=8)
     rawdata = dist.random_samples(20, seed=5)
     data = make_right_censored_data(data=rawdata, threshold=dist.mean)
@@ -263,6 +284,8 @@ def test_Fit_Gumbel_2P():
 
 
 def test_Fit_Exponential_1P():
+    # ignores the runtime warning from scipy when the nelder-mean or powell optimizers are used and jac is not required
+    warnings.filterwarnings(action="ignore", category=RuntimeWarning)
     dist = Exponential_Distribution(Lambda=5)
     rawdata = dist.random_samples(20, seed=5)
     data = make_right_censored_data(data=rawdata, threshold=dist.mean)
@@ -283,6 +306,8 @@ def test_Fit_Exponential_1P():
 
 
 def test_Fit_Exponential_2P():
+    # ignores the runtime warning from scipy when the nelder-mean or powell optimizers are used and jac is not required
+    warnings.filterwarnings(action="ignore", category=RuntimeWarning)
     dist = Exponential_Distribution(Lambda=5, gamma=500)
     rawdata = dist.random_samples(20, seed=5)
     data = make_right_censored_data(data=rawdata, threshold=dist.mean)
@@ -305,6 +330,8 @@ def test_Fit_Exponential_2P():
 
 
 def test_Fit_Beta_2P():
+    # ignores the runtime warning from scipy when the nelder-mean or powell optimizers are used and jac is not required
+    warnings.filterwarnings(action="ignore", category=RuntimeWarning)
     dist = Beta_Distribution(alpha=5, beta=4)
     rawdata = dist.random_samples(20, seed=5)
     data = make_right_censored_data(data=rawdata, threshold=dist.mean)
@@ -329,6 +356,8 @@ def test_Fit_Beta_2P():
 
 
 def test_Fit_Weibull_Mixture():
+    # ignores the runtime warning from scipy when the nelder-mean or powell optimizers are used and jac is not required
+    warnings.filterwarnings(action="ignore", category=RuntimeWarning)
     d1 = Weibull_Distribution(alpha=10, beta=3)
     d2 = Weibull_Distribution(alpha=40, beta=4)
     dist = Mixture_Model(distributions=[d1, d2], proportions=[0.2, 0.8])
@@ -349,6 +378,8 @@ def test_Fit_Weibull_Mixture():
 
 
 def test_Fit_Weibull_CR():
+    # ignores the runtime warning from scipy when the nelder-mean or powell optimizers are used and jac is not required
+    warnings.filterwarnings(action="ignore", category=RuntimeWarning)
     d1 = Weibull_Distribution(alpha=50, beta=2)
     d2 = Weibull_Distribution(alpha=40, beta=10)
     CR_model = Competing_Risks_Model(distributions=[d1, d2])
@@ -366,6 +397,8 @@ def test_Fit_Weibull_CR():
 
 
 def test_Fit_Everything():
+    # ignores the runtime warning from scipy when the nelder-mean or powell optimizers are used and jac is not required
+    warnings.filterwarnings(action="ignore", category=RuntimeWarning)
     dist = Beta_Distribution(alpha=5, beta=4)
     rawdata = dist.random_samples(200, seed=5)
     data = make_right_censored_data(data=rawdata, threshold=dist.mean)

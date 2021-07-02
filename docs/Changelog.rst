@@ -10,23 +10,25 @@ Changelog
 
 **Summary of changes**
 
--    TBA
+-    TBA once the version approaches the release date.
 
 **New features**
 
--    TBA
+-    Ability to specify "best" optimizer will result in multiple optimizers being tried and the best result being used. Optimizers tried are "L-BFGS-B", "TNC", "powell" and "nelder-mead". For more detail see the documentation on `Optimizers <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
 
 **API Changes**
 
--    TBA
+-    The optimizer "nelder-mead" will now be accepted as a bounded optimization method. This requires scipy 1.7.0 or higher.
 
 **Bug Fixes**
 
--    TBA
+-    Due to a new Utils function implemented in 0.5.7, a runtime error would occur when the confidence intervals could not be plotted due to too many NaNs in the arrays. This error has now been bypassed.
 
 **Other**
 
--    TBA
+-    The default optimizer has been changed. Previously it was 'L-BFGS-B' for < 97% censored data and 'TNC' above 97% censored data. Now it is 'TNC'. For more detail and a flowchart description of the default behaviour, see the documentation on `Optimizers <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
+-    The optimizer used is now reported in the printed results for all Fitters and ALT_Fitters.
+
 
 **Version: 0.5.7 --- Released: 25 June 2021**
 '''''''''''''''''''''''''''''''''''''''''''''

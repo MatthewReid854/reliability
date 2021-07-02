@@ -32,6 +32,7 @@ Contents:
   Fitting all available distributions to data
   Mixture models
   Competing risk models
+  Optimizers
 
 .. toctree::
   :maxdepth: 1

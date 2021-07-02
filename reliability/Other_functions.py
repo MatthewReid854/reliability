@@ -912,9 +912,9 @@ class make_right_censored_data:
                 data
             )  # randomize the order of the data in case it was ordered
             # place a limit on the amount of the data that can be censored
-            if fraction_censored <= 0 or fraction_censored >= 1:
+            if fraction_censored <= 0 or fraction_censored >= 1 or type(fraction_censored) not in [float,np.float_]:
                 raise ValueError(
-                    "fraction_censored must be between 0 and 1. The default is 0.5 which will right censor half the data"
+                    "fraction_censored must be a float between 0 and 1. The default is 0.5 which will right censor half the data"
                 )
             number_of_items_to_censor = np.floor(len(data) * fraction_censored)
             right_censored = []
