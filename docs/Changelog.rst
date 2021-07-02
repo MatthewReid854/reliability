@@ -28,6 +28,7 @@ Changelog
 
 -    The default optimizer has been changed. Previously it was 'L-BFGS-B' for < 97% censored data and 'TNC' above 97% censored data. Now it is 'TNC'. For more detail and a flowchart description of the default behaviour, see the documentation on `Optimizers <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
 -    The optimizer used is now reported in the printed results for all Fitters and ALT_Fitters.
+-    Removed support for Python 3.6 due to scipy 1.7.0 dropping this Python version.
 
 
 **Version: 0.5.7 --- Released: 25 June 2021**
