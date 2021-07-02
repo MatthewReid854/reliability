@@ -52,15 +52,15 @@ There are three behaviours within reliability with respect to the choice of opti
 
 In the case of a specific optimizer being specified, it will be used. If it fails, then the initial guess will be returned with a warning.
 
-.. image:: images/optimizer_specific.png
+.. image:: images/optimizer_specific.PNG
 
 In the case of "best" or "all" being specified, all four of the optimizers will be tried. The results from the best one (based on the lowest log-likelihood it finds) will be returned.
 
-.. image:: images/optimizer_best.png
+.. image:: images/optimizer_best.PNG
 
 In the case of no optimizer being specified, they will be tried in order of "TNC", "L-BFGS-B", "nelder-mead", "powell". Once one of them succeeds, the results will be returned and no further optimizers will be run.
 
-.. image:: images/optimizer_default.png
+.. image:: images/optimizer_default.PNG
 
 .. Note::
    For large sample sizes (above 10000) it will take considerable time to run multiple optimizers. In particular, "nelder-mead" and "powell" are much slower than "TNC" and "L-BFGS-B". For this reason, `reliability` does not try multiple optimizers unless told to or if the default did not succeed.
