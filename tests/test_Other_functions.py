@@ -5,7 +5,10 @@ import matplotlib.pyplot as plt
 import warnings
 
 atol = 1e-8
-rtol = 1e-7
+atol_big = 0 # 0 means it will not look at the absolute difference
+rtol = 1e-6
+rtol_big = 1e-3
+
 
 def test_stress_strength():
     stress = Weibull_Distribution(alpha=40, beta=4)
@@ -24,14 +27,14 @@ def test_similar_distributions():
     warnings.filterwarnings(action="ignore", category=RuntimeWarning)
     dist = Weibull_Distribution(alpha=50, beta=3.3)
     results = similar_distributions(distribution=dist, include_location_shifted=True, show_plot=False, print_results=False)
-    assert_allclose(results.results[0].alpha, 49.22622520639563, rtol=rtol, atol=atol)
-    assert_allclose(results.results[0].beta, 3.2573074120881964, rtol=rtol, atol=atol)
-    assert_allclose(results.results[0].gamma, 0.7236421159037678, rtol=rtol, atol=atol)
-    assert_allclose(results.results[1].mu, 44.847138326837566, rtol=rtol, atol=atol)
-    assert_allclose(results.results[1].sigma, 14.922616862230697, rtol=rtol, atol=atol)
-    assert_allclose(results.results[2].alpha, 5.760746660148767, rtol=rtol, atol=atol)
-    assert_allclose(results.results[2].beta, 7.784952297226461, rtol=rtol, atol=atol)
-    assert_allclose(results.results[2].gamma, 0, rtol=rtol, atol=atol)
+    assert_allclose(results.results[0].alpha, 49.22622520639563, rtol=rtol_big, atol=atol_big)
+    assert_allclose(results.results[0].beta, 3.2573074120881964, rtol=rtol_big, atol=atol_big)
+    assert_allclose(results.results[0].gamma, 0.7236421159037678, rtol=rtol_big, atol=atol_big)
+    assert_allclose(results.results[1].mu, 44.847138326837566, rtol=rtol_big, atol=atol_big)
+    assert_allclose(results.results[1].sigma, 14.922616862230697, rtol=rtol_big, atol=atol_big)
+    assert_allclose(results.results[2].alpha, 5.760746660148767, rtol=rtol_big, atol=atol_big)
+    assert_allclose(results.results[2].beta, 7.784952297226461, rtol=rtol_big, atol=atol_big)
+    assert_allclose(results.results[2].gamma, 0, rtol=rtol_big, atol=atol_big)
 
 def test_make_right_censored_data():
     results = make_right_censored_data(data=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10], fraction_censored=0.5, seed=1)

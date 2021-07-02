@@ -141,8 +141,8 @@ def test_Fit_Weibull_Power():
     warnings.filterwarnings(action="ignore", category=RuntimeWarning)
     data = make_ALT_data(distribution='Weibull',life_stress_model='Power',a=5e15,n=-4,beta=2.5,stress_1=[500,400,350],number_of_samples=100,fraction_censored=0.2,seed=1)
     model = Fit_Weibull_Power(failures=data.failures, failure_stress=data.failure_stresses, right_censored=data.right_censored, right_censored_stress=data.right_censored_stresses, use_level_stress=300, show_life_stress_plot=False, show_probability_plot=False, print_results=False)
-    assert_allclose(model.a, 1970769936973045.8, rtol=rtol, atol=atol)
-    assert_allclose(model.n, -3.8508765831753586, rtol=rtol, atol=atol)
+    assert_allclose(model.a, 1970769936973045.8, rtol=rtol_big, atol=atol) # larger due to variation in python versions
+    assert_allclose(model.n, -3.8508765831753586, rtol=rtol_big, atol=atol) # larger due to variation in python versions
     assert_allclose(model.beta, 2.3300112383377285, rtol=rtol, atol=atol)
     assert_allclose(model.AICc, 6037.00210532498, rtol=rtol, atol=atol)
     assert_allclose(model.BIC, 6048.032371667868, rtol=rtol, atol=atol)
