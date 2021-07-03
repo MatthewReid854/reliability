@@ -5,6 +5,9 @@
 Optimizers
 ''''''''''
 
+.. Note::
+   This documentation applies to version 0.5.8 (currently unreleased). Prior to version 0.5.8, the default optimizer is L-BFGS-B below 97% censored data and TNC above 97% censored data, and the nelder-mead optimizer was not available as a bounded optimizer. The option to specify "best" for the optimizer is new in version 0.5.8.
+
 **What is an optimizer?**
 
 An optimizer is an algorithm that uses two primary inputs; a target function and an initial guess. The optimizer's job is to figure out which input to the target function will minimise the output of the target function.
@@ -47,6 +50,8 @@ Each optimizer has various strengths and weaknesses because they work in differe
 There is no single best optimizer for fitting probability distributions so a few options are provided as described below.
 
 **Which optimizer should I pick?**
+
+You don't really need to worry about picking an optimizer as the default choice is usually sufficient. If you do want to select your optimizer, you have four to choose from. Most importantly, you should be aware of what the optimizer is doing (minimizing the negative log-likelihood equation by varying the parameters) and understand that optimizers aren't all the same which can cause different results. If you really need to know the best optimizer then select "best", otherwise you can just leave the default as None. 
 
 There are three behaviours within reliability with respect to the choice of optimizer. These depend on whether the user has specified a specific optimizer ("TNC", "L-BFGS-B", "nelder-mead", "powell"), specified all optimizers ("all" or "best"), or not specified anything (None).
 
