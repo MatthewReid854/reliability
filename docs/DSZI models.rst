@@ -35,9 +35,9 @@ Equations of DSZI models
 
 A DSZI Model adds a minor modification to the PDF and CDF of any standard distribution (referred to here as the "base distribution") to transform it into a DSZI Model. The transformations are as follows:
 
-:math:` PDF_{DSZI} = PDF_{base} × (DS-ZI)` 
+:math:`PDF_{DSZI} = PDF_{base} × (DS-ZI)` 
 
-:math:` CDF_{DSZI} = CDF_{base} × (DS-ZI) + ZI` 
+:math:`CDF_{DSZI} = CDF_{base} × (DS-ZI) + ZI` 
 
 In the above equations the base distribution (represented by :math:`PDF_{base}` and :math:`CDF_{base}`) is transformed using the parameters DS and ZI.
 DS is the maximum of the CDF which represents the fraction of the total population that is defective (the defective subpopulation).
@@ -45,11 +45,11 @@ ZI is the minimum of the CDF which represents the fraction of the total populati
 To create only a DS model we can set ZI as 0. To create only a ZI model we can set DS as 1. The parameters DS and ZI must be between 0 and 1, and DS must be greater than ZI.
 The above equations can be expanded depending on the equation of the base distribution. For example, if the base distribution is a two parameter Weibull distribution, the DSZI model would be:
 
-:math:`\text{PDF:} \hspace{11mm} f(t) = \frac{\left( \frac{\beta}{\alpha}\right) {\left( \frac{t}{\alpha} \right)}^{\beta - 1}}{{\left(1+{\left(\frac{t}{\alpha}\right)}^{\beta} \right)}^{2}} \left(DS - ZI \right)` 
+:math:`\text{PDF:} \hspace{11mm} f(t) = \frac{\beta}{\alpha}\left(\frac{t}{\alpha}\right)^{(\beta-1)}{\rm e}^{-(\frac{t}{\alpha })^ \beta } \left(DS - ZI \right)` 
 
-:math:`\text{CDF:} \hspace{10mm} F(t) = \frac{1}{1+{\left(\frac{t}{\alpha} \right)}^{-\beta}} \left(DS - ZI \right) + ZI`
+:math:`\text{CDF:} \hspace{10mm} F(t) = 1 - {\rm e}^{-(\frac{t}{\alpha })^ \beta } \left(DS - ZI \right) + ZI`
 
-The SF, HF and CHF can be obtained using transformations from the CDF and PDF as described `here <https://reliability.readthedocs.io/en/latest/Equations%20of%20supported%20distributions.html#relationships-between-the-five-functions>`_.
+The SF, HF and CHF can be obtained using transformations from the CDF and PDF using the `relationships between the five functions <https://reliability.readthedocs.io/en/latest/Equations%20of%20supported%20distributions.html#relationships-between-the-five-functions>`_.
 
 
 Creating a DSZI model
