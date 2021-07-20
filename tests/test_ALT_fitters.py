@@ -463,9 +463,9 @@ def test_Fit_Everything_ALT_dual_stress():
     assert_allclose(model.Lognormal_Dual_Exponential_BIC, 6671.4195147071605, rtol=rtol, atol=atol)
     assert_allclose(model.Lognormal_Dual_Exponential_loglik, -3322.1049678269314, rtol=rtol, atol=atol)
 
-    assert_allclose(model.Normal_Dual_Exponential_a, 49.68121667246413, rtol=rtol_big, atol=atol) # larger due to variation in python versions
-    assert_allclose(model.Normal_Dual_Exponential_b, 0.08164110127092898, rtol=rtol_big, atol=atol) # larger due to variation in python versions
-    assert_allclose(model.Normal_Dual_Exponential_c, 512.8410763917044, rtol=rtol_big, atol=atol) # larger due to variation in python versions
+    assert_allclose(model.Normal_Dual_Exponential_a, 49.68121667246413, rtol=rtol_extreme, atol=atol) # larger due to variation in python versions
+    assert_allclose(model.Normal_Dual_Exponential_b, 0.08164110127092898, rtol=rtol_extreme, atol=atol) # larger due to variation in python versions
+    assert_allclose(model.Normal_Dual_Exponential_c, 512.8410763917044, rtol=rtol_extreme, atol=atol) # larger due to variation in python versions
     assert_allclose(model.Normal_Dual_Exponential_sigma, 297.1949970356173, rtol=rtol, atol=atol)
     assert_allclose(model.Normal_Dual_Exponential_AICc, 6635.191223243016, rtol=rtol, atol=atol)
     assert_allclose(model.Normal_Dual_Exponential_BIC, 6654.356109558883, rtol=rtol, atol=atol)
