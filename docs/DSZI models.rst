@@ -47,7 +47,7 @@ The above equations can be expanded depending on the equation of the base distri
 
 :math:`\text{PDF:} \hspace{11mm} f(t) = \frac{\beta}{\alpha}\left(\frac{t}{\alpha}\right)^{(\beta-1)}{\rm e}^{-(\frac{t}{\alpha })^ \beta } \left(DS - ZI \right)` 
 
-:math:`\text{CDF:} \hspace{10mm} F(t) = 1 - {\rm e}^{-(\frac{t}{\alpha })^ \beta } \left(DS - ZI \right) + ZI`
+:math:`\text{CDF:} \hspace{10mm} F(t) = \left(1 - {\rm e}^{-(\frac{t}{\alpha })^ \beta }\right) \left(DS - ZI \right) + ZI`
 
 The SF, HF and CHF can be obtained using transformations from the CDF and PDF using the `relationships between the five functions <https://reliability.readthedocs.io/en/latest/Equations%20of%20supported%20distributions.html#relationships-between-the-five-functions>`_.
 
@@ -98,6 +98,10 @@ The reason for returning failures and right_censored data is that is is essentia
 
 Fitting a DSZI model
 ====================
+
+.. admonition:: API Reference
+
+   For inputs and outputs see the API reference for `Fit_Weibull_DS <https://reliability.readthedocs.io/en/latest/API/Fitters/Fit_Weibull_DS.html>`_ and `Fit_Weibull_ZI <https://reliability.readthedocs.io/en/latest/API/Fitters/Fit_Weibull_ZI.html>`_.
 
 As we saw above, the DSZI_Model can be either DS, ZI, or DSZI depending on the values of the DS and ZI parameters.
 Within the Fitters module, three functions are offered, one of each of these cases with the Weibull_2P distribution as the base distribution.
@@ -267,4 +271,4 @@ In addition the the visual proof provided by the probability plot (left) and the
 Example 6
 ---------
 
-This will be written soon and will show how to use Fit_Weibull_DSZI
+This will be written soon and will show how to use Fit_Weibull_DSZI, which is a four parameter model including both the DS and ZI parameters.
