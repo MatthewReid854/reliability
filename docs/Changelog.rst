@@ -5,16 +5,20 @@
 Changelog
 ---------
 
-**Version: 0.5.8 --- Currently Unreleased --- Due for release around October 2021**
+**Version: 0.6.0 --- Currently Unreleased --- Due for release around August 2021**
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 **Summary of changes**
 
--    TBA once the version approaches the release date.
+-    This version has two main improvements. Firstly the behaviour of the optimizers has been changed to be more efficient, and to allow users to try multiple optimizers easily by specifying optimizer='best'.
+     Secondly, the addition of the Defective Subpopulation (DS) and Zero Inflated (ZI) Model now provides a model for which the CDF can range from above 0 to below 1.
+     There are several new Fitters added to take advantage of this as detailed below.
 
 **New features**
 
 -    Ability to specify "best" optimizer will result in multiple optimizers being tried and the best result being used. Optimizers tried are "L-BFGS-B", "TNC", "powell" and "nelder-mead". For more detail see the documentation on `Optimizers <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
+-    DSZI_Model has been added to the Distributions module. This model allows for the CDF to start above 0 and finish below 1.
+-    Fitters for DSZI models, including Fit_Weibull_DS and Fit_Weibull_ZI
 
 **API Changes**
 
@@ -29,6 +33,11 @@ Changelog
 -    The default optimizer has been changed. Previously it was 'L-BFGS-B' for < 97% censored data and 'TNC' above 97% censored data. Now it is 'TNC'. For more detail and a flowchart description of the default behaviour, see the documentation on `Optimizers <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
 -    The optimizer used is now reported in the printed results for all Fitters and ALT_Fitters.
 -    Removed support for Python 3.6 due to scipy 1.7.0 dropping this Python version.
+-    Change to the algorithm used in Other_functions.make_right_censored_data when making multiply censored data. The algorithm used is explained `here <https://reliability.readthedocs.io/en/latest/Make%20right%20censored%20data.html#example-2>`_.
+-    Significant speed improvement to Other_functions.make_right_censored_data when making multiply censored data.
+-    Change to the versioning system. The new system is major.minor.bugfix whereas the previous system was reserved.major.minor. This should allow more frequent bugfix releases.
+-    Fixed all the tests for ALT_Fitters since this relied upon Other_functions.make_right_censored_data which had a change of algorithm
+-    Speed improvement to Probability_plotting.plotting_positions to make it 7% faster.
 
 
 **Version: 0.5.7 --- Released: 25 June 2021**

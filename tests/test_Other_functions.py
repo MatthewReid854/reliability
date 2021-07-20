@@ -38,8 +38,8 @@ def test_similar_distributions():
 
 def test_make_right_censored_data():
     results = make_right_censored_data(data=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10], fraction_censored=0.5, seed=1)
-    assert_allclose(results.failures, [3,5,1,4,2], rtol=rtol, atol=atol)
-    assert_allclose(results.right_censored, [6.02771433, 2.06619492, 3.74089736, 2.5841914, 0.46400404], rtol=rtol, atol=atol)
+    assert_allclose(results.failures, [4, 2, 8, 9, 6], rtol=rtol, atol=atol)
+    assert_allclose(results.right_censored, [1.16373222, 6.69746037, 6.5487735, 4.23155458, 0.31327352], rtol=rtol, atol=atol)
 
 def test_crosshairs():
     plt.ion()  # this is the key to enabling plt.close() to take control of a plot that is being blocked by plt.show() inside the plot generating function.

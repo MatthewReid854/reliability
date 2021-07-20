@@ -20,9 +20,10 @@ The following collection of resources are things I have found useful during my r
 **Free software**
 
 -    `Lifelines <https://lifelines.readthedocs.io/en/latest/index.html>`_ - a Python library for survival analysis. Very powerful collection of tools, only a few of which overlap with the Python reliability library.
+-    `Surpyval <https://surpyval.readthedocs.io/en/latest/>`_ - a Python library for survival anaysis. Similar to reliability, but with an API more aligned with Scipy. Mostly focussed on fitting models (probability distributions and nonparametric).
 -    `Parameter Solver v3.0 <https://biostatistics.mdanderson.org/SoftwareDownload/SingleSoftware/Index/6>`_ - a biostatistics tool for quickly making some simple calculations with probability distributions.
 -    `Orange <https://orange.biolab.si/>`_ - a standalone data mining and data visualization program that runs using Python. Beautifully interactive data analysis workflows with a large toolbox. Not much reliability related content but good for data preprocessing.
--    R (Programming Language) - R is one of the most popular programming languages for data science, and it has several libraries that are targeted towards reliability engineering and survival analysis. These include `WeibullR <https://github.com/openrelia/WeibullR.gallery>`_, `abrem <https://rdrr.io/rforge/abrem/>`_, and `survival <https://cran.r-project.org/web/packages/survival/index.html>`_. 
+-    R (Programming Language) - R is one of the most popular programming languages for data science, and it has several libraries that are targeted towards reliability engineering and survival analysis. These include `WeibullR <https://github.com/openrelia/WeibullR.gallery>`_, `abrem <https://rdrr.io/rforge/abrem/>`_, `flexsurv <https://cran.r-project.org/web/packages/flexsurv/index.html>`_, and `survival <https://cran.r-project.org/web/packages/survival/index.html>`_. 
 -    `CumFreq <https://www.waterlog.info/cumfreq.htm>`_ - a program for cumulative frequency analysis with probability distribution fitting for a wide range of distributions. Limited functionality beyond fitting distributions.
 -    `OpenTURNS <https://openturns.github.io/openturns/latest/auto_probabilistic_modeling/index.html>`_ - a Python library for the treatment of uncertainties, risks and statistics. This library contains many powerful statistical functions, some of which are applicable to reliability engineering (mainly the fitting of distributions). The syntax of the library requires many steps as shown in the tutorials.
 
@@ -76,3 +77,5 @@ The listing of a software package here does not imply my endorsement, and is onl
 
 -    `arXiv <https://arXiv.org>`_ - a database run by Cornell university that provides open access to over 1.5 million academic papers that have been submitted. If you can't find it here then check on Sci-Hub.
 -    `Sci-Hub <https://sci-hub.st/>`_ - paste in a DOI to get a copy of the academic paper. Accessing academic knowledge should be free and this site makes it possible.
+
+Found a broken link? If so, please email me (alpha.reliability@gmail.com) so I can update it.

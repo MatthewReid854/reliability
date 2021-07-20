@@ -53,6 +53,7 @@ from reliability.Distributions import (
     Gumbel_Distribution,
     Mixture_Model,
     Competing_Risks_Model,
+    DSZI_Model,
 )
 from reliability.Nonparametric import KaplanMeier
 from reliability.Probability_plotting import plotting_positions
@@ -3178,7 +3179,7 @@ class Fit_Weibull_Mixture:
             colorprint(
                 str(
                     "WARNING: The hessian matrix obtained using the "
-                    + optimizer
+                    + self.optimizer
                     + " optimizer is non-invertable for the Weibull mixture model.\n"
                     "Confidence interval estimates of the parameters could not be obtained.\n"
                     "You may want to try fitting the model using a different optimizer."
@@ -3217,7 +3218,8 @@ class Fit_Weibull_Mixture:
                     / (self.proportion_1 * (1 - self.proportion_1))
                 )
             )
-        )  # ref: http://reliawiki.org/index.php/The_Mixed_Weibull_Distribution
+        )
+        # ref: http://reliawiki.org/index.php/The_Mixed_Weibull_Distribution
         self.proportion_1_lower = self.proportion_1 / (
             self.proportion_1
             + (1 - self.proportion_1)
@@ -3316,7 +3318,10 @@ class Fit_Weibull_Mixture:
             else:
                 rc = right_censored
             Weibull_probability_plot(
-                failures=failures, right_censored=rc, show_fitted_distribution=False
+                failures=failures,
+                right_censored=rc,
+                show_fitted_distribution=False,
+                **kwargs,
             )
             if "label" in kwargs:
                 label_str = kwargs.pop("label")
@@ -3625,7 +3630,7 @@ class Fit_Weibull_CR:
             colorprint(
                 str(
                     "WARNING: The hessian matrix obtained using the "
-                    + optimizer
+                    + self.optimizer
                     + " optimizer is non-invertable for the Weibull competing risks model.\n"
                     "Confidence interval estimates of the parameters could not be obtained.\n"
                     "You may want to try fitting the model using a different optimizer."
@@ -3731,7 +3736,10 @@ class Fit_Weibull_CR:
             else:
                 rc = right_censored
             Weibull_probability_plot(
-                failures=failures, right_censored=rc, show_fitted_distribution=False
+                failures=failures,
+                right_censored=rc,
+                show_fitted_distribution=False,
+                **kwargs,
             )
             if "label" in kwargs:
                 label_str = kwargs.pop("label")
@@ -3777,6 +3785,643 @@ class Fit_Weibull_CR:
             T_rc, params[0], params[1], params[2], params[3]
         ).sum()
         return -(LL_f + LL_rc)
+
+
+class Fit_Weibull_DS:
+    """
+    Fits a Weibull Defective Subpopulation (DS) distribution to the data
+    provided. This is a 3 parameter distribution (alpha, beta, DS).
+
+    Parameters
+    ----------
+    failures : array, list
+        An array or list of the failure data. There must be at least 3 failures.
+    right_censored : array, list, optional
+        The right censored data. Optional input. Default = None.
+    show_probability_plot : bool, optional
+        True or False. Default = True
+    print_results : bool, optional
+        Prints a dataframe of the point estimate, standard error, Lower CI and
+        Upper CI for each parameter. True or False. Default = True
+    optimizer : str, optional
+        The optimization algorithm used to find the solution. Must be either
+        'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'. Specifying the optimizer
+        will result in that optimizer being used. To use all of these specify
+        'best' and the best result will be returned. The default behaviour is to
+        try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and
+        'powell') and stop once one of the optimizers finds a solution. If the
+        optimizer fails, the initial guess will be returned.
+        For more detail see the `documentation
+        <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
+    CI : float, optional
+        confidence interval for estimating confidence limits on parameters. Must
+        be between 0 and 1. Default is 0.95 for 95% CI.
+    kwargs
+        Plotting keywords that are passed directly to matplotlib for the
+        probability plot (e.g. color, label, linestyle)
+
+    Returns
+    -------
+    alpha : float
+        the fitted Weibull_DS alpha parameter
+    beta : float
+        the fitted Weibull_DS beta parameter
+    DS : float
+        the fitted Weibull_DS DS parameter
+    alpha_SE : float
+        the standard error (sqrt(variance)) of the parameter
+    beta_SE :float
+        the standard error (sqrt(variance)) of the parameter
+    DS_SE :float
+        the standard error (sqrt(variance)) of the parameter
+    alpha_upper : float
+        the upper CI estimate of the parameter
+    alpha_lower : float
+        the lower CI estimate of the parameter
+    beta_upper : float
+        the upper CI estimate of the parameter
+    beta_lower : float
+        the lower CI estimate of the parameter
+    DS_upper : float
+        the upper CI estimate of the parameter
+    DS_lower : float
+        the lower CI estimate of the parameter
+    loglik : float
+        Log Likelihood (as used in Minitab and Reliasoft)
+    loglik2 : float
+        LogLikelihood*-2 (as used in JMP Pro)
+    AICc : float
+        Akaike Information Criterion
+    BIC : float
+        Bayesian Information Criterion
+    AD : float
+        the Anderson Darling (corrected) statistic (as reported by Minitab)
+    distribution : object
+        a DSZI_Model object with the parameters of the fitted distribution
+    results : dataframe
+        a pandas dataframe of the results (point estimate, standard error,
+        lower CI and upper CI for each parameter)
+    goodness_of_fit : dataframe
+        a pandas dataframe of the goodness of fit values (Log-likelihood, AICc,
+        BIC, AD).
+    probability_plot : object
+        the axes handle for the probability plot. This is only returned if
+        show_probability_plot = True
+
+    Notes
+    -----
+    If the fitting process encounters a problem a warning will be printed. This
+    may be caused by the chosen distribution being a very poor fit to the data
+    or the data being heavily censored. If a warning is printed, consider trying
+    a different optimizer.
+    """
+
+    def __init__(
+        self,
+        failures=None,
+        right_censored=None,
+        show_probability_plot=True,
+        print_results=True,
+        CI=0.95,
+        optimizer=None,
+        **kwargs,
+    ):
+
+        inputs = fitters_input_checking(
+            dist="Weibull_DS",
+            failures=failures,
+            right_censored=right_censored,
+            optimizer=optimizer,
+            CI=CI,
+        )
+        failures = inputs.failures
+        right_censored = inputs.right_censored
+        CI = inputs.CI
+        optimizer = inputs.optimizer
+
+        # obtain initial estimates of the parameters
+        _, y_pts = plotting_positions(failures=failures, right_censored=right_censored)
+
+        DS_guess = max(y_pts)
+        weibull_2P_fit = Fit_Weibull_2P(
+            failures=failures,
+            right_censored=None,
+            print_results=False,
+            show_probability_plot=False,
+        )
+        alpha_guess = weibull_2P_fit.alpha
+        beta_guess = weibull_2P_fit.beta
+
+        # maximum likelihood method
+        MLE_results = MLE_optimization(
+            func_name="Weibull_DS",
+            LL_func=Fit_Weibull_DS.LL,
+            initial_guess=[alpha_guess, beta_guess, DS_guess],
+            failures=failures,
+            right_censored=right_censored,
+            optimizer=optimizer,
+        )
+        self.alpha = MLE_results.alpha
+        self.beta = MLE_results.beta
+        self.DS = MLE_results.DS
+        self.method = "Maximum Likelihood Estimation (MLE)"
+        self.optimizer = MLE_results.optimizer
+
+        # confidence interval estimates of parameters. This uses the Fisher Matrix so it can be applied to both MLE and LS estimates.
+        Z = -ss.norm.ppf((1 - CI) / 2)
+        params = [self.alpha, self.beta, self.DS]
+        hessian_matrix = hessian(Fit_Weibull_DS.LL)(
+            np.array(tuple(params)),
+            np.array(tuple(failures)),
+            np.array(tuple(right_censored)),
+        )
+        try:
+            covariance_matrix = np.linalg.inv(hessian_matrix)
+            self.alpha_SE = abs(covariance_matrix[0][0]) ** 0.5
+            self.beta_SE = abs(covariance_matrix[1][1]) ** 0.5
+            self.DS_SE = abs(covariance_matrix[2][2]) ** 0.5
+        except LinAlgError:
+            # this exception is rare but can occur with some optimizers
+            colorprint(
+                str(
+                    "WARNING: The hessian matrix obtained using the "
+                    + self.optimizer
+                    + " optimizer is non-invertable for the Weibull_DS Model.\n"
+                    "Confidence interval estimates of the parameters could not be obtained.\n"
+                    "You may want to try fitting the model using a different optimizer."
+                ),
+                text_color="red",
+            )
+            self.alpha_SE = 0
+            self.beta_SE = 0
+            self.DS_SE = 0
+
+        self.alpha_upper = self.alpha * (np.exp(Z * (self.alpha_SE / self.alpha)))
+        self.alpha_lower = self.alpha * (np.exp(-Z * (self.alpha_SE / self.alpha)))
+        self.beta_upper = self.beta * (np.exp(Z * (self.beta_SE / self.beta)))
+        self.beta_lower = self.beta * (np.exp(-Z * (self.beta_SE / self.beta)))
+        if self.DS == 1:
+            self.DS_lower = 1  # DS=1 causes a divide by zero error for CIs
+            self.DS_upper = 1
+        else:
+            self.DS_upper = self.DS / (
+                self.DS
+                + (1 - self.DS) * (np.exp(-Z * self.DS_SE / (self.DS * (1 - self.DS))))
+            )
+            self.DS_lower = self.DS / (
+                self.DS
+                + (1 - self.DS) * (np.exp(Z * self.DS_SE / (self.DS * (1 - self.DS))))
+            )
+
+        results_data = {
+            "Parameter": ["Alpha", "Beta", "DS"],
+            "Point Estimate": [self.alpha, self.beta, self.DS],
+            "Standard Error": [self.alpha_SE, self.beta_SE, self.DS_SE],
+            "Lower CI": [self.alpha_lower, self.beta_lower, self.DS_lower],
+            "Upper CI": [self.alpha_upper, self.beta_upper, self.DS_upper],
+        }
+        self.results = pd.DataFrame(
+            results_data,
+            columns=[
+                "Parameter",
+                "Point Estimate",
+                "Standard Error",
+                "Lower CI",
+                "Upper CI",
+            ],
+        )
+        self.distribution = DSZI_Model(
+            distribution=Weibull_Distribution(alpha=self.alpha, beta=self.beta),
+            DS=self.DS,
+        )
+
+        # goodness of fit measures
+        n = len(failures) + len(right_censored)
+        k = 3
+        LL2 = 2 * Fit_Weibull_DS.LL(params, failures, right_censored)
+        self.loglik2 = LL2
+        self.loglik = LL2 * -0.5
+        if n - k - 1 > 0:
+            self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
+        else:
+            self.AICc = "Insufficient data"
+        self.BIC = np.log(n) * k + LL2
+
+        x, y = plotting_positions(failures=failures, right_censored=right_censored)
+        self.AD = anderson_darling(
+            fitted_cdf=self.distribution.CDF(xvals=x, show_plot=False), empirical_cdf=y
+        )
+        GoF_data = {
+            "Goodness of fit": ["Log-likelihood", "AICc", "BIC", "AD"],
+            "Value": [self.loglik, self.AICc, self.BIC, self.AD],
+        }
+        self.goodness_of_fit = pd.DataFrame(
+            GoF_data, columns=["Goodness of fit", "Value"]
+        )
+
+        if print_results is True:
+            CI_rounded = CI * 100
+            if CI_rounded % 1 == 0:
+                CI_rounded = int(CI * 100)
+            frac_censored = round_to_decimals(len(right_censored) / n * 100)
+            if frac_censored % 1 < 1e-10:
+                frac_censored = int(frac_censored)
+            colorprint(
+                str("Results from Fit_Weibull_DS (" + str(CI_rounded) + "% CI):"),
+                bold=True,
+                underline=True,
+            )
+            print("Analysis method:", self.method)
+            if self.optimizer is not None:
+                print("Optimizer:", self.optimizer)
+            print(
+                "Failures / Right censored:",
+                str(str(len(failures)) + "/" + str(len(right_censored))),
+                str("(" + str(frac_censored) + "% right censored)"),
+                "\n",
+            )
+            print(self.results.to_string(index=False), "\n")
+            print(self.goodness_of_fit.to_string(index=False), "\n")
+
+        if show_probability_plot is True:
+            from reliability.Probability_plotting import Weibull_probability_plot
+
+            if len(right_censored) == 0:
+                rc = None
+            else:
+                rc = right_censored
+            Weibull_probability_plot(
+                failures=failures,
+                right_censored=rc,
+                show_fitted_distribution=False,
+                **kwargs,
+            )
+            if "label" in kwargs:
+                label_str = kwargs.pop("label")
+            else:
+                label_str = str(
+                    r"Fitted Weibull_DS"
+                    + r" ($\alpha=$"
+                    + str(round_to_decimals(self.alpha, dec))
+                    + r", $\beta=$"
+                    + str(round_to_decimals(self.beta, dec))
+                    + r", $DS=$"
+                    + str(round_to_decimals(self.DS, dec))
+                    + ")"
+                )
+            xvals = np.logspace(
+                np.log10(min(failures)) - 3, np.log10(max(failures)) + 1, 1000
+            )
+            self.distribution.CDF(xvals=xvals, label=label_str, **kwargs)
+            # need to add this manually as Weibull_probability_plot can only add Weibull_2P and Weibull_3P using __fitted_dist_params
+            plt.title("Probability Plot\nWeibull_DS CDF")
+            self.probability_plot = plt.gca()
+
+    @staticmethod
+    def logf(t, a, b, ds):  # Log PDF (Weibull DS)
+        return (b - 1) * anp.log(t / a) + anp.log(b / a) - (t / a) ** b + anp.log(ds)
+
+    @staticmethod
+    def logR(t, a, b, ds):  # Log SF (Weibull DS)
+        return anp.log(1 - ((1 - anp.exp(-((t / a) ** b))) * ds))
+
+    @staticmethod
+    def LL(params, T_f, T_rc):
+        # log likelihood function (Weibull DS)
+        LL_f = Fit_Weibull_DS.logf(T_f, params[0], params[1], params[2]).sum()
+        LL_rc = Fit_Weibull_DS.logR(T_rc, params[0], params[1], params[2]).sum()
+        return -(LL_f + LL_rc)
+
+
+class Fit_Weibull_ZI:
+    """
+    Fits a Weibull Zero Inflated (ZI) distribution to the data
+    provided. This is a 3 parameter distribution (alpha, beta, ZI).
+
+    Parameters
+    ----------
+    failures : array, list
+        An array or list of the failure data. There must be at least 2 non-zero
+        failures and at least 1 failure at zero.
+    right_censored : array, list, optional
+        The right censored data. Optional input. Default = None.
+    show_probability_plot : bool, optional
+        True or False. Default = True
+    print_results : bool, optional
+        Prints a dataframe of the point estimate, standard error, Lower CI and
+        Upper CI for each parameter. True or False. Default = True
+    optimizer : str, optional
+        The optimization algorithm used to find the solution. Must be either
+        'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'. Specifying the optimizer
+        will result in that optimizer being used. To use all of these specify
+        'best' and the best result will be returned. The default behaviour is to
+        try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and
+        'powell') and stop once one of the optimizers finds a solution. If the
+        optimizer fails, the initial guess will be returned.
+        For more detail see the `documentation
+        <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
+    CI : float, optional
+        confidence interval for estimating confidence limits on parameters. Must
+        be between 0 and 1. Default is 0.95 for 95% CI.
+    kwargs
+        Plotting keywords that are passed directly to matplotlib for the
+        probability plot (e.g. color, label, linestyle)
+
+    Returns
+    -------
+    alpha : float
+        the fitted Weibull_ZI alpha parameter
+    beta : float
+        the fitted Weibull_ZI beta parameter
+    ZI : float
+        the fitted Weibull_ZI ZI parameter
+    alpha_SE : float
+        the standard error (sqrt(variance)) of the parameter
+    beta_SE :float
+        the standard error (sqrt(variance)) of the parameter
+    ZI_SE :float
+        the standard error (sqrt(variance)) of the parameter.
+    alpha_upper : float
+        the upper CI estimate of the parameter
+    alpha_lower : float
+        the lower CI estimate of the parameter
+    beta_upper : float
+        the upper CI estimate of the parameter
+    beta_lower : float
+        the lower CI estimate of the parameter
+    ZI_upper : float
+        the upper CI estimate of the parameter.
+    ZI_lower : float
+        the lower CI estimate of the parameter.
+    loglik : float
+        Log Likelihood (as used in Minitab and Reliasoft)
+    loglik2 : float
+        LogLikelihood*-2 (as used in JMP Pro)
+    AICc : float
+        Akaike Information Criterion
+    BIC : float
+        Bayesian Information Criterion
+    AD : float
+        the Anderson Darling (corrected) statistic (as reported by Minitab)
+    distribution : object
+        a DSZI_Model object with the parameters of the fitted distribution
+    results : dataframe
+        a pandas dataframe of the results (point estimate, standard error,
+        lower CI and upper CI for each parameter)
+    goodness_of_fit : dataframe
+        a pandas dataframe of the goodness of fit values (Log-likelihood, AICc,
+        BIC, AD).
+    probability_plot : object
+        the axes handle for the probability plot. This is only returned if
+        show_probability_plot = True
+
+    Notes
+    -----
+    If the fitting process encounters a problem a warning will be printed. This
+    may be caused by the chosen distribution being a very poor fit to the data
+    or the data being heavily censored. If a warning is printed, consider trying
+    a different optimizer.
+    """
+
+    def __init__(
+        self,
+        failures=None,
+        right_censored=None,
+        show_probability_plot=True,
+        print_results=True,
+        CI=0.95,
+        optimizer=None,
+        **kwargs,
+    ):
+
+        # need to remove zeros before passing to fitters input checking
+        failures = np.asarray(failures)
+        failures_no_zeros = failures[failures != 0]
+        failures_zeros = failures[failures == 0]
+
+        inputs = fitters_input_checking(
+            dist="Weibull_ZI",
+            failures=failures_no_zeros,
+            right_censored=right_censored,
+            optimizer=optimizer,
+            CI=CI,
+        )
+        failures_no_zeros = inputs.failures
+        right_censored = inputs.right_censored
+        CI = inputs.CI
+        optimizer = inputs.optimizer
+
+        # obtain initial estimates of the parameters
+        weibull_2P_fit = Fit_Weibull_2P(
+            failures=failures_no_zeros,
+            right_censored=right_censored,
+            print_results=False,
+            show_probability_plot=False,
+            optimizer=optimizer,
+            CI=CI,
+        )
+        alpha_guess = weibull_2P_fit.alpha
+        beta_guess = weibull_2P_fit.beta
+        ZI_guess = len(failures[failures == 0]) / (len(failures) + len(right_censored))
+
+        # maximum likelihood method
+        MLE_results = MLE_optimization(
+            func_name="Weibull_ZI",
+            LL_func=Fit_Weibull_ZI.LL,
+            initial_guess=[alpha_guess, beta_guess, ZI_guess],
+            failures=failures,
+            right_censored=right_censored,
+            optimizer=optimizer,
+        )
+        self.alpha = MLE_results.alpha
+        self.beta = MLE_results.beta
+        self.ZI = MLE_results.ZI
+        self.method = "Maximum Likelihood Estimation (MLE)"
+        self.optimizer = MLE_results.optimizer
+
+        # confidence interval estimates of parameters. This uses the Fisher Matrix so it can be applied to both MLE and LS estimates.
+        Z = -ss.norm.ppf((1 - CI) / 2)
+        params = [self.alpha, self.beta, self.ZI]
+        hessian_matrix = hessian(Fit_Weibull_ZI.LL)(
+            np.array(tuple(params)),
+            np.array(tuple(failures_zeros)),
+            np.array(tuple(failures_no_zeros)),
+            np.array(tuple(right_censored)),
+        )
+
+        try:
+            covariance_matrix = np.linalg.inv(hessian_matrix)
+            self.alpha_SE = abs(covariance_matrix[0][0]) ** 0.5
+            self.beta_SE = abs(covariance_matrix[1][1]) ** 0.5
+            self.ZI_SE = abs(covariance_matrix[2][2]) ** 0.5
+        except LinAlgError:
+            # this exception is rare but can occur with some optimizers
+            colorprint(
+                str(
+                    "WARNING: The hessian matrix obtained using the "
+                    + self.optimizer
+                    + " optimizer is non-invertable for the Weibull_ZI Model.\n"
+                    "Confidence interval estimates of the parameters could not be obtained.\n"
+                    "You may want to try fitting the model using a different optimizer."
+                ),
+                text_color="red",
+            )
+            self.alpha_SE = 0
+            self.beta_SE = 0
+            self.ZI_SE = 0
+
+        self.alpha_upper = self.alpha * (np.exp(Z * (self.alpha_SE / self.alpha)))
+        self.alpha_lower = self.alpha * (np.exp(-Z * (self.alpha_SE / self.alpha)))
+        self.beta_upper = self.beta * (np.exp(Z * (self.beta_SE / self.beta)))
+        self.beta_lower = self.beta * (np.exp(-Z * (self.beta_SE / self.beta)))
+        if self.ZI == 0:
+            self.ZI_upper = 0  # ZI = 0 causes a divide by zero error for CIs
+            self.ZI_lower = 0
+        else:
+            self.ZI_upper = self.ZI / (
+                self.ZI
+                + (1 - self.ZI) * (np.exp(-Z * self.ZI_SE / (self.ZI * (1 - self.ZI))))
+            )
+            self.ZI_lower = self.ZI / (
+                self.ZI
+                + (1 - self.ZI) * (np.exp(Z * self.ZI_SE / (self.ZI * (1 - self.ZI))))
+            )
+
+        results_data = {
+            "Parameter": ["Alpha", "Beta", "ZI"],
+            "Point Estimate": [self.alpha, self.beta, self.ZI],
+            "Standard Error": [self.alpha_SE, self.beta_SE, self.ZI_SE],
+            "Lower CI": [self.alpha_lower, self.beta_lower, self.ZI_lower],
+            "Upper CI": [self.alpha_upper, self.beta_upper, self.ZI_upper],
+        }
+        self.results = pd.DataFrame(
+            results_data,
+            columns=[
+                "Parameter",
+                "Point Estimate",
+                "Standard Error",
+                "Lower CI",
+                "Upper CI",
+            ],
+        )
+        self.distribution = DSZI_Model(
+            distribution=Weibull_Distribution(alpha=self.alpha, beta=self.beta),
+            ZI=self.ZI,
+        )
+
+        # goodness of fit measures
+        n = len(failures) + len(right_censored)
+        k = 3
+        LL2 = 2 * Fit_Weibull_ZI.LL(
+            params, failures_zeros, failures_no_zeros, right_censored
+        )
+        self.loglik2 = LL2
+        self.loglik = LL2 * -0.5
+        if n - k - 1 > 0:
+            self.AICc = 2 * k + LL2 + (2 * k ** 2 + 2 * k) / (n - k - 1)
+        else:
+            self.AICc = "Insufficient data"
+        self.BIC = np.log(n) * k + LL2
+
+        x, y = plotting_positions(failures=failures, right_censored=right_censored)
+        # moves all the y values for the x=0 points to be equal to the value of ZI.
+        y = np.where(x == 0, self.ZI, y)
+        self.AD = anderson_darling(
+            fitted_cdf=self.distribution.CDF(xvals=x, show_plot=False), empirical_cdf=y
+        )
+        GoF_data = {
+            "Goodness of fit": ["Log-likelihood", "AICc", "BIC", "AD"],
+            "Value": [self.loglik, self.AICc, self.BIC, self.AD],
+        }
+        self.goodness_of_fit = pd.DataFrame(
+            GoF_data, columns=["Goodness of fit", "Value"]
+        )
+
+        if print_results is True:
+            CI_rounded = CI * 100
+            if CI_rounded % 1 == 0:
+                CI_rounded = int(CI * 100)
+            frac_censored = round_to_decimals(len(right_censored) / n * 100)
+            if frac_censored % 1 < 1e-10:
+                frac_censored = int(frac_censored)
+            colorprint(
+                str("Results from Fit_Weibull_ZI (" + str(CI_rounded) + "% CI):"),
+                bold=True,
+                underline=True,
+            )
+            print("Analysis method:", self.method)
+            if self.optimizer is not None:
+                print("Optimizer:", self.optimizer)
+            print(
+                "Failures / Right censored:",
+                str(str(len(failures)) + "/" + str(len(right_censored))),
+                str("(" + str(frac_censored) + "% right censored)"),
+                "\n",
+            )
+            print(self.results.to_string(index=False), "\n")
+            print(self.goodness_of_fit.to_string(index=False), "\n")
+
+        if show_probability_plot is True:
+            from reliability.Probability_plotting import (
+                Weibull_probability_plot,
+                plot_points,
+            )
+
+            if len(right_censored) == 0:
+                rc = None
+            else:
+                rc = right_censored
+            Weibull_probability_plot(
+                failures=failures_no_zeros,
+                right_censored=rc,
+                show_fitted_distribution=False,
+                show_scatter_points=False,
+                **kwargs,
+            )
+            plot_points(failures=failures, right_censored=right_censored, **kwargs)
+            if "label" in kwargs:
+                label_str = kwargs.pop("label")
+            else:
+                label_str = str(
+                    r"Fitted Weibull_ZI"
+                    + r" ($\alpha=$"
+                    + str(round_to_decimals(self.alpha, dec))
+                    + r", $\beta=$"
+                    + str(round_to_decimals(self.beta, dec))
+                    + r", $ZI=$"
+                    + str(round_to_decimals(self.ZI, dec))
+                    + ")"
+                )
+            xvals = np.logspace(
+                np.log10(min(failures_no_zeros)) - 3,
+                np.log10(max(failures_no_zeros)) + 1,
+                1000,
+            )
+            self.distribution.CDF(xvals=xvals, label=label_str, **kwargs)
+            # need to add this manually as Weibull_probability_plot can only add Weibull_2P and Weibull_3P using __fitted_dist_params
+            plt.title("Probability Plot\nWeibull_ZI CDF")
+            self.probability_plot = plt.gca()
+
+    @staticmethod
+    def logf(t, a, b, zi):  # Log PDF (Weibull ZI)
+        return (
+            (b - 1) * anp.log(t / a) + anp.log(b / a) - (t / a) ** b + anp.log(1 - zi)
+        )
+
+    @staticmethod
+    def logR(t, a, b, zi):  # Log SF (Weibull ZI)
+        return anp.log(1 - ((1 - anp.exp(-((t / a) ** b))) * (1 - zi) + zi))
+
+    @staticmethod
+    def LL(params, T_0, T_f, T_rc):
+        # log likelihood function (Weibull ZI)
+        if params[2] > 0:
+            LL_0 = anp.log(params[2]) * len(T_0)  # deals with t=0
+        else:
+            LL_0 = 0  # enables fitting when ZI = 0 to avoid log(0) error
+        LL_f = Fit_Weibull_ZI.logf(T_f, params[0], params[1], params[2]).sum()
+        LL_rc = Fit_Weibull_ZI.logR(T_rc, params[0], params[1], params[2]).sum()
+        return -(LL_0 + LL_f + LL_rc)
 
 
 class Fit_Exponential_1P:

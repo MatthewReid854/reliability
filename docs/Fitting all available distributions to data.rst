@@ -28,20 +28,20 @@ In this first example, we will use `Fit_Everything` on some data and will return
     Results from Fit_Everything:
     Analysis method: MLE
     Failures / Right censored: 30/0 (0% right censored) 
-
-       Distribution    Alpha    Beta   Gamma      Mu    Sigma   Lambda  Log-likelihood    AICc     BIC      AD
-         Weibull_2P  4.21932 2.43761                                          -56.6259 117.696 120.054 1.04805
-           Gamma_2P 0.816684 4.57133                                          -56.9801 118.405 120.763 1.06592
-          Normal_2P                          3.73333  1.65193                 -57.6266 119.698 122.056 1.18539
-       Lognormal_2P                          1.20392 0.503628                 -58.1088 120.662  123.02 1.19881
-         Weibull_3P  3.61252 2.02388 0.53024                                  -56.4219 119.767 123.047 1.04948
-     Loglogistic_2P  3.45096 3.48793                                          -58.3223 121.089 123.447  1.0561
-           Gamma_3P 0.816684 4.57133       0                                  -56.9801 120.883 124.164 1.06592
-       Lognormal_3P                        0 1.20392 0.503628                 -58.1088 123.141 126.421 1.19881
-     Loglogistic_3P  3.45096 3.48793       0                                  -58.3223 123.568 126.848  1.0561
-     Exponential_2P                   0.9999                   0.36584        -60.1668 124.778 127.136 3.11235
-          Gumbel_2P                          4.58389  1.65599                 -60.5408 125.526 127.884 1.57958
-     Exponential_1P                                           0.299846        -69.7173 141.578 142.836 5.89119 
+    
+      Distribution    Alpha    Beta    Gamma      Mu    Sigma   Lambda  Log-likelihood    AICc     BIC      AD optimizer
+        Weibull_2P  4.21932 2.43761                                           -56.6259 117.696 120.054 1.04805       TNC
+          Gamma_2P 0.816686 4.57132                                           -56.9801 118.405 120.763 1.06592       TNC
+         Normal_2P                           3.73333  1.65193                 -57.6266 119.698 122.056 1.18539       TNC
+      Lognormal_2P                           1.20395 0.503621                 -58.1088 120.662  123.02 1.19857       TNC
+        Weibull_3P  3.61242  2.0238 0.530324                                  -56.4219 119.767 123.047 1.04948       TNC
+    Loglogistic_2P  3.45096 3.48793                                           -58.3223 121.089 123.447  1.0561       TNC
+          Gamma_3P 0.816686 4.57132                                           -56.9801 120.883 124.164 1.06592       TNC
+      Lognormal_3P                           1.20395 0.503621                 -58.1088 123.141 126.421 1.19857       TNC
+    Loglogistic_3P  3.45096 3.48793        0                                  -58.3223 123.568 126.848  1.0561       TNC
+    Exponential_2P                    0.9999                   0.36584        -60.1668 124.778 127.136 3.11236       TNC
+         Gumbel_2P                           4.58389  1.65599                 -60.5408 125.526 127.884 1.57958       TNC
+    Exponential_1P                                            0.267857         -69.519 141.181 142.439 4.71093       TNC
     '''
 
 Example 2
@@ -63,23 +63,23 @@ In this second example, we will create some right censored data and use `Fit_Eve
     '''
     Results from Fit_Everything:
     Analysis method: MLE
-    Failures / Right censored: 86/14 (14% right censored) 
-
-       Distribution   Alpha    Beta   Gamma      Mu    Sigma    Lambda  Log-likelihood    AICc     BIC      AD
-         Weibull_2P 11.2773 3.30301                                           -241.959 488.041 493.128  44.945
-          Normal_2P                         10.1194  3.37466                  -242.479 489.082 494.169 44.9098
-           Gamma_2P 1.42314 7.21352                                           -243.235 490.594  495.68 45.2817
-     Loglogistic_2P 9.86245 4.48433                                           -243.588 491.301 496.387 45.2002
-         Weibull_3P 10.0786 2.85824 1.15085                                   -241.779 489.807 497.373 44.9927
-           Gamma_3P 1.42314 7.21352       0                                   -243.235  492.72 500.286 45.2817
-       Lognormal_2P                         2.26524 0.406436                  -245.785 495.694  500.78 45.6874
-     Loglogistic_3P 9.86245 4.48433       0                                   -243.588 493.427 500.992 45.2002
-       Lognormal_3P                       0 2.26524 0.406436                  -245.785  497.82 505.385 45.6874
-          Gumbel_2P                         11.5926  2.94944                  -248.348 500.819 505.906 45.4624
-     Exponential_2P                 2.82892                   0.121884        -267.003 538.129 543.216 51.7851
-     Exponential_1P                                          0.0870024        -295.996 594.034 596.598 56.8662 
-
-    The best fitting distribution was Weibull_2P which had parameters [11.27730642  3.30300716  0.        ]
+    Failures / Right censored: 86/14 (14.0% right censored) 
+    
+      Distribution   Alpha    Beta   Gamma      Mu    Sigma    Lambda  Log-likelihood    AICc     BIC      AD optimizer
+        Weibull_2P 11.2773 3.30301                                           -241.959 488.041 493.128  44.945       TNC
+         Normal_2P                         10.1194  3.37466                  -242.479 489.082 494.169 44.9098       TNC
+          Gamma_2P 1.42315 7.21347                                           -243.235 490.594  495.68 45.2818       TNC
+    Loglogistic_2P 9.86245 4.48433                                           -243.588 491.301 496.387 45.2002       TNC
+        Weibull_3P 10.0786 2.85822 1.15088                                   -241.779 489.807 497.373 44.9927       TNC
+          Gamma_3P 1.42315 7.21347                                           -243.235  492.72 500.286 45.2818       TNC
+      Lognormal_2P                         2.26524 0.406436                  -245.785 495.694  500.78 45.6874       TNC
+    Loglogistic_3P 9.86245 4.48433       0                                   -243.588 493.427 500.992 45.2002       TNC
+      Lognormal_3P                         2.26524 0.406436                  -245.785  497.82 505.385 45.6874       TNC
+         Gumbel_2P                         11.5926  2.94944                  -248.348 500.819 505.906 45.4624  L-BFGS-B
+    Exponential_2P                 2.82892                   0.121884        -267.003 538.129 543.216 51.7852       TNC
+    Exponential_1P                                          0.0870024        -295.996 594.034 596.598 56.8662       TNC 
+    
+    The best fitting distribution was Weibull_2P which had parameters [11.27730641  3.30300712  0.        ]
     '''
 
 .. image:: images/Fit_everything_histogram_plot_V6.png

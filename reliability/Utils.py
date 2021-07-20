@@ -319,6 +319,7 @@ def restore_axes_limits(limits, dist, func, X, Y, xvals=None, xmin=None, xmax=No
             elif dist.name == "Beta":
                 xlim_lower = 0
             elif dist.name in ["Mixture", "Competing risks"]:
+                # DSZI not required here as limits are same as base distribution
                 xlim_lower = min(X)
             else:
                 raise ValueError("Unrecognised distribution name")
@@ -1207,6 +1208,9 @@ class fitters_input_checking:
             "Beta_2P",
             "Weibull_Mixture",
             "Weibull_CR",
+            "Weibull_DSZI",
+            "Weibull_DS",
+            "Weibull_ZI",
         ]:
             raise ValueError(
                 "incorrect dist specified. Use the correct name. eg. Weibull_2P"
@@ -1376,7 +1380,7 @@ class fitters_input_checking:
                 )  # autograd needs floats. crashes with ints
 
         # minimum number of failures checking
-        if dist in ["Weibull_3P", "Gamma_3P", "Lognormal_3P", "Loglogistic_3P"]:
+        if dist in ["Weibull_3P", "Gamma_3P", "Lognormal_3P", "Loglogistic_3P", "Weibull_DS", "Weibull_DSZI"]:
             min_failures = 3
         elif dist in [
             "Weibull_2P",
@@ -1388,6 +1392,7 @@ class fitters_input_checking:
             "Beta_2P",
             "Exponential_2P",
             "Everything",
+            "Weibull_ZI",
         ]:
             if force_sigma is None and force_beta is None:
                 min_failures = 2
@@ -1918,7 +1923,7 @@ def clean_CI_arrays(xlower, xupper, ylower, yupper, plot_type="CDF"):
             ylower_out3 = np.append(ylower_out3, ylower_out2[i])
             yupper_out3 = np.append(yupper_out3, yupper_out2[i])
 
-    # final error check for lengths matching and there still being at lease 2 elements remaning
+    # final error check for lengths matching and there still being at least 2 elements remaning
     if (
         len(xlower_out3) != len(xupper_out3)
         or len(xlower_out3) != len(yupper_out3)
@@ -4274,29 +4279,41 @@ class MLE_optimization:
             optimizer,
             force_shape,
             LL_func_force,
+            func_name,
         ):
             delta_LL = 1
             LL_array = [1000000]
             runs = 0
 
+            if func_name == "Weibull_ZI":
+                ZI = True
+            else:
+                ZI = False
+
+            if ZI is True: # ZI distribution
+                args = (failures[failures==0],failures[failures>0], right_censored)
+            else:
+                args=(failures, right_censored)
+
             if force_shape is None:
-                while (
-                    delta_LL > 0.001 and runs < 5
-                ):  # exits after LL convergence or 5 iterations
+                while delta_LL > 0.001 and runs < 5:
+                    # exits after LL convergence or 5 iterations
                     runs += 1
                     result = minimize(
                         value_and_grad(LL_func),
                         guess,
-                        args=(failures, right_censored),
+                        args=args,
                         jac=True,
                         method=optimizer,
                         bounds=bounds,
                     )
-                    guess = result.x
-                    LL2 = 2 * LL_func(guess, failures, right_censored)
+                    guess = result.x  # update the guess each iteration
+                    if ZI is True:
+                        LL2 = 2 * LL_func(guess, failures[failures==0], failures[failures>0], right_censored)
+                    else:
+                        LL2 = 2 * LL_func(guess, failures, right_censored)
                     LL_array.append(np.abs(LL2))
                     delta_LL = abs(LL_array[-1] - LL_array[-2])
-                    guess = result.x  # update the guess each iteration
             else:  # this will only be run for Weibull_2P, Normal_2P, and Lognormal_2P so the guess is structured with this in mind
                 bounds = [bounds[0]]
                 guess = [guess[0]]
@@ -4345,6 +4362,12 @@ class MLE_optimization:
             ]
         elif func_name == "Weibull_CR":
             bounds = [(0.0001, None), (0.0001, None), (0.0001, None), (0.0001, None)]
+        elif func_name == "Weibull_DSZI":
+            bounds = [(0.0001, None), (0.0001, None), (0.00001, 1), (0, 0.99999)]
+        elif func_name == "Weibull_DS":
+            bounds = [(0.0001, None), (0.0001, None), (0.00001, 1)]
+        elif func_name == "Weibull_ZI":
+            bounds = [(0.0001, None), (0.0001, None), (0, 0.99999)]
         else:
             raise ValueError(
                 'func_name is not recognised. Use the correct name e.g. "Weibull_2P"'
@@ -4397,6 +4420,7 @@ class MLE_optimization:
                 opt,
                 force_shape,
                 LL_func_force,
+                func_name,
             )
             ALL_successes.append(optim_results[0])
             ALL_loglik.append(optim_results[1])
@@ -4433,6 +4457,34 @@ class MLE_optimization:
                 self.beta_1 = initial_guess[1]
                 self.alpha_2 = initial_guess[2]
                 self.beta_2 = initial_guess[3]
+            elif func_name == "Weibull_DSZI":
+                colorprint(
+                    "WARNING: MLE estimates failed for Weibull_DSZI. The initial estimates have been returned. These results may not be as accurate as MLE. "
+                    + optimizers_tried_str,
+                    text_color="red",
+                )
+                self.alpha = initial_guess[0]
+                self.beta = initial_guess[1]
+                self.DS = initial_guess[2]
+                self.ZI = initial_guess[3]
+            elif func_name == "Weibull_DS":
+                colorprint(
+                    "WARNING: MLE estimates failed for Weibull_DS. The initial estimates have been returned. These results may not be as accurate as MLE. "
+                    + optimizers_tried_str,
+                    text_color="red",
+                )
+                self.alpha = initial_guess[0]
+                self.beta = initial_guess[1]
+                self.DS = initial_guess[2]
+            elif func_name == "Weibull_ZI":
+                colorprint(
+                    "WARNING: MLE estimates failed for Weibull_ZI. The initial estimates have been returned. These results may not be as accurate as MLE. "
+                    + optimizers_tried_str,
+                    text_color="red",
+                )
+                self.alpha = initial_guess[0]
+                self.beta = initial_guess[1]
+                self.ZI = initial_guess[2]
             else:
                 colorprint(
                     str(
@@ -4465,6 +4517,7 @@ class MLE_optimization:
         else:
             # at least one optimizer succeeded. Need to drop the failed ones then get the best of the successes
             items = np.arange(0, len(ALL_successes))[::-1]
+
             for i in items:
                 if ALL_successes[i] is not True:
                     ALL_successes.pop(i)
@@ -4488,6 +4541,19 @@ class MLE_optimization:
                 self.beta_1 = params[1]
                 self.alpha_2 = params[2]
                 self.beta_2 = params[3]
+            elif func_name == "Weibull_DSZI":
+                self.alpha = params[0]
+                self.beta = params[1]
+                self.DS = params[2]
+                self.ZI = params[3]
+            elif func_name == "Weibull_DS":
+                self.alpha = params[0]
+                self.beta = params[1]
+                self.DS = params[2]
+            elif func_name == "Weibull_ZI":
+                self.alpha = params[0]
+                self.beta = params[1]
+                self.ZI = params[2]
             else:
                 if force_shape is None:
                     self.scale = params[0]  # alpha, mu, Lambda

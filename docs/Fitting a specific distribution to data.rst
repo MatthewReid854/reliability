@@ -60,17 +60,18 @@ To learn how we can fit a distribution, we will start by using a simple example 
     '''
     Results from Fit_Weibull_2P (95% CI):
     Analysis method: Maximum Likelihood Estimation (MLE)
+    Optimizer: TNC
     Failures / Right censored: 30/0 (0% right censored) 
-
+    
     Parameter  Point Estimate  Standard Error  Lower CI  Upper CI
         Alpha          51.858         3.55628   45.3359   59.3183
          Beta         2.80086         0.41411   2.09624   3.74233 
-
+    
     Goodness of fit    Value
      Log-likelihood -129.063
                AICc   262.57
                 BIC  264.928
-                 AD  0.75981 
+                 AD 0.759805
     '''
 
 .. image:: images/Fit_Weibull_2P_V4.png
@@ -138,9 +139,9 @@ It is beneficial to see the effectiveness of the fitted distribution in comparis
     '''
     There are 118 right censored items.
     Fit_Weibull_3P parameters:
-    Alpha: 28.874785735505373 
-    Beta: 2.029498089503753 
-    Gamma 20.383929097802667
+    Alpha: 28.87474387333969 
+    Beta: 2.0294949463087324 
+    Gamma 20.383959526415147
     '''
 
 .. image:: images/Fit_Weibull_3P_right_cens_V5.png
@@ -183,20 +184,20 @@ As another example, we will fit a Gamma_2P distribution to some partially right 
 
     '''
     Fit_Gamma_2P parameters using 10 samples: 
-    Alpha: 19.42603055922681 
-    Beta: 4.690128012497702
-
+    Alpha: 19.424319786626086 
+    Beta: 4.69047083028225
+    
     Fit_Gamma_2P parameters using 100 samples: 
-    Alpha: 36.26422284804005 
-    Beta: 3.292936597081274
-
+    Alpha: 36.26414346544092 
+    Beta: 3.2929424158773286
+    
     Fit_Gamma_2P parameters using 1000 samples: 
-    Alpha: 28.82498806044018 
-    Beta: 4.0629588362011315
-
+    Alpha: 28.825239132661917 
+    Beta: 4.0629289662058365
+    
     Fit_Gamma_2P parameters using 10000 samples: 
-    Alpha: 30.301283878512486 
-    Beta: 3.960085127204732
+    Alpha: 30.30128521400655 
+    Beta: 3.9600849740612447
     '''
     
 .. image:: images/Fit_Gamma_2P_right_cens_V5.png
@@ -231,18 +232,19 @@ To obtain details of the percentiles (lower estimate, point estimate, upper esti
     '''
     Results from Fit_Weibull_2P (80% CI):
     Analysis method: Maximum Likelihood Estimation (MLE)
+    Optimizer: TNC
     Failures / Right censored: 50/0 (0% right censored) 
-
+    
     Parameter  Point Estimate  Standard Error  Lower CI  Upper CI
         Alpha         489.117         13.9217   471.597   507.288
-         Beta         5.20799         0.58927   4.50501   6.02067 
-
+         Beta         5.20798        0.589269     4.505   6.02066 
+    
     Goodness of fit    Value
      Log-likelihood -301.658
                AICc  607.571
                 BIC   611.14
-                 AD 0.482678 
-
+                 AD  0.48267 
+    
     Table of percentiles (80% CI bounds on time):
      Percentile  Lower Estimate  Point Estimate  Upper Estimate
               1         175.215         202.212         233.368
@@ -250,35 +252,36 @@ To obtain details of the percentiles (lower estimate, point estimate, upper esti
              10         292.686         317.508         344.435
              20         344.277         366.719         390.623
              25         363.578          385.05          407.79
-             50          437.69         455.879         474.823
-             75          502.94         520.776         539.244
-             80         517.547         535.916         554.937
-             90         553.267         574.067          595.65
+             50          437.69         455.879         474.824
+             75          502.94         520.776         539.245
+             80         517.547         535.917         554.938
+             90         553.267         574.068         595.651
              95         580.174          603.82          628.43
-             99         625.681         655.789         687.347 
-
+             99         625.682          655.79         687.347 
+    
     ----------------------------------------------------------
     Results from Fit_Weibull_2P (80% CI):
     Analysis method: Maximum Likelihood Estimation (MLE)
+    Optimizer: TNC
     Failures / Right censored: 50/0 (0% right censored) 
-
+    
     Parameter  Point Estimate  Standard Error  Lower CI  Upper CI
         Alpha         489.117         13.9217   471.597   507.288
-         Beta         5.20799         0.58927   4.50501   6.02067 
-
+         Beta         5.20798        0.589269     4.505   6.02066 
+    
     Goodness of fit    Value
      Log-likelihood -301.658
                AICc  607.571
                 BIC   611.14
-                 AD 0.482678 
-
+                 AD  0.48267 
+    
     Table of percentiles (80% CI bounds on time):
      Percentile  Lower Estimate  Point Estimate  Upper Estimate
               5         250.235         276.521         305.569
-             50          437.69         455.879         474.823
+             50          437.69         455.879         474.824
              95         580.174          603.82          628.43 
-
-    Lower estimates: [250.23463128 437.68995083 580.17387075]
+    
+    Lower estimates: [250.23461473 437.69015375 580.17421254]
     '''
 
 .. image:: images/weibull_percentiles.png
@@ -335,16 +338,16 @@ The following example shows how we can use Fit_Weibull_2P_grouped to fit a Weibu
 
     Results from Fit_Weibull_2P_grouped (95% CI):
     Analysis method: Maximum Likelihood Estimation (MLE)
+    Optimizer: TNC
     Failures / Right censored: 10/4072 (99.75502% right censored) 
-
+    
     Parameter  Point Estimate  Standard Error    Lower CI    Upper CI
-        Alpha     3.90796e+21     3.95972e+22 9.27216e+12 1.64709e+30
-         Beta        0.155525       0.0404882   0.0933691    0.259057 
-
+        Alpha     3.32225e+21     3.18953e+22 2.23595e+13 4.93629e+29
+         Beta        0.156165       0.0387594   0.0960103    0.254008 
+    
     Goodness of fit    Value
-     Log-likelihood -144.617
-               AICc  293.238
-                BIC  305.864
-                 AD  264.999 
-
+     Log-likelihood -144.618
+               AICc  293.239
+                BIC  305.865
+                 AD  264.999
     '''

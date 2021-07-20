@@ -89,25 +89,26 @@ In the following example, we will fit the Normal-Dual-Exponential model to an AL
     '''
     Results from Fit_Normal_Dual_Exponential (95% CI):
     Analysis method: Maximum Likelihood Estimation (MLE)
+    Optimizer: TNC
     Failures / Right censored: 12/0 (0% right censored) 
-
+    
     Parameter  Point Estimate  Standard Error    Lower CI  Upper CI
-            a         4056.06         752.956     2580.29   5531.83
-            b         2.98952        0.851787     1.32005   4.65899
-            c      0.00220833      0.00488708 2.88625e-05  0.168963
+            a         4056.06         752.936     2580.33   5531.78
+            b         2.98949        0.851782     1.32002   4.65895
+            c      0.00220837      0.00488704 2.88663e-05  0.168947
         sigma         87.3192          17.824     58.5274   130.275 
-
-     stress  original mu  original sigma  new mu  common sigma sigma change  acceleration factor
-     378, 3        273.5         98.7258   273.5       87.3192      -11.55%              5.81287
-     348, 5          463         81.8475     463       87.3192       +6.69%              3.43374
-     348, 3       689.75         80.1759  689.75       87.3192       +8.91%              2.30492
-
+    
+    stress  original mu  original sigma  new mu  common sigma sigma change  acceleration factor
+    378, 3        273.5         98.7256   273.5       87.3192      -11.55%              5.81285
+    348, 5          463         81.8474 463.001       87.3192       +6.69%              3.43371
+    348, 3       689.75          80.176 689.749       87.3192       +8.91%              2.30492
+    
      Goodness of fit    Value
      Log-likelihood -70.6621
                AICc  155.039
                 BIC  151.264 
-
-    At the use level stress of 330, 2.5, the mean life is 1589.82043
+    
+    At the use level stress of 330, 2.5, the mean life is 1589.81428
     '''
 
 .. image:: images/Normal_dual_exponential_probplot.png
@@ -144,28 +145,29 @@ Two of the outputs returned are the axes handles for the probability plot and th
     '''
     Results from Fit_Lognormal_Power_Exponential (95% CI):
     Analysis method: Maximum Likelihood Estimation (MLE)
+    Optimizer: TNC
     Failures / Right censored: 250/250 (50% right censored) 
-
+    
     Parameter  Point Estimate  Standard Error  Lower CI  Upper CI
-            a          192.66         36.7262   120.678   264.642
-            c         369.526         100.472   216.875   629.624
-            n       -0.463811        0.110597 -0.680578 -0.247044
-        sigma        0.466844        0.020649  0.428078  0.509122 
-
-      stress  original mu  original sigma  new mu  common sigma sigma change  acceleration factor
-     500, 12      5.11464        0.480696 5.14501      0.466844       -2.88%               4.6742
-      420, 9      5.46727        0.491475 5.35184      0.466844       -5.01%              3.80088
-      400, 8      5.34327        0.431199  5.4294      0.466844       +8.27%              3.51721
-      350, 6      5.64245        0.504774 5.63164      0.466844       -7.51%              2.87321
-     245, 10      5.61146        0.413335 5.63062      0.466844      +12.95%              2.87614
-
+            a         192.105         39.4889   114.708   269.502
+            c         451.448         134.274    252.02   808.687
+            n        -0.49196         0.12119 -0.729488 -0.254433
+        sigma        0.491052       0.0212103  0.451191  0.534433 
+    
+     stress  original mu  original sigma  new mu  common sigma sigma change  acceleration factor
+    500, 12      5.29465        0.496646  5.2742      0.491052       -1.13%              4.84765
+     420, 9      5.54536        0.525041 5.48891      0.491052       -6.47%              3.91096
+     400, 8      5.42988        0.392672 5.56972      0.491052      +25.05%              3.60733
+     350, 6      5.84254        0.550746 5.77986      0.491052      -10.84%              2.92364
+    245, 10      5.75338        0.457948 5.76378      0.491052       +7.23%              2.97102
+    
      Goodness of fit    Value
-     Log-likelihood -1562.46
-               AICc  3133.01
-                BIC  3149.79 
-
-    At the use level stress of 150, 3, the mean life is 894.30098
-
+     Log-likelihood -1596.29
+               AICc  3200.66
+                BIC  3217.44 
+    
+    At the use level stress of 150, 3, the mean life is 1067.69246
+    
     The mean life at use stress of the true model is: 992.7627728988726
     '''
 

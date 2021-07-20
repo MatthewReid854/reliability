@@ -81,7 +81,8 @@ def plotting_positions(failures=None, right_censored=None, a=None):
         to 1. For more heuristics, see:
         https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics
 
-    Returns:
+    Returns
+    -------
     (array(x),array(y)) : tuple
         a tuple of two arrays. The arrays provide the x and y plotting
         positions. The x array will match the failures parameter while the y
@@ -95,14 +96,14 @@ def plotting_positions(failures=None, right_censored=None, a=None):
 
     # error checking the input
     if type(failures) in [list, np.ndarray]:
-        f = failures
+        f = np.asarray(failures)
     else:
         raise ValueError("failures must be specified as an array or list")
 
     if type(right_censored) == type(None):
         rc = np.array([])
     elif type(right_censored) in [np.ndarray, list]:
-        rc = right_censored
+        rc = np.asarray(right_censored)
     else:
         raise ValueError("if specified, right_censored must be an array or list")
 
@@ -122,13 +123,14 @@ def plotting_positions(failures=None, right_censored=None, a=None):
     data = {"times": all_data, "cens_codes": cens_codes}
     df = pd.DataFrame(data, columns=["times", "cens_codes"])
     df_sorted = df.sort_values(by="times")
-    df_sorted["reverse_i"] = np.arange(1, len(all_data) + 1)[::-1]
+    df_sorted["reverse_i"] = np.arange(1, n + 1)[::-1]
     failure_rows = df_sorted.loc[df_sorted["cens_codes"] == 1.0]
     reverse_i = failure_rows["reverse_i"].values
-    c = list(df_sorted["cens_codes"].values)
-    leading_cens = c.index(1)
+    len_reverse_i = len(reverse_i)
+    leading_cens = np.where(df_sorted["cens_codes"].values == 1)[0][0]
+
     if leading_cens > 0:  # there are censored items before the first failure
-        k = np.arange(1, len(reverse_i) + 1)
+        k = np.arange(1, len_reverse_i + 1)
         adjusted_rank2 = [0]
         rank_increment = [leading_cens / (n - 1)]
         for j in k:
@@ -136,7 +138,7 @@ def plotting_positions(failures=None, right_censored=None, a=None):
             adjusted_rank2.append(adjusted_rank2[-1] + rank_increment[-1])
         adjusted_rank = adjusted_rank2[1:]
     else:  # the first item is a failure
-        k = np.arange(1, len(reverse_i))
+        k = np.arange(1, len_reverse_i)
         adjusted_rank = [1]
         rank_increment = [1]
         for j in k:

@@ -128,20 +128,21 @@ In this example, we will create some data using a competing risks model from two
 
     '''
     Results from Fit_Weibull_CR (95% CI):
-    Analysis method: MLE
+    Analysis method: Maximum Likelihood Estimation (MLE)
+    Optimizer: L-BFGS-B
     Failures / Right censored: 100/0 (0% right censored) 
-
+    
     Parameter  Point Estimate  Standard Error  Lower CI  Upper CI
       Alpha 1         55.2695         14.3883   33.1812   92.0615
        Beta 1         1.89484        0.452994   1.18598   3.02738
       Alpha 2          38.175         1.07992    36.116   40.3514
        Beta 2         7.97514         1.18035   5.96701   10.6591 
-
+    
     Goodness of fit    Value
      Log-likelihood -352.479
                AICc   713.38
                 BIC  723.379
-                 AD 0.390325 
+                 AD 0.390325
     '''
 
 .. image:: images/CR_fit_probplot2.png
@@ -180,43 +181,45 @@ In this example, we will compare the mixture model to the competing risks model.
 
     '''
     Results from Fit_Weibull_CR (95% CI):
-    Analysis method: MLE
+    Analysis method: Maximum Likelihood Estimation (MLE)
+    Optimizer: L-BFGS-B
     Failures / Right censored: 50/0 (0% right censored) 
-
+    
     Parameter  Point Estimate  Standard Error  Lower CI  Upper CI
       Alpha 1         229.868         51.2178   148.531   355.744
        Beta 1         2.50124        0.747103   1.39286   4.49162
       Alpha 2         199.717         8.56554   183.615   217.231
        Beta 2         9.20155         2.20135   5.75734   14.7062 
-
+    
     Goodness of fit    Value
      Log-likelihood -255.444
                AICc  519.777
                 BIC  526.536
                  AD 0.582534 
-
+    
     ----------------------------------------
     Results from Fit_Weibull_Mixture (95% CI):
-    Analysis method: MLE
+    Analysis method: Maximum Likelihood Estimation (MLE)
+    Optimizer: TNC
     Failures / Right censored: 50/0 (0% right censored) 
-
-        Parameter  Point Estimate  Standard Error  Lower CI  Upper CI
-          Alpha 1          100.43         12.4539   78.7606   128.061
-           Beta 1         4.07758         1.21231   2.27684   7.30253
-          Alpha 2         189.763         5.13941   179.952   200.108
-           Beta 2         7.70218         1.35191    5.4602   10.8647
-     Proportion 1        0.215596       0.0815977 0.0964594  0.414393 
-
+    
+       Parameter  Point Estimate  Standard Error  Lower CI  Upper CI
+         Alpha 1          100.43         12.4535    78.761    128.06
+          Beta 1         4.07764          1.2123   2.27689   7.30257
+         Alpha 2         189.763         5.13937   179.953   200.108
+          Beta 2         7.70223         1.35191   5.46024   10.8648
+    Proportion 1        0.215599       0.0815976 0.0964618  0.414394 
+    
     Goodness of fit    Value
      Log-likelihood -254.471
                AICc  520.306
                 BIC  528.503
-                 AD 0.529284 
-
+                 AD 0.529294 
+    
     ----------------------------------------
                  Model    AICc     BIC       AD
     0  Competing Risks 519.777 526.536 0.582534
-    1          Mixture 520.306 528.503 0.529284
+    1          Mixture 520.306 528.503 0.529294
     '''
 
 .. image:: images/CRvsMM_fitV4.png

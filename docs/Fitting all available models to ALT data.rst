@@ -73,33 +73,33 @@ In this first example, we will use `Fit_Everything_ALT` on some data that is gen
 
 .. code:: python
 
-     from reliability.Other_functions import make_ALT_data
-     from reliability.ALT_fitters import Fit_Everything_ALT
-
-     ALT_data = make_ALT_data(distribution='Normal',life_stress_model='Exponential',a=500,b=1000,sigma=500,stress_1=[500,400,350],number_of_samples=100,fraction_censored=0.2,seed=1)
-     Fit_Everything_ALT(failures=ALT_data.failures, failure_stress_1=ALT_data.failure_stresses, right_censored=ALT_data.right_censored, right_censored_stress_1=ALT_data.right_censored_stresses, use_level_stress=300)
+    from reliability.Other_functions import make_ALT_data
+    from reliability.ALT_fitters import Fit_Everything_ALT
+    
+    ALT_data = make_ALT_data(distribution='Normal',life_stress_model='Exponential',a=500,b=1000,sigma=500,stress_1=[500,400,350],number_of_samples=100,fraction_censored=0.2,seed=1)
+    Fit_Everything_ALT(failures=ALT_data.failures, failure_stress_1=ALT_data.failure_stresses, right_censored=ALT_data.right_censored, right_censored_stress_1=ALT_data.right_censored_stresses, use_level_stress=300)
      
-     '''
-     Results from Fit_Everything_ALT:
-     Analysis method: Maximum Likelihood Estimation (MLE)
-     Failures / Right censored: 240/60 (20% right censored) 
-
-                    ALT_model           a       b        c        n    beta    sigma  Log-likelihood    AICc     BIC
-           Normal_Exponential     501.729 985.894                            487.321        -1833.41 3672.89 3683.93
-                Normal_Eyring      88.928         -13.9268                   490.833        -1835.23 3676.53 3687.56
-                 Normal_Power 4.77851e+06                    -1.205          491.757        -1835.68 3677.45 3688.48
-        Lognormal_Exponential     502.086 974.987                           0.151077        -1840.03 3686.14 3697.17
-             Lognormal_Eyring     84.8059         -13.9272                  0.151992        -1841.54 3689.16 3700.19
-              Lognormal_Power 4.43489e+06                  -1.19428         0.152211        -1841.89 3689.87  3700.9
-          Weibull_Exponential     445.079 1206.61                    7.1223                 -1849.68 3705.44 3716.47
-               Weibull_Eyring     28.2064         -14.1399          7.05022                 -1851.94 3709.96 3720.99
-                Weibull_Power 4.43489e+06                  -1.18188 6.92681                 -1854.25 3714.57  3725.6
-      Exponential_Exponential     492.845  1118.8                                           -2214.88  4433.8 4441.16
-           Exponential_Eyring     74.9261         -14.0665                                  -2214.93 4433.91 4441.27
-            Exponential_Power 4.23394e+06                  -1.16747                         -2214.94 4433.93  4441.3 
-
-     At the use level stress of 300, the Normal_Exponential model has a mean life of 5249.98339
-     '''
+    '''
+    Results from Fit_Everything_ALT:
+    Analysis method: Maximum Likelihood Estimation (MLE)
+    Failures / Right censored: 240/60 (20% right censored) 
+    
+                  ALT_model           a       b        c        n    beta    sigma  Log-likelihood    AICc     BIC optimizer
+         Normal_Exponential     510.328 973.822                            486.137        -1832.21 3670.51 3681.54       TNC
+              Normal_Eyring     97.5819         -13.9143                   489.775        -1834.07 3674.22 3685.25       TNC
+               Normal_Power 5.47181e+06                  -1.22605           490.81        -1834.59 3675.26 3686.29       TNC
+      Lognormal_Exponential     511.939 960.359                           0.148961        -1838.87 3683.82 3694.85       TNC
+           Lognormal_Eyring     93.8622          -13.914                  0.149853        -1840.35 3686.78 3697.81       TNC
+            Lognormal_Power 5.12115e+06                  -1.21668         0.150092        -1840.74 3687.57  3698.6       TNC
+        Weibull_Exponential     452.154 1196.63                   7.06525                 -1852.39 3710.87  3721.9       TNC
+             Weibull_Eyring     35.0269         -14.1323           6.9927                  -1854.7 3715.47  3726.5       TNC
+              Weibull_Power 5.56179e+06                  -1.21792 6.85258                 -1857.75 3721.58 3732.61  L-BFGS-B
+    Exponential_Exponential     503.344 1098.06                                           -2216.57 4437.17 4444.54       TNC
+         Exponential_Eyring     85.4578         -14.0477                                  -2216.62 4437.27 4444.64       TNC
+          Exponential_Power 5.56179e+06                  -1.21159                         -2216.63  4437.3 4444.66  L-BFGS-B 
+    
+    At the use level stress of 300, the Normal_Exponential model has a mean life of 5336.48499
+    '''
 
 .. image:: images/Fit_everything_ALT_example1_grid.png
 
@@ -112,33 +112,33 @@ In this second example, we will repeat what we saw in Example 1, but this time w
 
 .. code:: python
 
-     from reliability.Other_functions import make_ALT_data
-     from reliability.ALT_fitters import Fit_Everything_ALT
+    from reliability.Other_functions import make_ALT_data
+    from reliability.ALT_fitters import Fit_Everything_ALT
 
-     ALT_data = make_ALT_data(distribution='Weibull', life_stress_model='Dual_Power', c=1e15, m=-4, n=-2, beta=2.5, stress_1=[500, 400, 350, 420, 245], stress_2=[12, 8, 6, 9, 10], number_of_samples=100, fraction_censored=0.2, seed=1)
-     Fit_Everything_ALT(failures=ALT_data.failures, failure_stress_1=ALT_data.failure_stresses_1, failure_stress_2=ALT_data.failure_stresses_2, right_censored=ALT_data.right_censored, right_censored_stress_1=ALT_data.right_censored_stresses_1,right_censored_stress_2=ALT_data.right_censored_stresses_2, use_level_stress=[250,7])
-     
-     '''
-     Results from Fit_Everything_ALT:
-     Analysis method: Maximum Likelihood Estimation (MLE)
-     Failures / Right censored: 400/100 (20% right censored) 
-
-                          ALT_model       a       b           c        m        n    beta    sigma  Log-likelihood    AICc     BIC
-                 Weibull_Dual_Power                 1.46475e+15  -4.1208 -1.84314 2.42854                 -2812.38 5632.85 5649.62
-          Weibull_Power_Exponential 1356.32              2254.3           -2.2797 2.42384                 -2813.37 5634.81 5651.59
-           Weibull_Dual_Exponential 1369.88 18.3903     1.79043                   2.37954                 -2820.27 5648.63  5665.4
-               Lognormal_Dual_Power                 1.55721e+15 -4.13775 -1.93076         0.517428        -2833.83 5675.75 5692.52
-        Lognormal_Power_Exponential 1362.75             2143.08          -2.37053         0.518215        -2834.45 5676.99 5693.77
-         Lognormal_Dual_Exponential 1382.88  19.206     1.24225                            0.52403        -2838.99 5686.05 5702.83
-             Exponential_Dual_Power                   1.733e+15 -4.13485 -1.89678                            -2995 5996.05 6008.65
-      Exponential_Power_Exponential  1361.7              2429.1          -2.33559                         -2995.18  5996.4    6009
-       Exponential_Dual_Exponential 1379.14 18.8852     1.59237                                           -2996.34 5998.72 6011.32
-            Normal_Dual_Exponential 1174.35 14.1571     5.26764                            599.737        -3170.79 6349.65 6366.43
-           Normal_Power_Exponential 1200.75              1565.9          -1.90507          600.014        -3171.18 6350.45 6367.22
-                  Normal_Dual_Power                 1.52648e+15 -4.14955 -1.91248          441.469        -3257.31  6522.7 6539.47 
-
-     At the use level stress of 250, 7, the Weibull_Dual_Power model has a mean life of 4725.71844
-     '''
+    ALT_data = make_ALT_data(distribution='Weibull', life_stress_model='Dual_Power', c=1e15, m=-4, n=-2, beta=2.5, stress_1=[500, 400, 350, 420, 245], stress_2=[12, 8, 6, 9, 10], number_of_samples=100, fraction_censored=0.2, seed=1)
+    Fit_Everything_ALT(failures=ALT_data.failures, failure_stress_1=ALT_data.failure_stresses_1, failure_stress_2=ALT_data.failure_stresses_2, right_censored=ALT_data.right_censored, right_censored_stress_1=ALT_data.right_censored_stresses_1,right_censored_stress_2=ALT_data.right_censored_stresses_2, use_level_stress=[250,7])
+    
+    '''
+    Results from Fit_Everything_ALT:
+    Analysis method: Maximum Likelihood Estimation (MLE)
+    Failures / Right censored: 400/100 (20% right censored) 
+    
+                        ALT_model       a       b           c        m        n    beta    sigma  Log-likelihood    AICc     BIC optimizer
+               Weibull_Dual_Power                 1.46794e+15 -4.09472 -1.89863 2.49644                 -2815.87 5639.82 5656.59       TNC
+        Weibull_Power_Exponential 1348.44             2675.53          -2.33209 2.49569                 -2816.33 5640.73 5657.51       TNC
+         Weibull_Dual_Exponential 1362.97 18.8418     1.79306                   2.45183                 -2822.88 5653.84 5670.62       TNC
+             Lognormal_Dual_Power                 1.47649e+15 -4.12473 -1.92408         0.510416        -2841.82 5691.72  5708.5       TNC
+      Lognormal_Power_Exponential 1358.86                2217          -2.36348         0.510473        -2841.93 5691.93 5708.71       TNC
+       Lognormal_Dual_Exponential 1378.59 19.2034     1.30704                           0.514815        -2845.56  5699.2 5715.98       TNC
+           Exponential_Dual_Power                 1.76808e+15 -4.13272 -1.89779                         -3007.17  6020.4 6032.99       TNC
+    Exponential_Power_Exponential 1361.03             2510.92          -2.33605                         -3007.29 6020.62 6033.22       TNC
+     Exponential_Dual_Exponential 1378.66 18.9113     1.63804                                           -3008.35 6022.75 6035.34       TNC
+          Normal_Dual_Exponential 1174.43 14.8298     5.00316                            604.207        -3172.69 6353.45 6370.23       TNC
+         Normal_Power_Exponential 1203.19             1954.03          -1.99859          604.571        -3173.15 6354.38 6371.16       TNC
+                Normal_Dual_Power                 1.13695e+15 -4.08012 -1.94369          450.658        -3256.12 6520.32 6537.09  L-BFGS-B 
+    
+    At the use level stress of 250, 7, the Weibull_Dual_Power model has a mean life of 4912.81077
+    '''
 
 .. image:: images/Fit_everything_ALT_example2_grid.png
 
@@ -151,33 +151,33 @@ In this third example, we will look at how to extract specific parameters from t
 
 .. code:: python
 
-     from reliability.Datasets import ALT_temperature
-     from reliability.ALT_fitters import Fit_Everything_ALT
+    from reliability.Datasets import ALT_temperature
+    from reliability.ALT_fitters import Fit_Everything_ALT
 
-     model = Fit_Everything_ALT(failures=ALT_temperature().failures, failure_stress_1=ALT_temperature().failure_stresses, right_censored=ALT_temperature().right_censored, right_censored_stress_1=ALT_temperature().right_censored_stresses,show_probability_plot=False,show_best_distribution_probability_plot=False)
-     print('The Lognormal_Power model parameters are:\n a:',model.Lognormal_Power_a,'\n n:',model.Lognormal_Power_n,'\n sigma:',model.Lognormal_Power_sigma)
+    model = Fit_Everything_ALT(failures=ALT_temperature().failures, failure_stress_1=ALT_temperature().failure_stresses, right_censored=ALT_temperature().right_censored, right_censored_stress_1=ALT_temperature().right_censored_stresses,show_probability_plot=False,show_best_distribution_probability_plot=False)
+    print('The Lognormal_Power model parameters are:\n a:',model.Lognormal_Power_a,'\n n:',model.Lognormal_Power_n,'\n sigma:',model.Lognormal_Power_sigma)
      
-     '''
-     Results from Fit_Everything_ALT:
-     Analysis method: Maximum Likelihood Estimation (MLE)
-     Failures / Right censored: 35/102 (74.45255474452554% right censored) 
-
-                    ALT_model           a       b        c        n    beta    sigma  Log-likelihood    AICc     BIC
-              Lognormal_Power 1.20893e+10                   -3.6399         0.961922        -339.183 684.546 693.126
-             Lognormal_Eyring     142.294         -9.94803                  0.976603        -339.835 685.851  694.43
-        Lognormal_Exponential     197.351 134.746                           0.986867        -340.144 686.468 695.047
-                Weibull_Power 2.47966e+10                  -3.73283 1.44884                  -340.39  686.96  695.54
-            Exponential_Power 3.08769e+12                  -4.85419                         -343.274 690.639 696.389
-               Weibull_Eyring     151.091         -10.1367          1.42117                 -341.206 688.592 697.171
-           Exponential_Eyring     211.096         -9.31393                                  -343.795 691.679  697.43
-      Exponential_Exponential     266.147 71.2215                                           -343.991 692.071 697.821
-          Weibull_Exponential     208.334 157.574                   1.39983                 -341.591 689.363 697.942
-                Normal_Eyring     37.0322         -11.7653                   2464.67        -353.919 714.018 722.598
-           Normal_Exponential     89.9062 855.006                            2439.04        -354.496 715.172 723.751
-                 Normal_Power      772496                  -1.48137          2464.82        -465.469 937.119 945.698 
-
-     The Lognormal_Power model parameters are:
-      a: 12089297805.310057 
-      n: -3.639895486209829 
-      sigma: 0.9619219995672486
-     '''
+    '''
+    Results from Fit_Everything_ALT:
+    Analysis method: Maximum Likelihood Estimation (MLE)
+    Failures / Right censored: 35/102 (74.45255474452554% right censored) 
+    
+                  ALT_model           a       b        c        n    beta    sigma  Log-likelihood    AICc     BIC optimizer
+            Lognormal_Power 1.21036e+10                  -3.64018         0.961968        -339.183 684.546 693.126       TNC
+           Lognormal_Eyring     142.294         -9.94803                  0.976603        -339.835 685.851  694.43  L-BFGS-B
+      Lognormal_Exponential     197.357 134.732                           0.986886        -340.144 686.468 695.047       TNC
+              Weibull_Power 2.52681e+10                  -3.73732 1.44776                  -340.39  686.96  695.54       TNC
+          Exponential_Power 3.08769e+12                  -4.85419                         -343.274 690.639 696.389       TNC
+             Weibull_Eyring     151.091         -10.1367          1.42117                 -341.206 688.592 697.171       TNC
+         Exponential_Eyring     211.096         -9.31393                                  -343.795 691.679  697.43       TNC
+    Exponential_Exponential     266.147 71.2215                                           -343.991 692.071 697.821       TNC
+        Weibull_Exponential     208.334 157.573                   1.39983                 -341.591 689.363 697.942       TNC
+              Normal_Eyring     37.0335         -11.7653                   2464.82        -353.919 714.018 722.598  L-BFGS-B
+         Normal_Exponential     89.9058 855.015                            2439.04        -354.496 715.172 723.751  L-BFGS-B
+               Normal_Power      772496                  -1.48137          2464.97        -465.464 937.109 945.688  L-BFGS-B 
+    
+    The Lognormal_Power model parameters are:
+     a: 12103627516.445246 
+     n: -3.6401834647746396 
+     sigma: 0.9619680090329055
+    '''

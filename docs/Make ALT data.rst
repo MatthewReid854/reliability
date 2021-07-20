@@ -27,24 +27,25 @@ In this first example we will create ALT data from a Weibull_Eyring model. To ve
     '''
     Results from Fit_Weibull_Eyring (95% CI):
     Analysis method: Maximum Likelihood Estimation (MLE)
+    Optimizer: TNC
     Failures / Right censored: 240/60 (20% right censored) 
-
+    
     Parameter  Point Estimate  Standard Error  Lower CI  Upper CI
-            a         1439.38         93.9075   1255.33   1623.44
-            c        -10.1164        0.233217  -10.5735  -9.65934
-         beta         1.89927       0.0908621   1.72928   2.08598 
-
+            a         1458.14         92.7751   1276.31   1639.98
+            c        -10.1231        0.230245  -10.5743   -9.6718
+         beta         1.92551       0.0921087   1.75318   2.11477 
+    
      stress  original alpha  original beta  new alpha  common beta beta change  acceleration factor
-        500         901.054        1.82169    880.592      1.89927      +4.26%              11.3589
-        400         2066.75        1.80167     2260.7      1.89927      +5.42%              4.42454
-        350         4479.57        2.09167    4320.06      1.89927       -9.2%              2.31537
-
-     Goodness of fit    Value
-     Log-likelihood -1994.75
-               AICc  3995.58
-                BIC  4006.61 
-
-    At the use level stress of 300, the mean life is 8875.99544
+        500         945.271        1.94553    920.348      1.92551      -1.03%              11.6466
+        400          2193.3        1.75376    2385.03      1.92551      +9.79%              4.49426
+        350         4822.96        2.11256    4588.29      1.92551      -8.85%              2.33615
+    
+     Goodness of fit   Value
+     Log-likelihood -2000.5
+               AICc 4007.09
+                BIC 4018.12 
+    
+    At the use level stress of 300, the mean life is 9507.77152
     '''
 
 Example 2
@@ -65,28 +66,29 @@ In this second example we will create ALT data from a Lognormal_Dual_Power model
     '''
     Results from Fit_Lognormal_Dual_Power (95% CI):
     Analysis method: Maximum Likelihood Estimation (MLE)
+    Optimizer: TNC
     Failures / Right censored: 250/250 (50% right censored) 
-
+    
     Parameter  Point Estimate  Standard Error    Lower CI    Upper CI
-            c     8.12819e+14     5.30872e+14 2.25971e+14 2.92371e+15
-            m        -3.98122        0.111488    -4.19973    -3.76271
-            n        -1.96541        0.112554    -2.18602    -1.74481
-        sigma        0.466856       0.0206494    0.428089    0.509135 
-
-      stress  original mu  original sigma  new mu  common sigma sigma change  acceleration factor
-     500, 12      4.67615        0.480696 4.70595      0.466856       -2.88%              45.5551
-      420, 9      6.08153        0.491475  5.9655      0.466856       -5.01%              12.9276
-      400, 8      6.30556        0.431199 6.39124      0.466856       +8.27%              8.44548
-      350, 6      7.49896        0.504774 7.48827      0.466856       -7.51%              2.81961
-     245, 10      7.88354        0.413335 7.90429      0.466856      +12.95%              1.86001
-
-     Goodness of fit   Value
-     Log-likelihood -1825.8
-               AICc 3659.69
-                BIC 3676.46 
-
-    At the use level stress of 250, 7, the mean life is 5618.65229
-
+            c     9.48288e+14     6.67128e+14 2.38844e+14 3.76502e+15
+            m         -3.9731         0.11982    -4.20795    -3.73826
+            n        -1.99518        0.123271    -2.23678    -1.75357
+        sigma        0.491039       0.0212097     0.45118    0.534419 
+    
+     stress  original mu  original sigma  new mu  common sigma sigma change  acceleration factor
+    500, 12      4.85616        0.496646 4.83656      0.491039       -1.13%              46.0321
+     420, 9      6.15963        0.525041 6.10326      0.491039       -6.48%                12.97
+     400, 8      6.39217        0.392671 6.53211      0.491039      +25.05%              8.44684
+     350, 6      7.69905        0.550747 7.63662      0.491039      -10.84%              2.79905
+    245, 10      8.02546        0.457947 8.03454      0.491039       +7.23%              1.88017
+    
+     Goodness of fit    Value
+     Log-likelihood -1859.62
+               AICc  3727.32
+                BIC   3744.1 
+    
+    At the use level stress of 250, 7, the mean life is 6545.04098
+    
     The mean life from the true model is 5920.122530308318
     '''
 

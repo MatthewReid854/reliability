@@ -907,30 +907,17 @@ class make_right_censored_data:
         if threshold is None:
             if seed is not None:
                 np.random.seed(seed)
-            data = list(data)
-            np.random.shuffle(
-                data
-            )  # randomize the order of the data in case it was ordered
+            # randomize the order of the data in case it was ordered
+            np.random.shuffle(data)
             # place a limit on the amount of the data that can be censored
-            if fraction_censored <= 0 or fraction_censored >= 1 or type(fraction_censored) not in [float,np.float_]:
+            if fraction_censored <= 0 or fraction_censored >= 1 or type(
+                    fraction_censored) not in [float, np.float_]:
                 raise ValueError(
                     "fraction_censored must be a float between 0 and 1. The default is 0.5 which will right censor half the data"
                 )
-            number_of_items_to_censor = np.floor(len(data) * fraction_censored)
-            right_censored = []
-            while len(right_censored) < number_of_items_to_censor:
-                item = data.pop(0)  # draw an item from the start of the list
-                th = np.random.rand() * max(
-                    data
-                )  # randomly choose a censoring time between 0 and the max of the data
-                if item > th:  # check if the item exceeds the threshold for censoring
-                    right_censored.append(th)  # if it does, censor at the threshold
-                else:
-                    data.append(
-                        item
-                    )  # if it doesn't, then return it to the end of the list in case it is needed for another draw
-            self.failures = np.array(data)  # what's leftover
-            self.right_censored = np.array(right_censored)
+            number_of_items_to_censor = int(np.floor(len(data) * fraction_censored))
+            self.right_censored = data[0:number_of_items_to_censor]*np.random.rand(number_of_items_to_censor)
+            self.failures = data[number_of_items_to_censor:]
 
         # singly censored
         else:

@@ -83,24 +83,25 @@ In the following example, we will fit the Weibull-Power model to an ALT dataset 
     '''
     Results from Fit_Weibull_Power (95% CI):
     Analysis method: Maximum Likelihood Estimation (MLE)
+    Optimizer: TNC
     Failures / Right censored: 13/5 (27.77778% right censored) 
-
-    Parameter  Point Estimate  Standard Error  Lower CI    Upper CI
-            a          398727          519977   30947.7 5.13716e+06
-            n        -1.41726         0.24427  -1.89602     -0.9385
-         beta         3.01734        0.716506    1.8945     4.80565 
-
+    
+    Parameter  Point Estimate  Standard Error  Lower CI   Upper CI
+            a          393440          508989   31166.6 4.9667e+06
+            n        -1.41476        0.242371   -1.8898  -0.939725
+         beta         3.01934        0.716268   1.89664    4.80662 
+    
      stress  original alpha  original beta  new alpha  common beta beta change  acceleration factor
-        300         116.173        3.01009    123.012      3.01734      +0.24%               9.7864
-        200         240.182        3.57635    218.532      3.01734     -15.63%              5.50878
-        100          557.42         2.6792    583.652      3.01734     +12.62%              2.06261
-
+        300         116.174        3.01009    123.123      3.01934      +0.31%              9.74714
+        200         240.182        3.57635    218.507      3.01934     -15.57%              5.49224
+        100          557.42         2.6792    582.575      3.01934      +12.7%              2.05998
+    
      Goodness of fit    Value
-     Log-likelihood -76.8541
-               AICc  161.422
+     Log-likelihood -76.8542
+               AICc  161.423
                 BIC  162.379 
 
-    At the use level stress of 60, the mean life is 1075.28447
+    At the use level stress of 60, the mean life is 1071.96438
     '''
     
 .. image:: images/Weibull_power_probplot.png
@@ -131,24 +132,25 @@ The results show that the fitted parameters agree well with the parameters we us
     '''
     Results from Fit_Exponential_Eyring (95% CI):
     Analysis method: Maximum Likelihood Estimation (MLE)
+    Optimizer: TNC
     Failures / Right censored: 240/60 (20% right censored) 
-
+    
     Parameter  Point Estimate  Standard Error  Lower CI  Upper CI
-            a         1527.06         180.149   1173.98   1880.15
-            c        -9.88429        0.446485  -10.7594  -9.00919 
-
+            a         1428.47         178.875   1077.88   1779.06
+            c        -10.2599        0.443394  -11.1289  -9.39085 
+    
      stress  weibull alpha  weibull beta  new 1/Lambda  common shape shape change  acceleration factor
-        500        849.177      0.951565       831.978             1       +5.09%              12.7676
-        400         1887.8      0.910453       2231.62             1       +9.84%              4.75994
-        350        4443.19       1.08453       4400.15             1       -7.79%              2.41409
-
+        500        1034.22      0.981495       994.473             1       +1.89%              11.1948
+        400        2149.92      0.877218       2539.17             1       +14.0%              4.38449
+        350        5251.88       1.07081       4833.32             1       -6.61%              2.30337
+    
      Goodness of fit    Value
-     Log-likelihood -2065.89
-               AICc  4135.83
-                BIC   4143.2 
-
-    At the use level stress of 300, the mean life is 10622.36269
-
+     Log-likelihood -2098.01
+               AICc  4200.06
+                BIC  4207.42 
+    
+    At the use level stress of 300, the mean life is 11132.94095
+    
     The mean life at use stress of the true model is: 10896.724574907037
     '''
 

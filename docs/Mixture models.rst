@@ -121,21 +121,22 @@ In this example, we will create some data using two Weibull distributions and th
 
     '''
     Results from Fit_Weibull_Mixture (95% CI):
-    Analysis method: MLE
+    Analysis method: Maximum Likelihood Estimation (MLE)
+    Optimizer: TNC
     Failures / Right censored: 100/0 (0% right censored) 
-
-        Parameter  Point Estimate  Standard Error  Lower CI  Upper CI
-          Alpha 1         8.65512        0.393835   7.91663   9.46249
-           Beta 1         3.91196        0.509775   3.03021   5.05029
-          Alpha 2         38.1103         1.41076   35.4432   40.9781
-           Beta 2         3.82192        0.421384   3.07917   4.74385
-     Proportion 1        0.388491       0.0502663  0.295595  0.490263 
-
+    
+       Parameter  Point Estimate  Standard Error  Lower CI  Upper CI
+         Alpha 1         8.65511        0.393835   7.91663   9.46248
+          Beta 1         3.91197        0.509776   3.03021    5.0503
+         Alpha 2         38.1103         1.41075   35.4431   40.9781
+          Beta 2         3.82192        0.421385   3.07916   4.74385
+    Proportion 1        0.388491       0.0502663  0.295595  0.490263 
+    
     Goodness of fit    Value
      Log-likelihood -375.991
                AICc  762.619
                 BIC  775.007
-                 AD 0.418645 
+                 AD 0.418649 
     '''
 
 .. image:: images/Weibull_Mixture_V6.png
@@ -175,8 +176,8 @@ In this example, we will compare how well the Weibull Mixture performs vs a sing
     plt.show()
 
     '''
-    Weibull_Mixture BIC: 6431.578404093574 
-    Weibull_2P BIC: 6511.51175959736
+    Weibull_Mixture BIC: 6431.578404181696 
+    Weibull_2P BIC: 6511.511759597337
     '''
 
 .. image:: images/Weibull_mixture_vs_Weibull_2P_V5.png
