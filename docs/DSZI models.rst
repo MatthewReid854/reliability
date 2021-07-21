@@ -109,6 +109,7 @@ The three Fitters available are Fit_Weibull_DS, Fit_Weibull_ZI, and Fit_Weibull_
 If your data contains zeros then only the Fit_Weibull_ZI and Fit_Weibull_DSZI fitters are appropriate. Using anything else will cause the zeros to be automatically removed and a warning to be printed.
 Fit_Weibull_ZI does not mandate that the failures contain zeros, but if failures does not contain zeros then ZI will be 0 and the alpha and beta parameters will be equivalent to the results from Fit_Weibull_2P.
 Fit_Weibull_DS does not mandate that right_censored data is provided, but if right_censored data is not provided then DS will be 1 and the alpha and beta parameters will be equivalent to the results from Fit_Weibull_2P.
+Fit_Weibull_DSZI does not mandate that failures contain zeros or that right_censored data is provided. If right_censored data is not provided then DS will be 1. If failures does not contain zeros then ZI will be 0. If failures does not contain zeros and no right censored data is provided then DS will be 1, ZI will be 0 and the alpha and beta parameters will be equivalent to the results from Fit_Weibull_2P.
 
 Example 3
 ---------
@@ -271,4 +272,53 @@ In addition the the visual proof provided by the probability plot (left) and the
 Example 6
 ---------
 
-This will be written soon and will show how to use Fit_Weibull_DSZI, which is a four parameter model including both the DS and ZI parameters.
+In this example we will create a DSZI model with DS=0.7 and ZI=0.2.
+Based on these parameters, we expect the random samples to be around 70% failures and of those failures 20% of the total samples (failures + right censored) should be zeros due to the zero inflated fraction.
+We draw the random samples from the model and then fit a Weibull_DSZI model to the data.
+The result is surprisingly accurate showing DS=0.700005 and ZI=0.22, with the alpha and beta parameters closely resembling the parameters of the input Weibull Distribution.
+The plot below shows the CDF on the Weibull probability plot (top) and on linear axes (bottom) which each provide a different perspective of how the distribution models the failure points.
+
+.. code:: python
+    
+    from reliability.Distributions import DSZI_Model, Weibull_Distribution
+    from reliability.Probability_plotting import plot_points
+    import matplotlib.pyplot as plt
+    from reliability.Fitters import Fit_Weibull_DSZI
+    
+    model = DSZI_Model(distribution=Weibull_Distribution(alpha=1200,beta=3),DS=0.7,ZI=0.2)
+    failures, right_censored = model.random_samples(100,seed=5,right_censored_time=3000)
+    
+    plt.subplot(211)
+    fit = Fit_Weibull_DSZI(failures=failures,right_censored=right_censored,show_probability_plot=True)
+    model.CDF(label='true model')
+    plt.legend()
+    
+    plt.subplot(212)
+    fit.distribution.CDF(label='fitted Weibull_DSZI')
+    model.CDF(label='true model')
+    plot_points(failures=failures,right_censored=right_censored)
+    plt.tight_layout()
+    plt.show()
+
+    '''
+    Results from Fit_Weibull_DSZI (95% CI):
+    Analysis method: Maximum Likelihood Estimation (MLE)
+    Optimizer: TNC
+    Failures / Right censored: 70/30 (30% right censored) 
+    
+    Parameter  Point Estimate  Standard Error  Lower CI  Upper CI
+        Alpha         1170.12         68.0933   1043.99   1311.49
+         Beta         2.60255        0.299069   2.07771   3.25997
+           DS        0.700005        0.045826  0.603391  0.781602
+           ZI            0.22       0.0414247  0.149465  0.311627 
+    
+    Goodness of fit    Value
+     Log-likelihood -463.613
+               AICc  935.647
+                BIC  945.646
+                 AD  166.025 
+    '''
+
+.. image:: images/DSZI_example6.png
+
+The DSZI model is a model of my own making. It combines the well established DS and ZI models together for the first time to enable heavily right censored data to be modelled using a DS distribution while also allowing for zero inflation of the failures.

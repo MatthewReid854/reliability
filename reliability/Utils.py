@@ -1380,7 +1380,7 @@ class fitters_input_checking:
                 )  # autograd needs floats. crashes with ints
 
         # minimum number of failures checking
-        if dist in ["Weibull_3P", "Gamma_3P", "Lognormal_3P", "Loglogistic_3P", "Weibull_DS", "Weibull_DSZI"]:
+        if dist in ["Weibull_3P", "Gamma_3P", "Lognormal_3P", "Loglogistic_3P"]:
             min_failures = 3
         elif dist in [
             "Weibull_2P",
@@ -1393,6 +1393,8 @@ class fitters_input_checking:
             "Exponential_2P",
             "Everything",
             "Weibull_ZI",
+            "Weibull_DS",
+            "Weibull_DSZI",
         ]:
             if force_sigma is None and force_beta is None:
                 min_failures = 2
@@ -4285,15 +4287,15 @@ class MLE_optimization:
             LL_array = [1000000]
             runs = 0
 
-            if func_name == "Weibull_ZI":
+            if func_name in ["Weibull_ZI", "Weibull_DSZI"]:
                 ZI = True
             else:
                 ZI = False
 
-            if ZI is True: # ZI distribution
-                args = (failures[failures==0],failures[failures>0], right_censored)
+            if ZI is True:  # Zero Inflated distribution (applies to ZI and DSZI)
+                args = (failures[failures == 0], failures[failures > 0], right_censored)
             else:
-                args=(failures, right_censored)
+                args = (failures, right_censored)
 
             if force_shape is None:
                 while delta_LL > 0.001 and runs < 5:
@@ -4309,7 +4311,12 @@ class MLE_optimization:
                     )
                     guess = result.x  # update the guess each iteration
                     if ZI is True:
-                        LL2 = 2 * LL_func(guess, failures[failures==0], failures[failures>0], right_censored)
+                        LL2 = 2 * LL_func(
+                            guess,
+                            failures[failures == 0],
+                            failures[failures > 0],
+                            right_censored,
+                        )
                     else:
                         LL2 = 2 * LL_func(guess, failures, right_censored)
                     LL_array.append(np.abs(LL2))

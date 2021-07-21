@@ -21,6 +21,7 @@ Detailed documentation and examples are available at [readthedocs](https://relia
 ## Key features
 - Fitting probability distributions to data including right censored data
 - Fitting Weibull mixture models and Weibull Competing risks models
+- Fitting Weibull Defective Subpopulation (DS), Weibull Zero Inflated (ZI) models, and Weibull Defective Subpopulation Zero Inflated (DSZI) models
 - Calculating the probability of failure for stress-strength interference between any combination of the supported distributions
 - Support for Exponential, Weibull, Gamma, Gumbel, Normal, Lognormal, Loglogistic, and Beta probability distributions
 - Mean residual life, quantiles, descriptive statistics summaries, random sampling from distributions

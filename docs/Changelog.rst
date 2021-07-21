@@ -18,7 +18,7 @@ Changelog
 
 -    Ability to specify "best" optimizer will result in multiple optimizers being tried and the best result being used. Optimizers tried are "L-BFGS-B", "TNC", "powell" and "nelder-mead". For more detail see the documentation on `Optimizers <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
 -    DSZI_Model has been added to the Distributions module. This model allows for the CDF to start above 0 and finish below 1.
--    Fitters for DSZI models, including Fit_Weibull_DS and Fit_Weibull_ZI
+-    Fitters for DSZI models, including Fit_Weibull_DS, Fit_Weibull_ZI, Fit_Weibull_DSZI
 
 **API Changes**
 
