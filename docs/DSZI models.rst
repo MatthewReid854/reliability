@@ -101,7 +101,7 @@ Fitting a DSZI model
 
 .. admonition:: API Reference
 
-   For inputs and outputs see the API reference for `Fit_Weibull_DS <https://reliability.readthedocs.io/en/latest/API/Fitters/Fit_Weibull_DS.html>`_ and `Fit_Weibull_ZI <https://reliability.readthedocs.io/en/latest/API/Fitters/Fit_Weibull_ZI.html>`_.
+   For inputs and outputs see the API reference for `Fit_Weibull_DS <https://reliability.readthedocs.io/en/latest/API/Fitters/Fit_Weibull_DS.html>`_, `Fit_Weibull_ZI <https://reliability.readthedocs.io/en/latest/API/Fitters/Fit_Weibull_ZI.html>`_, and `Fit_Weibull_DSZI <https://reliability.readthedocs.io/en/latest/API/Fitters/Fit_Weibull_DSZI.html>`_.
 
 As we saw above, the DSZI_Model can be either DS, ZI, or DSZI depending on the values of the DS and ZI parameters.
 Within the Fitters module, three functions are offered, one of each of these cases with the Weibull_2P distribution as the base distribution.

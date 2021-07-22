@@ -7,7 +7,7 @@ with open("README.md", "r") as file:
 
 setuptools.setup(
     name="reliability",
-    version="0.5.8",
+    version="0.6.0",
     description="Reliability Engineering toolkit for Python",
     author="Matthew Reid",
     author_email="alpha.reliability@gmail.com",
@@ -54,6 +54,13 @@ setuptools.setup(
         "mean",
         "cumulative",
         "CIF",
+        "DS",
+        "ZI",
+        "defective",
+        "subpopulation",
+        "zero",
+        "inflated",
+        "DSZI",
     ],
     long_description=long_description,
     long_description_content_type="text/markdown",

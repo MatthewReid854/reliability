@@ -25,3 +25,4 @@ The current release schedule is approximately every 6 to 8 weeks.
 -    New reliability growth models. Currently there is only the Duane model. It is planned to include the Crow Extended and AMSAA PM2 models.
 -    Cox Proportional Hazards Model - This is available in `Lifelines <https://lifelines.readthedocs.io/en/latest/Survival%20Regression.html#cox-s-proportional-hazard-model>`_.
 -    Add `step-stress models <http://reliawiki.com/index.php/Time-Varying_Stress_Models>`_ to ALT models.
+-    Confidence intervals for Mixture Model, Competing Risks Model, DS model, ZI model, and DSZI model.
