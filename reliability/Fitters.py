@@ -4106,7 +4106,7 @@ class Fit_Weibull_DSZI:
                 show_scatter_points=False,
                 **kwargs,
             )
-            plot_points(failures=failures, right_censored=right_censored, **kwargs)
+
             if "label" in kwargs:
                 label_str = kwargs.pop("label")
             else:
@@ -4122,6 +4122,8 @@ class Fit_Weibull_DSZI:
                     + str(round_to_decimals(self.ZI, dec))
                     + ")"
                 )
+            plot_points(failures=failures, right_censored=right_censored, **kwargs)
+
             xvals = np.logspace(
                 np.log10(min(failures_no_zeros)) - 3,
                 np.log10(max(failures_no_zeros)) + 1,
@@ -4750,7 +4752,6 @@ class Fit_Weibull_ZI:
                 show_scatter_points=False,
                 **kwargs,
             )
-            plot_points(failures=failures, right_censored=right_censored, **kwargs)
             if "label" in kwargs:
                 label_str = kwargs.pop("label")
             else:
@@ -4764,6 +4765,7 @@ class Fit_Weibull_ZI:
                     + str(round_to_decimals(self.ZI, dec))
                     + ")"
                 )
+            plot_points(failures=failures, right_censored=right_censored, **kwargs)
             xvals = np.logspace(
                 np.log10(min(failures_no_zeros)) - 3,
                 np.log10(max(failures_no_zeros)) + 1,
