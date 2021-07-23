@@ -5,9 +5,6 @@
 Optimizers
 ''''''''''
 
-.. Note::
-   This documentation applies to version 0.6.0 (currently unreleased). Prior to version 0.6.0, the default optimizer is L-BFGS-B below 97% censored data and TNC above 97% censored data, and the nelder-mead optimizer was not available as a bounded optimizer. The option to specify "best" for the optimizer is new in version 0.6.0.
-
 **What is an optimizer?**
 
 An optimizer is an algorithm that uses two primary inputs; a target function and an initial guess. The optimizer's job is to figure out which input to the target function will minimise the output of the target function.
