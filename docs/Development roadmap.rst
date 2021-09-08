@@ -11,7 +11,7 @@ This roadmap is regularly changing and you may see some things remain on here fo
 If you have a suggested feature or you find a bug, please raise an `Issue <https://github.com/MatthewReid854/reliability/issues>`_ on Github or email me (alpha.reliability@gmail.com) and I will endeavour to either add it rapidly (for simple tasks and bug fixes) or add it to the roadmap.
 The current release schedule is approximately every 6 to 8 weeks.
 
-**Planned for version 0.7.0 (around October 2021)**
+**Planned for version 0.8.0 (around Oct/Nov 2021)**
 
 -    Correct the formatting in the API docs for every function - still need to do ALT_Fitters, Convert_data, Datasets, PoF, and Utils
 -    Within all fitters, use the FNRN format to give speed improvements in the same way as Fit_Weibull_2P_grouped works internally. This will subsequently result in the deprecation of Fit_Weibull_2P_grouped once its advantage is integrated in Fit_Weibull_2P. Need to confirm this method does not introduce too much cumulative error due to floating point precision limitations.

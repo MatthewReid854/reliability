@@ -765,15 +765,14 @@ class strain_life_diagram:
             raise ValueError(
                 "K and n must be specified if you specify max_stress or max_strain. These values are required to calculate the corresponding stress or strain"
             )
-        if mean_stress_correction_method not in ["morrow", "modified_morrow", "SWT"]:
+        if mean_stress_correction_method not in [
+            "morrow",
+            "modified_morrow",
+            "modified morrow",
+            "SWT",
+        ]:
             raise ValueError(
-                "mean_stress_correction_method must be either "
-                "morrow"
-                ","
-                "modified_morrow"
-                ",or "
-                "SWT"
-                "."
+                "mean_stress_correction_method must be either 'morrow', 'modified_morrow', or 'SWT'"
             )
 
         self.sigma_f = sigma_f
@@ -808,16 +807,15 @@ class strain_life_diagram:
                 fun_min_strain = lambda x: ramberg_osgood(
                     epsilon=self.min_strain, sigma=x, E=E, K=K, n=n
                 )
-                self.max_stress = fsolve(fun_max_strain, np.array(100))
-                self.min_stress = fsolve(fun_min_strain, np.array(-100))
+                self.max_stress = fsolve(fun_max_strain, np.array(100))[0]
+                self.min_stress = fsolve(fun_min_strain, np.array(-100))[0]
 
-            mean_stress = (self.min_stress + (self.max_stress - self.min_stress) / 2)[0]
+            mean_stress = self.min_stress + (self.max_stress - self.min_stress) / 2
             delta_epsilon_half = (self.max_strain - self.min_strain) / 2
 
             # solve for number of cycles and the plot parameters
             cycles_2Nf_array = np.logspace(1, 8, 1000)
             if mean_stress == 0:
-                print("here")
 
                 def coffin_manson(eps_tot, sigma_f, E, cycles_2Nf, epsilon_f, b, c):
                     return (
@@ -914,7 +912,10 @@ class strain_life_diagram:
                         (self.sigma_f - mean_stress) / E
                     ) * cycles_2Nf_array ** self.b
 
-                elif mean_stress_correction_method == "modified_morrow":
+                elif mean_stress_correction_method in [
+                    "modified_morrow",
+                    "modified morrow",
+                ]:
 
                     def modified_morrow(
                         eps_tot, sigma_f, sigma_mean, E, cycles_2Nf, epsilon_f, b, c
@@ -1033,7 +1034,7 @@ class strain_life_diagram:
                     ) / self.max_stress
                     equation_str = str(
                         r"$\epsilon_{tot} = \frac{1}{"
-                        + str(round(self.max_stress[0], 4))
+                        + str(round(self.max_stress, 4))
                         + "}"
                         + r"(\frac{"
                         + str(round(self.sigma_f, 4))

@@ -217,3 +217,48 @@ Example 7
     plt.show()
 
 .. image:: images/probability_plotting_good_and_bad_V6.png
+
+Downsampling the scatterplot
+----------------------------
+
+When matplotlib is asked to plot large datasets (thousands of items), it can become very slow to generate the plot. To show probability plots when fitting distributions to large datasets, `reliability` allows for the scatterplot to be downsampled.
+
+Downsampling only affects the scatterplot, not the calculations. It is applied automatically for all probability plots (including when these plots are generated as an output from the Fitters), but can be controlled using the "downsample_scatterplot" keyword.
+
+If "downsample_scatterplot" is True or None, and there are over 1000 points, then the scatterplot will be downsampled by a factor. The default downsample factor will seek to produce between 500 and 1000 points. If a number is specified, it will be used as the downsample factor. FOr example, if 2 is specified then every 2nd point will be displayed, whereas if 3 is specified then every 3rd point will be displayed.
+
+The min and max points will always be retained in the downsampled scatterplot which helps to preserve the plotting range.
+
+See the `API <https://reliability.readthedocs.io/en/latest/API%20reference.html>`_ documentation for more detail on the default in each function.
+
+Example 8
+---------
+
+In this example, we will see how downsampling affects the probability plot for a dataset with 100000 datapoints.
+
+.. code:: python
+
+    from reliability.Fitters import Fit_Weibull_2P
+    from reliability.Distributions import Weibull_Distribution
+    import matplotlib.pyplot as plt
+    
+    data = Weibull_Distribution(alpha=2000,beta=2).random_samples(100000,seed=1)
+    
+    plt.subplot(131)
+    Fit_Weibull_2P(failures=data,print_results=False,downsample_scatterplot=False)
+    plt.title('Downsampling is turned off \n All points are shown')
+    
+    plt.subplot(132)
+    Fit_Weibull_2P(failures=data,print_results=False)
+    plt.title('Downsampling is applied by default\nThe downsampling factor is chosen to\ndisplay between 500 and 1000 points')
+    
+    plt.subplot(133)
+    Fit_Weibull_2P(failures=data,print_results=False,downsample_scatterplot=10000)
+    plt.title('Downsampling is forced to show\nevery 10000th point resulting\nin 10 points displayed')
+    
+    plt.gcf().set_size_inches(14,8)
+    plt.tight_layout()
+    plt.show()
+
+.. image:: images/downsampling.png
+

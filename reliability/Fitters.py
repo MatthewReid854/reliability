@@ -19,6 +19,9 @@ Fit_Loglogistic_2P
 Fit_Loglogistic_3P
 Fit_Weibull_Mixture
 Fit_Weibull_CR
+Fit_Weibull_DS
+Fit_Weibull_ZI
+Fit_Weibull_DSZI
 
 Note that the Beta distribution is only for data in the range 0 < t < 1.
 There is also a Fit_Everything function which will fit all distributions (except
@@ -66,6 +69,7 @@ from reliability.Utils import (
     least_squares,
     MLE_optimization,
     LS_optimization,
+    xy_downsample,
 )
 import autograd.numpy as anp
 from autograd import value_and_grad
@@ -138,6 +142,13 @@ class Fit_Everything:
         optimizer fails, the initial guess will be returned.
         For more detail see the `documentation
         <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
+    downsample_scatterplot : bool, int, optional
+        If True or None, and there are over 1000 points, then the scatterplot
+        will be downsampled by a factor. The default downsample factor will seek
+        to produce between 500 and 1000 points. If a number is specified, it
+        will be used as the downsample factor. Default is True. This
+        functionality makes plotting faster when there are very large numbers of
+        points. It only affects the scatterplot not the calculations.
 
     Returns
     -------
@@ -191,6 +202,7 @@ class Fit_Everything:
         show_PP_plot=True,
         show_probability_plot=True,
         show_best_distribution_probability_plot=True,
+        downsample_scatterplot=True,
     ):
 
         inputs = fitters_input_checking(
@@ -232,15 +244,13 @@ class Fit_Everything:
         self.failures = failures
         self.right_censored = right_censored
         self._all_data = np.hstack([failures, right_censored])
-        self._frac_fail = len(failures) / len(
-            self._all_data
-        )  # This is used for scaling the histogram when there is censored data
-        self._frac_cens = len(right_censored) / len(
-            self._all_data
-        )  # This is used for reporting the fraction censored in the printed output
-        d = sorted(
-            self._all_data
-        )  # sorting the failure data is necessary for plotting quantiles in order
+        # This is used for scaling the histogram when there is censored data
+        self._frac_fail = len(failures) / len(self._all_data)
+        # This is used for reporting the fraction censored in the printed output
+        self._frac_cens = len(right_censored) / len(self._all_data)
+        # sorting the failure data is necessary for plotting quantiles in order
+        d = sorted(self._all_data)
+        self.__downsample_scatterplot = downsample_scatterplot
 
         if exclude is None:
             exclude = []
@@ -252,7 +262,14 @@ class Fit_Everything:
             )
         if len(failures) < 3:
             exclude.extend(
-                ["Weibull_3P", "Gamma_3P", "Loglogistic_3P", "Lognormal_3P"]
+                [
+                    "Weibull_3P",
+                    "Gamma_3P",
+                    "Loglogistic_3P",
+                    "Lognormal_3P",
+                    "Weibull_Mixture",
+                    "Weibull_CR",
+                ]
             )  # do not fit the 3P distributions if there are only 2 failures
         # flexible name checking for excluded distributions
         excluded_distributions = []
@@ -261,7 +278,7 @@ class Fit_Everything:
             if type(item) not in [str, np.str_]:
                 raise ValueError(
                     "exclude must be a list or array of strings that specified the distributions to be excluded from fitting. Available strings are:"
-                    "\nWeibull_2P\nWeibull_3P\nNormal_2P\nGamma_2P\nLoglogistic_2P\nGamma_3P\nLognormal_2P\nLognormal_3P\nLoglogistic_3P\nGumbel_2P\nExponential_2P\nExponential_1P\nBeta_2P"
+                    "\nWeibull_2P\nWeibull_3P\nNormal_2P\nGamma_2P\nLoglogistic_2P\nGamma_3P\nLognormal_2P\nLognormal_3P\nLoglogistic_3P\nGumbel_2P\nExponential_2P\nExponential_1P\nBeta_2P\nWeibull_Mixture\nWeibull_CR\nWeibull_DS"
                 )
             if item.upper() in ["WEIBULL_2P", "WEIBULL2P", "WEIBULL2"]:
                 excluded_distributions.append("Weibull_2P")
@@ -303,6 +320,31 @@ class Fit_Everything:
                 excluded_distributions.append("Loglogistic_3P")
             elif item.upper() in ["BETA_2P", "BETA2P", "BETA2"]:
                 excluded_distributions.append("Beta_2P")
+            elif item.upper() in [
+                "WEIBULLMIXTURE",
+                "WEIBULL_MIXTURE",
+                "MIXTURE",
+                "WEIBULLMIX",
+                "WEIBULL_MIX",
+                "MIX",
+            ]:
+                excluded_distributions.append("Weibull_Mixture")
+            elif item.upper() in [
+                "WEIBULLCR",
+                "WEIBULL_CR",
+                "WEIBULL_COMPETING_RISKS",
+                "WEIBULL_COMPETINGRISKS",
+                "WEIBULLCOMPETINGRISKS",
+            ]:
+                excluded_distributions.append("Weibull_CR")
+            elif item.upper() in [
+                "WEIBULLDS",
+                "WEIBULL_DS",
+                "WEIBULL_DEFECTIVE_SUBPOPULATION",
+                "WEIBULL_DEFECTIVESUBPOPULATION",
+                "WEIBULLDEFECTIVESUBPOPULATION",
+            ]:
+                excluded_distributions.append("Weibull_DS")
             else:
                 unknown_exclusions.append(item)
         if len(unknown_exclusions) > 0:
@@ -314,7 +356,7 @@ class Fit_Everything:
                 text_color="red",
             )
             colorprint(
-                "Available distributions to exclude are: Weibull_2P, Weibull_3P, Normal_2P, Gamma_2P, Loglogistic_2P, Gamma_3P, Lognormal_2P, Lognormal_3P, Loglogistic_3P, Gumbel_2P, Exponential_2P, Exponential_1P, Beta_2P",
+                "Available distributions to exclude are: Weibull_2P, Weibull_3P, Normal_2P, Gamma_2P, Loglogistic_2P, Gamma_3P, Lognormal_2P, Lognormal_3P, Loglogistic_3P, Gumbel_2P, Exponential_2P, Exponential_1P, Beta_2P, Weibull_Mixture, Weibull_CR, Weibull_DS",
                 text_color="red",
             )
         if (
@@ -331,6 +373,12 @@ class Fit_Everything:
                 "Alpha",
                 "Beta",
                 "Gamma",
+                "Alpha 1",
+                "Beta 1",
+                "Alpha 2",
+                "Beta 2",
+                "Proportion 1",
+                "DS",
                 "Mu",
                 "Sigma",
                 "Lambda",
@@ -368,6 +416,12 @@ class Fit_Everything:
                     "Alpha": self.Weibull_3P_alpha,
                     "Beta": self.Weibull_3P_beta,
                     "Gamma": self.Weibull_3P_gamma,
+                    "Alpha 1": "",
+                    "Beta 1": "",
+                    "Alpha 2": "",
+                    "Beta 2": "",
+                    "Proportion 1": "",
+                    "DS": "",
                     "Mu": "",
                     "Sigma": "",
                     "Lambda": "",
@@ -407,6 +461,12 @@ class Fit_Everything:
                     "Alpha": self.Gamma_3P_alpha,
                     "Beta": self.Gamma_3P_beta,
                     "Gamma": self.Gamma_3P_gamma,
+                    "Alpha 1": "",
+                    "Beta 1": "",
+                    "Alpha 2": "",
+                    "Beta 2": "",
+                    "Proportion 1": "",
+                    "DS": "",
                     "Mu": "",
                     "Sigma": "",
                     "Lambda": "",
@@ -444,6 +504,12 @@ class Fit_Everything:
                     "Alpha": "",
                     "Beta": "",
                     "Gamma": self.Exponential_2P_gamma,
+                    "Alpha 1": "",
+                    "Beta 1": "",
+                    "Alpha 2": "",
+                    "Beta 2": "",
+                    "Proportion 1": "",
+                    "DS": "",
                     "Mu": "",
                     "Sigma": "",
                     "Lambda": self.Exponential_2P_lambda,
@@ -482,6 +548,12 @@ class Fit_Everything:
                     "Alpha": "",
                     "Beta": "",
                     "Gamma": self.Lognormal_3P_gamma,
+                    "Alpha 1": "",
+                    "Beta 1": "",
+                    "Alpha 2": "",
+                    "Beta 2": "",
+                    "Proportion 1": "",
+                    "DS": "",
                     "Mu": self.Lognormal_3P_mu,
                     "Sigma": self.Lognormal_3P_sigma,
                     "Lambda": "",
@@ -519,6 +591,12 @@ class Fit_Everything:
                     "Alpha": "",
                     "Beta": "",
                     "Gamma": "",
+                    "Alpha 1": "",
+                    "Beta 1": "",
+                    "Alpha 2": "",
+                    "Beta 2": "",
+                    "Proportion 1": "",
+                    "DS": "",
                     "Mu": self.Normal_2P_mu,
                     "Sigma": self.Normal_2P_sigma,
                     "Lambda": "",
@@ -557,6 +635,12 @@ class Fit_Everything:
                     "Alpha": "",
                     "Beta": "",
                     "Gamma": "",
+                    "Alpha 1": "",
+                    "Beta 1": "",
+                    "Alpha 2": "",
+                    "Beta 2": "",
+                    "Proportion 1": "",
+                    "DS": "",
                     "Mu": self.Lognormal_2P_mu,
                     "Sigma": self.Lognormal_2P_sigma,
                     "Lambda": "",
@@ -594,6 +678,12 @@ class Fit_Everything:
                     "Alpha": "",
                     "Beta": "",
                     "Gamma": "",
+                    "Alpha 1": "",
+                    "Beta 1": "",
+                    "Alpha 2": "",
+                    "Beta 2": "",
+                    "Proportion 1": "",
+                    "DS": "",
                     "Mu": self.Gumbel_2P_mu,
                     "Sigma": self.Gumbel_2P_sigma,
                     "Lambda": "",
@@ -632,6 +722,12 @@ class Fit_Everything:
                     "Alpha": self.Weibull_2P_alpha,
                     "Beta": self.Weibull_2P_beta,
                     "Gamma": "",
+                    "Alpha 1": "",
+                    "Beta 1": "",
+                    "Alpha 2": "",
+                    "Beta 2": "",
+                    "Proportion 1": "",
+                    "DS": "",
                     "Mu": "",
                     "Sigma": "",
                     "Lambda": "",
@@ -640,6 +736,143 @@ class Fit_Everything:
                     "BIC": self.Weibull_2P_BIC,
                     "AD": self.Weibull_2P_AD,
                     "optimizer": self.Weibull_2P_optimizer,
+                },
+                ignore_index=True,
+            )
+
+        if "Weibull_Mixture" not in self.excluded_distributions:
+            self.__Weibull_Mixture_params = Fit_Weibull_Mixture(
+                failures=failures,
+                right_censored=right_censored,
+                method=method,
+                optimizer=optimizer,
+                show_probability_plot=False,
+                print_results=False,
+            )
+            self.Weibull_Mixture_alpha_1 = self.__Weibull_Mixture_params.alpha_1
+            self.Weibull_Mixture_beta_1 = self.__Weibull_Mixture_params.beta_1
+            self.Weibull_Mixture_alpha_2 = self.__Weibull_Mixture_params.alpha_2
+            self.Weibull_Mixture_beta_2 = self.__Weibull_Mixture_params.beta_2
+            self.Weibull_Mixture_proportion_1 = (
+                self.__Weibull_Mixture_params.proportion_1
+            )
+            self.Weibull_Mixture_loglik = self.__Weibull_Mixture_params.loglik
+            self.Weibull_Mixture_BIC = self.__Weibull_Mixture_params.BIC
+            self.Weibull_Mixture_AICc = self.__Weibull_Mixture_params.AICc
+            self.Weibull_Mixture_AD = self.__Weibull_Mixture_params.AD
+            self.Weibull_Mixture_optimizer = self.__Weibull_Mixture_params.optimizer
+            self._parametric_CDF_Weibull_Mixture = (
+                self.__Weibull_Mixture_params.distribution.CDF(xvals=d, show_plot=False)
+            )
+            df = df.append(
+                {
+                    "Distribution": "Weibull_Mixture",
+                    "Alpha": "",
+                    "Beta": "",
+                    "Gamma": "",
+                    "Alpha 1": self.Weibull_Mixture_alpha_1,
+                    "Beta 1": self.Weibull_Mixture_beta_1,
+                    "Alpha 2": self.Weibull_Mixture_alpha_2,
+                    "Beta 2": self.Weibull_Mixture_beta_2,
+                    "Proportion 1": self.Weibull_Mixture_proportion_1,
+                    "DS": "",
+                    "Mu": "",
+                    "Sigma": "",
+                    "Lambda": "",
+                    "Log-likelihood": self.Weibull_Mixture_loglik,
+                    "AICc": self.Weibull_Mixture_AICc,
+                    "BIC": self.Weibull_Mixture_BIC,
+                    "AD": self.Weibull_Mixture_AD,
+                    "optimizer": self.Weibull_Mixture_optimizer,
+                },
+                ignore_index=True,
+            )
+
+        if "Weibull_CR" not in self.excluded_distributions:
+            self.__Weibull_CR_params = Fit_Weibull_CR(
+                failures=failures,
+                right_censored=right_censored,
+                method=method,
+                optimizer=optimizer,
+                show_probability_plot=False,
+                print_results=False,
+            )
+            self.Weibull_CR_alpha_1 = self.__Weibull_CR_params.alpha_1
+            self.Weibull_CR_beta_1 = self.__Weibull_CR_params.beta_1
+            self.Weibull_CR_alpha_2 = self.__Weibull_CR_params.alpha_2
+            self.Weibull_CR_beta_2 = self.__Weibull_CR_params.beta_2
+            self.Weibull_CR_loglik = self.__Weibull_CR_params.loglik
+            self.Weibull_CR_BIC = self.__Weibull_CR_params.BIC
+            self.Weibull_CR_AICc = self.__Weibull_CR_params.AICc
+            self.Weibull_CR_AD = self.__Weibull_CR_params.AD
+            self.Weibull_CR_optimizer = self.__Weibull_CR_params.optimizer
+            self._parametric_CDF_Weibull_CR = self.__Weibull_CR_params.distribution.CDF(
+                xvals=d, show_plot=False
+            )
+            df = df.append(
+                {
+                    "Distribution": "Weibull_CR",
+                    "Alpha": "",
+                    "Beta": "",
+                    "Gamma": "",
+                    "Alpha 1": self.Weibull_CR_alpha_1,
+                    "Beta 1": self.Weibull_CR_beta_1,
+                    "Alpha 2": self.Weibull_CR_alpha_2,
+                    "Beta 2": self.Weibull_CR_beta_2,
+                    "Proportion 1": "",
+                    "DS": "",
+                    "Mu": "",
+                    "Sigma": "",
+                    "Lambda": "",
+                    "Log-likelihood": self.Weibull_CR_loglik,
+                    "AICc": self.Weibull_CR_AICc,
+                    "BIC": self.Weibull_CR_BIC,
+                    "AD": self.Weibull_CR_AD,
+                    "optimizer": self.Weibull_CR_optimizer,
+                },
+                ignore_index=True,
+            )
+
+        if "Weibull_DS" not in self.excluded_distributions:
+            self.__Weibull_DS_params = Fit_Weibull_DS(
+                failures=failures,
+                right_censored=right_censored,
+                method=method,
+                optimizer=optimizer,
+                show_probability_plot=False,
+                print_results=False,
+            )
+            self.Weibull_DS_alpha = self.__Weibull_DS_params.alpha
+            self.Weibull_DS_beta = self.__Weibull_DS_params.beta
+            self.Weibull_DS_DS = self.__Weibull_DS_params.DS
+            self.Weibull_DS_loglik = self.__Weibull_DS_params.loglik
+            self.Weibull_DS_BIC = self.__Weibull_DS_params.BIC
+            self.Weibull_DS_AICc = self.__Weibull_DS_params.AICc
+            self.Weibull_DS_AD = self.__Weibull_DS_params.AD
+            self.Weibull_DS_optimizer = self.__Weibull_DS_params.optimizer
+            self._parametric_CDF_Weibull_DS = self.__Weibull_DS_params.distribution.CDF(
+                xvals=d, show_plot=False
+            )
+            df = df.append(
+                {
+                    "Distribution": "Weibull_DS",
+                    "Alpha": self.Weibull_DS_alpha,
+                    "Beta": self.Weibull_DS_beta,
+                    "Gamma": "",
+                    "Alpha 1": "",
+                    "Beta 1": "",
+                    "Alpha 2": "",
+                    "Beta 2": "",
+                    "Proportion 1": "",
+                    "DS": self.Weibull_DS_DS,
+                    "Mu": "",
+                    "Sigma": "",
+                    "Lambda": "",
+                    "Log-likelihood": self.Weibull_DS_loglik,
+                    "AICc": self.Weibull_DS_AICc,
+                    "BIC": self.Weibull_DS_BIC,
+                    "AD": self.Weibull_DS_AD,
+                    "optimizer": self.Weibull_DS_optimizer,
                 },
                 ignore_index=True,
             )
@@ -671,6 +904,12 @@ class Fit_Everything:
                     "Alpha": self.Gamma_2P_alpha,
                     "Beta": self.Gamma_2P_beta,
                     "Gamma": "",
+                    "Alpha 1": "",
+                    "Beta 1": "",
+                    "Alpha 2": "",
+                    "Beta 2": "",
+                    "Proportion 1": "",
+                    "DS": "",
                     "Mu": "",
                     "Sigma": "",
                     "Lambda": "",
@@ -708,6 +947,12 @@ class Fit_Everything:
                     "Alpha": "",
                     "Beta": "",
                     "Gamma": "",
+                    "Alpha 1": "",
+                    "Beta 1": "",
+                    "Alpha 2": "",
+                    "Beta 2": "",
+                    "Proportion 1": "",
+                    "DS": "",
                     "Mu": "",
                     "Sigma": "",
                     "Lambda": self.Exponential_1P_lambda,
@@ -746,6 +991,12 @@ class Fit_Everything:
                     "Alpha": self.Loglogistic_2P_alpha,
                     "Beta": self.Loglogistic_2P_beta,
                     "Gamma": "",
+                    "Alpha 1": "",
+                    "Beta 1": "",
+                    "Alpha 2": "",
+                    "Beta 2": "",
+                    "Proportion 1": "",
+                    "DS": "",
                     "Mu": "",
                     "Sigma": "",
                     "Lambda": "",
@@ -784,6 +1035,12 @@ class Fit_Everything:
                     "Alpha": self.Loglogistic_3P_alpha,
                     "Beta": self.Loglogistic_3P_beta,
                     "Gamma": self.Loglogistic_3P_gamma,
+                    "Alpha 1": "",
+                    "Beta 1": "",
+                    "Alpha 2": "",
+                    "Beta 2": "",
+                    "Proportion 1": "",
+                    "DS": "",
                     "Mu": "",
                     "Sigma": "",
                     "Lambda": "",
@@ -821,6 +1078,12 @@ class Fit_Everything:
                     "Alpha": self.Beta_2P_alpha,
                     "Beta": self.Beta_2P_beta,
                     "Gamma": "",
+                    "Alpha 1": "",
+                    "Beta 1": "",
+                    "Alpha 2": "",
+                    "Beta 2": "",
+                    "Proportion 1": "",
+                    "DS": "",
                     "Mu": "",
                     "Sigma": "",
                     "Lambda": "",
@@ -880,6 +1143,33 @@ class Fit_Everything:
                 beta=self.Weibull_3P_beta,
                 gamma=self.Weibull_3P_gamma,
             )
+        elif best_dist == "Weibull_Mixture":
+            d1 = Weibull_Distribution(
+                alpha=self.Weibull_Mixture_alpha_1, beta=self.Weibull_Mixture_beta_1
+            )
+            d2 = Weibull_Distribution(
+                alpha=self.Weibull_Mixture_alpha_2, beta=self.Weibull_Mixture_beta_2
+            )
+            self.best_distribution = Mixture_Model(
+                distributions=[d1, d2],
+                proportions=[
+                    self.Weibull_Mixture_proportion_1,
+                    1 - self.Weibull_Mixture_proportion_1,
+                ],
+            )
+        elif best_dist == "Weibull_CR":
+            d1 = Weibull_Distribution(
+                alpha=self.Weibull_CR_alpha_1, beta=self.Weibull_CR_beta_1
+            )
+            d2 = Weibull_Distribution(
+                alpha=self.Weibull_CR_alpha_2, beta=self.Weibull_CR_beta_2
+            )
+            self.best_distribution = Competing_Risks_Model(distributions=[d1, d2])
+        if best_dist == "Weibull_DS":
+            d1 = Weibull_Distribution(
+                alpha=self.Weibull_DS_alpha, beta=self.Weibull_DS_beta
+            )
+            self.best_distribution = DSZI_Model(distribution=d1, DS=self.Weibull_DS_DS)
         elif best_dist == "Gamma_2P":
             self.best_distribution = Gamma_Distribution(
                 alpha=self.Gamma_2P_alpha, beta=self.Gamma_2P_beta
@@ -945,19 +1235,19 @@ class Fit_Everything:
             print(self.results.to_string(index=False), "\n")
 
         if show_histogram_plot is True:
-            # plotting occurs by default
+            # plotting enabled by default
             Fit_Everything.__histogram_plot(self)
 
         if show_PP_plot is True:
-            # plotting occurs by default
+            # plotting enabled by default
             Fit_Everything.__P_P_plot(self)
 
         if show_probability_plot is True:
-            # plotting occurs by default
+            # plotting enabled by default
             Fit_Everything.__probability_plot(self)
 
         if show_best_distribution_probability_plot is True:
-            # plotting occurs by default
+            # plotting enabled by default
             Fit_Everything.__probability_plot(self, best_only=True)
 
         if (
@@ -972,23 +1262,73 @@ class Fit_Everything:
         """
         Internal function to provide layout formatting of the plots.
         """
-        items = len(self.results.index.values)  # number of items that were fitted
-        if items == 13:  # ------------------------ w   , h    w , h
-            cols, rows, figsize, figsizePP = 5, 3, (17.5, 8), (10, 7.5)
+        items = len(self.results.index.values)  # number of items fitted
+        xx1, yy1 = 2.5, 2  # multipliers for easy adjustment of window sizes
+        xx2, yy2 = 0.5, 0.5
+        if items == 16:
+            # figsizes are in (w,h) format using the above multipliers
+            cols, rows, figsize, figsizePP = (
+                6,
+                3,
+                (xx1 * 8, yy1 * 4),
+                (xx2 * 23, yy2 * 15),
+            )
+        elif items in [13, 14, 15]:
+            cols, rows, figsize, figsizePP = (
+                5,
+                3,
+                (xx1 * 7, yy1 * 4),
+                (xx2 * 20, yy2 * 15),
+            )
         elif items in [10, 11, 12]:
-            cols, rows, figsize, figsizePP = 4, 3, (15, 8), (8.5, 7.5)
+            cols, rows, figsize, figsizePP = (
+                4,
+                3,
+                (xx1 * 6, yy1 * 4),
+                (xx2 * 17, yy2 * 15),
+            )
         elif items in [7, 8, 9]:
-            cols, rows, figsize, figsizePP = 3, 3, (12.5, 8), (7, 7.5)
+            cols, rows, figsize, figsizePP = (
+                3,
+                3,
+                (xx1 * 5, yy1 * 4),
+                (xx2 * 14, yy2 * 15),
+            )
         elif items in [5, 6]:
-            cols, rows, figsize, figsizePP = 3, 2, (12.5, 6), (6.5, 5.5)
+            cols, rows, figsize, figsizePP = (
+                3,
+                2,
+                (xx1 * 5, yy1 * 3),
+                (xx2 * 13, yy2 * 11),
+            )
         elif items == 4:
-            cols, rows, figsize, figsizePP = 2, 2, (10, 6), (6, 5.5)
+            cols, rows, figsize, figsizePP = (
+                2,
+                2,
+                (xx1 * 4, yy1 * 3),
+                (xx2 * 12, yy2 * 11),
+            )
         elif items == 3:
-            cols, rows, figsize, figsizePP = 3, 1, (12.5, 5), (10, 4)
+            cols, rows, figsize, figsizePP = (
+                3,
+                1,
+                (xx1 * 5, yy1 * 2.5),
+                (xx2 * 20, yy2 * 8),
+            )
         elif items == 2:
-            cols, rows, figsize, figsizePP = 2, 1, (10, 4), (6, 4)
+            cols, rows, figsize, figsizePP = (
+                2,
+                1,
+                (xx1 * 4, yy1 * 2),
+                (xx2 * 12, yy2 * 8),
+            )
         elif items == 1:
-            cols, rows, figsize, figsizePP = 1, 1, (7.5, 4), (6, 4)
+            cols, rows, figsize, figsizePP = (
+                1,
+                1,
+                (xx1 * 3, yy1 * 2),
+                (xx2 * 12, yy2 * 8),
+            )
         return cols, rows, figsize, figsizePP
 
     def __histogram_plot(self):
@@ -999,30 +1339,23 @@ class Fit_Everything:
         # define plotting limits
         delta = max(X) - min(X)
         xmin = 0
-        if max(X) <= 1:
-            xmax = 1  # this is the case when beta is fitted
-        else:
-            xmax = (
-                max(X) + delta
-            )  # this is when beta is not fitted so the upper xlim goes a bit more
+        xmax = max(X) * 1.2
 
-        plt.figure(figsize=(14, 6))
-        # we need to make the histogram manually (can't use plt.hist) due to need to scale the heights when there's censored data
-        plotting_order = self.results[
-            "Distribution"
-        ].values  # this is the order to plot things so that the legend matches the results dataframe
+        plt.figure(figsize=(12, 6))
+        # this is the order to plot things so that the legend matches the results dataframe
+        plotting_order = self.results["Distribution"].values
         iqr = np.subtract(*np.percentile(X, [75, 25]))  # interquartile range
-        bin_width = (
-            2 * iqr * len(X) ** -(1 / 3)
-        )  # Freedman–Diaconis rule ==> https://en.wikipedia.org/wiki/Freedman%E2%80%93Diaconis_rule
+        # Freedman–Diaconis rule ==> https://en.wikipedia.org/wiki/Freedman%E2%80%93Diaconis_rule
+        bin_width = 2 * iqr * len(X) ** -(1 / 3)
         num_bins = int(np.ceil((max(X) - min(X)) / bin_width))
+        # we need to make the histogram manually (can't use plt.hist) due to need to scale the heights when there's censored data
         hist, bins = np.histogram(X, bins=num_bins, density=True)
         hist_cumulative = np.cumsum(hist) / sum(hist)
         width = np.diff(bins)
         center = (bins[:-1] + bins[1:]) / 2
 
         # Probability Density Functions
-        plt.subplot(121)
+        plt.subplot(132)
         plt.bar(
             center,
             hist * self._frac_fail,
@@ -1032,153 +1365,160 @@ class Fit_Everything:
             edgecolor="k",
             linewidth=0.5,
         )
+        counter = 0
+        ls = "-"
         for item in plotting_order:
+            counter += 1
+            if counter > 10:
+                ls = "--"
             if item == "Weibull_2P":
-                Weibull_Distribution(
-                    alpha=self.Weibull_2P_alpha, beta=self.Weibull_2P_beta
-                ).PDF(label=r"Weibull ($\alpha , \beta$)")
+                self.__Weibull_2P_params.distribution.PDF(
+                    label=r"Weibull_2P ($\alpha , \beta$)", linestyle=ls
+                )
             elif item == "Weibull_3P":
-                Weibull_Distribution(
-                    alpha=self.Weibull_3P_alpha,
-                    beta=self.Weibull_3P_beta,
-                    gamma=self.Weibull_3P_gamma,
-                ).PDF(label=r"Weibull ($\alpha , \beta , \gamma$)")
+                self.__Weibull_3P_params.distribution.PDF(
+                    label=r"Weibull_3P ($\alpha , \beta , \gamma$)", linestyle=ls
+                )
+            elif item == "Weibull_Mixture":
+                self.__Weibull_Mixture_params.distribution.PDF(
+                    label=r"Weibull_Mixture ($\alpha_1 , \beta_1 , \alpha_2 , \beta_2 , p_1$)",
+                    linestyle=ls,
+                    xmax=xmax * 2,
+                )
+            elif item == "Weibull_CR":
+                self.__Weibull_CR_params.distribution.PDF(
+                    label=r"Weibull_CR ($\alpha_1 , \beta_1 , \alpha_2 , \beta_2$)",
+                    linestyle=ls,
+                    xmax=xmax * 2,
+                )
+            elif item == "Weibull_DS":
+                self.__Weibull_DS_params.distribution.PDF(
+                    label=r"Weibull_DS ($\alpha , \beta , DS$)",
+                    linestyle=ls,
+                    xmax=xmax * 2,
+                )
             elif item == "Gamma_2P":
-                Gamma_Distribution(
-                    alpha=self.Gamma_2P_alpha, beta=self.Gamma_2P_beta
-                ).PDF(label=r"Gamma ($\alpha , \beta$)")
+                self.__Gamma_2P_params.distribution.PDF(
+                    label=r"Gamma_2P ($\alpha , \beta$)", linestyle=ls
+                )
             elif item == "Gamma_3P":
-                Gamma_Distribution(
-                    alpha=self.Gamma_3P_alpha,
-                    beta=self.Gamma_3P_beta,
-                    gamma=self.Gamma_3P_gamma,
-                ).PDF(label=r"Gamma ($\alpha , \beta , \gamma$)")
+                self.__Gamma_3P_params.distribution.PDF(
+                    label=r"Gamma_3P ($\alpha , \beta , \gamma$)", linestyle=ls
+                )
             elif item == "Exponential_1P":
-                Exponential_Distribution(Lambda=self.Exponential_1P_lambda).PDF(
-                    label=r"Exponential ($\lambda$)"
+                self.__Exponential_1P_params.distribution.PDF(
+                    label=r"Exponential_1P ($\lambda$)", linestyle=ls
                 )
             elif item == "Exponential_2P":
-                Exponential_Distribution(
-                    Lambda=self.Exponential_2P_lambda, gamma=self.Exponential_2P_gamma
-                ).PDF(label=r"Exponential ($\lambda , \gamma$)")
-            elif item == "Lognormal_2P":
-                Lognormal_Distribution(
-                    mu=self.Lognormal_2P_mu, sigma=self.Lognormal_2P_sigma
-                ).PDF(label=r"Lognormal ($\mu , \sigma$)")
-            elif item == "Lognormal_3P":
-                Lognormal_Distribution(
-                    mu=self.Lognormal_3P_mu,
-                    sigma=self.Lognormal_3P_sigma,
-                    gamma=self.Lognormal_3P_gamma,
-                ).PDF(label=r"Lognormal ($\mu , \sigma , \gamma$)")
-            elif item == "Normal_2P":
-                Normal_Distribution(
-                    mu=self.Normal_2P_mu, sigma=self.Normal_2P_sigma
-                ).PDF(label=r"Normal ($\mu , \sigma$)")
-            elif item == "Gumbel_2P":
-                Gumbel_Distribution(
-                    mu=self.Gumbel_2P_mu, sigma=self.Gumbel_2P_sigma
-                ).PDF(label=r"Gumbel ($\mu , \sigma$)")
-            elif item == "Loglogistic_2P":
-                Loglogistic_Distribution(
-                    alpha=self.Loglogistic_2P_alpha, beta=self.Loglogistic_2P_beta
-                ).PDF(label=r"Loglogistic ($\alpha , \beta$)")
-            elif item == "Loglogistic_3P":
-                Loglogistic_Distribution(
-                    alpha=self.Loglogistic_3P_alpha,
-                    beta=self.Loglogistic_3P_beta,
-                    gamma=self.Loglogistic_3P_gamma,
-                ).PDF(label=r"Loglogistic ($\alpha , \beta, \gamma$)")
-            elif item == "Beta_2P":
-                Beta_Distribution(alpha=self.Beta_2P_alpha, beta=self.Beta_2P_beta).PDF(
-                    label=r"Beta ($\alpha , \beta$)"
+                self.__Exponential_2P_params.distribution.PDF(
+                    label=r"Exponential_2P ($\lambda , \gamma$)", linestyle=ls
                 )
+            elif item == "Lognormal_2P":
+                self.__Lognormal_2P_params.distribution.PDF(
+                    label=r"Lognormal_2P ($\mu , \sigma$)", linestyle=ls
+                )
+            elif item == "Lognormal_3P":
+                self.__Lognormal_3P_params.distribution.PDF(
+                    label=r"Lognormal_3P ($\mu , \sigma , \gamma$)", linestyle=ls
+                )
+            elif item == "Normal_2P":
+                self.__Normal_2P_params.distribution.PDF(
+                    label=r"Normal_2P ($\mu , \sigma$)", linestyle=ls
+                )
+            elif item == "Gumbel_2P":
+                self.__Gumbel_2P_params.distribution.PDF(
+                    label=r"Gumbel_2P ($\mu , \sigma$)", linestyle=ls
+                )
+            elif item == "Loglogistic_2P":
+                self.__Loglogistic_2P_params.distribution.PDF(
+                    label=r"Loglogistic_2P ($\alpha , \beta$)", linestyle=ls
+                )
+            elif item == "Loglogistic_3P":
+                self.__Loglogistic_3P_params.distribution.PDF(
+                    label=r"Loglogistic_3P ($\alpha , \beta , \gamma$)", linestyle=ls
+                )
+            elif item == "Beta_2P":
+                self.__Beta_2P_params.distribution.PDF(
+                    label=r"Beta_2P ($\alpha , \beta$)", linestyle=ls
+                )
+        handles, labels = plt.gca().get_legend_handles_labels()
+        lgd = plt.gca().legend(
+            handles,
+            labels,
+            loc="upper left",
+            bbox_to_anchor=(-1.1, 1),
+            frameon=False,
+            title="Distribution Fitted\n",
+        )
+        lgd._legend_box.align = "left"
         plt.xlim(xmin, xmax)
-        plt.ylim(0, max(hist) * 1.5)
+        plt.ylim(0, max(hist * self._frac_fail) * 1.2)
         plt.title("Probability Density Function")
         plt.xlabel("Data")
         plt.ylabel("Probability density")
-        plt.legend()
 
         # Cumulative Distribution Functions
-        plt.subplot(122)
+        plt.subplot(133)
+        _, ecdf_y = plotting_positions(
+            failures=self.failures, right_censored=self.right_censored
+        )
         plt.bar(
             center,
-            hist_cumulative * self._frac_fail,
+            hist_cumulative * max(ecdf_y),
             align="center",
             width=width,
             color="lightgrey",
             edgecolor="k",
             linewidth=0.5,
         )
+
+        counter = 0
+        ls = "-"
         for item in plotting_order:
+            counter += 1
+            if counter > 10:
+                ls = "--"
             if item == "Weibull_2P":
-                Weibull_Distribution(
-                    alpha=self.Weibull_2P_alpha, beta=self.Weibull_2P_beta
-                ).CDF(label=r"Weibull ($\alpha , \beta$)")
+                self.__Weibull_2P_params.distribution.CDF(CI=False, linestyle=ls)
             elif item == "Weibull_3P":
-                Weibull_Distribution(
-                    alpha=self.Weibull_3P_alpha,
-                    beta=self.Weibull_3P_beta,
-                    gamma=self.Weibull_3P_gamma,
-                ).CDF(label=r"Weibull ($\alpha , \beta , \gamma$)")
+                self.__Weibull_3P_params.distribution.CDF(CI=False, linestyle=ls)
+            elif item == "Weibull_Mixture":
+                self.__Weibull_Mixture_params.distribution.CDF(
+                    linestyle=ls, xmax=xmax * 2
+                )
+            elif item == "Weibull_CR":
+                self.__Weibull_CR_params.distribution.CDF(linestyle=ls, xmax=xmax * 2)
+            elif item == "Weibull_DS":
+                self.__Weibull_DS_params.distribution.CDF(linestyle=ls, xmax=xmax * 2)
             elif item == "Gamma_2P":
-                Gamma_Distribution(
-                    alpha=self.Gamma_2P_alpha, beta=self.Gamma_2P_beta
-                ).CDF(label=r"Gamma ($\alpha , \beta$)")
+                self.__Gamma_2P_params.distribution.CDF(CI=False, linestyle=ls)
             elif item == "Gamma_3P":
-                Gamma_Distribution(
-                    alpha=self.Gamma_3P_alpha,
-                    beta=self.Gamma_3P_beta,
-                    gamma=self.Gamma_3P_gamma,
-                ).CDF(label=r"Gamma ($\alpha , \beta , \gamma$)")
+                self.__Gamma_3P_params.distribution.CDF(CI=False, linestyle=ls)
             elif item == "Exponential_1P":
-                Exponential_Distribution(Lambda=self.Exponential_1P_lambda).CDF(
-                    label=r"Exponential ($\lambda$)"
-                )
+                self.__Exponential_1P_params.distribution.CDF(CI=False, linestyle=ls)
             elif item == "Exponential_2P":
-                Exponential_Distribution(
-                    Lambda=self.Exponential_2P_lambda, gamma=self.Exponential_2P_gamma
-                ).CDF(label=r"Exponential ($\lambda , \gamma$)")
+                self.__Exponential_2P_params.distribution.CDF(CI=False, linestyle=ls)
             elif item == "Lognormal_2P":
-                Lognormal_Distribution(
-                    mu=self.Lognormal_2P_mu, sigma=self.Lognormal_2P_sigma
-                ).CDF(label=r"Lognormal ($\mu , \sigma$)")
+                self.__Lognormal_2P_params.distribution.CDF(CI=False, linestyle=ls)
             elif item == "Lognormal_3P":
-                Lognormal_Distribution(
-                    mu=self.Lognormal_3P_mu,
-                    sigma=self.Lognormal_3P_sigma,
-                    gamma=self.Lognormal_3P_gamma,
-                ).CDF(label=r"Lognormal ($\mu , \sigma , \gamma$)")
+                self.__Lognormal_3P_params.distribution.CDF(CI=False, linestyle=ls)
             elif item == "Normal_2P":
-                Normal_Distribution(
-                    mu=self.Normal_2P_mu, sigma=self.Normal_2P_sigma
-                ).CDF(label=r"Normal ($\mu , \sigma$)")
+                self.__Normal_2P_params.distribution.CDF(CI=False, linestyle=ls)
             elif item == "Gumbel_2P":
-                Gumbel_Distribution(
-                    mu=self.Gumbel_2P_mu, sigma=self.Gumbel_2P_sigma
-                ).CDF(label=r"Gumbel ($\mu , \sigma$)")
+                self.__Gumbel_2P_params.distribution.CDF(CI=False, linestyle=ls)
             elif item == "Loglogistic_2P":
-                Loglogistic_Distribution(
-                    alpha=self.Loglogistic_2P_alpha, beta=self.Loglogistic_2P_beta
-                ).CDF(label=r"Loglogistic ($\alpha , \beta$)")
+                self.__Loglogistic_2P_params.distribution.CDF(CI=False, linestyle=ls)
             elif item == "Loglogistic_3P":
-                Loglogistic_Distribution(
-                    alpha=self.Loglogistic_3P_alpha,
-                    beta=self.Loglogistic_3P_beta,
-                    gamma=self.Loglogistic_3P_gamma,
-                ).CDF(label=r"Loglogistic ($\alpha , \beta, \gamma$)")
+                self.__Loglogistic_3P_params.distribution.CDF(CI=False, linestyle=ls)
             elif item == "Beta_2P":
-                Beta_Distribution(alpha=self.Beta_2P_alpha, beta=self.Beta_2P_beta).CDF(
-                    label=r"Beta ($\alpha , \beta$)"
-                )
-        plt.xlim([xmin, xmax])
+                self.__Beta_2P_params.distribution.CDF(linestyle=ls)
+        plt.xlim(xmin, xmax)
+        plt.ylim(0, max(ecdf_y) * 1.2)
         plt.title("Cumulative Distribution Function")
         plt.xlabel("Data")
         plt.ylabel("Cumulative probability density")
-        plt.legend()
         plt.suptitle("Histogram plot of each fitted distribution")
-        plt.subplots_adjust(left=0.07, bottom=0.10, right=0.97, top=0.88, wspace=0.15)
+        plt.subplots_adjust(left=0, bottom=0.10, right=0.97, top=0.88, wspace=0.18)
 
     def __P_P_plot(self):
         """
@@ -1195,9 +1535,8 @@ class Fit_Everything:
         nonparametric_CDF = 1 - nonparametric.KM  # change SF into CDF
 
         cols, rows, _, figsizePP = Fit_Everything.__probplot_layout(self)
-        plotting_order = self.results[
-            "Distribution"
-        ].values  # this is the order to plot things which matches the results dataframe
+        # this is the order to plot things which matches the results dataframe
+        plotting_order = self.results["Distribution"].values
         plt.figure(figsize=figsizePP)
         plt.suptitle(
             "Semi-parametric Probability-Probability plots of each fitted distribution\nParametric (x-axis) vs Non-Parametric (y-axis)\n"
@@ -1205,145 +1544,103 @@ class Fit_Everything:
         subplot_counter = 1
         for item in plotting_order:
             plt.subplot(rows, cols, subplot_counter)
+
+            xx = nonparametric_CDF
+            plotlim = max(xx)
             if item == "Exponential_1P":
-                xlim = max(
-                    np.hstack([nonparametric_CDF, self._parametric_CDF_Exponential_1P])
-                )
-                plt.scatter(
-                    nonparametric_CDF,
-                    self._parametric_CDF_Exponential_1P,
-                    marker=".",
-                    color="k",
-                )
+                yy = self._parametric_CDF_Exponential_1P
+                max_yy = max(yy)
+                if max_yy > plotlim:
+                    plotlim = max_yy
             elif item == "Exponential_2P":
-                xlim = max(
-                    np.hstack([nonparametric_CDF, self._parametric_CDF_Exponential_2P])
-                )
-                plt.scatter(
-                    nonparametric_CDF,
-                    self._parametric_CDF_Exponential_2P,
-                    marker=".",
-                    color="k",
-                )
+                yy = self._parametric_CDF_Exponential_2P
+                max_yy = max(yy)
+                if max_yy > plotlim:
+                    plotlim = max_yy
             elif item == "Lognormal_2P":
-                xlim = max(
-                    np.hstack([nonparametric_CDF, self._parametric_CDF_Lognormal_2P])
-                )
-                plt.scatter(
-                    nonparametric_CDF,
-                    self._parametric_CDF_Lognormal_2P,
-                    marker=".",
-                    color="k",
-                )
+                yy = self._parametric_CDF_Lognormal_2P
+                max_yy = max(yy)
+                if max_yy > plotlim:
+                    plotlim = max_yy
             elif item == "Lognormal_3P":
-                xlim = max(
-                    np.hstack([nonparametric_CDF, self._parametric_CDF_Lognormal_3P])
-                )
-                plt.scatter(
-                    nonparametric_CDF,
-                    self._parametric_CDF_Lognormal_3P,
-                    marker=".",
-                    color="k",
-                )
+                yy = self._parametric_CDF_Lognormal_3P
+                max_yy = max(yy)
+                if max_yy > plotlim:
+                    plotlim = max_yy
             elif item == "Weibull_2P":
-                xlim = max(
-                    np.hstack([nonparametric_CDF, self._parametric_CDF_Weibull_2P])
-                )
-                plt.scatter(
-                    nonparametric_CDF,
-                    self._parametric_CDF_Weibull_2P,
-                    marker=".",
-                    color="k",
-                )
+                yy = self._parametric_CDF_Weibull_2P
+                max_yy = max(yy)
+                if max_yy > plotlim:
+                    plotlim = max_yy
             elif item == "Weibull_3P":
-                xlim = max(
-                    np.hstack([nonparametric_CDF, self._parametric_CDF_Weibull_3P])
-                )
-                plt.scatter(
-                    nonparametric_CDF,
-                    self._parametric_CDF_Weibull_3P,
-                    marker=".",
-                    color="k",
-                )
+                yy = self._parametric_CDF_Weibull_3P
+                max_yy = max(yy)
+                if max_yy > plotlim:
+                    plotlim = max_yy
+            elif item == "Weibull_Mixture":
+                yy = self._parametric_CDF_Weibull_Mixture
+                max_yy = max(yy)
+                if max_yy > plotlim:
+                    plotlim = max_yy
+            elif item == "Weibull_CR":
+                yy = self._parametric_CDF_Weibull_CR
+                max_yy = max(yy)
+                if max_yy > plotlim:
+                    plotlim = max_yy
+            elif item == "Weibull_DS":
+                yy = self._parametric_CDF_Weibull_DS
+                max_yy = max(yy)
+                if max_yy > plotlim:
+                    plotlim = max_yy
             elif item == "Loglogistic_2P":
-                xlim = max(
-                    np.hstack([nonparametric_CDF, self._parametric_CDF_Loglogistic_2P])
-                )
-                plt.scatter(
-                    nonparametric_CDF,
-                    self._parametric_CDF_Loglogistic_2P,
-                    marker=".",
-                    color="k",
-                )
+                yy = self._parametric_CDF_Loglogistic_2P
+                max_yy = max(yy)
+                if max_yy > plotlim:
+                    plotlim = max_yy
             elif item == "Loglogistic_3P":
-                xlim = max(
-                    np.hstack([nonparametric_CDF, self._parametric_CDF_Loglogistic_3P])
-                )
-                plt.scatter(
-                    nonparametric_CDF,
-                    self._parametric_CDF_Loglogistic_3P,
-                    marker=".",
-                    color="k",
-                )
+                yy = self._parametric_CDF_Loglogistic_3P
+                max_yy = max(yy)
+                if max_yy > plotlim:
+                    plotlim = max_yy
             elif item == "Gamma_2P":
-                xlim = max(
-                    np.hstack([nonparametric_CDF, self._parametric_CDF_Gamma_2P])
-                )
-                plt.scatter(
-                    nonparametric_CDF,
-                    self._parametric_CDF_Gamma_2P,
-                    marker=".",
-                    color="k",
-                )
+                yy = self._parametric_CDF_Gamma_2P
+                max_yy = max(yy)
+                if max_yy > plotlim:
+                    plotlim = max_yy
             elif item == "Gamma_3P":
-                xlim = max(
-                    np.hstack([nonparametric_CDF, self._parametric_CDF_Gamma_3P])
-                )
-                plt.scatter(
-                    nonparametric_CDF,
-                    self._parametric_CDF_Gamma_3P,
-                    marker=".",
-                    color="k",
-                )
+                yy = self._parametric_CDF_Gamma_3P
+                max_yy = max(yy)
+                if max_yy > plotlim:
+                    plotlim = max_yy
             elif item == "Normal_2P":
-                xlim = max(
-                    np.hstack([nonparametric_CDF, self._parametric_CDF_Normal_2P])
-                )
-                plt.scatter(
-                    nonparametric_CDF,
-                    self._parametric_CDF_Normal_2P,
-                    marker=".",
-                    color="k",
-                )
+                yy = self._parametric_CDF_Normal_2P
+                max_yy = max(yy)
+                if max_yy > plotlim:
+                    plotlim = max_yy
             elif item == "Gumbel_2P":
-                xlim = max(
-                    np.hstack([nonparametric_CDF, self._parametric_CDF_Gumbel_2P])
-                )
-                plt.scatter(
-                    nonparametric_CDF,
-                    self._parametric_CDF_Gumbel_2P,
-                    marker=".",
-                    color="k",
-                )
+                yy = self._parametric_CDF_Gumbel_2P
+                max_yy = max(yy)
+                if max_yy > plotlim:
+                    plotlim = max_yy
             elif item == "Beta_2P":
-                xlim = max(np.hstack([nonparametric_CDF, self._parametric_CDF_Beta_2P]))
-                plt.scatter(
-                    nonparametric_CDF,
-                    self._parametric_CDF_Beta_2P,
-                    marker=".",
-                    color="k",
-                )
-            else:
-                raise ValueError("unknown item was fitted")
+                yy = self._parametric_CDF_Beta_2P
+                max_yy = max(yy)
+                if max_yy > plotlim:
+                    plotlim = max_yy
+
+            # downsample if necessary
+            x_scatter, y_scatter = xy_downsample(
+                xx, yy, downsample_factor=self.__downsample_scatterplot
+            )
+            # plot the scatterplot
+            plt.scatter(x_scatter, y_scatter, marker=".", color="k")
             plt.title(item)
-            plt.plot(
-                [-xlim, 2 * xlim], [-xlim, 2 * xlim], "r", alpha=0.7
-            )  # red diagonal line
+            plt.plot([-1, 2], [-1, 2], "r", alpha=0.7)  # red diagonal line
             plt.axis("square")
             plt.yticks([])
             plt.xticks([])
-            plt.xlim(-xlim * 0.05, xlim * 1.05)
-            plt.ylim(-xlim * 0.05, xlim * 1.05)
+            plt.xlim(-plotlim * 0.05, plotlim * 1.05)
+            plt.ylim(-plotlim * 0.05, plotlim * 1.05)
             subplot_counter += 1
         plt.tight_layout()
 
@@ -1373,6 +1670,10 @@ class Fit_Everything:
         else:
             plotting_order = [self.results["Distribution"].values[0]]
 
+        # xvals is used by Weibull_Mixture, Weibull_CR, and Weibull_DS
+        xvals = np.logspace(
+            np.log10(min(self.failures)) - 3, np.log10(max(self.failures)) + 1, 1000
+        )
         for item in plotting_order:
             if best_only is False:
                 plt.subplot(rows, cols, subplot_counter)
@@ -1381,81 +1682,120 @@ class Fit_Everything:
                     failures=self.failures,
                     right_censored=self.right_censored,
                     __fitted_dist_params=self.__Exponential_1P_params,
+                    downsample_scatterplot=self.__downsample_scatterplot,
                 )
             elif item == "Exponential_2P":
                 Exponential_probability_plot_Weibull_Scale(
                     failures=self.failures,
                     right_censored=self.right_censored,
                     __fitted_dist_params=self.__Exponential_2P_params,
+                    downsample_scatterplot=self.__downsample_scatterplot,
                 )
             elif item == "Lognormal_2P":
                 Lognormal_probability_plot(
                     failures=self.failures,
                     right_censored=self.right_censored,
                     __fitted_dist_params=self.__Lognormal_2P_params,
+                    downsample_scatterplot=self.__downsample_scatterplot,
                 )
             elif item == "Lognormal_3P":
                 Lognormal_probability_plot(
                     failures=self.failures,
                     right_censored=self.right_censored,
                     __fitted_dist_params=self.__Lognormal_3P_params,
+                    downsample_scatterplot=self.__downsample_scatterplot,
                 )
             elif item == "Weibull_2P":
                 Weibull_probability_plot(
                     failures=self.failures,
                     right_censored=self.right_censored,
                     __fitted_dist_params=self.__Weibull_2P_params,
+                    downsample_scatterplot=self.__downsample_scatterplot,
                 )
             elif item == "Weibull_3P":
                 Weibull_probability_plot(
                     failures=self.failures,
                     right_censored=self.right_censored,
                     __fitted_dist_params=self.__Weibull_3P_params,
+                    downsample_scatterplot=self.__downsample_scatterplot,
                 )
+            elif item == "Weibull_Mixture":
+                Weibull_probability_plot(
+                    failures=self.failures,
+                    right_censored=self.right_censored,
+                    show_fitted_distribution=False,
+                    downsample_scatterplot=self.__downsample_scatterplot,
+                )
+                self.__Weibull_Mixture_params.distribution.CDF(xvals=xvals)
+                # need to add this manually as Weibull_probability_plot can only add Weibull_2P and Weibull_3P using __fitted_dist_params
+            elif item == "Weibull_CR":
+                Weibull_probability_plot(
+                    failures=self.failures,
+                    right_censored=self.right_censored,
+                    show_fitted_distribution=False,
+                    downsample_scatterplot=self.__downsample_scatterplot,
+                )
+                self.__Weibull_CR_params.distribution.CDF(xvals=xvals)
+                # need to add this manually as Weibull_probability_plot can only add Weibull_2P and Weibull_3P using __fitted_dist_params
+            elif item == "Weibull_DS":
+                Weibull_probability_plot(
+                    failures=self.failures,
+                    right_censored=self.right_censored,
+                    show_fitted_distribution=False,
+                    downsample_scatterplot=self.__downsample_scatterplot,
+                )
+                self.__Weibull_DS_params.distribution.CDF(xvals=xvals)
+                # need to add this manually as Weibull_probability_plot can only add Weibull_2P and Weibull_3P using __fitted_dist_params
             elif item == "Loglogistic_2P":
                 Loglogistic_probability_plot(
                     failures=self.failures,
                     right_censored=self.right_censored,
                     __fitted_dist_params=self.__Loglogistic_2P_params,
+                    downsample_scatterplot=self.__downsample_scatterplot,
                 )
             elif item == "Loglogistic_3P":
                 Loglogistic_probability_plot(
                     failures=self.failures,
                     right_censored=self.right_censored,
                     __fitted_dist_params=self.__Loglogistic_3P_params,
+                    downsample_scatterplot=self.__downsample_scatterplot,
                 )
             elif item == "Gamma_2P":
                 Gamma_probability_plot(
                     failures=self.failures,
                     right_censored=self.right_censored,
                     __fitted_dist_params=self.__Gamma_2P_params,
+                    downsample_scatterplot=self.__downsample_scatterplot,
                 )
             elif item == "Gamma_3P":
                 Gamma_probability_plot(
                     failures=self.failures,
                     right_censored=self.right_censored,
                     __fitted_dist_params=self.__Gamma_3P_params,
+                    downsample_scatterplot=self.__downsample_scatterplot,
                 )
             elif item == "Normal_2P":
                 Normal_probability_plot(
                     failures=self.failures,
                     right_censored=self.right_censored,
                     __fitted_dist_params=self.__Normal_2P_params,
+                    downsample_scatterplot=self.__downsample_scatterplot,
                 )
             elif item == "Gumbel_2P":
                 Gumbel_probability_plot(
                     failures=self.failures,
                     right_censored=self.right_censored,
                     __fitted_dist_params=self.__Gumbel_2P_params,
+                    downsample_scatterplot=self.__downsample_scatterplot,
                 )
             elif item == "Beta_2P":
                 Beta_probability_plot(
                     failures=self.failures,
                     right_censored=self.right_censored,
                     __fitted_dist_params=self.__Beta_2P_params,
+                    downsample_scatterplot=self.__downsample_scatterplot,
                 )
-            else:
-                raise ValueError("unknown item was fitted")
+
             if best_only is False:
                 plt.title(item)
                 ax = plt.gca()
@@ -1465,15 +1805,22 @@ class Fit_Everything:
                 ax.set_xticklabels([], minor=True)
                 ax.set_ylabel("")
                 ax.set_xlabel("")
-                ax.get_legend().remove()
+                try:
+                    ax.get_legend().remove()
+                except AttributeError:
+                    pass
+                    # some plots don't have a legend added so this exception ignores them when trying to remove the legend
                 subplot_counter += 1
             else:
-                plt.title(
-                    str(
-                        "Probability plot of best distribution\n"
-                        + self.best_distribution.param_title_long
-                    )
-                )
+                if self.best_distribution_name == "Weibull_Mixture":
+                    title_detail = "Weibull Mixture Model"
+                elif self.best_distribution_name == "Weibull_CR":
+                    title_detail = "Weibull Competing Risks Model"
+                elif self.best_distribution_name == "Weibull_DS":
+                    title_detail = "Weibull Defective Subpopulation Model"
+                else:
+                    title_detail = self.best_distribution.param_title_long
+                plt.title(str("Probability plot of best distribution\n" + title_detail))
         if best_only is False:
             plt.tight_layout()
             plt.gcf().set_size_inches(figsize)
@@ -1530,6 +1877,13 @@ class Fit_Weibull_2P:
         If an array or list is specified then it will be used instead of the
         default array. Any array or list specified must contain values between
         0 and 100.
+    downsample_scatterplot : bool, int, optional
+        If True or None, and there are over 1000 points, then the scatterplot
+        will be downsampled by a factor. The default downsample factor will seek
+        to produce between 500 and 1000 points. If a number is specified, it
+        will be used as the downsample factor. Default is True. This
+        functionality makes plotting faster when there are very large numbers of
+        points. It only affects the scatterplot not the calculations.
     kwargs
         Plotting keywords that are passed directly to matplotlib for the
         probability plot (e.g. color, label, linestyle)
@@ -1601,6 +1955,7 @@ class Fit_Weibull_2P:
         method="MLE",
         optimizer=None,
         force_beta=None,
+        downsample_scatterplot=True,
         **kwargs,
     ):
 
@@ -1826,6 +2181,7 @@ class Fit_Weibull_2P:
                 __fitted_dist_params=self,
                 CI=CI,
                 CI_type=CI_type,
+                downsample_scatterplot=downsample_scatterplot,
                 **kwargs,
             )
             self.probability_plot = plt.gca()
@@ -1899,6 +2255,13 @@ class Fit_Weibull_2P_grouped:
         If an array or list is specified then it will be used instead of the
         default array. Any array or list specified must contain values between
         0 and 100.
+    downsample_scatterplot : bool, int, optional
+        If True or None, and there are over 1000 points, then the scatterplot
+        will be downsampled by a factor. The default downsample factor will seek
+        to produce between 500 and 1000 points. If a number is specified, it
+        will be used as the downsample factor. Default is True. This
+        functionality makes plotting faster when there are very large numbers of
+        points. It only affects the scatterplot not the calculations.
     kwargs
         Plotting keywords that are passed directly to matplotlib for the
         probability plot (e.g. color, label, linestyle)
@@ -2013,6 +2376,7 @@ class Fit_Weibull_2P_grouped:
         method="MLE",
         optimizer=None,
         CI_type="time",
+        downsample_scatterplot=True,
         **kwargs,
     ):
 
@@ -2451,6 +2815,7 @@ class Fit_Weibull_2P_grouped:
                 __fitted_dist_params=self,
                 CI=CI,
                 CI_type=CI_type,
+                downsample_scatterplot=downsample_scatterplot,
                 **kwargs,
             )
             self.probability_plot = plt.gca()
@@ -2519,11 +2884,18 @@ class Fit_Weibull_3P:
     percentiles : bool, str, list, array, None, optional
         percentiles (y-values) to produce a table of percentiles failed with
         lower, point, and upper estimates. Default is None which results in no
-        output. To use default array [1, 5, 10,..., 95, 99] set percentiles as
+        output. To use default array [1, 5, 10,..., 95, 99] set percentuiles as
         either 'auto', True, 'default', 'on'.
         If an array or list is specified then it will be used instead of the
         default array. Any array or list specified must contain values between
         0 and 100.
+    downsample_scatterplot : bool, int, optional
+        If True or None, and there are over 1000 points, then the scatterplot
+        will be downsampled by a factor. The default downsample factor will seek
+        to produce between 500 and 1000 points. If a number is specified, it
+        will be used as the downsample factor. Default is True. This
+        functionality makes plotting faster when there are very large numbers of
+        points. It only affects the scatterplot not the calculations.
     kwargs
         Plotting keywords that are passed directly to matplotlib for the
         probability plot (e.g. color, label, linestyle)
@@ -2606,6 +2978,7 @@ class Fit_Weibull_3P:
         CI_type="time",
         optimizer=None,
         method="MLE",
+        downsample_scatterplot=True,
         **kwargs,
     ):
 
@@ -2632,6 +3005,7 @@ class Fit_Weibull_3P:
             LS_method = "LS"
         else:
             LS_method = method
+
         LS_results = LS_optimization(
             func_name="Weibull_3P",
             LL_func=Fit_Weibull_3P.LL,
@@ -2850,6 +3224,7 @@ class Fit_Weibull_3P:
                 __fitted_dist_params=self,
                 CI=CI,
                 CI_type=CI_type,
+                downsample_scatterplot=downsample_scatterplot,
                 **kwargs,
             )
             if self.gamma < 0.01:
@@ -2918,6 +3293,13 @@ class Fit_Weibull_Mixture:
     CI : float, optional
         confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
+    downsample_scatterplot : bool, int, optional
+        If True or None, and there are over 1000 points, then the scatterplot
+        will be downsampled by a factor. The default downsample factor will seek
+        to produce between 500 and 1000 points. If a number is specified, it
+        will be used as the downsample factor. Default is True. This
+        functionality makes plotting faster when there are very large numbers of
+        points. It only affects the scatterplot not the calculations.
     kwargs
         Plotting keywords that are passed directly to matplotlib for the
         probability plot (e.g. color, label, linestyle)
@@ -3025,6 +3407,7 @@ class Fit_Weibull_Mixture:
         print_results=True,
         CI=0.95,
         optimizer=None,
+        downsample_scatterplot=True,
         **kwargs,
     ):
 
@@ -3321,6 +3704,7 @@ class Fit_Weibull_Mixture:
                 failures=failures,
                 right_censored=rc,
                 show_fitted_distribution=False,
+                downsample_scatterplot=downsample_scatterplot,
                 **kwargs,
             )
             if "label" in kwargs:
@@ -3407,6 +3791,13 @@ class Fit_Weibull_CR:
     CI : float, optional
         confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
+    downsample_scatterplot : bool, int, optional
+        If True or None, and there are over 1000 points, then the scatterplot
+        will be downsampled by a factor. The default downsample factor will seek
+        to produce between 500 and 1000 points. If a number is specified, it
+        will be used as the downsample factor. Default is True. This
+        functionality makes plotting faster when there are very large numbers of
+        points. It only affects the scatterplot not the calculations.
     kwargs
         Plotting keywords that are passed directly to matplotlib for the
         probability plot (e.g. color, label, linestyle)
@@ -3495,6 +3886,7 @@ class Fit_Weibull_CR:
         print_results=True,
         CI=0.95,
         optimizer=None,
+        downsample_scatterplot=True,
         **kwargs,
     ):
 
@@ -3739,6 +4131,7 @@ class Fit_Weibull_CR:
                 failures=failures,
                 right_censored=rc,
                 show_fitted_distribution=False,
+                downsample_scatterplot=downsample_scatterplot,
                 **kwargs,
             )
             if "label" in kwargs:
@@ -3817,6 +4210,13 @@ class Fit_Weibull_DSZI:
     CI : float, optional
         confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
+    downsample_scatterplot : bool, int, optional
+        If True or None, and there are over 1000 points, then the scatterplot
+        will be downsampled by a factor. The default downsample factor will seek
+        to produce between 500 and 1000 points. If a number is specified, it
+        will be used as the downsample factor. Default is True. This
+        functionality makes plotting faster when there are very large numbers of
+        points. It only affects the scatterplot not the calculations.
     kwargs
         Plotting keywords that are passed directly to matplotlib for the
         probability plot (e.g. color, label, linestyle)
@@ -3893,6 +4293,7 @@ class Fit_Weibull_DSZI:
         print_results=True,
         CI=0.95,
         optimizer=None,
+        downsample_scatterplot=True,
         **kwargs,
     ):
         # need to remove zeros before passing to fitters input checking
@@ -4122,7 +4523,12 @@ class Fit_Weibull_DSZI:
                     + str(round_to_decimals(self.ZI, dec))
                     + ")"
                 )
-            plot_points(failures=failures, right_censored=right_censored, **kwargs)
+            plot_points(
+                failures=failures,
+                right_censored=right_censored,
+                downsample_scatterplot=downsample_scatterplot,
+                **kwargs,
+            )
 
             xvals = np.logspace(
                 np.log10(min(failures_no_zeros)) - 3,
@@ -4131,7 +4537,9 @@ class Fit_Weibull_DSZI:
             )
             self.distribution.CDF(xvals=xvals, label=label_str, **kwargs)
             # need to add this manually as Weibull_probability_plot can only add Weibull_2P and Weibull_3P using __fitted_dist_params
-            plt.title("Probability Plot\nWeibull_DSZI CDF")
+            plt.title(
+                "Probability Plot\nWeibull Defective Subpopulation Zero Inflated CDF"
+            )
             self.probability_plot = plt.gca()
 
     @staticmethod
@@ -4189,6 +4597,13 @@ class Fit_Weibull_DS:
     CI : float, optional
         confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
+    downsample_scatterplot : bool, int, optional
+        If True or None, and there are over 1000 points, then the scatterplot
+        will be downsampled by a factor. The default downsample factor will seek
+        to produce between 500 and 1000 points. If a number is specified, it
+        will be used as the downsample factor. Default is True. This
+        functionality makes plotting faster when there are very large numbers of
+        points. It only affects the scatterplot not the calculations.
     kwargs
         Plotting keywords that are passed directly to matplotlib for the
         probability plot (e.g. color, label, linestyle)
@@ -4257,6 +4672,7 @@ class Fit_Weibull_DS:
         print_results=True,
         CI=0.95,
         optimizer=None,
+        downsample_scatterplot=True,
         **kwargs,
     ):
 
@@ -4428,6 +4844,7 @@ class Fit_Weibull_DS:
                 failures=failures,
                 right_censored=rc,
                 show_fitted_distribution=False,
+                downsample_scatterplot=downsample_scatterplot,
                 **kwargs,
             )
             if "label" in kwargs:
@@ -4448,7 +4865,7 @@ class Fit_Weibull_DS:
             )
             self.distribution.CDF(xvals=xvals, label=label_str, **kwargs)
             # need to add this manually as Weibull_probability_plot can only add Weibull_2P and Weibull_3P using __fitted_dist_params
-            plt.title("Probability Plot\nWeibull_DS CDF")
+            plt.title("Probability Plot\nWeibull Defective Subpopulation CDF")
             self.probability_plot = plt.gca()
 
     @staticmethod
@@ -4497,6 +4914,13 @@ class Fit_Weibull_ZI:
     CI : float, optional
         confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
+    downsample_scatterplot : bool, int, optional
+        If True or None, and there are over 1000 points, then the scatterplot
+        will be downsampled by a factor. The default downsample factor will seek
+        to produce between 500 and 1000 points. If a number is specified, it
+        will be used as the downsample factor. Default is True. This
+        functionality makes plotting faster when there are very large numbers of
+        points. It only affects the scatterplot not the calculations.
     kwargs
         Plotting keywords that are passed directly to matplotlib for the
         probability plot (e.g. color, label, linestyle)
@@ -4565,6 +4989,7 @@ class Fit_Weibull_ZI:
         print_results=True,
         CI=0.95,
         optimizer=None,
+        downsample_scatterplot=True,
         **kwargs,
     ):
 
@@ -4765,7 +5190,12 @@ class Fit_Weibull_ZI:
                     + str(round_to_decimals(self.ZI, dec))
                     + ")"
                 )
-            plot_points(failures=failures, right_censored=right_censored, **kwargs)
+            plot_points(
+                failures=failures,
+                right_censored=right_censored,
+                downsample_scatterplot=downsample_scatterplot,
+                **kwargs,
+            )
             xvals = np.logspace(
                 np.log10(min(failures_no_zeros)) - 3,
                 np.log10(max(failures_no_zeros)) + 1,
@@ -4773,7 +5203,7 @@ class Fit_Weibull_ZI:
             )
             self.distribution.CDF(xvals=xvals, label=label_str, **kwargs)
             # need to add this manually as Weibull_probability_plot can only add Weibull_2P and Weibull_3P using __fitted_dist_params
-            plt.title("Probability Plot\nWeibull_ZI CDF")
+            plt.title("Probability Plot\nWeibull Zero Inflated CDF")
             self.probability_plot = plt.gca()
 
     @staticmethod
@@ -4839,6 +5269,13 @@ class Fit_Exponential_1P:
         If an array or list is specified then it will be used instead of the
         default array. Any array or list specified must contain values between
         0 and 100.
+    downsample_scatterplot : bool, int, optional
+        If True or None, and there are over 1000 points, then the scatterplot
+        will be downsampled by a factor. The default downsample factor will seek
+        to produce between 500 and 1000 points. If a number is specified, it
+        will be used as the downsample factor. Default is True. This
+        functionality makes plotting faster when there are very large numbers of
+        points. It only affects the scatterplot not the calculations.
     kwargs
         Plotting keywords that are passed directly to matplotlib for the
         probability plot (e.g. color, label, linestyle)
@@ -4912,6 +5349,7 @@ class Fit_Exponential_1P:
         percentiles=None,
         method="MLE",
         optimizer=None,
+        downsample_scatterplot=True,
         **kwargs,
     ):
 
@@ -5100,6 +5538,7 @@ class Fit_Exponential_1P:
                 right_censored=rc,
                 __fitted_dist_params=self,
                 CI=CI,
+                downsample_scatterplot=downsample_scatterplot,
                 **kwargs,
             )
             self.probability_plot = plt.gca()
@@ -5162,6 +5601,13 @@ class Fit_Exponential_2P:
         If an array or list is specified then it will be used instead of the
         default array. Any array or list specified must contain values between
         0 and 100.
+    downsample_scatterplot : bool, int, optional
+        If True or None, and there are over 1000 points, then the scatterplot
+        will be downsampled by a factor. The default downsample factor will seek
+        to produce between 500 and 1000 points. If a number is specified, it
+        will be used as the downsample factor. Default is True. This
+        functionality makes plotting faster when there are very large numbers of
+        points. It only affects the scatterplot not the calculations.
     kwargs
         Plotting keywords that are passed directly to matplotlib for the
         probability plot (e.g. color, label, linestyle)
@@ -5243,6 +5689,7 @@ class Fit_Exponential_2P:
         percentiles=None,
         method="MLE",
         optimizer=None,
+        downsample_scatterplot=True,
         **kwargs,
     ):
         # To obtain the confidence intervals of the parameters, the gamma parameter is estimated by optimizing the log-likelihood function but
@@ -5455,6 +5902,7 @@ class Fit_Exponential_2P:
                 right_censored=rc,
                 CI=CI,
                 __fitted_dist_params=self,
+                downsample_scatterplot=downsample_scatterplot,
                 **kwargs,
             )
             self.probability_plot = plt.gca()
@@ -5537,6 +5985,13 @@ class Fit_Normal_2P:
         If an array or list is specified then it will be used instead of the
         default array. Any array or list specified must contain values between
         0 and 100.
+    downsample_scatterplot : bool, int, optional
+        If True or None, and there are over 1000 points, then the scatterplot
+        will be downsampled by a factor. The default downsample factor will seek
+        to produce between 500 and 1000 points. If a number is specified, it
+        will be used as the downsample factor. Default is True. This
+        functionality makes plotting faster when there are very large numbers of
+        points. It only affects the scatterplot not the calculations.
     kwargs
         Plotting keywords that are passed directly to matplotlib for the
         probability plot (e.g. color, label, linestyle)
@@ -5608,6 +6063,7 @@ class Fit_Normal_2P:
         CI_type="time",
         method="MLE",
         force_sigma=None,
+        downsample_scatterplot=True,
         **kwargs,
     ):
 
@@ -5838,6 +6294,7 @@ class Fit_Normal_2P:
                 __fitted_dist_params=self,
                 CI=CI,
                 CI_type=CI_type,
+                downsample_scatterplot=downsample_scatterplot,
                 **kwargs,
             )
             self.probability_plot = plt.gca()
@@ -5915,6 +6372,13 @@ class Fit_Gumbel_2P:
         If an array or list is specified then it will be used instead of the
         default array. Any array or list specified must contain values between
         0 and 100.
+    downsample_scatterplot : bool, int, optional
+        If True or None, and there are over 1000 points, then the scatterplot
+        will be downsampled by a factor. The default downsample factor will seek
+        to produce between 500 and 1000 points. If a number is specified, it
+        will be used as the downsample factor. Default is True. This
+        functionality makes plotting faster when there are very large numbers of
+        points. It only affects the scatterplot not the calculations.
     kwargs
         Plotting keywords that are passed directly to matplotlib for the
         probability plot (e.g. color, label, linestyle).
@@ -5988,6 +6452,7 @@ class Fit_Gumbel_2P:
         CI_type="time",
         method="MLE",
         optimizer=None,
+        downsample_scatterplot=True,
         **kwargs,
     ):
 
@@ -6188,6 +6653,7 @@ class Fit_Gumbel_2P:
                 __fitted_dist_params=self,
                 CI=CI,
                 CI_type=CI_type,
+                downsample_scatterplot=downsample_scatterplot,
                 **kwargs,
             )
             self.probability_plot = plt.gca()
@@ -6259,6 +6725,13 @@ class Fit_Lognormal_2P:
         If an array or list is specified then it will be used instead of the
         default array. Any array or list specified must contain values between
         0 and 100.
+    downsample_scatterplot : bool, int, optional
+        If True or None, and there are over 1000 points, then the scatterplot
+        will be downsampled by a factor. The default downsample factor will seek
+        to produce between 500 and 1000 points. If a number is specified, it
+        will be used as the downsample factor. Default is True. This
+        functionality makes plotting faster when there are very large numbers of
+        points. It only affects the scatterplot not the calculations.
     kwargs
         Plotting keywords that are passed directly to matplotlib for the
         probability plot (e.g. color, label, linestyle).
@@ -6330,6 +6803,7 @@ class Fit_Lognormal_2P:
         CI_type="time",
         method="MLE",
         force_sigma=None,
+        downsample_scatterplot=True,
         **kwargs,
     ):
 
@@ -6559,6 +7033,7 @@ class Fit_Lognormal_2P:
                 __fitted_dist_params=self,
                 CI=CI,
                 CI_type=CI_type,
+                downsample_scatterplot=downsample_scatterplot,
                 **kwargs,
             )
             self.probability_plot = plt.gca()
@@ -6635,6 +7110,13 @@ class Fit_Lognormal_3P:
         If an array or list is specified then it will be used instead of the
         default array. Any array or list specified must contain values between
         0 and 100.
+    downsample_scatterplot : bool, int, optional
+        If True or None, and there are over 1000 points, then the scatterplot
+        will be downsampled by a factor. The default downsample factor will seek
+        to produce between 500 and 1000 points. If a number is specified, it
+        will be used as the downsample factor. Default is True. This
+        functionality makes plotting faster when there are very large numbers of
+        points. It only affects the scatterplot not the calculations.
     kwargs
         Plotting keywords that are passed directly to matplotlib for the
         probability plot (e.g. color, label, linestyle).
@@ -6717,6 +7199,7 @@ class Fit_Lognormal_3P:
         CI_type="time",
         optimizer=None,
         method="MLE",
+        downsample_scatterplot=True,
         **kwargs,
     ):
 
@@ -6966,6 +7449,7 @@ class Fit_Lognormal_3P:
                 __fitted_dist_params=self,
                 CI=CI,
                 CI_type=CI_type,
+                downsample_scatterplot=downsample_scatterplot,
                 **kwargs,
             )
             if self.gamma < 0.01:
@@ -7048,6 +7532,13 @@ class Fit_Gamma_2P:
         If an array or list is specified then it will be used instead of the
         default array. Any array or list specified must contain values between
         0 and 100.
+    downsample_scatterplot : bool, int, optional
+        If True or None, and there are over 1000 points, then the scatterplot
+        will be downsampled by a factor. The default downsample factor will seek
+        to produce between 500 and 1000 points. If a number is specified, it
+        will be used as the downsample factor. Default is True. This
+        functionality makes plotting faster when there are very large numbers of
+        points. It only affects the scatterplot not the calculations.
     kwargs
         Plotting keywords that are passed directly to matplotlib for the
         probability plot (e.g. color, label, linestyle)
@@ -7140,6 +7631,7 @@ class Fit_Gamma_2P:
         optimizer=None,
         percentiles=None,
         CI_type="time",
+        downsample_scatterplot=True,
         **kwargs,
     ):
 
@@ -7351,6 +7843,7 @@ class Fit_Gamma_2P:
                 __fitted_dist_params=self,
                 CI_type=CI_type,
                 CI=CI,
+                downsample_scatterplot=downsample_scatterplot,
                 **kwargs,
             )
             self.probability_plot = plt.gca()
@@ -7436,6 +7929,13 @@ class Fit_Gamma_3P:
         If an array or list is specified then it will be used instead of the
         default array. Any array or list specified must contain values between
         0 and 100.
+    downsample_scatterplot : bool, int, optional
+        If True or None, and there are over 1000 points, then the scatterplot
+        will be downsampled by a factor. The default downsample factor will seek
+        to produce between 500 and 1000 points. If a number is specified, it
+        will be used as the downsample factor. Default is True. This
+        functionality makes plotting faster when there are very large numbers of
+        points. It only affects the scatterplot not the calculations.
     kwargs
         Plotting keywords that are passed directly to matplotlib for the
         probability plot (e.g. color, label, linestyle)
@@ -7541,6 +8041,7 @@ class Fit_Gamma_3P:
         method="MLE",
         percentiles=None,
         CI_type="time",
+        downsample_scatterplot=True,
         **kwargs,
     ):
 
@@ -7803,6 +8304,7 @@ class Fit_Gamma_3P:
                 __fitted_dist_params=self,
                 CI=CI,
                 CI_type=CI_type,
+                downsample_scatterplot=downsample_scatterplot,
                 **kwargs,
             )
             if self.gamma < 0.01:
@@ -7899,6 +8401,13 @@ class Fit_Beta_2P:
         If an array or list is specified then it will be used instead of the
         default array. Any array or list specified must contain values between
         0 and 100.
+    downsample_scatterplot : bool, int, optional
+        If True or None, and there are over 1000 points, then the scatterplot
+        will be downsampled by a factor. The default downsample factor will seek
+        to produce between 500 and 1000 points. If a number is specified, it
+        will be used as the downsample factor. Default is True. This
+        functionality makes plotting faster when there are very large numbers of
+        points. It only affects the scatterplot not the calculations.
     kwargs
         Plotting keywords that are passed directly to matplotlib for the
         probability plot (e.g. color, label, linestyle)
@@ -7970,6 +8479,7 @@ class Fit_Beta_2P:
         percentiles=None,
         method="MLE",
         optimizer=None,
+        downsample_scatterplot=True,
         **kwargs,
     ):
 
@@ -8145,6 +8655,7 @@ class Fit_Beta_2P:
                 failures=failures,
                 right_censored=rc,
                 __fitted_dist_params=self,
+                downsample_scatterplot=downsample_scatterplot,
                 **kwargs,
             )
             self.probability_plot = plt.gca()
@@ -8212,6 +8723,13 @@ class Fit_Loglogistic_2P:
         If an array or list is specified then it will be used instead of the
         default array. Any array or list specified must contain values between
         0 and 100.
+    downsample_scatterplot : bool, int, optional
+        If True or None, and there are over 1000 points, then the scatterplot
+        will be downsampled by a factor. The default downsample factor will seek
+        to produce between 500 and 1000 points. If a number is specified, it
+        will be used as the downsample factor. Default is True. This
+        functionality makes plotting faster when there are very large numbers of
+        points. It only affects the scatterplot not the calculations.
     kwargs
         Plotting keywords that are passed directly to matplotlib for the
         probability plot (e.g. color, label, linestyle)
@@ -8282,6 +8800,7 @@ class Fit_Loglogistic_2P:
         CI_type="time",
         method="MLE",
         optimizer=None,
+        downsample_scatterplot=True,
         **kwargs,
     ):
 
@@ -8481,6 +9000,7 @@ class Fit_Loglogistic_2P:
                 __fitted_dist_params=self,
                 CI=CI,
                 CI_type=CI_type,
+                downsample_scatterplot=downsample_scatterplot,
                 **kwargs,
             )
             self.probability_plot = plt.gca()
@@ -8549,6 +9069,13 @@ class Fit_Loglogistic_3P:
         If an array or list is specified then it will be used instead of the
         default array. Any array or list specified must contain values between
         0 and 100.
+    downsample_scatterplot : bool, int, optional
+        If True or None, and there are over 1000 points, then the scatterplot
+        will be downsampled by a factor. The default downsample factor will seek
+        to produce between 500 and 1000 points. If a number is specified, it
+        will be used as the downsample factor. Default is True. This
+        functionality makes plotting faster when there are very large numbers of
+        points. It only affects the scatterplot not the calculations.
     kwargs
         Plotting keywords that are passed directly to matplotlib for the
         probability plot (e.g. color, label, linestyle)
@@ -8631,6 +9158,7 @@ class Fit_Loglogistic_3P:
         optimizer=None,
         method="MLE",
         percentiles=None,
+        downsample_scatterplot=True,
         **kwargs,
     ):
 
@@ -8875,6 +9403,7 @@ class Fit_Loglogistic_3P:
                 __fitted_dist_params=self,
                 CI=CI,
                 CI_type=CI_type,
+                downsample_scatterplot=downsample_scatterplot,
                 **kwargs,
             )
             if self.gamma < 0.01:

@@ -5,6 +5,34 @@
 Changelog
 ---------
 
+**Version: 0.7.0 --- Currently unreleased --- scheduled for release by end of Sept 2021**
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+**Summary of changes**
+
+-    This will be provided closer to the final release.
+
+**New features**
+
+-    Downsampling for the scatter plot on probability plots. This makes plotting much faster for large datasets (>1000 failures), particularly when using Fit_Everything which has many subplots.
+-    Added Weibull_Mixture, Weibull_CR, and Weibull_DS to Fit Everything. This also required changes to the plot window sizes.
+-    Changed the histogram plot from Fit_Everything. Legend is now on the left as it was getting too long with 15 items. New method used to scale the CDF histogram when there is censored data which is more accurate than the previous scaling method.
+
+**API Changes**
+
+-    The keyword "downsample_scatterplot" now appears in all fitters and probability plots. It controls whether the scatterplot will apply downsampling. This only affects the plot (when there are over 1000 data points) not the calculations.
+
+**Bug Fixes**
+
+-    Resolved Deprecation Warning from numpy in PoF.strain_life_diagram.
+-    Fit_Everything had a bug when the best distribution was Weibull_Mixture, Weibull_CR, Weibull_DS due to these distributions not having param_title_long.
+-    Probability plots with very large datasets (>10000 items) sometimes resulted in the upper ylim being 1. This is equivalent to infinity on a probability plot and caused an error. It is now manually corrected for.
+-    The least squares method for Fit_Gamma_3P produced a very poor estimate due to a bug. This carried across into the MLE result since LS is used for the MLE initial guess.
+
+**Other**
+
+-    Changed the method used by curve_fit within least_squares. Previously was 'dogleg' which was very slow. Changed to 'trf'. This significantly speeds up the location shifted distributions (Weibull_3P, etc.)
+
 **Version: 0.6.0 --- Released: 23 July 2021**
 '''''''''''''''''''''''''''''''''''''''''''''
 

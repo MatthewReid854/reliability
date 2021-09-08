@@ -112,14 +112,14 @@ def test_Fit_Gamma_3P():
     assert_allclose(MLE.Cov_alpha_beta, -11.302538880460721, rtol=rtol, atol=atol)
 
     LS = Fit_Gamma_3P(failures=data.failures, right_censored=data.right_censored, method='LS', show_probability_plot=False, print_results=False)
-    assert_allclose(LS.alpha, 67.82751726558604, rtol=rtol, atol=atol)
-    assert_allclose(LS.beta, 31.29226170989501, rtol=rtol, atol=atol)
-    assert_allclose(LS.gamma, 505.13533298746347, rtol=rtol, atol=atol)
-    assert_allclose(LS.AICc, 2727.0287032370256, rtol=rtol, atol=atol)
-    assert_allclose(LS.BIC, 2728.5159000576878, rtol=rtol, atol=atol)
-    assert_allclose(LS.loglik, -1359.7643516185128, rtol=rtol, atol=atol)
-    assert_allclose(LS.AD, 574.8571449781781, rtol=rtol, atol=atol)
-    assert_allclose(LS.Cov_alpha_beta, 2.4557691690459174, rtol=rtol, atol=atol)
+    assert_allclose(LS.alpha, 15.52387782496473, rtol=rtol, atol=atol)
+    assert_allclose(LS.beta, 6.379102526634475, rtol=rtol, atol=atol)
+    assert_allclose(LS.gamma, 471.0728464561921, rtol=rtol, atol=atol)
+    assert_allclose(LS.AICc, 158.76750225090194, rtol=rtol, atol=atol)
+    assert_allclose(LS.BIC, 160.25469907156392, rtol=rtol, atol=atol)
+    assert_allclose(LS.loglik, -75.63375112545097, rtol=rtol, atol=atol)
+    assert_allclose(LS.AD, 38.025029148894646, rtol=rtol, atol=atol)
+    assert_allclose(LS.Cov_alpha_beta, -5.605059720113306, rtol=rtol, atol=atol)
 
 
 def test_Fit_Lognormal_2P():

@@ -57,6 +57,7 @@ from reliability.Utils import (
     probability_plot_xylims,
     probability_plot_xyticks,
     colorprint,
+    xy_downsample,
 )
 
 np.seterr("ignore")
@@ -170,6 +171,7 @@ def Weibull_probability_plot(
     CI_type="time",
     show_fitted_distribution=True,
     show_scatter_points=True,
+    downsample_scatterplot=False,
     **kwargs
 ):
     """
@@ -192,6 +194,14 @@ def Weibull_probability_plot(
     show_scatter_points : bool, optional
         If True, the plot will include the scatter points from the failure
         times. Defaults = True.
+    downsample_scatterplot : bool, int, optional
+        If True or None, and there are over 1000 points, then the scatterplot
+        will be downsampled by a factor. The default downsample factor will seek
+        to produce between 500 and 1000 points. If a number is specified, it
+        will be used as the downsample factor. Default is False which will
+        result in no downsampling. This functionality makes plotting faster when
+        there are very large numbers of points. It only affects the scatterplot
+        not the calculations.
     a : float, int, optional
         The heuristic constant for plotting positions of the form
         (k-a)/(n+1-2a). Default = 0.3 which is the median rank method (same as
@@ -351,7 +361,10 @@ def Weibull_probability_plot(
     # plot the failure points and format the scale and axes
     x, y = plotting_positions(failures=failures, right_censored=right_censored, a=a)
     if show_scatter_points is True:
-        plt.scatter(x, y, marker=".", linewidth=2, c=data_color)
+        x_scatter, y_scatter = xy_downsample(
+            x, y, downsample_factor=downsample_scatterplot
+        )
+        plt.scatter(x_scatter, y_scatter, marker=".", linewidth=2, c=data_color)
     plt.gca().set_yscale(
         "function",
         functions=(axes_transforms.weibull_forward, axes_transforms.weibull_inverse),
@@ -385,6 +398,7 @@ def Loglogistic_probability_plot(
     CI_type="time",
     show_fitted_distribution=True,
     show_scatter_points=True,
+    downsample_scatterplot=False,
     **kwargs
 ):
     """
@@ -407,6 +421,14 @@ def Loglogistic_probability_plot(
     show_scatter_points : bool, optional
         If True, the plot will include the scatter points from the failure
         times. Defaults = True.
+    downsample_scatterplot : bool, int, optional
+        If True or None, and there are over 1000 points, then the scatterplot
+        will be downsampled by a factor. The default downsample factor will seek
+        to produce between 500 and 1000 points. If a number is specified, it
+        will be used as the downsample factor. Default is False which will
+        result in no downsampling. This functionality makes plotting faster when
+        there are very large numbers of points. It only affects the scatterplot
+        not the calculations.
     a : float, int, optional
         The heuristic constant for plotting positions of the form
         (k-a)/(n+1-2a). Default = 0.3 which is the median rank method (same as
@@ -565,7 +587,10 @@ def Loglogistic_probability_plot(
     # plot the failure points and format the scale and axes
     x, y = plotting_positions(failures=failures, right_censored=right_censored, a=a)
     if show_scatter_points is True:
-        plt.scatter(x, y, marker=".", linewidth=2, c=data_color)
+        x_scatter, y_scatter = xy_downsample(
+            x, y, downsample_factor=downsample_scatterplot
+        )
+        plt.scatter(x_scatter, y_scatter, marker=".", linewidth=2, c=data_color)
     plt.gca().set_yscale(
         "function",
         functions=(
@@ -602,6 +627,7 @@ def Exponential_probability_plot_Weibull_Scale(
     CI=0.95,
     show_fitted_distribution=True,
     show_scatter_points=True,
+    downsample_scatterplot=False,
     **kwargs
 ):
     """
@@ -629,6 +655,14 @@ def Exponential_probability_plot_Weibull_Scale(
     show_scatter_points : bool, optional
         If True, the plot will include the scatter points from the failure
         times. Defaults = True.
+    downsample_scatterplot : bool, int, optional
+        If True or None, and there are over 1000 points, then the scatterplot
+        will be downsampled by a factor. The default downsample factor will seek
+        to produce between 500 and 1000 points. If a number is specified, it
+        will be used as the downsample factor. Default is False which will
+        result in no downsampling. This functionality makes plotting faster when
+        there are very large numbers of points. It only affects the scatterplot
+        not the calculations.
     a : float, int, optional
         The heuristic constant for plotting positions of the form
         (k-a)/(n+1-2a). Default = 0.3 which is the median rank method (same as
@@ -769,7 +803,10 @@ def Exponential_probability_plot_Weibull_Scale(
     # plot the failure points and format the scale and axes
     x, y = plotting_positions(failures=failures, right_censored=right_censored, a=a)
     if show_scatter_points is True:
-        plt.scatter(x, y, marker=".", linewidth=2, c=data_color)
+        x_scatter, y_scatter = xy_downsample(
+            x, y, downsample_factor=downsample_scatterplot
+        )
+        plt.scatter(x_scatter, y_scatter, marker=".", linewidth=2, c=data_color)
     plt.gca().set_yscale(
         "function",
         functions=(axes_transforms.weibull_forward, axes_transforms.weibull_inverse),
@@ -803,6 +840,7 @@ def Gumbel_probability_plot(
     CI_type="time",
     show_fitted_distribution=True,
     show_scatter_points=True,
+    downsample_scatterplot=False,
     **kwargs
 ):
     """
@@ -821,6 +859,14 @@ def Gumbel_probability_plot(
     show_scatter_points : bool, optional
         If True, the plot will include the scatter points from the failure
         times. Defaults = True.
+    downsample_scatterplot : bool, int, optional
+        If True or None, and there are over 1000 points, then the scatterplot
+        will be downsampled by a factor. The default downsample factor will seek
+        to produce between 500 and 1000 points. If a number is specified, it
+        will be used as the downsample factor. Default is False which will
+        result in no downsampling. This functionality makes plotting faster when
+        there are very large numbers of points. It only affects the scatterplot
+        not the calculations.
     a : float, int, optional
         The heuristic constant for plotting positions of the form
         (k-a)/(n+1-2a). Default = 0.3 which is the median rank method (same as
@@ -924,7 +970,10 @@ def Gumbel_probability_plot(
 
     x, y = plotting_positions(failures=failures, right_censored=right_censored, a=a)
     if show_scatter_points is True:
-        plt.scatter(x, y, marker=".", linewidth=2, c=data_color)
+        x_scatter, y_scatter = xy_downsample(
+            x, y, downsample_factor=downsample_scatterplot
+        )
+        plt.scatter(x_scatter, y_scatter, marker=".", linewidth=2, c=data_color)
     plt.gca().set_yscale(
         "function",
         functions=(axes_transforms.gumbel_forward, axes_transforms.gumbel_inverse),
@@ -955,6 +1004,7 @@ def Normal_probability_plot(
     CI_type="time",
     show_fitted_distribution=True,
     show_scatter_points=True,
+    downsample_scatterplot=False,
     **kwargs
 ):
     """
@@ -973,6 +1023,14 @@ def Normal_probability_plot(
     show_scatter_points : bool, optional
         If True, the plot will include the scatter points from the failure
         times. Defaults = True.
+    downsample_scatterplot : bool, int, optional
+        If True or None, and there are over 1000 points, then the scatterplot
+        will be downsampled by a factor. The default downsample factor will seek
+        to produce between 500 and 1000 points. If a number is specified, it
+        will be used as the downsample factor. Default is False which will
+        result in no downsampling. This functionality makes plotting faster when
+        there are very large numbers of points. It only affects the scatterplot
+        not the calculations.
     a : float, int, optional
         The heuristic constant for plotting positions of the form
         (k-a)/(n+1-2a). Default = 0.3 which is the median rank method (same as
@@ -1076,7 +1134,10 @@ def Normal_probability_plot(
     # plot the failure points and format the scale and axes
     x, y = plotting_positions(failures=failures, right_censored=right_censored, a=a)
     if show_scatter_points is True:
-        plt.scatter(x, y, marker=".", linewidth=2, c=data_color)
+        x_scatter, y_scatter = xy_downsample(
+            x, y, downsample_factor=downsample_scatterplot
+        )
+        plt.scatter(x_scatter, y_scatter, marker=".", linewidth=2, c=data_color)
     plt.gca().set_yscale(
         "function",
         functions=(axes_transforms.normal_forward, axes_transforms.normal_inverse),
@@ -1108,6 +1169,7 @@ def Lognormal_probability_plot(
     CI_type="time",
     show_fitted_distribution=True,
     show_scatter_points=True,
+    downsample_scatterplot=False,
     **kwargs
 ):
     """
@@ -1130,6 +1192,14 @@ def Lognormal_probability_plot(
     show_scatter_points : bool, optional
         If True, the plot will include the scatter points from the failure
         times. Defaults = True.
+    downsample_scatterplot : bool, int, optional
+        If True or None, and there are over 1000 points, then the scatterplot
+        will be downsampled by a factor. The default downsample factor will seek
+        to produce between 500 and 1000 points. If a number is specified, it
+        will be used as the downsample factor. Default is False which will
+        result in no downsampling. This functionality makes plotting faster when
+        there are very large numbers of points. It only affects the scatterplot
+        not the calculations.
     a : float, int, optional
         The heuristic constant for plotting positions of the form
         (k-a)/(n+1-2a). Default = 0.3 which is the median rank method (same as
@@ -1285,7 +1355,10 @@ def Lognormal_probability_plot(
     # plot the failure points and format the scale and axes
     x, y = plotting_positions(failures=failures, right_censored=right_censored, a=a)
     if show_scatter_points is True:
-        plt.scatter(x, y, marker=".", linewidth=2, c=data_color)
+        x_scatter, y_scatter = xy_downsample(
+            x, y, downsample_factor=downsample_scatterplot
+        )
+        plt.scatter(x_scatter, y_scatter, marker=".", linewidth=2, c=data_color)
     plt.gca().set_yscale(
         "function",
         functions=(axes_transforms.normal_forward, axes_transforms.normal_inverse),
@@ -1316,6 +1389,7 @@ def Beta_probability_plot(
     CI=0.95,
     show_fitted_distribution=True,
     show_scatter_points=True,
+    downsample_scatterplot=False,
     **kwargs
 ):
     """
@@ -1333,6 +1407,14 @@ def Beta_probability_plot(
         plot. Defaults = True.
     show_scatter_points : bool, optional
         If True, the plot will include the scatter points from the failure
+    downsample_scatterplot : bool, int, optional
+        If True or None, and there are over 1000 points, then the scatterplot
+        will be downsampled by a factor. The default downsample factor will seek
+        to produce between 500 and 1000 points. If a number is specified, it
+        will be used as the downsample factor. Default is False which will
+        result in no downsampling. This functionality makes plotting faster when
+        there are very large numbers of points. It only affects the scatterplot
+        not the calculations.
         times. Defaults = True.
     a : float, int, optional
         The heuristic constant for plotting positions of the form
@@ -1429,7 +1511,10 @@ def Beta_probability_plot(
     plt.grid(b=True, which="major", color="k", alpha=0.3, linestyle="-")
     plt.grid(b=True, which="minor", color="k", alpha=0.08, linestyle="-")
     if show_scatter_points is True:
-        plt.scatter(x, y, marker=".", linewidth=2, c=data_color)
+        x_scatter, y_scatter = xy_downsample(
+            x, y, downsample_factor=downsample_scatterplot
+        )
+        plt.scatter(x_scatter, y_scatter, marker=".", linewidth=2, c=data_color)
     f_beta = lambda x: axes_transforms.beta_forward(x, alpha, beta)
     fi_beta = lambda x: axes_transforms.beta_inverse(x, alpha, beta)
     plt.gca().set_yscale("function", functions=(f_beta, fi_beta))
@@ -1462,6 +1547,7 @@ def Gamma_probability_plot(
     CI_type="time",
     show_fitted_distribution=True,
     show_scatter_points=True,
+    downsample_scatterplot=False,
     **kwargs
 ):
     """
@@ -1484,6 +1570,14 @@ def Gamma_probability_plot(
     show_scatter_points : bool, optional
         If True, the plot will include the scatter points from the failure
         times. Defaults = True.
+    downsample_scatterplot : bool, int, optional
+        If True or None, and there are over 1000 points, then the scatterplot
+        will be downsampled by a factor. The default downsample factor will seek
+        to produce between 500 and 1000 points. If a number is specified, it
+        will be used as the downsample factor. Default is False which will
+        result in no downsampling. This functionality makes plotting faster when
+        there are very large numbers of points. It only affects the scatterplot
+        not the calculations.
     a : float, int, optional
         The heuristic constant for plotting positions of the form
         (k-a)/(n+1-2a). Default = 0.3 which is the median rank method (same as
@@ -1656,7 +1750,10 @@ def Gamma_probability_plot(
     # plot the failure points and format the scale and axes
     x, y = plotting_positions(failures=failures, right_censored=right_censored, a=a)
     if show_scatter_points is True:
-        plt.scatter(x, y, marker=".", linewidth=2, c=data_color)
+        x_scatter, y_scatter = xy_downsample(
+            x, y, downsample_factor=downsample_scatterplot
+        )
+        plt.scatter(x_scatter, y_scatter, marker=".", linewidth=2, c=data_color)
     f_gamma = lambda x: axes_transforms.gamma_forward(x, beta)
     fi_gamma = lambda x: axes_transforms.gamma_inverse(x, beta)
     plt.gca().set_yscale("function", functions=(f_gamma, fi_gamma))
@@ -1688,6 +1785,7 @@ def Exponential_probability_plot(
     CI=0.95,
     show_fitted_distribution=True,
     show_scatter_points=True,
+    downsample_scatterplot=False,
     **kwargs
 ):
     """
@@ -1715,6 +1813,14 @@ def Exponential_probability_plot(
     show_scatter_points : bool, optional
         If True, the plot will include the scatter points from the failure
         times. Defaults = True.
+    downsample_scatterplot : bool, int, optional
+        If True or None, and there are over 1000 points, then the scatterplot
+        will be downsampled by a factor. The default downsample factor will seek
+        to produce between 500 and 1000 points. If a number is specified, it
+        will be used as the downsample factor. Default is False which will
+        result in no downsampling. This functionality makes plotting faster when
+        there are very large numbers of points. It only affects the scatterplot
+        not the calculations.
     a : float, int, optional
         The heuristic constant for plotting positions of the form
         (k-a)/(n+1-2a). Default = 0.3 which is the median rank method (same as
@@ -1844,7 +1950,10 @@ def Exponential_probability_plot(
 
     x, y = plotting_positions(failures=failures, right_censored=right_censored, a=a)
     if show_scatter_points is True:
-        plt.scatter(x, y, marker=".", linewidth=2, c=data_color)
+        x_scatter, y_scatter = xy_downsample(
+            x, y, downsample_factor=downsample_scatterplot
+        )
+        plt.scatter(x_scatter, y_scatter, marker=".", linewidth=2, c=data_color)
     plt.gca().set_yscale(
         "function",
         functions=(
@@ -1879,6 +1988,7 @@ def PP_plot_parametric(
     y_quantile_lines=None,
     x_quantile_lines=None,
     show_diagonal_line=False,
+    downsample_scatterplot=False,
     **kwargs
 ):
     """
@@ -1907,6 +2017,14 @@ def PP_plot_parametric(
         X-quantile. Optional input. Default = None
     show_diagonal_line : bool, optional
         If True the diagonal line will be shown on the plot. Default = False
+    downsample_scatterplot : bool, int, optional
+        If True or None, and there are over 1000 points, then the scatterplot
+        will be downsampled by a factor. The default downsample factor will seek
+        to produce between 500 and 1000 points. If a number is specified, it
+        will be used as the downsample factor. Default is False which will
+        result in no downsampling. This functionality makes plotting faster when
+        there are very large numbers of points. It only affects the scatterplot
+        not the calculations.
     kwargs
         Plotting keywords that are passed directly to matplotlib (e.g. color,
         label, linestyle).
@@ -1966,7 +2084,12 @@ def PP_plot_parametric(
     xvals = np.linspace(min(dist_X_b01, dist_Y_b01), max(dist_X_b99, dist_Y_b99), 100)
     dist_X_CDF = X_dist.CDF(xvals=xvals, show_plot=False)
     dist_Y_CDF = Y_dist.CDF(xvals=xvals, show_plot=False)
-    plt.scatter(dist_X_CDF, dist_Y_CDF, marker=marker, color=color, **kwargs)
+
+    if show_scatter_points is True:
+        x_scatter, y_scatter = xy_downsample(
+            dist_X_CDF, dist_Y_CDF, downsample_factor=downsample_scatterplot
+        )
+        plt.scatter(x_scatter, y_scatter, marker=marker, color=color)
 
     # this creates the labels for the axes using the parameters of the distributions
     X_label_str = str(X_dist.name + " CDF (" + X_dist.param_title + ")")
@@ -2018,7 +2141,12 @@ def PP_plot_parametric(
 
 
 def QQ_plot_parametric(
-    X_dist=None, Y_dist=None, show_fitted_lines=True, show_diagonal_line=False, **kwargs
+    X_dist=None,
+    Y_dist=None,
+    show_fitted_lines=True,
+    show_diagonal_line=False,
+    downsample_scatterplot=False,
+    **kwargs
 ):
     """
     A QQ plot (quantile-quantile plot) consists of plotting failure units vs
@@ -2048,6 +2176,14 @@ def QQ_plot_parametric(
         Default = True. These are the Y=mX and Y=mX+c lines of best fit.
     show_diagonal_line : bool
         Default = False. If True the diagonal line will be shown on the plot.
+    downsample_scatterplot : bool, int, optional
+        If True or None, and there are over 1000 points, then the scatterplot
+        will be downsampled by a factor. The default downsample factor will seek
+        to produce between 500 and 1000 points. If a number is specified, it
+        will be used as the downsample factor. Default is False which will
+        result in no downsampling. This functionality makes plotting faster when
+        there are very large numbers of points. It only affects the scatterplot
+        not the calculations.
     kwargs
         Plotting keywords that are passed directly to matplotlib (e.g. color,
         label, linestyle).
@@ -2108,7 +2244,12 @@ def QQ_plot_parametric(
         dist_Y_ISF.append(Y_dist.inverse_SF(float(x)))
     dist_X_ISF = np.array(dist_X_ISF)
     dist_Y_ISF = np.array(dist_Y_ISF)
-    plt.scatter(dist_X_ISF, dist_Y_ISF, color=color, marker=marker, **kwargs)
+
+    if show_scatter_points is True:
+        x_scatter, y_scatter = xy_downsample(
+            dist_X_ISF, dist_Y_ISF, downsample_factor=downsample_scatterplot
+        )
+        plt.scatter(x_scatter, y_scatter, marker=marker, color=color)
 
     # fit lines and generate text for equations to go in legend
     max_value = max(max(dist_X_ISF), max(dist_Y_ISF))
@@ -2165,6 +2306,7 @@ def PP_plot_semiparametric(
     Y_dist=None,
     show_diagonal_line=True,
     method="KM",
+    downsample_scatterplot=False,
     **kwargs
 ):
     """
@@ -2197,6 +2339,14 @@ def PP_plot_semiparametric(
         Adjustment respectively. Default = 'KM'.
     show_diagonal_line : bool
         Default = True. If True the diagonal line will be shown on the plot.
+    downsample_scatterplot : bool, int, optional
+        If True or None, and there are over 1000 points, then the scatterplot
+        will be downsampled by a factor. The default downsample factor will seek
+        to produce between 500 and 1000 points. If a number is specified, it
+        will be used as the downsample factor. Default is False which will
+        result in no downsampling. This functionality makes plotting faster when
+        there are very large numbers of points. It only affects the scatterplot
+        not the calculations.
     kwargs
         Plotting keywords that are passed directly to matplotlib (e.g. color,
         label, linestyle).
@@ -2310,7 +2460,13 @@ def PP_plot_semiparametric(
         plt.plot([-1, 2], [-1, 2], color="red", alpha=0.7)
 
     CDF = Y_dist.CDF(X_data_failures, show_plot=False)
-    plt.scatter(ecdf, CDF, color=color, marker=marker, **kwargs)
+
+    if show_scatter_points is True:
+        x_scatter, y_scatter = xy_downsample(
+            ecdf, CDF, downsample_factor=downsample_scatterplot
+        )
+        plt.scatter(x_scatter, y_scatter, marker=marker, color=color)
+
     Y_label_str = str(Y_dist.name + " CDF (" + Y_dist.param_title + ")")
     plt.ylabel(Y_label_str)
     plt.xlabel(xlabel)
@@ -2328,6 +2484,7 @@ def QQ_plot_semiparametric(
     show_fitted_lines=True,
     show_diagonal_line=False,
     method="KM",
+    downsample_scatterplot=False,
     **kwargs
 ):
     """
@@ -2366,6 +2523,14 @@ def QQ_plot_semiparametric(
         Default = True. These are the Y=m.X and Y=m.X+c lines of best fit.
     show_diagonal_line : bool
         Default = False. If True the diagonal line will be shown on the plot.
+    downsample_scatterplot : bool, int, optional
+        If True or None, and there are over 1000 points, then the scatterplot
+        will be downsampled by a factor. The default downsample factor will seek
+        to produce between 500 and 1000 points. If a number is specified, it
+        will be used as the downsample factor. Default is False which will
+        result in no downsampling. This functionality makes plotting faster when
+        there are very large numbers of points. It only affects the scatterplot
+        not the calculations.
     kwargs
         Plotting keywords that are passed directly to matplotlib (e.g. color,
         label, linestyle).
@@ -2480,7 +2645,13 @@ def QQ_plot_semiparametric(
     dist_Y_ISF = np.array(dist_Y_ISF[::-1])
 
     dist_Y_ISF[dist_Y_ISF == -np.inf] = 0
-    plt.scatter(X_data_failures, dist_Y_ISF, marker=marker, color=color)
+
+    if show_scatter_points is True:
+        x_scatter, y_scatter = xy_downsample(
+            X_data_failures, dist_Y_ISF, downsample_factor=downsample_scatterplot
+        )
+        plt.scatter(x_scatter, y_scatter, marker=marker, color=color)
+
     plt.ylabel(
         str(
             "Theoretical Quantiles based on\n"
@@ -2532,7 +2703,14 @@ def QQ_plot_semiparametric(
     return [m, deg1[0], deg1[1]]
 
 
-def plot_points(failures=None, right_censored=None, func="CDF", a=None, **kwargs):
+def plot_points(
+    failures=None,
+    right_censored=None,
+    func="CDF",
+    a=None,
+    downsample_scatterplot=False,
+    **kwargs
+):
     """
     Plots the failure points as a scatter plot based on the plotting positions.
     This is similar to a probability plot, just without the axes scaling or the
@@ -2557,6 +2735,14 @@ def plot_points(failures=None, right_censored=None, func="CDF", a=None, **kwargs
         (k-a)/(n+1-2a). Default is a=0.3 which is the median rank method (same
         as the default in Minitab). For more heuristics, see:
         https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics
+    downsample_scatterplot : bool, int, optional
+        If True or None, and there are over 1000 points, then the scatterplot
+        will be downsampled by a factor. The default downsample factor will seek
+        to produce between 500 and 1000 points. If a number is specified, it
+        will be used as the downsample factor. Default is False which will
+        result in no downsampling. This functionality makes plotting faster when
+        there are very large numbers of points. It only affects the scatterplot
+        not the calculations.
     kwargs
         Keyword arguments for the scatter plot. Defaults are set for color='k'
         and marker='.' These defaults can be changed using kwargs.
@@ -2626,18 +2812,16 @@ def plot_points(failures=None, right_censored=None, func="CDF", a=None, **kwargs
         marker = "."
 
     # check the previous axes limits
+    # this checks if there was a previous plot. If the lims were 0,1 and 0,1 then there probably wasn't.
     xlims = plt.xlim(auto=None)  # get previous xlim
     ylims = plt.ylim(auto=None)  # get previous ylim
-    if xlims == (0, 1) and ylims == (
-        0,
-        1,
-    ):  # this checks if there was a previous plot. If the lims were 0,1 and 0,1 then there probably wasn't.
-        plt.scatter(
-            x, y_adjusted, marker=marker, color=color, **kwargs
-        )  # plot the points. Do not restore any limits
-    else:
-        plt.scatter(
-            x, y_adjusted, marker=marker, color=color, **kwargs
-        )  # plot the points. Restore the previous limits
+
+    x_scatter, y_scatter = xy_downsample(
+        x, y_adjusted, downsample_factor=downsample_scatterplot
+    )
+    plt.scatter(x_scatter, y_scatter, marker=marker, color=color, **kwargs)
+
+    if xlims != (0, 1) or ylims != (0, 1):
+        # Restore the previous limits if there were previous limits
         plt.xlim(*xlims, auto=None)
         plt.ylim(*ylims, auto=None)

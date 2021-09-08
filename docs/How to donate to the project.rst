@@ -11,6 +11,7 @@ Developing and maintaining this library is all done in my spare time and is a ve
 
 Thank you to the following `reliability` donors for their generous support of open source development :)
 
+- elriaral (GitHub user)
 - Gabriel Felipe
 - Juergen Leib
 - Felix Nakovic

@@ -139,9 +139,9 @@ It is beneficial to see the effectiveness of the fitted distribution in comparis
     '''
     There are 118 right censored items.
     Fit_Weibull_3P parameters:
-    Alpha: 28.87474387333969 
-    Beta: 2.0294949463087324 
-    Gamma 20.383959526415147
+    Alpha: 28.874745169627886 
+    Beta: 2.0294944619390654 
+    Gamma 20.383959629725744
     '''
 
 .. image:: images/Fit_Weibull_3P_right_cens_V5.png
@@ -184,20 +184,20 @@ As another example, we will fit a Gamma_2P distribution to some partially right 
 
     '''
     Fit_Gamma_2P parameters using 10 samples: 
-    Alpha: 19.424319786626086 
-    Beta: 4.69047083028225
+    Alpha: 19.42603577754394 
+    Beta: 4.6901283424759255
     
     Fit_Gamma_2P parameters using 100 samples: 
-    Alpha: 36.26414346544092 
-    Beta: 3.2929424158773286
+    Alpha: 36.26411284656554 
+    Beta: 3.2929448936077534
     
     Fit_Gamma_2P parameters using 1000 samples: 
-    Alpha: 28.825239132661917 
-    Beta: 4.0629289662058365
+    Alpha: 28.825423280158407 
+    Beta: 4.062909060146121
     
     Fit_Gamma_2P parameters using 10000 samples: 
-    Alpha: 30.30128521400655 
-    Beta: 3.9600849740612447
+    Alpha: 30.301232862075587 
+    Beta: 3.96009153189253
     '''
     
 .. image:: images/Fit_Gamma_2P_right_cens_V5.png
@@ -342,12 +342,12 @@ The following example shows how we can use Fit_Weibull_2P_grouped to fit a Weibu
     Failures / Right censored: 10/4072 (99.75502% right censored) 
     
     Parameter  Point Estimate  Standard Error    Lower CI    Upper CI
-        Alpha     3.32225e+21     3.18953e+22 2.23595e+13 4.93629e+29
-         Beta        0.156165       0.0387594   0.0960103    0.254008 
-    
+        Alpha     6.19454e+21      7.7592e+22 1.34889e+11 2.84473e+32
+         Beta        0.153742       0.0485886   0.0827523    0.285632 
+
     Goodness of fit    Value
-     Log-likelihood -144.618
-               AICc  293.239
-                BIC  305.865
-                 AD  264.999
+     Log-likelihood -144.617
+               AICc  293.236
+                BIC  305.862
+                 AD  264.999 
     '''

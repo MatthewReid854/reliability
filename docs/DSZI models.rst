@@ -289,7 +289,7 @@ The plot below shows the CDF on the Weibull probability plot (left) and on linea
     failures, right_censored = model.random_samples(100,seed=5,right_censored_time=3000)
     
     plt.subplot(121)
-    fit = Fit_Weibull_DSZI(failures=failures,right_censored=right_censored,show_probability_plot=True,label='fitted Weibull_DSZI')
+    fit = Fit_Weibull_DSZI(failures=failures,right_censored=right_censored,label='fitted Weibull_DSZI')
     model.CDF(label='true model')
     plt.legend()
     

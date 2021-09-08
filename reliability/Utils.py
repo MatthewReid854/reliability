@@ -758,11 +758,15 @@ def probability_plot_xylims(
     x = x[np.isfinite(x)]
     y = np.asarray(y)
     y = y[np.isfinite(y)]
+    min_x = min(x)
+    max_x = max(x)
+    min_y = min(y)
+    max_y = max(y)
 
     # x limits
     if dist in ["weibull", "lognormal", "loglogistic"]:
-        min_x_log = np.log10(min(x))
-        max_x_log = np.log10(max(x))
+        min_x_log = np.log10(min_x)
+        max_x_log = np.log10(max_x)
         dx_log = max_x_log - min_x_log
         xlim_lower = 10 ** (min_x_log - dx_log * spacing)
         xlim_upper = 10 ** (max_x_log + dx_log * spacing)
@@ -770,8 +774,6 @@ def probability_plot_xylims(
             xlim_lower = 10 ** (np.log10(xlim_lower) - 10 * spacing)
             xlim_upper = 10 ** (np.log10(xlim_upper) + 10 * spacing)
     elif dist in ["normal", "gamma", "exponential", "beta", "gumbel"]:
-        min_x = min(x)
-        max_x = max(x)
         dx = max_x - min_x
         xlim_lower = min_x - dx * spacing
         xlim_upper = max_x + dx * spacing
@@ -782,24 +784,25 @@ def probability_plot_xylims(
         raise ValueError("dist is unrecognised")
     if xlim_lower < 0 and dist not in ["normal", "gumbel"]:
         xlim_lower = 0
+    # set xlims
     plt.xlim(xlim_lower, xlim_upper)
 
     # y limits
     if dist == "weibull":
-        min_y_tfm = axes_transforms.weibull_forward(min(y))
-        max_y_tfm = axes_transforms.weibull_forward(max(y))
+        min_y_tfm = axes_transforms.weibull_forward(min_y)
+        max_y_tfm = axes_transforms.weibull_forward(max_y)
         dy_tfm = max_y_tfm - min_y_tfm
         ylim_lower = axes_transforms.weibull_inverse(min_y_tfm - dy_tfm * spacing)
         ylim_upper = axes_transforms.weibull_inverse(max_y_tfm + dy_tfm * spacing)
     if dist == "exponential":
-        min_y_tfm = axes_transforms.exponential_forward(min(y))
-        max_y_tfm = axes_transforms.exponential_forward(max(y))
+        min_y_tfm = axes_transforms.exponential_forward(min_y)
+        max_y_tfm = axes_transforms.exponential_forward(max_y)
         dy_tfm = max_y_tfm - min_y_tfm
         ylim_lower = axes_transforms.exponential_inverse(min_y_tfm - dy_tfm * spacing)
         ylim_upper = axes_transforms.exponential_inverse(max_y_tfm + dy_tfm * spacing)
     elif dist == "gamma":
-        min_y_tfm = axes_transforms.gamma_forward(min(y), gamma_beta)
-        max_y_tfm = axes_transforms.gamma_forward(max(y), gamma_beta)
+        min_y_tfm = axes_transforms.gamma_forward(min_y, gamma_beta)
+        max_y_tfm = axes_transforms.gamma_forward(max_y, gamma_beta)
         dy_tfm = max_y_tfm - min_y_tfm
         ylim_lower = axes_transforms.gamma_inverse(
             min_y_tfm - dy_tfm * spacing, gamma_beta
@@ -808,20 +811,20 @@ def probability_plot_xylims(
             max_y_tfm + dy_tfm * spacing, gamma_beta
         )
     elif dist in ["normal", "lognormal"]:
-        min_y_tfm = axes_transforms.normal_forward(min(y))
-        max_y_tfm = axes_transforms.normal_forward(max(y))
+        min_y_tfm = axes_transforms.normal_forward(min_y)
+        max_y_tfm = axes_transforms.normal_forward(max_y)
         dy_tfm = max_y_tfm - min_y_tfm
         ylim_lower = axes_transforms.normal_inverse(min_y_tfm - dy_tfm * spacing)
         ylim_upper = axes_transforms.normal_inverse(max_y_tfm + dy_tfm * spacing)
     elif dist == "gumbel":
-        min_y_tfm = axes_transforms.gumbel_forward(min(y))
-        max_y_tfm = axes_transforms.gumbel_forward(max(y))
+        min_y_tfm = axes_transforms.gumbel_forward(min_y)
+        max_y_tfm = axes_transforms.gumbel_forward(max_y)
         dy_tfm = max_y_tfm - min_y_tfm
         ylim_lower = axes_transforms.gumbel_inverse(min_y_tfm - dy_tfm * spacing)
         ylim_upper = axes_transforms.gumbel_inverse(max_y_tfm + dy_tfm * spacing)
     elif dist == "beta":
-        min_y_tfm = axes_transforms.beta_forward(min(y), beta_alpha, beta_beta)
-        max_y_tfm = axes_transforms.beta_forward(max(y), beta_alpha, beta_beta)
+        min_y_tfm = axes_transforms.beta_forward(min_y, beta_alpha, beta_beta)
+        max_y_tfm = axes_transforms.beta_forward(max_y, beta_alpha, beta_beta)
         dy_tfm = max_y_tfm - min_y_tfm
         ylim_lower = axes_transforms.beta_inverse(
             min_y_tfm - dy_tfm * spacing, beta_alpha, beta_beta
@@ -830,8 +833,8 @@ def probability_plot_xylims(
             max_y_tfm + dy_tfm * spacing, beta_alpha, beta_beta
         )
     elif dist == "loglogistic":
-        min_y_tfm = axes_transforms.loglogistic_forward(min(y))
-        max_y_tfm = axes_transforms.loglogistic_forward(max(y))
+        min_y_tfm = axes_transforms.loglogistic_forward(min_y)
+        max_y_tfm = axes_transforms.loglogistic_forward(max_y)
         dy_tfm = max_y_tfm - min_y_tfm
         ylim_lower = axes_transforms.loglogistic_inverse(min_y_tfm - dy_tfm * spacing)
         ylim_upper = axes_transforms.loglogistic_inverse(max_y_tfm + dy_tfm * spacing)
@@ -839,6 +842,19 @@ def probability_plot_xylims(
         dx = min(1 - ylim_upper, ylim_upper - 1)
         ylim_upper = ylim_upper - spacing * dx
         ylim_lower = ylim_lower + spacing * dx
+
+    # correction for the case where ylims are is 0 or 1
+    if ylim_lower == 0:
+        if min_y > 0:
+            ylim_lower = min_y
+        else:
+            ylim_lower = 0.00001
+    if ylim_upper == 1:
+        if max_y < 1:
+            ylim_upper = max_y
+        else:
+            ylim_upper = 0.99999
+    # set ylims
     plt.ylim(ylim_lower, ylim_upper)
 
 
@@ -1250,7 +1266,7 @@ class fitters_input_checking:
             if len(failures) != len(f0):
                 if dist == "Everything":
                     colorprint(
-                        "WARNING: failures contained zeros. These have been removed to enable fitting of all distributions.",
+                        "WARNING: failures contained zeros. These have been removed to enable fitting of all distributions. Consider using Fit_Weibull_ZI or Fit_Weibull_DSZI if you need to include the zero inflation in the models.",
                         text_color="red",
                     )
                 else:
@@ -1258,7 +1274,7 @@ class fitters_input_checking:
                         str(
                             "WARNING: failures contained zeros. These have been removed to enable fitting of the "
                             + dist
-                            + " distribution."
+                            + " distribution. Consider using Fit_Weibull_ZI or Fit_Weibull_DSZI if you need to include the zero inflation in the model."
                         ),
                         text_color="red",
                     )
@@ -1285,7 +1301,7 @@ class fitters_input_checking:
                 failures = f1[f1 != 0]
                 if len(failures) != len(f1):
                     colorprint(
-                        "WARNING: failures contained ones. These have been removed to enable fitting of the Beta_2P distribution.",
+                        "WARNING: failures contained ones. These have been removed to enable fitting of the Beta_2P distribution. Consider using Fit_Weibull_ZI or Fit_Weibull_DSZI if you need to include the zero inflation in the model.",
                         text_color="red",
                     )
                 if len(right_censored) != len(rc1):
@@ -3744,8 +3760,8 @@ def least_squares(dist, failures, right_censored, method="RRX", force_shape=None
                 y,
                 p0=[LS_alpha, LS_beta, gamma0],
                 bounds=curve_fit_bounds,
-                jac="cs",
-                method="dogbox",
+                jac="3-point",
+                method="trf",
                 max_nfev=300 * len(failures),
             )  # This is the non-linear least squares method. p0 is the initial guess for [alpha,beta,gamma]
             NLLS_alpha = popt[0]
@@ -3796,7 +3812,7 @@ def least_squares(dist, failures, right_censored, method="RRX", force_shape=None
                 y,
                 p0=[LS_Lambda, gamma0],
                 bounds=curve_fit_bounds,
-                jac="cs",
+                jac="3-point",
                 method="trf",
                 max_nfev=300 * len(failures),
             )
@@ -3868,6 +3884,8 @@ def least_squares(dist, failures, right_censored, method="RRX", force_shape=None
                 y,
                 p0=[np.mean(np.log(x - gamma)), np.std(np.log(x - gamma))],
                 bounds=curve_fit_bounds,
+                jac="3-point",
+                method="trf",
                 max_nfev=300 * len(failures),
             )  # This is the non-linear least squares method. p0 is the initial guess for [mu,sigma].
             NLLS_mu = popt[0]
@@ -3912,8 +3930,8 @@ def least_squares(dist, failures, right_censored, method="RRX", force_shape=None
                 y,
                 p0=[LS_alpha, LS_beta, gamma0],
                 bounds=curve_fit_bounds,
-                jac="cs",
-                method="dogbox",
+                jac="3-point",
+                method="trf",
                 max_nfev=300 * len(failures),
             )  # This is the non-linear least squares method. p0 is the initial guess for [alpha,beta,gamma].
             NLLS_alpha = popt[0]
@@ -3954,7 +3972,8 @@ def least_squares(dist, failures, right_censored, method="RRX", force_shape=None
                 y,
                 p0=[alpha_guess, beta_guess],
                 bounds=curve_fit_bounds,
-                method="dogbox",
+                jac="3-point",
+                method="trf",
                 max_nfev=300 * len(failures),
             )  # This is the non-linear least squares method. p0 is the initial guess for [alpha,beta]
             return [popt[0], popt[1]]
@@ -4004,11 +4023,12 @@ def least_squares(dist, failures, right_censored, method="RRX", force_shape=None
             )  # ([alpha_lower,beta_lower],[alpha_upper,beta_upper])
             popt, _ = curve_fit(
                 __gamma_2P_CDF,
-                x,
+                x - gamma0 * 0.98,
                 y,
                 p0=[alpha_guess, beta_guess],
                 bounds=curve_fit_bounds,
-                method="dogbox",
+                jac="3-point",
+                method="trf",
                 max_nfev=300 * len(failures),
             )  # This is the non-linear least squares method. p0 is the initial guess for [alpha,beta]
             return [popt[0], popt[1]]
@@ -4024,6 +4044,7 @@ def least_squares(dist, failures, right_censored, method="RRX", force_shape=None
                 y,
                 p0=[NLLS_alpha_2P, NLLS_beta_2P, gamma0 * 0.98],
                 bounds=curve_fit_bounds_3P,
+                jac="3-point",
                 method="trf",
                 max_nfev=300 * len(failures),
             )  # This is the non-linear least squares method. p0 is the initial guess for [alpha,beta,gamma]
@@ -4092,6 +4113,8 @@ def least_squares(dist, failures, right_censored, method="RRX", force_shape=None
                 y,
                 p0=[2, 1],
                 bounds=curve_fit_bounds,
+                jac="3-point",
+                method="trf",
                 max_nfev=300 * len(failures),
             )  # This is the non-linear least squares method. p0 is the initial guess for [alpha,beta]
             NLLS_alpha = popt[0]
@@ -5420,3 +5443,41 @@ def life_stress_plot(
             plt.title("Life-stress plot\n" + dist + "-" + model + " model")
             plt.tight_layout()
         return plt.gca()
+
+
+def xy_downsample(x, y, downsample_factor=None, default_max_values=1000):
+    """
+    Downsamples the x and y arrays.
+    Downsampling is done using the downsample_factor. If the down_sample factor
+    is 2 then every second value will be returned, if 3 then every third value
+    will be returned. The first and last items will always be included in the
+    downsampled dataset. If downsample_factor is not specified, downsampling
+    will only occur if there are more than default_max_values and the downsample
+    factor will aim for a minimum of 500 values to be returned.
+    """
+
+    x_sorted = np.sort(x)
+    y_sorted = np.sort(y)
+    len_x = len(x)
+    if downsample_factor is False:
+        return x, y
+    if downsample_factor in [None, True] and len_x < default_max_values:
+        return x, y
+    else:
+        if downsample_factor in [None, True]:
+            downsample_factor = np.floor(len_x / (0.5 * default_max_values))
+        if len_x / downsample_factor < 2:
+            return x, y
+        else:
+            indices = np.arange(
+                start=0, stop=len_x, step=int(np.floor(downsample_factor)), dtype=int
+            )
+
+            if len_x - 1 not in indices:
+                indices[-1] = len_x - 1
+            x_downsample = []
+            y_downsample = []
+            for idx in indices:
+                x_downsample.append(x_sorted[idx])
+                y_downsample.append(y_sorted[idx])
+            return x_downsample, y_downsample
