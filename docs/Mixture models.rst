@@ -176,7 +176,7 @@ In this example, we will compare how well the Weibull Mixture performs vs a sing
     plt.show()
 
     '''
-    Weibull_Mixture BIC: 6431.578404181696 
+    Weibull_Mixture BIC: 6431.578404076784
     Weibull_2P BIC: 6511.511759597337
     '''
 

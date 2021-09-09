@@ -1941,7 +1941,7 @@ def clean_CI_arrays(xlower, xupper, ylower, yupper, plot_type="CDF"):
             ylower_out3 = np.append(ylower_out3, ylower_out2[i])
             yupper_out3 = np.append(yupper_out3, yupper_out2[i])
 
-    # final error check for lengths matching and there still being at least 2 elements remaning
+    # final error check for lengths matching and there still being at least 2 elements remaining
     if (
         len(xlower_out3) != len(xupper_out3)
         or len(xlower_out3) != len(yupper_out3)
@@ -1964,6 +1964,12 @@ def fill_no_autoscale(xlower, xupper, ylower, yupper, **kwargs):
     # generate the polygon
     xstack = np.hstack([xlower, xupper[::-1]])
     ystack = np.hstack([ylower, yupper[::-1]])
+
+    # this corrects illegal yvalues in the probability plot
+    if plt.gca().get_yscale() == "function":
+        ystack[np.where(ystack >= 1)] = 0.9999999
+        ystack[np.where(ystack <= 0)] = 0.0000001
+
     polygon = np.column_stack([xstack, ystack])
     # this is equivalent to fill as it makes a polygon
     col = PolyCollection([polygon], **kwargs)
@@ -2133,6 +2139,7 @@ class distribution_confidence_intervals:
                 )  # still need to specify color otherwise the invisible CI lines will consume default colors
                 # plt.scatter(t + self.gamma, yy_lower,color='blue',marker='.')
                 # plt.scatter(t + self.gamma, yy_upper, color='red', marker='.')
+
             elif plot_CI is None and q is not None:
                 return t_lower, t_upper
 

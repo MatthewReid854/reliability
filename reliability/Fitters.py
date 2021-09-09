@@ -3428,51 +3428,58 @@ class Fit_Weibull_Mixture:
             failures=failures, right_censored=right_censored
         )  # this is only used to find AD
 
-        # find the division line. This is to assign data to each group
-        h = np.histogram(failures, bins=50, density=True)
-        hist_counts = h[0]
-        hist_bins = h[1]
-        midbins = []
-        for i in range(len(hist_bins)):
-            if i > 0 and i < len(hist_bins):
-                midbins.append((hist_bins[i] + hist_bins[i - 1]) / 2)
-        peaks_x = []
-        peaks_y = []
-        batch_width = 8
-        for i, x in enumerate(hist_counts):
-            if i < batch_width:
-                batch = hist_counts[0 : i + batch_width]
-            elif i > batch_width and i > len(hist_counts - batch_width):
-                batch = hist_counts[i - batch_width : len(hist_counts)]
-            else:
-                batch = hist_counts[
-                    i - batch_width : i + batch_width
-                ]  # the histogram counts are batched (actual batch size = 2 x batch_width)
-            if (
-                max(batch) == x
-            ):  # if the current point is higher than the rest of the batch then it is counted as a peak
-                peaks_x.append(midbins[i])
-                peaks_y.append(x)
-        if (
-            len(peaks_x) > 2
-        ):  # if there are more than 2 peaks, the mean is moved based on the height of the peaks. Higher peaks will attract the mean towards them more than smaller peaks.
-            yfracs = np.array(peaks_y) / sum(peaks_y)
-            division_line = sum(peaks_x * yfracs)
+        # this algorithm is used to estimate the dividing line between the two groups
+        # firstly it fits a gaussian kde to the histogram
+        # then it draws two straight lines from the highest peak of the kde down to the lower and upper bounds of the failures
+        # the dividing line is the point where the difference between the kde and the straight lines is greatest
+        max_failures = max(failures)
+        min_failures = min(failures)
+        gkde = ss.gaussian_kde(failures)
+        delta = max_failures - min_failures
+        x_kde = np.linspace(min_failures - delta / 5, max_failures + delta / 5, 100)
+        y_kde = gkde.evaluate(x_kde)
+        peak_y = max(y_kde)
+        peak_x = x_kde[np.where(y_kde == peak_y)][0]
+
+        left_x = min_failures
+        left_y = gkde.evaluate(left_x)
+        left_m = (peak_y - left_y) / (peak_x - left_x)
+        left_c = -left_m * left_x + left_y
+        left_line_x = np.linspace(left_x, peak_x, 100)
+        left_line_y = left_m * left_line_x + left_c  # y=mx+c
+        left_kde = gkde.evaluate(left_line_x)
+        left_diff = abs(left_line_y - left_kde)
+        left_diff_max = max(left_diff)
+        left_div_line = left_line_x[np.where(left_diff == left_diff_max)][0]
+
+        right_x = max_failures
+        right_y = gkde.evaluate(right_x)
+        right_m = (right_y - peak_y) / (right_x - peak_x)
+        right_c = -right_m * right_x + right_y
+        right_line_x = np.linspace(peak_x, right_x, 100)
+        right_line_y = right_m * right_line_x + right_c  # y=mx+c
+        right_kde = gkde.evaluate(right_line_x)
+        right_diff = abs(right_line_y - right_kde)
+        right_diff_max = max(right_diff)
+        right_div_line = right_line_x[np.where(right_diff == right_diff_max)][0]
+
+        if left_diff_max > right_diff_max:
+            dividing_line = left_div_line
         else:
-            division_line = np.average(peaks_x)
-        self.division_line = division_line
+            dividing_line = right_div_line
+
         # this is the point at which data is assigned to one group or another for the purpose of generating the initial guess
         GROUP_1_failures = []
         GROUP_2_failures = []
         GROUP_1_right_cens = []
         GROUP_2_right_cens = []
         for item in failures:
-            if item < division_line:
+            if item < dividing_line:
                 GROUP_1_failures.append(item)
             else:
                 GROUP_2_failures.append(item)
         for item in right_censored:
-            if item < division_line:
+            if item < dividing_line:
                 GROUP_1_right_cens.append(item)
             else:
                 GROUP_2_right_cens.append(item)
@@ -3492,9 +3499,8 @@ class Fit_Weibull_Mixture:
             print_results=False,
             optimizer=optimizer,
         )
-        p_guess = (
-            len(GROUP_1_failures) + len(GROUP_1_right_cens)
-        ) / n  # proportion guess
+        # proportion guess
+        p_guess = (len(GROUP_1_failures) + len(GROUP_1_right_cens)) / n
         guess = [
             group_1_estimates.alpha,
             group_1_estimates.beta,
@@ -3906,51 +3912,59 @@ class Fit_Weibull_CR:
         _, y = plotting_positions(
             failures=failures, right_censored=right_censored
         )  # this is only used to find AD
-        # find the division line. This is to assign data to each group
-        h = np.histogram(failures, bins=50, density=True)
-        hist_counts = h[0]
-        hist_bins = h[1]
-        midbins = []
-        for i in range(len(hist_bins)):
-            if i > 0 and i < len(hist_bins):
-                midbins.append((hist_bins[i] + hist_bins[i - 1]) / 2)
-        peaks_x = []
-        peaks_y = []
-        batch_width = 8
-        for i, x in enumerate(hist_counts):
-            if i < batch_width:
-                batch = hist_counts[0 : i + batch_width]
-            elif i > batch_width and i > len(hist_counts - batch_width):
-                batch = hist_counts[i - batch_width : len(hist_counts)]
-            else:
-                batch = hist_counts[
-                    i - batch_width : i + batch_width
-                ]  # the histogram counts are batched (actual batch size = 2 x batch_width)
-            if (
-                max(batch) == x
-            ):  # if the current point is higher than the rest of the batch then it is counted as a peak
-                peaks_x.append(midbins[i])
-                peaks_y.append(x)
-        if (
-            len(peaks_x) > 2
-        ):  # if there are more than 2 peaks, the mean is moved based on the height of the peaks. Higher peaks will attract the mean towards them more than smaller peaks.
-            yfracs = np.array(peaks_y) / sum(peaks_y)
-            division_line = sum(peaks_x * yfracs)
+
+        # this algorithm is used to estimate the dividing line between the two groups
+        # firstly it fits a gaussian kde to the histogram
+        # then it draws two straight lines from the highest peak of the kde down to the lower and upper bounds of the failures
+        # the dividing line is the point where the difference between the kde and the straight lines is greatest
+        max_failures = max(failures)
+        min_failures = min(failures)
+        gkde = ss.gaussian_kde(failures)
+        delta = max_failures - min_failures
+        x_kde = np.linspace(min_failures - delta / 5, max_failures + delta / 5, 100)
+        y_kde = gkde.evaluate(x_kde)
+        peak_y = max(y_kde)
+        peak_x = x_kde[np.where(y_kde == peak_y)][0]
+
+        left_x = min_failures
+        left_y = gkde.evaluate(left_x)
+        left_m = (peak_y - left_y) / (peak_x - left_x)
+        left_c = -left_m * left_x + left_y
+        left_line_x = np.linspace(left_x, peak_x, 100)
+        left_line_y = left_m * left_line_x + left_c  # y=mx+c
+        left_kde = gkde.evaluate(left_line_x)
+        left_diff = abs(left_line_y - left_kde)
+        left_diff_max = max(left_diff)
+        left_div_line = left_line_x[np.where(left_diff == left_diff_max)][0]
+
+        right_x = max_failures
+        right_y = gkde.evaluate(right_x)
+        right_m = (right_y - peak_y) / (right_x - peak_x)
+        right_c = -right_m * right_x + right_y
+        right_line_x = np.linspace(peak_x, right_x, 100)
+        right_line_y = right_m * right_line_x + right_c  # y=mx+c
+        right_kde = gkde.evaluate(right_line_x)
+        right_diff = abs(right_line_y - right_kde)
+        right_diff_max = max(right_diff)
+        right_div_line = right_line_x[np.where(right_diff == right_diff_max)][0]
+
+        if left_diff_max > right_diff_max:
+            dividing_line = left_div_line
         else:
-            division_line = np.average(peaks_x)
-        self.division_line = division_line
+            dividing_line = right_div_line
+
         # this is the point at which data is assigned to one group or another for the purpose of generating the initial guess
         GROUP_1_failures = []
         GROUP_2_failures = []
         GROUP_1_right_cens = []
         GROUP_2_right_cens = []
         for item in failures:
-            if item < division_line:
+            if item < dividing_line:
                 GROUP_1_failures.append(item)
             else:
                 GROUP_2_failures.append(item)
         for item in right_censored:
-            if item < division_line:
+            if item < dividing_line:
                 GROUP_1_right_cens.append(item)
             else:
                 GROUP_2_right_cens.append(item)
@@ -4023,7 +4037,7 @@ class Fit_Weibull_CR:
                 str(
                     "WARNING: The hessian matrix obtained using the "
                     + self.optimizer
-                    + " optimizer is non-invertable for the Weibull competing risks model.\n"
+                    + " optimizer is non-invertable for the Weibull Competing Risks model.\n"
                     "Confidence interval estimates of the parameters could not be obtained.\n"
                     "You may want to try fitting the model using a different optimizer."
                 ),

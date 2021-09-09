@@ -225,9 +225,9 @@ When matplotlib is asked to plot large datasets (thousands of items), it can bec
 
 Downsampling only affects the scatterplot, not the calculations. It is applied automatically for all probability plots (including when these plots are generated as an output from the Fitters), but can be controlled using the "downsample_scatterplot" keyword.
 
-If "downsample_scatterplot" is True or None, and there are over 1000 points, then the scatterplot will be downsampled by a factor. The default downsample factor will seek to produce between 500 and 1000 points. If a number is specified, it will be used as the downsample factor. FOr example, if 2 is specified then every 2nd point will be displayed, whereas if 3 is specified then every 3rd point will be displayed.
+If "downsample_scatterplot" is True or None, and there are over 1000 points, then the scatterplot will be downsampled by a factor. The default downsample factor will seek to produce between 500 and 1000 points. If a number is specified, it will be used as the downsample factor. For example, if 2 is specified then every 2nd point will be displayed, whereas if 3 is specified then every 3rd point will be displayed.
 
-The min and max points will always be retained in the downsampled scatterplot which helps to preserve the plotting range.
+The min and max points will always be displayed in the downsampled scatterplot which preserves the plotting range.
 
 See the `API <https://reliability.readthedocs.io/en/latest/API%20reference.html>`_ documentation for more detail on the default in each function.
 

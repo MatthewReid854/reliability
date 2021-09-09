@@ -14,9 +14,9 @@ Changelog
 
 **New features**
 
--    Downsampling for the scatter plot on probability plots. This makes plotting much faster for large datasets (>1000 failures), particularly when using Fit_Everything which has many subplots.
 -    Added Weibull_Mixture, Weibull_CR, and Weibull_DS to Fit Everything. This also required changes to the plot window sizes.
 -    Changed the histogram plot from Fit_Everything. Legend is now on the left as it was getting too long with 15 items. New method used to scale the CDF histogram when there is censored data which is more accurate than the previous scaling method.
+-    Downsampling for the scatter plot on probability plots. This makes plotting much faster for large datasets (>1000 failures), particularly when using Fit_Everything which has many subplots.
 
 **API Changes**
 
@@ -28,10 +28,12 @@ Changelog
 -    Fit_Everything had a bug when the best distribution was Weibull_Mixture, Weibull_CR, Weibull_DS due to these distributions not having param_title_long.
 -    Probability plots with very large datasets (>10000 items) sometimes resulted in the upper ylim being 1. This is equivalent to infinity on a probability plot and caused an error. It is now manually corrected for.
 -    The least squares method for Fit_Gamma_3P produced a very poor estimate due to a bug. This carried across into the MLE result since LS is used for the MLE initial guess.
+-    The confidence intervals would sometimes not be displayed on probability plots with very small datasets. This was due to the CI arrays still containing 1's at the extremities. This is now corrected.
 
 **Other**
 
 -    Changed the method used by curve_fit within least_squares. Previously was 'dogleg' which was very slow. Changed to 'trf'. This significantly speeds up the location shifted distributions (Weibull_3P, etc.)
+-    Changed the group splitting algorithm used in Fit_Weibull_Mixture and Fit_Weibull_CR. The new method is more robust and provides better a better initial guess of the parameters for MLE.
 
 **Version: 0.6.0 --- Released: 23 July 2021**
 '''''''''''''''''''''''''''''''''''''''''''''
