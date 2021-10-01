@@ -5,12 +5,14 @@
 Changelog
 ---------
 
-**Version: 0.7.0 --- Currently unreleased --- scheduled for release by end of Sept 2021**
-'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+**Version: 0.7.0 --- Currently unreleased --- scheduled for release by early October 2021**
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 **Summary of changes**
 
--    This will be provided closer to the final release.
+-    Version 0.7.0 has a few really useful enhancements. The first of these is the addition of three of the special models (mixture, competing risks, defective subpopulation) to the Fit_Everything function.
+     The second major enhancement is faster plotting for large datasets using downsampling.
+     There are also numerous bug fixes that resolve several longstanding minor issues as well as some minor changes that make some of the algorithms more reliable.
 
 **New features**
 
@@ -28,7 +30,9 @@ Changelog
 -    Fit_Everything had a bug when the best distribution was Weibull_Mixture, Weibull_CR, Weibull_DS due to these distributions not having param_title_long.
 -    Probability plots with very large datasets (>10000 items) sometimes resulted in the upper ylim being 1. This is equivalent to infinity on a probability plot and caused an error. It is now manually corrected for.
 -    The least squares method for Fit_Gamma_3P produced a very poor estimate due to a bug. This carried across into the MLE result since LS is used for the MLE initial guess.
--    The confidence intervals would sometimes not be displayed on probability plots with very small datasets. This was due to the CI arrays still containing 1's at the extremities. This is now corrected.
+-    The confidence intervals would sometimes not be displayed on probability plots with very small datasets. This was due to the CI arrays still containing 1's at the extremities. This is now corrected using a more robust filter before plotting.
+-    Numerous bug fixes for ALT_Fitters, including the ability to exclude distributions (which was previously being ignored due to an error) and greater stability in the initial guess (which previously could crash with some datasets due to non-invertable matrices).
+-    Fixed a rare bug in all Fitters and all ALT_Fitters when the hessian matrix was non-invertable. This would cause a LinAlgError. Now it will be excepted and print a warning that the confidence intervals can't be obtained.
 
 **Other**
 

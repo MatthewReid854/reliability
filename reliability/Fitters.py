@@ -1337,7 +1337,6 @@ class Fit_Everything:
         """
         X = self.failures
         # define plotting limits
-        delta = max(X) - min(X)
         xmin = 0
         xmax = max(X) * 1.2
 
@@ -2027,14 +2026,39 @@ class Fit_Weibull_2P:
                 np.array(tuple(failures)),
                 np.array(tuple(right_censored)),
             )
-            covariance_matrix = np.linalg.inv(hessian_matrix)
-            self.alpha_SE = abs(covariance_matrix[0][0]) ** 0.5
-            self.beta_SE = abs(covariance_matrix[1][1]) ** 0.5
-            self.Cov_alpha_beta = covariance_matrix[0][1]
-            self.alpha_upper = self.alpha * (np.exp(Z * (self.alpha_SE / self.alpha)))
-            self.alpha_lower = self.alpha * (np.exp(-Z * (self.alpha_SE / self.alpha)))
-            self.beta_upper = self.beta * (np.exp(Z * (self.beta_SE / self.beta)))
-            self.beta_lower = self.beta * (np.exp(-Z * (self.beta_SE / self.beta)))
+            try:
+                covariance_matrix = np.linalg.inv(hessian_matrix)
+                self.alpha_SE = abs(covariance_matrix[0][0]) ** 0.5
+                self.beta_SE = abs(covariance_matrix[1][1]) ** 0.5
+                self.Cov_alpha_beta = covariance_matrix[0][1]
+                self.alpha_upper = self.alpha * (
+                    np.exp(Z * (self.alpha_SE / self.alpha))
+                )
+                self.alpha_lower = self.alpha * (
+                    np.exp(-Z * (self.alpha_SE / self.alpha))
+                )
+                self.beta_upper = self.beta * (np.exp(Z * (self.beta_SE / self.beta)))
+                self.beta_lower = self.beta * (np.exp(-Z * (self.beta_SE / self.beta)))
+            except LinAlgError:
+                # this exception is rare but can occur with some optimizers
+                colorprint(
+                    str(
+                        "WARNING: The hessian matrix obtained using the "
+                        + self.optimizer
+                        + " optimizer is non-invertable for the Weibull_2P model.\n"
+                        "Confidence interval estimates of the parameters could not be obtained.\n"
+                        "You may want to try fitting the model using a different optimizer."
+                    ),
+                    text_color="red",
+                )
+                self.alpha_SE = 0
+                self.beta_SE = 0
+                self.Cov_alpha_beta = 0
+                self.alpha_upper = self.alpha
+                self.alpha_lower = self.alpha
+                self.beta_upper = self.beta
+                self.beta_lower = self.beta
+
         else:  # this is for when force beta is specified
             hessian_matrix = hessian(Fit_Weibull_2P.LL_fb)(
                 np.array(tuple([self.alpha])),
@@ -2042,14 +2066,38 @@ class Fit_Weibull_2P:
                 np.array(tuple(right_censored)),
                 np.array(tuple([force_beta])),
             )
-            covariance_matrix = np.linalg.inv(hessian_matrix)
-            self.alpha_SE = abs(covariance_matrix[0][0]) ** 0.5
-            self.beta_SE = 0
-            self.Cov_alpha_beta = 0
-            self.alpha_upper = self.alpha * (np.exp(Z * (self.alpha_SE / self.alpha)))
-            self.alpha_lower = self.alpha * (np.exp(-Z * (self.alpha_SE / self.alpha)))
-            self.beta_upper = self.beta
-            self.beta_lower = self.beta
+            try:
+                covariance_matrix = np.linalg.inv(hessian_matrix)
+                self.alpha_SE = abs(covariance_matrix[0][0]) ** 0.5
+                self.beta_SE = 0
+                self.Cov_alpha_beta = 0
+                self.alpha_upper = self.alpha * (
+                    np.exp(Z * (self.alpha_SE / self.alpha))
+                )
+                self.alpha_lower = self.alpha * (
+                    np.exp(-Z * (self.alpha_SE / self.alpha))
+                )
+                self.beta_upper = self.beta
+                self.beta_lower = self.beta
+            except LinAlgError:
+                # this exception is rare but can occur with some optimizers
+                colorprint(
+                    str(
+                        "WARNING: The hessian matrix obtained using the "
+                        + self.optimizer
+                        + " optimizer is non-invertable for the Weibull_2P model.\n"
+                        "Confidence interval estimates of the parameters could not be obtained.\n"
+                        "You may want to try fitting the model using a different optimizer."
+                    ),
+                    text_color="red",
+                )
+                self.alpha_SE = 0
+                self.beta_SE = 0
+                self.Cov_alpha_beta = 0
+                self.alpha_upper = self.alpha
+                self.alpha_lower = self.alpha
+                self.beta_upper = self.beta
+                self.beta_lower = self.beta
 
         results_data = {
             "Parameter": ["Alpha", "Beta"],
@@ -2644,14 +2692,39 @@ class Fit_Weibull_2P_grouped:
                 np.array(tuple(failure_qty)),
                 np.array(tuple(right_censored_qty)),
             )
-            covariance_matrix = np.linalg.inv(hessian_matrix)
-            self.alpha_SE = abs(covariance_matrix[0][0]) ** 0.5
-            self.beta_SE = abs(covariance_matrix[1][1]) ** 0.5
-            self.Cov_alpha_beta = covariance_matrix[0][1]
-            self.alpha_upper = self.alpha * (np.exp(Z * (self.alpha_SE / self.alpha)))
-            self.alpha_lower = self.alpha * (np.exp(-Z * (self.alpha_SE / self.alpha)))
-            self.beta_upper = self.beta * (np.exp(Z * (self.beta_SE / self.beta)))
-            self.beta_lower = self.beta * (np.exp(-Z * (self.beta_SE / self.beta)))
+            try:
+                covariance_matrix = np.linalg.inv(hessian_matrix)
+                self.alpha_SE = abs(covariance_matrix[0][0]) ** 0.5
+                self.beta_SE = abs(covariance_matrix[1][1]) ** 0.5
+                self.Cov_alpha_beta = covariance_matrix[0][1]
+                self.alpha_upper = self.alpha * (
+                    np.exp(Z * (self.alpha_SE / self.alpha))
+                )
+                self.alpha_lower = self.alpha * (
+                    np.exp(-Z * (self.alpha_SE / self.alpha))
+                )
+                self.beta_upper = self.beta * (np.exp(Z * (self.beta_SE / self.beta)))
+                self.beta_lower = self.beta * (np.exp(-Z * (self.beta_SE / self.beta)))
+            except LinAlgError:
+                # this exception is rare but can occur with some optimizers
+                colorprint(
+                    str(
+                        "WARNING: The hessian matrix obtained using the "
+                        + self.optimizer
+                        + " optimizer is non-invertable for the Weibull_2P model.\n"
+                        "Confidence interval estimates of the parameters could not be obtained.\n"
+                        "You may want to try fitting the model using a different optimizer."
+                    ),
+                    text_color="red",
+                )
+                self.alpha_SE = 0
+                self.beta_SE = 0
+                self.Cov_alpha_beta = 0
+                self.alpha_upper = self.alpha
+                self.alpha_lower = self.alpha
+                self.beta_upper = self.beta
+                self.beta_lower = self.beta
+
         else:  # this is for when force beta is specified
             hessian_matrix = hessian(Fit_Weibull_2P_grouped.LL_fb)(
                 np.array(tuple([self.alpha])),
@@ -2661,14 +2734,38 @@ class Fit_Weibull_2P_grouped:
                 np.array(tuple(right_censored_qty)),
                 np.array(tuple([force_beta])),
             )
-            covariance_matrix = np.linalg.inv(hessian_matrix)
-            self.alpha_SE = abs(covariance_matrix[0][0]) ** 0.5
-            self.beta_SE = 0
-            self.Cov_alpha_beta = 0
-            self.alpha_upper = self.alpha * (np.exp(Z * (self.alpha_SE / self.alpha)))
-            self.alpha_lower = self.alpha * (np.exp(-Z * (self.alpha_SE / self.alpha)))
-            self.beta_upper = self.beta
-            self.beta_lower = self.beta
+            try:
+                covariance_matrix = np.linalg.inv(hessian_matrix)
+                self.alpha_SE = abs(covariance_matrix[0][0]) ** 0.5
+                self.beta_SE = 0
+                self.Cov_alpha_beta = 0
+                self.alpha_upper = self.alpha * (
+                    np.exp(Z * (self.alpha_SE / self.alpha))
+                )
+                self.alpha_lower = self.alpha * (
+                    np.exp(-Z * (self.alpha_SE / self.alpha))
+                )
+                self.beta_upper = self.beta
+                self.beta_lower = self.beta
+            except LinAlgError:
+                # this exception is rare but can occur with some optimizers
+                colorprint(
+                    str(
+                        "WARNING: The hessian matrix obtained using the "
+                        + self.optimizer
+                        + " optimizer is non-invertable for the Weibull_2P model.\n"
+                        "Confidence interval estimates of the parameters could not be obtained.\n"
+                        "You may want to try fitting the model using a different optimizer."
+                    ),
+                    text_color="red",
+                )
+                self.alpha_SE = 0
+                self.beta_SE = 0
+                self.Cov_alpha_beta = 0
+                self.alpha_upper = self.alpha
+                self.alpha_lower = self.alpha
+                self.beta_upper = self.beta
+                self.beta_lower = self.beta
 
         results_data = {
             "Parameter": ["Alpha", "Beta"],
@@ -3076,26 +3173,55 @@ class Fit_Weibull_3P:
                 np.array(tuple(failures - self.gamma)),
                 np.array(tuple(right_censored - self.gamma)),
             )
-            covariance_matrix = np.linalg.inv(hessian_matrix)
-            # this is to get the gamma_SE. Unfortunately this approach for alpha_SE and beta_SE give SE values that are very large resulting in incorrect CI plots. This is the same method used by Reliasoft
-            hessian_matrix_for_gamma = hessian(Fit_Weibull_3P.LL)(
-                np.array(tuple(params_3P)),
-                np.array(tuple(failures)),
-                np.array(tuple(right_censored)),
-            )
-            covariance_matrix_for_gamma = np.linalg.inv(hessian_matrix_for_gamma)
-            self.alpha_SE = abs(covariance_matrix[0][0]) ** 0.5
-            self.beta_SE = abs(covariance_matrix[1][1]) ** 0.5
-            self.gamma_SE = abs(covariance_matrix_for_gamma[2][2]) ** 0.5
-            self.Cov_alpha_beta = covariance_matrix[0][1]
-            self.alpha_upper = self.alpha * (np.exp(Z * (self.alpha_SE / self.alpha)))
-            self.alpha_lower = self.alpha * (np.exp(-Z * (self.alpha_SE / self.alpha)))
-            self.beta_upper = self.beta * (np.exp(Z * (self.beta_SE / self.beta)))
-            self.beta_lower = self.beta * (np.exp(-Z * (self.beta_SE / self.beta)))
-            self.gamma_upper = self.gamma * (
-                np.exp(Z * (self.gamma_SE / self.gamma))
-            )  # here we assume gamma can only be positive as there are bounds placed on it in the optimizer. Minitab assumes positive or negative so bounds are different
-            self.gamma_lower = self.gamma * (np.exp(-Z * (self.gamma_SE / self.gamma)))
+            try:
+                covariance_matrix = np.linalg.inv(hessian_matrix)
+                # this is to get the gamma_SE. Unfortunately this approach for alpha_SE and beta_SE give SE values that are very large resulting in incorrect CI plots. This is the same method used by Reliasoft
+                hessian_matrix_for_gamma = hessian(Fit_Weibull_3P.LL)(
+                    np.array(tuple(params_3P)),
+                    np.array(tuple(failures)),
+                    np.array(tuple(right_censored)),
+                )
+                covariance_matrix_for_gamma = np.linalg.inv(hessian_matrix_for_gamma)
+                self.alpha_SE = abs(covariance_matrix[0][0]) ** 0.5
+                self.beta_SE = abs(covariance_matrix[1][1]) ** 0.5
+                self.gamma_SE = abs(covariance_matrix_for_gamma[2][2]) ** 0.5
+                self.Cov_alpha_beta = covariance_matrix[0][1]
+                self.alpha_upper = self.alpha * (
+                    np.exp(Z * (self.alpha_SE / self.alpha))
+                )
+                self.alpha_lower = self.alpha * (
+                    np.exp(-Z * (self.alpha_SE / self.alpha))
+                )
+                self.beta_upper = self.beta * (np.exp(Z * (self.beta_SE / self.beta)))
+                self.beta_lower = self.beta * (np.exp(-Z * (self.beta_SE / self.beta)))
+                self.gamma_upper = self.gamma * (
+                    np.exp(Z * (self.gamma_SE / self.gamma))
+                )  # here we assume gamma can only be positive as there are bounds placed on it in the optimizer. Minitab assumes positive or negative so bounds are different
+                self.gamma_lower = self.gamma * (
+                    np.exp(-Z * (self.gamma_SE / self.gamma))
+                )
+            except LinAlgError:
+                # this exception is rare but can occur with some optimizers
+                colorprint(
+                    str(
+                        "WARNING: The hessian matrix obtained using the "
+                        + self.optimizer
+                        + " optimizer is non-invertable for the Weibull_3P model.\n"
+                        "Confidence interval estimates of the parameters could not be obtained.\n"
+                        "You may want to try fitting the model using a different optimizer."
+                    ),
+                    text_color="red",
+                )
+                self.alpha_SE = 0
+                self.beta_SE = 0
+                self.gamma_SE = 0
+                self.Cov_alpha_beta = 0
+                self.alpha_upper = self.alpha
+                self.alpha_lower = self.alpha
+                self.beta_upper = self.beta
+                self.beta_lower = self.beta
+                self.gamma_upper = self.gamma
+                self.gamma_lower = self.gamma
 
         results_data = {
             "Parameter": ["Alpha", "Beta", "Gamma"],
@@ -3569,7 +3695,7 @@ class Fit_Weibull_Mixture:
                 str(
                     "WARNING: The hessian matrix obtained using the "
                     + self.optimizer
-                    + " optimizer is non-invertable for the Weibull mixture model.\n"
+                    + " optimizer is non-invertable for the Weibull_Mixture model.\n"
                     "Confidence interval estimates of the parameters could not be obtained.\n"
                     "You may want to try fitting the model using a different optimizer."
                 ),
@@ -4037,7 +4163,7 @@ class Fit_Weibull_CR:
                 str(
                     "WARNING: The hessian matrix obtained using the "
                     + self.optimizer
-                    + " optimizer is non-invertable for the Weibull Competing Risks model.\n"
+                    + " optimizer is non-invertable for the Weibull_CR model.\n"
                     "Confidence interval estimates of the parameters could not be obtained.\n"
                     "You may want to try fitting the model using a different optimizer."
                 ),
@@ -5424,16 +5550,40 @@ class Fit_Exponential_1P:
             np.array(tuple(failures)),
             np.array(tuple(right_censored)),
         )
-        covariance_matrix = np.linalg.inv(hessian_matrix)
-        self.Lambda_SE = abs(covariance_matrix[0][0]) ** 0.5
-        self.Lambda_upper = self.Lambda * (np.exp(Z * (self.Lambda_SE / self.Lambda)))
-        self.Lambda_lower = self.Lambda * (np.exp(-Z * (self.Lambda_SE / self.Lambda)))
-        self.Lambda_inv = 1 / self.Lambda
-        self.Lambda_SE_inv = abs(
-            1 / self.Lambda * np.log(self.Lambda / self.Lambda_upper) / Z
-        )
-        self.Lambda_lower_inv = 1 / self.Lambda_upper
-        self.Lambda_upper_inv = 1 / self.Lambda_lower
+        try:
+            covariance_matrix = np.linalg.inv(hessian_matrix)
+            self.Lambda_SE = abs(covariance_matrix[0][0]) ** 0.5
+            self.Lambda_upper = self.Lambda * (
+                np.exp(Z * (self.Lambda_SE / self.Lambda))
+            )
+            self.Lambda_lower = self.Lambda * (
+                np.exp(-Z * (self.Lambda_SE / self.Lambda))
+            )
+            self.Lambda_inv = 1 / self.Lambda
+            self.Lambda_SE_inv = abs(
+                1 / self.Lambda * np.log(self.Lambda / self.Lambda_upper) / Z
+            )
+            self.Lambda_lower_inv = 1 / self.Lambda_upper
+            self.Lambda_upper_inv = 1 / self.Lambda_lower
+        except LinAlgError:
+            # this exception is rare but can occur with some optimizers
+            colorprint(
+                str(
+                    "WARNING: The hessian matrix obtained using the "
+                    + self.optimizer
+                    + " optimizer is non-invertable for the Exponential_1P model.\n"
+                    "Confidence interval estimates of the parameters could not be obtained.\n"
+                    "You may want to try fitting the model using a different optimizer."
+                ),
+                text_color="red",
+            )
+            self.Lambda_SE = 0
+            self.Lambda_upper = self.Lambda
+            self.Lambda_lower = self.Lambda
+            self.Lambda_inv = 1 / self.Lambda
+            self.Lambda_SE_inv = 0
+            self.Lambda_lower_inv = 1 / self.Lambda
+            self.Lambda_upper_inv = 1 / self.Lambda
 
         results_data = {
             "Parameter": ["Lambda", "1/Lambda"],
@@ -5775,7 +5925,7 @@ class Fit_Exponential_2P:
             self.method = "Maximum Likelihood Estimation (MLE)"
             self.optimizer = MLE_results.optimizer
 
-        # confidence interval estimates of parameters. Uses Exponential_1P because gamma (while optimized) cannot be used in the MLE solution as the solution is unbounded
+        # confidence interval estimates of parameters. Uses Exponential_1P because gamma (while optimized) cannot be used in the MLE solution as the solution is unbounded. This is why there are no CI limits on gamma.
         Z = -ss.norm.ppf((1 - CI) / 2)
         params_1P = [self.Lambda]
         params_2P = [self.Lambda, self.gamma]
@@ -5784,19 +5934,46 @@ class Fit_Exponential_2P:
             np.array(tuple(failures - self.gamma)),
             np.array(tuple(right_censored - self.gamma)),
         )
-        covariance_matrix = np.linalg.inv(hessian_matrix)
-        self.Lambda_SE = abs(covariance_matrix[0][0]) ** 0.5
-        self.gamma_SE = 0
-        self.Lambda_upper = self.Lambda * (np.exp(Z * (self.Lambda_SE / self.Lambda)))
-        self.Lambda_lower = self.Lambda * (np.exp(-Z * (self.Lambda_SE / self.Lambda)))
-        self.gamma_upper = self.gamma
-        self.gamma_lower = self.gamma
-        self.Lambda_inv = 1 / self.Lambda
-        self.Lambda_SE_inv = abs(
-            1 / self.Lambda * np.log(self.Lambda / self.Lambda_upper) / Z
-        )
-        self.Lambda_lower_inv = 1 / self.Lambda_upper
-        self.Lambda_upper_inv = 1 / self.Lambda_lower
+        try:
+            covariance_matrix = np.linalg.inv(hessian_matrix)
+            self.Lambda_SE = abs(covariance_matrix[0][0]) ** 0.5
+            self.gamma_SE = 0
+            self.Lambda_upper = self.Lambda * (
+                np.exp(Z * (self.Lambda_SE / self.Lambda))
+            )
+            self.Lambda_lower = self.Lambda * (
+                np.exp(-Z * (self.Lambda_SE / self.Lambda))
+            )
+            self.gamma_upper = self.gamma
+            self.gamma_lower = self.gamma
+            self.Lambda_inv = 1 / self.Lambda
+            self.Lambda_SE_inv = abs(
+                1 / self.Lambda * np.log(self.Lambda / self.Lambda_upper) / Z
+            )
+            self.Lambda_lower_inv = 1 / self.Lambda_upper
+            self.Lambda_upper_inv = 1 / self.Lambda_lower
+        except LinAlgError:
+            # this exception is rare but can occur with some optimizers
+            colorprint(
+                str(
+                    "WARNING: The hessian matrix obtained using the "
+                    + self.optimizer
+                    + " optimizer is non-invertable for the Exponential_2P model.\n"
+                    "Confidence interval estimates of the parameters could not be obtained.\n"
+                    "You may want to try fitting the model using a different optimizer."
+                ),
+                text_color="red",
+            )
+            self.Lambda_SE = 0
+            self.gamma_SE = 0
+            self.Lambda_upper = self.Lambda
+            self.Lambda_lower = self.Lambda
+            self.gamma_upper = self.gamma
+            self.gamma_lower = self.gamma
+            self.Lambda_inv = 1 / self.Lambda
+            self.Lambda_SE_inv = 0
+            self.Lambda_lower_inv = 1 / self.Lambda
+            self.Lambda_upper_inv = 1 / self.Lambda
 
         results_data = {
             "Parameter": ["Lambda", "1/Lambda", "Gamma"],
@@ -6148,16 +6325,41 @@ class Fit_Normal_2P:
                 np.array(tuple(failures)),
                 np.array(tuple(right_censored)),
             )
-            covariance_matrix = np.linalg.inv(hessian_matrix)
-            self.mu_SE = abs(covariance_matrix[0][0]) ** 0.5
-            self.sigma_SE = abs(covariance_matrix[1][1]) ** 0.5
-            self.Cov_mu_sigma = covariance_matrix[0][1]
-            self.mu_upper = self.mu + (
-                Z * self.mu_SE
-            )  # these are unique to normal and lognormal mu params
-            self.mu_lower = self.mu + (-Z * self.mu_SE)
-            self.sigma_upper = self.sigma * (np.exp(Z * (self.sigma_SE / self.sigma)))
-            self.sigma_lower = self.sigma * (np.exp(-Z * (self.sigma_SE / self.sigma)))
+            try:
+                covariance_matrix = np.linalg.inv(hessian_matrix)
+                self.mu_SE = abs(covariance_matrix[0][0]) ** 0.5
+                self.sigma_SE = abs(covariance_matrix[1][1]) ** 0.5
+                self.Cov_mu_sigma = covariance_matrix[0][1]
+                self.mu_upper = self.mu + (
+                    Z * self.mu_SE
+                )  # these are unique to normal and lognormal mu params
+                self.mu_lower = self.mu + (-Z * self.mu_SE)
+                self.sigma_upper = self.sigma * (
+                    np.exp(Z * (self.sigma_SE / self.sigma))
+                )
+                self.sigma_lower = self.sigma * (
+                    np.exp(-Z * (self.sigma_SE / self.sigma))
+                )
+            except LinAlgError:
+                # this exception is rare but can occur with some optimizers
+                colorprint(
+                    str(
+                        "WARNING: The hessian matrix obtained using the "
+                        + self.optimizer
+                        + " optimizer is non-invertable for the Normal_2P model.\n"
+                        "Confidence interval estimates of the parameters could not be obtained.\n"
+                        "You may want to try fitting the model using a different optimizer."
+                    ),
+                    text_color="red",
+                )
+                self.mu_SE = 0
+                self.sigma_SE = 0
+                self.Cov_mu_sigma = 0
+                self.mu_upper = self.mu
+                self.mu_lower = self.mu
+                self.sigma_upper = self.sigma
+                self.sigma_lower = self.sigma
+
         else:
             hessian_matrix = hessian(Fit_Normal_2P.LL_fs)(
                 np.array(tuple([self.mu])),
@@ -6165,16 +6367,36 @@ class Fit_Normal_2P:
                 np.array(tuple(right_censored)),
                 np.array(tuple([force_sigma])),
             )
-            covariance_matrix = np.linalg.inv(hessian_matrix)
-            self.mu_SE = abs(covariance_matrix[0][0]) ** 0.5
-            self.sigma_SE = 0
-            self.Cov_mu_sigma = 0
-            self.mu_upper = self.mu + (
-                Z * self.mu_SE
-            )  # these are unique to normal and lognormal mu params
-            self.mu_lower = self.mu + (-Z * self.mu_SE)
-            self.sigma_upper = self.sigma
-            self.sigma_lower = self.sigma
+            try:
+                covariance_matrix = np.linalg.inv(hessian_matrix)
+                self.mu_SE = abs(covariance_matrix[0][0]) ** 0.5
+                self.sigma_SE = 0
+                self.Cov_mu_sigma = 0
+                self.mu_upper = self.mu + (
+                    Z * self.mu_SE
+                )  # these are unique to normal and lognormal mu params
+                self.mu_lower = self.mu + (-Z * self.mu_SE)
+                self.sigma_upper = self.sigma
+                self.sigma_lower = self.sigma
+            except LinAlgError:
+                # this exception is rare but can occur with some optimizers
+                colorprint(
+                    str(
+                        "WARNING: The hessian matrix obtained using the "
+                        + self.optimizer
+                        + " optimizer is non-invertable for the Normal_2P model.\n"
+                        "Confidence interval estimates of the parameters could not be obtained.\n"
+                        "You may want to try fitting the model using a different optimizer."
+                    ),
+                    text_color="red",
+                )
+                self.mu_SE = 0
+                self.sigma_SE = 0
+                self.Cov_mu_sigma = 0
+                self.mu_upper = self.mu
+                self.mu_lower = self.mu
+                self.sigma_upper = self.sigma
+                self.sigma_lower = self.sigma
 
         results_data = {
             "Parameter": ["Mu", "Sigma"],
@@ -6530,16 +6752,36 @@ class Fit_Gumbel_2P:
             np.array(tuple(failures)),
             np.array(tuple(right_censored)),
         )
-        covariance_matrix = np.linalg.inv(hessian_matrix)
-        self.mu_SE = abs(covariance_matrix[0][0]) ** 0.5
-        self.sigma_SE = abs(covariance_matrix[1][1]) ** 0.5
-        self.Cov_mu_sigma = covariance_matrix[0][1]
-        self.mu_upper = self.mu + (
-            Z * self.mu_SE
-        )  # these are unique to gumbel, normal and lognormal mu params
-        self.mu_lower = self.mu + (-Z * self.mu_SE)
-        self.sigma_upper = self.sigma * (np.exp(Z * (self.sigma_SE / self.sigma)))
-        self.sigma_lower = self.sigma * (np.exp(-Z * (self.sigma_SE / self.sigma)))
+        try:
+            covariance_matrix = np.linalg.inv(hessian_matrix)
+            self.mu_SE = abs(covariance_matrix[0][0]) ** 0.5
+            self.sigma_SE = abs(covariance_matrix[1][1]) ** 0.5
+            self.Cov_mu_sigma = covariance_matrix[0][1]
+            self.mu_upper = self.mu + (
+                Z * self.mu_SE
+            )  # these are unique to gumbel, normal and lognormal mu params
+            self.mu_lower = self.mu + (-Z * self.mu_SE)
+            self.sigma_upper = self.sigma * (np.exp(Z * (self.sigma_SE / self.sigma)))
+            self.sigma_lower = self.sigma * (np.exp(-Z * (self.sigma_SE / self.sigma)))
+        except LinAlgError:
+            # this exception is rare but can occur with some optimizers
+            colorprint(
+                str(
+                    "WARNING: The hessian matrix obtained using the "
+                    + self.optimizer
+                    + " optimizer is non-invertable for the Gumbel_2P model.\n"
+                    "Confidence interval estimates of the parameters could not be obtained.\n"
+                    "You may want to try fitting the model using a different optimizer."
+                ),
+                text_color="red",
+            )
+            self.mu_SE = 0
+            self.sigma_SE = 0
+            self.Cov_mu_sigma = 0
+            self.mu_upper = self.mu
+            self.mu_lower = self.mu
+            self.sigma_upper = self.sigma
+            self.sigma_lower = self.sigma
 
         results_data = {
             "Parameter": ["Mu", "Sigma"],
@@ -6889,16 +7131,38 @@ class Fit_Lognormal_2P:
                 np.array(tuple(failures)),
                 np.array(tuple(right_censored)),
             )
-            covariance_matrix = np.linalg.inv(hessian_matrix)
-            self.mu_SE = abs(covariance_matrix[0][0]) ** 0.5
-            self.sigma_SE = abs(covariance_matrix[1][1]) ** 0.5
-            self.Cov_mu_sigma = covariance_matrix[0][1]
-            self.mu_upper = self.mu + (Z * self.mu_SE)  # mu is positive or negative
-            self.mu_lower = self.mu + (-Z * self.mu_SE)
-            self.sigma_upper = self.sigma * (
-                np.exp(Z * (self.sigma_SE / self.sigma))
-            )  # sigma is strictly positive
-            self.sigma_lower = self.sigma * (np.exp(-Z * (self.sigma_SE / self.sigma)))
+            try:
+                covariance_matrix = np.linalg.inv(hessian_matrix)
+                self.mu_SE = abs(covariance_matrix[0][0]) ** 0.5
+                self.sigma_SE = abs(covariance_matrix[1][1]) ** 0.5
+                self.Cov_mu_sigma = covariance_matrix[0][1]
+                self.mu_upper = self.mu + (Z * self.mu_SE)  # mu is positive or negative
+                self.mu_lower = self.mu + (-Z * self.mu_SE)
+                self.sigma_upper = self.sigma * (
+                    np.exp(Z * (self.sigma_SE / self.sigma))
+                )  # sigma is strictly positive
+                self.sigma_lower = self.sigma * (
+                    np.exp(-Z * (self.sigma_SE / self.sigma))
+                )
+            except LinAlgError:
+                # this exception is rare but can occur with some optimizers
+                colorprint(
+                    str(
+                        "WARNING: The hessian matrix obtained using the "
+                        + self.optimizer
+                        + " optimizer is non-invertable for the Lognormal_2P model.\n"
+                        "Confidence interval estimates of the parameters could not be obtained.\n"
+                        "You may want to try fitting the model using a different optimizer."
+                    ),
+                    text_color="red",
+                )
+                self.mu_SE = 0
+                self.sigma_SE = 0
+                self.Cov_mu_sigma = 0
+                self.mu_upper = self.mu
+                self.mu_lower = self.mu
+                self.sigma_upper = self.sigma
+                self.sigma_lower = self.sigma
         else:
             hessian_matrix = hessian(Fit_Lognormal_2P.LL_fs)(
                 np.array(tuple([self.mu])),
@@ -6906,14 +7170,34 @@ class Fit_Lognormal_2P:
                 np.array(tuple(right_censored)),
                 np.array(tuple([force_sigma])),
             )
-            covariance_matrix = np.linalg.inv(hessian_matrix)
-            self.mu_SE = abs(covariance_matrix[0][0]) ** 0.5
-            self.sigma_SE = 0
-            self.Cov_mu_sigma = 0
-            self.mu_upper = self.mu + (Z * self.mu_SE)  # mu is positive or negative
-            self.mu_lower = self.mu + (-Z * self.mu_SE)
-            self.sigma_upper = self.sigma
-            self.sigma_lower = self.sigma
+            try:
+                covariance_matrix = np.linalg.inv(hessian_matrix)
+                self.mu_SE = abs(covariance_matrix[0][0]) ** 0.5
+                self.sigma_SE = 0
+                self.Cov_mu_sigma = 0
+                self.mu_upper = self.mu + (Z * self.mu_SE)  # mu is positive or negative
+                self.mu_lower = self.mu + (-Z * self.mu_SE)
+                self.sigma_upper = self.sigma
+                self.sigma_lower = self.sigma
+            except LinAlgError:
+                # this exception is rare but can occur with some optimizers
+                colorprint(
+                    str(
+                        "WARNING: The hessian matrix obtained using the "
+                        + self.optimizer
+                        + " optimizer is non-invertable for the Lognormal_2P model.\n"
+                        "Confidence interval estimates of the parameters could not be obtained.\n"
+                        "You may want to try fitting the model using a different optimizer."
+                    ),
+                    text_color="red",
+                )
+                self.mu_SE = 0
+                self.sigma_SE = 0
+                self.Cov_mu_sigma = 0
+                self.mu_upper = self.mu
+                self.mu_lower = self.mu
+                self.sigma_upper = self.sigma
+                self.sigma_lower = self.sigma
 
         results_data = {
             "Parameter": ["Mu", "Sigma"],
@@ -7311,30 +7595,57 @@ class Fit_Lognormal_3P:
                 np.array(tuple(failures - self.gamma)),
                 np.array(tuple(right_censored - self.gamma)),
             )
-            covariance_matrix = np.linalg.inv(hessian_matrix)
-            # this is to get the gamma_SE. Unfortunately this approach for mu_SE and sigma_SE give SE values that are very large resulting in incorrect CI plots. This is the same method used by Reliasoft
-            hessian_matrix_for_gamma = hessian(Fit_Lognormal_3P.LL)(
-                np.array(tuple(params_3P)),
-                np.array(tuple(failures)),
-                np.array(tuple(right_censored)),
-            )
-            covariance_matrix_for_gamma = np.linalg.inv(hessian_matrix_for_gamma)
-            self.mu_SE = abs(covariance_matrix[0][0]) ** 0.5
-            self.sigma_SE = abs(covariance_matrix[1][1]) ** 0.5
-            self.gamma_SE = abs(covariance_matrix_for_gamma[2][2]) ** 0.5
-            self.Cov_mu_sigma = covariance_matrix[0][1]
-            self.mu_upper = self.mu + (
-                Z * self.mu_SE
-            )  # Mu can be positive or negative.
-            self.mu_lower = self.mu + (-Z * self.mu_SE)
-            self.sigma_upper = self.sigma * (
-                np.exp(Z * (self.sigma_SE / self.sigma))
-            )  # sigma is strictly positive
-            self.sigma_lower = self.sigma * (np.exp(-Z * (self.sigma_SE / self.sigma)))
-            self.gamma_upper = self.gamma * (
-                np.exp(Z * (self.gamma_SE / self.gamma))
-            )  # here we assume gamma can only be positive as there are bounds placed on it in the optimizer. Minitab assumes positive or negative so bounds are different
-            self.gamma_lower = self.gamma * (np.exp(-Z * (self.gamma_SE / self.gamma)))
+            try:
+                covariance_matrix = np.linalg.inv(hessian_matrix)
+                # this is to get the gamma_SE. Unfortunately this approach for mu_SE and sigma_SE give SE values that are very large resulting in incorrect CI plots. This is the same method used by Reliasoft
+                hessian_matrix_for_gamma = hessian(Fit_Lognormal_3P.LL)(
+                    np.array(tuple(params_3P)),
+                    np.array(tuple(failures)),
+                    np.array(tuple(right_censored)),
+                )
+                covariance_matrix_for_gamma = np.linalg.inv(hessian_matrix_for_gamma)
+                self.mu_SE = abs(covariance_matrix[0][0]) ** 0.5
+                self.sigma_SE = abs(covariance_matrix[1][1]) ** 0.5
+                self.gamma_SE = abs(covariance_matrix_for_gamma[2][2]) ** 0.5
+                self.Cov_mu_sigma = covariance_matrix[0][1]
+                self.mu_upper = self.mu + (
+                    Z * self.mu_SE
+                )  # Mu can be positive or negative.
+                self.mu_lower = self.mu + (-Z * self.mu_SE)
+                self.sigma_upper = self.sigma * (
+                    np.exp(Z * (self.sigma_SE / self.sigma))
+                )  # sigma is strictly positive
+                self.sigma_lower = self.sigma * (
+                    np.exp(-Z * (self.sigma_SE / self.sigma))
+                )
+                self.gamma_upper = self.gamma * (
+                    np.exp(Z * (self.gamma_SE / self.gamma))
+                )  # here we assume gamma can only be positive as there are bounds placed on it in the optimizer. Minitab assumes positive or negative so bounds are different
+                self.gamma_lower = self.gamma * (
+                    np.exp(-Z * (self.gamma_SE / self.gamma))
+                )
+            except LinAlgError:
+                # this exception is rare but can occur with some optimizers
+                colorprint(
+                    str(
+                        "WARNING: The hessian matrix obtained using the "
+                        + self.optimizer
+                        + " optimizer is non-invertable for the Lognormal_3P model.\n"
+                        "Confidence interval estimates of the parameters could not be obtained.\n"
+                        "You may want to try fitting the model using a different optimizer."
+                    ),
+                    text_color="red",
+                )
+                self.mu_SE = 0
+                self.sigma_SE = 0
+                self.gamma_SE = 0
+                self.Cov_mu_sigma = 0
+                self.mu_upper = self.mu
+                self.mu_lower = self.mu
+                self.sigma_upper = self.sigma
+                self.sigma_lower = self.sigma
+                self.gamma_upper = self.gamma
+                self.gamma_lower = self.gamma
 
         results_data = {
             "Parameter": ["Mu", "Sigma", "Gamma"],
@@ -7710,26 +8021,50 @@ class Fit_Gamma_2P:
             np.array(tuple(failures)),
             np.array(tuple(right_censored)),
         )
-        covariance_matrix_ab = np.linalg.inv(hessian_matrix_ab)
-        self.alpha_SE = abs(covariance_matrix_ab[0][0]) ** 0.5
-        self.beta_SE = abs(covariance_matrix_ab[1][1]) ** 0.5
-        self.Cov_alpha_beta = covariance_matrix_ab[0][1]
-        self.alpha_upper = self.alpha * (np.exp(Z * (self.alpha_SE / self.alpha)))
-        self.alpha_lower = self.alpha * (np.exp(-Z * (self.alpha_SE / self.alpha)))
-        self.beta_upper = self.beta * (np.exp(Z * (self.beta_SE / self.beta)))
-        self.beta_lower = self.beta * (np.exp(-Z * (self.beta_SE / self.beta)))
+        try:
+            covariance_matrix_ab = np.linalg.inv(hessian_matrix_ab)
+            self.alpha_SE = abs(covariance_matrix_ab[0][0]) ** 0.5
+            self.beta_SE = abs(covariance_matrix_ab[1][1]) ** 0.5
+            self.Cov_alpha_beta = covariance_matrix_ab[0][1]
+            self.alpha_upper = self.alpha * (np.exp(Z * (self.alpha_SE / self.alpha)))
+            self.alpha_lower = self.alpha * (np.exp(-Z * (self.alpha_SE / self.alpha)))
+            self.beta_upper = self.beta * (np.exp(Z * (self.beta_SE / self.beta)))
+            self.beta_lower = self.beta * (np.exp(-Z * (self.beta_SE / self.beta)))
 
-        params_mb = [self.mu, self.beta]
-        hessian_matrix_mb = hessian(Fit_Gamma_2P.LL_mb)(
-            np.array(tuple(params_mb)),
-            np.array(tuple(failures)),
-            np.array(tuple(right_censored)),
-        )
-        covariance_matrix_mb = np.linalg.inv(hessian_matrix_mb)
-        self.mu_SE = abs(covariance_matrix_mb[0][0]) ** 0.5
-        self.Cov_mu_beta = covariance_matrix_mb[0][1]
-        self.mu_upper = self.mu * (np.exp(Z * (self.mu_SE / self.mu)))
-        self.mu_lower = self.mu * (np.exp(-Z * (self.mu_SE / self.mu)))
+            params_mb = [self.mu, self.beta]
+            hessian_matrix_mb = hessian(Fit_Gamma_2P.LL_mb)(
+                np.array(tuple(params_mb)),
+                np.array(tuple(failures)),
+                np.array(tuple(right_censored)),
+            )
+            covariance_matrix_mb = np.linalg.inv(hessian_matrix_mb)
+            self.mu_SE = abs(covariance_matrix_mb[0][0]) ** 0.5
+            self.Cov_mu_beta = covariance_matrix_mb[0][1]
+            self.mu_upper = self.mu * (np.exp(Z * (self.mu_SE / self.mu)))
+            self.mu_lower = self.mu * (np.exp(-Z * (self.mu_SE / self.mu)))
+        except LinAlgError:
+            # this exception is rare but can occur with some optimizers
+            colorprint(
+                str(
+                    "WARNING: The hessian matrix obtained using the "
+                    + self.optimizer
+                    + " optimizer is non-invertable for the Gamma_2P model.\n"
+                    "Confidence interval estimates of the parameters could not be obtained.\n"
+                    "You may want to try fitting the model using a different optimizer."
+                ),
+                text_color="red",
+            )
+            self.alpha_SE = 0
+            self.beta_SE = 0
+            self.mu_SE = 0
+            self.Cov_alpha_beta = 0
+            self.Cov_mu_beta = 0
+            self.alpha_upper = self.alpha
+            self.alpha_lower = self.alpha
+            self.beta_upper = self.beta
+            self.beta_lower = self.beta
+            self.mu_upper = self.mu
+            self.mu_lower = self.mu
 
         results_data = {
             "Parameter": ["Alpha", "Beta"],
@@ -8160,36 +8495,71 @@ class Fit_Gamma_3P:
                 np.array(tuple(failures - self.gamma)),
                 np.array(tuple(right_censored - self.gamma)),
             )
-            covariance_matrix_ab = np.linalg.inv(hessian_matrix_ab)
-            hessian_matrix_mb = hessian(Fit_Gamma_2P.LL_mb)(
-                np.array(tuple(params_2P_mb)),
-                np.array(tuple(failures - self.gamma)),
-                np.array(tuple(right_censored - self.gamma)),
-            )
-            covariance_matrix_mb = np.linalg.inv(hessian_matrix_mb)
+            try:
+                covariance_matrix_ab = np.linalg.inv(hessian_matrix_ab)
+                hessian_matrix_mb = hessian(Fit_Gamma_2P.LL_mb)(
+                    np.array(tuple(params_2P_mb)),
+                    np.array(tuple(failures - self.gamma)),
+                    np.array(tuple(right_censored - self.gamma)),
+                )
+                covariance_matrix_mb = np.linalg.inv(hessian_matrix_mb)
 
-            # this is to get the gamma_SE. Unfortunately this approach for alpha_SE and beta_SE give SE values that are very large resulting in incorrect CI plots. This is the same method used by Reliasoft
-            hessian_matrix_for_gamma = hessian(Fit_Gamma_3P.LL_abg)(
-                np.array(tuple(params_3P_abg)),
-                np.array(tuple(failures)),
-                np.array(tuple(right_censored)),
-            )
-            covariance_matrix_for_gamma = np.linalg.inv(hessian_matrix_for_gamma)
+                # this is to get the gamma_SE. Unfortunately this approach for alpha_SE and beta_SE give SE values that are very large resulting in incorrect CI plots. This is the same method used by Reliasoft
+                hessian_matrix_for_gamma = hessian(Fit_Gamma_3P.LL_abg)(
+                    np.array(tuple(params_3P_abg)),
+                    np.array(tuple(failures)),
+                    np.array(tuple(right_censored)),
+                )
+                covariance_matrix_for_gamma = np.linalg.inv(hessian_matrix_for_gamma)
 
-            self.alpha_SE = abs(covariance_matrix_ab[0][0]) ** 0.5
-            self.beta_SE = abs(covariance_matrix_ab[1][1]) ** 0.5
-            self.mu_SE = abs(covariance_matrix_mb[0][0]) ** 0.5
-            self.gamma_SE = abs(covariance_matrix_for_gamma[2][2]) ** 0.5
-            self.Cov_alpha_beta = covariance_matrix_ab[0][1]
-            self.Cov_mu_beta = covariance_matrix_mb[0][1]
-            self.alpha_upper = self.alpha * (np.exp(Z * (self.alpha_SE / self.alpha)))
-            self.alpha_lower = self.alpha * (np.exp(-Z * (self.alpha_SE / self.alpha)))
-            self.mu_upper = self.mu * (np.exp(Z * (self.mu_SE / self.mu)))
-            self.mu_lower = self.mu * (np.exp(-Z * (self.mu_SE / self.mu)))
-            self.beta_upper = self.beta * (np.exp(Z * (self.beta_SE / self.beta)))
-            self.beta_lower = self.beta * (np.exp(-Z * (self.beta_SE / self.beta)))
-            self.gamma_upper = self.gamma * (np.exp(Z * (self.gamma_SE / self.gamma)))
-            self.gamma_lower = self.gamma * (np.exp(-Z * (self.gamma_SE / self.gamma)))
+                self.alpha_SE = abs(covariance_matrix_ab[0][0]) ** 0.5
+                self.beta_SE = abs(covariance_matrix_ab[1][1]) ** 0.5
+                self.mu_SE = abs(covariance_matrix_mb[0][0]) ** 0.5
+                self.gamma_SE = abs(covariance_matrix_for_gamma[2][2]) ** 0.5
+                self.Cov_alpha_beta = covariance_matrix_ab[0][1]
+                self.Cov_mu_beta = covariance_matrix_mb[0][1]
+                self.alpha_upper = self.alpha * (
+                    np.exp(Z * (self.alpha_SE / self.alpha))
+                )
+                self.alpha_lower = self.alpha * (
+                    np.exp(-Z * (self.alpha_SE / self.alpha))
+                )
+                self.mu_upper = self.mu * (np.exp(Z * (self.mu_SE / self.mu)))
+                self.mu_lower = self.mu * (np.exp(-Z * (self.mu_SE / self.mu)))
+                self.beta_upper = self.beta * (np.exp(Z * (self.beta_SE / self.beta)))
+                self.beta_lower = self.beta * (np.exp(-Z * (self.beta_SE / self.beta)))
+                self.gamma_upper = self.gamma * (
+                    np.exp(Z * (self.gamma_SE / self.gamma))
+                )
+                self.gamma_lower = self.gamma * (
+                    np.exp(-Z * (self.gamma_SE / self.gamma))
+                )
+            except LinAlgError:
+                # this exception is rare but can occur with some optimizers
+                colorprint(
+                    str(
+                        "WARNING: The hessian matrix obtained using the "
+                        + self.optimizer
+                        + " optimizer is non-invertable for the Gamma_3P model.\n"
+                        "Confidence interval estimates of the parameters could not be obtained.\n"
+                        "You may want to try fitting the model using a different optimizer."
+                    ),
+                    text_color="red",
+                )
+                self.alpha_SE = 0
+                self.beta_SE = 0
+                self.mu_SE = 0
+                self.gamma_SE = 0
+                self.Cov_alpha_beta = 0
+                self.Cov_mu_beta = 0
+                self.alpha_upper = self.alpha
+                self.alpha_lower = self.alpha
+                self.mu_upper = self.mu
+                self.mu_lower = self.mu
+                self.beta_upper = self.beta
+                self.beta_lower = self.beta
+                self.gamma_upper = self.gamma
+                self.gamma_lower = self.gamma
 
         results_data = {
             "Parameter": ["Alpha", "Beta", "Gamma"],
@@ -8555,14 +8925,34 @@ class Fit_Beta_2P:
             np.array(tuple(failures)),
             np.array(tuple(right_censored)),
         )
-        covariance_matrix = np.linalg.inv(hessian_matrix)
-        self.alpha_SE = abs(covariance_matrix[0][0]) ** 0.5
-        self.beta_SE = abs(covariance_matrix[1][1]) ** 0.5
-        self.Cov_alpha_beta = covariance_matrix[0][1]
-        self.alpha_upper = self.alpha * (np.exp(Z * (self.alpha_SE / self.alpha)))
-        self.alpha_lower = self.alpha * (np.exp(-Z * (self.alpha_SE / self.alpha)))
-        self.beta_upper = self.beta * (np.exp(Z * (self.beta_SE / self.beta)))
-        self.beta_lower = self.beta * (np.exp(-Z * (self.beta_SE / self.beta)))
+        try:
+            covariance_matrix = np.linalg.inv(hessian_matrix)
+            self.alpha_SE = abs(covariance_matrix[0][0]) ** 0.5
+            self.beta_SE = abs(covariance_matrix[1][1]) ** 0.5
+            self.Cov_alpha_beta = covariance_matrix[0][1]
+            self.alpha_upper = self.alpha * (np.exp(Z * (self.alpha_SE / self.alpha)))
+            self.alpha_lower = self.alpha * (np.exp(-Z * (self.alpha_SE / self.alpha)))
+            self.beta_upper = self.beta * (np.exp(Z * (self.beta_SE / self.beta)))
+            self.beta_lower = self.beta * (np.exp(-Z * (self.beta_SE / self.beta)))
+        except LinAlgError:
+            # this exception is rare but can occur with some optimizers
+            colorprint(
+                str(
+                    "WARNING: The hessian matrix obtained using the "
+                    + self.optimizer
+                    + " optimizer is non-invertable for the Beta_2P model.\n"
+                    "Confidence interval estimates of the parameters could not be obtained.\n"
+                    "You may want to try fitting the model using a different optimizer."
+                ),
+                text_color="red",
+            )
+            self.alpha_SE = 0
+            self.beta_SE = 0
+            self.Cov_alpha_beta = 0
+            self.alpha_upper = self.alpha
+            self.alpha_lower = self.alpha
+            self.beta_upper = self.beta
+            self.beta_lower = self.beta
 
         results_data = {
             "Parameter": ["Alpha", "Beta"],
@@ -8879,14 +9269,34 @@ class Fit_Loglogistic_2P:
             np.array(tuple(failures)),
             np.array(tuple(right_censored)),
         )
-        covariance_matrix = np.linalg.inv(hessian_matrix)
-        self.alpha_SE = abs(covariance_matrix[0][0]) ** 0.5
-        self.beta_SE = abs(covariance_matrix[1][1]) ** 0.5
-        self.Cov_alpha_beta = covariance_matrix[0][1]
-        self.alpha_upper = self.alpha * (np.exp(Z * (self.alpha_SE / self.alpha)))
-        self.alpha_lower = self.alpha * (np.exp(-Z * (self.alpha_SE / self.alpha)))
-        self.beta_upper = self.beta * (np.exp(Z * (self.beta_SE / self.beta)))
-        self.beta_lower = self.beta * (np.exp(-Z * (self.beta_SE / self.beta)))
+        try:
+            covariance_matrix = np.linalg.inv(hessian_matrix)
+            self.alpha_SE = abs(covariance_matrix[0][0]) ** 0.5
+            self.beta_SE = abs(covariance_matrix[1][1]) ** 0.5
+            self.Cov_alpha_beta = covariance_matrix[0][1]
+            self.alpha_upper = self.alpha * (np.exp(Z * (self.alpha_SE / self.alpha)))
+            self.alpha_lower = self.alpha * (np.exp(-Z * (self.alpha_SE / self.alpha)))
+            self.beta_upper = self.beta * (np.exp(Z * (self.beta_SE / self.beta)))
+            self.beta_lower = self.beta * (np.exp(-Z * (self.beta_SE / self.beta)))
+        except LinAlgError:
+            # this exception is rare but can occur with some optimizers
+            colorprint(
+                str(
+                    "WARNING: The hessian matrix obtained using the "
+                    + self.optimizer
+                    + " optimizer is non-invertable for the Loglogistic_2P model.\n"
+                    "Confidence interval estimates of the parameters could not be obtained.\n"
+                    "You may want to try fitting the model using a different optimizer."
+                ),
+                text_color="red",
+            )
+            self.alpha_SE = 0
+            self.beta_SE = 0
+            self.Cov_alpha_beta = 0
+            self.alpha_upper = self.alpha
+            self.alpha_lower = self.alpha
+            self.beta_upper = self.beta
+            self.beta_lower = self.beta
 
         results_data = {
             "Parameter": ["Alpha", "Beta"],
@@ -9269,26 +9679,55 @@ class Fit_Loglogistic_3P:
                 np.array(tuple(failures - self.gamma)),
                 np.array(tuple(right_censored - self.gamma)),
             )
-            covariance_matrix = np.linalg.inv(hessian_matrix)
-            # this is to get the gamma_SE. Unfortunately this approach for alpha_SE and beta_SE give SE values that are very large resulting in incorrect CI plots. This is the same method used by Reliasoft
-            hessian_matrix_for_gamma = hessian(Fit_Loglogistic_3P.LL)(
-                np.array(tuple(params_3P)),
-                np.array(tuple(failures)),
-                np.array(tuple(right_censored)),
-            )
-            covariance_matrix_for_gamma = np.linalg.inv(hessian_matrix_for_gamma)
-            self.alpha_SE = abs(covariance_matrix[0][0]) ** 0.5
-            self.beta_SE = abs(covariance_matrix[1][1]) ** 0.5
-            self.gamma_SE = abs(covariance_matrix_for_gamma[2][2]) ** 0.5
-            self.Cov_alpha_beta = covariance_matrix[0][1]
-            self.alpha_upper = self.alpha * (np.exp(Z * (self.alpha_SE / self.alpha)))
-            self.alpha_lower = self.alpha * (np.exp(-Z * (self.alpha_SE / self.alpha)))
-            self.beta_upper = self.beta * (np.exp(Z * (self.beta_SE / self.beta)))
-            self.beta_lower = self.beta * (np.exp(-Z * (self.beta_SE / self.beta)))
-            self.gamma_upper = self.gamma * (
-                np.exp(Z * (self.gamma_SE / self.gamma))
-            )  # here we assume gamma can only be positive as there are bounds placed on it in the optimizer. Minitab assumes positive or negative so bounds are different
-            self.gamma_lower = self.gamma * (np.exp(-Z * (self.gamma_SE / self.gamma)))
+            try:
+                covariance_matrix = np.linalg.inv(hessian_matrix)
+                # this is to get the gamma_SE. Unfortunately this approach for alpha_SE and beta_SE give SE values that are very large resulting in incorrect CI plots. This is the same method used by Reliasoft
+                hessian_matrix_for_gamma = hessian(Fit_Loglogistic_3P.LL)(
+                    np.array(tuple(params_3P)),
+                    np.array(tuple(failures)),
+                    np.array(tuple(right_censored)),
+                )
+                covariance_matrix_for_gamma = np.linalg.inv(hessian_matrix_for_gamma)
+                self.alpha_SE = abs(covariance_matrix[0][0]) ** 0.5
+                self.beta_SE = abs(covariance_matrix[1][1]) ** 0.5
+                self.gamma_SE = abs(covariance_matrix_for_gamma[2][2]) ** 0.5
+                self.Cov_alpha_beta = covariance_matrix[0][1]
+                self.alpha_upper = self.alpha * (
+                    np.exp(Z * (self.alpha_SE / self.alpha))
+                )
+                self.alpha_lower = self.alpha * (
+                    np.exp(-Z * (self.alpha_SE / self.alpha))
+                )
+                self.beta_upper = self.beta * (np.exp(Z * (self.beta_SE / self.beta)))
+                self.beta_lower = self.beta * (np.exp(-Z * (self.beta_SE / self.beta)))
+                self.gamma_upper = self.gamma * (
+                    np.exp(Z * (self.gamma_SE / self.gamma))
+                )  # here we assume gamma can only be positive as there are bounds placed on it in the optimizer. Minitab assumes positive or negative so bounds are different
+                self.gamma_lower = self.gamma * (
+                    np.exp(-Z * (self.gamma_SE / self.gamma))
+                )
+            except LinAlgError:
+                # this exception is rare but can occur with some optimizers
+                colorprint(
+                    str(
+                        "WARNING: The hessian matrix obtained using the "
+                        + self.optimizer
+                        + " optimizer is non-invertable for the Loglogistic_3P model.\n"
+                        "Confidence interval estimates of the parameters could not be obtained.\n"
+                        "You may want to try fitting the model using a different optimizer."
+                    ),
+                    text_color="red",
+                )
+                self.alpha_SE = 0
+                self.beta_SE = 0
+                self.gamma_SE = 0
+                self.Cov_alpha_beta = 0
+                self.alpha_upper = self.alpha
+                self.alpha_lower = self.alpha
+                self.beta_upper = self.beta
+                self.beta_lower = self.beta
+                self.gamma_upper = self.gamma
+                self.gamma_lower = self.gamma
 
         results_data = {
             "Parameter": ["Alpha", "Beta", "Gamma"],

@@ -1503,9 +1503,9 @@ class ALT_fitters_input_checking:
         optimizer=None,
     ):
 
-        if dist not in ["Exponential", "Weibull", "Lognormal", "Normal"]:
+        if dist not in ["Exponential", "Weibull", "Lognormal", "Normal", "Everything"]:
             raise ValueError(
-                "dist must be one of Exponential, Weibull, Lognormal, Normal."
+                "dist must be one of Exponential, Weibull, Lognormal, Normal, Everything."
             )
         if life_stress_model not in [
             "Exponential",
@@ -1514,11 +1514,24 @@ class ALT_fitters_input_checking:
             "Dual_Exponential",
             "Power_Exponential",
             "Dual_Power",
+            "Everything",
         ]:
             raise ValueError(
-                "life_stess_model must be one of Exponential, Eyring, Power, Dual_Exponential, Power_Exponential, Dual_Power."
+                "life_stess_model must be one of Exponential, Eyring, Power, Dual_Exponential, Power_Exponential, Dual_Power, Everything."
             )
-        if life_stress_model in ["Dual_Exponential", "Power_Exponential", "Dual_Power"]:
+
+        if life_stress_model == "Everything":
+            if failure_stress_2 is not None:
+                is_dual_stress = True
+                min_failures_reqd = 4
+            else:
+                is_dual_stress = False
+                min_failures_reqd = 3
+        elif life_stress_model in [
+            "Dual_Exponential",
+            "Power_Exponential",
+            "Dual_Power",
+        ]:
             is_dual_stress = True
             min_failures_reqd = 4
         else:
@@ -1705,17 +1718,26 @@ class ALT_fitters_input_checking:
             for i, failure_group in enumerate(failure_groups):
                 total_unique_failures += len(np.unique(failure_group))
             if total_unique_failures < min_failures_reqd:
-                raise ValueError(
-                    str(
-                        "There must be at least "
-                        + str(min_failures_reqd)
-                        + " unique failures for the "
-                        + dist
-                        + "-"
-                        + life_stress_model
-                        + " model to be fitted."
+                if life_stress_model == "Everything":
+                    raise ValueError(
+                        str(
+                            "There must be at least "
+                            + str(min_failures_reqd)
+                            + " unique failures for all ALT models to be fitted."
+                        )
                     )
-                )
+                else:
+                    raise ValueError(
+                        str(
+                            "There must be at least "
+                            + str(min_failures_reqd)
+                            + " unique failures for the "
+                            + dist
+                            + "-"
+                            + life_stress_model
+                            + " model to be fitted."
+                        )
+                    )
 
             if len(right_censored) > 0:
                 right_censored_df_ungrouped = pd.DataFrame(
@@ -1776,7 +1798,16 @@ class ALT_fitters_input_checking:
             total_unique_failures = 0
             for i, failure_group in enumerate(failure_groups):
                 total_unique_failures += len(np.unique(failure_group))
-                if total_unique_failures < min_failures_reqd:
+            if total_unique_failures < min_failures_reqd:
+                if life_stress_model == "Everything":
+                    raise ValueError(
+                        str(
+                            "There must be at least "
+                            + str(min_failures_reqd)
+                            + " unique failures for all ALT models to be fitted."
+                        )
+                    )
+                else:
                     raise ValueError(
                         str(
                             "There must be at least "
@@ -1845,6 +1876,10 @@ class ALT_fitters_input_checking:
             if type(use_level_stress) not in [list, np.ndarray]:
                 raise ValueError(
                     "use_level_stress must be an array or list of the use level stresses. eg. use_level_stress = [stress_1, stress_2]."
+                )
+            if len(use_level_stress) != 2:
+                raise ValueError(
+                    "use_level_stress must be an array or list of length 2 with the use level stresses. eg. use_level_stress = [stress_1, stress_2]."
                 )
             use_level_stress = np.asarray(use_level_stress)
 
@@ -4152,6 +4187,27 @@ def ALT_least_squares(model, failures, stress_1_array, stress_2_array=None):
         Dual_Power - [c,m,n]
     """
 
+    def non_invertable_handler(xx, yy, model):
+        # this performs the linear algebra to find the solution
+        # it also handles the occasional case of a non-invertable matrix
+        try:
+            # linear regression formula for RRY
+            out = np.linalg.inv(xx.T.dot(xx)).dot(xx.T).dot(yy)
+        except LinAlgError:
+            try:
+                # if the matrix is perfectly symmetrical, it becomes non-invertable
+                # in this case we introduce a small amount of noise so it can be inverted
+                # this noise doesn't affect the result much and it doesn't really matter since it is just a guess being passed to MLE for optimization
+                noise = np.random.normal(loc=0, scale=0.01, size=(3, 3))
+                out = np.linalg.inv(xx.T.dot(xx) + noise).dot(xx.T).dot(yy)
+            except LinAlgError:
+                colorprint(
+                    "WARNING: Least squares estimates failed for " + model + " model.",
+                    text_color="red",
+                )
+                out = [1, 2, 3]  # return a dummy solution for MLE to deal with
+        return out
+
     L = np.asarray(failures)
     S1 = np.asarray(stress_1_array)
     if stress_2_array is not None:
@@ -4174,7 +4230,7 @@ def ALT_least_squares(model, failures, stress_1_array, stress_2_array=None):
         yy = Z.T
         xx = np.array([np.ones_like(X), X, Y]).T
         # linear regression formula for RRY
-        solution = np.linalg.inv(xx.T.dot(xx)).dot(xx.T).dot(yy)
+        solution = non_invertable_handler(xx, yy, model)
         output = [solution[1], solution[2], np.exp(solution[0])]  # a,b,c
     elif model == "Power_Exponential":
         X = 1 / S1
@@ -4183,7 +4239,7 @@ def ALT_least_squares(model, failures, stress_1_array, stress_2_array=None):
         yy = Z.T
         xx = np.array([np.ones_like(X), X, Y]).T
         # linear regression formula for RRY
-        solution = np.linalg.inv(xx.T.dot(xx)).dot(xx.T).dot(yy)
+        solution = non_invertable_handler(xx, yy, model)
         output = [solution[1], np.exp(solution[0]), solution[2]]  # a,c,n
     elif model == "Dual_Power":
         X = np.log(S1)
@@ -4191,8 +4247,7 @@ def ALT_least_squares(model, failures, stress_1_array, stress_2_array=None):
         Z = np.log(L)
         yy = Z.T
         xx = np.array([np.ones_like(X), X, Y]).T
-        # linear regression formula for RRY
-        solution = np.linalg.inv(xx.T.dot(xx)).dot(xx.T).dot(yy)
+        solution = non_invertable_handler(xx, yy, model)
         output = [np.exp(solution[0]), solution[1], solution[2]]  # c,m,n
     else:
         raise ValueError(
@@ -4830,9 +4885,9 @@ class ALT_MLE_optimization:
                 str(
                     "WARNING: MLE estimates failed for "
                     + dist
-                    + " "
+                    + "_"
                     + model
-                    + ". The least squares estimates have been returned. These results may not be as accurate as MLE."
+                    + ". The least squares estimates have been returned. These results may not be as accurate as MLE. "
                     + optimizers_tried_str
                 ),
                 text_color="red",
