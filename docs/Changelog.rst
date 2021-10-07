@@ -5,14 +5,12 @@
 Changelog
 ---------
 
-**Version: 0.7.0 --- Currently unreleased --- scheduled for release by early October 2021**
-'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+**Version: 0.7.0 --- Released: 8 Oct 2021**
+'''''''''''''''''''''''''''''''''''''''''''
 
 **Summary of changes**
 
--    Version 0.7.0 has a few really useful enhancements. The first of these is the addition of three of the special models (mixture, competing risks, defective subpopulation) to the Fit_Everything function.
-     The second major enhancement is faster plotting for large datasets using downsampling.
-     There are also numerous bug fixes that resolve several longstanding minor issues as well as some minor changes that make some of the algorithms more reliable.
+Version 0.7.0 has a few really useful enhancements. The first of these is the addition of three of the special models (mixture, competing risks, defective subpopulation) to the Fit_Everything function. The second major enhancement is faster plotting for large datasets using downsampling. There are also numerous bug fixes that resolve several longstanding minor issues as well as some minor changes that make some of the algorithms more reliable.
 
 **New features**
 
@@ -38,15 +36,14 @@ Changelog
 
 -    Changed the method used by curve_fit within least_squares. Previously was 'dogleg' which was very slow. Changed to 'trf'. This significantly speeds up the location shifted distributions (Weibull_3P, etc.)
 -    Changed the group splitting algorithm used in Fit_Weibull_Mixture and Fit_Weibull_CR. The new method is more robust and provides better a better initial guess of the parameters for MLE.
+-    Completed the reformatting of the API docs for all the ALT_Fitters. Still need to do this for the Convert_data, Datasets, PoF, Utils modules. Reformatted API docs for these remaining modules will be part of a future release.
 
 **Version: 0.6.0 --- Released: 23 July 2021**
 '''''''''''''''''''''''''''''''''''''''''''''
 
 **Summary of changes**
 
--    Version 0.6.0 has two main improvements. Firstly the behaviour of the optimizers has been changed to be more efficient, and to allow users to try multiple optimizers easily by specifying optimizer='best'.
-     Secondly, the addition of the Defective Subpopulation (DS) and Zero Inflated (ZI) Model now provides a model for which the CDF can range from above 0 to below 1.
-     There are several new Fitters added to take advantage of this as detailed below.
+Version 0.6.0 has two main improvements. Firstly the behaviour of the optimizers has been changed to be more efficient, and to allow users to try multiple optimizers easily by specifying optimizer='best'. Secondly, the addition of the Defective Subpopulation (DS) and Zero Inflated (ZI) Model now provides a model for which the CDF can range from above 0 to below 1. There are several new Fitters added to take advantage of this as detailed below.
 
 **New features**
 
