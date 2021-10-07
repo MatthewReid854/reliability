@@ -11,13 +11,18 @@ This roadmap is regularly changing and you may see some things remain on here fo
 If you have a suggested feature or you find a bug, please raise an `Issue <https://github.com/MatthewReid854/reliability/issues>`_ on Github or email me (alpha.reliability@gmail.com) and I will endeavour to either add it rapidly (for simple tasks and bug fixes) or add it to the roadmap.
 The current release schedule is approximately every 6 to 8 weeks.
 
-**Planned for version 0.8.0 (around Oct/Nov 2021)**
+**Planned for version 0.8.0 (around Dec 2021)**
 
--    Correct the formatting in the API docs for every function - still need to do ALT_Fitters, Convert_data, Datasets, PoF, and Utils
+-    Correct the formatting in the API docs for every function - still need to do Convert_data, Datasets, PoF, and Utils
 -    Within all fitters, use the FNRN format to give speed improvements in the same way as Fit_Weibull_2P_grouped works internally. This will subsequently result in the deprecation of Fit_Weibull_2P_grouped once its advantage is integrated in Fit_Weibull_2P. Need to confirm this method does not introduce too much cumulative error due to floating point precision limitations.
 -    Improvement to the online documentation for how some of these methods work, including the addition of more formulas, algorithms, and better referencing.
 -    Make tests for everything that doesn't have a test yet.
 -    Add plotting to all things that can plot in order to increase test coverage.
+
+**Planned for version 0.9.0 (around Mar 2022)**
+
+-    Add confidence intervals for Weibull_Mixture, Weibull_CR, Weibull_DS, Weibull_ZI, and Weibull_DSZI
+-    Enable the confidence intervals for CDF, SF, CHF to be extracted programatically from the distribution object.
 
 **Low priority (more of a wish list at this point)**
 
@@ -25,4 +30,3 @@ The current release schedule is approximately every 6 to 8 weeks.
 -    New reliability growth models. Currently there is only the Duane model. It is planned to include the Crow Extended and AMSAA PM2 models.
 -    Cox Proportional Hazards Model - This is available in `Lifelines <https://lifelines.readthedocs.io/en/latest/Survival%20Regression.html#cox-s-proportional-hazard-model>`_.
 -    Add `step-stress models <http://reliawiki.com/index.php/Time-Varying_Stress_Models>`_ to ALT models.
--    Confidence intervals for Mixture Model, Competing Risks Model, DS model, ZI model, and DSZI model.

@@ -11,7 +11,7 @@ There are 24 ALT models available within `reliability`; 12 single stress models 
 
 .. admonition:: API Reference
 
-   For inputs and outputs see the `API reference <https://reliability.readthedocs.io/en/latest/API/Fit_Everything_ALT.html>`_.
+   For inputs and outputs see the `API reference <https://reliability.readthedocs.io/en/latest/API/ALT_fitters/Fit_Everything_ALT.html>`_.
 
 Example 1
 ---------
