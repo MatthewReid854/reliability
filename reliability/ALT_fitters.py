@@ -3107,53 +3107,112 @@ class Fit_Weibull_Exponential:
 
 class Fit_Weibull_Eyring:
     """
-    Fit_Weibull_Eyring
+    This function will Fit the Weibull-Eyring life-stress model to the data
+    provided. Please see the online documentation for the equations of this
+    model.
 
-    This function will Fit the Weibull-Eyring life-stress model to the data provided. Please see the online documentation for the equations of this model.
-    This model is most appropriate to model a life-stress relationship with temperature. It is recommended that you ensure your temperature data are in Kelvin.
+    This model is most appropriate to model a life-stress relationship with
+    temperature. It is recommended that you ensure your temperature data are in
+    Kelvin.
 
-    Inputs:
-    failures - an array or list of the failure times.
-    failure_stress - an array or list of the corresponding stresses (such as temperature) at which each failure occurred. This must match the length of failures as each failure is tied to a failure stress.
-    right_censored - an array or list of all the right censored failure times.
-    right_censored_stress - an array or list of the corresponding stresses (such as temperature) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
-    use_level_stress - The use level stress at which you want to know the mean life. Optional input.
-    print_results - True/False. Default is True
-    show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
-    show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
-    CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - The optimization algorithm used to find the solution. Must be either 'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'.
-        Specifying the optimizer will result in that optimizer being used.
-        To use all of these specify 'best' and the best result will be returned.
-        The default behaviour is to try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and 'powell') and stop once one of the optimizers finds a solution.
-        If the optimizer fails, the initial guess will be returned.
-        For more detail see the `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
+    Parameters
+    ----------
+    failures : array, list
+        The failure data.
+    failure_stress : array, list
+        The corresponding stresses (such as temperature) at which each failure
+        occurred. This must match the length of failures as each failure is
+        tied to a failure stress.
+    right_censored : array, list, optional
+        The right censored failure times. Optional input.
+    right_censored_stress : array, list, optional
+        The corresponding stresses (such as temperature) at which each
+        right_censored data point was obtained. This must match the length of
+        right_censored as each right_censored value is tied to a
+        right_censored stress. Conditionally optional input. This must be
+        provided if right_censored is provided.
+    use_level_stress : int, float, optional
+        The use level stress at which you want to know the mean life. Optional
+        input.
+    print_results : bool, optional
+        True/False. Default is True. Prints the results to the console.
+    show_probability_plot : bool, object, optional
+        True/False. Default is True. Provides a probability plot of the fitted
+        ALT model. If an axes object is passed it will be used.
+    show_life_stress_plot : bool, object, optional
+        True/False. Default is True. Provides a life stress plot of the fitted
+        ALT model. If an axes object is passed it will be used.
+    CI : float, optional
+        Confidence interval for estimating confidence limits on parameters. Must
+        be between 0 and 1. Default is 0.95 for 95% CI.
+    optimizer : str, optional
+        The optimization algorithm used to find the solution. Must be either
+        'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'. Specifying the optimizer
+        will result in that optimizer being used. To use all of these specify
+        'best' and the best result will be returned. The default behaviour is to
+        try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and
+        'powell') and stop once one of the optimizers finds a solution. If the
+        optimizer fails, the initial guess will be returned.
+        For more detail see the
+        `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
 
-    Outputs:
-    a - fitted parameter from the Eyring model
-    c - fitted parameter from the Eyring model
-    beta - the fitted Weibull_2P beta
-    loglik2 - Log Likelihood*-2 (as used in JMP Pro)
-    loglik - Log Likelihood (as used in Minitab and Reliasoft)
-    AICc - Akaike Information Criterion
-    BIC - Bayesian Information Criterion
-    a_SE - the standard error (sqrt(variance)) of the parameter
-    c_SE - the standard error (sqrt(variance)) of the parameter
-    beta_SE - the standard error (sqrt(variance)) of the parameter
-    a_upper - the upper CI estimate of the parameter
-    a_lower - the lower CI estimate of the parameter
-    c_upper - the upper CI estimate of the parameter
-    c_lower - the lower CI estimate of the parameter
-    beta_upper - the upper CI estimate of the parameter
-    beta_lower - the lower CI estimate of the parameter
-    results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
-    goodness_of_fit - a dataframe of the goodness of fit criterion (Log-likelihood, AICc, BIC)
-    change_of_parameters - a dataframe showing the change of the parameters (alpha and beta) at each stress level
-    mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided)
-    alpha_at_use_stress - the equivalent Weibull alpha parameter at the use level stress (only provided if use_level_stress is provided)
-    distribution_at_use_stress - the Weibull distribution at the use level stress (only provided if use_level_stress is provided)
-    probability_plot - the figure object from the probability plot (only provided if show_probability_plot is True)
-    life_stress_plot - the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
+    Returns
+    -------
+    a : float
+        The fitted parameter from the Eyring model
+    c : float
+        The fitted parameter from the Eyring model
+    beta : float
+        The fitted Weibull_2P beta parameter
+    loglik2 : float
+        Log Likelihood*-2 (as used in JMP Pro)
+    loglik : float
+        Log Likelihood (as used in Minitab and Reliasoft)
+    AICc : float
+        Akaike Information Criterion
+    BIC : float
+        Bayesian Information Criterion
+    a_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    c_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    beta_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    a_upper : float
+        The upper CI estimate of the parameter
+    a_lower : float
+        The lower CI estimate of the parameter
+    c_upper : float
+        The upper CI estimate of the parameter
+    c_lower : float
+        The lower CI estimate of the parameter
+    beta_upper : float
+        The upper CI estimate of the parameter
+    beta_lower : float
+        The lower CI estimate of the parameter
+    results : dataframe
+        A dataframe of the results (point estimate, standard error, Lower CI and
+        Upper CI for each parameter)
+    goodness_of_fit : dataframe
+        A dataframe of the goodness of fit criterion (Log-likelihood, AICc, BIC)
+    change_of_parameters : dataframe
+        A dataframe showing the change of the parameters (alpha and beta) at
+        each stress level.
+    mean_life : float
+        The mean life at the use_level_stress (only provided if use_level_stress
+        is provided).
+    alpha_at_use_stress : float
+        The equivalent Weibull alpha parameter at the use level stress (only
+        provided if use_level_stress is provided).
+    distribution_at_use_stress : object
+        The Weibull distribution at the use level stress (only provided if
+        use_level_stress is provided).
+    probability_plot : object
+        The figure object from the probability plot (only provided if
+        show_probability_plot is True).
+    life_stress_plot : object
+        The figure object from the life-stress plot (only provided if
+        show_life_stress_plot is True).
     """
 
     def __init__(
@@ -3495,53 +3554,111 @@ class Fit_Weibull_Eyring:
 
 class Fit_Weibull_Power:
     """
-    Fit_Weibull_Power
+    This function will Fit the Weibull-Power life-stress model to the data
+    provided. Please see the online documentation for the equations of this
+    model.
 
-    This function will Fit the Weibull-Power life-stress model to the data provided. Please see the online documentation for the equations of this model.
-    This model is most appropriate to model a life-stress relationship with non-thermal stresses (typically in fatigue applications).
+    This model is most appropriate to model a life-stress relationship with
+    non-thermal stresses (typically in fatigue applications).
 
-    Inputs:
-    failures - an array or list of the failure times.
-    failure_stress - an array or list of the corresponding stresses (such as load) at which each failure occurred. This must match the length of failures as each failure is tied to a failure stress.
-    right_censored - an array or list of all the right censored failure times.
-    right_censored_stress - an array or list of the corresponding stresses (such as load) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
-    use_level_stress - The use level stress at which you want to know the mean life. Optional input.
-    print_results - True/False. Default is True
-    show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
-    show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
-    CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - The optimization algorithm used to find the solution. Must be either 'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'.
-        Specifying the optimizer will result in that optimizer being used.
-        To use all of these specify 'best' and the best result will be returned.
-        The default behaviour is to try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and 'powell') and stop once one of the optimizers finds a solution.
-        If the optimizer fails, the initial guess will be returned.
-        For more detail see the `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
+    Parameters
+    ----------
+    failures : array, list
+        The failure data.
+    failure_stress : array, list
+        The corresponding stresses (such as temperature) at which each failure
+        occurred. This must match the length of failures as each failure is
+        tied to a failure stress.
+    right_censored : array, list, optional
+        The right censored failure times. Optional input.
+    right_censored_stress : array, list, optional
+        The corresponding stresses (such as temperature) at which each
+        right_censored data point was obtained. This must match the length of
+        right_censored as each right_censored value is tied to a
+        right_censored stress. Conditionally optional input. This must be
+        provided if right_censored is provided.
+    use_level_stress : int, float, optional
+        The use level stress at which you want to know the mean life. Optional
+        input.
+    print_results : bool, optional
+        True/False. Default is True. Prints the results to the console.
+    show_probability_plot : bool, object, optional
+        True/False. Default is True. Provides a probability plot of the fitted
+        ALT model. If an axes object is passed it will be used.
+    show_life_stress_plot : bool, object, optional
+        True/False. Default is True. Provides a life stress plot of the fitted
+        ALT model. If an axes object is passed it will be used.
+    CI : float, optional
+        Confidence interval for estimating confidence limits on parameters. Must
+        be between 0 and 1. Default is 0.95 for 95% CI.
+    optimizer : str, optional
+        The optimization algorithm used to find the solution. Must be either
+        'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'. Specifying the optimizer
+        will result in that optimizer being used. To use all of these specify
+        'best' and the best result will be returned. The default behaviour is to
+        try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and
+        'powell') and stop once one of the optimizers finds a solution. If the
+        optimizer fails, the initial guess will be returned.
+        For more detail see the
+        `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
 
-    Outputs:
-    a - fitted parameter from the Power model
-    n - fitted parameter from the Power model
-    beta - the fitted Weibull_2P beta
-    loglik2 - Log Likelihood*-2 (as used in JMP Pro)
-    loglik - Log Likelihood (as used in Minitab and Reliasoft)
-    AICc - Akaike Information Criterion
-    BIC - Bayesian Information Criterion
-    a_SE - the standard error (sqrt(variance)) of the parameter
-    n_SE - the standard error (sqrt(variance)) of the parameter
-    beta_SE - the standard error (sqrt(variance)) of the parameter
-    a_upper - the upper CI estimate of the parameter
-    a_lower - the lower CI estimate of the parameter
-    n_upper - the upper CI estimate of the parameter
-    n_lower - the lower CI estimate of the parameter
-    beta_upper - the upper CI estimate of the parameter
-    beta_lower - the lower CI estimate of the parameter
-    results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
-    goodness_of_fit - a dataframe of the goodness of fit criterion (Log-likelihood, AICc, BIC)
-    change_of_parameters - a dataframe showing the change of the parameters (alpha and beta) at each stress level
-    mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided)
-    alpha_at_use_stress - the equivalent Weibull alpha parameter at the use level stress (only provided if use_level_stress is provided)
-    distribution_at_use_stress - the Weibull distribution at the use level stress (only provided if use_level_stress is provided)
-    probability_plot - the figure object from the probability plot (only provided if show_probability_plot is True)
-    life_stress_plot - the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
+    Returns
+    -------
+    a : float
+        The fitted parameter from the Power model
+    n : float
+        The fitted parameter from the Power model
+    beta : float
+        The fitted Weibull_2P beta parameter
+    loglik2 : float
+        Log Likelihood*-2 (as used in JMP Pro)
+    loglik : float
+        Log Likelihood (as used in Minitab and Reliasoft)
+    AICc : float
+        Akaike Information Criterion
+    BIC : float
+        Bayesian Information Criterion
+    a_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    n_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    beta_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    a_upper : float
+        The upper CI estimate of the parameter
+    a_lower : float
+        The lower CI estimate of the parameter
+    n_upper : float
+        The upper CI estimate of the parameter
+    n_lower : float
+        The lower CI estimate of the parameter
+    beta_upper : float
+        The upper CI estimate of the parameter
+    beta_lower : float
+        The lower CI estimate of the parameter
+    results : dataframe
+        A dataframe of the results (point estimate, standard error, Lower CI and
+        Upper CI for each parameter)
+    goodness_of_fit : dataframe
+        A dataframe of the goodness of fit criterion (Log-likelihood, AICc, BIC)
+    change_of_parameters : dataframe
+        A dataframe showing the change of the parameters (alpha and beta) at
+        each stress level.
+    mean_life : float
+        The mean life at the use_level_stress (only provided if use_level_stress
+        is provided).
+    alpha_at_use_stress : float
+        The equivalent Weibull alpha parameter at the use level stress (only
+        provided if use_level_stress is provided).
+    distribution_at_use_stress : object
+        The Weibull distribution at the use level stress (only provided if
+        use_level_stress is provided).
+    probability_plot : object
+        The figure object from the probability plot (only provided if
+        show_probability_plot is True).
+    life_stress_plot : object
+        The figure object from the life-stress plot (only provided if
+        show_life_stress_plot is True).
     """
 
     def __init__(
@@ -3883,59 +4000,132 @@ class Fit_Weibull_Power:
 
 class Fit_Weibull_Dual_Exponential:
     """
-    Fit_Weibull_Dual_Exponential
+    This function will Fit the Weibull_Dual_Exponential life-stress model to the
+    data provided. Please see the online documentation for the equations of this
+    model.
 
-    This function will Fit the Weibull_Dual_Exponential life-stress model to the data provided. Please see the online documentation for the equations of this model.
-    This model is most appropriate to model a life-stress relationship with temperature-humidity. It is recommended that you ensure your temperature data are in Kelvin and humidity data range from 0 to 1.
+    This model is most appropriate to model a life-stress relationship with
+    two thermal stresses (such as temperature-humidity). It is recommended that
+    you ensure your temperature data are in Kelvin and humidity data range from
+    0 to 1.
 
-    Inputs:
-    failures - an array or list of the failure times.
-    failure_stress_1 - an array or list of the corresponding stress 1 (such as temperature) at which each failure occurred. This must match the length of failures as each failure is tied to a failure stress.
-    failure_stress_2 - an array or list of the corresponding stress 2 (such as humidity) at which each failure occurred. This must match the length of failures as each failure is tied to a failure stress.
-    right_censored - an array or list of all the right censored failure times
-    right_censored_stress_1 - an array or list of the corresponding stress 1 (such as temperature) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
-    right_censored_stress_2 - an array or list of the corresponding stress 1 (such as humidity) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
-    use_level_stress - [stress_1, stress_2]. A two element list or array of the use level stresses at which you want to know the mean life. Optional input.
-    print_results - True/False. Default is True
-    show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
-    show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
-    CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - The optimization algorithm used to find the solution. Must be either 'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'.
-        Specifying the optimizer will result in that optimizer being used.
-        To use all of these specify 'best' and the best result will be returned.
-        The default behaviour is to try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and 'powell') and stop once one of the optimizers finds a solution.
-        If the optimizer fails, the initial guess will be returned.
-        For more detail see the `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
+    Parameters
+    ----------
+    failures : array, list
+        The failure data.
+    failure_stress_1 : array, list
+        The corresponding stress 1 (such as temperature) at which each failure
+        occurred. This must match the length of failures as each failure is tied
+        to a failure stress.
+    failure_stress_2 : array, list
+        The corresponding stress 2 (such as humidity) at which each failure
+        occurred. This must match the length of failures as each failure is tied
+        to a failure stress.
+    right_censored : array, list, optional
+        The right censored failure times. Optional input.
+    right_censored_stress_1 : array, list, optional
+        The corresponding stress 1 (such as temperature) at which each
+        right_censored data point was obtained. This must match the length of
+        right_censored as each right_censored value is tied to a right_censored
+        stress. Conditionally optional input. This must be provided if
+        right_censored is provided.
+    right_censored_stress_2 : array, list, optional
+        The corresponding stress 1 (such as humidity) at which each
+        right_censored data point was obtained. This must match the length of
+        right_censored as each right_censored value is tied to a right_censored
+        stress. Conditionally optional input. This must be provided if
+        right_censored is provided.
+    use_level_stress : array, list optional
+        A two element list or array of the use level stresses in the form
+        [stress_1, stress_2] at which you want to know the mean life. Optional
+        input.
+    print_results : bool, optional
+        True/False. Default is True. Prints the results to the console.
+    show_probability_plot : bool, object, optional
+        True/False. Default is True. Provides a probability plot of the fitted
+        ALT model. If an axes object is passed it will be used.
+    show_life_stress_plot : bool, object, optional
+        True/False. Default is True. Provides a life stress plot of the fitted
+        ALT model. If an axes object is passed it will be used.
+    CI : float, optional
+        Confidence interval for estimating confidence limits on parameters. Must
+        be between 0 and 1. Default is 0.95 for 95% CI.
+    optimizer : str, optional
+        The optimization algorithm used to find the solution. Must be either
+        'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'. Specifying the optimizer
+        will result in that optimizer being used. To use all of these specify
+        'best' and the best result will be returned. The default behaviour is to
+        try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and
+        'powell') and stop once one of the optimizers finds a solution. If the
+        optimizer fails, the initial guess will be returned.
+        For more detail see the
+        `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
 
-    Outputs:
-    a - fitted parameter from the Dual_Exponential model
-    b - fitted parameter from the Dual_Exponential model
-    c - fitted parameter from the Dual_Exponential model
-    beta - the fitted Weibull_2P beta
-    loglik2 - Log Likelihood*-2 (as used in JMP Pro)
-    loglik - Log Likelihood (as used in Minitab and Reliasoft)
-    AICc - Akaike Information Criterion
-    BIC - Bayesian Information Criterion
-    a_SE - the standard error (sqrt(variance)) of the parameter
-    b_SE - the standard error (sqrt(variance)) of the parameter
-    c_SE - the standard error (sqrt(variance)) of the parameter
-    beta_SE - the standard error (sqrt(variance)) of the parameter
-    a_upper - the upper CI estimate of the parameter
-    a_lower - the lower CI estimate of the parameter
-    b_upper - the upper CI estimate of the parameter
-    b_lower - the lower CI estimate of the parameter
-    c_upper - the upper CI estimate of the parameter
-    c_lower - the lower CI estimate of the parameter
-    beta_upper - the upper CI estimate of the parameter
-    beta_lower - the lower CI estimate of the parameter
-    results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
-    goodness_of_fit - a dataframe of the goodness of fit criterion (Log-likelihood, AICc, BIC)
-    change_of_parameters - a dataframe showing the change of the parameters (alpha and beta) at each stress level
-    mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided)
-    alpha_at_use_stress - the equivalent Weibull alpha parameter at the use level stress (only provided if use_level_stress is provided)
-    distribution_at_use_stress - the Weibull distribution at the use level stress (only provided if use_level_stress is provided)
-    probability_plot - the figure object from the probability plot (only provided if show_probability_plot is True)
-    life_stress_plot - the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
+    Returns
+    -------
+    a : float
+        The fitted parameter from the Dual_Exponential model
+    b : float
+        The fitted parameter from the Dual_Exponential model
+    c : float
+        The fitted parameter from the Dual_Exponential model
+    beta : float
+        The fitted Weibull_2P beta parameter
+    loglik2 : float
+        Log Likelihood*-2 (as used in JMP Pro)
+    loglik : float
+        Log Likelihood (as used in Minitab and Reliasoft)
+    AICc : float
+        Akaike Information Criterion
+    BIC : float
+        Bayesian Information Criterion
+    a_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    b_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    c_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    beta_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    a_upper : float
+        The upper CI estimate of the parameter
+    a_lower : float
+        The lower CI estimate of the parameter
+    b_upper : float
+        The upper CI estimate of the parameter
+    b_lower : float
+        The lower CI estimate of the parameter
+    c_upper : float
+        The upper CI estimate of the parameter
+    c_lower : float
+        The lower CI estimate of the parameter
+    beta_upper : float
+        The upper CI estimate of the parameter
+    beta_lower : float
+        The lower CI estimate of the parameter
+    results : dataframe
+        A dataframe of the results (point estimate, standard error, Lower CI and
+        Upper CI for each parameter)
+    goodness_of_fit : dataframe
+        A dataframe of the goodness of fit criterion (Log-likelihood, AICc, BIC)
+    change_of_parameters : dataframe
+        A dataframe showing the change of the parameters (alpha and beta) at
+        each stress level.
+    mean_life : float
+        The mean life at the use_level_stress (only provided if use_level_stress
+        is provided).
+    alpha_at_use_stress : float
+        The equivalent Weibull alpha parameter at the use level stress (only
+        provided if use_level_stress is provided).
+    distribution_at_use_stress : object
+        The Weibull distribution at the use level stress (only provided if
+        use_level_stress is provided).
+    probability_plot : object
+        The figure object from the probability plot (only provided if
+        show_probability_plot is True).
+    life_stress_plot : object
+        The figure object from the life-stress plot (only provided if
+        show_life_stress_plot is True).
     """
 
     def __init__(
@@ -4330,60 +4520,133 @@ class Fit_Weibull_Dual_Exponential:
 
 class Fit_Weibull_Power_Exponential:
     """
-    Fit_Weibull_Power_Exponential
+    This function will Fit the Weibull_Power_Exponential life-stress model to
+    the data provided. Please see the online documentation for the equations of
+    this model.
 
-    This function will Fit the Weibull_Power_Exponential life-stress model to the data provided. Please see the online documentation for the equations of this model.
-    This model is most appropriate to model a life-stress relationship with thermal and non-thermal stresses. It is essential that you ensure your thermal stress is stress_thermal and your non-thermal stress is stress_nonthermal.
+    This model is most appropriate to model a life-stress relationship with
+    thermal and non-thermal stresses. It is essential that you ensure your
+    thermal stress is stress_1 (as this will be modeled by the Exponential) and
+    your non-thermal stress is stress_2 (as this will be modeled by the Power).
     Also ensure that your temperature data are in Kelvin.
 
-    Inputs:
-    failures - an array or list of the failure times.
-    failure_stress_1 - an array or list of the corresponding stress 1 (thermal stress) at which each failure occurred. This must match the length of failures as each failure is tied to a failure stress.
-    failure_stress_2 - an array or list of the corresponding stress 2 (non-thermal stress) at which each failure occurred. This must match the length of failures as each failure is tied to a failure stress.
-    right_censored - an array or list of all the right censored failure times
-    right_censored_stress_1 - an array or list of the corresponding stress 1 (thermal stress) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
-    right_censored_stress_2 - an array or list of the corresponding stress 1 (non-thermal stress) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
-    use_level_stress - [stress_1, stress_2]. A two element list or array of the use level stresses at which you want to know the mean life. Optional input.
-    print_results - True/False. Default is True
-    show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
-    show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
-    CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - The optimization algorithm used to find the solution. Must be either 'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'.
-        Specifying the optimizer will result in that optimizer being used.
-        To use all of these specify 'best' and the best result will be returned.
-        The default behaviour is to try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and 'powell') and stop once one of the optimizers finds a solution.
-        If the optimizer fails, the initial guess will be returned.
-        For more detail see the `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
+    Parameters
+    ----------
+    failures : array, list
+        The failure data.
+    failure_stress_1 : array, list
+        The corresponding stress 1 (thermal stress) at which each failure
+        occurred. This must match the length of failures as each failure is tied
+        to a failure stress.
+    failure_stress_2 : array, list
+        The corresponding stress 2 (non-thermal stress) at which each failure
+        occurred. This must match the length of failures as each failure is tied
+        to a failure stress.
+    right_censored : array, list, optional
+        The right censored failure times. Optional input.
+    right_censored_stress_1 : array, list, optional
+        The corresponding stress 1 (thermal stress) at which each
+        right_censored data point was obtained. This must match the length of
+        right_censored as each right_censored value is tied to a right_censored
+        stress. Conditionally optional input. This must be provided if
+        right_censored is provided.
+    right_censored_stress_2 : array, list, optional
+        The corresponding stress 1 (non-thermal stress) at which each
+        right_censored data point was obtained. This must match the length of
+        right_censored as each right_censored value is tied to a right_censored
+        stress. Conditionally optional input. This must be provided if
+        right_censored is provided.
+    use_level_stress : array, list optional
+        A two element list or array of the use level stresses in the form
+        [stress_1, stress_2] at which you want to know the mean life. Optional
+        input.
+    print_results : bool, optional
+        True/False. Default is True. Prints the results to the console.
+    show_probability_plot : bool, object, optional
+        True/False. Default is True. Provides a probability plot of the fitted
+        ALT model. If an axes object is passed it will be used.
+    show_life_stress_plot : bool, object, optional
+        True/False. Default is True. Provides a life stress plot of the fitted
+        ALT model. If an axes object is passed it will be used.
+    CI : float, optional
+        Confidence interval for estimating confidence limits on parameters. Must
+        be between 0 and 1. Default is 0.95 for 95% CI.
+    optimizer : str, optional
+        The optimization algorithm used to find the solution. Must be either
+        'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'. Specifying the optimizer
+        will result in that optimizer being used. To use all of these specify
+        'best' and the best result will be returned. The default behaviour is to
+        try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and
+        'powell') and stop once one of the optimizers finds a solution. If the
+        optimizer fails, the initial guess will be returned.
+        For more detail see the
+        `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
 
-    Outputs:
-    a - fitted parameter from the Power_Exponential model
-    c - fitted parameter from the Power_Exponential model
-    n - fitted parameter from the Power_Exponential model
-    beta - the fitted Weibull_2P beta
-    loglik2 - Log Likelihood*-2 (as used in JMP Pro)
-    loglik - Log Likelihood (as used in Minitab and Reliasoft)
-    AICc - Akaike Information Criterion
-    BIC - Bayesian Information Criterion
-    a_SE - the standard error (sqrt(variance)) of the parameter
-    c_SE - the standard error (sqrt(variance)) of the parameter
-    n_SE - the standard error (sqrt(variance)) of the parameter
-    beta_SE - the standard error (sqrt(variance)) of the parameter
-    a_upper - the upper CI estimate of the parameter
-    a_lower - the lower CI estimate of the parameter
-    c_upper - the upper CI estimate of the parameter
-    c_lower - the lower CI estimate of the parameter
-    n_upper - the upper CI estimate of the parameter
-    n_lower - the lower CI estimate of the parameter
-    beta_upper - the upper CI estimate of the parameter
-    beta_lower - the lower CI estimate of the parameter
-    results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
-    goodness_of_fit - a dataframe of the goodness of fit criterion (Log-likelihood, AICc, BIC).
-    change_of_parameters - a dataframe showing the change of the parameters (alpha and beta) at each stress level.
-    mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided).
-    alpha_at_use_stress - the equivalent Weibull alpha parameter at the use level stress (only provided if use_level_stress is provided).
-    distribution_at_use_stress - the Weibull distribution at the use level stress (only provided if use_level_stress is provided).
-    probability_plot - the figure object from the probability plot (only provided if show_probability_plot is True)
-    life_stress_plot - the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
+    Returns
+    -------
+    a : float
+        The fitted parameter from the Power_Exponential model
+    c : float
+        The fitted parameter from the Power_Exponential model
+    n : float
+        The fitted parameter from the Power_Exponential model
+    beta : float
+        The fitted Weibull_2P beta parameter
+    loglik2 : float
+        Log Likelihood*-2 (as used in JMP Pro)
+    loglik : float
+        Log Likelihood (as used in Minitab and Reliasoft)
+    AICc : float
+        Akaike Information Criterion
+    BIC : float
+        Bayesian Information Criterion
+    a_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    c_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    n_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    beta_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    a_upper : float
+        The upper CI estimate of the parameter
+    a_lower : float
+        The lower CI estimate of the parameter
+    c_upper : float
+        The upper CI estimate of the parameter
+    c_lower : float
+        The lower CI estimate of the parameter
+    n_upper : float
+        The upper CI estimate of the parameter
+    n_lower : float
+        The lower CI estimate of the parameter
+    beta_upper : float
+        The upper CI estimate of the parameter
+    beta_lower : float
+        The lower CI estimate of the parameter
+    results : dataframe
+        A dataframe of the results (point estimate, standard error, Lower CI and
+        Upper CI for each parameter)
+    goodness_of_fit : dataframe
+        A dataframe of the goodness of fit criterion (Log-likelihood, AICc, BIC)
+    change_of_parameters : dataframe
+        A dataframe showing the change of the parameters (alpha and beta) at
+        each stress level.
+    mean_life : float
+        The mean life at the use_level_stress (only provided if use_level_stress
+        is provided).
+    alpha_at_use_stress : float
+        The equivalent Weibull alpha parameter at the use level stress (only
+        provided if use_level_stress is provided).
+    distribution_at_use_stress : object
+        The Weibull distribution at the use level stress (only provided if
+        use_level_stress is provided).
+    probability_plot : object
+        The figure object from the probability plot (only provided if
+        show_probability_plot is True).
+    life_stress_plot : object
+        The figure object from the life-stress plot (only provided if
+        show_life_stress_plot is True).
     """
 
     def __init__(
@@ -4778,57 +5041,130 @@ class Fit_Weibull_Dual_Power:
     """
     Fit_Weibull_Dual_Power
 
-    This function will Fit the Weibull_Dual_Power life-stress model to the data provided. Please see the online documentation for the equations of this model.
-    This model is most appropriate to model a life-stress relationship with two non-thermal stresses such as voltage and load.
+    This function will Fit the Weibull_Dual_Power life-stress model to the data
+    provided. Please see the online documentation for the equations of this
+    model.
 
-    Inputs:
-    failures - an array or list of the failure times.
-    failure_stress_1 - an array or list of the corresponding stress 1 (such as voltage) at which each failure occurred. This must match the length of failures as each failure is tied to a failure stress.
-    failure_stress_2 - an array or list of the corresponding stress 2 (such as load) at which each failure occurred. This must match the length of failures as each failure is tied to a failure stress.
-    right_censored - an array or list of all the right censored failure times
-    right_censored_stress_1 - an array or list of the corresponding stress 1 (such as voltage) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
-    right_censored_stress_2 - an array or list of the corresponding stress 1 (such as load) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
-    use_level_stress - [stress_1, stress_2]. A two element list or array of the use level stresses at which you want to know the mean life. Optional input.
-    print_results - True/False. Default is True
-    show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
-    show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
-    CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - The optimization algorithm used to find the solution. Must be either 'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'.
-        Specifying the optimizer will result in that optimizer being used.
-        To use all of these specify 'best' and the best result will be returned.
-        The default behaviour is to try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and 'powell') and stop once one of the optimizers finds a solution.
-        If the optimizer fails, the initial guess will be returned.
-        For more detail see the `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
+    This model is most appropriate to model a life-stress relationship with two
+    non-thermal stresses such as voltage and load.
 
-    Outputs:
-    c - fitted parameter from the Dual_Power model
-    n - fitted parameter from the Dual_Power model
-    m - fitted parameter from the Dual_Power model
-    beta - the fitted Weibull_2P beta
-    loglik2 - Log Likelihood*-2 (as used in JMP Pro)
-    loglik - Log Likelihood (as used in Minitab and Reliasoft)
-    AICc - Akaike Information Criterion
-    BIC - Bayesian Information Criterion
-    c_SE - the standard error (sqrt(variance)) of the parameter
-    m_SE - the standard error (sqrt(variance)) of the parameter
-    n_SE - the standard error (sqrt(variance)) of the parameter
-    beta_SE - the standard error (sqrt(variance)) of the parameter
-    c_upper - the upper CI estimate of the parameter
-    c_lower - the lower CI estimate of the parameter
-    m_upper - the upper CI estimate of the parameter
-    m_lower - the lower CI estimate of the parameter
-    n_upper - the upper CI estimate of the parameter
-    n_lower - the lower CI estimate of the parameter
-    beta_upper - the upper CI estimate of the parameter
-    beta_lower - the lower CI estimate of the parameter
-    results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
-    goodness_of_fit - a dataframe of the goodness of fit criterion (Log-likelihood, AICc, BIC)
-    change_of_parameters - a dataframe showing the change of the parameters (alpha and beta) at each stress level
-    mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided)
-    alpha_at_use_stress - the equivalent Weibull alpha parameter at the use level stress (only provided if use_level_stress is provided)
-    distribution_at_use_stress - the Weibull distribution at the use level stress (only provided if use_level_stress is provided)
-    probability_plot - the axes handles for the figure object from the probability plot (only provided if show_probability_plot is True)
-    life_stress_plot - the axes handles for the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
+    Parameters
+    ----------
+    failures : array, list
+        The failure data.
+    failure_stress_1 : array, list
+        The corresponding stress 1 (such as voltage) at which each failure
+        occurred. This must match the length of failures as each failure is tied
+        to a failure stress.
+    failure_stress_2 : array, list
+        The corresponding stress 2 (such as load) at which each failure
+        occurred. This must match the length of failures as each failure is tied
+        to a failure stress.
+    right_censored : array, list, optional
+        The right censored failure times. Optional input.
+    right_censored_stress_1 : array, list, optional
+        The corresponding stress 1 (such as voltage) at which each
+        right_censored data point was obtained. This must match the length of
+        right_censored as each right_censored value is tied to a right_censored
+        stress. Conditionally optional input. This must be provided if
+        right_censored is provided.
+    right_censored_stress_2 : array, list, optional
+        The corresponding stress 1 (such as load) at which each
+        right_censored data point was obtained. This must match the length of
+        right_censored as each right_censored value is tied to a right_censored
+        stress. Conditionally optional input. This must be provided if
+        right_censored is provided.
+    use_level_stress : array, list optional
+        A two element list or array of the use level stresses in the form
+        [stress_1, stress_2] at which you want to know the mean life. Optional
+        input.
+    print_results : bool, optional
+        True/False. Default is True. Prints the results to the console.
+    show_probability_plot : bool, object, optional
+        True/False. Default is True. Provides a probability plot of the fitted
+        ALT model. If an axes object is passed it will be used.
+    show_life_stress_plot : bool, object, optional
+        True/False. Default is True. Provides a life stress plot of the fitted
+        ALT model. If an axes object is passed it will be used.
+    CI : float, optional
+        Confidence interval for estimating confidence limits on parameters. Must
+        be between 0 and 1. Default is 0.95 for 95% CI.
+    optimizer : str, optional
+        The optimization algorithm used to find the solution. Must be either
+        'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'. Specifying the optimizer
+        will result in that optimizer being used. To use all of these specify
+        'best' and the best result will be returned. The default behaviour is to
+        try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and
+        'powell') and stop once one of the optimizers finds a solution. If the
+        optimizer fails, the initial guess will be returned.
+        For more detail see the
+        `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
+
+    Returns
+    -------
+    c : float
+        The fitted parameter from the Dual_Power model
+    n : float
+        The fitted parameter from the Dual_Power model
+    m : float
+        The fitted parameter from the Dual_Power model
+    beta : float
+        The fitted Weibull_2P beta parameter
+    loglik2 : float
+        Log Likelihood*-2 (as used in JMP Pro)
+    loglik : float
+        Log Likelihood (as used in Minitab and Reliasoft)
+    AICc : float
+        Akaike Information Criterion
+    BIC : float
+        Bayesian Information Criterion
+    c_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    n_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    m_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    beta_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    c_upper : float
+        The upper CI estimate of the parameter
+    c_lower : float
+        The lower CI estimate of the parameter
+    n_upper : float
+        The upper CI estimate of the parameter
+    n_lower : float
+        The lower CI estimate of the parameter
+    m_upper : float
+        The upper CI estimate of the parameter
+    m_lower : float
+        The lower CI estimate of the parameter
+    beta_upper : float
+        The upper CI estimate of the parameter
+    beta_lower : float
+        The lower CI estimate of the parameter
+    results : dataframe
+        A dataframe of the results (point estimate, standard error, Lower CI and
+        Upper CI for each parameter)
+    goodness_of_fit : dataframe
+        A dataframe of the goodness of fit criterion (Log-likelihood, AICc, BIC)
+    change_of_parameters : dataframe
+        A dataframe showing the change of the parameters (alpha and beta) at
+        each stress level.
+    mean_life : float
+        The mean life at the use_level_stress (only provided if use_level_stress
+        is provided).
+    alpha_at_use_stress : float
+        The equivalent Weibull alpha parameter at the use level stress (only
+        provided if use_level_stress is provided).
+    distribution_at_use_stress : object
+        The Weibull distribution at the use level stress (only provided if
+        use_level_stress is provided).
+    probability_plot : object
+        The figure object from the probability plot (only provided if
+        show_probability_plot is True).
+    life_stress_plot : object
+        The figure object from the life-stress plot (only provided if
+        show_life_stress_plot is True).
     """
 
     def __init__(
@@ -5221,54 +5557,115 @@ class Fit_Weibull_Dual_Power:
 
 class Fit_Lognormal_Exponential:
     """
-    Fit_Lognormal_Exponential
+    This function will Fit the Lognormal-Exponential life-stress model to the
+    data provided. Please see the online documentation for the equations of this
+    model.
 
-    This function will Fit the Lognormal-Exponential life-stress model to the data provided. Please see the online documentation for the equations of this model.
-    This model is most appropriate to model a life-stress relationship with temperature. It is recommended that you ensure your temperature data are in Kelvin.
-    If you are using this model for the Arrhenius equation, a = Ea/K_B. When results are printed Ea will be provided in eV.
+    This model is most appropriate to model a life-stress relationship with
+    temperature. It is recommended that you ensure your temperature data are in
+    Kelvin.
 
-    Inputs:
-    failures - an array or list of the failure times.
-    failure_stress - an array or list of the corresponding stresses (such as temperature) at which each failure occurred. This must match the length of failures as each failure is tied to a failure stress.
-    right_censored - an array or list of all the right censored failure times.
-    right_censored_stress - an array or list of the corresponding stresses (such as temperature) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
-    use_level_stress - The use level stress at which you want to know the mean life. Optional input.
-    print_results - True/False. Default is True
-    show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
-    show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
-    CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - The optimization algorithm used to find the solution. Must be either 'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'.
-        Specifying the optimizer will result in that optimizer being used.
-        To use all of these specify 'best' and the best result will be returned.
-        The default behaviour is to try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and 'powell') and stop once one of the optimizers finds a solution.
-        If the optimizer fails, the initial guess will be returned.
-        For more detail see the `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
+    If you are using this model for the Arrhenius equation, a = Ea/K_B. When
+    results are printed Ea will be provided in eV.
 
-    Outputs:
-    a - fitted parameter from the Exponential model
-    b - fitted parameter from the Exponential model
-    sigma - the fitted Lognormal_2P sigma
-    loglik2 - Log Likelihood*-2 (as used in JMP Pro)
-    loglik - Log Likelihood (as used in Minitab and Reliasoft)
-    AICc - Akaike Information Criterion
-    BIC - Bayesian Information Criterion
-    a_SE - the standard error (sqrt(variance)) of the parameter
-    b_SE - the standard error (sqrt(variance)) of the parameter
-    sigma_SE - the standard error (sqrt(variance)) of the parameter
-    a_upper - the upper CI estimate of the parameter
-    a_lower - the lower CI estimate of the parameter
-    b_upper - the upper CI estimate of the parameter
-    b_lower - the lower CI estimate of the parameter
-    sigma_upper - the upper CI estimate of the parameter
-    sigma_lower - the lower CI estimate of the parameter
-    results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
-    goodness_of_fit - a dataframe of the goodness of fit criterion (Log-likelihood, AICc, BIC)
-    change_of_parameters - a dataframe showing the change of the parameters (mu and sigma) at each stress level
-    mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided)
-    mu_at_use_stress - the equivalent Lognormal mu parameter at the use level stress (only provided if use_level_stress is provided)
-    distribution_at_use_stress - the Lognormal distribution at the use level stress (only provided if use_level_stress is provided)
-    probability_plot - the axes handles for the figure object from the probability plot (only provided if show_probability_plot is True)
-    life_stress_plot - the axes handles for the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
+    Parameters
+    ----------
+    failures : array, list
+        The failure data.
+    failure_stress : array, list
+        The corresponding stresses (such as temperature) at which each failure
+        occurred. This must match the length of failures as each failure is
+        tied to a failure stress.
+    right_censored : array, list, optional
+        The right censored failure times. Optional input.
+    right_censored_stress : array, list, optional
+        The corresponding stresses (such as temperature) at which each
+        right_censored data point was obtained. This must match the length of
+        right_censored as each right_censored value is tied to a
+        right_censored stress. Conditionally optional input. This must be
+        provided if right_censored is provided.
+    use_level_stress : int, float, optional
+        The use level stress at which you want to know the mean life. Optional
+        input.
+    print_results : bool, optional
+        True/False. Default is True. Prints the results to the console.
+    show_probability_plot : bool, object, optional
+        True/False. Default is True. Provides a probability plot of the fitted
+        ALT model. If an axes object is passed it will be used.
+    show_life_stress_plot : bool, object, optional
+        True/False. Default is True. Provides a life stress plot of the fitted
+        ALT model. If an axes object is passed it will be used.
+    CI : float, optional
+        Confidence interval for estimating confidence limits on parameters. Must
+        be between 0 and 1. Default is 0.95 for 95% CI.
+    optimizer : str, optional
+        The optimization algorithm used to find the solution. Must be either
+        'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'. Specifying the optimizer
+        will result in that optimizer being used. To use all of these specify
+        'best' and the best result will be returned. The default behaviour is to
+        try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and
+        'powell') and stop once one of the optimizers finds a solution. If the
+        optimizer fails, the initial guess will be returned.
+        For more detail see the
+        `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
+
+    Returns
+    -------
+    a : float
+        The fitted parameter from the Exponential model
+    b : float
+        The fitted parameter from the Exponential model
+    sigma : float
+        The fitted Lognormal_2P sigma parameter
+    loglik2 : float
+        Log Likelihood*-2 (as used in JMP Pro)
+    loglik : float
+        Log Likelihood (as used in Minitab and Reliasoft)
+    AICc : float
+        Akaike Information Criterion
+    BIC : float
+        Bayesian Information Criterion
+    a_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    b_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    sigma_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    a_upper : float
+        The upper CI estimate of the parameter
+    a_lower : float
+        The lower CI estimate of the parameter
+    b_upper : float
+        The upper CI estimate of the parameter
+    b_lower : float
+        The lower CI estimate of the parameter
+    sigma_upper : float
+        The upper CI estimate of the parameter
+    sigma_lower : float
+        The lower CI estimate of the parameter
+    results : dataframe
+        A dataframe of the results (point estimate, standard error, Lower CI and
+        Upper CI for each parameter)
+    goodness_of_fit : dataframe
+        A dataframe of the goodness of fit criterion (Log-likelihood, AICc, BIC)
+    change_of_parameters : dataframe
+        A dataframe showing the change of the parameters (mu and sigma) at
+        each stress level.
+    mean_life : float
+        The mean life at the use_level_stress (only provided if use_level_stress
+        is provided).
+    mu_at_use_stress : float
+        The equivalent Lognormal mu parameter at the use level stress (only
+        provided if use_level_stress is provided).
+    distribution_at_use_stress : object
+        The Lognormal distribution at the use level stress (only provided if
+        use_level_stress is provided).
+    probability_plot : object
+        The figure object from the probability plot (only provided if
+        show_probability_plot is True).
+    life_stress_plot : object
+        The figure object from the life-stress plot (only provided if
+        show_life_stress_plot is True).
     """
 
     def __init__(
@@ -5628,53 +6025,112 @@ class Fit_Lognormal_Exponential:
 
 class Fit_Lognormal_Eyring:
     """
-    Fit_Lognormal_Eyring
+    This function will Fit the Lognormal-Eyring life-stress model to the data
+    provided. Please see the online documentation for the equations of this
+    model.
 
-    This function will Fit the Lognormal-Eyring life-stress model to the data provided. Please see the online documentation for the equations of this model.
-    This model is most appropriate to model a life-stress relationship with temperature. It is recommended that you ensure your temperature data are in Kelvin.
+    This model is most appropriate to model a life-stress relationship with
+    temperature. It is recommended that you ensure your temperature data are in
+    Kelvin.
 
-    Inputs:
-    failures - an array or list of the failure times.
-    failure_stress - an array or list of the corresponding stresses (such as temperature) at which each failure occurred. This must match the length of failures as each failure is tied to a failure stress.
-    right_censored - an array or list of all the right censored failure times.
-    right_censored_stress - an array or list of the corresponding stresses (such as temperature) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
-    use_level_stress - The use level stress at which you want to know the mean life. Optional input.
-    print_results - True/False. Default is True
-    show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
-    show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
-    CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - The optimization algorithm used to find the solution. Must be either 'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'.
-        Specifying the optimizer will result in that optimizer being used.
-        To use all of these specify 'best' and the best result will be returned.
-        The default behaviour is to try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and 'powell') and stop once one of the optimizers finds a solution.
-        If the optimizer fails, the initial guess will be returned.
-        For more detail see the `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
+    Parameters
+    ----------
+    failures : array, list
+        The failure data.
+    failure_stress : array, list
+        The corresponding stresses (such as temperature) at which each failure
+        occurred. This must match the length of failures as each failure is
+        tied to a failure stress.
+    right_censored : array, list, optional
+        The right censored failure times. Optional input.
+    right_censored_stress : array, list, optional
+        The corresponding stresses (such as temperature) at which each
+        right_censored data point was obtained. This must match the length of
+        right_censored as each right_censored value is tied to a
+        right_censored stress. Conditionally optional input. This must be
+        provided if right_censored is provided.
+    use_level_stress : int, float, optional
+        The use level stress at which you want to know the mean life. Optional
+        input.
+    print_results : bool, optional
+        True/False. Default is True. Prints the results to the console.
+    show_probability_plot : bool, object, optional
+        True/False. Default is True. Provides a probability plot of the fitted
+        ALT model. If an axes object is passed it will be used.
+    show_life_stress_plot : bool, object, optional
+        True/False. Default is True. Provides a life stress plot of the fitted
+        ALT model. If an axes object is passed it will be used.
+    CI : float, optional
+        Confidence interval for estimating confidence limits on parameters. Must
+        be between 0 and 1. Default is 0.95 for 95% CI.
+    optimizer : str, optional
+        The optimization algorithm used to find the solution. Must be either
+        'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'. Specifying the optimizer
+        will result in that optimizer being used. To use all of these specify
+        'best' and the best result will be returned. The default behaviour is to
+        try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and
+        'powell') and stop once one of the optimizers finds a solution. If the
+        optimizer fails, the initial guess will be returned.
+        For more detail see the
+        `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
 
-    Outputs:
-    a - fitted parameter from the Eyring model
-    c - fitted parameter from the Eyring model
-    sigma - the fitted Lognormal_2P sigma
-    loglik2 - Log Likelihood*-2 (as used in JMP Pro)
-    loglik - Log Likelihood (as used in Minitab and Reliasoft)
-    AICc - Akaike Information Criterion
-    BIC - Bayesian Information Criterion
-    a_SE - the standard error (sqrt(variance)) of the parameter
-    c_SE - the standard error (sqrt(variance)) of the parameter
-    sigma_SE - the standard error (sqrt(variance)) of the parameter
-    a_upper - the upper CI estimate of the parameter
-    a_lower - the lower CI estimate of the parameter
-    c_upper - the upper CI estimate of the parameter
-    c_lower - the lower CI estimate of the parameter
-    sigma_upper - the upper CI estimate of the parameter
-    sigma_lower - the lower CI estimate of the parameter
-    results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
-    goodness_of_fit - a dataframe of the goodness of fit criterion (Log-likelihood, AICc, BIC)
-    change_of_parameters - a dataframe showing the change of the parameters (mu and sigma) at each stress level
-    mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided)
-    mu_at_use_stress - the equivalent Lognormal mu parameter at the use level stress (only provided if use_level_stress is provided)
-    distribution_at_use_stress - the Lognormal distribution at the use level stress (only provided if use_level_stress is provided)
-    probability_plot - the axes handles for the figure object from the probability plot (only provided if show_probability_plot is True)
-    life_stress_plot - the axes handles for the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
+    Returns
+    -------
+    a : float
+        The fitted parameter from the Eyring model
+    c : float
+        The fitted parameter from the Eyring model
+    sigma : float
+        The fitted Lognormal_2P sigma parameter
+    loglik2 : float
+        Log Likelihood*-2 (as used in JMP Pro)
+    loglik : float
+        Log Likelihood (as used in Minitab and Reliasoft)
+    AICc : float
+        Akaike Information Criterion
+    BIC : float
+        Bayesian Information Criterion
+    a_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    c_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    sigma_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    a_upper : float
+        The upper CI estimate of the parameter
+    a_lower : float
+        The lower CI estimate of the parameter
+    c_upper : float
+        The upper CI estimate of the parameter
+    c_lower : float
+        The lower CI estimate of the parameter
+    sigma_upper : float
+        The upper CI estimate of the parameter
+    sigma_lower : float
+        The lower CI estimate of the parameter
+    results : dataframe
+        A dataframe of the results (point estimate, standard error, Lower CI and
+        Upper CI for each parameter)
+    goodness_of_fit : dataframe
+        A dataframe of the goodness of fit criterion (Log-likelihood, AICc, BIC)
+    change_of_parameters : dataframe
+        A dataframe showing the change of the parameters (mu and sigma) at
+        each stress level.
+    mean_life : float
+        The mean life at the use_level_stress (only provided if use_level_stress
+        is provided).
+    mu_at_use_stress : float
+        The equivalent Lognormal mu parameter at the use level stress (only
+        provided if use_level_stress is provided).
+    distribution_at_use_stress : object
+        The Lognormal distribution at the use level stress (only provided if
+        use_level_stress is provided).
+    probability_plot : object
+        The figure object from the probability plot (only provided if
+        show_probability_plot is True).
+    life_stress_plot : object
+        The figure object from the life-stress plot (only provided if
+        show_life_stress_plot is True).
     """
 
     def __init__(
@@ -6025,53 +6481,111 @@ class Fit_Lognormal_Eyring:
 
 class Fit_Lognormal_Power:
     """
-    Fit_Lognormal_Power
+    This function will Fit the Lognormal-Power life-stress model to the data
+    provided. Please see the online documentation for the equations of this
+    model.
 
-    This function will Fit the Lognormal-Power life-stress model to the data provided. Please see the online documentation for the equations of this model.
-    This model is most appropriate to model a life-stress relationship with non-thermal stresses (typically in fatigue applications).
+    This model is most appropriate to model a life-stress relationship with
+    non-thermal stresses (typically in fatigue applications).
 
-    Inputs:
-    failures - an array or list of the failure times.
-    failure_stress - an array or list of the corresponding stresses (such as load) at which each failure occurred. This must match the length of failures as each failure is tied to a failure stress.
-    right_censored - an array or list of all the right censored failure times.
-    right_censored_stress - an array or list of the corresponding stresses (such as load) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
-    use_level_stress - The use level stress at which you want to know the mean life. Optional input.
-    print_results - True/False. Default is True
-    show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
-    show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
-    CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - The optimization algorithm used to find the solution. Must be either 'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'.
-        Specifying the optimizer will result in that optimizer being used.
-        To use all of these specify 'best' and the best result will be returned.
-        The default behaviour is to try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and 'powell') and stop once one of the optimizers finds a solution.
-        If the optimizer fails, the initial guess will be returned.
-        For more detail see the `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
+    Parameters
+    ----------
+    failures : array, list
+        The failure data.
+    failure_stress : array, list
+        The corresponding stresses (such as load) at which each failure
+        occurred. This must match the length of failures as each failure is
+        tied to a failure stress.
+    right_censored : array, list, optional
+        The right censored failure times. Optional input.
+    right_censored_stress : array, list, optional
+        The corresponding stresses (such as load) at which each
+        right_censored data point was obtained. This must match the length of
+        right_censored as each right_censored value is tied to a
+        right_censored stress. Conditionally optional input. This must be
+        provided if right_censored is provided.
+    use_level_stress : int, float, optional
+        The use level stress at which you want to know the mean life. Optional
+        input.
+    print_results : bool, optional
+        True/False. Default is True. Prints the results to the console.
+    show_probability_plot : bool, object, optional
+        True/False. Default is True. Provides a probability plot of the fitted
+        ALT model. If an axes object is passed it will be used.
+    show_life_stress_plot : bool, object, optional
+        True/False. Default is True. Provides a life stress plot of the fitted
+        ALT model. If an axes object is passed it will be used.
+    CI : float, optional
+        Confidence interval for estimating confidence limits on parameters. Must
+        be between 0 and 1. Default is 0.95 for 95% CI.
+    optimizer : str, optional
+        The optimization algorithm used to find the solution. Must be either
+        'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'. Specifying the optimizer
+        will result in that optimizer being used. To use all of these specify
+        'best' and the best result will be returned. The default behaviour is to
+        try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and
+        'powell') and stop once one of the optimizers finds a solution. If the
+        optimizer fails, the initial guess will be returned.
+        For more detail see the
+        `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
 
-    Outputs:
-    a - fitted parameter from the Power model
-    n - fitted parameter from the Power model
-    sigma - the fitted Lognormal_2P sigma
-    loglik2 - Log Likelihood*-2 (as used in JMP Pro)
-    loglik - Log Likelihood (as used in Minitab and Reliasoft)
-    AICc - Akaike Information Criterion
-    BIC - Bayesian Information Criterion
-    a_SE - the standard error (sqrt(variance)) of the parameter
-    n_SE - the standard error (sqrt(variance)) of the parameter
-    sigma_SE - the standard error (sqrt(variance)) of the parameter
-    a_upper - the upper CI estimate of the parameter
-    a_lower - the lower CI estimate of the parameter
-    n_upper - the upper CI estimate of the parameter
-    n_lower - the lower CI estimate of the parameter
-    sigma_upper - the upper CI estimate of the parameter
-    sigma_lower - the lower CI estimate of the parameter
-    results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
-    goodness_of_fit - a dataframe of the goodness of fit criterion (Log-likelihood, AICc, BIC)
-    change_of_parameters - a dataframe showing the change of the parameters (mu and sigma) at each stress level
-    mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided)
-    mu_at_use_stress - the equivalent Lognormal mu parameter at the use level stress (only provided if use_level_stress is provided)
-    distribution_at_use_stress - the Lognormal distribution at the use level stress (only provided if use_level_stress is provided)
-    probability_plot - the axes handles for the figure object from the probability plot (only provided if show_probability_plot is True)
-    life_stress_plot - the axes handles for the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
+    Returns
+    -------
+    a : float
+        The fitted parameter from the Power model
+    n : float
+        The fitted parameter from the Power model
+    sigma : float
+        The fitted Lognormal_2P sigma parameter
+    loglik2 : float
+        Log Likelihood*-2 (as used in JMP Pro)
+    loglik : float
+        Log Likelihood (as used in Minitab and Reliasoft)
+    AICc : float
+        Akaike Information Criterion
+    BIC : float
+        Bayesian Information Criterion
+    a_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    n_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    sigma_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    a_upper : float
+        The upper CI estimate of the parameter
+    a_lower : float
+        The lower CI estimate of the parameter
+    n_upper : float
+        The upper CI estimate of the parameter
+    n_lower : float
+        The lower CI estimate of the parameter
+    sigma_upper : float
+        The upper CI estimate of the parameter
+    sigma_lower : float
+        The lower CI estimate of the parameter
+    results : dataframe
+        A dataframe of the results (point estimate, standard error, Lower CI and
+        Upper CI for each parameter)
+    goodness_of_fit : dataframe
+        A dataframe of the goodness of fit criterion (Log-likelihood, AICc, BIC)
+    change_of_parameters : dataframe
+        A dataframe showing the change of the parameters (mu and sigma) at
+        each stress level.
+    mean_life : float
+        The mean life at the use_level_stress (only provided if use_level_stress
+        is provided).
+    mu_at_use_stress : float
+        The equivalent Lognormal mu parameter at the use level stress (only
+        provided if use_level_stress is provided).
+    distribution_at_use_stress : object
+        The Lognormal distribution at the use level stress (only provided if
+        use_level_stress is provided).
+    probability_plot : object
+        The figure object from the probability plot (only provided if
+        show_probability_plot is True).
+    life_stress_plot : object
+        The figure object from the life-stress plot (only provided if
+        show_life_stress_plot is True).
     """
 
     def __init__(
@@ -6420,59 +6934,132 @@ class Fit_Lognormal_Power:
 
 class Fit_Lognormal_Dual_Exponential:
     """
-    Fit_Lognormal_Dual_Exponential
+    This function will Fit the Lognormal_Dual_Exponential life-stress model to
+    the data provided. Please see the online documentation for the equations of
+    this model.
 
-    This function will Fit the Lognormal_Dual_Exponential life-stress model to the data provided. Please see the online documentation for the equations of this model.
-    This model is most appropriate to model a life-stress relationship with temperature-humidity. It is recommended that you ensure your temperature data are in Kelvin and humidity data range from 0 to 1.
+    This model is most appropriate to model a life-stress relationship with
+    two thermal stresses (such as temperature-humidity). It is recommended that
+    you ensure your temperature data are in Kelvin and humidity data range from
+    0 to 1.
 
-    Inputs:
-    failures - an array or list of the failure times.
-    failure_stress_1 - an array or list of the corresponding stress 1 (such as temperature) at which each failure occurred. This must match the length of failures as each failure is tied to a failure stress.
-    failure_stress_2 - an array or list of the corresponding stress 2 (such as humidity) at which each failure occurred. This must match the length of failures as each failure is tied to a failure stress.
-    right_censored - an array or list of all the right censored failure times
-    right_censored_stress_1 - an array or list of the corresponding stress 1 (such as temperature) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
-    right_censored_stress_2 - an array or list of the corresponding stress 1 (such as humidity) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
-    use_level_stress - [stress_1, stress_2]. A two element list or array of the use level stresses at which you want to know the mean life. Optional input.
-    print_results - True/False. Default is True
-    show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
-    show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
-    CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - The optimization algorithm used to find the solution. Must be either 'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'.
-        Specifying the optimizer will result in that optimizer being used.
-        To use all of these specify 'best' and the best result will be returned.
-        The default behaviour is to try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and 'powell') and stop once one of the optimizers finds a solution.
-        If the optimizer fails, the initial guess will be returned.
-        For more detail see the `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
+    Parameters
+    ----------
+    failures : array, list
+        The failure data.
+    failure_stress_1 : array, list
+        The corresponding stress 1 (such as temperature) at which each failure
+        occurred. This must match the length of failures as each failure is tied
+        to a failure stress.
+    failure_stress_2 : array, list
+        The corresponding stress 2 (such as humidity) at which each failure
+        occurred. This must match the length of failures as each failure is tied
+        to a failure stress.
+    right_censored : array, list, optional
+        The right censored failure times. Optional input.
+    right_censored_stress_1 : array, list, optional
+        The corresponding stress 1 (such as temperature) at which each
+        right_censored data point was obtained. This must match the length of
+        right_censored as each right_censored value is tied to a right_censored
+        stress. Conditionally optional input. This must be provided if
+        right_censored is provided.
+    right_censored_stress_2 : array, list, optional
+        The corresponding stress 1 (such as humidity) at which each
+        right_censored data point was obtained. This must match the length of
+        right_censored as each right_censored value is tied to a right_censored
+        stress. Conditionally optional input. This must be provided if
+        right_censored is provided.
+    use_level_stress : array, list optional
+        A two element list or array of the use level stresses in the form
+        [stress_1, stress_2] at which you want to know the mean life. Optional
+        input.
+    print_results : bool, optional
+        True/False. Default is True. Prints the results to the console.
+    show_probability_plot : bool, object, optional
+        True/False. Default is True. Provides a probability plot of the fitted
+        ALT model. If an axes object is passed it will be used.
+    show_life_stress_plot : bool, object, optional
+        True/False. Default is True. Provides a life stress plot of the fitted
+        ALT model. If an axes object is passed it will be used.
+    CI : float, optional
+        Confidence interval for estimating confidence limits on parameters. Must
+        be between 0 and 1. Default is 0.95 for 95% CI.
+    optimizer : str, optional
+        The optimization algorithm used to find the solution. Must be either
+        'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'. Specifying the optimizer
+        will result in that optimizer being used. To use all of these specify
+        'best' and the best result will be returned. The default behaviour is to
+        try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and
+        'powell') and stop once one of the optimizers finds a solution. If the
+        optimizer fails, the initial guess will be returned.
+        For more detail see the
+        `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
 
-    Outputs:
-    a - fitted parameter from the Dual_Exponential model
-    b - fitted parameter from the Dual_Exponential model
-    c - fitted parameter from the Dual_Exponential model
-    sigma - the fitted Lognormal_2P sigma
-    loglik2 - Log Likelihood*-2 (as used in JMP Pro)
-    loglik - Log Likelihood (as used in Minitab and Reliasoft)
-    AICc - Akaike Information Criterion
-    BIC - Bayesian Information Criterion
-    a_SE - the standard error (sqrt(variance)) of the parameter
-    b_SE - the standard error (sqrt(variance)) of the parameter
-    c_SE - the standard error (sqrt(variance)) of the parameter
-    sigma_SE - the standard error (sqrt(variance)) of the parameter
-    a_upper - the upper CI estimate of the parameter
-    a_lower - the lower CI estimate of the parameter
-    b_upper - the upper CI estimate of the parameter
-    b_lower - the lower CI estimate of the parameter
-    c_upper - the upper CI estimate of the parameter
-    c_lower - the lower CI estimate of the parameter
-    sigma_upper - the upper CI estimate of the parameter
-    sigma_lower - the lower CI estimate of the parameter
-    results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
-    goodness_of_fit - a dataframe of the goodness of fit criterion (Log-likelihood, AICc, BIC)
-    change_of_parameters - a dataframe showing the change of the parameters (mu and sigma) at each stress level
-    mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided)
-    mu_at_use_stress - the equivalent Lognormal mu parameter at the use level stress (only provided if use_level_stress is provided)
-    distribution_at_use_stress - the Lognormal distribution at the use level stress (only provided if use_level_stress is provided)
-    probability_plot - the axes handles for the figure object from the probability plot (only provided if show_probability_plot is True)
-    life_stress_plot - the axes handles for the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
+    Returns
+    -------
+    a : float
+        The fitted parameter from the Dual_Exponential model
+    b : float
+        The fitted parameter from the Dual_Exponential model
+    c : float
+        The fitted parameter from the Dual_Exponential model
+    sigma : float
+        The fitted Lognormal_2P sigma parameter
+    loglik2 : float
+        Log Likelihood*-2 (as used in JMP Pro)
+    loglik : float
+        Log Likelihood (as used in Minitab and Reliasoft)
+    AICc : float
+        Akaike Information Criterion
+    BIC : float
+        Bayesian Information Criterion
+    a_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    b_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    c_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    sigma_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    a_upper : float
+        The upper CI estimate of the parameter
+    a_lower : float
+        The lower CI estimate of the parameter
+    b_upper : float
+        The upper CI estimate of the parameter
+    b_lower : float
+        The lower CI estimate of the parameter
+    c_upper : float
+        The upper CI estimate of the parameter
+    c_lower : float
+        The lower CI estimate of the parameter
+    sigma_upper : float
+        The upper CI estimate of the parameter
+    sigma_lower : float
+        The lower CI estimate of the parameter
+    results : dataframe
+        A dataframe of the results (point estimate, standard error, Lower CI and
+        Upper CI for each parameter)
+    goodness_of_fit : dataframe
+        A dataframe of the goodness of fit criterion (Log-likelihood, AICc, BIC)
+    change_of_parameters : dataframe
+        A dataframe showing the change of the parameters (mu and sigma) at
+        each stress level.
+    mean_life : float
+        The mean life at the use_level_stress (only provided if use_level_stress
+        is provided).
+    mu_at_use_stress : float
+        The equivalent Lognormal mu parameter at the use level stress (only
+        provided if use_level_stress is provided).
+    distribution_at_use_stress : object
+        The Lognormal distribution at the use level stress (only provided if
+        use_level_stress is provided).
+    probability_plot : object
+        The figure object from the probability plot (only provided if
+        show_probability_plot is True).
+    life_stress_plot : object
+        The figure object from the life-stress plot (only provided if
+        show_life_stress_plot is True).
     """
 
     def __init__(
@@ -6868,60 +7455,133 @@ class Fit_Lognormal_Dual_Exponential:
 
 class Fit_Lognormal_Power_Exponential:
     """
-    Fit_Lognormal_Power_Exponential
+    This function will Fit the Lognormal_Power_Exponential life-stress model to
+    the data provided. Please see the online documentation for the equations of
+    this model.
 
-    This function will Fit the Lognormal_Power_Exponential life-stress model to the data provided. Please see the online documentation for the equations of this model.
-    This model is most appropriate to model a life-stress relationship with thermal and non-thermal stresses. It is essential that you ensure your thermal stress is stress_thermal and your non-thermal stress is stress_nonthermal.
+    This model is most appropriate to model a life-stress relationship with
+    thermal and non-thermal stresses. It is essential that you ensure your
+    thermal stress is stress_1 (as this will be modeled by the Exponential) and
+    your non-thermal stress is stress_2 (as this will be modeled by the Power).
     Also ensure that your temperature data are in Kelvin.
 
-    Inputs:
-    failures - an array or list of the failure times.
-    failure_stress_1 - an array or list of the corresponding stress 1 (thermal stress) at which each failure occurred. This must match the length of failures as each failure is tied to a failure stress.
-    failure_stress_2 - an array or list of the corresponding stress 2 (non-thermal stress) at which each failure occurred. This must match the length of failures as each failure is tied to a failure stress.
-    right_censored - an array or list of all the right censored failure times
-    right_censored_stress_1 - an array or list of the corresponding stress 1 (thermal stress) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
-    right_censored_stress_2 - an array or list of the corresponding stress 1 (non-thermal stress) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
-    use_level_stress - [stress_1, stress_2]. A two element list or array of the use level stresses at which you want to know the mean life. Optional input.
-    print_results - True/False. Default is True
-    show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
-    show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
-    CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - The optimization algorithm used to find the solution. Must be either 'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'.
-        Specifying the optimizer will result in that optimizer being used.
-        To use all of these specify 'best' and the best result will be returned.
-        The default behaviour is to try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and 'powell') and stop once one of the optimizers finds a solution.
-        If the optimizer fails, the initial guess will be returned.
-        For more detail see the `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
+    Parameters
+    ----------
+    failures : array, list
+        The failure data.
+    failure_stress_1 : array, list
+        The corresponding stress 1 (thermal-stress) at which each failure
+        occurred. This must match the length of failures as each failure is tied
+        to a failure stress.
+    failure_stress_2 : array, list
+        The corresponding stress 2 (non-thermal stress) at which each failure
+        occurred. This must match the length of failures as each failure is tied
+        to a failure stress.
+    right_censored : array, list, optional
+        The right censored failure times. Optional input.
+    right_censored_stress_1 : array, list, optional
+        The corresponding stress 1 (thermal stress) at which each
+        right_censored data point was obtained. This must match the length of
+        right_censored as each right_censored value is tied to a right_censored
+        stress. Conditionally optional input. This must be provided if
+        right_censored is provided.
+    right_censored_stress_2 : array, list, optional
+        The corresponding stress 1 (non-thermal stress) at which each
+        right_censored data point was obtained. This must match the length of
+        right_censored as each right_censored value is tied to a right_censored
+        stress. Conditionally optional input. This must be provided if
+        right_censored is provided.
+    use_level_stress : array, list optional
+        A two element list or array of the use level stresses in the form
+        [stress_1, stress_2] at which you want to know the mean life. Optional
+        input.
+    print_results : bool, optional
+        True/False. Default is True. Prints the results to the console.
+    show_probability_plot : bool, object, optional
+        True/False. Default is True. Provides a probability plot of the fitted
+        ALT model. If an axes object is passed it will be used.
+    show_life_stress_plot : bool, object, optional
+        True/False. Default is True. Provides a life stress plot of the fitted
+        ALT model. If an axes object is passed it will be used.
+    CI : float, optional
+        Confidence interval for estimating confidence limits on parameters. Must
+        be between 0 and 1. Default is 0.95 for 95% CI.
+    optimizer : str, optional
+        The optimization algorithm used to find the solution. Must be either
+        'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'. Specifying the optimizer
+        will result in that optimizer being used. To use all of these specify
+        'best' and the best result will be returned. The default behaviour is to
+        try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and
+        'powell') and stop once one of the optimizers finds a solution. If the
+        optimizer fails, the initial guess will be returned.
+        For more detail see the
+        `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
 
-    Outputs:
-    a - fitted parameter from the Power_Exponential model
-    c - fitted parameter from the Power_Exponential model
-    n - fitted parameter from the Power_Exponential model
-    sigma - the fitted Lognormal_2P sigma
-    loglik2 - Log Likelihood*-2 (as used in JMP Pro)
-    loglik - Log Likelihood (as used in Minitab and Reliasoft)
-    AICc - Akaike Information Criterion
-    BIC - Bayesian Information Criterion
-    a_SE - the standard error (sqrt(variance)) of the parameter
-    c_SE - the standard error (sqrt(variance)) of the parameter
-    n_SE - the standard error (sqrt(variance)) of the parameter
-    sigma_SE - the standard error (sqrt(variance)) of the parameter
-    a_upper - the upper CI estimate of the parameter
-    a_lower - the lower CI estimate of the parameter
-    c_upper - the upper CI estimate of the parameter
-    c_lower - the lower CI estimate of the parameter
-    n_upper - the upper CI estimate of the parameter
-    n_lower - the lower CI estimate of the parameter
-    sigma_upper - the upper CI estimate of the parameter
-    sigma_lower - the lower CI estimate of the parameter
-    results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
-    goodness_of_fit - a dataframe of the goodness of fit criterion (Log-likelihood, AICc, BIC).
-    change_of_parameters - a dataframe showing the change of the parameters (mu and sigma) at each stress level.
-    mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided).
-    mu_at_use_stress - the equivalent Lognormal mu parameter at the use level stress (only provided if use_level_stress is provided).
-    distribution_at_use_stress - the Lognormal distribution at the use level stress (only provided if use_level_stress is provided).
-    probability_plot - the axes handles for the figure object from the probability plot (only provided if show_probability_plot is True)
-    life_stress_plot - the axes handles for the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
+    Returns
+    -------
+    a : float
+        The fitted parameter from the Power_Exponential model
+    c : float
+        The fitted parameter from the Power_Exponential model
+    n : float
+        The fitted parameter from the Power_Exponential model
+    sigma : float
+        The fitted Lognormal_2P sigma parameter
+    loglik2 : float
+        Log Likelihood*-2 (as used in JMP Pro)
+    loglik : float
+        Log Likelihood (as used in Minitab and Reliasoft)
+    AICc : float
+        Akaike Information Criterion
+    BIC : float
+        Bayesian Information Criterion
+    a_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    c_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    n_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    sigma_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    a_upper : float
+        The upper CI estimate of the parameter
+    a_lower : float
+        The lower CI estimate of the parameter
+    c_upper : float
+        The upper CI estimate of the parameter
+    c_lower : float
+        The lower CI estimate of the parameter
+    n_upper : float
+        The upper CI estimate of the parameter
+    n_lower : float
+        The lower CI estimate of the parameter
+    sigma_upper : float
+        The upper CI estimate of the parameter
+    sigma_lower : float
+        The lower CI estimate of the parameter
+    results : dataframe
+        A dataframe of the results (point estimate, standard error, Lower CI and
+        Upper CI for each parameter)
+    goodness_of_fit : dataframe
+        A dataframe of the goodness of fit criterion (Log-likelihood, AICc, BIC)
+    change_of_parameters : dataframe
+        A dataframe showing the change of the parameters (mu and sigma) at
+        each stress level.
+    mean_life : float
+        The mean life at the use_level_stress (only provided if use_level_stress
+        is provided).
+    mu_at_use_stress : float
+        The equivalent Lognormal mu parameter at the use level stress (only
+        provided if use_level_stress is provided).
+    distribution_at_use_stress : object
+        The Lognormal distribution at the use level stress (only provided if
+        use_level_stress is provided).
+    probability_plot : object
+        The figure object from the probability plot (only provided if
+        show_probability_plot is True).
+    life_stress_plot : object
+        The figure object from the life-stress plot (only provided if
+        show_life_stress_plot is True).
     """
 
     def __init__(
@@ -7317,59 +7977,130 @@ class Fit_Lognormal_Power_Exponential:
 
 class Fit_Lognormal_Dual_Power:
     """
-    Fit_Lognormal_Dual_Power
+    This function will Fit the Lognormal_Dual_Power life-stress model to the
+    data provided. Please see the online documentation for the equations of this
+    model.
 
-    This function will Fit the Lognormal_Dual_Power life-stress model to the data provided. Please see the online documentation for the equations of this model.
-    This model is most appropriate to model a life-stress relationship with two non-thermal stresses such as voltage and load.
+    This model is most appropriate to model a life-stress relationship with two
+    non-thermal stresses such as voltage and load.
 
-    Inputs:
-    failures - an array or list of the failure times.
-    failure_stress_1 - an array or list of the corresponding stress 1 (such as voltage) at which each failure occurred. This must match the length of failures as each failure is tied to a failure stress.
-    failure_stress_2 - an array or list of the corresponding stress 2 (such as load) at which each failure occurred. This must match the length of failures as each failure is tied to a failure stress.
-    right_censored - an array or list of all the right censored failure times
-    right_censored_stress_1 - an array or list of the corresponding stress 1 (such as voltage) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
-    right_censored_stress_2 - an array or list of the corresponding stress 1 (such as load) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
-    use_level_stress - [stress_1, stress_2]. A two element list or array of the use level stresses at which you want to know the mean life. Optional input.
-    print_results - True/False. Default is True
-    show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
-    show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
-    CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - The optimization algorithm used to find the solution. Must be either 'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'.
-        Specifying the optimizer will result in that optimizer being used.
-        To use all of these specify 'best' and the best result will be returned.
-        The default behaviour is to try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and 'powell') and stop once one of the optimizers finds a solution.
-        If the optimizer fails, the initial guess will be returned.
-        For more detail see the `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
+    Parameters
+    ----------
+    failures : array, list
+        The failure data.
+    failure_stress_1 : array, list
+        The corresponding stress 1 (such as voltage) at which each failure
+        occurred. This must match the length of failures as each failure is tied
+        to a failure stress.
+    failure_stress_2 : array, list
+        The corresponding stress 2 (such as load) at which each failure
+        occurred. This must match the length of failures as each failure is tied
+        to a failure stress.
+    right_censored : array, list, optional
+        The right censored failure times. Optional input.
+    right_censored_stress_1 : array, list, optional
+        The corresponding stress 1 (such as voltage) at which each
+        right_censored data point was obtained. This must match the length of
+        right_censored as each right_censored value is tied to a right_censored
+        stress. Conditionally optional input. This must be provided if
+        right_censored is provided.
+    right_censored_stress_2 : array, list, optional
+        The corresponding stress 1 (such as load) at which each
+        right_censored data point was obtained. This must match the length of
+        right_censored as each right_censored value is tied to a right_censored
+        stress. Conditionally optional input. This must be provided if
+        right_censored is provided.
+    use_level_stress : array, list optional
+        A two element list or array of the use level stresses in the form
+        [stress_1, stress_2] at which you want to know the mean life. Optional
+        input.
+    print_results : bool, optional
+        True/False. Default is True. Prints the results to the console.
+    show_probability_plot : bool, object, optional
+        True/False. Default is True. Provides a probability plot of the fitted
+        ALT model. If an axes object is passed it will be used.
+    show_life_stress_plot : bool, object, optional
+        True/False. Default is True. Provides a life stress plot of the fitted
+        ALT model. If an axes object is passed it will be used.
+    CI : float, optional
+        Confidence interval for estimating confidence limits on parameters. Must
+        be between 0 and 1. Default is 0.95 for 95% CI.
+    optimizer : str, optional
+        The optimization algorithm used to find the solution. Must be either
+        'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'. Specifying the optimizer
+        will result in that optimizer being used. To use all of these specify
+        'best' and the best result will be returned. The default behaviour is to
+        try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and
+        'powell') and stop once one of the optimizers finds a solution. If the
+        optimizer fails, the initial guess will be returned.
+        For more detail see the
+        `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
 
-    Outputs:
-    c - fitted parameter from the Dual_Power model
-    m - fitted parameter from the Dual_Power model
-    n - fitted parameter from the Dual_Power model
-    sigma - the fitted Lognormal_2P sigma
-    loglik2 - Log Likelihood*-2 (as used in JMP Pro)
-    loglik - Log Likelihood (as used in Minitab and Reliasoft)
-    AICc - Akaike Information Criterion
-    BIC - Bayesian Information Criterion
-    c_SE - the standard error (sqrt(variance)) of the parameter
-    m_SE - the standard error (sqrt(variance)) of the parameter
-    n_SE - the standard error (sqrt(variance)) of the parameter
-    sigma_SE - the standard error (sqrt(variance)) of the parameter
-    c_upper - the upper CI estimate of the parameter
-    c_lower - the lower CI estimate of the parameter
-    m_upper - the upper CI estimate of the parameter
-    m_lower - the lower CI estimate of the parameter
-    n_upper - the upper CI estimate of the parameter
-    n_lower - the lower CI estimate of the parameter
-    sigma_upper - the upper CI estimate of the parameter
-    sigma_lower - the lower CI estimate of the parameter
-    results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
-    goodness_of_fit - a dataframe of the goodness of fit criterion (Log-likelihood, AICc, BIC)
-    change_of_parameters - a dataframe showing the change of the parameters (mu and sigma) at each stress level
-    mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided)
-    mu_at_use_stress - the equivalent Lognormal mu parameter at the use level stress (only provided if use_level_stress is provided)
-    distribution_at_use_stress - the Lognormal distribution at the use level stress (only provided if use_level_stress is provided)
-    probability_plot - the axes handles for the figure object from the probability plot (only provided if show_probability_plot is True)
-    life_stress_plot - the axes handles for the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
+    Returns
+    -------
+    c : float
+        The fitted parameter from the Dual_Power model
+    m : float
+        The fitted parameter from the Dual_Power model
+    n : float
+        The fitted parameter from the Dual_Power model
+    sigma : float
+        The fitted Lognormal_2P sigma parameter
+    loglik2 : float
+        Log Likelihood*-2 (as used in JMP Pro)
+    loglik : float
+        Log Likelihood (as used in Minitab and Reliasoft)
+    AICc : float
+        Akaike Information Criterion
+    BIC : float
+        Bayesian Information Criterion
+    c_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    m_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    n_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    sigma_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    c_upper : float
+        The upper CI estimate of the parameter
+    c_lower : float
+        The lower CI estimate of the parameter
+    m_upper : float
+        The upper CI estimate of the parameter
+    m_lower : float
+        The lower CI estimate of the parameter
+    n_upper : float
+        The upper CI estimate of the parameter
+    n_lower : float
+        The lower CI estimate of the parameter
+    sigma_upper : float
+        The upper CI estimate of the parameter
+    sigma_lower : float
+        The lower CI estimate of the parameter
+    results : dataframe
+        A dataframe of the results (point estimate, standard error, Lower CI and
+        Upper CI for each parameter)
+    goodness_of_fit : dataframe
+        A dataframe of the goodness of fit criterion (Log-likelihood, AICc, BIC)
+    change_of_parameters : dataframe
+        A dataframe showing the change of the parameters (mu and sigma) at
+        each stress level.
+    mean_life : float
+        The mean life at the use_level_stress (only provided if use_level_stress
+        is provided).
+    mu_at_use_stress : float
+        The equivalent Lognormal mu parameter at the use level stress (only
+        provided if use_level_stress is provided).
+    distribution_at_use_stress : object
+        The Lognormal distribution at the use level stress (only provided if
+        use_level_stress is provided).
+    probability_plot : object
+        The figure object from the probability plot (only provided if
+        show_probability_plot is True).
+    life_stress_plot : object
+        The figure object from the life-stress plot (only provided if
+        show_life_stress_plot is True).
     """
 
     def __init__(
@@ -7767,54 +8498,115 @@ class Fit_Lognormal_Dual_Power:
 
 class Fit_Normal_Exponential:
     """
-    Fit_Normal_Exponential
+    This function will Fit the Normal-Exponential life-stress model to the data
+    provided. Please see the online documentation for the equations of this
+    model.
 
-    This function will Fit the Normal-Exponential life-stress model to the data provided. Please see the online documentation for the equations of this model.
-    This model is most appropriate to model a life-stress relationship with temperature. It is recommended that you ensure your temperature data are in Kelvin.
-    If you are using this model for the Arrhenius equation, a = Ea/K_B. When results are printed Ea will be provided in eV.
+    This model is most appropriate to model a life-stress relationship with
+    temperature. It is recommended that you ensure your temperature data are in
+    Kelvin.
 
-    Inputs:
-    failures - an array or list of the failure times.
-    failure_stress - an array or list of the corresponding stresses (such as temperature) at which each failure occurred. This must match the length of failures as each failure is tied to a failure stress.
-    right_censored - an array or list of all the right censored failure times.
-    right_censored_stress - an array or list of the corresponding stresses (such as temperature) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
-    use_level_stress - The use level stress at which you want to know the mean life. Optional input.
-    print_results - True/False. Default is True
-    show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
-    show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
-    CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - The optimization algorithm used to find the solution. Must be either 'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'.
-        Specifying the optimizer will result in that optimizer being used.
-        To use all of these specify 'best' and the best result will be returned.
-        The default behaviour is to try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and 'powell') and stop once one of the optimizers finds a solution.
-        If the optimizer fails, the initial guess will be returned.
-        For more detail see the `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
+    If you are using this model for the Arrhenius equation, a = Ea/K_B. When
+    results are printed Ea will be provided in eV.
 
-    Outputs:
-    a - fitted parameter from the Exponential model
-    b - fitted parameter from the Exponential model
-    sigma - the fitted Normal_2P sigma
-    loglik2 - Log Likelihood*-2 (as used in JMP Pro)
-    loglik - Log Likelihood (as used in Minitab and Reliasoft)
-    AICc - Akaike Information Criterion
-    BIC - Bayesian Information Criterion
-    a_SE - the standard error (sqrt(variance)) of the parameter
-    b_SE - the standard error (sqrt(variance)) of the parameter
-    sigma_SE - the standard error (sqrt(variance)) of the parameter
-    a_upper - the upper CI estimate of the parameter
-    a_lower - the lower CI estimate of the parameter
-    b_upper - the upper CI estimate of the parameter
-    b_lower - the lower CI estimate of the parameter
-    sigma_upper - the upper CI estimate of the parameter
-    sigma_lower - the lower CI estimate of the parameter
-    results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
-    goodness_of_fit - a dataframe of the goodness of fit criterion (Log-likelihood, AICc, BIC)
-    change_of_parameters - a dataframe showing the change of the parameters (mu and sigma) at each stress level
-    mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided)
-    mu_at_use_stress - the equivalent Normal mu parameter at the use level stress (only provided if use_level_stress is provided)
-    distribution_at_use_stress - the Normal distribution at the use level stress (only provided if use_level_stress is provided)
-    probability_plot - the axes handles for the figure object from the probability plot (only provided if show_probability_plot is True)
-    life_stress_plot - the axes handles for the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
+    Parameters
+    ----------
+    failures : array, list
+        The failure data.
+    failure_stress : array, list
+        The corresponding stresses (such as temperature) at which each failure
+        occurred. This must match the length of failures as each failure is
+        tied to a failure stress.
+    right_censored : array, list, optional
+        The right censored failure times. Optional input.
+    right_censored_stress : array, list, optional
+        The corresponding stresses (such as temperature) at which each
+        right_censored data point was obtained. This must match the length of
+        right_censored as each right_censored value is tied to a
+        right_censored stress. Conditionally optional input. This must be
+        provided if right_censored is provided.
+    use_level_stress : int, float, optional
+        The use level stress at which you want to know the mean life. Optional
+        input.
+    print_results : bool, optional
+        True/False. Default is True. Prints the results to the console.
+    show_probability_plot : bool, object, optional
+        True/False. Default is True. Provides a probability plot of the fitted
+        ALT model. If an axes object is passed it will be used.
+    show_life_stress_plot : bool, object, optional
+        True/False. Default is True. Provides a life stress plot of the fitted
+        ALT model. If an axes object is passed it will be used.
+    CI : float, optional
+        Confidence interval for estimating confidence limits on parameters. Must
+        be between 0 and 1. Default is 0.95 for 95% CI.
+    optimizer : str, optional
+        The optimization algorithm used to find the solution. Must be either
+        'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'. Specifying the optimizer
+        will result in that optimizer being used. To use all of these specify
+        'best' and the best result will be returned. The default behaviour is to
+        try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and
+        'powell') and stop once one of the optimizers finds a solution. If the
+        optimizer fails, the initial guess will be returned.
+        For more detail see the
+        `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
+
+    Returns
+    -------
+    a : float
+        The fitted parameter from the Exponential model
+    b : float
+        The fitted parameter from the Exponential model
+    sigma : float
+        The fitted Normal_2P sigma parameter
+    loglik2 : float
+        Log Likelihood*-2 (as used in JMP Pro)
+    loglik : float
+        Log Likelihood (as used in Minitab and Reliasoft)
+    AICc : float
+        Akaike Information Criterion
+    BIC : float
+        Bayesian Information Criterion
+    a_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    b_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    sigma_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    a_upper : float
+        The upper CI estimate of the parameter
+    a_lower : float
+        The lower CI estimate of the parameter
+    b_upper : float
+        The upper CI estimate of the parameter
+    b_lower : float
+        The lower CI estimate of the parameter
+    sigma_upper : float
+        The upper CI estimate of the parameter
+    sigma_lower : float
+        The lower CI estimate of the parameter
+    results : dataframe
+        A dataframe of the results (point estimate, standard error, Lower CI and
+        Upper CI for each parameter)
+    goodness_of_fit : dataframe
+        A dataframe of the goodness of fit criterion (Log-likelihood, AICc, BIC)
+    change_of_parameters : dataframe
+        A dataframe showing the change of the parameters (mu and sigma) at
+        each stress level.
+    mean_life : float
+        The mean life at the use_level_stress (only provided if use_level_stress
+        is provided).
+    mu_at_use_stress : float
+        The equivalent Normal mu parameter at the use level stress (only
+        provided if use_level_stress is provided).
+    distribution_at_use_stress : object
+        The Normal distribution at the use level stress (only provided if
+        use_level_stress is provided).
+    probability_plot : object
+        The figure object from the probability plot (only provided if
+        show_probability_plot is True).
+    life_stress_plot : object
+        The figure object from the life-stress plot (only provided if
+        show_life_stress_plot is True).
     """
 
     def __init__(
@@ -8169,53 +8961,112 @@ class Fit_Normal_Exponential:
 
 class Fit_Normal_Eyring:
     """
-    Fit_Normal_Eyring
+    This function will Fit the Normal-Eyring life-stress model to the data
+    provided. Please see the online documentation for the equations of this
+    model.
 
-    This function will Fit the Normal-Eyring life-stress model to the data provided. Please see the online documentation for the equations of this model.
-    This model is most appropriate to model a life-stress relationship with temperature. It is recommended that you ensure your temperature data are in Kelvin.
+    This model is most appropriate to model a life-stress relationship with
+    temperature. It is recommended that you ensure your temperature data are in
+    Kelvin.
 
-    Inputs:
-    failures - an array or list of the failure times.
-    failure_stress - an array or list of the corresponding stresses (such as temperature) at which each failure occurred. This must match the length of failures as each failure is tied to a failure stress.
-    right_censored - an array or list of all the right censored failure times.
-    right_censored_stress - an array or list of the corresponding stresses (such as temperature) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
-    use_level_stress - The use level stress at which you want to know the mean life. Optional input.
-    print_results - True/False. Default is True
-    show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
-    show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
-    CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - The optimization algorithm used to find the solution. Must be either 'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'.
-        Specifying the optimizer will result in that optimizer being used.
-        To use all of these specify 'best' and the best result will be returned.
-        The default behaviour is to try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and 'powell') and stop once one of the optimizers finds a solution.
-        If the optimizer fails, the initial guess will be returned.
-        For more detail see the `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
+    Parameters
+    ----------
+    failures : array, list
+        The failure data.
+    failure_stress : array, list
+        The corresponding stresses (such as temperature) at which each failure
+        occurred. This must match the length of failures as each failure is
+        tied to a failure stress.
+    right_censored : array, list, optional
+        The right censored failure times. Optional input.
+    right_censored_stress : array, list, optional
+        The corresponding stresses (such as temperature) at which each
+        right_censored data point was obtained. This must match the length of
+        right_censored as each right_censored value is tied to a
+        right_censored stress. Conditionally optional input. This must be
+        provided if right_censored is provided.
+    use_level_stress : int, float, optional
+        The use level stress at which you want to know the mean life. Optional
+        input.
+    print_results : bool, optional
+        True/False. Default is True. Prints the results to the console.
+    show_probability_plot : bool, object, optional
+        True/False. Default is True. Provides a probability plot of the fitted
+        ALT model. If an axes object is passed it will be used.
+    show_life_stress_plot : bool, object, optional
+        True/False. Default is True. Provides a life stress plot of the fitted
+        ALT model. If an axes object is passed it will be used.
+    CI : float, optional
+        Confidence interval for estimating confidence limits on parameters. Must
+        be between 0 and 1. Default is 0.95 for 95% CI.
+    optimizer : str, optional
+        The optimization algorithm used to find the solution. Must be either
+        'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'. Specifying the optimizer
+        will result in that optimizer being used. To use all of these specify
+        'best' and the best result will be returned. The default behaviour is to
+        try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and
+        'powell') and stop once one of the optimizers finds a solution. If the
+        optimizer fails, the initial guess will be returned.
+        For more detail see the
+        `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
 
-    Outputs:
-    a - fitted parameter from the Eyring model
-    c - fitted parameter from the Eyring model
-    sigma - the fitted Normal_2P sigma
-    loglik2 - Log Likelihood*-2 (as used in JMP Pro)
-    loglik - Log Likelihood (as used in Minitab and Reliasoft)
-    AICc - Akaike Information Criterion
-    BIC - Bayesian Information Criterion
-    a_SE - the standard error (sqrt(variance)) of the parameter
-    c_SE - the standard error (sqrt(variance)) of the parameter
-    sigma_SE - the standard error (sqrt(variance)) of the parameter
-    a_upper - the upper CI estimate of the parameter
-    a_lower - the lower CI estimate of the parameter
-    c_upper - the upper CI estimate of the parameter
-    c_lower - the lower CI estimate of the parameter
-    sigma_upper - the upper CI estimate of the parameter
-    sigma_lower - the lower CI estimate of the parameter
-    results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
-    goodness_of_fit - a dataframe of the goodness of fit criterion (Log-likelihood, AICc, BIC)
-    change_of_parameters - a dataframe showing the change of the parameters (mu and sigma) at each stress level
-    mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided)
-    mu_at_use_stress - the equivalent Normal mu parameter at the use level stress (only provided if use_level_stress is provided)
-    distribution_at_use_stress - the Normal distribution at the use level stress (only provided if use_level_stress is provided)
-    probability_plot - the axes handles for the figure object from the probability plot (only provided if show_probability_plot is True)
-    life_stress_plot - the axes handles for the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
+    Returns
+    -------
+    a : float
+        The fitted parameter from the Eyring model
+    c : float
+        The fitted parameter from the Eyring model
+    sigma : float
+        The fitted Normal_2P sigma parameter
+    loglik2 : float
+        Log Likelihood*-2 (as used in JMP Pro)
+    loglik : float
+        Log Likelihood (as used in Minitab and Reliasoft)
+    AICc : float
+        Akaike Information Criterion
+    BIC : float
+        Bayesian Information Criterion
+    a_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    c_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    sigma_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    a_upper : float
+        The upper CI estimate of the parameter
+    a_lower : float
+        The lower CI estimate of the parameter
+    c_upper : float
+        The upper CI estimate of the parameter
+    c_lower : float
+        The lower CI estimate of the parameter
+    sigma_upper : float
+        The upper CI estimate of the parameter
+    sigma_lower : float
+        The lower CI estimate of the parameter
+    results : dataframe
+        A dataframe of the results (point estimate, standard error, Lower CI and
+        Upper CI for each parameter)
+    goodness_of_fit : dataframe
+        A dataframe of the goodness of fit criterion (Log-likelihood, AICc, BIC)
+    change_of_parameters : dataframe
+        A dataframe showing the change of the parameters (mu and sigma) at
+        each stress level.
+    mean_life : float
+        The mean life at the use_level_stress (only provided if use_level_stress
+        is provided).
+    mu_at_use_stress : float
+        The equivalent Normal mu parameter at the use level stress (only
+        provided if use_level_stress is provided).
+    distribution_at_use_stress : object
+        The Normal distribution at the use level stress (only provided if
+        use_level_stress is provided).
+    probability_plot : object
+        The figure object from the probability plot (only provided if
+        show_probability_plot is True).
+    life_stress_plot : object
+        The figure object from the life-stress plot (only provided if
+        show_life_stress_plot is True).
     """
 
     def __init__(
@@ -8561,53 +9412,111 @@ class Fit_Normal_Eyring:
 
 class Fit_Normal_Power:
     """
-    Fit_Normal_Power
+    This function will Fit the Normal-Power life-stress model to the data
+    provided. Please see the online documentation for the equations of this
+    model.
 
-    This function will Fit the Normal-Power life-stress model to the data provided. Please see the online documentation for the equations of this model.
-    This model is most appropriate to model a life-stress relationship with non-thermal stresses (typically in fatigue applications).
+    This model is most appropriate to model a life-stress relationship with
+    non-thermal stresses (typically in fatigue applications).
 
-    Inputs:
-    failures - an array or list of the failure times.
-    failure_stress - an array or list of the corresponding stresses (such as load) at which each failure occurred. This must match the length of failures as each failure is tied to a failure stress.
-    right_censored - an array or list of all the right censored failure times.
-    right_censored_stress - an array or list of the corresponding stresses (such as load) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
-    use_level_stress - The use level stress at which you want to know the mean life. Optional input.
-    print_results - True/False. Default is True
-    show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
-    show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
-    CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - The optimization algorithm used to find the solution. Must be either 'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'.
-        Specifying the optimizer will result in that optimizer being used.
-        To use all of these specify 'best' and the best result will be returned.
-        The default behaviour is to try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and 'powell') and stop once one of the optimizers finds a solution.
-        If the optimizer fails, the initial guess will be returned.
-        For more detail see the `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
+    Parameters
+    ----------
+    failures : array, list
+        The failure data.
+    failure_stress : array, list
+        The corresponding stresses (such as load) at which each failure
+        occurred. This must match the length of failures as each failure is
+        tied to a failure stress.
+    right_censored : array, list, optional
+        The right censored failure times. Optional input.
+    right_censored_stress : array, list, optional
+        The corresponding stresses (such as load) at which each
+        right_censored data point was obtained. This must match the length of
+        right_censored as each right_censored value is tied to a
+        right_censored stress. Conditionally optional input. This must be
+        provided if right_censored is provided.
+    use_level_stress : int, float, optional
+        The use level stress at which you want to know the mean life. Optional
+        input.
+    print_results : bool, optional
+        True/False. Default is True. Prints the results to the console.
+    show_probability_plot : bool, object, optional
+        True/False. Default is True. Provides a probability plot of the fitted
+        ALT model. If an axes object is passed it will be used.
+    show_life_stress_plot : bool, object, optional
+        True/False. Default is True. Provides a life stress plot of the fitted
+        ALT model. If an axes object is passed it will be used.
+    CI : float, optional
+        Confidence interval for estimating confidence limits on parameters. Must
+        be between 0 and 1. Default is 0.95 for 95% CI.
+    optimizer : str, optional
+        The optimization algorithm used to find the solution. Must be either
+        'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'. Specifying the optimizer
+        will result in that optimizer being used. To use all of these specify
+        'best' and the best result will be returned. The default behaviour is to
+        try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and
+        'powell') and stop once one of the optimizers finds a solution. If the
+        optimizer fails, the initial guess will be returned.
+        For more detail see the
+        `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
 
-    Outputs:
-    a - fitted parameter from the Power model
-    n - fitted parameter from the Power model
-    sigma - the fitted Normal_2P sigma
-    loglik2 - Log Likelihood*-2 (as used in JMP Pro)
-    loglik - Log Likelihood (as used in Minitab and Reliasoft)
-    AICc - Akaike Information Criterion
-    BIC - Bayesian Information Criterion
-    a_SE - the standard error (sqrt(variance)) of the parameter
-    n_SE - the standard error (sqrt(variance)) of the parameter
-    sigma_SE - the standard error (sqrt(variance)) of the parameter
-    a_upper - the upper CI estimate of the parameter
-    a_lower - the lower CI estimate of the parameter
-    n_upper - the upper CI estimate of the parameter
-    n_lower - the lower CI estimate of the parameter
-    sigma_upper - the upper CI estimate of the parameter
-    sigma_lower - the lower CI estimate of the parameter
-    results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
-    goodness_of_fit - a dataframe of the goodness of fit criterion (Log-likelihood, AICc, BIC)
-    change_of_parameters - a dataframe showing the change of the parameters (mu and sigma) at each stress level
-    mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided)
-    mu_at_use_stress - the equivalent Normal mu parameter at the use level stress (only provided if use_level_stress is provided)
-    distribution_at_use_stress - the Normal distribution at the use level stress (only provided if use_level_stress is provided)
-    probability_plot - the axes handles for the figure object from the probability plot (only provided if show_probability_plot is True)
-    life_stress_plot - the axes handles for the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
+    Returns
+    -------
+    a : float
+        The fitted parameter from the Power model
+    n : float
+        The fitted parameter from the Power model
+    sigma : float
+        The fitted Normal_2P sigma parameter
+    loglik2 : float
+        Log Likelihood*-2 (as used in JMP Pro)
+    loglik : float
+        Log Likelihood (as used in Minitab and Reliasoft)
+    AICc : float
+        Akaike Information Criterion
+    BIC : float
+        Bayesian Information Criterion
+    a_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    n_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    sigma_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    a_upper : float
+        The upper CI estimate of the parameter
+    a_lower : float
+        The lower CI estimate of the parameter
+    n_upper : float
+        The upper CI estimate of the parameter
+    n_lower : float
+        The lower CI estimate of the parameter
+    sigma_upper : float
+        The upper CI estimate of the parameter
+    sigma_lower : float
+        The lower CI estimate of the parameter
+    results : dataframe
+        A dataframe of the results (point estimate, standard error, Lower CI and
+        Upper CI for each parameter)
+    goodness_of_fit : dataframe
+        A dataframe of the goodness of fit criterion (Log-likelihood, AICc, BIC)
+    change_of_parameters : dataframe
+        A dataframe showing the change of the parameters (mu and sigma) at
+        each stress level.
+    mean_life : float
+        The mean life at the use_level_stress (only provided if use_level_stress
+        is provided).
+    mu_at_use_stress : float
+        The equivalent Normal mu parameter at the use level stress (only
+        provided if use_level_stress is provided).
+    distribution_at_use_stress : object
+        The Normal distribution at the use level stress (only provided if
+        use_level_stress is provided).
+    probability_plot : object
+        The figure object from the probability plot (only provided if
+        show_probability_plot is True).
+    life_stress_plot : object
+        The figure object from the life-stress plot (only provided if
+        show_life_stress_plot is True).
     """
 
     def __init__(
@@ -8951,59 +9860,132 @@ class Fit_Normal_Power:
 
 class Fit_Normal_Dual_Exponential:
     """
-    Fit_Normal_Dual_Exponential
+    This function will Fit the Normal_Dual_Exponential life-stress model to the
+    data provided. Please see the online documentation for the equations of
+    this model.
 
-    This function will Fit the Normal_Dual_Exponential life-stress model to the data provided. Please see the online documentation for the equations of this model.
-    This model is most appropriate to model a life-stress relationship with temperature-humidity. It is recommended that you ensure your temperature data are in Kelvin and humidity data range from 0 to 1.
+    This model is most appropriate to model a life-stress relationship with
+    two thermal stresses (such as temperature-humidity). It is recommended that
+    you ensure your temperature data are in Kelvin and humidity data range from
+    0 to 1.
 
-    Inputs:
-    failures - an array or list of the failure times.
-    failure_stress_1 - an array or list of the corresponding stress 1 (such as temperature) at which each failure occurred. This must match the length of failures as each failure is tied to a failure stress.
-    failure_stress_2 - an array or list of the corresponding stress 2 (such as humidity) at which each failure occurred. This must match the length of failures as each failure is tied to a failure stress.
-    right_censored - an array or list of all the right censored failure times
-    right_censored_stress_1 - an array or list of the corresponding stress 1 (such as temperature) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
-    right_censored_stress_2 - an array or list of the corresponding stress 1 (such as humidity) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
-    use_level_stress - [stress_1, stress_2]. A two element list or array of the use level stresses at which you want to know the mean life. Optional input.
-    print_results - True/False. Default is True
-    show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
-    show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
-    CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - The optimization algorithm used to find the solution. Must be either 'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'.
-        Specifying the optimizer will result in that optimizer being used.
-        To use all of these specify 'best' and the best result will be returned.
-        The default behaviour is to try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and 'powell') and stop once one of the optimizers finds a solution.
-        If the optimizer fails, the initial guess will be returned.
-        For more detail see the `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
+    Parameters
+    ----------
+    failures : array, list
+        The failure data.
+    failure_stress_1 : array, list
+        The corresponding stress 1 (such as temperature) at which each failure
+        occurred. This must match the length of failures as each failure is tied
+        to a failure stress.
+    failure_stress_2 : array, list
+        The corresponding stress 2 (such as humidity) at which each failure
+        occurred. This must match the length of failures as each failure is tied
+        to a failure stress.
+    right_censored : array, list, optional
+        The right censored failure times. Optional input.
+    right_censored_stress_1 : array, list, optional
+        The corresponding stress 1 (such as temperature) at which each
+        right_censored data point was obtained. This must match the length of
+        right_censored as each right_censored value is tied to a right_censored
+        stress. Conditionally optional input. This must be provided if
+        right_censored is provided.
+    right_censored_stress_2 : array, list, optional
+        The corresponding stress 1 (such as humidity) at which each
+        right_censored data point was obtained. This must match the length of
+        right_censored as each right_censored value is tied to a right_censored
+        stress. Conditionally optional input. This must be provided if
+        right_censored is provided.
+    use_level_stress : array, list optional
+        A two element list or array of the use level stresses in the form
+        [stress_1, stress_2] at which you want to know the mean life. Optional
+        input.
+    print_results : bool, optional
+        True/False. Default is True. Prints the results to the console.
+    show_probability_plot : bool, object, optional
+        True/False. Default is True. Provides a probability plot of the fitted
+        ALT model. If an axes object is passed it will be used.
+    show_life_stress_plot : bool, object, optional
+        True/False. Default is True. Provides a life stress plot of the fitted
+        ALT model. If an axes object is passed it will be used.
+    CI : float, optional
+        Confidence interval for estimating confidence limits on parameters. Must
+        be between 0 and 1. Default is 0.95 for 95% CI.
+    optimizer : str, optional
+        The optimization algorithm used to find the solution. Must be either
+        'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'. Specifying the optimizer
+        will result in that optimizer being used. To use all of these specify
+        'best' and the best result will be returned. The default behaviour is to
+        try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and
+        'powell') and stop once one of the optimizers finds a solution. If the
+        optimizer fails, the initial guess will be returned.
+        For more detail see the
+        `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
 
-    Outputs:
-    a - fitted parameter from the Dual_Exponential model
-    b - fitted parameter from the Dual_Exponential model
-    c - fitted parameter from the Dual_Exponential model
-    sigma - the fitted Normal_2P sigma
-    loglik2 - Log Likelihood*-2 (as used in JMP Pro)
-    loglik - Log Likelihood (as used in Minitab and Reliasoft)
-    AICc - Akaike Information Criterion
-    BIC - Bayesian Information Criterion
-    a_SE - the standard error (sqrt(variance)) of the parameter
-    b_SE - the standard error (sqrt(variance)) of the parameter
-    c_SE - the standard error (sqrt(variance)) of the parameter
-    sigma_SE - the standard error (sqrt(variance)) of the parameter
-    a_upper - the upper CI estimate of the parameter
-    a_lower - the lower CI estimate of the parameter
-    b_upper - the upper CI estimate of the parameter
-    b_lower - the lower CI estimate of the parameter
-    c_upper - the upper CI estimate of the parameter
-    c_lower - the lower CI estimate of the parameter
-    sigma_upper - the upper CI estimate of the parameter
-    sigma_lower - the lower CI estimate of the parameter
-    results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
-    goodness_of_fit - a dataframe of the goodness of fit criterion (Log-likelihood, AICc, BIC)
-    change_of_parameters - a dataframe showing the change of the parameters (mu and sigma) at each stress level
-    mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided)
-    mu_at_use_stress - the equivalent Normal mu parameter at the use level stress (only provided if use_level_stress is provided)
-    distribution_at_use_stress - the Normal distribution at the use level stress (only provided if use_level_stress is provided)
-    probability_plot - the axes handles for the figure object from the probability plot (only provided if show_probability_plot is True)
-    life_stress_plot - the axes handles for the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
+    Returns
+    -------
+    a : float
+        The fitted parameter from the Dual_Exponential model
+    b : float
+        The fitted parameter from the Dual_Exponential model
+    c : float
+        The fitted parameter from the Dual_Exponential model
+    sigma : float
+        The fitted Normal_2P sigma parameter
+    loglik2 : float
+        Log Likelihood*-2 (as used in JMP Pro)
+    loglik : float
+        Log Likelihood (as used in Minitab and Reliasoft)
+    AICc : float
+        Akaike Information Criterion
+    BIC : float
+        Bayesian Information Criterion
+    a_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    b_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    c_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    sigma_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    a_upper : float
+        The upper CI estimate of the parameter
+    a_lower : float
+        The lower CI estimate of the parameter
+    b_upper : float
+        The upper CI estimate of the parameter
+    b_lower : float
+        The lower CI estimate of the parameter
+    c_upper : float
+        The upper CI estimate of the parameter
+    c_lower : float
+        The lower CI estimate of the parameter
+    sigma_upper : float
+        The upper CI estimate of the parameter
+    sigma_lower : float
+        The lower CI estimate of the parameter
+    results : dataframe
+        A dataframe of the results (point estimate, standard error, Lower CI and
+        Upper CI for each parameter)
+    goodness_of_fit : dataframe
+        A dataframe of the goodness of fit criterion (Log-likelihood, AICc, BIC)
+    change_of_parameters : dataframe
+        A dataframe showing the change of the parameters (mu and sigma) at
+        each stress level.
+    mean_life : float
+        The mean life at the use_level_stress (only provided if use_level_stress
+        is provided).
+    mu_at_use_stress : float
+        The equivalent Normal mu parameter at the use level stress (only
+        provided if use_level_stress is provided).
+    distribution_at_use_stress : object
+        The Normal distribution at the use level stress (only provided if
+        use_level_stress is provided).
+    probability_plot : object
+        The figure object from the probability plot (only provided if
+        show_probability_plot is True).
+    life_stress_plot : object
+        The figure object from the life-stress plot (only provided if
+        show_life_stress_plot is True).
     """
 
     def __init__(
@@ -9398,60 +10380,133 @@ class Fit_Normal_Dual_Exponential:
 
 class Fit_Normal_Power_Exponential:
     """
-    Fit_Normal_Power_Exponential
+    This function will Fit the Normal_Power_Exponential life-stress model to
+    the data provided. Please see the online documentation for the equations of
+    this model.
 
-    This function will Fit the Normal_Power_Exponential life-stress model to the data provided. Please see the online documentation for the equations of this model.
-    This model is most appropriate to model a life-stress relationship with thermal and non-thermal stresses. It is essential that you ensure your thermal stress is stress_thermal and your non-thermal stress is stress_nonthermal.
+    This model is most appropriate to model a life-stress relationship with
+    thermal and non-thermal stresses. It is essential that you ensure your
+    thermal stress is stress_1 (as this will be modeled by the Exponential) and
+    your non-thermal stress is stress_2 (as this will be modeled by the Power).
     Also ensure that your temperature data are in Kelvin.
 
-    Inputs:
-    failures - an array or list of the failure times.
-    failure_stress_1 - an array or list of the corresponding stress 1 (thermal stress) at which each failure occurred. This must match the length of failures as each failure is tied to a failure stress.
-    failure_stress_2 - an array or list of the corresponding stress 2 (non-thermal stress) at which each failure occurred. This must match the length of failures as each failure is tied to a failure stress.
-    right_censored - an array or list of all the right censored failure times
-    right_censored_stress_1 - an array or list of the corresponding stress 1 (thermal stress) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
-    right_censored_stress_2 - an array or list of the corresponding stress 1 (non-thermal stress) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
-    use_level_stress - [stress_1, stress_2]. A two element list or array of the use level stresses at which you want to know the mean life. Optional input.
-    print_results - True/False. Default is True
-    show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
-    show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
-    CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - The optimization algorithm used to find the solution. Must be either 'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'.
-        Specifying the optimizer will result in that optimizer being used.
-        To use all of these specify 'best' and the best result will be returned.
-        The default behaviour is to try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and 'powell') and stop once one of the optimizers finds a solution.
-        If the optimizer fails, the initial guess will be returned.
-        For more detail see the `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
+    Parameters
+    ----------
+    failures : array, list
+        The failure data.
+    failure_stress_1 : array, list
+        The corresponding stress 1 (thermal-stress) at which each failure
+        occurred. This must match the length of failures as each failure is tied
+        to a failure stress.
+    failure_stress_2 : array, list
+        The corresponding stress 2 (non-thermal stress) at which each failure
+        occurred. This must match the length of failures as each failure is tied
+        to a failure stress.
+    right_censored : array, list, optional
+        The right censored failure times. Optional input.
+    right_censored_stress_1 : array, list, optional
+        The corresponding stress 1 (thermal stress) at which each
+        right_censored data point was obtained. This must match the length of
+        right_censored as each right_censored value is tied to a right_censored
+        stress. Conditionally optional input. This must be provided if
+        right_censored is provided.
+    right_censored_stress_2 : array, list, optional
+        The corresponding stress 1 (non-thermal stress) at which each
+        right_censored data point was obtained. This must match the length of
+        right_censored as each right_censored value is tied to a right_censored
+        stress. Conditionally optional input. This must be provided if
+        right_censored is provided.
+    use_level_stress : array, list optional
+        A two element list or array of the use level stresses in the form
+        [stress_1, stress_2] at which you want to know the mean life. Optional
+        input.
+    print_results : bool, optional
+        True/False. Default is True. Prints the results to the console.
+    show_probability_plot : bool, object, optional
+        True/False. Default is True. Provides a probability plot of the fitted
+        ALT model. If an axes object is passed it will be used.
+    show_life_stress_plot : bool, object, optional
+        True/False. Default is True. Provides a life stress plot of the fitted
+        ALT model. If an axes object is passed it will be used.
+    CI : float, optional
+        Confidence interval for estimating confidence limits on parameters. Must
+        be between 0 and 1. Default is 0.95 for 95% CI.
+    optimizer : str, optional
+        The optimization algorithm used to find the solution. Must be either
+        'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'. Specifying the optimizer
+        will result in that optimizer being used. To use all of these specify
+        'best' and the best result will be returned. The default behaviour is to
+        try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and
+        'powell') and stop once one of the optimizers finds a solution. If the
+        optimizer fails, the initial guess will be returned.
+        For more detail see the
+        `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
 
-    Outputs:
-    a - fitted parameter from the Power_Exponential model
-    c - fitted parameter from the Power_Exponential model
-    n - fitted parameter from the Power_Exponential model
-    sigma - the fitted Normal_2P sigma
-    loglik2 - Log Likelihood*-2 (as used in JMP Pro)
-    loglik - Log Likelihood (as used in Minitab and Reliasoft)
-    AICc - Akaike Information Criterion
-    BIC - Bayesian Information Criterion
-    a_SE - the standard error (sqrt(variance)) of the parameter
-    c_SE - the standard error (sqrt(variance)) of the parameter
-    n_SE - the standard error (sqrt(variance)) of the parameter
-    sigma_SE - the standard error (sqrt(variance)) of the parameter
-    a_upper - the upper CI estimate of the parameter
-    a_lower - the lower CI estimate of the parameter
-    c_upper - the upper CI estimate of the parameter
-    c_lower - the lower CI estimate of the parameter
-    n_upper - the upper CI estimate of the parameter
-    n_lower - the lower CI estimate of the parameter
-    sigma_upper - the upper CI estimate of the parameter
-    sigma_lower - the lower CI estimate of the parameter
-    results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
-    goodness_of_fit - a dataframe of the goodness of fit criterion (Log-likelihood, AICc, BIC).
-    change_of_parameters - a dataframe showing the change of the parameters (mu and sigma) at each stress level.
-    mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided).
-    mu_at_use_stress - the equivalent Normal mu parameter at the use level stress (only provided if use_level_stress is provided).
-    distribution_at_use_stress - the Normal distribution at the use level stress (only provided if use_level_stress is provided).
-    probability_plot - the axes handles for the figure object from the probability plot (only provided if show_probability_plot is True)
-    life_stress_plot - the axes handles for the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
+    Returns
+    -------
+    a : float
+        The fitted parameter from the Power_Exponential model
+    c : float
+        The fitted parameter from the Power_Exponential model
+    n : float
+        The fitted parameter from the Power_Exponential model
+    sigma : float
+        The fitted Normal_2P sigma parameter
+    loglik2 : float
+        Log Likelihood*-2 (as used in JMP Pro)
+    loglik : float
+        Log Likelihood (as used in Minitab and Reliasoft)
+    AICc : float
+        Akaike Information Criterion
+    BIC : float
+        Bayesian Information Criterion
+    a_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    c_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    n_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    sigma_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    a_upper : float
+        The upper CI estimate of the parameter
+    a_lower : float
+        The lower CI estimate of the parameter
+    c_upper : float
+        The upper CI estimate of the parameter
+    c_lower : float
+        The lower CI estimate of the parameter
+    n_upper : float
+        The upper CI estimate of the parameter
+    n_lower : float
+        The lower CI estimate of the parameter
+    sigma_upper : float
+        The upper CI estimate of the parameter
+    sigma_lower : float
+        The lower CI estimate of the parameter
+    results : dataframe
+        A dataframe of the results (point estimate, standard error, Lower CI and
+        Upper CI for each parameter)
+    goodness_of_fit : dataframe
+        A dataframe of the goodness of fit criterion (Log-likelihood, AICc, BIC)
+    change_of_parameters : dataframe
+        A dataframe showing the change of the parameters (mu and sigma) at
+        each stress level.
+    mean_life : float
+        The mean life at the use_level_stress (only provided if use_level_stress
+        is provided).
+    mu_at_use_stress : float
+        The equivalent Normal mu parameter at the use level stress (only
+        provided if use_level_stress is provided).
+    distribution_at_use_stress : object
+        The Normal distribution at the use level stress (only provided if
+        use_level_stress is provided).
+    probability_plot : object
+        The figure object from the probability plot (only provided if
+        show_probability_plot is True).
+    life_stress_plot : object
+        The figure object from the life-stress plot (only provided if
+        show_life_stress_plot is True).
     """
 
     def __init__(
@@ -9846,59 +10901,130 @@ class Fit_Normal_Power_Exponential:
 
 class Fit_Normal_Dual_Power:
     """
-    Fit_Normal_Dual_Power
+    This function will Fit the Normal_Dual_Power life-stress model to the data
+    provided. Please see the online documentation for the equations of this
+    model.
 
-    This function will Fit the Normal_Dual_Power life-stress model to the data provided. Please see the online documentation for the equations of this model.
-    This model is most appropriate to model a life-stress relationship with two non-thermal stresses such as voltage and load.
+    This model is most appropriate to model a life-stress relationship with two
+    non-thermal stresses such as voltage and load.
 
-    Inputs:
-    failures - an array or list of the failure times.
-    failure_stress_1 - an array or list of the corresponding stress 1 (such as voltage) at which each failure occurred. This must match the length of failures as each failure is tied to a failure stress.
-    failure_stress_2 - an array or list of the corresponding stress 2 (such as load) at which each failure occurred. This must match the length of failures as each failure is tied to a failure stress.
-    right_censored - an array or list of all the right censored failure times
-    right_censored_stress_1 - an array or list of the corresponding stress 1 (such as voltage) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
-    right_censored_stress_2 - an array or list of the corresponding stress 1 (such as load) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
-    use_level_stress - [stress_1, stress_2]. A two element list or array of the use level stresses at which you want to know the mean life. Optional input.
-    print_results - True/False. Default is True
-    show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
-    show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
-    CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - The optimization algorithm used to find the solution. Must be either 'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'.
-        Specifying the optimizer will result in that optimizer being used.
-        To use all of these specify 'best' and the best result will be returned.
-        The default behaviour is to try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and 'powell') and stop once one of the optimizers finds a solution.
-        If the optimizer fails, the initial guess will be returned.
-        For more detail see the `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
+    Parameters
+    ----------
+    failures : array, list
+        The failure data.
+    failure_stress_1 : array, list
+        The corresponding stress 1 (such as voltage) at which each failure
+        occurred. This must match the length of failures as each failure is tied
+        to a failure stress.
+    failure_stress_2 : array, list
+        The corresponding stress 2 (such as load) at which each failure
+        occurred. This must match the length of failures as each failure is tied
+        to a failure stress.
+    right_censored : array, list, optional
+        The right censored failure times. Optional input.
+    right_censored_stress_1 : array, list, optional
+        The corresponding stress 1 (such as voltage) at which each
+        right_censored data point was obtained. This must match the length of
+        right_censored as each right_censored value is tied to a right_censored
+        stress. Conditionally optional input. This must be provided if
+        right_censored is provided.
+    right_censored_stress_2 : array, list, optional
+        The corresponding stress 1 (such as load) at which each
+        right_censored data point was obtained. This must match the length of
+        right_censored as each right_censored value is tied to a right_censored
+        stress. Conditionally optional input. This must be provided if
+        right_censored is provided.
+    use_level_stress : array, list optional
+        A two element list or array of the use level stresses in the form
+        [stress_1, stress_2] at which you want to know the mean life. Optional
+        input.
+    print_results : bool, optional
+        True/False. Default is True. Prints the results to the console.
+    show_probability_plot : bool, object, optional
+        True/False. Default is True. Provides a probability plot of the fitted
+        ALT model. If an axes object is passed it will be used.
+    show_life_stress_plot : bool, object, optional
+        True/False. Default is True. Provides a life stress plot of the fitted
+        ALT model. If an axes object is passed it will be used.
+    CI : float, optional
+        Confidence interval for estimating confidence limits on parameters. Must
+        be between 0 and 1. Default is 0.95 for 95% CI.
+    optimizer : str, optional
+        The optimization algorithm used to find the solution. Must be either
+        'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'. Specifying the optimizer
+        will result in that optimizer being used. To use all of these specify
+        'best' and the best result will be returned. The default behaviour is to
+        try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and
+        'powell') and stop once one of the optimizers finds a solution. If the
+        optimizer fails, the initial guess will be returned.
+        For more detail see the
+        `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
 
-    Outputs:
-    c - fitted parameter from the Dual_Power model
-    m - fitted parameter from the Dual_Power model
-    n - fitted parameter from the Dual_Power model
-    sigma - the fitted Normal_2P sigma
-    loglik2 - Log Likelihood*-2 (as used in JMP Pro)
-    loglik - Log Likelihood (as used in Minitab and Reliasoft)
-    AICc - Akaike Information Criterion
-    BIC - Bayesian Information Criterion
-    c_SE - the standard error (sqrt(variance)) of the parameter
-    m_SE - the standard error (sqrt(variance)) of the parameter
-    n_SE - the standard error (sqrt(variance)) of the parameter
-    sigma_SE - the standard error (sqrt(variance)) of the parameter
-    c_upper - the upper CI estimate of the parameter
-    c_lower - the lower CI estimate of the parameter
-    m_upper - the upper CI estimate of the parameter
-    m_lower - the lower CI estimate of the parameter
-    n_upper - the upper CI estimate of the parameter
-    n_lower - the lower CI estimate of the parameter
-    sigma_upper - the upper CI estimate of the parameter
-    sigma_lower - the lower CI estimate of the parameter
-    results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
-    goodness_of_fit - a dataframe of the goodness of fit criterion (Log-likelihood, AICc, BIC)
-    change_of_parameters - a dataframe showing the change of the parameters (mu and sigma) at each stress level
-    mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided)
-    mu_at_use_stress - the equivalent Normal mu parameter at the use level stress (only provided if use_level_stress is provided)
-    distribution_at_use_stress - the Normal distribution at the use level stress (only provided if use_level_stress is provided)
-    probability_plot - the axes handles for the figure object from the probability plot (only provided if show_probability_plot is True)
-    life_stress_plot - the axes handles for the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
+    Returns
+    -------
+    c : float
+        The fitted parameter from the Dual_Power model
+    m : float
+        The fitted parameter from the Dual_Power model
+    n : float
+        The fitted parameter from the Dual_Power model
+    sigma : float
+        The fitted Normal_2P sigma parameter
+    loglik2 : float
+        Log Likelihood*-2 (as used in JMP Pro)
+    loglik : float
+        Log Likelihood (as used in Minitab and Reliasoft)
+    AICc : float
+        Akaike Information Criterion
+    BIC : float
+        Bayesian Information Criterion
+    c_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    m_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    n_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    sigma_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    c_upper : float
+        The upper CI estimate of the parameter
+    c_lower : float
+        The lower CI estimate of the parameter
+    m_upper : float
+        The upper CI estimate of the parameter
+    m_lower : float
+        The lower CI estimate of the parameter
+    n_upper : float
+        The upper CI estimate of the parameter
+    n_lower : float
+        The lower CI estimate of the parameter
+    sigma_upper : float
+        The upper CI estimate of the parameter
+    sigma_lower : float
+        The lower CI estimate of the parameter
+    results : dataframe
+        A dataframe of the results (point estimate, standard error, Lower CI and
+        Upper CI for each parameter)
+    goodness_of_fit : dataframe
+        A dataframe of the goodness of fit criterion (Log-likelihood, AICc, BIC)
+    change_of_parameters : dataframe
+        A dataframe showing the change of the parameters (mu and sigma) at
+        each stress level.
+    mean_life : float
+        The mean life at the use_level_stress (only provided if use_level_stress
+        is provided).
+    mu_at_use_stress : float
+        The equivalent Normal mu parameter at the use level stress (only
+        provided if use_level_stress is provided).
+    distribution_at_use_stress : object
+        The Normal distribution at the use level stress (only provided if
+        use_level_stress is provided).
+    probability_plot : object
+        The figure object from the probability plot (only provided if
+        show_probability_plot is True).
+    life_stress_plot : object
+        The figure object from the life-stress plot (only provided if
+        show_life_stress_plot is True).
     """
 
     def __init__(
@@ -10289,50 +11415,107 @@ class Fit_Normal_Dual_Power:
 
 class Fit_Exponential_Exponential:
     """
-    Fit_Exponential_Exponential
+    This function will fit the Exponential-Exponential life-stress model to the
+    data provided. Please see the online documentation for the equations of this
+    model.
 
-    This function will Fit the Exponential-Exponential life-stress model to the data provided. Please see the online documentation for the equations of this model.
-    This model is most appropriate to model a life-stress relationship with temperature. It is recommended that you ensure your temperature data are in Kelvin.
-    If you are using this model for the Arrhenius equation, a = Ea/K_B. When results are printed Ea will be provided in eV.
+    This model is most appropriate to model a life-stress relationship with
+    temperature. It is recommended that you ensure your temperature data are in
+    Kelvin.
 
-    Inputs:
-    failures - an array or list of the failure times.
-    failure_stress - an array or list of the corresponding stresses (such as temperature) at which each failure occurred. This must match the length of failures as each failure is tied to a failure stress.
-    right_censored - an array or list of all the right censored failure times.
-    right_censored_stress - an array or list of the corresponding stresses (such as temperature) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
-    use_level_stress - The use level stress at which you want to know the mean life. Optional input.
-    print_results - True/False. Default is True
-    show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
-    show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
-    CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - The optimization algorithm used to find the solution. Must be either 'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'.
-        Specifying the optimizer will result in that optimizer being used.
-        To use all of these specify 'best' and the best result will be returned.
-        The default behaviour is to try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and 'powell') and stop once one of the optimizers finds a solution.
-        If the optimizer fails, the initial guess will be returned.
-        For more detail see the `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
+    If you are using this model for the Arrhenius equation, a = Ea/K_B. When
+    results are printed Ea will be provided in eV.
 
-    Outputs:
-    a - fitted parameter from the Exponential model
-    b - fitted parameter from the Exponential model
-    loglik2 - Log Likelihood*-2 (as used in JMP Pro)
-    loglik - Log Likelihood (as used in Minitab and Reliasoft)
-    AICc - Akaike Information Criterion
-    BIC - Bayesian Information Criterion
-    a_SE - the standard error (sqrt(variance)) of the parameter
-    b_SE - the standard error (sqrt(variance)) of the parameter
-    a_upper - the upper CI estimate of the parameter
-    a_lower - the lower CI estimate of the parameter
-    b_upper - the upper CI estimate of the parameter
-    b_lower - the lower CI estimate of the parameter
-    results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
-    goodness_of_fit - a dataframe of the goodness of fit criterion (Log-likelihood, AICc, BIC)
-    change_of_parameters - a dataframe showing the change of the parameters at each stress level
-    mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided)
-    Lambda_at_use_stress - the equivalent Exponential Lambda parameter at the use level stress (only provided if use_level_stress is provided)
-    distribution_at_use_stress - the Exponential distribution at the use level stress (only provided if use_level_stress is provided)
-    probability_plot - the axes handles for the figure object from the probability plot (only provided if show_probability_plot is True)
-    life_stress_plot - the axes handles for the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
+    Parameters
+    ----------
+    failures : array, list
+        The failure data.
+    failure_stress : array, list
+        The corresponding stresses (such as temperature) at which each failure
+        occurred. This must match the length of failures as each failure is
+        tied to a failure stress.
+    right_censored : array, list, optional
+        The right censored failure times. Optional input.
+    right_censored_stress : array, list, optional
+        The corresponding stresses (such as temperature) at which each
+        right_censored data point was obtained. This must match the length of
+        right_censored as each right_censored value is tied to a
+        right_censored stress. Conditionally optional input. This must be
+        provided if right_censored is provided.
+    use_level_stress : int, float, optional
+        The use level stress at which you want to know the mean life. Optional
+        input.
+    print_results : bool, optional
+        True/False. Default is True. Prints the results to the console.
+    show_probability_plot : bool, object, optional
+        True/False. Default is True. Provides a probability plot of the fitted
+        ALT model. If an axes object is passed it will be used.
+    show_life_stress_plot : bool, object, optional
+        True/False. Default is True. Provides a life stress plot of the fitted
+        ALT model. If an axes object is passed it will be used.
+    CI : float, optional
+        Confidence interval for estimating confidence limits on parameters. Must
+        be between 0 and 1. Default is 0.95 for 95% CI.
+    optimizer : str, optional
+        The optimization algorithm used to find the solution. Must be either
+        'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'. Specifying the optimizer
+        will result in that optimizer being used. To use all of these specify
+        'best' and the best result will be returned. The default behaviour is to
+        try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and
+        'powell') and stop once one of the optimizers finds a solution. If the
+        optimizer fails, the initial guess will be returned.
+        For more detail see the
+        `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
+
+    Returns
+    -------
+    a : float
+        The fitted parameter from the Exponential model
+    b : float
+        The fitted parameter from the Exponential model
+    loglik2 : float
+        Log Likelihood*-2 (as used in JMP Pro)
+    loglik : float
+        Log Likelihood (as used in Minitab and Reliasoft)
+    AICc : float
+        Akaike Information Criterion
+    BIC : float
+        Bayesian Information Criterion
+    a_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    b_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    a_upper : float
+        The upper CI estimate of the parameter
+    a_lower : float
+        The lower CI estimate of the parameter
+    b_upper : float
+        The upper CI estimate of the parameter
+    b_lower : float
+        The lower CI estimate of the parameter
+    results : dataframe
+        A dataframe of the results (point estimate, standard error, Lower CI and
+        Upper CI for each parameter)
+    goodness_of_fit : dataframe
+        A dataframe of the goodness of fit criterion (Log-likelihood, AICc, BIC)
+    change_of_parameters : dataframe
+        A dataframe showing the change of the parameters (equivalent Weibull
+        alpha and beta) at each stress level.
+    mean_life : float
+        The mean life at the use_level_stress (only provided if use_level_stress
+        is provided).
+    Lambda_at_use_stress : float
+        The equivalent Exponential Lambda parameter at the use level stress
+        (only provided if use_level_stress is provided).
+    distribution_at_use_stress : object
+        The Exponential distribution at the use level stress (only provided if
+        use_level_stress is provided).
+    probability_plot : object
+        The figure object from the probability plot (only provided if
+        show_probability_plot is True).
+    life_stress_plot : object
+        The figure object from the life-stress plot (only provided if
+        show_life_stress_plot is True).
     """
 
     def __init__(
@@ -10667,49 +11850,104 @@ class Fit_Exponential_Exponential:
 
 class Fit_Exponential_Eyring:
     """
-    Fit_Exponential_Eyring
+    This function will fit the Exponential-Eyring life-stress model to the
+    data provided. Please see the online documentation for the equations of this
+    model.
 
-    This function will Fit the Exponential-Eyring life-stress model to the data provided. Please see the online documentation for the equations of this model.
-    This model is most appropriate to model a life-stress relationship with temperature. It is recommended that you ensure your temperature data are in Kelvin.
+    This model is most appropriate to model a life-stress relationship with
+    temperature. It is recommended that you ensure your temperature data are in
+    Kelvin.
 
-    Inputs:
-    failures - an array or list of the failure times.
-    failure_stress - an array or list of the corresponding stresses (such as temperature) at which each failure occurred. This must match the length of failures as each failure is tied to a failure stress.
-    right_censored - an array or list of all the right censored failure times.
-    right_censored_stress - an array or list of the corresponding stresses (such as temperature) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
-    use_level_stress - The use level stress at which you want to know the mean life. Optional input.
-    print_results - True/False. Default is True
-    show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
-    show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
-    CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - The optimization algorithm used to find the solution. Must be either 'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'.
-        Specifying the optimizer will result in that optimizer being used.
-        To use all of these specify 'best' and the best result will be returned.
-        The default behaviour is to try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and 'powell') and stop once one of the optimizers finds a solution.
-        If the optimizer fails, the initial guess will be returned.
-        For more detail see the `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
+    Parameters
+    ----------
+    failures : array, list
+        The failure data.
+    failure_stress : array, list
+        The corresponding stresses (such as temperature) at which each failure
+        occurred. This must match the length of failures as each failure is
+        tied to a failure stress.
+    right_censored : array, list, optional
+        The right censored failure times. Optional input.
+    right_censored_stress : array, list, optional
+        The corresponding stresses (such as temperature) at which each
+        right_censored data point was obtained. This must match the length of
+        right_censored as each right_censored value is tied to a
+        right_censored stress. Conditionally optional input. This must be
+        provided if right_censored is provided.
+    use_level_stress : int, float, optional
+        The use level stress at which you want to know the mean life. Optional
+        input.
+    print_results : bool, optional
+        True/False. Default is True. Prints the results to the console.
+    show_probability_plot : bool, object, optional
+        True/False. Default is True. Provides a probability plot of the fitted
+        ALT model. If an axes object is passed it will be used.
+    show_life_stress_plot : bool, object, optional
+        True/False. Default is True. Provides a life stress plot of the fitted
+        ALT model. If an axes object is passed it will be used.
+    CI : float, optional
+        Confidence interval for estimating confidence limits on parameters. Must
+        be between 0 and 1. Default is 0.95 for 95% CI.
+    optimizer : str, optional
+        The optimization algorithm used to find the solution. Must be either
+        'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'. Specifying the optimizer
+        will result in that optimizer being used. To use all of these specify
+        'best' and the best result will be returned. The default behaviour is to
+        try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and
+        'powell') and stop once one of the optimizers finds a solution. If the
+        optimizer fails, the initial guess will be returned.
+        For more detail see the
+        `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
 
-    Outputs:
-    a - fitted parameter from the Eyring model
-    c - fitted parameter from the Eyring model
-    loglik2 - Log Likelihood*-2 (as used in JMP Pro)
-    loglik - Log Likelihood (as used in Minitab and Reliasoft)
-    AICc - Akaike Information Criterion
-    BIC - Bayesian Information Criterion
-    a_SE - the standard error (sqrt(variance)) of the parameter
-    c_SE - the standard error (sqrt(variance)) of the parameter
-    a_upper - the upper CI estimate of the parameter
-    a_lower - the lower CI estimate of the parameter
-    c_upper - the upper CI estimate of the parameter
-    c_lower - the lower CI estimate of the parameter
-    results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
-    goodness_of_fit - a dataframe of the goodness of fit criterion (Log-likelihood, AICc, BIC)
-    change_of_parameters - a dataframe showing the change of the parameters at each stress level
-    mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided)
-    Lambda_at_use_stress - the equivalent Exponential Lambda parameter at the use level stress (only provided if use_level_stress is provided)
-    distribution_at_use_stress - the Exponential distribution at the use level stress (only provided if use_level_stress is provided)
-    probability_plot - the axes handles for the figure object from the probability plot (only provided if show_probability_plot is True)
-    life_stress_plot - the axes handles for the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
+    Returns
+    -------
+    a : float
+        The fitted parameter from the Exponential model
+    c : float
+        The fitted parameter from the Exponential model
+    loglik2 : float
+        Log Likelihood*-2 (as used in JMP Pro)
+    loglik : float
+        Log Likelihood (as used in Minitab and Reliasoft)
+    AICc : float
+        Akaike Information Criterion
+    BIC : float
+        Bayesian Information Criterion
+    a_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    c_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    a_upper : float
+        The upper CI estimate of the parameter
+    a_lower : float
+        The lower CI estimate of the parameter
+    c_upper : float
+        The upper CI estimate of the parameter
+    c_lower : float
+        The lower CI estimate of the parameter
+    results : dataframe
+        A dataframe of the results (point estimate, standard error, Lower CI and
+        Upper CI for each parameter)
+    goodness_of_fit : dataframe
+        A dataframe of the goodness of fit criterion (Log-likelihood, AICc, BIC)
+    change_of_parameters : dataframe
+        A dataframe showing the change of the parameters (equivalent Weibull
+        alpha and beta) at each stress level.
+    mean_life : float
+        The mean life at the use_level_stress (only provided if use_level_stress
+        is provided).
+    Lambda_at_use_stress : float
+        The equivalent Exponential Lambda parameter at the use level stress
+        (only provided if use_level_stress is provided).
+    distribution_at_use_stress : object
+        The Exponential distribution at the use level stress (only provided if
+        use_level_stress is provided).
+    probability_plot : object
+        The figure object from the probability plot (only provided if
+        show_probability_plot is True).
+    life_stress_plot : object
+        The figure object from the life-stress plot (only provided if
+        show_life_stress_plot is True).
     """
 
     def __init__(
@@ -11037,49 +12275,103 @@ class Fit_Exponential_Eyring:
 
 class Fit_Exponential_Power:
     """
-    Fit_Exponential_Power
+    This function will Fit the Exponential-Power life-stress model to the data
+    provided. Please see the online documentation for the equations of this
+    model.
 
-    This function will Fit the Exponential-Power life-stress model to the data provided. Please see the online documentation for the equations of this model.
-    This model is most appropriate to model a life-stress relationship with non-thermal stresses (typically in fatigue applications).
+    This model is most appropriate to model a life-stress relationship with
+    non-thermal stresses (typically in fatigue applications).
 
-    Inputs:
-    failures - an array or list of the failure times.
-    failure_stress - an array or list of the corresponding stresses (such as load) at which each failure occurred. This must match the length of failures as each failure is tied to a failure stress.
-    right_censored - an array or list of all the right censored failure times.
-    right_censored_stress - an array or list of the corresponding stresses (such as load) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
-    use_level_stress - The use level stress at which you want to know the mean life. Optional input.
-    print_results - True/False. Default is True
-    show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
-    show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
-    CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - The optimization algorithm used to find the solution. Must be either 'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'.
-        Specifying the optimizer will result in that optimizer being used.
-        To use all of these specify 'best' and the best result will be returned.
-        The default behaviour is to try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and 'powell') and stop once one of the optimizers finds a solution.
-        If the optimizer fails, the initial guess will be returned.
-        For more detail see the `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
+    Parameters
+    ----------
+    failures : array, list
+        The failure data.
+    failure_stress : array, list
+        The corresponding stresses (such as load) at which each failure
+        occurred. This must match the length of failures as each failure is
+        tied to a failure stress.
+    right_censored : array, list, optional
+        The right censored failure times. Optional input.
+    right_censored_stress : array, list, optional
+        The corresponding stresses (such as load) at which each
+        right_censored data point was obtained. This must match the length of
+        right_censored as each right_censored value is tied to a
+        right_censored stress. Conditionally optional input. This must be
+        provided if right_censored is provided.
+    use_level_stress : int, float, optional
+        The use level stress at which you want to know the mean life. Optional
+        input.
+    print_results : bool, optional
+        True/False. Default is True. Prints the results to the console.
+    show_probability_plot : bool, object, optional
+        True/False. Default is True. Provides a probability plot of the fitted
+        ALT model. If an axes object is passed it will be used.
+    show_life_stress_plot : bool, object, optional
+        True/False. Default is True. Provides a life stress plot of the fitted
+        ALT model. If an axes object is passed it will be used.
+    CI : float, optional
+        Confidence interval for estimating confidence limits on parameters. Must
+        be between 0 and 1. Default is 0.95 for 95% CI.
+    optimizer : str, optional
+        The optimization algorithm used to find the solution. Must be either
+        'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'. Specifying the optimizer
+        will result in that optimizer being used. To use all of these specify
+        'best' and the best result will be returned. The default behaviour is to
+        try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and
+        'powell') and stop once one of the optimizers finds a solution. If the
+        optimizer fails, the initial guess will be returned.
+        For more detail see the
+        `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
 
-    Outputs:
-    a - fitted parameter from the Power model
-    n - fitted parameter from the Power model
-    loglik2 - Log Likelihood*-2 (as used in JMP Pro)
-    loglik - Log Likelihood (as used in Minitab and Reliasoft)
-    AICc - Akaike Information Criterion
-    BIC - Bayesian Information Criterion
-    a_SE - the standard error (sqrt(variance)) of the parameter
-    n_SE - the standard error (sqrt(variance)) of the parameter
-    a_upper - the upper CI estimate of the parameter
-    a_lower - the lower CI estimate of the parameter
-    n_upper - the upper CI estimate of the parameter
-    n_lower - the lower CI estimate of the parameter
-    results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
-    goodness_of_fit - a dataframe of the goodness of fit criterion (Log-likelihood, AICc, BIC)
-    change_of_parameters - a dataframe showing the change of the parameters at each stress level
-    mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided)
-    Lambda_at_use_stress - the equivalent Exponential Lambda parameter at the use level stress (only provided if use_level_stress is provided)
-    distribution_at_use_stress - the Exponential distribution at the use level stress (only provided if use_level_stress is provided)
-    probability_plot - the axes handles for the figure object from the probability plot (only provided if show_probability_plot is True)
-    life_stress_plot - the axes handles for the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
+    Returns
+    -------
+    a : float
+        The fitted parameter from the Power model
+    n : float
+        The fitted parameter from the Power model
+    loglik2 : float
+        Log Likelihood*-2 (as used in JMP Pro)
+    loglik : float
+        Log Likelihood (as used in Minitab and Reliasoft)
+    AICc : float
+        Akaike Information Criterion
+    BIC : float
+        Bayesian Information Criterion
+    a_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    n_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    a_upper : float
+        The upper CI estimate of the parameter
+    a_lower : float
+        The lower CI estimate of the parameter
+    n_upper : float
+        The upper CI estimate of the parameter
+    n_lower : float
+        The lower CI estimate of the parameter
+    results : dataframe
+        A dataframe of the results (point estimate, standard error, Lower CI and
+        Upper CI for each parameter)
+    goodness_of_fit : dataframe
+        A dataframe of the goodness of fit criterion (Log-likelihood, AICc, BIC)
+    change_of_parameters : dataframe
+        A dataframe showing the change of the parameters (equivalent Weibull
+        alpha and beta) at each stress level.
+    mean_life : float
+        The mean life at the use_level_stress (only provided if use_level_stress
+        is provided).
+    Lambda_at_use_stress : float
+        The equivalent Exponential Lambda parameter at the use level stress
+        (only provided if use_level_stress is provided).
+    distribution_at_use_stress : object
+        The Exponential distribution at the use level stress (only provided if
+        use_level_stress is provided).
+    probability_plot : object
+        The figure object from the probability plot (only provided if
+        show_probability_plot is True).
+    life_stress_plot : object
+        The figure object from the life-stress plot (only provided if
+        show_life_stress_plot is True).
     """
 
     def __init__(
@@ -11407,55 +12699,124 @@ class Fit_Exponential_Power:
 
 class Fit_Exponential_Dual_Exponential:
     """
-    Fit_Exponential_Dual_Exponential
+    This function will Fit the Exponential_Dual_Exponential life-stress model to
+    the data provided. Please see the online documentation for the equations of
+    this model.
 
-    This function will Fit the Exponential_Dual_Exponential life-stress model to the data provided. Please see the online documentation for the equations of this model.
-    This model is most appropriate to model a life-stress relationship with temperature-humidity. It is recommended that you ensure your temperature data are in Kelvin and humidity data range from 0 to 1.
+    This model is most appropriate to model a life-stress relationship with
+    two thermal stresses (such as temperature-humidity). It is recommended that
+    you ensure your temperature data are in Kelvin and humidity data range from
+    0 to 1.
 
-    Inputs:
-    failures - an array or list of the failure times.
-    failure_stress_1 - an array or list of the corresponding stress 1 (such as temperature) at which each failure occurred. This must match the length of failures as each failure is tied to a failure stress.
-    failure_stress_2 - an array or list of the corresponding stress 2 (such as humidity) at which each failure occurred. This must match the length of failures as each failure is tied to a failure stress.
-    right_censored - an array or list of all the right censored failure times
-    right_censored_stress_1 - an array or list of the corresponding stress 1 (such as temperature) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
-    right_censored_stress_2 - an array or list of the corresponding stress 1 (such as humidity) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
-    use_level_stress - [stress_1, stress_2]. A two element list or array of the use level stresses at which you want to know the mean life. Optional input.
-    print_results - True/False. Default is True
-    show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
-    show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
-    CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - The optimization algorithm used to find the solution. Must be either 'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'.
-        Specifying the optimizer will result in that optimizer being used.
-        To use all of these specify 'best' and the best result will be returned.
-        The default behaviour is to try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and 'powell') and stop once one of the optimizers finds a solution.
-        If the optimizer fails, the initial guess will be returned.
-        For more detail see the `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
+    Parameters
+    ----------
+    failures : array, list
+        The failure data.
+    failure_stress_1 : array, list
+        The corresponding stress 1 (such as temperature) at which each failure
+        occurred. This must match the length of failures as each failure is tied
+        to a failure stress.
+    failure_stress_2 : array, list
+        The corresponding stress 2 (such as humidity) at which each failure
+        occurred. This must match the length of failures as each failure is tied
+        to a failure stress.
+    right_censored : array, list, optional
+        The right censored failure times. Optional input.
+    right_censored_stress_1 : array, list, optional
+        The corresponding stress 1 (such as temperature) at which each
+        right_censored data point was obtained. This must match the length of
+        right_censored as each right_censored value is tied to a right_censored
+        stress. Conditionally optional input. This must be provided if
+        right_censored is provided.
+    right_censored_stress_2 : array, list, optional
+        The corresponding stress 1 (such as humidity) at which each
+        right_censored data point was obtained. This must match the length of
+        right_censored as each right_censored value is tied to a right_censored
+        stress. Conditionally optional input. This must be provided if
+        right_censored is provided.
+    use_level_stress : array, list optional
+        A two element list or array of the use level stresses in the form
+        [stress_1, stress_2] at which you want to know the mean life. Optional
+        input.
+    print_results : bool, optional
+        True/False. Default is True. Prints the results to the console.
+    show_probability_plot : bool, object, optional
+        True/False. Default is True. Provides a probability plot of the fitted
+        ALT model. If an axes object is passed it will be used.
+    show_life_stress_plot : bool, object, optional
+        True/False. Default is True. Provides a life stress plot of the fitted
+        ALT model. If an axes object is passed it will be used.
+    CI : float, optional
+        Confidence interval for estimating confidence limits on parameters. Must
+        be between 0 and 1. Default is 0.95 for 95% CI.
+    optimizer : str, optional
+        The optimization algorithm used to find the solution. Must be either
+        'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'. Specifying the optimizer
+        will result in that optimizer being used. To use all of these specify
+        'best' and the best result will be returned. The default behaviour is to
+        try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and
+        'powell') and stop once one of the optimizers finds a solution. If the
+        optimizer fails, the initial guess will be returned.
+        For more detail see the
+        `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
 
-    Outputs:
-    a - fitted parameter from the Dual_Exponential model
-    b - fitted parameter from the Dual_Exponential model
-    c - fitted parameter from the Dual_Exponential model
-    loglik2 - Log Likelihood*-2 (as used in JMP Pro)
-    loglik - Log Likelihood (as used in Minitab and Reliasoft)
-    AICc - Akaike Information Criterion
-    BIC - Bayesian Information Criterion
-    a_SE - the standard error (sqrt(variance)) of the parameter
-    b_SE - the standard error (sqrt(variance)) of the parameter
-    c_SE - the standard error (sqrt(variance)) of the parameter
-    a_upper - the upper CI estimate of the parameter
-    a_lower - the lower CI estimate of the parameter
-    b_upper - the upper CI estimate of the parameter
-    b_lower - the lower CI estimate of the parameter
-    c_upper - the upper CI estimate of the parameter
-    c_lower - the lower CI estimate of the parameter
-    results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
-    goodness_of_fit - a dataframe of the goodness of fit criterion (Log-likelihood, AICc, BIC)
-    change_of_parameters - a dataframe showing the change of the parameters at each stress level
-    mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided)
-    Lambda_at_use_stress - the equivalent Exponential Lambda parameter at the use level stress (only provided if use_level_stress is provided)
-    distribution_at_use_stress - the Exponential distribution at the use level stress (only provided if use_level_stress is provided)
-    probability_plot - the axes handles for the figure object from the probability plot (only provided if show_probability_plot is True)
-    life_stress_plot - the axes handles for the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
+    Returns
+    -------
+    a : float
+        The fitted parameter from the Dual_Exponential model
+    b : float
+        The fitted parameter from the Dual_Exponential model
+    c : float
+        The fitted parameter from the Dual_Exponential model
+    loglik2 : float
+        Log Likelihood*-2 (as used in JMP Pro)
+    loglik : float
+        Log Likelihood (as used in Minitab and Reliasoft)
+    AICc : float
+        Akaike Information Criterion
+    BIC : float
+        Bayesian Information Criterion
+    a_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    b_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    c_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    a_upper : float
+        The upper CI estimate of the parameter
+    a_lower : float
+        The lower CI estimate of the parameter
+    b_upper : float
+        The upper CI estimate of the parameter
+    b_lower : float
+        The lower CI estimate of the parameter
+    c_upper : float
+        The upper CI estimate of the parameter
+    c_lower : float
+        The lower CI estimate of the parameter
+    results : dataframe
+        A dataframe of the results (point estimate, standard error, Lower CI and
+        Upper CI for each parameter)
+    goodness_of_fit : dataframe
+        A dataframe of the goodness of fit criterion (Log-likelihood, AICc, BIC)
+    change_of_parameters : dataframe
+        A dataframe showing the change of the parameters (equivalent Weibull
+        alpha and beta) at each stress level.
+    mean_life : float
+        The mean life at the use_level_stress (only provided if use_level_stress
+        is provided).
+    Lambda_at_use_stress : float
+        The equivalent Exponential Lambda parameter at the use level stress
+        (only provided if use_level_stress is provided).
+    distribution_at_use_stress : object
+        The Exponential distribution at the use level stress (only provided if
+        use_level_stress is provided).
+    probability_plot : object
+        The figure object from the probability plot (only provided if
+        show_probability_plot is True).
+    life_stress_plot : object
+        The figure object from the life-stress plot (only provided if
+        show_life_stress_plot is True).
     """
 
     def __init__(
@@ -11835,56 +13196,125 @@ class Fit_Exponential_Dual_Exponential:
 
 class Fit_Exponential_Power_Exponential:
     """
-    Fit_Exponential_Power_Exponential
+    This function will Fit the Exponential_Power_Exponential life-stress model
+    to the data provided. Please see the online documentation for the equations
+    of this model.
 
-    This function will Fit the Exponential_Power_Exponential life-stress model to the data provided. Please see the online documentation for the equations of this model.
-    This model is most appropriate to model a life-stress relationship with thermal and non-thermal stresses. It is essential that you ensure your thermal stress is stress_thermal and your non-thermal stress is stress_nonthermal.
+    This model is most appropriate to model a life-stress relationship with
+    thermal and non-thermal stresses. It is essential that you ensure your
+    thermal stress is stress_1 (as it will be modeled by the Exponential) and
+    your non-thermal stress is stress_2 (as it will be modeled by the Power).
     Also ensure that your temperature data are in Kelvin.
 
-    Inputs:
-    failures - an array or list of the failure times.
-    failure_stress_1 - an array or list of the corresponding stress 1 (thermal stress) at which each failure occurred. This must match the length of failures as each failure is tied to a failure stress.
-    failure_stress_2 - an array or list of the corresponding stress 2 (non-thermal stress) at which each failure occurred. This must match the length of failures as each failure is tied to a failure stress.
-    right_censored - an array or list of all the right censored failure times
-    right_censored_stress_1 - an array or list of the corresponding stress 1 (thermal stress) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
-    right_censored_stress_2 - an array or list of the corresponding stress 1 (non-thermal stress) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
-    use_level_stress - [stress_1, stress_2]. A two element list or array of the use level stresses at which you want to know the mean life. Optional input.
-    print_results - True/False. Default is True
-    show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
-    show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
-    CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - The optimization algorithm used to find the solution. Must be either 'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'.
-        Specifying the optimizer will result in that optimizer being used.
-        To use all of these specify 'best' and the best result will be returned.
-        The default behaviour is to try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and 'powell') and stop once one of the optimizers finds a solution.
-        If the optimizer fails, the initial guess will be returned.
-        For more detail see the `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
+    Parameters
+    ----------
+    failures : array, list
+        The failure data.
+    failure_stress_1 : array, list
+        The corresponding stress 1 (thermal stress) at which each failure
+        occurred. This must match the length of failures as each failure is tied
+        to a failure stress.
+    failure_stress_2 : array, list
+        The corresponding stress 2 (non-thermal stress) at which each failure
+        occurred. This must match the length of failures as each failure is tied
+        to a failure stress.
+    right_censored : array, list, optional
+        The right censored failure times. Optional input.
+    right_censored_stress_1 : array, list, optional
+        The corresponding stress 1 (thermal stress) at which each
+        right_censored data point was obtained. This must match the length of
+        right_censored as each right_censored value is tied to a right_censored
+        stress. Conditionally optional input. This must be provided if
+        right_censored is provided.
+    right_censored_stress_2 : array, list, optional
+        The corresponding stress 1 (non-thermal stress) at which each
+        right_censored data point was obtained. This must match the length of
+        right_censored as each right_censored value is tied to a right_censored
+        stress. Conditionally optional input. This must be provided if
+        right_censored is provided.
+    use_level_stress : array, list optional
+        A two element list or array of the use level stresses in the form
+        [stress_1, stress_2] at which you want to know the mean life. Optional
+        input.
+    print_results : bool, optional
+        True/False. Default is True. Prints the results to the console.
+    show_probability_plot : bool, object, optional
+        True/False. Default is True. Provides a probability plot of the fitted
+        ALT model. If an axes object is passed it will be used.
+    show_life_stress_plot : bool, object, optional
+        True/False. Default is True. Provides a life stress plot of the fitted
+        ALT model. If an axes object is passed it will be used.
+    CI : float, optional
+        Confidence interval for estimating confidence limits on parameters. Must
+        be between 0 and 1. Default is 0.95 for 95% CI.
+    optimizer : str, optional
+        The optimization algorithm used to find the solution. Must be either
+        'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'. Specifying the optimizer
+        will result in that optimizer being used. To use all of these specify
+        'best' and the best result will be returned. The default behaviour is to
+        try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and
+        'powell') and stop once one of the optimizers finds a solution. If the
+        optimizer fails, the initial guess will be returned.
+        For more detail see the
+        `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
 
-    Outputs:
-    a - fitted parameter from the Power_Exponential model
-    c - fitted parameter from the Power_Exponential model
-    n - fitted parameter from the Power_Exponential model
-    loglik2 - Log Likelihood*-2 (as used in JMP Pro)
-    loglik - Log Likelihood (as used in Minitab and Reliasoft)
-    AICc - Akaike Information Criterion
-    BIC - Bayesian Information Criterion
-    a_SE - the standard error (sqrt(variance)) of the parameter
-    c_SE - the standard error (sqrt(variance)) of the parameter
-    n_SE - the standard error (sqrt(variance)) of the parameter
-    a_upper - the upper CI estimate of the parameter
-    a_lower - the lower CI estimate of the parameter
-    c_upper - the upper CI estimate of the parameter
-    c_lower - the lower CI estimate of the parameter
-    n_upper - the upper CI estimate of the parameter
-    n_lower - the lower CI estimate of the parameter
-    results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
-    goodness_of_fit - a dataframe of the goodness of fit criterion (Log-likelihood, AICc, BIC).
-    change_of_parameters - a dataframe showing the change of the parameters at each stress level.
-    mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided).
-    Lambda_at_use_stress - the equivalent Exponential Lambda parameter at the use level stress (only provided if use_level_stress is provided).
-    distribution_at_use_stress - the Exponential distribution at the use level stress (only provided if use_level_stress is provided).
-    probability_plot - the axes handles for the figure object from the probability plot (only provided if show_probability_plot is True)
-    life_stress_plot - the axes handles for the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
+    Returns
+    -------
+    a : float
+        The fitted parameter from the Power_Exponential model
+    c : float
+        The fitted parameter from the Power_Exponential model
+    n : float
+        The fitted parameter from the Power_Exponential model
+    loglik2 : float
+        Log Likelihood*-2 (as used in JMP Pro)
+    loglik : float
+        Log Likelihood (as used in Minitab and Reliasoft)
+    AICc : float
+        Akaike Information Criterion
+    BIC : float
+        Bayesian Information Criterion
+    a_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    c_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    n_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    a_upper : float
+        The upper CI estimate of the parameter
+    a_lower : float
+        The lower CI estimate of the parameter
+    c_upper : float
+        The upper CI estimate of the parameter
+    c_lower : float
+        The lower CI estimate of the parameter
+    n_upper : float
+        The upper CI estimate of the parameter
+    n_lower : float
+        The lower CI estimate of the parameter
+    results : dataframe
+        A dataframe of the results (point estimate, standard error, Lower CI and
+        Upper CI for each parameter)
+    goodness_of_fit : dataframe
+        A dataframe of the goodness of fit criterion (Log-likelihood, AICc, BIC)
+    change_of_parameters : dataframe
+        A dataframe showing the change of the parameters (equivalent Weibull
+        alpha and beta) at each stress level.
+    mean_life : float
+        The mean life at the use_level_stress (only provided if use_level_stress
+        is provided).
+    Lambda_at_use_stress : float
+        The equivalent Exponential Lambda parameter at the use level stress
+        (only provided if use_level_stress is provided).
+    distribution_at_use_stress : object
+        The Exponential distribution at the use level stress (only provided if
+        use_level_stress is provided).
+    probability_plot : object
+        The figure object from the probability plot (only provided if
+        show_probability_plot is True).
+    life_stress_plot : object
+        The figure object from the life-stress plot (only provided if
+        show_life_stress_plot is True).
     """
 
     def __init__(
@@ -12264,55 +13694,122 @@ class Fit_Exponential_Power_Exponential:
 
 class Fit_Exponential_Dual_Power:
     """
-    Fit_Exponential_Dual_Power
+    This function will Fit the Exponential_Dual_Power life-stress model to the
+    data provided. Please see the online documentation for the equations of
+    this model.
 
-    This function will Fit the Exponential_Dual_Power life-stress model to the data provided. Please see the online documentation for the equations of this model.
-    This model is most appropriate to model a life-stress relationship with two non-thermal stresses such as voltage and load.
+    This model is most appropriate to model a life-stress relationship with
+    two non-thermal stresses such as voltage and load.
 
-    Inputs:
-    failures - an array or list of the failure times.
-    failure_stress_1 - an array or list of the corresponding stress 1 (such as voltage) at which each failure occurred. This must match the length of failures as each failure is tied to a failure stress.
-    failure_stress_2 - an array or list of the corresponding stress 2 (such as load) at which each failure occurred. This must match the length of failures as each failure is tied to a failure stress.
-    right_censored - an array or list of all the right censored failure times
-    right_censored_stress_1 - an array or list of the corresponding stress 1 (such as voltage) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
-    right_censored_stress_2 - an array or list of the corresponding stress 1 (such as load) at which each right_censored data point was obtained. This must match the length of right_censored as each right_censored value is tied to a right_censored stress.
-    use_level_stress - [stress_1, stress_2]. A two element list or array of the use level stresses at which you want to know the mean life. Optional input.
-    print_results - True/False. Default is True
-    show_probability_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
-    show_life_stress_plot - True/False/axes. Default is True. If an axes object is passed it will be used.
-    CI - confidence interval for estimating confidence limits on parameters. Must be between 0 and 1. Default is 0.95 for 95% CI.
-    optimizer - The optimization algorithm used to find the solution. Must be either 'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'.
-        Specifying the optimizer will result in that optimizer being used.
-        To use all of these specify 'best' and the best result will be returned.
-        The default behaviour is to try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and 'powell') and stop once one of the optimizers finds a solution.
-        If the optimizer fails, the initial guess will be returned.
-        For more detail see the `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
+    Parameters
+    ----------
+    failures : array, list
+        The failure data.
+    failure_stress_1 : array, list
+        The corresponding stress 1 (such as voltage) at which each failure
+        occurred. This must match the length of failures as each failure is tied
+        to a failure stress.
+    failure_stress_2 : array, list
+        The corresponding stress 2 (such as load) at which each failure
+        occurred. This must match the length of failures as each failure is tied
+        to a failure stress.
+    right_censored : array, list, optional
+        The right censored failure times. Optional input.
+    right_censored_stress_1 : array, list, optional
+        The corresponding stress 1 (such as voltage) at which each
+        right_censored data point was obtained. This must match the length of
+        right_censored as each right_censored value is tied to a right_censored
+        stress. Conditionally optional input. This must be provided if
+        right_censored is provided.
+    right_censored_stress_2 : array, list, optional
+        The corresponding stress 1 (such as load) at which each
+        right_censored data point was obtained. This must match the length of
+        right_censored as each right_censored value is tied to a right_censored
+        stress. Conditionally optional input. This must be provided if
+        right_censored is provided.
+    use_level_stress : array, list optional
+        A two element list or array of the use level stresses in the form
+        [stress_1, stress_2] at which you want to know the mean life. Optional
+        input.
+    print_results : bool, optional
+        True/False. Default is True. Prints the results to the console.
+    show_probability_plot : bool, object, optional
+        True/False. Default is True. Provides a probability plot of the fitted
+        ALT model. If an axes object is passed it will be used.
+    show_life_stress_plot : bool, object, optional
+        True/False. Default is True. Provides a life stress plot of the fitted
+        ALT model. If an axes object is passed it will be used.
+    CI : float, optional
+        Confidence interval for estimating confidence limits on parameters. Must
+        be between 0 and 1. Default is 0.95 for 95% CI.
+    optimizer : str, optional
+        The optimization algorithm used to find the solution. Must be either
+        'TNC', 'L-BFGS-B', 'nelder-mead', or 'powell'. Specifying the optimizer
+        will result in that optimizer being used. To use all of these specify
+        'best' and the best result will be returned. The default behaviour is to
+        try each optimizer in order ('TNC', 'L-BFGS-B', 'nelder-mead', and
+        'powell') and stop once one of the optimizers finds a solution. If the
+        optimizer fails, the initial guess will be returned.
+        For more detail see the
+        `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
 
-    Outputs:
-    c - fitted parameter from the Dual_Power model
-    m - fitted parameter from the Dual_Power model
-    n - fitted parameter from the Dual_Power model
-    loglik2 - Log Likelihood*-2 (as used in JMP Pro)
-    loglik - Log Likelihood (as used in Minitab and Reliasoft)
-    AICc - Akaike Information Criterion
-    BIC - Bayesian Information Criterion
-    c_SE - the standard error (sqrt(variance)) of the parameter
-    m_SE - the standard error (sqrt(variance)) of the parameter
-    n_SE - the standard error (sqrt(variance)) of the parameter
-    c_upper - the upper CI estimate of the parameter
-    c_lower - the lower CI estimate of the parameter
-    m_upper - the upper CI estimate of the parameter
-    m_lower - the lower CI estimate of the parameter
-    n_upper - the upper CI estimate of the parameter
-    n_lower - the lower CI estimate of the parameter
-    results - a dataframe of the results (point estimate, standard error, Lower CI and Upper CI for each parameter)
-    goodness_of_fit - a dataframe of the goodness of fit criterion (Log-likelihood, AICc, BIC)
-    change_of_parameters - a dataframe showing the change of the parameters at each stress level
-    mean_life - the mean life at the use_level_stress (only provided if use_level_stress is provided)
-    Lambda_at_use_stress - the equivalent Exponential Lambda parameter at the use level stress (only provided if use_level_stress is provided)
-    distribution_at_use_stress - the Exponential distribution at the use level stress (only provided if use_level_stress is provided)
-    probability_plot - the axes handles for the figure object from the probability plot (only provided if show_probability_plot is True)
-    life_stress_plot - the axes handles for the figure object from the life-stress plot (only provided if show_life_stress_plot is True)
+    Returns
+    -------
+    c : float
+        The fitted parameter from the Dual_Power model
+    n : float
+        The fitted parameter from the Dual_Power model
+    m : float
+        The fitted parameter from the Dual_Power model
+    loglik2 : float
+        Log Likelihood*-2 (as used in JMP Pro)
+    loglik : float
+        Log Likelihood (as used in Minitab and Reliasoft)
+    AICc : float
+        Akaike Information Criterion
+    BIC : float
+        Bayesian Information Criterion
+    c_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    n_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    m_SE : float
+        The standard error (sqrt(variance)) of the parameter
+    c_upper : float
+        The upper CI estimate of the parameter
+    c_lower : float
+        The lower CI estimate of the parameter
+    n_upper : float
+        The upper CI estimate of the parameter
+    n_lower : float
+        The lower CI estimate of the parameter
+    m_upper : float
+        The upper CI estimate of the parameter
+    m_lower : float
+        The lower CI estimate of the parameter
+    results : dataframe
+        A dataframe of the results (point estimate, standard error, Lower CI and
+        Upper CI for each parameter)
+    goodness_of_fit : dataframe
+        A dataframe of the goodness of fit criterion (Log-likelihood, AICc, BIC)
+    change_of_parameters : dataframe
+        A dataframe showing the change of the parameters (equivalent Weibull
+        alpha and beta) at each stress level.
+    mean_life : float
+        The mean life at the use_level_stress (only provided if use_level_stress
+        is provided).
+    Lambda_at_use_stress : float
+        The equivalent Exponential Lambda parameter at the use level stress
+        (only provided if use_level_stress is provided).
+    distribution_at_use_stress : object
+        The Exponential distribution at the use level stress (only provided if
+        use_level_stress is provided).
+    probability_plot : object
+        The figure object from the probability plot (only provided if
+        show_probability_plot is True).
+    life_stress_plot : object
+        The figure object from the life-stress plot (only provided if
+        show_life_stress_plot is True).
     """
 
     def __init__(

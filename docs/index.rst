@@ -26,7 +26,6 @@ Contents:
   :caption: Parametric Models
 
   Equations of supported distributions
-  What is censored data
   Creating and plotting distributions
   Fitting a specific distribution to data
   Fitting all available distributions to data
@@ -116,6 +115,16 @@ Contents:
   Crosshairs
   Distribution explorer
   Histogram
+
+.. toctree::
+  :maxdepth: 1
+  :caption: Reliability Theory
+
+  What is censored data
+  How are the plotting positions calculated
+  How does Least Squares Estimation work
+  How does Maximum Likelihood Estimation work
+  How are the confidence intervals calculated
 
 .. toctree::
   :maxdepth: 1

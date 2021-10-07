@@ -5,7 +5,8 @@
 Optimizers
 ''''''''''
 
-**What is an optimizer?**
+What is an optimizer?
+"""""""""""""""""""""
 
 An optimizer is an algorithm that uses two primary inputs; a target function and an initial guess. The optimizer's job is to figure out which input to the target function will minimise the output of the target function.
 
@@ -40,13 +41,15 @@ The optimizer that was used is always reported by each of the functions in `Fitt
                 BIC           19.3294
                  AD           3.72489 
 
-**Why do we need different optimizers?**
+Why do we need different optimizers?
+""""""""""""""""""""""""""""""""""""
 
 Each optimizer has various strengths and weaknesses because they work in different ways. Often they will arrive at the same result. Sometimes they will arrive at different results, either because of the very shallow gradient near the minimum, or the non-global minimum they have found. Sometimes they will fail entirely.
 
 There is no single best optimizer for fitting probability distributions so a few options are provided as described below.
 
-**Which optimizer should I pick?**
+Which optimizer should I pick?
+""""""""""""""""""""""""""""""
 
 You don't really need to worry about picking an optimizer as the default choice is usually sufficient. If you do want to select your optimizer, you have four to choose from. Most importantly, you should be aware of what the optimizer is doing (minimizing the negative log-likelihood equation by varying the parameters) and understand that optimizers aren't all the same which can cause different results. If you really need to know the best optimizer then select "best", otherwise you can just leave the default as None. 
 

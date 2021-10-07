@@ -3674,9 +3674,14 @@ def linear_regression(
         raise ValueError(err_str)
 
     if RRX_or_RRY == "RRY":
-        solution = (
-            np.linalg.inv(xx.T.dot(xx)).dot(xx.T).dot(yy)
-        )  # linear regression formula for RRY
+        try:
+            solution = (
+                np.linalg.inv(xx.T.dot(xx)).dot(xx.T).dot(yy)
+            )  # linear regression formula for RRY
+        except LinAlgError:
+            raise RuntimeError(
+                "An error has occurred when attempting to find the initial guess using least squares estimation.\nThis error is caused by a non-invertable matrix.\nThis can occur when there are only two very similar failure times like 10 and 10.000001.\nThere is no solution to this error, other than to use failure times that are more unique."
+            )
         if y_intercept is not None:
             m = solution[0]
             c = y_intercept
@@ -3687,9 +3692,14 @@ def linear_regression(
             m = solution[0]
             c = solution[1]
     else:  # RRX
-        solution = (
-            np.linalg.inv(yy.T.dot(yy)).dot(yy.T).dot(xx)
-        )  # linear regression formula for RRX
+        try:
+            solution = (
+                np.linalg.inv(yy.T.dot(yy)).dot(yy.T).dot(xx)
+            )  # linear regression formula for RRX
+        except LinAlgError:
+            raise RuntimeError(
+                "An error has occurred when attempting to find the initial guess using least squares estimation.\nThis error is caused by a non-invertable matrix.\nThis can occur when there are only two very similar failure times like 10 and 10.000001.\nThere is no solution to this error, other than to use failure times that are more unique."
+            )
         if x_intercept is not None:
             m_x = solution[0]
             m = 1 / m_x
