@@ -5,6 +5,26 @@
 Changelog
 ---------
 
+**Version: 0.8.0 --- Currently Unreleased --- Scheduled for release around Dec 2021**
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+**Summary of changes**
+
+
+**New features**
+
+
+**API Changes**
+
+
+**Bug Fixes**
+
+
+**Other**
+
+-    Added a section with theory documents to explain how some important algorithms work
+
+
 **Version: 0.7.0 --- Released: 8 Oct 2021**
 '''''''''''''''''''''''''''''''''''''''''''
 
