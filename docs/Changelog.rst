@@ -35,7 +35,7 @@ Version 0.7.0 has a few really useful enhancements. The first of these is the ad
 **Other**
 
 -    Changed the method used by curve_fit within least_squares. Previously was 'dogleg' which was very slow. Changed to 'trf'. This significantly speeds up the location shifted distributions (Weibull_3P, etc.)
--    Changed the group splitting algorithm used in Fit_Weibull_Mixture and Fit_Weibull_CR. The new method is more robust and provides better a better initial guess of the parameters for MLE.
+-    Changed the group splitting algorithm used in Fit_Weibull_Mixture and Fit_Weibull_CR. The new method is more robust and provides a better initial guess of the parameters for MLE.
 -    Completed the reformatting of the API docs for all the ALT_Fitters. Still need to do this for the Convert_data, Datasets, PoF, Utils modules. Reformatted API docs for these remaining modules will be part of a future release.
 
 **Version: 0.6.0 --- Released: 23 July 2021**
