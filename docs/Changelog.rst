@@ -22,7 +22,7 @@ Changelog
 
 **Other**
 
--    Added a section with theory documents to explain how some important algorithms work
+-    Added a documentation section which explains how some important algorithms work
 
 
 **Version: 0.7.0 --- Released: 8 Oct 2021**

@@ -46,7 +46,7 @@ The rank adjustment algorithm for right censored data is as follows:
 1. sort the data in ascending order
 2. create a column (i) for the rank from 1 to n.
 3. create a column (m) of the reverse rank from n to 1.
-4. calculate the adjusted rank as :math:`j = j_{i-1}+\frac{n+1-j_{i-1}}{1+m}`. If the first item is a failure, then the adjusted rank of the first failure is j = 1. If the first item is not a failure, the the adjusted rank of the first failure is :math:`j=\frac{{\rm number of leading censored values}}{n - 1}`. Leave the rows with censored items blank.
+4. calculate the adjusted rank as :math:`j = j_{i-1}+\frac{n+1-j_{i-1}}{1+m}`. If the first item is a failure, then the adjusted rank of the first failure is j = 1. If the first item is not a failure, the the adjusted rank of the first failure is :math:`j=\frac{\textrm{number of leading censored values}}{n - 1}`. Leave the rows with censored items blank.
 5. estimate the CDF using :math:`\frac{j-a}{n+1-2a}`.
 
 Let's do an example using the dataset x = [150, 340+, 560, 800, 1130+, 1720, 2470+, 4210+, 5230, 6890]. In this dataset the values with + are right censored.
@@ -160,3 +160,4 @@ The Weibull distribution used to generate the data is also overlayed for compari
 
 .. image:: images/plotting_positions_5.png
 
+If you find any errors, think this needs to be explained better, or have any suggestions for improvements, please `email me <mailto:alpha.reliability@gmail.com>`_.
