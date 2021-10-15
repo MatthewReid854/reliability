@@ -34,7 +34,7 @@ The least squares algorithm is as follows:
 4. Convert the parameters of the fitted line to the parameters of the probability distribution using the inverse transform for the CDF (the reverse of step 2).
 
 This algorithm is best explained with an example. For this example we will use least squares estimation to fit a Weibull Distribution to the following dataset x = [25, 43, 53, 65, 76, 86, 95, 115, 132, 150].
-We firstly need the plotting positions. In Python this is done as:
+We firstly need the `plotting positions <https://reliability.readthedocs.io/en/latest/How%20are%20the%20plotting%20positions%20calculated.html>`_. In Python this is done as:
 
 .. code:: python
     
@@ -49,32 +49,32 @@ We firstly need the plotting positions. In Python this is done as:
     F = [0.06730769 0.16346154 0.25961538 0.35576923 0.45192308 0.54807692 0.64423077 0.74038462 0.83653846 0.93269231]
     '''
 
-We now need to find the transforms required to linearize the CDF.
+We now need to find the transforms required to linearize the Weibull CDF (to get it in the form :math:`y = m.x+c`).
 
 :math:`F=1-exp\left(-\left(\frac{t}{\alpha}\right)^\beta\right)`
 
 :math:`-ln(1-F)=\left(\frac{t}{\alpha}\right)^\beta`
 
-:math:`ln(-ln(1-F))=\beta.ln(t)-\beta.ln(\alpha)`
+:math:`\underbrace{ln(-ln(1-F))}_{\text{y}}=\underbrace{\beta}_{\text{m}}.\underbrace{ln(t)}_{\text{x}}\underbrace{-\beta.ln(\alpha)}_{\text{c}}`
 
-The above equation takes the form :math:`y = m.x+c`. So the transforms for x and y are:
+So the forward transforms for x and y are:
 
 :math:`x = ln(t)`
 
 :math:`y = ln(-ln(1-F))`
 
-Once we fit the straight line to the transformed data, we will need the reverse transforms:
+Once we fit the straight line to the transformed data, we will need the reverse transforms to obtain :math:`\alpha` and :math:`\beta` which are:
 
 :math:`\beta = m`
 
 :math:`c = -\beta.ln(\alpha)` which becomes :math:`\alpha=exp\left(-\frac{c}{\beta}\right)`
 
 The table below shows the transformed data (from t and F into x and y) and a plot in Excel with the line of best fit.
-It also shows alpha and beta which are obtained using the reverse transforms described above.
+It also shows :math:`\alpha` and :math:`\beta` which are obtained using the reverse transforms described above.
 
 .. image:: images/least_squares_1.PNG
 
-Here's how to do the same thing in Python, using numpy.polyfit for the line of best fit.
+Here's how to do the same thing in Python, using `numpy.polyfit <https://numpy.org/doc/stable/reference/generated/numpy.polyfit.html>`_ for the line of best fit.
 
 .. code:: python
 
@@ -130,7 +130,7 @@ Let's plot the Weibull Distribution that we have fitted alongside the data.
 
 If you have right censored data, the only thing that will change will be the plotting positions.
 If you use different software to find the parameters of the line of best fit, the results may differ slightly.
-This is because finding the line of best fit involves an optimizer and different optimizers work differently.
+This is because there are several different algorithms to find the line of best fit, some of which use an optimizer and some of which do not.
 The RRX and RRY difference (discussed below) will also cause discrepancies in the results if each of the software packages you are using do not use the same approach.
 
 RRX and RRY
@@ -142,7 +142,7 @@ We can minimize the sum of the squared errors on X or we can minimize the sum of
 
 .. image:: images/least_squares_3.png
 
-You might think that it doesn't matter, but these two methods can give very different results, particularly if there is a small dataset.
+These two methods can give very different results, particularly if there is a small dataset.
 Most software (including MINITAB, Excel and numpy) use RRY. Reliasoft's Weibull++ gives the options for RRX or RRY, as does `reliability` in all of the fitters.
 
 To illustrate the difference between RRX and RRY we can use one of the functions inside reliability.Utils which accepts RRX_or_RRY as an argument.
@@ -156,8 +156,8 @@ To illustrate the difference between RRX and RRY we can use one of the functions
     data = [10,12,60,80,85]
     t,F = plotting_positions(failures=data)
     
-    RRX_m, RRX_c = linear_regression(x=t,y=F,RRX_or_RRY="RRX",show_plot=True,label='RRX')
-    RRY_m, RRY_c = linear_regression(x=t,y=F,RRX_or_RRY="RRY",show_plot=True,label='RRY')
+    linear_regression(x=t,y=F,RRX_or_RRY="RRX",show_plot=True,label='RRX')
+    linear_regression(x=t,y=F,RRX_or_RRY="RRY",show_plot=True,label='RRY')
     plt.legend()
     plt.title('Comparison of the lines produced by RRX and RRY')
     plt.show()
@@ -167,7 +167,7 @@ To illustrate the difference between RRX and RRY we can use one of the functions
 Non-linear least squares
 """"""""""""""""""""""""
 
-In the first example above, the CDF of the Weibull Distribution was able to be linearized without too much trouble into the form y=m.x+c.
+In the first example above, the CDF of the Weibull Distribution was able to be linearized without too much trouble into the form :math:`y=m.x+c`.
 Some distributions cannot be linearized. These include 3 parameter distributions (such as Weibull_3P) and distributions involving special functions (such as the Gamma and Beta Distributions).
 I encourage you to try this yourself using the equations for the CDF available `here <https://reliability.readthedocs.io/en/latest/Equations%20of%20supported%20distributions.html>`_.
 The Normal (and Lognormal) distributions can be linearized quite easily because there is an algorithm to compute the Normal CDF :math:`(\Phi)` as well as its inverse :math:`(\Phi^{-1})`.
