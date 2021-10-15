@@ -46,8 +46,8 @@ The rank adjustment algorithm for right censored data is as follows:
 1. sort the data in ascending order
 2. create a column (i) for the rank from 1 to n.
 3. create a column (m) of the reverse rank from n to 1.
-4. calculate the adjusted rank as :math:`j = j_{i-1}+\frac{n+1-j_{i-1}}{1+m}`. If the first item is a failure, then the adjusted rank of the first failure is j = 1. If the first item is not a failure, the the adjusted rank of the first failure is :math:`j=\frac{\textrm{number of leading censored values}}{n - 1}`. Leave the rows with censored items blank.
-5. estimate the CDF using :math:`\frac{j-a}{n+1-2a}`.
+4. calculate the adjusted rank as :math:`j_i = j_{i-1}+\frac{n+1-j_{i-1}}{1+m}`. If the first item is a failure, then the adjusted rank of the first failure is j_1 = 1. If the first item is not a failure, the the adjusted rank of the first failure is :math:`j_1=\frac{\textrm{number of leading censored values}}{n - 1}`. Leave the rows with censored items blank.
+5. estimate the CDF using :math:`y=\frac{j-a}{n+1-2a}`.
 
 Let's do an example using the dataset x = [150, 340+, 560, 800, 1130+, 1720, 2470+, 4210+, 5230, 6890]. In this dataset the values with + are right censored.
 
@@ -86,29 +86,29 @@ Some of these are better than others, but the most popular is a = 0.3 (Benard's 
 
 Published literature has been produced on the following Heuristics:
 
-+-------------------------------+------------+
-| Method                        | a          |
-+===============================+============+
-| Blom                          | 0.375      |
-+-------------------------------+------------+
-| Benard (Median)               | 0.3        |
-+-------------------------------+------------+
-| Hazen (Modified Kaplan Meier) | 0.5        |
-+-------------------------------+------------+
-| Herd-Johnson (Mean)           | 0          |
-+-------------------------------+------------+
-| Modal                         | 1          |
-+-------------------------------+------------+
-| Beard	                        | 0.31       |
-+-------------------------------+------------+
-| Gringorten	                | 0.44       |
-+-------------------------------+------------+
-| Larsen	                | 0.567      |
-+-------------------------------+------------+
-| One-Third                     | 1/3        |
-+-------------------------------+------------+
-| Cunane	                | 0.4        |
-+-------------------------------+------------+
++-------------------------------+---------------+
+| Method                        | Heuristic (a) |
++===============================+===============+
+| Blom                          | 0.375         |
++-------------------------------+---------------+
+| Benard (Median)               | 0.3           |
++-------------------------------+---------------+
+| Hazen (Modified Kaplan Meier) | 0.5           |
++-------------------------------+---------------+
+| Herd-Johnson (Mean)           | 0             |
++-------------------------------+---------------+
+| Modal                         | 1             |
++-------------------------------+---------------+
+| Beard	                        | 0.31          |
++-------------------------------+---------------+
+| Gringorten	                | 0.44          |
++-------------------------------+---------------+
+| Larsen	                | 0.567         |
++-------------------------------+---------------+
+| One-Third                     | 1/3           |
++-------------------------------+---------------+
+| Cunane	                | 0.4           |
++-------------------------------+---------------+
 
 There is another modification to the :math:`y=\frac{i-a}{n+1-2a}` formula to make it :math:`y=\frac{i-a}{n+b}` which allows "b" to be independent of "a".
 The Kaplan Meier method uses this formula with a=0 and b=0 (making it :math:`y=\frac{i}{n}`).
@@ -160,4 +160,4 @@ The Weibull distribution used to generate the data is also overlayed for compari
 
 .. image:: images/plotting_positions_5.png
 
-If you find any errors, think this needs to be explained better, or have any suggestions for improvements, please `email me <mailto:alpha.reliability@gmail.com>`_.
+If you find any errors, think this needs to be explained better, or have any suggestions for improvements, please email me (alpha.reliability@gmail.com).

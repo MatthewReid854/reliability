@@ -59,9 +59,9 @@ We now need to find the transforms required to linearize the CDF.
 
 The above equation takes the form :math:`y = m.x+c`. So the transforms for x and y are:
 
-:math:`y = ln(-ln(1-F))`
-
 :math:`x = ln(t)`
+
+:math:`y = ln(-ln(1-F))`
 
 Once we fit the straight line to the transformed data, we will need the reverse transforms:
 
@@ -69,11 +69,12 @@ Once we fit the straight line to the transformed data, we will need the reverse 
 
 :math:`c = -\beta.ln(\alpha)` which becomes :math:`\alpha=exp\left(-\frac{c}{\beta}\right)`
 
-The table below shows the transformed data (from t and F into x and y) and a plot in Excel with the line of best fit. It also shows alpha and beta which are obtained using the reverse transforms describes above.
+The table below shows the transformed data (from t and F into x and y) and a plot in Excel with the line of best fit.
+It also shows alpha and beta which are obtained using the reverse transforms described above.
 
 .. image:: images/least_squares_1.PNG
 
-Here's how to do the same thing in Python, using numpy for the line of best fit.
+Here's how to do the same thing in Python, using numpy.polyfit for the line of best fit.
 
 .. code:: python
 
@@ -163,36 +164,13 @@ To illustrate the difference between RRX and RRY we can use one of the functions
 
 .. image:: images/least_squares_4.png
 
-Is MLE better than Least Squares
-""""""""""""""""""""""""""""""""
-
-The short answer is yes, though the slightly longer answer is that it depends and a few things.
-Least squares is computationally easier so it was invented first and remains popular today as it is easier for students to learn.
-Least squares can yield more accurate results than MLE is some special cases, though these cases are rare.
-If in doubt, and you're in posession of a computer with the right software, then MLE is the way to go.
-MLE is the default method for most reliability engineering software including Weibull++, MINITAB, `reliability`, and many others.
-
-The best way to check whether MLE or Least squares is more accurate is through a Monte-Carlo simulation.
-In the following code, we will draw some random parameters (alpha and beta) to create a Weibull Distribution (the TRUE distribution).
-We will then draw some random data from the TRUE distribution.
-Then we will fit a distribution to the random data using MLE and LS.
-The percentage error in the parameters is computed and plotted.
-This is done in 4 cases, for small dataset no censoring, large dataset no censoring, small dataset heavy censoring, large dataset heavy censoring.
-
-Code goes here. It will be written soon
-
-.. image:: images/least_squares_5.png
-
-From the above plots we can see _________.
-It is noted that the results may differ if we chose another distribution, different ranges for the parameters, or different numbers of samples.
-
 Non-linear least squares
 """"""""""""""""""""""""
 
 In the first example above, the CDF of the Weibull Distribution was able to be linearized without too much trouble into the form y=m.x+c.
 Some distributions cannot be linearized. These include 3 parameter distributions (such as Weibull_3P) and distributions involving special functions (such as the Gamma and Beta Distributions).
 I encourage you to try this yourself using the equations for the CDF available `here <https://reliability.readthedocs.io/en/latest/Equations%20of%20supported%20distributions.html>`_.
-The Normal (and Lognormal) distributions can be linearized quite easily because there is an algorithm to compute the Normal CDF :math:`(\Phi)` as well as its inverse :math:`(\Phi^-1)`.
+The Normal (and Lognormal) distributions can be linearized quite easily because there is an algorithm to compute the Normal CDF :math:`(\Phi)` as well as its inverse :math:`(\Phi^{-1})`.
 
 When the equation of the CDF cannot be linearized, we can use non-linear least squares (NLLS).
 The NLLS algorithm still seeks to minimize the sum of the square errors (usually the errors on Y), but it does not use the linear regression formula and can therefore work on any function.
@@ -202,4 +180,114 @@ There is no forward and reverse transform required, just the appropriate setup o
 The hardest part (and one possible source of failure) is obtaining a reasonable initial guess for the optimizer to begin.
 There are several different ways in which `relibility` obtains an initial guess, depending on the function being fitted.
 
-If you find any errors, think this needs to be explained better, or have any suggestions for improvements, please `email me <mailto:alpha.reliability@gmail.com>`_.
+Is MLE better than Least Squares
+""""""""""""""""""""""""""""""""
+
+Sometimes yes, but sometimes no. It really depends on the distribution, the amount of data, and the amount of censoring.
+Least squares is computationally easier so it was invented first and remains popular today as it is easier for students to learn and can be faster for computers if doing a lot of calculations.
+MLE is the default method for most reliability engineering software including Weibull++, MINITAB, `reliability`, and many others.
+For most cases, MLE is generally regarded as more accurate.
+
+The best way to check whether MLE or Least squares is more accurate is through a Monte-Carlo simulation.
+In the following code, we will draw some random parameters (alpha and beta) to create a Weibull Distribution.
+In this simulation alpha is between 1 and 1000, while beta is between 0.5 and 10.
+We will then draw some random data from the Weibull distribution. This is done 3 times (10 samples, 100 samples, 1000 samples).
+We will right censor a fraction of the data (from 0 (no censoring) to 0.9 (90% censored)).
+Then we will fit a distribution to the random data using MLE and LS.
+The percentage error in the parameters (alpha and beta) is calculated and plotted.
+The following code performs this simulation 1000 times for each fraction censored.
+The code took about 45 minutes to run as it is fitting around 60K distributions (1000 trials x 10 fraction censored increments x 2 methods (MLE and LS) x 3 groups of samples).
+
+.. code:: python
+
+    import numpy as np
+    from reliability.Distributions import Weibull_Distribution
+    from reliability.Fitters import Fit_Weibull_2P
+    from tqdm import tqdm
+    from reliability.Other_functions import make_right_censored_data
+    import matplotlib.pyplot as plt
+    from matplotlib.ticker import ScalarFormatter
+    
+    def MLE_or_LS(trials,number_of_samples):
+    
+        fraction_censored = [0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9]
+    
+        MLE_alpha_error_mean_array = []
+        MLE_beta_error_mean_array = []
+        LS_alpha_error_mean_array = []
+        LS_beta_error_mean_array = []
+    
+        for frac in tqdm(fraction_censored):
+    
+            MLE_alpha_error_array = []
+            MLE_beta_error_array = []
+            LS_alpha_error_array = []
+            LS_beta_error_array = []
+            for trial in range(trials):
+                alpha = (np.random.randint(1,1000,1)+np.random.rand())[0] # alpha between 1 and 1000
+                beta = (np.random.randint(50,900,1)/100+np.random.rand())[0] # beta between 0.5 and 10
+                true_dist = Weibull_Distribution(alpha=alpha,beta=beta)
+                raw_samples = true_dist.random_samples(number_of_samples=number_of_samples)
+                samples = make_right_censored_data(data=raw_samples,fraction_censored=frac)
+    
+                if len(np.unique(samples.failures))>1:
+                    MLE = Fit_Weibull_2P(failures=samples.failures,right_censored=samples.right_censored,show_probability_plot=False,print_results=False,method='MLE')
+                    MLE_alpha = MLE.distribution.alpha
+                    MLE_beta = MLE.distribution.beta
+                    MLE_alpha_error_array.append(abs(alpha-MLE_alpha)/alpha)
+                    MLE_beta_error_array.append(abs(beta-MLE_beta)/beta)
+    
+                    LS = Fit_Weibull_2P(failures=samples.failures,right_censored=samples.right_censored,show_probability_plot=False,print_results=False,method='LS')
+                    LS_alpha = LS.distribution.alpha
+                    LS_beta = LS.distribution.beta
+                    LS_alpha_error_array.append(abs(alpha-LS_alpha)/alpha)
+                    LS_beta_error_array.append(abs(beta-LS_beta)/beta)
+    
+            MLE_alpha_error_mean_array.append(np.average(MLE_alpha_error_array))
+            MLE_beta_error_mean_array.append(np.average(MLE_beta_error_array))
+            LS_alpha_error_mean_array.append(np.average(LS_alpha_error_array))
+            LS_beta_error_mean_array.append(np.average(LS_beta_error_array))
+    
+    
+        plt.plot(fraction_censored,MLE_alpha_error_mean_array,label='MLE alpha',color='steelblue')
+        plt.plot(fraction_censored,MLE_beta_error_mean_array,label='MLE beta',color='darkorange')
+        plt.plot(fraction_censored,LS_alpha_error_mean_array,label='LS alpha',color='steelblue',linestyle='--')
+        plt.plot(fraction_censored,LS_beta_error_mean_array,label='LS beta',color='darkorange',linestyle='--')
+        plt.yscale('log')
+        plt.xlim(0,1)
+        plt.gca().yaxis.set_major_formatter(ScalarFormatter())
+        plt.legend()
+        plt.xlabel('Fraction censored')
+        plt.ylabel('Percentage error')
+    
+    trials = 10
+    plt.figure(figsize=(14,5))
+    plt.subplot(131)
+    MLE_or_LS(trials=trials, number_of_samples=10)
+    plt.title('10 samples')
+    
+    plt.subplot(132)
+    MLE_or_LS(trials=trials, number_of_samples=100)
+    plt.title('100 samples')
+    
+    plt.subplot(133)
+    MLE_or_LS(trials=trials, number_of_samples=1000)
+    plt.title('1000 samples')
+    plt.suptitle('Comparison of MLE and Least Squares based on number of samples and amount of censoring')
+    plt.tight_layout()
+    plt.show()
+
+.. image:: images/least_squares_5.png
+
+The y-axis is a log plot of the percentage error, so where you see 1 that means it is 100% in error (eg. correct value of 2, predicted value of 4).
+The fraction censored ranges from 0 to 0.9, except for the 10 sample case as a minimum of 2 samples are needed to fit the distribution making 0.8 the maximum possible fraction censored.
+From the above plots we can see a few things:
+
+- The percentage error in beta is much higher than the percentage error in alpha for smaller sample sizes, but about the same for large sample sizes.
+- Both MLE and LS perform very similarly in terms of their percentage error.
+- Least squares is generally better than MLE for small sample sizes, while MLE is generally better than Least squares for large sample sizes.
+- MLE tends to have more error in the beta parameter than Least squares, and less error in the alpha parameter than least squares. A correction method exists for this, though it is not currently implemented in `reliability`.
+
+The trends we see in the above plot may differ if we chose another distribution, different ranges for the parameters, or different numbers of samples.
+
+If you find any errors, think this needs to be explained better, or have any suggestions for improvements, please email me (alpha.reliability@gmail.com).

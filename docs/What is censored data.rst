@@ -73,4 +73,4 @@ Items may fail by a variety of failure modes. If the failure modes are being ana
 
 If we are studying brake failures in our sample of 5 vehicles, we should use the following failure times: 22000, 28000+, 37000, 45000, 55000+. In this case the failures for vehicles 3 and 4 are treated as right censored data (shown with +) since the failure mode observed did not match the failure mode under analysis.
 
-If you find any errors, think this needs to be explained better, or have any suggestions for improvements, please `email me <mailto:alpha.reliability@gmail.com>`_.
+If you find any errors, think this needs to be explained better, or have any suggestions for improvements, please email me (alpha.reliability@gmail.com).
