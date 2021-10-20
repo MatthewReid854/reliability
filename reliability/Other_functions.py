@@ -863,8 +863,8 @@ class make_right_censored_data:
         threshold). This is known as "singly censored data" as everything is
         censored at a single point. Default is None in which case the
         fraction_censored will be used. See the notes below.
-    fraction_censored : float, optional
-        Must be between 0 and 1. Default = 0.5. Censoring is done randomly. This
+    fraction_censored : int, float, optional
+        Must be >= 0 and < 1. Default = 0.5. Censoring is done randomly. This
         is known as "multiply censored data" as there are multiple times at
         which censoring occurs. See the notes below.
     seed : int, optional
@@ -911,12 +911,12 @@ class make_right_censored_data:
             np.random.shuffle(data)
             # place a limit on the amount of the data that can be censored
             if (
-                fraction_censored <= 0
+                fraction_censored < 0
                 or fraction_censored >= 1
-                or type(fraction_censored) not in [float, np.float_]
+                or type(fraction_censored) not in [int, float, np.float_, np.int_]
             ):
                 raise ValueError(
-                    "fraction_censored must be a float between 0 and 1. The default is 0.5 which will right censor half the data"
+                    "fraction_censored must be >= 0 and < 1. The default is 0.5 which will right censor half the data"
                 )
             number_of_items_to_censor = int(np.floor(len(data) * fraction_censored))
             self.right_censored = data[0:number_of_items_to_censor] * np.random.rand(
@@ -1363,11 +1363,19 @@ class crosshairs:
         if type(dateformat) is str:
             x_string = time.strftime(dateformat, time.gmtime(x * 24 * 3600))
         else:
-            x_string = round(x, decimals)
+            if decimals == 0:
+                x_string = int(x)
+            else:
+                x_string = round_to_decimals(x, decimals)
+
+        if decimals == 0:
+            y_string = int(y)
+        else:
+            y_string = round_to_decimals(y, decimals)
 
         texts = [
             ax.text(
-                s=round(y, decimals),
+                s=y_string,
                 x=0,
                 y=y,
                 transform=ax.get_yaxis_transform(),
@@ -1406,7 +1414,15 @@ class crosshairs:
         if type(dateformat) is str:
             x_string = time.strftime(dateformat, time.gmtime(x * 24 * 3600))
         else:
-            x_string = round(x, decimals)
+            if decimals == 0:
+                x_string = int(x)
+            else:
+                x_string = round_to_decimals(x, decimals)
+
+        if decimals == 0:
+            y_string = int(y)
+        else:
+            y_string = round_to_decimals(y, decimals)
 
         text = str(
             label[0]
@@ -1415,7 +1431,7 @@ class crosshairs:
             + "\n"
             + label[1]
             + " = "
-            + str(round(y, decimals))
+            + str(y_string)
         )
         sel.annotation.set_text(text)
         sel.annotation.get_bbox_patch().set(fc="white")

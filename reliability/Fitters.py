@@ -93,8 +93,9 @@ pd.options.display.width = 200  # prevents wrapping after default 80 characters
 
 class Fit_Everything:
     """
-    This function will fit all available distributions (excluding mixture and
-    competing risks) to the data provided.
+    This function will fit all available distributions to the data provided.
+    The only distributions not fitted are Weibull_DSZI and Weibull_ZI. The
+    Beta_2P distribution will only be fitted if the data are between 0 and 1.
 
     Parameters
     ----------
@@ -121,9 +122,10 @@ class Fit_Everything:
         distribution. True or False. Default = True.
     exclude : list, array, optional
         List or array of strings specifying which distributions to exclude.
-        Default is None. Options are Weibull_2P, Weibull_3P, Normal_2P,
-        Gamma_2P, Loglogistic_2P, Gamma_3P, Lognormal_2P, Lognormal_3P,
-        Loglogistic_3P, Gumbel_2P, Exponential_2P, Exponential_1P, Beta_2P.
+        Default is None. Options are Weibull_2P, Weibull_3P, Weibull_CR,
+        Weibull_Mixture, Weibull_DS, Normal_2P, Gamma_2P, Loglogistic_2P,
+        Gamma_3P, Lognormal_2P, Lognormal_3P, Loglogistic_3P, Gumbel_2P,
+        Exponential_2P, Exponential_1P, Beta_2P.
     print_results : bool, optional
         Will show the results of the fitted parameters and the goodness of fit
         tests in a dataframe. True/False. Defaults to True.
@@ -321,6 +323,7 @@ class Fit_Everything:
             elif item.upper() in ["BETA_2P", "BETA2P", "BETA2"]:
                 excluded_distributions.append("Beta_2P")
             elif item.upper() in [
+                "WEIBULL MIXTURE",
                 "WEIBULLMIXTURE",
                 "WEIBULL_MIXTURE",
                 "MIXTURE",
@@ -330,19 +333,30 @@ class Fit_Everything:
             ]:
                 excluded_distributions.append("Weibull_Mixture")
             elif item.upper() in [
+                "WEIBULL CR",
                 "WEIBULLCR",
                 "WEIBULL_CR",
                 "WEIBULL_COMPETING_RISKS",
                 "WEIBULL_COMPETINGRISKS",
                 "WEIBULLCOMPETINGRISKS",
+                "WEIBULL COMPETING RISKS",
+                "WEIBULL COMPETINGRISKS",
+                "COMPETINGRISKS",
+                "COMPETING RISKS",
+                "CR",
             ]:
                 excluded_distributions.append("Weibull_CR")
             elif item.upper() in [
                 "WEIBULLDS",
                 "WEIBULL_DS",
+                "WEIBULL DS",
                 "WEIBULL_DEFECTIVE_SUBPOPULATION",
                 "WEIBULL_DEFECTIVESUBPOPULATION",
                 "WEIBULLDEFECTIVESUBPOPULATION",
+                "WEIBULL DEFECTIVE SUBPOPULATION",
+                "DEFECTIVE SUBPOPULATION",
+                "DEFECTIVESUBPOPULATION",
+                "DS",
             ]:
                 excluded_distributions.append("Weibull_DS")
             else:
