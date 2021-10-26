@@ -2085,11 +2085,13 @@ def PP_plot_parametric(
     dist_X_CDF = X_dist.CDF(xvals=xvals, show_plot=False)
     dist_Y_CDF = Y_dist.CDF(xvals=xvals, show_plot=False)
 
-    if show_scatter_points is True:
+    if downsample_scatterplot is not False:
         x_scatter, y_scatter = xy_downsample(
             dist_X_CDF, dist_Y_CDF, downsample_factor=downsample_scatterplot
         )
-        plt.scatter(x_scatter, y_scatter, marker=marker, color=color)
+    else:
+        x_scatter, y_scatter = dist_X_CDF, dist_Y_CDF
+    plt.scatter(x_scatter, y_scatter, marker=marker, color=color)
 
     # this creates the labels for the axes using the parameters of the distributions
     X_label_str = str(X_dist.name + " CDF (" + X_dist.param_title + ")")
@@ -2245,11 +2247,13 @@ def QQ_plot_parametric(
     dist_X_ISF = np.array(dist_X_ISF)
     dist_Y_ISF = np.array(dist_Y_ISF)
 
-    if show_scatter_points is True:
+    if downsample_scatterplot is not False:
         x_scatter, y_scatter = xy_downsample(
             dist_X_ISF, dist_Y_ISF, downsample_factor=downsample_scatterplot
         )
-        plt.scatter(x_scatter, y_scatter, marker=marker, color=color)
+    else:
+        x_scatter, y_scatter = dist_X_ISF, dist_Y_ISF
+    plt.scatter(x_scatter, y_scatter, marker=marker, color=color)
 
     # fit lines and generate text for equations to go in legend
     max_value = max(max(dist_X_ISF), max(dist_Y_ISF))
@@ -2461,11 +2465,13 @@ def PP_plot_semiparametric(
 
     CDF = Y_dist.CDF(X_data_failures, show_plot=False)
 
-    if show_scatter_points is True:
+    if downsample_scatterplot is not False:
         x_scatter, y_scatter = xy_downsample(
             ecdf, CDF, downsample_factor=downsample_scatterplot
         )
-        plt.scatter(x_scatter, y_scatter, marker=marker, color=color)
+    else:
+        x_scatter, y_scatter = ecdf, CDF
+    plt.scatter(x_scatter, y_scatter, marker=marker, color=color)
 
     Y_label_str = str(Y_dist.name + " CDF (" + Y_dist.param_title + ")")
     plt.ylabel(Y_label_str)
@@ -2599,6 +2605,7 @@ def QQ_plot_semiparametric(
         marker = kwargs.pop("marker")
     else:
         marker = "."
+
     if method == "KM":
         KM = KaplanMeier(
             failures=X_data_failures,
@@ -2643,14 +2650,15 @@ def QQ_plot_semiparametric(
     for q in ecdf:
         dist_Y_ISF.append(Y_dist.inverse_SF(float(q)))
     dist_Y_ISF = np.array(dist_Y_ISF[::-1])
-
     dist_Y_ISF[dist_Y_ISF == -np.inf] = 0
 
-    if show_scatter_points is True:
+    if downsample_scatterplot is not False:
         x_scatter, y_scatter = xy_downsample(
             X_data_failures, dist_Y_ISF, downsample_factor=downsample_scatterplot
         )
-        plt.scatter(x_scatter, y_scatter, marker=marker, color=color)
+    else:
+        x_scatter, y_scatter = X_data_failures, dist_Y_ISF
+    plt.scatter(x_scatter, y_scatter, marker=marker, color=color)
 
     plt.ylabel(
         str(

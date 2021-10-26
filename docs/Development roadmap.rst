@@ -8,8 +8,12 @@ Development roadmap
 The following development roadmap is the current task list and implementation plan for the Python reliability library.
 I welcome the addition of new suggestions, both large and small, as well as help with writing the code if you feel that you have the ability.
 This roadmap is regularly changing and you may see some things remain on here for a while without progressing, while others may be prioritized at short notice.
-If you have a suggested feature or you find a bug, please raise an `Issue <https://github.com/MatthewReid854/reliability/issues>`_ on Github or email me (alpha.reliability@gmail.com) and I will endeavour to either add it rapidly (for simple tasks and bug fixes) or add it to the roadmap.
-The current release schedule is approximately every 6 to 8 weeks.
+If you have something to add:
+
+- new features - please send me an email (alpha.reliability@gmail.com) or fill out the `feedback form <https://form.jotform.com/203156856636058>`_.
+- bugs - please send me an email (alpha.reliability@gmail.com) or raise an `Issue <https://github.com/MatthewReid854/reliability/issues>`_ on Github.
+
+The current release schedule is approximately every 6 to 8 weeks for minor releases, and rapidly (within the day) for bug fixes.
 
 **Planned for version 0.8.0 (around Dec 2021)**
 

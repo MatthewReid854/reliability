@@ -19,11 +19,25 @@ Changelog
 
 **Bug Fixes**
 
--    Crosshairs returned the labels as a float which resulted in numbers like 10.0 rather than 10 when decimals=0. The labels are now converted to int when decimals=0 so they will indeed return zero decimals when told to.
 
 **Other**
 
--    Added a documentation section (Reliability Theory) which explains how some important algorithms work
+
+**Version: 0.7.1 --- Released 26 Oct 2021**
+'''''''''''''''''''''''''''''''''''''''''''
+
+**Summary of changes**
+
+This is primarily a bugfix release to deal with some minor bugs.
+
+**Bug Fixes**
+
+-    Other_functions.crosshairs returned the labels as a float which resulted in numbers like 10.0 rather than 10 when decimals=0. The labels are now converted to int when decimals=0 so they will indeed return zero decimals when told to.
+-    PP_plot_parametric, PP_plot_semiparametric, QQ_plot_parametric, and QQ_plot_semiparametric all had a bug that would cause complete failure. This bug was caused by incorporating an argument that didn't exist. Further details in `this issue <https://github.com/MatthewReid854/reliability/issues/23>`_.
+
+**Other**
+
+-    Added a documentation section (Reliability Theory) which explains how some important algorithms work.
 -    Made Fit_Everything more tolerant of different names to exclude distributions. For example to exclude the Weibull_CR model, users may type "Weibull_CR", "CR", "Weibull_Competing_Risks", "Competing Risks" and many more variations.
 
 **Version: 0.7.0 --- Released: 8 Oct 2021**
