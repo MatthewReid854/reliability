@@ -309,7 +309,6 @@ class stress_strain_life_parameters_from_data:
     epsilon_f - the fatigue strain coefficient. Not generated if cycles is not provided.
     b - the elastic strain exponent. Not generated if cycles is not provided.
     c - the plastic strain exponent. Not generated if cycles is not provided.
-
     """
 
     def __init__(
@@ -507,7 +506,6 @@ class stress_strain_diagram:
 
     Outputs:
     The stress-strain plot will always be generated. Use plt.show() to show it.
-
     """
 
     def __init__(
@@ -731,7 +729,6 @@ class strain_life_diagram:
     Outputs:
     The strain-life plot will be generated if show_plot = True. Use plt.show() to show it.
     cycles_to_failure - only calculated if max_stress OR max_strain is specified. This will be printed if print_results = True.
-
     """
 
     def __init__(
@@ -1300,6 +1297,7 @@ def palmgren_miner_linear_damage(rated_life, time_at_stress, stress):
 
     palmgren_miner_linear_damage(rated_life=[50000,6500,1000], time_at_stress=[40/60, 15/60, 5/60], stress=[1, 2, 4])
     """
+    
     if len(rated_life) != len(time_at_stress) or len(rated_life) != len(stress):
         raise ValueError("All inputs must be of equal length.")
 
@@ -1364,7 +1362,6 @@ class fracture_mechanics_crack_initiation:
 
     Example usage:
     fracture_mechanics_crack_initiation(P=0.15, A=5*80, Kt=2.41, q=0.9857, Sy=690, E=210000, K=1060, n=0.14, b=-0.081, c=-0.65, sigma_f=1160, epsilon_f=1.1,mean_stress_correction_method='SWT')
-
     """
 
     def __init__(
@@ -1915,7 +1912,7 @@ class fracture_mechanics_crack_growth:
 def creep_rupture_curves(
     temp_array, stress_array, TTF_array, stress_trace=None, temp_trace=None
 ):
-    """
+    '''
     Plots the creep rupture curves for a given set of creep data. Also fits the lines of best fit to each temperature.
     The time to failure for a given temperature can be found by specifying stress_trace and temp_trace.
 
@@ -1935,7 +1932,7 @@ def creep_rupture_curves(
     TTF = [37,975,3581,9878,7,17,213,1493,2491,5108,7390,10447,18,167,615,2220,6637,19,102,125,331,3.7,8.9,31.8]
     creep_rupture_curves(temp_array=TEMP, stress_array=STRESS, TTF_array=TTF, stress_trace=70, temp_trace=1100)
     plt.show()
-    """
+    '''
 
     if (stress_trace is not None and temp_trace is None) or (
         stress_trace is None and temp_trace is not None
@@ -2023,6 +2020,7 @@ def creep_failure_time(temp_low, temp_high, time_low, C=20, print_results=True):
     The time to failure at the higher temperature.
     If print_results is True, the output will also be printed to the console.
     """
+    
     LMP = (temp_low + 459.67) * (
         C + np.log10(time_low)
     )  # larson-miller parameter. 459.67 converts Fahrenheit to Rankine
