@@ -37,50 +37,50 @@ from reliability.Utils import colorprint, write_df_to_xlsx, removeNaNs
 
 
 class xlsx_to_XCN:
-    """
-    Converts data from xlsx format into XCN format. The xlsx format is a
-    Microsoft Excel xlsx file.
-
-    Parameters
-    ----------
-    path : str
-        The filepath for the xlsx file. Note that you must prefix this with r to
-        specify it as raw text.
-    censor_code_in_xlsx : str, int optional
-        The censor code you have used if it does not appear in the defaults. The
-        default censor codes that will be recognised (not case sensitive) are
-        'R', 'RC', 'RIGHT CENS', 'RIGHT CENSORED', 'C', 'CENSORED', 'CENS', 'S',
-        'SUSP', 'SUSPENSION', 'SUSPENDED', 'UF', 'UNFAILED', 'UNFAIL', 'NF',
-        'NO FAIL', 'NO FAILURE', 'NOT FAILED', 1
-    failure_code_in_xlsx : str, int, optional
-        The failure code you have used if it does not appear in the defaults.
-        The default failure codes that will be recognised (not case sensitive)
-         are 'F', 'FAIL', 'FAILED', 'FAILURE', 0
-    censor_code_in_XCN : str, int, optional
-        The censor code to be used in XCN format. Default is 'C'
-    failure_code_in_XCN : str, int, optional
-        The failure code to be used in XCN format. Default is 'F'
-
-    Returns
-    -------
-    X : array
-        event times
-    C : array
-        censor codes
-    N : array
-        number of events at each event time
-
-    Notes
-    -----
-    For example usage, please see the `online documentation <https://reliability.readthedocs.io/en/latest/Importing%20data%20from%20Excel.html>`_.
-
-    The function is expecting the xlsx file to have columns in XCN format. If
-    they are in another format (FR, FNRN) then you will need to use the
-    appropriate function for that format.
-
-    A reduced form (XC) is accepted and all values will be assumed to have a
-    quantity (N) of 1.
-    """
+    # """
+    # Converts data from xlsx format into XCN format. The xlsx format is a
+    # Microsoft Excel xlsx file.
+    #
+    # Parameters
+    # ----------
+    # path : str
+    #     The filepath for the xlsx file. Note that you must prefix this with r to
+    #     specify it as raw text.
+    # censor_code_in_xlsx : str, int optional
+    #     The censor code you have used if it does not appear in the defaults. The
+    #     default censor codes that will be recognised (not case sensitive) are
+    #     'R', 'RC', 'RIGHT CENS', 'RIGHT CENSORED', 'C', 'CENSORED', 'CENS', 'S',
+    #     'SUSP', 'SUSPENSION', 'SUSPENDED', 'UF', 'UNFAILED', 'UNFAIL', 'NF',
+    #     'NO FAIL', 'NO FAILURE', 'NOT FAILED', 1
+    # failure_code_in_xlsx : str, int, optional
+    #     The failure code you have used if it does not appear in the defaults.
+    #     The default failure codes that will be recognised (not case sensitive)
+    #      are 'F', 'FAIL', 'FAILED', 'FAILURE', 0
+    # censor_code_in_XCN : str, int, optional
+    #     The censor code to be used in XCN format. Default is 'C'
+    # failure_code_in_XCN : str, int, optional
+    #     The failure code to be used in XCN format. Default is 'F'
+    #
+    # Returns
+    # -------
+    # X : array
+    #     event times
+    # C : array
+    #     censor codes
+    # N : array
+    #     number of events at each event time
+    #
+    # Notes
+    # -----
+    # For example usage, please see the `online documentation <https://reliability.readthedocs.io/en/latest/Importing%20data%20from%20Excel.html>`_.
+    #
+    # The function is expecting the xlsx file to have columns in XCN format. If
+    # they are in another format (FR, FNRN) then you will need to use the
+    # appropriate function for that format.
+    #
+    # A reduced form (XC) is accepted and all values will be assumed to have a
+    # quantity (N) of 1.
+    # """
 
     def __init__(
         self,
@@ -209,34 +209,34 @@ class xlsx_to_XCN:
 
 
 class xlsx_to_FR:
-    """
-    Converts data from xlsx format into FR format. The xlsx format is a
-    Microsoft Excel xlsx file.
-
-    Parameters
-    ----------
-    path : str
-        The filepath for the xlsx file. Note that you must prefix this with r to
-        specify it as raw text.
-
-    Returns
-    -------
-    failures : array
-        failure times
-    right_censored : array
-        right censored times
-
-    Notes
-    -----
-    For example usage, please see the `online documentation <https://reliability.readthedocs.io/en/latest/Importing%20data%20from%20Excel.html>`_.
-
-    The function is expecting the xlsx file to have columns in FR format. If
-    they are in another format (XCN, FNRN) then you will need to use the
-    appropriate function for that format.
-
-    A reduced form (F) is accepted and all values will be assumed to be
-    failures.
-    """
+    # """
+    # Converts data from xlsx format into FR format. The xlsx format is a
+    # Microsoft Excel xlsx file.
+    #
+    # Parameters
+    # ----------
+    # path : str
+    #     The filepath for the xlsx file. Note that you must prefix this with r to
+    #     specify it as raw text.
+    #
+    # Returns
+    # -------
+    # failures : array
+    #     failure times
+    # right_censored : array
+    #     right censored times
+    #
+    # Notes
+    # -----
+    # For example usage, please see the `online documentation <https://reliability.readthedocs.io/en/latest/Importing%20data%20from%20Excel.html>`_.
+    #
+    # The function is expecting the xlsx file to have columns in FR format. If
+    # they are in another format (XCN, FNRN) then you will need to use the
+    # appropriate function for that format.
+    #
+    # A reduced form (F) is accepted and all values will be assumed to be
+    # failures.
+    # """
 
     def __init__(self, path, **kwargs):
         df = pd.read_excel(io=path, **kwargs)
@@ -288,38 +288,38 @@ class xlsx_to_FR:
 
 
 class xlsx_to_FNRN:
-    """
-    Converts data from xlsx format into FNRN format. The xlsx format is a
-    Microsoft Excel xlsx file.
-
-    Parameters
-    ----------
-    path : str
-        The filepath for the xlsx file. Note that you must prefix this with r to
-        specify it as raw text.
-
-    Returns
-    -------
-    failures : array
-        failure times
-    num_failures : array
-        the number of failures for each failure time
-    right_censored : array
-        right censored times
-    num_right_censored : array
-        the number of right censored for each right censored time
-
-    Notes
-    -----
-    For example usage, please see the `online documentation <https://reliability.readthedocs.io/en/latest/Importing%20data%20from%20Excel.html>`_.
-
-    The function is expecting the xlsx file to have columns in FNRN format. If
-    they are in another format (FR, XCN) then you will need to use the
-    appropriate function for that format.
-
-    A reduced form (FN) is accepted and all values will be assumed to be
-    failures.
-    """
+    # """
+    # Converts data from xlsx format into FNRN format. The xlsx format is a
+    # Microsoft Excel xlsx file.
+    #
+    # Parameters
+    # ----------
+    # path : str
+    #     The filepath for the xlsx file. Note that you must prefix this with r to
+    #     specify it as raw text.
+    #
+    # Returns
+    # -------
+    # failures : array
+    #     failure times
+    # num_failures : array
+    #     the number of failures for each failure time
+    # right_censored : array
+    #     right censored times
+    # num_right_censored : array
+    #     the number of right censored for each right censored time
+    #
+    # Notes
+    # -----
+    # For example usage, please see the `online documentation <https://reliability.readthedocs.io/en/latest/Importing%20data%20from%20Excel.html>`_.
+    #
+    # The function is expecting the xlsx file to have columns in FNRN format. If
+    # they are in another format (FR, XCN) then you will need to use the
+    # appropriate function for that format.
+    #
+    # A reduced form (FN) is accepted and all values will be assumed to be
+    # failures.
+    # """
 
     def __init__(self, path, **kwargs):
         df = pd.read_excel(io=path, **kwargs)
@@ -421,64 +421,64 @@ class xlsx_to_FNRN:
 
 
 class XCN_to_FNRN:
-    """
-    Converts data from XCN format to FNRN format.
-
-    Parameters
-    ----------
-    X : list, array
-        The failure or right_censored time.
-    C : list, array
-        The censoring code for each X. The default censor codes that will be
-        recognised (not case sensitive) as right censored values are are R,
-        'RC', 'RIGHT CENS', 'RIGHT CENSORED', 'C', 'CENSORED', 'CENS', 'S',
-        'SUSP', 'SUSPENSION', 'SUSPENDED', 'UF', 'UNFAILED', 'UNFAIL', 'NF',
-        'NO FAIL', 'NO FAILURE', 'NOT FAILED', 1. The default failure codes that
-        will be recognised (not case sensitive) as failures are 'F', 'FAIL',
-        'FAILED', 'FAILURE', 0.
-    N : list, array, optional
-        The quantity for each X. If omitted all items are assumed to have
-        quantity (N) of 1.
-    censor_code : str, int, optional
-        The censor code you have used if it does not appear in the defaults
-        listed above.
-    failure_code : str, int, optional
-        The failure code you have used if it does not appear in the defaults
-        listed above.
-
-    Returns
-    -------
-    failures : array
-        failure times
-    num_failures : array
-        the number of failures for each failure time
-    right_censored : array
-        right censored times
-    num_right_censored : array
-        the number of right censored for each right censored time
-
-    Notes
-    -----
-    Example usage:
-
-    .. code:: python
-
-        FNRN = XCN_to_FNRN(X=[1,2,3,7,8,9], C=['f','f','f','c','c','c'], N=[1,2,2,3,2,1])
-        print(FNRN.failures)
-           >>> [1 2 3]
-        print(FNRN.num_failures)
-           >>> [1 2 2]
-        print(FNRN.right_censored)
-           >>> [7 8 9]
-        print(FNRN.num_right_censored)
-           >>> [3 2 1]
-        FNRN.print()
-           >>> Data (FNRN format)
-               failures  number of failures  right censored  number of right censored
-                      1                   1               7                         3
-                      2                   2               8                         2
-                      3                   2               9                         1
-    """
+    # """
+    # Converts data from XCN format to FNRN format.
+    #
+    # Parameters
+    # ----------
+    # X : list, array
+    #     The failure or right_censored time.
+    # C : list, array
+    #     The censoring code for each X. The default censor codes that will be
+    #     recognised (not case sensitive) as right censored values are are R,
+    #     'RC', 'RIGHT CENS', 'RIGHT CENSORED', 'C', 'CENSORED', 'CENS', 'S',
+    #     'SUSP', 'SUSPENSION', 'SUSPENDED', 'UF', 'UNFAILED', 'UNFAIL', 'NF',
+    #     'NO FAIL', 'NO FAILURE', 'NOT FAILED', 1. The default failure codes that
+    #     will be recognised (not case sensitive) as failures are 'F', 'FAIL',
+    #     'FAILED', 'FAILURE', 0.
+    # N : list, array, optional
+    #     The quantity for each X. If omitted all items are assumed to have
+    #     quantity (N) of 1.
+    # censor_code : str, int, optional
+    #     The censor code you have used if it does not appear in the defaults
+    #     listed above.
+    # failure_code : str, int, optional
+    #     The failure code you have used if it does not appear in the defaults
+    #     listed above.
+    #
+    # Returns
+    # -------
+    # failures : array
+    #     failure times
+    # num_failures : array
+    #     the number of failures for each failure time
+    # right_censored : array
+    #     right censored times
+    # num_right_censored : array
+    #     the number of right censored for each right censored time
+    #
+    # Notes
+    # -----
+    # Example usage:
+    #
+    # .. code:: python
+    #
+    #     FNRN = XCN_to_FNRN(X=[1,2,3,7,8,9], C=['f','f','f','c','c','c'], N=[1,2,2,3,2,1])
+    #     print(FNRN.failures)
+    #        >>> [1 2 3]
+    #     print(FNRN.num_failures)
+    #        >>> [1 2 2]
+    #     print(FNRN.right_censored)
+    #        >>> [7 8 9]
+    #     print(FNRN.num_right_censored)
+    #        >>> [3 2 1]
+    #     FNRN.print()
+    #        >>> Data (FNRN format)
+    #            failures  number of failures  right censored  number of right censored
+    #                   1                   1               7                         3
+    #                   2                   2               8                         2
+    #                   3                   2               9                         1
+    # """
 
     def __init__(self, X, C, N=None, censor_code=None, failure_code=None):
         FR = XCN_to_FR(
@@ -546,59 +546,59 @@ class XCN_to_FNRN:
 
 
 class XCN_to_FR:
-    """
-    Converts data from XCN format to FR format.
-
-    Parameters
-    ----------
-    X : list, array
-        The failure or right_censored time.
-    C : list, array
-        The censoring code for each X. The default censor codes that will be
-        recognised (not case sensitive) as right censored values are are R,
-        'RC', 'RIGHT CENS', 'RIGHT CENSORED', 'C', 'CENSORED', 'CENS', 'S',
-        'SUSP', 'SUSPENSION', 'SUSPENDED', 'UF', 'UNFAILED', 'UNFAIL', 'NF',
-        'NO FAIL', 'NO FAILURE', 'NOT FAILED', 1. The default failure codes that
-        will be recognised (not case sensitive) as failures are 'F', 'FAIL',
-        'FAILED', 'FAILURE', 0.
-    N : list, array, optional
-        The quantity for each X. If omitted all items are assumed to have
-        quantity (N) of 1.
-    censor_code : str, int, optional
-        The censor code you have used if it does not appear in the defaults
-        listed above.
-    failure_code : str, int, optional
-        The failure code you have used if it does not appear in the defaults
-        listed above.
-
-    Returns
-    -------
-    failures : array
-        failure times
-    right_censored : array
-        right censored times
-
-    Notes
-    -----
-    Example usage:
-
-    .. code:: python
-
-        FR = XCN_to_FR(X=[1,2,3,7,8,9], C=['f','f','f','c','c','c'], N=[1,2,2,3,2,1])
-        print(FR.failures)
-           >>> [1 2 2 3 3]
-        print(FR.right_censored)
-           >>> [7 7 7 8 8 9]
-        FR.print()
-           >>> Data (FR format)
-               failures  right censored
-                      1               7
-                      2               7
-                      2               7
-                      3               8
-                      3               8
-                                      9
-    """
+    # """
+    # Converts data from XCN format to FR format.
+    #
+    # Parameters
+    # ----------
+    # X : list, array
+    #     The failure or right_censored time.
+    # C : list, array
+    #     The censoring code for each X. The default censor codes that will be
+    #     recognised (not case sensitive) as right censored values are are R,
+    #     'RC', 'RIGHT CENS', 'RIGHT CENSORED', 'C', 'CENSORED', 'CENS', 'S',
+    #     'SUSP', 'SUSPENSION', 'SUSPENDED', 'UF', 'UNFAILED', 'UNFAIL', 'NF',
+    #     'NO FAIL', 'NO FAILURE', 'NOT FAILED', 1. The default failure codes that
+    #     will be recognised (not case sensitive) as failures are 'F', 'FAIL',
+    #     'FAILED', 'FAILURE', 0.
+    # N : list, array, optional
+    #     The quantity for each X. If omitted all items are assumed to have
+    #     quantity (N) of 1.
+    # censor_code : str, int, optional
+    #     The censor code you have used if it does not appear in the defaults
+    #     listed above.
+    # failure_code : str, int, optional
+    #     The failure code you have used if it does not appear in the defaults
+    #     listed above.
+    #
+    # Returns
+    # -------
+    # failures : array
+    #     failure times
+    # right_censored : array
+    #     right censored times
+    #
+    # Notes
+    # -----
+    # Example usage:
+    #
+    # .. code:: python
+    #
+    #     FR = XCN_to_FR(X=[1,2,3,7,8,9], C=['f','f','f','c','c','c'], N=[1,2,2,3,2,1])
+    #     print(FR.failures)
+    #        >>> [1 2 2 3 3]
+    #     print(FR.right_censored)
+    #        >>> [7 7 7 8 8 9]
+    #     FR.print()
+    #        >>> Data (FR format)
+    #            failures  right censored
+    #                   1               7
+    #                   2               7
+    #                   2               7
+    #                   3               8
+    #                   3               8
+    #                                   9
+    # """
 
     def __init__(self, X, C, N=None, censor_code=None, failure_code=None):
         if type(N) == type(None):
@@ -714,52 +714,52 @@ class XCN_to_FR:
 
 
 class FR_to_XCN:
-    """
-    Converts data from FR format to XCN format.
-
-    Parameters
-    ----------
-    failures : array, list
-        The failure times
-    right_censored : array, list, optional
-        The right censored times
-    censor_code : str, int, optional
-        The code to use for the censored items. Default is 'C'
-    failure_code : str, int, optional
-        The code to use for the failed items. Default is 'F'
-
-    Returns
-    -------
-    X : array
-        The event times
-    C : array
-        The censor codes
-    N : array
-        The number of events at each event time
-
-    Notes
-    -----
-    Example usage:
-
-    .. code:: python
-
-        XCN = FR_to_XCN(failures=[1,1,2,2,3], right_censored=[9,9,9,9,8,8,7])
-        print(XCN.X)
-            >>> [1 2 3 7 8 9]
-        print(XCN.C)
-            >>> ['F' 'F' 'F' 'C' 'C' 'C']
-        print(XCN.N)
-           >>> [2 2 1 1 2 4]
-        XCN.print()
-           >>> Data (XCN format)
-               event time censor code  number of events
-                        1           F                 2
-                        2           F                 2
-                        3           F                 1
-                        7           C                 1
-                        8           C                 2
-                        9           C                 4
-    """
+    # """
+    # Converts data from FR format to XCN format.
+    #
+    # Parameters
+    # ----------
+    # failures : array, list
+    #     The failure times
+    # right_censored : array, list, optional
+    #     The right censored times
+    # censor_code : str, int, optional
+    #     The code to use for the censored items. Default is 'C'
+    # failure_code : str, int, optional
+    #     The code to use for the failed items. Default is 'F'
+    #
+    # Returns
+    # -------
+    # X : array
+    #     The event times
+    # C : array
+    #     The censor codes
+    # N : array
+    #     The number of events at each event time
+    #
+    # Notes
+    # -----
+    # Example usage:
+    #
+    # .. code:: python
+    #
+    #     XCN = FR_to_XCN(failures=[1,1,2,2,3], right_censored=[9,9,9,9,8,8,7])
+    #     print(XCN.X)
+    #         >>> [1 2 3 7 8 9]
+    #     print(XCN.C)
+    #         >>> ['F' 'F' 'F' 'C' 'C' 'C']
+    #     print(XCN.N)
+    #        >>> [2 2 1 1 2 4]
+    #     XCN.print()
+    #        >>> Data (XCN format)
+    #            event time censor code  number of events
+    #                     1           F                 2
+    #                     2           F                 2
+    #                     3           F                 1
+    #                     7           C                 1
+    #                     8           C                 2
+    #                     9           C                 4
+    # """
 
     def __init__(
         self, failures, right_censored=None, censor_code="C", failure_code="F"
@@ -819,58 +819,58 @@ class FR_to_XCN:
 
 
 class FNRN_to_XCN:
-    """
-    Converts data from FNRN format to XCN format.
-
-    Parameters
-    ----------
-    failures : array, list
-        The failure times
-    num_failures : array, list
-        The number of failures for each failure time. Length must match length
-        of failures.
-    right_censored : array, list, optional
-        The right censored times
-    num_right_censored : array, list, optional
-        The number of right censored for each right censored time. Length must
-        match length of right_censored.
-    censor_code : str, int, optional
-        The code to use for the censored items. Default is 'C'
-    failure_code : str, int, optional
-        The code to use for the failed items. Default is 'F'
-
-    Returns
-    -------
-    X : array
-        The event times
-    C : array
-        The censor codes
-    N : array
-        The number of events at each event time
-
-    Notes
-    -----
-    Example usage:
-
-    .. code:: python
-
-        XCN = FNRN_to_XCN(failures=[1, 2, 3], num_failures=[2, 2, 1], right_censored=[9, 8, 7], num_right_censored=[3, 2, 1])
-        print(XCN.X)
-            >>> [1. 2. 3. 7. 8. 9.]
-        print(XCN.C)
-            >>> ['F' 'F' 'F' 'C' 'C' 'C']
-        print(XCN.N)
-           >>> [2 2 1 1 2 3]
-        XCN.print()
-           >>> Data (XCN format)
-               event time censor code  number of events
-                        1           F                 2
-                        2           F                 2
-                        3           F                 1
-                        7           C                 1
-                        8           C                 2
-                        9           C                 3
-    """
+    # """
+    # Converts data from FNRN format to XCN format.
+    #
+    # Parameters
+    # ----------
+    # failures : array, list
+    #     The failure times
+    # num_failures : array, list
+    #     The number of failures for each failure time. Length must match length
+    #     of failures.
+    # right_censored : array, list, optional
+    #     The right censored times
+    # num_right_censored : array, list, optional
+    #     The number of right censored for each right censored time. Length must
+    #     match length of right_censored.
+    # censor_code : str, int, optional
+    #     The code to use for the censored items. Default is 'C'
+    # failure_code : str, int, optional
+    #     The code to use for the failed items. Default is 'F'
+    #
+    # Returns
+    # -------
+    # X : array
+    #     The event times
+    # C : array
+    #     The censor codes
+    # N : array
+    #     The number of events at each event time
+    #
+    # Notes
+    # -----
+    # Example usage:
+    #
+    # .. code:: python
+    #
+    #     XCN = FNRN_to_XCN(failures=[1, 2, 3], num_failures=[2, 2, 1], right_censored=[9, 8, 7], num_right_censored=[3, 2, 1])
+    #     print(XCN.X)
+    #         >>> [1. 2. 3. 7. 8. 9.]
+    #     print(XCN.C)
+    #         >>> ['F' 'F' 'F' 'C' 'C' 'C']
+    #     print(XCN.N)
+    #        >>> [2 2 1 1 2 3]
+    #     XCN.print()
+    #        >>> Data (XCN format)
+    #            event time censor code  number of events
+    #                     1           F                 2
+    #                     2           F                 2
+    #                     3           F                 1
+    #                     7           C                 1
+    #                     8           C                 2
+    #                     9           C                 3
+    # """
 
     def __init__(
         self,
@@ -959,50 +959,50 @@ class FNRN_to_XCN:
 
 
 class FR_to_FNRN:
-    """
-    Converts data from FR format to FNRN format
-
-    Parameters
-    ----------
-    failures : array, list
-        The failure times
-    right censored : array, list, optional
-        The right censored times
-
-    Returns
-    -------
-    failures : array
-        The failure times
-    num_failures : array
-        The number of failures are each failure time
-    right_censored : array
-        The right censored times
-    num_right_censored : array
-        The number of values at each right_censored time
-
-
-    Notes
-    -----
-    Example usage:
-
-    .. code:: python
-
-        FNRN = FR_to_FNRN(failures=[1,1,2,2,3], right_censored=[9,9,9,9,8,8,7])
-        print(FNRN.failures)
-            >>> [1 2 3]
-        print(FNRN.num_failures)
-            >>> [2 2 1]
-        print(FNRN.right_censored)
-           >>> [7 8 9]
-        print(FNRN.num_right_censored)
-           >>> [1 2 4]
-        FNRN.print()
-           >>> Data (FNRN format)
-               failures  number of failures  right censored  number of right censored
-                      1                   2               7                         1
-                      2                   2               8                         2
-                      3                   1               9                         4
-    """
+    # """
+    # Converts data from FR format to FNRN format
+    #
+    # Parameters
+    # ----------
+    # failures : array, list
+    #     The failure times
+    # right censored : array, list, optional
+    #     The right censored times
+    #
+    # Returns
+    # -------
+    # failures : array
+    #     The failure times
+    # num_failures : array
+    #     The number of failures are each failure time
+    # right_censored : array
+    #     The right censored times
+    # num_right_censored : array
+    #     The number of values at each right_censored time
+    #
+    #
+    # Notes
+    # -----
+    # Example usage:
+    #
+    # .. code:: python
+    #
+    #     FNRN = FR_to_FNRN(failures=[1,1,2,2,3], right_censored=[9,9,9,9,8,8,7])
+    #     print(FNRN.failures)
+    #         >>> [1 2 3]
+    #     print(FNRN.num_failures)
+    #         >>> [2 2 1]
+    #     print(FNRN.right_censored)
+    #        >>> [7 8 9]
+    #     print(FNRN.num_right_censored)
+    #        >>> [1 2 4]
+    #     FNRN.print()
+    #        >>> Data (FNRN format)
+    #            failures  number of failures  right censored  number of right censored
+    #                   1                   2               7                         1
+    #                   2                   2               8                         2
+    #                   3                   1               9                         4
+    # """
 
     def __init__(self, failures, right_censored=None):
         if type(failures) not in [list, np.ndarray]:
@@ -1074,57 +1074,57 @@ class FR_to_FNRN:
 
 
 class FNRN_to_FR:
-    """
-    Converts data from FNRN format to FR format
-
-    Parameters
-    ----------
-    failures : array, list
-        The failure times
-    num_failures : array, list
-        The number of failures are each failure time.  Length must match length
-        of failures.
-    right_censored : array, list, optional
-        The right censored times
-    num_right_censored : array, list, optional
-        The number of values at each right_censored time. Length must match
-        length of right_censored.
-
-    Returns
-    -------
-    failures : array
-        The failure times
-    right_censored : array
-        The right censored times
-
-    Notes
-    -----
-    Example usage:
-
-    .. code:: python
-
-        FR = FNRN_to_FR(failures=[1,2,3], num_failures=[1,1,2], right_censored=[9,8,7], num_right_censored=[5,4,4])
-        print(FR.failures)
-            >>> [1. 2. 3. 3.]
-        print(FR.right_censored)
-           >>> [9. 9. 9. 9. 9. 8. 8. 8. 8. 7. 7. 7. 7.]
-        FR.print()
-           >>>  Data (FR format)
-                failures  right censored
-                       1               9
-                       2               9
-                       3               9
-                       3               9
-                                       9
-                                       8
-                                       8
-                                       8
-                                       8
-                                       7
-                                       7
-                                       7
-                                       7
-    """
+    # """
+    # Converts data from FNRN format to FR format
+    #
+    # Parameters
+    # ----------
+    # failures : array, list
+    #     The failure times
+    # num_failures : array, list
+    #     The number of failures are each failure time.  Length must match length
+    #     of failures.
+    # right_censored : array, list, optional
+    #     The right censored times
+    # num_right_censored : array, list, optional
+    #     The number of values at each right_censored time. Length must match
+    #     length of right_censored.
+    #
+    # Returns
+    # -------
+    # failures : array
+    #     The failure times
+    # right_censored : array
+    #     The right censored times
+    #
+    # Notes
+    # -----
+    # Example usage:
+    #
+    # .. code:: python
+    #
+    #     FR = FNRN_to_FR(failures=[1,2,3], num_failures=[1,1,2], right_censored=[9,8,7], num_right_censored=[5,4,4])
+    #     print(FR.failures)
+    #         >>> [1. 2. 3. 3.]
+    #     print(FR.right_censored)
+    #        >>> [9. 9. 9. 9. 9. 8. 8. 8. 8. 7. 7. 7. 7.]
+    #     FR.print()
+    #        >>>  Data (FR format)
+    #             failures  right censored
+    #                    1               9
+    #                    2               9
+    #                    3               9
+    #                    3               9
+    #                                    9
+    #                                    8
+    #                                    8
+    #                                    8
+    #                                    8
+    #                                    7
+    #                                    7
+    #                                    7
+    #                                    7
+    # """
 
     def __init__(
         self, failures, num_failures, right_censored=None, num_right_censored=None

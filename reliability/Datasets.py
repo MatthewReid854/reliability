@@ -13,35 +13,35 @@ import numpy as np
 
 
 class automotive:
-    """
-    This dataset is relatively small and a challenging task to fit with any
-    distribution due to its size and shape. It also includes mostly right
-    censored data which makes fitting more difficult.
-
-    Sourced (with permission) from: V.V. Krivtsov and J. W. Case (1999),
-    Peculiarities of Censored Data Analysis in Automotive Industry Applications
-    - SAE Technical Paper Series, # 1999-01-3220
-
-    Returns
-    -------
-    failures : list
-        The failure times
-    right_censored : list
-        The right censored times
-    info : dataframe
-        Descriptive statistics about the dataset
-
-    Notes
-    -----
-    When importing the dataset, ensure it is called using the brackets after the
-    name. Example Usage:
-
-    .. code:: python
-
-        from reliability.Datasets import automotive
-        from reliability.Fitters import Fit_Weibull_2P
-        Fit_Weibull_2P(failures=automotive().failures, right_censored=automotive().right_censored)
-    """
+    # """
+    # This dataset is relatively small and a challenging task to fit with any
+    # distribution due to its size and shape. It also includes mostly right
+    # censored data which makes fitting more difficult.
+    #
+    # Sourced (with permission) from: V.V. Krivtsov and J. W. Case (1999),
+    # Peculiarities of Censored Data Analysis in Automotive Industry Applications
+    # - SAE Technical Paper Series, # 1999-01-3220
+    #
+    # Returns
+    # -------
+    # failures : list
+    #     The failure times
+    # right_censored : list
+    #     The right censored times
+    # info : dataframe
+    #     Descriptive statistics about the dataset
+    #
+    # Notes
+    # -----
+    # When importing the dataset, ensure it is called using the brackets after the
+    # name. Example Usage:
+    #
+    # .. code:: python
+    #
+    #     from reliability.Datasets import automotive
+    #     from reliability.Fitters import Fit_Weibull_2P
+    #     Fit_Weibull_2P(failures=automotive().failures, right_censored=automotive().right_censored)
+    # """
 
     def __init__(self):
         self.failures = [5248, 7454, 16890, 17200, 38700, 45000, 49390, 69040, 72280, 131900]
@@ -65,31 +65,31 @@ class automotive:
 
 
 class mileage:
-    """
-    This dataset is simple to fit. It contains 100 values with no right
-    censoring. The data appears to be from a Normal Distribution.
-
-    Sourced from Example 2.31 (page 63) of Reliability Engineering and Risk
-    analysis 3rd Edition by M. Modarres, M. Kaminskiy, and V.V. Krivtsov
-
-    Returns
-    -------
-    failures : list
-        The failure times
-    info : dataframe
-        Descriptive statistics about the dataset
-
-    Notes
-    -----
-    When importing the dataset, ensure it is called using the brackets after the
-    name. Example Usage:
-
-    .. code:: python
-
-        from reliability.Datasets import mileage
-        from reliability.Fitters import Fit_Weibull_2P
-        Fit_Weibull_2P(failures=mileage().failures)
-    """
+    # """
+    # This dataset is simple to fit. It contains 100 values with no right
+    # censoring. The data appears to be from a Normal Distribution.
+    #
+    # Sourced from Example 2.31 (page 63) of Reliability Engineering and Risk
+    # analysis 3rd Edition by M. Modarres, M. Kaminskiy, and V.V. Krivtsov
+    #
+    # Returns
+    # -------
+    # failures : list
+    #     The failure times
+    # info : dataframe
+    #     Descriptive statistics about the dataset
+    #
+    # Notes
+    # -----
+    # When importing the dataset, ensure it is called using the brackets after the
+    # name. Example Usage:
+    #
+    # .. code:: python
+    #
+    #     from reliability.Datasets import mileage
+    #     from reliability.Fitters import Fit_Weibull_2P
+    #     Fit_Weibull_2P(failures=mileage().failures)
+    # """
 
     def __init__(self):
         self.failures = [32797, 47119, 33532, 55627, 11538, 34107, 26704, 9979, 10014, 22159, 37603, 26830, 25210, 16946, 30368, 24571, 43665, 55269, 29760, 17438, 16768, 43154, 22418, 14525, 52448,
@@ -115,32 +115,32 @@ class mileage:
 
 
 class defective_sample:
-    """
-    This dataset is heavily right censored with intermixed multiply censored
-    data (not all censored values are greater than the largest failure). It
-    exhibits the behavior of a defective sample (aka. Limited fraction
-    defective). Thanks to Alexander Davis for providing this dataset.
-
-    Returns
-    -------
-    failures : list
-        The failure times
-    right_censored : list
-        The right censored times
-    info : dataframe
-        Descriptive statistics about the dataset
-
-    Notes
-    -----
-    When importing the dataset, ensure it is called using the brackets after the
-    name. Example Usage:
-
-    .. code:: python
-
-        from reliability.Datasets import defective_sample
-        from reliability.Fitters import Fit_Weibull_DS
-        Fit_Weibull_DS(failures=defective_sample().failures, right_censored=defective_sample().right_censored)
-    """
+    # """
+    # This dataset is heavily right censored with intermixed multiply censored
+    # data (not all censored values are greater than the largest failure). It
+    # exhibits the behavior of a defective sample (aka. Limited fraction
+    # defective). Thanks to Alexander Davis for providing this dataset.
+    #
+    # Returns
+    # -------
+    # failures : list
+    #     The failure times
+    # right_censored : list
+    #     The right censored times
+    # info : dataframe
+    #     Descriptive statistics about the dataset
+    #
+    # Notes
+    # -----
+    # When importing the dataset, ensure it is called using the brackets after the
+    # name. Example Usage:
+    #
+    # .. code:: python
+    #
+    #     from reliability.Datasets import defective_sample
+    #     from reliability.Fitters import Fit_Weibull_DS
+    #     Fit_Weibull_DS(failures=defective_sample().failures, right_censored=defective_sample().right_censored)
+    # """
 
     def __init__(self):
         self.failures = [81, 163, 56, 86, 144, 47, 121, 56, 43, 106, 54, 50, 43, 107, 107, 22, 106, 106, 106, 71, 71, 68, 65, 65, 99, 70, 23, 34, 217, 81, 95, 78, 4, 183, 117, 36, 22, 5, 106, 36, 96, 6, 32, 239, 31, 232, 91, 182, 126, 55, 43, 40, 354, 170, 91, 51, 85, 58, 20, 238, 21, 21, 14, 12, 47, 32, 252, 144, 57, 51, 91, 90, 42, 90, 56, 56, 55, 55, 55, 55, 54, 54, 30, 28, 246, 89, 83, 22, 78, 88, 87, 84, 49, 44, 22, 89, 147, 25, 82, 56, 38, 34, 115, 86, 20, 43, 179, 116, 42, 85, 36, 196,
@@ -303,30 +303,30 @@ class defective_sample:
 
 
 class mixture:
-    """
-    This dataset is from a mixture model with heavy censoring (97.90622% right
-    censored). It is best modelled using a Weibull Mixture Model.
-
-    Returns
-    -------
-    failures : list
-        The failure times
-    right_censored : list
-        The right censored times
-    info : dataframe
-        Descriptive statistics about the dataset
-
-    Notes
-    -----
-    When importing the dataset, ensure it is called using the brackets after the
-    name. Example Usage:
-
-    .. code:: python
-
-        from reliability.Datasets import mixture
-        from reliability.Fitters import Fit_Weibull_Mixture
-        Fit_Weibull_Mixture(failures=automotive().failures, right_censored=automotive().right_censored)
-    """
+    # """
+    # This dataset is from a mixture model with heavy censoring (97.90622% right
+    # censored). It is best modelled using a Weibull Mixture Model.
+    #
+    # Returns
+    # -------
+    # failures : list
+    #     The failure times
+    # right_censored : list
+    #     The right censored times
+    # info : dataframe
+    #     Descriptive statistics about the dataset
+    #
+    # Notes
+    # -----
+    # When importing the dataset, ensure it is called using the brackets after the
+    # name. Example Usage:
+    #
+    # .. code:: python
+    #
+    #     from reliability.Datasets import mixture
+    #     from reliability.Fitters import Fit_Weibull_Mixture
+    #     Fit_Weibull_Mixture(failures=automotive().failures, right_censored=automotive().right_censored)
+    # """
 
     def __init__(self):
         self.failures = [9907, 11573, 7612, 2461, 2213, 11817, 10810, 21775, 13309, 1450, 10596, 12477, 22572, 8329, 6858, 14260, 15460, 6024, 6016, 17405, 5466, 5403, 5308, 5201, 5151, 12624, 10500, 5454, 14467, 14460, 3884, 13753, 14193, 3516, 18303, 3460, 10715, 7086, 9091, 4738, 15882, 13627, 7114, 15721, 2948, 7132, 12398, 21207, 9437, 1621, 9288, 4357, 20216, 6439, 873, 5589, 16449, 763, 7549, 19787, 12672, 12000, 425, 425, 13168, 11701, 9824, 114, 5080, 5684, 9]
@@ -395,35 +395,35 @@ class mixture:
 
 
 class electronics:
-    """
-    This dataset is heavily right censored without intermixed censoring (all
-    censored values are greater than the largest failure). Thanks to Jiwon Cha
-    for providing this dataset.
-
-    Returns
-    -------
-    dataframe : dataframe
-        A dataframe with columns of time, quantity, category (this is data in
-        XCN format).
-    failures : list
-        The failure times
-    right_censored : list
-        The right censored times
-    info : dataframe
-        Descriptive statistics about the dataset
-
-    Notes
-    -----
-    This dataset is in the correct format for use in Fit_Weibull_2P_grouped.
-    When importing the dataset, ensure it is called using the brackets after the
-    name. Example Usage:
-
-    .. code:: python
-
-        from reliability.Datasets import electronics
-        from reliability.Fitters import Fit_Weibull_2P_grouped
-        Fit_Weibull_2P_grouped(dataframe=electronics().dataframe)
-    """
+    # """
+    # This dataset is heavily right censored without intermixed censoring (all
+    # censored values are greater than the largest failure). Thanks to Jiwon Cha
+    # for providing this dataset.
+    #
+    # Returns
+    # -------
+    # dataframe : dataframe
+    #     A dataframe with columns of time, quantity, category (this is data in
+    #     XCN format).
+    # failures : list
+    #     The failure times
+    # right_censored : list
+    #     The right censored times
+    # info : dataframe
+    #     Descriptive statistics about the dataset
+    #
+    # Notes
+    # -----
+    # This dataset is in the correct format for use in Fit_Weibull_2P_grouped.
+    # When importing the dataset, ensure it is called using the brackets after the
+    # name. Example Usage:
+    #
+    # .. code:: python
+    #
+    #     from reliability.Datasets import electronics
+    #     from reliability.Fitters import Fit_Weibull_2P_grouped
+    #     Fit_Weibull_2P_grouped(dataframe=electronics().dataframe)
+    # """
 
     def __init__(self):
         time = [220, 179, 123, 146, 199, 181, 191, 216, 1, 73, 44798, 62715, 81474, 80632, 62716]
@@ -460,31 +460,31 @@ class electronics:
 
 
 class MCF_1:
-    """
-    This dataset is formatted for use with the Mean Cumulative Function
-    (MCF_parametric or MCF_nonparametric). It consists of failure times for five
-    systems. It exhibits a fairly constant failure rate, appearing to be
-    slightly increasing (beta > 1).
-
-    Returns
-    -------
-    times : list
-        A list of lists. Each sublist contains the failure times for each
-        system.
-    number_of_systems : int
-        The number of systems in the dataset (len(times))
-
-    Notes
-    -----
-    When importing the dataset, ensure it is called using the brackets after the
-    name. Example Usage:
-
-    .. code:: python
-
-        from reliability.Repairable_systems import MCF_nonparametric
-        from reliability.Datasets import MCF_1
-        MCF_nonparametric(data=MCF_1().times)
-    """
+    # """
+    # This dataset is formatted for use with the Mean Cumulative Function
+    # (MCF_parametric or MCF_nonparametric). It consists of failure times for five
+    # systems. It exhibits a fairly constant failure rate, appearing to be
+    # slightly increasing (beta > 1).
+    #
+    # Returns
+    # -------
+    # times : list
+    #     A list of lists. Each sublist contains the failure times for each
+    #     system.
+    # number_of_systems : int
+    #     The number of systems in the dataset (len(times))
+    #
+    # Notes
+    # -----
+    # When importing the dataset, ensure it is called using the brackets after the
+    # name. Example Usage:
+    #
+    # .. code:: python
+    #
+    #     from reliability.Repairable_systems import MCF_nonparametric
+    #     from reliability.Datasets import MCF_1
+    #     MCF_nonparametric(data=MCF_1().times)
+    # """
 
     def __init__(self):
         self.times = [
@@ -498,32 +498,32 @@ class MCF_1:
 
 
 class MCF_2:
-    """
-    This dataset is formatted for use with the Mean Cumulative Function
-    (MCF_parametric or MCF_nonparametric). It consists of failure times for 56
-    systems. It exhibits an increasing failure rate at the start and a
-    decreasing failure rate near the end. Due to this shape it is not fitted
-    well by the power law model used in MCF parametric.
-
-    Returns
-    -------
-    times : list
-        A list of lists. Each sublist contains the failure times for each
-        system.
-    number_of_systems : int
-        The number of systems in the dataset (len(times))
-
-    Notes
-    -----
-    When importing the dataset, ensure it is called using the brackets after the
-    name. Example Usage:
-
-    .. code:: python
-
-        from reliability.Repairable_systems import MCF_nonparametric
-        from reliability.Datasets import MCF_2
-        MCF_nonparametric(data=MCF_2().times)
-    """
+    # """
+    # This dataset is formatted for use with the Mean Cumulative Function
+    # (MCF_parametric or MCF_nonparametric). It consists of failure times for 56
+    # systems. It exhibits an increasing failure rate at the start and a
+    # decreasing failure rate near the end. Due to this shape it is not fitted
+    # well by the power law model used in MCF parametric.
+    #
+    # Returns
+    # -------
+    # times : list
+    #     A list of lists. Each sublist contains the failure times for each
+    #     system.
+    # number_of_systems : int
+    #     The number of systems in the dataset (len(times))
+    #
+    # Notes
+    # -----
+    # When importing the dataset, ensure it is called using the brackets after the
+    # name. Example Usage:
+    #
+    # .. code:: python
+    #
+    #     from reliability.Repairable_systems import MCF_nonparametric
+    #     from reliability.Datasets import MCF_2
+    #     MCF_nonparametric(data=MCF_2().times)
+    # """
 
     def __init__(self):
         times = [
@@ -587,37 +587,37 @@ class MCF_2:
 
 
 class ALT_temperature:
-    """
-    This is a single stress accelerated life test (ALT) dataset conducted at 3
-    temperatures. The dataset contains mostly censored data but is easily fitted
-    by several ALT models.
-
-    Sourced from Dr. Mohammad Modarres, University of Maryland.
-
-    Returns
-    -------
-    failures : list
-        The failure times
-    failure_stresses : list
-        The stress corresponding to each failure time
-    right_censored : list
-        The right censored times
-    right_censored_stresses : list
-        The stress corresponding to each right censored time
-    info : dataframe
-        Descriptive statistics about the dataset
-
-    Notes
-    -----
-    When importing the dataset, ensure it is called using the brackets after the
-    name. Example Usage:
-
-    .. code:: python
-
-        from reliability.ALT_fitters import Fit_Weibull_Exponential
-        from reliability.Datasets import ALT_temperature
-        Fit_Weibull_Exponential(failures=ALT_temperature().failures, failure_stress=ALT_temperature().failure_stresses, right_censored=ALT_temperature().right_censored, right_censored_stress=ALT_temperature().right_censored_stresses)
-    """
+    # """
+    # This is a single stress accelerated life test (ALT) dataset conducted at 3
+    # temperatures. The dataset contains mostly censored data but is easily fitted
+    # by several ALT models.
+    #
+    # Sourced from Dr. Mohammad Modarres, University of Maryland.
+    #
+    # Returns
+    # -------
+    # failures : list
+    #     The failure times
+    # failure_stresses : list
+    #     The stress corresponding to each failure time
+    # right_censored : list
+    #     The right censored times
+    # right_censored_stresses : list
+    #     The stress corresponding to each right censored time
+    # info : dataframe
+    #     Descriptive statistics about the dataset
+    #
+    # Notes
+    # -----
+    # When importing the dataset, ensure it is called using the brackets after the
+    # name. Example Usage:
+    #
+    # .. code:: python
+    #
+    #     from reliability.ALT_fitters import Fit_Weibull_Exponential
+    #     from reliability.Datasets import ALT_temperature
+    #     Fit_Weibull_Exponential(failures=ALT_temperature().failures, failure_stress=ALT_temperature().failure_stresses, right_censored=ALT_temperature().right_censored, right_censored_stress=ALT_temperature().right_censored_stresses)
+    # """
 
     def __init__(self):
         self.failures = [1298, 1390, 3187, 3241, 3261, 3313, 4501, 4568, 4841, 4982, 581, 925, 1432, 1586, 2452, 2734, 2772, 4106, 4674, 283, 361, 515, 638, 854, 1024, 1030, 1045, 1767, 1777, 1856, 1951, 1964, 1951, 1964, 2884]
@@ -651,36 +651,36 @@ class ALT_temperature:
 
 
 class ALT_temperature2:
-    """
-    This is a single stress accelerated life test (ALT) dataset conducted at 4
-    temperatures. This dataset contains 40 values, 20 of which are censored.
-
-    Sourced from Dr. Mohammad Modarres, University of Maryland
-
-    Returns
-    -------
-    failures : list
-        The failure times
-    failure_stresses : list
-        The stress corresponding to each failure time
-    right_censored : list
-        The right censored times
-    right_censored_stresses : list
-        The stress corresponding to each right censored time
-    info : dataframe
-        Descriptive statistics about the dataset
-
-    Notes
-    -----
-    When importing the dataset, ensure it is called using the brackets after the
-    name. Example Usage:
-
-    .. code:: python
-
-        from reliability.ALT_fitters import Fit_Weibull_Exponential
-        from reliability.Datasets import ALT_temperature2
-        Fit_Weibull_Exponential(failures=ALT_temperature2().failures, failure_stress=ALT_temperature2().failure_stresses, right_censored=ALT_temperature2().right_censored, right_censored_stress=ALT_temperature2().right_censored_stresses)
-    """
+    # """
+    # This is a single stress accelerated life test (ALT) dataset conducted at 4
+    # temperatures. This dataset contains 40 values, 20 of which are censored.
+    #
+    # Sourced from Dr. Mohammad Modarres, University of Maryland
+    #
+    # Returns
+    # -------
+    # failures : list
+    #     The failure times
+    # failure_stresses : list
+    #     The stress corresponding to each failure time
+    # right_censored : list
+    #     The right censored times
+    # right_censored_stresses : list
+    #     The stress corresponding to each right censored time
+    # info : dataframe
+    #     Descriptive statistics about the dataset
+    #
+    # Notes
+    # -----
+    # When importing the dataset, ensure it is called using the brackets after the
+    # name. Example Usage:
+    #
+    # .. code:: python
+    #
+    #     from reliability.ALT_fitters import Fit_Weibull_Exponential
+    #     from reliability.Datasets import ALT_temperature2
+    #     Fit_Weibull_Exponential(failures=ALT_temperature2().failures, failure_stress=ALT_temperature2().failure_stresses, right_censored=ALT_temperature2().right_censored, right_censored_stress=ALT_temperature2().right_censored_stresses)
+    # """
 
     def __init__(self):
         self.failures = [29.1, 80.7, 47.5, 71.8, 73.7, 86.2, 29.5, 52, 56.3, 63.5, 92.5, 99.5, 26.1, 47.5, 53.4, 56.1, 61.8, 76.6, 77.6, 80.9]
@@ -713,30 +713,30 @@ class ALT_temperature2:
 
 
 class ALT_temperature3:
-    """
-    This is a single stress accelerated life test (ALT) dataset conducted at 3
-    temperatures. This dataset contains 30 values and no censoring.
-
-    Returns
-    -------
-    failures : list
-        The failure times
-    failure_stresses : list
-        The stress corresponding to each failure time
-    info : dataframe
-        Descriptive statistics about the dataset
-
-    Notes
-    -----
-    When importing the dataset, ensure it is called using the brackets after the
-    name. Example Usage:
-
-    .. code:: python
-
-        from reliability.ALT_fitters import Fit_Weibull_Exponential
-        from reliability.Datasets import ALT_temperature3
-        Fit_Weibull_Exponential(failures=ALT_temperature3().failures, failure_stress=ALT_temperature3().failure_stresses)
-    """
+    # """
+    # This is a single stress accelerated life test (ALT) dataset conducted at 3
+    # temperatures. This dataset contains 30 values and no censoring.
+    #
+    # Returns
+    # -------
+    # failures : list
+    #     The failure times
+    # failure_stresses : list
+    #     The stress corresponding to each failure time
+    # info : dataframe
+    #     Descriptive statistics about the dataset
+    #
+    # Notes
+    # -----
+    # When importing the dataset, ensure it is called using the brackets after the
+    # name. Example Usage:
+    #
+    # .. code:: python
+    #
+    #     from reliability.ALT_fitters import Fit_Weibull_Exponential
+    #     from reliability.Datasets import ALT_temperature3
+    #     Fit_Weibull_Exponential(failures=ALT_temperature3().failures, failure_stress=ALT_temperature3().failure_stresses)
+    # """
 
     def __init__(self):
         self.failures = [3850, 4340, 4760, 5320, 5740, 6160, 6580, 7140, 7980, 8960, 3300, 3720, 4080, 4560, 4920, 5280, 5640, 6120, 6840, 7680, 2750, 3100, 3400, 3800, 4100, 4400, 4700, 5100, 5700, 6400]
@@ -767,30 +767,30 @@ class ALT_temperature3:
 
 
 class ALT_temperature4:
-    """
-    This is a single stress accelerated life test (ALT) dataset conducted at 3
-    temperatures. This dataset contains 20 values and no censoring.
-
-    Returns
-    -------
-    failures : list
-        The failure times
-    failure_stresses : list
-        The stress corresponding to each failure time
-    info : dataframe
-        Descriptive statistics about the dataset
-
-    Notes
-    -----
-    When importing the dataset, ensure it is called using the brackets after the
-    name. Example Usage:
-
-    .. code:: python
-
-        from reliability.ALT_fitters import Fit_Weibull_Exponential
-        from reliability.Datasets import ALT_temperature4
-        Fit_Weibull_Exponential(failures=ALT_temperature4().failures, failure_stress=ALT_temperature4().failure_stresses)
-    """
+    # """
+    # This is a single stress accelerated life test (ALT) dataset conducted at 3
+    # temperatures. This dataset contains 20 values and no censoring.
+    #
+    # Returns
+    # -------
+    # failures : list
+    #     The failure times
+    # failure_stresses : list
+    #     The stress corresponding to each failure time
+    # info : dataframe
+    #     Descriptive statistics about the dataset
+    #
+    # Notes
+    # -----
+    # When importing the dataset, ensure it is called using the brackets after the
+    # name. Example Usage:
+    #
+    # .. code:: python
+    #
+    #     from reliability.ALT_fitters import Fit_Weibull_Exponential
+    #     from reliability.Datasets import ALT_temperature4
+    #     Fit_Weibull_Exponential(failures=ALT_temperature4().failures, failure_stress=ALT_temperature4().failure_stresses)
+    # """
 
     def __init__(self):
         self.failures = [267, 443, 521, 570, 713, 721, 802, 808, 173, 174, 290, 321, 334, 502, 102, 104, 158, 197, 224, 243]
@@ -821,32 +821,32 @@ class ALT_temperature4:
 
 
 class ALT_load:
-    """
-    This is a single stress accelerated life test (ALT) dataset conducted at 3
-    loads. This dataset contains 20 failure times and no censoring.
-
-    Sourced from Dr. Mohammad Modarres, University of Maryland
-
-    Returns
-    -------
-    failures : list
-        The failure times
-    failure_stresses : list
-        The stress corresponding to each failure time
-    info : dataframe
-        Descriptive statistics about the dataset
-
-    Notes
-    -----
-    When importing the dataset, ensure it is called using the brackets after the
-    name. Example Usage:
-
-    .. code:: python
-
-        from reliability.ALT_fitters import Fit_Weibull_Power
-        from reliability.Datasets import ALT_load
-        Fit_Weibull_Power(failures=ALT_load().failures, failure_stress=ALT_load().failure_stresses)
-    """
+    # """
+    # This is a single stress accelerated life test (ALT) dataset conducted at 3
+    # loads. This dataset contains 20 failure times and no censoring.
+    #
+    # Sourced from Dr. Mohammad Modarres, University of Maryland
+    #
+    # Returns
+    # -------
+    # failures : list
+    #     The failure times
+    # failure_stresses : list
+    #     The stress corresponding to each failure time
+    # info : dataframe
+    #     Descriptive statistics about the dataset
+    #
+    # Notes
+    # -----
+    # When importing the dataset, ensure it is called using the brackets after the
+    # name. Example Usage:
+    #
+    # .. code:: python
+    #
+    #     from reliability.ALT_fitters import Fit_Weibull_Power
+    #     from reliability.Datasets import ALT_load
+    #     Fit_Weibull_Power(failures=ALT_load().failures, failure_stress=ALT_load().failure_stresses)
+    # """
 
     def __init__(self):
         self.failures = [250, 460, 530, 730, 820, 970, 970, 1530, 160, 180, 290, 320, 390, 460, 90, 100, 150, 180, 220, 230]
@@ -877,36 +877,36 @@ class ALT_load:
 
 
 class ALT_load2:
-    """
-    This is a single stress accelerated life test (ALT) dataset conducted at 3
-    loads. This dataset contains 18 values, 5 of which are censored.
-
-    Sourced from Dr. Mohammad Modarres, University of Maryland
-
-    Returns
-    -------
-    failures : list
-        The failure times
-    failure_stresses : list
-        The stress corresponding to each failure time
-    right_censored : list
-        The right censored times
-    right_censored_stresses : list
-        The stress corresponding to each right censored time
-    info : dataframe
-        Descriptive statistics about the dataset
-
-    Notes
-    -----
-    When importing the dataset, ensure it is called using the brackets after the
-    name. Example Usage:
-
-    .. code:: python
-
-        from reliability.ALT_fitters import Fit_Weibull_Power
-        from reliability.Datasets import ALT_load2
-        Fit_Weibull_Power(failures=ALT_load2().failures, failure_stress=ALT_load2().failure_stresses, right_censored=ALT_load2().right_censored, right_censored_stress=ALT_load2().right_censored_stresses)
-    """
+    # """
+    # This is a single stress accelerated life test (ALT) dataset conducted at 3
+    # loads. This dataset contains 18 values, 5 of which are censored.
+    #
+    # Sourced from Dr. Mohammad Modarres, University of Maryland
+    #
+    # Returns
+    # -------
+    # failures : list
+    #     The failure times
+    # failure_stresses : list
+    #     The stress corresponding to each failure time
+    # right_censored : list
+    #     The right censored times
+    # right_censored_stresses : list
+    #     The stress corresponding to each right censored time
+    # info : dataframe
+    #     Descriptive statistics about the dataset
+    #
+    # Notes
+    # -----
+    # When importing the dataset, ensure it is called using the brackets after the
+    # name. Example Usage:
+    #
+    # .. code:: python
+    #
+    #     from reliability.ALT_fitters import Fit_Weibull_Power
+    #     from reliability.Datasets import ALT_load2
+    #     Fit_Weibull_Power(failures=ALT_load2().failures, failure_stress=ALT_load2().failure_stresses, right_censored=ALT_load2().right_censored, right_censored_stress=ALT_load2().right_censored_stresses)
+    # """
 
     def __init__(self):
         self.failures = [245, 312, 409, 110, 180, 200, 222, 50, 70, 88, 112, 140, 160]
@@ -939,34 +939,34 @@ class ALT_load2:
 
 
 class ALT_temperature_voltage:
-    """
-    This is a dual stress accelerated life test (ALT) dataset conducted at 2
-    different temperatures and 2 different voltages. The dataset is contains 12
-    failures and no censoring.
-
-    Returns
-    -------
-    failures : list
-        The failure times
-    failure_stress_temp : list
-        The temperature stress corresponding to each failure time
-    failure_stress_voltage : list
-        The voltage stress corresponding to each failure time
-    info : dataframe
-        Descriptive statistics about the dataset
-
-    Notes
-    -----
-    When importing the dataset, ensure it is called using the brackets after the
-    name. Example Usage:
-
-    .. code:: python
-
-        from reliability.Datasets import ALT_temperature_voltage
-        from reliability.ALT_fitters import Fit_Normal_Dual_Exponential
-        data = ALT_temperature_voltage()
-        Fit_Normal_Dual_Exponential(failures=data.failures, failure_stress_1=data.failure_stress_temp, failure_stress_2=data.failure_stress_voltage)
-    """
+    # """
+    # This is a dual stress accelerated life test (ALT) dataset conducted at 2
+    # different temperatures and 2 different voltages. The dataset is contains 12
+    # failures and no censoring.
+    #
+    # Returns
+    # -------
+    # failures : list
+    #     The failure times
+    # failure_stress_temp : list
+    #     The temperature stress corresponding to each failure time
+    # failure_stress_voltage : list
+    #     The voltage stress corresponding to each failure time
+    # info : dataframe
+    #     Descriptive statistics about the dataset
+    #
+    # Notes
+    # -----
+    # When importing the dataset, ensure it is called using the brackets after the
+    # name. Example Usage:
+    #
+    # .. code:: python
+    #
+    #     from reliability.Datasets import ALT_temperature_voltage
+    #     from reliability.ALT_fitters import Fit_Normal_Dual_Exponential
+    #     data = ALT_temperature_voltage()
+    #     Fit_Normal_Dual_Exponential(failures=data.failures, failure_stress_1=data.failure_stress_temp, failure_stress_2=data.failure_stress_voltage)
+    # """
 
     def __init__(self):
         self.failures = [620, 632, 685, 822, 380, 416, 460, 596, 216, 146, 332, 400]
@@ -998,35 +998,35 @@ class ALT_temperature_voltage:
 
 
 class ALT_temperature_voltage2:
-    """
-    This is a dual stress accelerated life test (ALT) dataset conducted at 3
-    different temperatures and 2 different voltages. There are 18 failures and
-    no censoring. Note that there is stress-pair that contains only a single
-    failure.
-
-    Returns
-    -------
-    failures : list
-        The failure times
-    failure_stress_temp : list
-        The temperature stress corresponding to each failure time
-    failure_stress_voltage : list
-        The voltage stress corresponding to each failure time
-    info : dataframe
-        Descriptive statistics about the dataset
-
-    Notes
-    -----
-    When importing the dataset, ensure it is called using the brackets after the
-    name. Example Usage:
-
-    .. code:: python
-
-        from reliability.Datasets import ALT_temperature_voltage2
-        from reliability.ALT_fitters import Fit_Normal_Dual_Exponential
-        data = ALT_temperature_voltage2()
-        Fit_Normal_Dual_Exponential(failures=data.failures, failure_stress_1=data.failure_stress_temp, failure_stress_2=data.failure_stress_voltage)
-    """
+    # """
+    # This is a dual stress accelerated life test (ALT) dataset conducted at 3
+    # different temperatures and 2 different voltages. There are 18 failures and
+    # no censoring. Note that there is stress-pair that contains only a single
+    # failure.
+    #
+    # Returns
+    # -------
+    # failures : list
+    #     The failure times
+    # failure_stress_temp : list
+    #     The temperature stress corresponding to each failure time
+    # failure_stress_voltage : list
+    #     The voltage stress corresponding to each failure time
+    # info : dataframe
+    #     Descriptive statistics about the dataset
+    #
+    # Notes
+    # -----
+    # When importing the dataset, ensure it is called using the brackets after the
+    # name. Example Usage:
+    #
+    # .. code:: python
+    #
+    #     from reliability.Datasets import ALT_temperature_voltage2
+    #     from reliability.ALT_fitters import Fit_Normal_Dual_Exponential
+    #     data = ALT_temperature_voltage2()
+    #     Fit_Normal_Dual_Exponential(failures=data.failures, failure_stress_1=data.failure_stress_temp, failure_stress_2=data.failure_stress_voltage)
+    # """
 
     def __init__(self):
         self.failures = [1200, 1205, 1509, 1560, 1780, 2390, 2490, 2690, 1466, 1536, 1698, 1784, 2689, 222, 250, 297, 354, 368]
@@ -1061,35 +1061,35 @@ class ALT_temperature_voltage2:
 
 
 class ALT_temperature_humidity:
-    """
-    This is a dual stress accelerated life test (ALT) dataset conducted at 2
-    different temperatures and 2 different humidities. The dataset contains 12
-    failures and no censoring.
-
-    Returns
-    -------
-    failures : list
-        The failure times
-    failure_stress_temp : list
-        The temperature stress corresponding to each failure time
-    failure_stress_humidity : list
-        The humidity stress corresponding to each failure time
-    info : dataframe
-        Descriptive statistics about the dataset
-
-    Notes
-    -----
-    When importing the dataset, ensure it is called using the brackets after the
-    name. Example Usage:
-
-    .. code:: python
-
-        from reliability.Datasets import ALT_temperature_humidity
-        from reliability.ALT_fitters import Fit_Normal_Dual_Exponential
-        data = ALT_temperature_humidity()
-        Fit_Normal_Dual_Exponential(failures=data.failures, failure_stress_1=data.failure_stress_temp, failure_stress_2=data.failure_stress_humidity)
-
-    """
+    # """
+    # This is a dual stress accelerated life test (ALT) dataset conducted at 2
+    # different temperatures and 2 different humidities. The dataset contains 12
+    # failures and no censoring.
+    #
+    # Returns
+    # -------
+    # failures : list
+    #     The failure times
+    # failure_stress_temp : list
+    #     The temperature stress corresponding to each failure time
+    # failure_stress_humidity : list
+    #     The humidity stress corresponding to each failure time
+    # info : dataframe
+    #     Descriptive statistics about the dataset
+    #
+    # Notes
+    # -----
+    # When importing the dataset, ensure it is called using the brackets after the
+    # name. Example Usage:
+    #
+    # .. code:: python
+    #
+    #     from reliability.Datasets import ALT_temperature_humidity
+    #     from reliability.ALT_fitters import Fit_Normal_Dual_Exponential
+    #     data = ALT_temperature_humidity()
+    #     Fit_Normal_Dual_Exponential(failures=data.failures, failure_stress_1=data.failure_stress_temp, failure_stress_2=data.failure_stress_humidity)
+    #
+    # """
 
     def __init__(self):
         self.failures = [310, 316, 329, 411, 190, 208, 230, 298, 108, 123, 166, 200]
