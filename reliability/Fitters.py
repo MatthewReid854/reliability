@@ -4,24 +4,25 @@ Fitters
 This module contains custom fitting functions for parametric distributions which
 support complete and right censored data.
 The included functions are:
-Fit_Weibull_2P
-Fit_Weibull_3P
-Fit_Exponential_1P
-Fit_Exponential_2P
-Fit_Gamma_2P
-Fit_Gamma_3P
-Fit_Lognormal_2P
-Fit_Lognormal_3P
-Fit_Normal_2P
-Fit_Gumbel_2P
-Fit_Beta_2P
-Fit_Loglogistic_2P
-Fit_Loglogistic_3P
-Fit_Weibull_Mixture
-Fit_Weibull_CR
-Fit_Weibull_DS
-Fit_Weibull_ZI
-Fit_Weibull_DSZI
+
+- Fit_Weibull_2P
+- Fit_Weibull_3P
+- Fit_Exponential_1P
+- Fit_Exponential_2P
+- Fit_Gamma_2P
+- Fit_Gamma_3P
+- Fit_Lognormal_2P
+- Fit_Lognormal_3P
+- Fit_Normal_2P
+- Fit_Gumbel_2P
+- Fit_Beta_2P
+- Fit_Loglogistic_2P
+- Fit_Loglogistic_3P
+- Fit_Weibull_Mixture
+- Fit_Weibull_CR
+- Fit_Weibull_DS
+- Fit_Weibull_ZI
+- Fit_Weibull_DSZI
 
 Note that the Beta distribution is only for data in the range 0 < t < 1.
 There is also a Fit_Everything function which will fit all distributions (except

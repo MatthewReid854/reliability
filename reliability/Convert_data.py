@@ -3,27 +3,32 @@ Convert_data
 
 This module contains converters to easily convert data between multiple formats
 The formats used within reliability are:
-FR - failures, right censored
-FNRN - failures, number of failures, right censored, number of right censored
-XCN - event time, censoring code, number of events
+
+- FR - failures, right censored
+- FNRN - failures, number of failures, right censored, number of right censored
+- XCN - event time, censoring code, number of events
 
 The following data converters are available in this module:
-FR_to_FNRN
-FR_to_XCN
-FNRN_to_FR
-FNRN_to_XCN
-XCN_to_FR
-XCN_to_FNRN
-xlsx_to_FR
-xlsx_to_FNRN
-xlsx_to_XCN
 
-Note that each format has an acceptable reduced form where the omitted detail is assumed absent (i.e. no right censored data in the case of FR and FNRN)
-or as all single events (i.e. all with a quantity of 1 in the case of XCN).
-For example:
-FR format may just be F if there is no right censored data
-FNRN may be just FN if there is no right censored data. FNRN may not be just F as this is the same as F from FR format.
-XCN may be just XC if there are no grouped values (ie. every event is assumed to have a quantity of 1). XCN may not be just X as this is the same as F from FR format.
+- FR_to_FNRN
+- FR_to_XCN
+- FNRN_to_FR
+- FNRN_to_XCN
+- XCN_to_FR
+- XCN_to_FNRN
+- xlsx_to_FR
+- xlsx_to_FNRN
+- xlsx_to_XCN
+
+Note that each format has an acceptable reduced form where the omitted detail is
+assumed absent (ie. no right censored data in the case of FR and FNRN) or as all
+single events (ie. all with a quantity of 1 in the case of XCN).
+
+For example, FR format may just be F if there is no right censored data. FNRN
+may be just FN if there is no right censored data. FNRN may not be just F as
+this is the same as F from FR format. XCN may be just XC if there are no grouped
+values (ie. every event is assumed to have a quantity of 1). XCN may not be just
+X as this is the same as F from FR format.
 """
 
 import numpy as np
@@ -33,34 +38,48 @@ from reliability.Utils import colorprint, write_df_to_xlsx, removeNaNs
 
 class xlsx_to_XCN:
     """
-    xlsx_to_XCN data format converter
+    Converts data from xlsx format into XCN format. The xlsx format is a
+    Microsoft Excel xlsx file.
 
-    Inputs:
-    path - the filepath for the xlsx file. Note that you must prefix this with r to specify it as raw text.
-    censor_code_in_xlsx - specify the censor code you have used if it does not appear in the defaults (see below).
-        *default censor codes that will be recognised (not case sensitive): 'R', 'RC', 'RIGHT CENS', 'RIGHT CENSORED', 'C', 'CENSORED', 'CENS', 'S', 'SUSP', 'SUSPENSION', 'SUSPENDED', 'UF', 'UNFAILED', 'UNFAIL', 'NF', 'NO FAIL', 'NO FAILURE', 'NOT FAILED', 1
-    failure_code_in_xlsx - specify the failure code you have used if it does not appear in the defaults (see below).
-        *default failure codes that will be recognised (not case sensitive): 'F', 'FAIL', 'FAILED', 'FAILURE', 0
-    censor_code_in_XCN - specify the censor code to be used in XCN format. Default is 'C'
-    failure_code_in_XCN - specify the failure code to be used in XCN format. Default is 'F'
+    Parameters
+    ----------
+    path : str
+        The filepath for the xlsx file. Note that you must prefix this with r to
+        specify it as raw text.
+    censor_code_in_xlsx : str, int optional
+        The censor code you have used if it does not appear in the defaults. The
+        default censor codes that will be recognised (not case sensitive) are
+        'R', 'RC', 'RIGHT CENS', 'RIGHT CENSORED', 'C', 'CENSORED', 'CENS', 'S',
+        'SUSP', 'SUSPENSION', 'SUSPENDED', 'UF', 'UNFAILED', 'UNFAIL', 'NF',
+        'NO FAIL', 'NO FAILURE', 'NOT FAILED', 1
+    failure_code_in_xlsx : str, int, optional
+        The failure code you have used if it does not appear in the defaults.
+        The default failure codes that will be recognised (not case sensitive)
+         are 'F', 'FAIL', 'FAILED', 'FAILURE', 0
+    censor_code_in_XCN : str, int, optional
+        The censor code to be used in XCN format. Default is 'C'
+    failure_code_in_XCN : str, int, optional
+        The failure code to be used in XCN format. Default is 'F'
 
-    Output:
-    X - event time
-    C - censor code
-    N - number of events at each event time
+    Returns
+    -------
+    X : array
+        event times
+    C : array
+        censor codes
+    N : array
+        number of events at each event time
 
-    Methods:
-    print() - this will print a dataframe of the data in XCN format to the console
-    write_to_xlsx() - this will export the data in XCN format to an xlsx file at the specified path.
+    Notes
+    -----
+    For example usage, please see the `online documentation <https://reliability.readthedocs.io/en/latest/Importing%20data%20from%20Excel.html>`_.
 
-    For example usage, please see the online documentation at: https://reliability.readthedocs.io/en/latest/Importing%20data%20from%20Excel.html
+    The function is expecting the xlsx file to have columns in XCN format. If
+    they are in another format (FR, FNRN) then you will need to use the
+    appropriate function for that format.
 
-    Note that the function is expecting the xlsx file to have columns in XCN format.
-    If they are in another format (FR, FNRN) then you will need to use the appropriate function for that format.
-    A reduced form (XC) is accepted and all values will be assumed to have a quantity (N) of 1.
-
-
-
+    A reduced form (XC) is accepted and all values will be assumed to have a
+    quantity (N) of 1.
     """
 
     def __init__(
@@ -169,34 +188,54 @@ class xlsx_to_XCN:
         )
 
     def print(self):
+        """
+        This will print a dataframe of the data in XCN format to the console
+        """
         colorprint("Data (XCN format)", bold=True, underline=True)
         print(self.__df.to_string(index=False), "\n")
 
     def write_to_xlsx(self, path, **kwargs):
+        """
+        This will export the data in XCN format to an xlsx file at the specified path.
+
+        Parameters
+        ----------
+        path : str
+            The file path of the xlsx file to be written
+        kwargs
+            Keyword arguments passed directly to pandas
+        """
         write_df_to_xlsx(df=self.__df, path=path, **kwargs)
 
 
 class xlsx_to_FR:
     """
-    xlsx_to_FR data format converter
+    Converts data from xlsx format into FR format. The xlsx format is a
+    Microsoft Excel xlsx file.
 
-    Inputs:
-    path - the filepath for the xlsx file. Note that you must prefix this with r to specify it as raw text.
+    Parameters
+    ----------
+    path : str
+        The filepath for the xlsx file. Note that you must prefix this with r to
+        specify it as raw text.
 
-    Output:
-    failures
-    right_censored
+    Returns
+    -------
+    failures : array
+        failure times
+    right_censored : array
+        right censored times
 
-    Methods:
-    print() - this will print a dataframe of the data in FR format to the console
-    write_to_xlsx() - this will export the data in FR format to an xlsx file at the specified path.
+    Notes
+    -----
+    For example usage, please see the `online documentation <https://reliability.readthedocs.io/en/latest/Importing%20data%20from%20Excel.html>`_.
 
-    For example usage, please see the online documentation at: https://reliability.readthedocs.io/en/latest/Importing%20data%20from%20Excel.html
+    The function is expecting the xlsx file to have columns in FR format. If
+    they are in another format (XCN, FNRN) then you will need to use the
+    appropriate function for that format.
 
-    Note that the function is expecting the xlsx file to have columns in FR format.
-    If they are in another format (XCN, FNRN) then you will need to use the appropriate function for that format.
-    A reduced form (F) is accepted and all values will be assumed to be failures.
-
+    A reduced form (F) is accepted and all values will be assumed to be
+    failures.
     """
 
     def __init__(self, path, **kwargs):
@@ -228,36 +267,58 @@ class xlsx_to_FR:
             )
 
     def print(self):
+        """
+        This will print a dataframe of the data in FR format to the console
+        """
         colorprint("Data (FR format)", bold=True, underline=True)
         print(self.__df.to_string(index=False), "\n")
 
     def write_to_xlsx(self, path, **kwargs):
+        """
+        This will export the data in FR format to an xlsx file at the specified path.
+
+        Parameters
+        ----------
+        path : str
+            The file path of the xlsx file to be written
+        kwargs
+            Keyword arguments passed directly to pandas
+        """
         write_df_to_xlsx(df=self.__df, path=path, **kwargs)
 
 
 class xlsx_to_FNRN:
     """
-    xlsx_to_FNRN data format converter
+    Converts data from xlsx format into FNRN format. The xlsx format is a
+    Microsoft Excel xlsx file.
 
-    Inputs:
-    path - the filepath for the xlsx file. Note that you must prefix this with r to specify it as raw text.
+    Parameters
+    ----------
+    path : str
+        The filepath for the xlsx file. Note that you must prefix this with r to
+        specify it as raw text.
 
-    Output:
-    failures
-    num_failures
-    right_censored
-    num_right_censored
+    Returns
+    -------
+    failures : array
+        failure times
+    num_failures : array
+        the number of failures for each failure time
+    right_censored : array
+        right censored times
+    num_right_censored : array
+        the number of right censored for each right censored time
 
-    Methods:
-    print() - this will print a dataframe of the data in FNRN format to the console
-    write_to_xlsx() - this will export the data in FNRN format to an xlsx file at the specified path.
+    Notes
+    -----
+    For example usage, please see the `online documentation <https://reliability.readthedocs.io/en/latest/Importing%20data%20from%20Excel.html>`_.
 
-    For example usage, please see the online documentation at: https://reliability.readthedocs.io/en/latest/Importing%20data%20from%20Excel.html
+    The function is expecting the xlsx file to have columns in FNRN format. If
+    they are in another format (FR, XCN) then you will need to use the
+    appropriate function for that format.
 
-    Note that the function is expecting the xlsx file to have columns in FNRN format.
-    If they are in another format (FR, XCN) then you will need to use the appropriate function for that format.
-    A reduced form (FN) is accepted and all values will be assumed to be failures.
-
+    A reduced form (FN) is accepted and all values will be assumed to be
+    failures.
     """
 
     def __init__(self, path, **kwargs):
@@ -339,53 +400,84 @@ class xlsx_to_FNRN:
             self.__df = pd.DataFrame(Data, columns=["failures", "number of failures"])
 
     def print(self):
+        """
+        This will print a dataframe of the data in FNRN format to the console
+        """
         colorprint("Data (FNRN format)", bold=True, underline=True)
         print(self.__df.to_string(index=False), "\n")
 
     def write_to_xlsx(self, path, **kwargs):
+        """
+        This will export the data in FNRN format to an xlsx file at the specified path.
+
+        Parameters
+        ----------
+        path : str
+            The file path of the xlsx file to be written
+        kwargs
+            Keyword arguments passed directly to pandas
+        """
         write_df_to_xlsx(df=self.__df, path=path, **kwargs)
 
 
 class XCN_to_FNRN:
     """
-    XCN_to_FNRN data format converter
+    Converts data from XCN format to FNRN format.
 
-    Inputs:
-    X - the failure or right_censored time. This must be an array or list.
-    C -  the censoring code for each X. This must be an array or list. Defaults are recognised from the lists shown below.
-    N - the quantity for each X. This must be an array or list. Optional Input. If omitted all items are assumed to have quantity (N) of 1.
-    censor_code - specify the censor code you have used if it does not appear in the defaults (see below). Optional input.
-        * default censor codes that will be recognised (not case sensitive): R, 'RC', 'RIGHT CENS', 'RIGHT CENSORED', 'C', 'CENSORED', 'CENS', 'S', 'SUSP', 'SUSPENSION', 'SUSPENDED', 'UF', 'UNFAILED', 'UNFAIL', 'NF', 'NO FAIL', 'NO FAILURE', 'NOT FAILED', 1
-    failure_code - specify the failure code you have used if it does not appear in the defaults (see below). Optional Input.
-        * default failure codes that will be recognised (not case sensitive): 'F', 'FAIL', 'FAILED', 'FAILURE', 0
+    Parameters
+    ----------
+    X : list, array
+        The failure or right_censored time.
+    C : list, array
+        The censoring code for each X. The default censor codes that will be
+        recognised (not case sensitive) as right censored values are are R,
+        'RC', 'RIGHT CENS', 'RIGHT CENSORED', 'C', 'CENSORED', 'CENS', 'S',
+        'SUSP', 'SUSPENSION', 'SUSPENDED', 'UF', 'UNFAILED', 'UNFAIL', 'NF',
+        'NO FAIL', 'NO FAILURE', 'NOT FAILED', 1. The default failure codes that
+        will be recognised (not case sensitive) as failures are 'F', 'FAIL',
+        'FAILED', 'FAILURE', 0.
+    N : list, array, optional
+        The quantity for each X. If omitted all items are assumed to have
+        quantity (N) of 1.
+    censor_code : str, int, optional
+        The censor code you have used if it does not appear in the defaults
+        listed above.
+    failure_code : str, int, optional
+        The failure code you have used if it does not appear in the defaults
+        listed above.
 
-    Output:
-    failures
-    num_failures
-    right_censored
-    num_right_censored
+    Returns
+    -------
+    failures : array
+        failure times
+    num_failures : array
+        the number of failures for each failure time
+    right_censored : array
+        right censored times
+    num_right_censored : array
+        the number of right censored for each right censored time
 
-    Methods:
-    print() - this will print a dataframe of the data in FNRN format to the console
-    write_to_xlsx() - this will export the data in FNRN format to an xlsx file at the specified path.
-
+    Notes
+    -----
     Example usage:
-    FNRN = XCN_to_FNRN(X=[1,2,3,7,8,9], C=['f','f','f','c','c','c'], N=[1,2,2,3,2,1])
-    print(FNRN.failures)
-       >>> [1 2 3]
-    print(FNRN.num_failures)
-       >>> [1 2 2]
-    print(FNRN.right_censored)
-       >>> [7 8 9]
-    print(FNRN.num_right_censored)
-       >>> [3 2 1]
-    FNRN.print()
-       >>> Data (FNRN format)
-           failures  number of failures  right censored  number of right censored
-                  1                   1               7                         3
-                  2                   2               8                         2
-                  3                   2               9                         1
 
+    .. code:: python
+
+        FNRN = XCN_to_FNRN(X=[1,2,3,7,8,9], C=['f','f','f','c','c','c'], N=[1,2,2,3,2,1])
+        print(FNRN.failures)
+           >>> [1 2 3]
+        print(FNRN.num_failures)
+           >>> [1 2 2]
+        print(FNRN.right_censored)
+           >>> [7 8 9]
+        print(FNRN.num_right_censored)
+           >>> [3 2 1]
+        FNRN.print()
+           >>> Data (FNRN format)
+               failures  number of failures  right censored  number of right censored
+                      1                   1               7                         3
+                      2                   2               8                         2
+                      3                   2               9                         1
     """
 
     def __init__(self, X, C, N=None, censor_code=None, failure_code=None):
@@ -433,50 +525,79 @@ class XCN_to_FNRN:
             self.__df = pd.DataFrame(Data, columns=["failures", "number of failures"])
 
     def print(self):
+        """
+        This will print a dataframe of the data in FNRN format to the console
+        """
         colorprint("Data (FNRN format)", bold=True, underline=True)
         print(self.__df.to_string(index=False), "\n")
 
     def write_to_xlsx(self, path, **kwargs):
+        """
+        This will export the data in FNRN format to an xlsx file at the specified path.
+
+        Parameters
+        ----------
+        path : str
+            The file path of the xlsx file to be written
+        kwargs
+            Keyword arguments passed directly to pandas
+        """
         write_df_to_xlsx(df=self.__df, path=path, **kwargs)
 
 
 class XCN_to_FR:
     """
-    XCN_to_FR data format converter
+    Converts data from XCN format to FR format.
 
-    Inputs:
-    X - the failure or right_censored time. This must be an array or list.
-    C -  the censoring code for each X. This must be an array or list. Defaults are recognised from the lists shown below.
-    N - the quantity for each X. This must be an array or list. Optional Input. If omitted all items are assumed to have quantity (N) of 1.
-    censor_code - specify the censor code you have used if it does not appear in the defaults (see below). Optional input.
-        * default censor codes that will be recognised (not case sensitive): R, 'RC', 'RIGHT CENS', 'RIGHT CENSORED', 'C', 'CENSORED', 'CENS', 'S', 'SUSP', 'SUSPENSION', 'SUSPENDED', 'UF', 'UNFAILED', 'UNFAIL', 'NF', 'NO FAIL', 'NO FAILURE', 'NOT FAILED', 1
-    failure_code - specify the failure code you have used if it does not appear in the defaults (see below). Optional Input.
-        * default failure codes that will be recognised (not case sensitive): 'F', 'FAIL', 'FAILED', 'FAILURE', 0
+    Parameters
+    ----------
+    X : list, array
+        The failure or right_censored time.
+    C : list, array
+        The censoring code for each X. The default censor codes that will be
+        recognised (not case sensitive) as right censored values are are R,
+        'RC', 'RIGHT CENS', 'RIGHT CENSORED', 'C', 'CENSORED', 'CENS', 'S',
+        'SUSP', 'SUSPENSION', 'SUSPENDED', 'UF', 'UNFAILED', 'UNFAIL', 'NF',
+        'NO FAIL', 'NO FAILURE', 'NOT FAILED', 1. The default failure codes that
+        will be recognised (not case sensitive) as failures are 'F', 'FAIL',
+        'FAILED', 'FAILURE', 0.
+    N : list, array, optional
+        The quantity for each X. If omitted all items are assumed to have
+        quantity (N) of 1.
+    censor_code : str, int, optional
+        The censor code you have used if it does not appear in the defaults
+        listed above.
+    failure_code : str, int, optional
+        The failure code you have used if it does not appear in the defaults
+        listed above.
 
-    Output:
-    failures
-    right_censored
+    Returns
+    -------
+    failures : array
+        failure times
+    right_censored : array
+        right censored times
 
-    Methods:
-    print() - this will print a dataframe of the data in FR format to the console
-    write_to_xlsx() - this will export the data in FR format to an xlsx file at the specified path.
-
+    Notes
+    -----
     Example usage:
-    FR = XCN_to_FR(X=[1,2,3,7,8,9], C=['f','f','f','c','c','c'], N=[1,2,2,3,2,1])
-    print(FR.failures)
-       >>> [1 2 2 3 3]
-    print(FR.right_censored)
-       >>> [7 7 7 8 8 9]
-    FR.print()
-       >>> Data (FR format)
-           failures  right censored
-                  1               7
-                  2               7
-                  2               7
-                  3               8
-                  3               8
-                                  9
 
+    .. code:: python
+
+        FR = XCN_to_FR(X=[1,2,3,7,8,9], C=['f','f','f','c','c','c'], N=[1,2,2,3,2,1])
+        print(FR.failures)
+           >>> [1 2 2 3 3]
+        print(FR.right_censored)
+           >>> [7 7 7 8 8 9]
+        FR.print()
+           >>> Data (FR format)
+               failures  right censored
+                      1               7
+                      2               7
+                      2               7
+                      3               8
+                      3               8
+                                      9
     """
 
     def __init__(self, X, C, N=None, censor_code=None, failure_code=None):
@@ -572,50 +693,72 @@ class XCN_to_FR:
             self.__df = pd.DataFrame(Data, columns=["failures"])
 
     def print(self):
+        """
+        This will print a dataframe of the data in FR format to the console
+        """
         colorprint("Data (FR format)", bold=True, underline=True)
         print(self.__df.to_string(index=False), "\n")
 
     def write_to_xlsx(self, path, **kwargs):
+        """
+        This will export the data in FR format to an xlsx file at the specified path.
+
+        Parameters
+        ----------
+        path : str
+            The file path of the xlsx file to be written
+        kwargs
+            Keyword arguments passed directly to pandas
+        """
         write_df_to_xlsx(df=self.__df, path=path, **kwargs)
 
 
 class FR_to_XCN:
     """
-    FR_to_XCN data format converter
+    Converts data from FR format to XCN format.
 
-    Inputs:
-    failures - array or list
-    right_censored -  array or list. Optional input.
-    censor_code - the int or str to use for the censored items. Default is 'C'
-    failure_code - the int or str to use for the failed items. Default is 'F'
+    Parameters
+    ----------
+    failures : array, list
+        The failure times
+    right_censored : array, list, optional
+        The right censored times
+    censor_code : str, int, optional
+        The code to use for the censored items. Default is 'C'
+    failure_code : str, int, optional
+        The code to use for the failed items. Default is 'F'
 
-    Output:
-    X - event time
-    C - censor code
-    N - number of events at each event time
+    Returns
+    -------
+    X : array
+        The event times
+    C : array
+        The censor codes
+    N : array
+        The number of events at each event time
 
-    Methods:
-    print() - this will print a dataframe of the data in XCN format to the console
-    write_to_xlsx() - this will export the data in XCN format to an xlsx file at the specified path.
-
+    Notes
+    -----
     Example usage:
-    XCN = FR_to_XCN(failures=[1,1,2,2,3], right_censored=[9,9,9,9,8,8,7])
-    print(XCN.X)
-        >>> [1 2 3 7 8 9]
-    print(XCN.C)
-        >>> ['F' 'F' 'F' 'C' 'C' 'C']
-    print(XCN.N)
-       >>> [2 2 1 1 2 4]
-    XCN.print()
-       >>> Data (XCN format)
-           event time censor code  number of events
-                    1           F                 2
-                    2           F                 2
-                    3           F                 1
-                    7           C                 1
-                    8           C                 2
-                    9           C                 4
 
+    .. code:: python
+
+        XCN = FR_to_XCN(failures=[1,1,2,2,3], right_censored=[9,9,9,9,8,8,7])
+        print(XCN.X)
+            >>> [1 2 3 7 8 9]
+        print(XCN.C)
+            >>> ['F' 'F' 'F' 'C' 'C' 'C']
+        print(XCN.N)
+           >>> [2 2 1 1 2 4]
+        XCN.print()
+           >>> Data (XCN format)
+               event time censor code  number of events
+                        1           F                 2
+                        2           F                 2
+                        3           F                 1
+                        7           C                 1
+                        8           C                 2
+                        9           C                 4
     """
 
     def __init__(
@@ -655,52 +798,78 @@ class FR_to_XCN:
         )
 
     def print(self):
+        """
+        This will print a dataframe of the data in XCN format to the console
+        """
         colorprint("Data (XCN format)", bold=True, underline=True)
         print(self.__df.to_string(index=False), "\n")
 
     def write_to_xlsx(self, path, **kwargs):
+        """
+        This will export the data in XCN format to an xlsx file at the specified path.
+
+        Parameters
+        ----------
+        path : str
+            The file path of the xlsx file to be written
+        kwargs
+            Keyword arguments passed directly to pandas
+        """
         write_df_to_xlsx(df=self.__df, path=path, **kwargs)
 
 
 class FNRN_to_XCN:
     """
-    FNRN_to_XCN data format converter
+    Converts data from FNRN format to XCN format.
 
-    Inputs:
-    failures - array or list
-    num_failures - array or list. Length must match length of failures
-    right_censored -  array or list. Optional input.
-    num_right_censored - array or list. Optional Input. Length must match length of right_censored
-    censor_code - the int or str to use for the censored items. Default is 'C'
-    failure_code - the int or str to use for the failed items. Default is 'F'
+    Parameters
+    ----------
+    failures : array, list
+        The failure times
+    num_failures : array, list
+        The number of failures for each failure time. Length must match length
+        of failures.
+    right_censored : array, list, optional
+        The right censored times
+    num_right_censored : array, list, optional
+        The number of right censored for each right censored time. Length must
+        match length of right_censored.
+    censor_code : str, int, optional
+        The code to use for the censored items. Default is 'C'
+    failure_code : str, int, optional
+        The code to use for the failed items. Default is 'F'
 
-    Output:
-    X - event time
-    C - censor code
-    N - number of events at each event time
+    Returns
+    -------
+    X : array
+        The event times
+    C : array
+        The censor codes
+    N : array
+        The number of events at each event time
 
-    Methods:
-    print() - this will print a dataframe of the data in XCN format to the console
-    write_to_xlsx() - this will export the data in XCN format to an xlsx file at the specified path.
-
+    Notes
+    -----
     Example usage:
-    XCN = FNRN_to_XCN(failures=[1, 2, 3], num_failures=[2, 2, 1], right_censored=[9, 8, 7], num_right_censored=[3, 2, 1])
-    print(XCN.X)
-        >>> [1. 2. 3. 7. 8. 9.]
-    print(XCN.C)
-        >>> ['F' 'F' 'F' 'C' 'C' 'C']
-    print(XCN.N)
-       >>> [2 2 1 1 2 3]
-    XCN.print()
-       >>> Data (XCN format)
-           event time censor code  number of events
-                    1           F                 2
-                    2           F                 2
-                    3           F                 1
-                    7           C                 1
-                    8           C                 2
-                    9           C                 3
 
+    .. code:: python
+
+        XCN = FNRN_to_XCN(failures=[1, 2, 3], num_failures=[2, 2, 1], right_censored=[9, 8, 7], num_right_censored=[3, 2, 1])
+        print(XCN.X)
+            >>> [1. 2. 3. 7. 8. 9.]
+        print(XCN.C)
+            >>> ['F' 'F' 'F' 'C' 'C' 'C']
+        print(XCN.N)
+           >>> [2 2 1 1 2 3]
+        XCN.print()
+           >>> Data (XCN format)
+               event time censor code  number of events
+                        1           F                 2
+                        2           F                 2
+                        3           F                 1
+                        7           C                 1
+                        8           C                 2
+                        9           C                 3
     """
 
     def __init__(
@@ -769,48 +938,69 @@ class FNRN_to_XCN:
         )
 
     def print(self):
+        """
+        This will print a dataframe of the data in XCN format to the console
+        """
         colorprint("Data (XCN format)", bold=True, underline=True)
         print(self.__df.to_string(index=False), "\n")
 
     def write_to_xlsx(self, path, **kwargs):
+        """
+        This will export the data in XCN format to an xlsx file at the specified path.
+
+        Parameters
+        ----------
+        path : str
+            The file path of the xlsx file to be written
+        kwargs
+            Keyword arguments passed directly to pandas
+        """
         write_df_to_xlsx(df=self.__df, path=path, **kwargs)
 
 
 class FR_to_FNRN:
     """
-    FR_to_FNRN data format converter
+    Converts data from FR format to FNRN format
 
-    Inputs:
-    failures - array or list
-    right censored -  array or list. Optional input.
+    Parameters
+    ----------
+    failures : array, list
+        The failure times
+    right censored : array, list, optional
+        The right censored times
 
-    Output:
-    failures
-    num_failures
-    right_censored
-    num_right_censored
+    Returns
+    -------
+    failures : array
+        The failure times
+    num_failures : array
+        The number of failures are each failure time
+    right_censored : array
+        The right censored times
+    num_right_censored : array
+        The number of values at each right_censored time
 
-    Methods:
-    print() - this will print a dataframe of the data in FNRN format to the console
-    write_to_xlsx() - this will export the data in FNRN format to an xlsx file at the specified path.
 
+    Notes
+    -----
     Example usage:
-    FNRN = FR_to_FNRN(failures=[1,1,2,2,3], right_censored=[9,9,9,9,8,8,7])
-    print(FNRN.failures)
-        >>> [1 2 3]
-    print(FNRN.num_failures)
-        >>> [2 2 1]
-    print(FNRN.right_censored)
-       >>> [7 8 9]
-    print(FNRN.num_right_censored)
-       >>> [1 2 4]
-    FNRN.print()
-       >>> Data (FNRN format)
-           failures  number of failures  right censored  number of right censored
-                  1                   2               7                         1
-                  2                   2               8                         2
-                  3                   1               9                         4
 
+    .. code:: python
+        FNRN = FR_to_FNRN(failures=[1,1,2,2,3], right_censored=[9,9,9,9,8,8,7])
+        print(FNRN.failures)
+            >>> [1 2 3]
+        print(FNRN.num_failures)
+            >>> [2 2 1]
+        print(FNRN.right_censored)
+           >>> [7 8 9]
+        print(FNRN.num_right_censored)
+           >>> [1 2 4]
+        FNRN.print()
+           >>> Data (FNRN format)
+               failures  number of failures  right censored  number of right censored
+                      1                   2               7                         1
+                      2                   2               8                         2
+                      3                   1               9                         4
     """
 
     def __init__(self, failures, right_censored=None):
@@ -862,54 +1052,77 @@ class FR_to_FNRN:
             self.__df = pd.DataFrame(Data, columns=["failures", "number of failures"])
 
     def print(self):
+        """
+        This will print a dataframe of the data in FNRN format to the console
+        """
         colorprint("Data (FNRN format)", bold=True, underline=True)
         print(self.__df.to_string(index=False), "\n")
 
     def write_to_xlsx(self, path, **kwargs):
+        """
+        This will export the data in FNRN format to an xlsx file at the specified path.
+
+        Parameters
+        ----------
+        path : str
+            The file path of the xlsx file to be written
+        kwargs
+            Keyword arguments passed directly to pandas
+        """
         write_df_to_xlsx(df=self.__df, path=path, **kwargs)
 
 
 class FNRN_to_FR:
     """
-    FNRN_to_FR data format converter
+    Converts data from FNRN format to FR format
 
-    Inputs:
-    failures - array or list
-    num_failures - array or list. Length must match length of failures
-    right_censored -  array or list. Optional input.
-    num_right_censored - array or list. Optional Input. Length must match length of right_censored
+    Parameters
+    ----------
+    failures : array, list
+        The failure times
+    num_failures : array, list
+        The number of failures are each failure time.  Length must match length
+        of failures.
+    right_censored : array, list, optional
+        The right censored times
+    num_right_censored : array, list, optional
+        The number of values at each right_censored time. Length must match
+        length of right_censored.
 
-    Output:
-    failures
-    right_censored
+    Returns
+    -------
+    failures : array
+        The failure times
+    right_censored : array
+        The right censored times
 
-    Methods:
-    print() - this will print a dataframe of the data in FR format to the console
-    write_to_xlsx() - this will export the data in FR format to an xlsx file at the specified path.
-
+    Notes
+    -----
     Example usage:
-    FR = FNRN_to_FR(failures=[1,2,3], num_failures=[1,1,2], right_censored=[9,8,7], num_right_censored=[5,4,4])
-    print(FR.failures)
-        >>> [1. 2. 3. 3.]
-    print(FR.right_censored)
-       >>> [9. 9. 9. 9. 9. 8. 8. 8. 8. 7. 7. 7. 7.]
-    FR.print()
-       >>>  Data (FR format)
-            failures  right censored
-                   1               9
-                   2               9
-                   3               9
-                   3               9
-                                   9
-                                   8
-                                   8
-                                   8
-                                   8
-                                   7
-                                   7
-                                   7
-                                   7
 
+    .. code:: python
+
+        FR = FNRN_to_FR(failures=[1,2,3], num_failures=[1,1,2], right_censored=[9,8,7], num_right_censored=[5,4,4])
+        print(FR.failures)
+            >>> [1. 2. 3. 3.]
+        print(FR.right_censored)
+           >>> [9. 9. 9. 9. 9. 8. 8. 8. 8. 7. 7. 7. 7.]
+        FR.print()
+           >>>  Data (FR format)
+                failures  right censored
+                       1               9
+                       2               9
+                       3               9
+                       3               9
+                                       9
+                                       8
+                                       8
+                                       8
+                                       8
+                                       7
+                                       7
+                                       7
+                                       7
     """
 
     def __init__(
@@ -958,8 +1171,21 @@ class FNRN_to_FR:
             self.__df = pd.DataFrame(Data, columns=["failures"])
 
     def print(self):
+        """
+        This will print a dataframe of the data in FR format to the console
+        """
         colorprint("Data (FR format)", bold=True, underline=True)
         print(self.__df.to_string(index=False), "\n")
 
     def write_to_xlsx(self, path, **kwargs):
+        """
+        This will export the data in FR format to an xlsx file at the specified path.
+
+        Parameters
+        ----------
+        path : str
+            The file path of the xlsx file to be written
+        kwargs
+            Keyword arguments passed directly to pandas
+        """
         write_df_to_xlsx(df=self.__df, path=path, **kwargs)
