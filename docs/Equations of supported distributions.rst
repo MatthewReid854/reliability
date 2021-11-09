@@ -170,7 +170,7 @@ where :math:`I_t(t|x,y)` is the regularized incomplete beta function which is de
 Note that there is a parameterization of the Beta distribution that changes the lower and upper limits beyond 0 and 1. For this parametrization, see the reference listed in the opening paragraph of this page.
 
 Loglogistic Distribution
-====================
+========================
 
 :math:`\alpha` = scale parameter :math:`( \alpha > 0 )`
 
@@ -195,7 +195,7 @@ Limits :math:`( t \geq 0 )`
 There is another parameterization of the loglogistic distribution using :math:`\mu` and :math:`\sigma` which is designed to look more like the parametrization of the `logistic distribution <https://en.wikipedia.org/wiki/Logistic_distribution>`_ and is related to the above parametrization by :math:`\mu = ln(\alpha)` and :math:`\sigma = \frac{1}{\beta}`. This parametrisation can be found `here <http://reliawiki.org/index.php/The_Loglogistic_Distribution>`_.
 
 Gumbel Distribution
-====================
+===================
 
 :math:`\mu` = location parameter :math:`( -\infty < \mu < \infty )`
 
