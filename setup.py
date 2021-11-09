@@ -79,6 +79,7 @@ setuptools.setup(
         "pandas>=1.1.2",
         "autograd-gamma>=0.5.0",
         "mplcursors>=0.3",
+        "docutils<0.18"
     ],
     python_requires=">=3.7",
     packages=setuptools.find_packages(
