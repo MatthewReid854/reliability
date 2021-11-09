@@ -986,6 +986,7 @@ class FR_to_FNRN:
     Example usage:
 
     .. code:: python
+
         FNRN = FR_to_FNRN(failures=[1,1,2,2,3], right_censored=[9,9,9,9,8,8,7])
         print(FNRN.failures)
             >>> [1 2 3]
