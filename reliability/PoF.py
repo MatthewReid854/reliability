@@ -945,13 +945,10 @@ class strain_life_diagram:
                     c=c,
                 )
                 use_cycles_2Nf = fsolve(fun_cm, np.array(10))
-                cycles_2Nt = (epsilon_f * E / sigma_f) ** (
-                    1 / (b - c)
-                )
+                cycles_2Nt = (epsilon_f * E / sigma_f) ** (1 / (b - c))
                 epsilon_total = (
-                    (sigma_f / E) * cycles_2Nf_array ** b
-                    + epsilon_f * cycles_2Nf_array ** c
-                )
+                    sigma_f / E
+                ) * cycles_2Nf_array ** b + epsilon_f * cycles_2Nf_array ** c
                 epsilon_total_at_cycles_2Nt = (
                     sigma_f / E
                 ) * cycles_2Nt ** b + epsilon_f * cycles_2Nt ** c
@@ -993,13 +990,12 @@ class strain_life_diagram:
                         c=c,
                     )
                     use_cycles_2Nf = fsolve(fun_m, np.array(10))
-                    cycles_2Nt = (
-                        epsilon_f * E / (sigma_f - mean_stress)
-                    ) ** (1 / (b - c))
-                    epsilon_total = (
-                        ((sigma_f - mean_stress) / E) * cycles_2Nf_array ** b
-                        + epsilon_f * cycles_2Nf_array ** c
+                    cycles_2Nt = (epsilon_f * E / (sigma_f - mean_stress)) ** (
+                        1 / (b - c)
                     )
+                    epsilon_total = (
+                        (sigma_f - mean_stress) / E
+                    ) * cycles_2Nf_array ** b + epsilon_f * cycles_2Nf_array ** c
                     epsilon_total_at_cycles_2Nt = (
                         (sigma_f - mean_stress) / E
                     ) * cycles_2Nt ** b + epsilon_f * cycles_2Nt ** c
@@ -1053,8 +1049,7 @@ class strain_life_diagram:
                     cycles_2Nt = (
                         epsilon_f
                         * E
-                        * ((sigma_f - mean_stress) / sigma_f)
-                        ** (c / b)
+                        * ((sigma_f - mean_stress) / sigma_f) ** (c / b)
                         / (sigma_f - mean_stress)
                     ) ** (1 / (b - c))
                     epsilon_total = (
@@ -1100,8 +1095,7 @@ class strain_life_diagram:
                     )
                     plastic_strain_line = (
                         epsilon_f
-                        * ((sigma_f - mean_stress) / sigma_f)
-                        ** (c / b)
+                        * ((sigma_f - mean_stress) / sigma_f) ** (c / b)
                         * cycles_2Nf_array ** c
                     )
                     elastic_strain_line = (
@@ -1128,20 +1122,14 @@ class strain_life_diagram:
                         sigma_max=self.max_stress,
                     )
                     use_cycles_2Nf = fsolve(fun_swt, np.array(10))
-                    cycles_2Nt = (epsilon_f * E / sigma_f) ** (
-                        1 / (b - c)
-                    )
+                    cycles_2Nt = (epsilon_f * E / sigma_f) ** (1 / (b - c))
                     epsilon_total = (
                         (sigma_f ** 2 / E) * cycles_2Nf_array ** (2 * b)
-                        + sigma_f
-                        * epsilon_f
-                        * cycles_2Nf_array ** (b + c)
+                        + sigma_f * epsilon_f * cycles_2Nf_array ** (b + c)
                     ) / self.max_stress
                     epsilon_total_at_cycles_2Nt = (
                         (sigma_f ** 2 / E) * cycles_2Nt ** (2 * b)
-                        + sigma_f
-                        * epsilon_f
-                        * cycles_2Nt ** (b + c)
+                        + sigma_f * epsilon_f * cycles_2Nt ** (b + c)
                     ) / self.max_stress
                     equation_str = str(
                         r"$\epsilon_{tot} = \frac{1}{"
@@ -1164,9 +1152,7 @@ class strain_life_diagram:
                         + ")})$"
                     )
                     plastic_strain_line = (
-                        sigma_f
-                        * epsilon_f
-                        * cycles_2Nf_array ** (b + c)
+                        sigma_f * epsilon_f * cycles_2Nf_array ** (b + c)
                     ) / self.max_stress
                     elastic_strain_line = (
                         (sigma_f ** 2 / E) * cycles_2Nf_array ** (2 * b)
@@ -1310,14 +1296,11 @@ class strain_life_diagram:
                 plt.gcf().set_size_inches(10, 7)
         else:  # this is in the case that max stress or strain was not supplied
             if show_plot is True:
-                cycles_2Nt = (epsilon_f * E / sigma_f) ** (
-                    1 / (b - c)
-                )
+                cycles_2Nt = (epsilon_f * E / sigma_f) ** (1 / (b - c))
                 cycles_2Nf_array = np.logspace(1, 8, 1000)
                 epsilon_total = (
-                    (sigma_f / E) * cycles_2Nf_array ** b
-                    + epsilon_f * cycles_2Nf_array ** c
-                )
+                    sigma_f / E
+                ) * cycles_2Nf_array ** b + epsilon_f * cycles_2Nf_array ** c
                 epsilon_total_at_cycles_2Nt = (
                     sigma_f / E
                 ) * cycles_2Nt ** b + epsilon_f * cycles_2Nt ** c
@@ -1429,13 +1412,15 @@ def palmgren_miner_linear_damage(rated_life, time_at_stress, stress):
         from reliability.PoF import palmgren_miner_linear_damage
         palmgren_miner_linear_damage(rated_life=[50000,6500,1000], time_at_stress=[40/60, 15/60, 5/60], stress=[1, 2, 4])
 
-        >>> Palmgren-Miner Linear Damage Model results:
-        >>> Each load cycle uses 0.01351 % of the components life.
-        >>> The service life of the component is 7400.37951 load cycles.
-        >>> The amount of damage caused at each stress level is:
-        >>> Stress =  1 , Damage fraction = 9.86717 %.
-        >>> Stress =  2 , Damage fraction = 28.463 %.
-        >>> Stress =  4 , Damage fraction = 61.66983 %.
+        '''
+        Palmgren-Miner Linear Damage Model results:
+        Each load cycle uses 0.01351 % of the components life.
+        The service life of the component is 7400.37951 load cycles.
+        The amount of damage caused at each stress level is:
+        Stress =  1 , Damage fraction = 9.86717 %.
+        Stress =  2 , Damage fraction = 28.463 %.
+        Stress =  4 , Damage fraction = 61.66983 %.
+        '''
     """
     if len(rated_life) != len(time_at_stress) or len(rated_life) != len(stress):
         raise ValueError("All inputs must be of equal length.")
@@ -1477,13 +1462,9 @@ class fracture_mechanics_crack_initiation:
     different materials and geometries. Resources for finding some of these
     parameters if they are not given to you:
 
-    - q = 1/(1+a/r) Where r is the notch radius of curvature (in mm), and a is
-    0.025*(2070/Su). Su is the ultimate strength in MPa. This only applies to
-    high strength steels where Su>550MPa.
-
-    - Kt can be calculated using the `efatigue website <https://www.efatigue.com/constantamplitude/stressconcentration/>`_.
-    This website will provide you with the appropriate Kt for your notched
-    geometry.
+    - q = 1/(1+a/r) Where r is the notch radius of curvature (in mm), and a is 0.025*(2070/Su).
+    - Su is the ultimate strength in MPa. This only applies to high strength steels where Su>550MPa.
+    - Kt can be calculated using the `efatigue website <https://www.efatigue.com/constantamplitude/stressconcentration/>`_. This website will provide you with the appropriate Kt for your notched geometry.
 
     Parameters
     ----------
@@ -1536,6 +1517,8 @@ class fracture_mechanics_crack_initiation:
     cycles_to_failure : float
         The number of cycles until failure due to fatigue
 
+    Notes
+    -----
     Example usage:
 
     .. code:: python
@@ -1543,11 +1526,14 @@ class fracture_mechanics_crack_initiation:
         from reliability.PoF import fracture_mechanics_crack_initiation
         fracture_mechanics_crack_initiation(P=0.15, A=5*80, Kt=2.41, q=0.9857, Sy=690, E=210000, K=1060, n=0.14, b=-0.081, c=-0.65, sigma_f=1160, epsilon_f=1.1,mean_stress_correction_method='SWT')
 
-        >>> Results from fracture_mechanics_crack_initiation:
-        >>> A crack of 1 mm will be formed after: 2919.91 cycles (5839.82 reversals).
-        >>> Stresses in the component: Min = -506.7291 MPa , Max = 506.7291 MPa , Mean = -5.684341886080802e-14 MPa.
-        >>> Strains in the component: Min = -0.0075 , Max = 0.0075 , Mean = 8.673617379884035e-19
-        >>> Mean stress correction method used: SWT
+        '''
+        Results from fracture_mechanics_crack_initiation:
+        A crack of 1 mm will be formed after: 2919.91 cycles (5839.82 reversals).
+        Stresses in the component: Min = -506.7291 MPa , Max = 506.7291 MPa , Mean = -5.684341886080802e-14 MPa.
+        Strains in the component: Min = -0.0075 , Max = 0.0075 , Mean = 8.673617379884035e-19
+        Mean stress correction method used: SWT
+        '''
+
     """
 
     def __init__(
@@ -1851,31 +1837,33 @@ class fracture_mechanics_crack_growth:
         print('')
         fracture_mechanics_crack_growth(Kc=66,C=3.81*10**-12,m=3,P=0.103,W=100,t=5,crack_type='center')
 
-        >>> Results from fracture_mechanics_crack_growth:
-        >>> SIMPLIFIED METHOD (keeping f(g), S_max, and a_crit as constant):
-        >>> Crack growth was found in two stages since the transition length ( 2.08 mm ) due to the notch, was greater than the initial crack length ( 1 mm ).
-        >>> Stage 1 (a_initial to transition length): 6802 cycles
-        >>> Stage 2 (transition length to a_final): 1133 cycles
-        >>> Total cycles to failure: 7935 cycles.
-        >>> Critical crack length to cause failure was found to be: 7.86 mm.
+        '''
+        Results from fracture_mechanics_crack_growth:
+        SIMPLIFIED METHOD (keeping f(g), S_max, and a_crit as constant):
+        Crack growth was found in two stages since the transition length ( 2.08 mm ) due to the notch, was greater than the initial crack length ( 1 mm ).
+        Stage 1 (a_initial to transition length): 6802 cycles
+        Stage 2 (transition length to a_final): 1133 cycles
+        Total cycles to failure: 7935 cycles.
+        Critical crack length to cause failure was found to be: 7.86 mm.
 
-        >>> ITERATIVE METHOD (recalculating f(g), S_max, and a_crit for each cycle):
-        >>> Crack growth was found in two stages since the transition length ( 2.45 mm ) due to the notch, was greater than the initial crack length ( 1 mm ).
-        >>> Stage 1 (a_initial to transition length): 7576 cycles
-        >>> Stage 2 (transition length to a_final): 671 cycles
-        >>> Total cycles to failure: 8247 cycles.
-        >>> Critical crack length to cause failure was found to be: 6.39 mm.
+        ITERATIVE METHOD (recalculating f(g), S_max, and a_crit for each cycle):
+        Crack growth was found in two stages since the transition length ( 2.45 mm ) due to the notch, was greater than the initial crack length ( 1 mm ).
+        Stage 1 (a_initial to transition length): 7576 cycles
+        Stage 2 (transition length to a_final): 671 cycles
+        Total cycles to failure: 8247 cycles.
+        Critical crack length to cause failure was found to be: 6.39 mm.
 
-        >>> Results from fracture_mechanics_crack_growth:
-        >>> SIMPLIFIED METHOD (keeping f(g), S_max, and a_crit as constant):
-        >>> Crack growth was found in a single stage since the transition length ( 0.0 mm ) was less than the initial crack length 1.0 mm.
-        >>> Total cycles to failure: 281359 cycles.
-        >>> Critical crack length to cause failure was found to be: 32.67 mm.
+        Results from fracture_mechanics_crack_growth:
+        SIMPLIFIED METHOD (keeping f(g), S_max, and a_crit as constant):
+        Crack growth was found in a single stage since the transition length ( 0.0 mm ) was less than the initial crack length 1.0 mm.
+        Total cycles to failure: 281359 cycles.
+        Critical crack length to cause failure was found to be: 32.67 mm.
 
-        >>> ITERATIVE METHOD (recalculating f(g), S_max, and a_crit for each cycle):
-        >>> Crack growth was found in a single stage since the transition length ( 0.0 mm ) was less than the initial crack length 1.0 mm.
-        >>> Total cycles to failure: 225827 cycles.
-        >>> Critical crack length to cause failure was found to be: 18.3 mm.
+        ITERATIVE METHOD (recalculating f(g), S_max, and a_crit for each cycle):
+        Crack growth was found in a single stage since the transition length ( 0.0 mm ) was less than the initial crack length 1.0 mm.
+        Total cycles to failure: 225827 cycles.
+        Critical crack length to cause failure was found to be: 18.3 mm.
+        '''
     """
 
     def __init__(
@@ -2302,10 +2290,10 @@ def creep_failure_time(temp_low, temp_high, time_low, C=20, print_results=True):
     temperature (temp_high).
 
     This relation requires the input temperatures in Fahrenheit. To convert
-    Celsius to Fahrenheit use F = C*(9/5)+32
+    Celsius to Fahrenheit use :math:`F = C \times \left(\frac{9}{5}\right)+32`
 
     Note that the conversion between Fahrenheit and Rankine used in this
-    calculation is R = F+459.67
+    calculation is :math:`R = F+459.67`
 
     For more information see `Wikipedia <https://en.wikipedia.org/wiki/Larson%E2%80%93Miller_relation>`_.
 
@@ -2343,9 +2331,9 @@ class acceleration_factor:
     """
     The Arrhenius model for Acceleration factor due to higher temperature is:
 
-    :math: `AF = exp\left(\frac{Ea}{K\left(\frac{1}{T_{use}}-\frac{1}{T_{acc}}\right)}\right)`
+    :math:`AF = exp\left(\frac{Ea}{K\left(\frac{1}{T_{use}}-\frac{1}{T_{acc}}\right)}\right)`
 
-    K is the Boltzmann constant: 8.617333262145*10^-5 eV/Kelvin
+    K is the Boltzmann constant: :math:`8.617333262145 \times 10^{-5}` eV/Kelvin
 
     This function accepts T_use as a mandatory input and the user may specify
     any two of the three other variables, and the third variable will be found.
