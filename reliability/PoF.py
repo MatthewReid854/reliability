@@ -2,6 +2,7 @@
 Physics of Failure
 
 Within the module PoF, are the following functions:
+
 - SN_diagram - plots an S-N diagram from stress and life data from cyclic fatigue tests.
 - stress_strain_life_parameters_from_data - finds the parameters K, n, sigma_F, epsilon_f, b, c, given data for stress, strain, and cycles
 - stress_strain_diagram - plots the stress-strain diagram and hysteresis loop using model parameters
@@ -36,31 +37,66 @@ def SN_diagram(
     **kwargs
 ):
     """
-    This function will plot the stress vs number of cycles (S-N) diagram when supplied with data from a series of fatigue tests.
+    This function will plot the stress vs number of cycles (S-N) diagram when
+    supplied with data from a series of fatigue tests.
 
-    Inputs:
-    stress - an array or list of stress values at failure
-    cycles - an array or list of cycles values at failure
-    stress_runout - an array or list of stress values that did not result in failure Optional
-    cycles_runout - an array or list of cycles values that did not result in failure. Optional
-    xscale - 'log' or 'linear'. Default is 'log'.
-    stress_trace - an array or list of stress values to be traced across to cycles values.
-    cycles_trace - an array or list of cycles values to be traced across to stress values.
-    show_endurance_limit - This will adjust all lines of best fit to be greater than or equal to the average stress_runout. Defaults to False if stress_runout is not specified. Defaults to True if stress_runout is specified.
-    method_for_bounds - 'statistical', 'residual', or None. Defaults to 'statistical'. If set to 'statistical' the CI value is used, otherwise it is not used for the 'residual' method. Residual uses the maximum residual datapoint for symmetric bounds. Setting the method for bounds to None will turn off the confidence bounds.
-    CI - Must be between 0 and 1. Default is 0.95 for 95% confidence interval. Only used if method_for_bounds = 'statistical'
-    Other plotting keywords (eg. color, linestyle, etc) are accepted for the line of best fit.
+    Parameters
+    ----------
+    stress : array, list
+        The stress values at failure.
+    cycles : array, list
+        The cycles values at failure. Must match the length of stress.
+    stress_runout : array, list, optional
+        The stress values that did not result in failure. Optional input.
+    cycles_runout : array, list, optional
+        The cycles values that did not result in failure. Optional input. If
+        supplied, Must match the length of stress_runout.
+    xscale : str, optional
+        The scale for the x-axis. Must be 'log' or 'linear'. Default is 'log'.
+    stress_trace : array, list, optional
+        The stress values to be traced across to cycles values on the plot.
+        Optional input.
+    cycles_trace : array, list, optional
+        The cycles values to be traced across to stress values on the plot.
+        Optional input.
+    show_endurance_limit : bool, optional
+        This will adjust all lines of best fit to be greater than or equal to
+        the average stress_runout. Defaults to False if stress_runout is not
+        specified. Defaults to True if stress_runout is specified.
+    method_for_bounds : str, None, optional
+        The method for the confidence bounds. Must be 'statistical', 'residual',
+        or None. Defaults to 'statistical'. If set to 'statistical' the CI value
+        is used, otherwise it is not used for the 'residual' method. Residual
+        uses the maximum residual datapoint for symmetric bounds. Setting the
+        method for bounds to None will turn off the confidence bounds.
+    CI : float, optional
+        The confidence interval. Must be between 0 and 1. Default is 0.95 for
+        95% confidence interval. Only used if method_for_bounds is
+        'statistical'.
+    kwargs
+        Other plotting keywords (eg. color, linestyle, etc) are accepted and
+        passed to matplotlib for the line of best fit.
 
-    Outputs:
-    The plot is the only output. All calculated values are shown on the plot.
+    Returns
+    -------
+    None
+        The plot is the only output. All calculated values are shown on the
+        plot.
 
+    Notes
+    -----
     Example usage:
-    stress = [340, 300, 290, 275, 260, 255, 250, 235, 230, 220, 215, 210]
-    cycles = [15000, 24000, 36000, 80000, 177000, 162000, 301000, 290000, 361000, 881000, 1300000, 2500000]
-    stress_runout = [210, 210, 205, 205, 205]
-    cycles_runout = [10 ** 7, 10 ** 7, 10 ** 7, 10 ** 7, 10 ** 7]
-    SN_diagram(stress=stress, cycles=cycles, stress_runout=stress_runout, cycles_runout=cycles_runout,method_for_bounds='residual',cycles_trace=[5 * 10 ** 5], stress_trace=[260])
-    plt.show()
+
+    .. code:: python
+
+        from reliability.PoF import SN_diagram
+        import matplotlib.pyplot as plt
+        stress = [340, 300, 290, 275, 260, 255, 250, 235, 230, 220, 215, 210]
+        cycles = [15000, 24000, 36000, 80000, 177000, 162000, 301000, 290000, 361000, 881000, 1300000, 2500000]
+        stress_runout = [210, 210, 205, 205, 205]
+        cycles_runout = [10 ** 7, 10 ** 7, 10 ** 7, 10 ** 7, 10 ** 7]
+        SN_diagram(stress=stress, cycles=cycles, stress_runout=stress_runout, cycles_runout=cycles_runout,method_for_bounds='residual',cycles_trace=[5 * 10 ** 5], stress_trace=[260])
+        plt.show()
     """
 
     # error checking of input and changing inputs to arrays
@@ -286,29 +322,53 @@ def SN_diagram(
 
 class stress_strain_life_parameters_from_data:
     """
-    This function will use stress and strain data to calculate the stress-strain parameters: K, n.
-    If cycles is provided it will also produce the strain-life parameters: sigma_f, epsilon_f, b, c.
-    You cannot find the strain-life parameters without stress as we use stress to find elastic strain.
+    This function will use stress and strain data to calculate the stress-strain
+    parameters: K, n.
+    If cycles is provided it will also calculate the strain-life parameters:
+    sigma_f, epsilon_f, b, c.
 
-    Note: If you already have the parameters K, n, sigma_f, epsilon_f, b, c, then you can use the function 'stress_strain_diagram'
+    It is not posible to calculate the strain-life parameters without stress
+    because stress is needed to find elastic strain.
 
-    Inputs:
-    strain - an array or list of strain
-    stress - an array or list of stress
-    E - The modulus of elasticity. Ensure this is in the same units as stress (typically MPa)
-    cycles - the number of cycles to failure. Optional input. Required if you want to obtain the parameters sigma_f, epsilon_f, b, c
-    print_results - True/False. Default is True.
-    show_plot - True/False. Default is True.
+    If you already have the parameters K, n, sigma_f, epsilon_f, b, c, then you
+    can use the function 'stress_strain_diagram' for the plot.
 
-    Outputs:
-    The stress-strain plot will a be generated if show_plot is True. Use plt.show() to show it.
-    The results will be printed in the console if print_results is True.
-    K - the cyclic strength coefficient
-    n - the cyclic strain hardening exponent
-    sigma_f - the fatigue strength coefficient. Not generated if cycles is not provided.
-    epsilon_f - the fatigue strain coefficient. Not generated if cycles is not provided.
-    b - the elastic strain exponent. Not generated if cycles is not provided.
-    c - the plastic strain exponent. Not generated if cycles is not provided.
+    Parameters
+    ----------
+    strain : array, list
+        The strain values
+    stress : array, list
+        The stress values
+    E : int, float
+        The modulus of elasticity. Ensure this is in the same units as stress
+        (typically MPa).
+    cycles : array, list, optional
+        The number of cycles to failure. Optional input. This is required if you
+        want to obtain the parameters sigma_f, epsilon_f, b, c
+    print_results : bool, optional
+        If True the results will be printed to console. Default is True.
+    show_plot : bool, optional
+        If True the stress strain diagram will be produced. Default is True. Use
+        plt.show() to show it.
+
+    Returns
+    -------
+    K : float
+        The cyclic strength coefficient
+    n : float
+        The cyclic strain hardening exponent
+    sigma_f : float
+        The fatigue strength coefficient. This is only generated if cycles is
+        provided.
+    epsilon_f : float
+        The fatigue strain coefficient. This is only generated if cycles is
+        provided.
+    b : float
+        The elastic strain exponent. This is only generated if cycles is
+        provided.
+    c : float
+        The plastic strain exponent. This is only generated if cycles is
+        provided.
     """
 
     def __init__(
@@ -491,21 +551,42 @@ class stress_strain_diagram:
     """
     This function plots the stress-strain diagram.
 
-    Note: If you do not have the parameters K, n, but you do have stress and strain data then you can use the function 'stress_strain_life_parameters_from_data'
+    If you do not have the parameters K, n, but you do have stress and strain
+    data then you can use the function 'stress_strain_life_parameters_from_data'
+    to calculate K and n.
 
-    Inputs:
-    K - cyclic strength coefficient
-    n - strain hardening exponent
-    E - The modulus of elasticity. Ensure this is in the same units for which K and n were obtained (typically MPa)
-    max_strain - the maximum strain to use for cyclic loading when plotting the hysteresis loop.
-    max_stress - the maximum stress to use for cyclic loading when plotting the hysteresis loop.
-    min_strain - if this is not -max_strain then specify it here. Optional input.
-    min_stress - if this is not -max_stress then specify it here. Optional input.
-     *When specifying min and max stress or strain, Do not specify both stress and strain as the corresponding value will be automatically calculated. Only specify the min if it is not -max
-    initial_load_direction - 'tension' or 'compression'. Default is tension.
+    Parameters
+    ----------
+    K : float, int
+        The cyclic strength coefficient
+    n : float, int
+        The strain hardening exponent
+    E : float, int
+        The modulus of elasticity. Ensure this is in the same units for which K
+        and n were obtained (typically MPa).
+    max_strain : float, int
+        The maximum strain to use for cyclic loading when plotting the
+        hysteresis loop.
+    max_stress : float, int
+        The maximum stress to use for cyclic loading when plotting the hysteresis loop.
+    min_strain : float, int, optional
+        If this is not -max_strain then specify it here. Optional input.
+    min_stress  : float, int, optional
+        Tf this is not -max_stress then specify it here. Optional input.
+    initial_load_direction : str, optional
+        Must be 'tension' or 'compression'. Default is tension.
 
-    Outputs:
-    The stress-strain plot will always be generated. Use plt.show() to show it.
+    Returns
+    -------
+    None
+        The plot is the only output. All calculated values are shown on the
+        plot.
+
+    Notes
+    -----
+    When specifying min and max stress or strain, Do not specify both stress and
+    strain as the corresponding value will be automatically calculated. Only
+    specify the min if it is not -max.
     """
 
     def __init__(
@@ -707,28 +788,66 @@ class strain_life_diagram:
     """
     This function plots the strain-life diagram.
 
-    Note: If you do not have the parameters sigma_f, epsilon_f, b, c, but you do have stress, strain, and cycles data then you can use the function 'stress_strain_life_parameters_from_data'
+    If you do not have the parameters sigma_f, epsilon_f, b, c, but you do have
+    stress, strain, and cycles data then you can use the function
+    'stress_strain_life_parameters_from_data' to find these parameters.
 
-    Inputs:
-    E - The modulus of elasticity. Ensure this is in the same units for which K and n were obtained (typically MPa)
-    sigma_f - fatigue strength coefficient
-    epsilon_f - fatigue strain coefficient
-    b - elastic strain exponent
-    c - plastic strain exponent
-    K - cyclic strength coefficient. Optional input. Only required if you specify max_stress or max_strain.
-    n - strain hardening exponent. Optional input. Only required if you specify max_stress or max_strain.
-    mean_stress_correction_method - must be either 'morrow','modified_morrow', or 'SWT'. Default is 'SWT'. Only used if mean_stress is found to be non-zero.
-    max_stress - specify the max_stress if you want cycles to failure. If specified, you will need to also specify K and n.
-    max_strain - specify the max_strain if you want cycles to failure.
-    min_stress - if this is not -max_stress then specify it here. Optional input.
-    min_strain - if this is not -max_strain then specify it here. Optional input.
-     *When specifying min and max stress or strain, Do not specify both stress and strain as the corresponding value will be automatically calculated. Only specify the min if it is not -max
-    print_results - True/False. Defaults to True. If use_level_stress or use_level_strain is specified then the printed results will be the cycles_to_failure
-    show_plot - True/False. Default is True
+    Parameters
+    ----------
+    E : float, int
+        The modulus of elasticity. Ensure this is in the same units for which K
+        and n were obtained (typically MPa)
+    sigma_f : float, int
+        The fatigue strength coefficient.
+    epsilon_f : float, int
+        The fatigue strain coefficient.
+    b : float, int
+        The elastic strain exponent.
+    c : float, int
+        The plastic strain exponent.
+    K : float, int, optional
+        The cyclic strength coefficient. Optional input. Only required if you
+        specify max_stress or max_strain.
+    n : float, int, optional
+        The strain hardening exponent. Optional input. Only required if you
+        specify max_stress or max_strain.
+    mean_stress_correction_method : str, optional
+        Must be either 'morrow','modified_morrow', or 'SWT'. Default is 'SWT'.
+        Only used if mean_stress is found to be non-zero.
+    max_stress : float, int, optional
+        Specify the max_stress if you want cycles to failure. If specified, you
+        will need to also specify K and n.
+    max_strain : float, int, optional
+        Specify the max_strain if you want cycles to failure.
+    min_stress : float, int, optional
+        If this is not -max_stress then specify it here. Optional input.
+    min_strain : float, int, optional
+        If this is not -max_strain then specify it here. Optional input.
+    print_results : bool, optional
+        Default is True. The cycles to failure will only be printed if
+        max_stress OR max_strain is specified.
+    show_plot : bool, optional
+        Default is True. The strain-life plot will be generated if show_plot =
+        True. Use plt.show() to show it.
 
-    Outputs:
-    The strain-life plot will be generated if show_plot = True. Use plt.show() to show it.
-    cycles_to_failure - only calculated if max_stress OR max_strain is specified. This will be printed if print_results = True.
+    Returns
+    -------
+    cycles_to_failure : float
+        The number of cycles until fatigue failure
+    max_stress : float
+        The maximim stress
+    max_strain : float
+        The maximum strain
+    min_stress : float
+        The minimum stress
+    min_strain : float, int, optional
+        The minimum strain
+
+    Notes
+    -----
+    When specifying min and max stress or strain, do not specify both stress and
+    strain as the corresponding value will be automatically calculated. Only
+    specify the min if it is not -max.
     """
 
     def __init__(
@@ -771,11 +890,6 @@ class strain_life_diagram:
             raise ValueError(
                 "mean_stress_correction_method must be either 'morrow', 'modified_morrow', or 'SWT'"
             )
-
-        self.sigma_f = sigma_f
-        self.b = b
-        self.epsilon_f = epsilon_f
-        self.c = c
 
         if max_strain is not None or max_stress is not None:
             if max_stress is not None:  # we have stress. Need to find strain
@@ -823,39 +937,39 @@ class strain_life_diagram:
 
                 fun_cm = lambda x: coffin_manson(
                     eps_tot=self.max_strain,
-                    sigma_f=self.sigma_f,
+                    sigma_f=sigma_f,
                     E=E,
                     cycles_2Nf=x,
-                    epsilon_f=self.epsilon_f,
-                    b=self.b,
-                    c=self.c,
+                    epsilon_f=epsilon_f,
+                    b=b,
+                    c=c,
                 )
                 use_cycles_2Nf = fsolve(fun_cm, np.array(10))
-                cycles_2Nt = (self.epsilon_f * E / self.sigma_f) ** (
-                    1 / (self.b - self.c)
+                cycles_2Nt = (epsilon_f * E / sigma_f) ** (
+                    1 / (b - c)
                 )
                 epsilon_total = (
-                    (self.sigma_f / E) * cycles_2Nf_array ** self.b
-                    + self.epsilon_f * cycles_2Nf_array ** self.c
+                    (sigma_f / E) * cycles_2Nf_array ** b
+                    + epsilon_f * cycles_2Nf_array ** c
                 )
                 epsilon_total_at_cycles_2Nt = (
-                    self.sigma_f / E
-                ) * cycles_2Nt ** self.b + self.epsilon_f * cycles_2Nt ** self.c
+                    sigma_f / E
+                ) * cycles_2Nt ** b + epsilon_f * cycles_2Nt ** c
                 equation_str = str(
                     r"$\epsilon_{tot} = \frac{"
-                    + str(round(self.sigma_f, 4))
+                    + str(round(sigma_f, 4))
                     + "}{"
                     + str(round(E, 4))
                     + "}(2N_f)^{"
-                    + str(round(self.b, 4))
+                    + str(round(b, 4))
                     + "} + "
-                    + str(round(self.epsilon_f, 4))
+                    + str(round(epsilon_f, 4))
                     + "(2N_f)^{"
-                    + str(round(self.c, 4))
+                    + str(round(c, 4))
                     + "}$"
                 )
-                plastic_strain_line = self.epsilon_f * cycles_2Nf_array ** self.c
-                elastic_strain_line = self.sigma_f / E * cycles_2Nf_array ** self.b
+                plastic_strain_line = epsilon_f * cycles_2Nf_array ** c
+                elastic_strain_line = sigma_f / E * cycles_2Nf_array ** b
             else:
                 if mean_stress_correction_method == "morrow":
 
@@ -870,44 +984,44 @@ class strain_life_diagram:
 
                     fun_m = lambda x: morrow(
                         eps_tot=delta_epsilon_half,
-                        sigma_f=self.sigma_f,
+                        sigma_f=sigma_f,
                         sigma_mean=mean_stress,
                         E=E,
                         cycles_2Nf=x,
-                        epsilon_f=self.epsilon_f,
-                        b=self.b,
-                        c=self.c,
+                        epsilon_f=epsilon_f,
+                        b=b,
+                        c=c,
                     )
                     use_cycles_2Nf = fsolve(fun_m, np.array(10))
                     cycles_2Nt = (
-                        self.epsilon_f * E / (self.sigma_f - mean_stress)
-                    ) ** (1 / (self.b - self.c))
+                        epsilon_f * E / (sigma_f - mean_stress)
+                    ) ** (1 / (b - c))
                     epsilon_total = (
-                        ((self.sigma_f - mean_stress) / E) * cycles_2Nf_array ** self.b
-                        + self.epsilon_f * cycles_2Nf_array ** self.c
+                        ((sigma_f - mean_stress) / E) * cycles_2Nf_array ** b
+                        + epsilon_f * cycles_2Nf_array ** c
                     )
                     epsilon_total_at_cycles_2Nt = (
-                        (self.sigma_f - mean_stress) / E
-                    ) * cycles_2Nt ** self.b + self.epsilon_f * cycles_2Nt ** self.c
+                        (sigma_f - mean_stress) / E
+                    ) * cycles_2Nt ** b + epsilon_f * cycles_2Nt ** c
                     equation_str = str(
                         r"$\epsilon_{tot} = \frac{"
-                        + str(round(self.sigma_f, 4))
+                        + str(round(sigma_f, 4))
                         + "-"
                         + str(round(mean_stress, 4))
                         + "}{"
                         + str(round(E, 4))
                         + "}(2N_f)^{"
-                        + str(round(self.b, 4))
+                        + str(round(b, 4))
                         + "} + "
-                        + str(round(self.epsilon_f, 4))
+                        + str(round(epsilon_f, 4))
                         + "(2N_f)^{"
-                        + str(round(self.c, 4))
+                        + str(round(c, 4))
                         + "}$"
                     )
-                    plastic_strain_line = self.epsilon_f * cycles_2Nf_array ** self.c
+                    plastic_strain_line = epsilon_f * cycles_2Nf_array ** c
                     elastic_strain_line = (
-                        (self.sigma_f - mean_stress) / E
-                    ) * cycles_2Nf_array ** self.b
+                        (sigma_f - mean_stress) / E
+                    ) * cycles_2Nf_array ** b
 
                 elif mean_stress_correction_method in [
                     "modified_morrow",
@@ -927,72 +1041,72 @@ class strain_life_diagram:
 
                     fun_mm = lambda x: modified_morrow(
                         eps_tot=delta_epsilon_half,
-                        sigma_f=self.sigma_f,
+                        sigma_f=sigma_f,
                         sigma_mean=mean_stress,
                         E=E,
                         cycles_2Nf=x,
-                        epsilon_f=self.epsilon_f,
-                        b=self.b,
-                        c=self.c,
+                        epsilon_f=epsilon_f,
+                        b=b,
+                        c=c,
                     )
                     use_cycles_2Nf = fsolve(fun_mm, np.array(10))
                     cycles_2Nt = (
-                        self.epsilon_f
+                        epsilon_f
                         * E
-                        * ((self.sigma_f - mean_stress) / self.sigma_f)
-                        ** (self.c / self.b)
-                        / (self.sigma_f - mean_stress)
-                    ) ** (1 / (self.b - self.c))
+                        * ((sigma_f - mean_stress) / sigma_f)
+                        ** (c / b)
+                        / (sigma_f - mean_stress)
+                    ) ** (1 / (b - c))
                     epsilon_total = (
-                        (self.sigma_f - mean_stress) / E
-                    ) * cycles_2Nf_array ** self.b + self.epsilon_f * (
-                        (self.sigma_f - mean_stress) / self.sigma_f
+                        (sigma_f - mean_stress) / E
+                    ) * cycles_2Nf_array ** b + epsilon_f * (
+                        (sigma_f - mean_stress) / sigma_f
                     ) ** (
-                        self.c / self.b
-                    ) * cycles_2Nf_array ** self.c
+                        c / b
+                    ) * cycles_2Nf_array ** c
                     epsilon_total_at_cycles_2Nt = (
-                        (self.sigma_f - mean_stress) / E
-                    ) * cycles_2Nt ** self.b + self.epsilon_f * (
-                        (self.sigma_f - mean_stress) / self.sigma_f
+                        (sigma_f - mean_stress) / E
+                    ) * cycles_2Nt ** b + epsilon_f * (
+                        (sigma_f - mean_stress) / sigma_f
                     ) ** (
-                        self.c / self.b
-                    ) * cycles_2Nt ** self.c
+                        c / b
+                    ) * cycles_2Nt ** c
                     equation_str = str(
                         r"$\epsilon_{tot} = \frac{"
-                        + str(round(self.sigma_f, 4))
+                        + str(round(sigma_f, 4))
                         + "-"
                         + str(round(mean_stress, 4))
                         + "}{"
                         + str(round(E, 4))
                         + "}(2N_f)^{"
-                        + str(round(self.b, 4))
+                        + str(round(b, 4))
                         + "} + "
-                        + str(round(self.epsilon_f, 4))
+                        + str(round(epsilon_f, 4))
                         + r"(\frac{"
-                        + str(round(self.sigma_f, 4))
+                        + str(round(sigma_f, 4))
                         + "-"
                         + str(round(mean_stress, 4))
                         + "}{"
-                        + str(round(self.sigma_f, 4))
+                        + str(round(sigma_f, 4))
                         + "})^"
                         + r"\frac{"
-                        + str(self.c)
+                        + str(c)
                         + "}{"
-                        + str(self.b)
+                        + str(b)
                         + "}"
                         + "(2N_f)^{"
-                        + str(round(self.c, 4))
+                        + str(round(c, 4))
                         + "}$"
                     )
                     plastic_strain_line = (
-                        self.epsilon_f
-                        * ((self.sigma_f - mean_stress) / self.sigma_f)
-                        ** (self.c / self.b)
-                        * cycles_2Nf_array ** self.c
+                        epsilon_f
+                        * ((sigma_f - mean_stress) / sigma_f)
+                        ** (c / b)
+                        * cycles_2Nf_array ** c
                     )
                     elastic_strain_line = (
-                        (self.sigma_f - mean_stress) / E
-                    ) * cycles_2Nf_array ** self.b
+                        (sigma_f - mean_stress) / E
+                    ) * cycles_2Nf_array ** b
                 elif mean_stress_correction_method == "SWT":
 
                     def SWT(
@@ -1005,57 +1119,57 @@ class strain_life_diagram:
 
                     fun_swt = lambda x: SWT(
                         eps_tot=delta_epsilon_half,
-                        sigma_f=self.sigma_f,
+                        sigma_f=sigma_f,
                         E=E,
                         cycles_2Nf=x,
-                        epsilon_f=self.epsilon_f,
-                        b=self.b,
-                        c=self.c,
+                        epsilon_f=epsilon_f,
+                        b=b,
+                        c=c,
                         sigma_max=self.max_stress,
                     )
                     use_cycles_2Nf = fsolve(fun_swt, np.array(10))
-                    cycles_2Nt = (self.epsilon_f * E / self.sigma_f) ** (
-                        1 / (self.b - self.c)
+                    cycles_2Nt = (epsilon_f * E / sigma_f) ** (
+                        1 / (b - c)
                     )
                     epsilon_total = (
-                        (self.sigma_f ** 2 / E) * cycles_2Nf_array ** (2 * self.b)
-                        + self.sigma_f
-                        * self.epsilon_f
-                        * cycles_2Nf_array ** (self.b + self.c)
+                        (sigma_f ** 2 / E) * cycles_2Nf_array ** (2 * b)
+                        + sigma_f
+                        * epsilon_f
+                        * cycles_2Nf_array ** (b + c)
                     ) / self.max_stress
                     epsilon_total_at_cycles_2Nt = (
-                        (self.sigma_f ** 2 / E) * cycles_2Nt ** (2 * self.b)
-                        + self.sigma_f
-                        * self.epsilon_f
-                        * cycles_2Nt ** (self.b + self.c)
+                        (sigma_f ** 2 / E) * cycles_2Nt ** (2 * b)
+                        + sigma_f
+                        * epsilon_f
+                        * cycles_2Nt ** (b + c)
                     ) / self.max_stress
                     equation_str = str(
                         r"$\epsilon_{tot} = \frac{1}{"
                         + str(round(self.max_stress, 4))
                         + "}"
                         + r"(\frac{"
-                        + str(round(self.sigma_f, 4))
+                        + str(round(sigma_f, 4))
                         + "^2}{"
                         + str(round(E, 4))
                         + "}(2N_f)^{("
-                        + str(round(self.b, 4))
+                        + str(round(b, 4))
                         + "×2)} + "
-                        + str(round(self.sigma_f, 4))
+                        + str(round(sigma_f, 4))
                         + "×"
-                        + str(round(self.epsilon_f, 4))
+                        + str(round(epsilon_f, 4))
                         + "(2N_f)^{("
-                        + str(round(self.b, 4))
+                        + str(round(b, 4))
                         + "+"
-                        + str(round(self.c, 4))
+                        + str(round(c, 4))
                         + ")})$"
                     )
                     plastic_strain_line = (
-                        self.sigma_f
-                        * self.epsilon_f
-                        * cycles_2Nf_array ** (self.b + self.c)
+                        sigma_f
+                        * epsilon_f
+                        * cycles_2Nf_array ** (b + c)
                     ) / self.max_stress
                     elastic_strain_line = (
-                        (self.sigma_f ** 2 / E) * cycles_2Nf_array ** (2 * self.b)
+                        (sigma_f ** 2 / E) * cycles_2Nf_array ** (2 * b)
                     ) / self.max_stress
 
             self.cycles_to_failure = use_cycles_2Nf[0] / 2
@@ -1196,17 +1310,17 @@ class strain_life_diagram:
                 plt.gcf().set_size_inches(10, 7)
         else:  # this is in the case that max stress or strain was not supplied
             if show_plot is True:
-                cycles_2Nt = (self.epsilon_f * E / self.sigma_f) ** (
-                    1 / (self.b - self.c)
+                cycles_2Nt = (epsilon_f * E / sigma_f) ** (
+                    1 / (b - c)
                 )
                 cycles_2Nf_array = np.logspace(1, 8, 1000)
                 epsilon_total = (
-                    (self.sigma_f / E) * cycles_2Nf_array ** self.b
-                    + self.epsilon_f * cycles_2Nf_array ** self.c
+                    (sigma_f / E) * cycles_2Nf_array ** b
+                    + epsilon_f * cycles_2Nf_array ** c
                 )
                 epsilon_total_at_cycles_2Nt = (
-                    self.sigma_f / E
-                ) * cycles_2Nt ** self.b + self.epsilon_f * cycles_2Nt ** self.c
+                    sigma_f / E
+                ) * cycles_2Nt ** b + epsilon_f * cycles_2Nt ** c
                 plt.loglog(
                     cycles_2Nf_array,
                     epsilon_total,
@@ -1214,15 +1328,15 @@ class strain_life_diagram:
                     alpha=0.8,
                     label=str(
                         r"$\epsilon_{tot} = \frac{"
-                        + str(round(self.sigma_f, 4))
+                        + str(round(sigma_f, 4))
                         + "}{"
                         + str(round(E, 4))
                         + "}(2N_f)^{"
-                        + str(round(self.b, 4))
+                        + str(round(b, 4))
                         + "} + "
-                        + str(round(self.epsilon_f, 4))
+                        + str(round(epsilon_f, 4))
                         + "(2N_f)^{"
-                        + str(round(self.c, 4))
+                        + str(round(c, 4))
                         + "}$"
                     ),
                 )
@@ -1233,8 +1347,8 @@ class strain_life_diagram:
                     linestyle="--",
                     alpha=0.5,
                 )
-                plastic_strain_line = self.epsilon_f * cycles_2Nf_array ** self.c
-                elastic_strain_line = self.sigma_f / E * cycles_2Nf_array ** self.b
+                plastic_strain_line = epsilon_f * cycles_2Nf_array ** c
+                elastic_strain_line = sigma_f / E * cycles_2Nf_array ** b
                 plt.plot(
                     cycles_2Nf_array,
                     plastic_strain_line,
@@ -1277,27 +1391,52 @@ class strain_life_diagram:
 
 def palmgren_miner_linear_damage(rated_life, time_at_stress, stress):
     """
-    Uses the Palmgren-Miner linear damage hypothesis to find the outputs:
+    Uses the Palmgren-Miner linear damage hypothesis to calculate the outputs.
 
-    Inputs:
-    - rated life - an array or list of how long the component will last at a given stress level
-    - time_at_stress - an array or list of how long the component is subjected to the stress that gives the specified rated_life
-    - stress - what stress the component is subjected to. Not used in the calculation but is required for printing the output.
-    Ensure that the time_at_stress and rated life are in the same units as the answer will also be in those units
+    Parameters
+    ----------
+    rated life : array, list
+        How long the component will last at a given stress level.
+    time_at_stress : array, list
+        How long the component is subjected to the stress that gives the
+        specified rated_life
+    stress : float, int
+        What stress the component is subjected to. This is not used in the
+        calculation but is required for printing the output. Ensure that the
+        time_at_stress and rated life are in the same units as the answer will
+        also be in those units
 
-    Outputs:
+    Returns
+    -------
+    None
+        The printed results are the only output.
+
+    Notes
+    -----
+    The output will print the results to the console. The printed results
+    include:
+
     - Fraction of life consumed per load cycle
     - service life of the component
     - Fraction of damage caused at each stress level
-
 
     Example usage:
     Ball bearings are fail after 50000 hrs, 6500 hrs, and 1000 hrs, after being subjected to a stress of 1kN, 2kN, and 4kN respectively.
     If each load cycle involves 40 mins at 1kN, 15 mins at 2kN, and 5 mins at 4kN, how long will the ball bearings last?
 
-    palmgren_miner_linear_damage(rated_life=[50000,6500,1000], time_at_stress=[40/60, 15/60, 5/60], stress=[1, 2, 4])
+    .. code:: python
+
+        from reliability.PoF import palmgren_miner_linear_damage
+        palmgren_miner_linear_damage(rated_life=[50000,6500,1000], time_at_stress=[40/60, 15/60, 5/60], stress=[1, 2, 4])
+
+        >>> Palmgren-Miner Linear Damage Model results:
+        >>> Each load cycle uses 0.01351 % of the components life.
+        >>> The service life of the component is 7400.37951 load cycles.
+        >>> The amount of damage caused at each stress level is:
+        >>> Stress =  1 , Damage fraction = 9.86717 %.
+        >>> Stress =  2 , Damage fraction = 28.463 %.
+        >>> Stress =  4 , Damage fraction = 61.66983 %.
     """
-    
     if len(rated_life) != len(time_at_stress) or len(rated_life) != len(stress):
         raise ValueError("All inputs must be of equal length.")
 
@@ -1325,43 +1464,90 @@ def palmgren_miner_linear_damage(rated_life, time_at_stress, stress):
 
 class fracture_mechanics_crack_initiation:
     """
-    This function uses the material properties, the local cross sectional area, and force applied to the component to determine how many cycles until crack initiation (of a 1mm crack).
-    Units should always be in MPa (and mm^2 for area). This function may be used for an un-notched or notched component.
-    If the component is un-notched, the parameters q and Kt may be left as their default values of 1.
+    This function uses the material properties, the local cross sectional area,
+    and force applied to the component to determine how many cycles until crack
+    initiation (of a 1mm crack).
 
-    While there are formulas to find the parameters q and Kt, these formulas have not been included here so that the function is reasonably generic to different materials and geometries.
-    Resources for finding some of these parameters if they are not given to you:
-    q = 1/(1+a/r) Where r is the notch radius of curvature (in mm), and a is 0.025*(2070/Su). Su is the ultimate strength in MPa. This only applies to high strength steels where Su>550MPa.
-    Kt ==> https://www.efatigue.com/constantamplitude/stressconcentration/  This website will provide you with the appropriate Kt for your notched geometry.
+    Units should always be in MPa (and mm^2 for area). This function may be used
+    for an un-notched or notched component. If the component is un-notched, the
+    parameters q and Kt may be left as their default values of 1.
 
-    Inputs:
-    P - Force applied on the component [units of MPa]
-    A - Cross sectional area of the component (at the point of crack initiation) [units of mm^2]
-    Sy - Yield strength of the material [units of MPa]
-    E - Elastic modulus (Young's modulus) [units of MPa]
-    K - Strength coefficient of the material
-    n - Strain hardening exponent of the material
-    b - Elastic strain exponent of the material
-    c - Plastic strain exponent of the material
-    sigma_f - Fatigue strength coefficient of the material
-    epsilon_f - Fatigue strain coefficient of the material
-    q - Notch sensitivity factor (default is 1 for no notch)
-    Kt - stress concentration factor (default is 1 for no notch)
-    mean_stress_correction_method - must be either ‘morrow’, ’modified_morrow’, or ‘SWT'. Default is 'modified_morrow' as this is the same as the uncorrected Coffin-Manson relationship when mean stress is zero.
+    While there are formulas to find the parameters q and Kt, these formulas
+    have not been included here so that the function is reasonably generic to
+    different materials and geometries. Resources for finding some of these
+    parameters if they are not given to you:
 
-    Outputs:
-    The results will be printed to the console if print_results is True
-    The following results are also stored in the calculated object.
-    sigma_max
-    sigma_min
-    sigma_mean
-    epsilon_max
-    epsilon_min
-    epsilon_mean
-    cycles_to_failure
+    - q = 1/(1+a/r) Where r is the notch radius of curvature (in mm), and a is
+    0.025*(2070/Su). Su is the ultimate strength in MPa. This only applies to
+    high strength steels where Su>550MPa.
+
+    - Kt can be calculated using the `efatigue website <https://www.efatigue.com/constantamplitude/stressconcentration/>`_.
+    This website will provide you with the appropriate Kt for your notched
+    geometry.
+
+    Parameters
+    ----------
+    P : float, int
+        Force applied on the component [units of MPa].
+    A : float, int
+        Cross sectional area of the component (at the point of crack initiation)
+        [units of mm^2].
+    Sy : float, int
+        Yield strength of the material [units of MPa].
+    E : float, int
+        Elastic modulus (Young's modulus) [units of MPa]
+    K : float, int
+        Strength coefficient of the material
+    n : float, int
+        Strain hardening exponent of the material
+    b : float, int
+        Elastic strain exponent of the material
+    c : float, int
+        Plastic strain exponent of the material
+    sigma_f : float, int
+        Fatigue strength coefficient of the material
+    epsilon_f : float, int
+        Fatigue strain coefficient of the material
+    q : float, int, optional
+        Notch sensitivity factor. Default is 1 for no notch.
+    Kt : float, int, optional
+        Stress concentration factor. Default is 1 for no notch.
+    mean_stress_correction_method : str, optional
+        Must be either ‘morrow’, ’modified_morrow’, or ‘SWT'. Default is
+        'modified_morrow' as this is the same as the uncorrected Coffin-Manson
+        relationship when mean stress is zero.
+    print_results : bool, optional
+        The results will be printed to the console if print_results is True.
+
+    Returns
+    -------
+    sigma_max : float
+        The maximum stress
+    sigma_min : float
+        The minimum stress
+    sigma_mean : float
+        The mean stress
+    epsilon_max: float
+        The maximum strain
+    epsilon_min : float
+        The minimim strain
+    epsilon_mean : float
+        The mean strain
+    cycles_to_failure : float
+        The number of cycles until failure due to fatigue
 
     Example usage:
-    fracture_mechanics_crack_initiation(P=0.15, A=5*80, Kt=2.41, q=0.9857, Sy=690, E=210000, K=1060, n=0.14, b=-0.081, c=-0.65, sigma_f=1160, epsilon_f=1.1,mean_stress_correction_method='SWT')
+
+    .. code:: python
+
+        from reliability.PoF import fracture_mechanics_crack_initiation
+        fracture_mechanics_crack_initiation(P=0.15, A=5*80, Kt=2.41, q=0.9857, Sy=690, E=210000, K=1060, n=0.14, b=-0.081, c=-0.65, sigma_f=1160, epsilon_f=1.1,mean_stress_correction_method='SWT')
+
+        >>> Results from fracture_mechanics_crack_initiation:
+        >>> A crack of 1 mm will be formed after: 2919.91 cycles (5839.82 reversals).
+        >>> Stresses in the component: Min = -506.7291 MPa , Max = 506.7291 MPa , Mean = -5.684341886080802e-14 MPa.
+        >>> Strains in the component: Min = -0.0075 , Max = 0.0075 , Mean = 8.673617379884035e-19
+        >>> Mean stress correction method used: SWT
     """
 
     def __init__(
@@ -1560,53 +1746,136 @@ class fracture_mechanics_crack_initiation:
 
 class fracture_mechanics_crack_growth:
     """
-    This function uses the principles of fracture mechanics to find the number of cycles required to grow a crack from an initial length until a final length.
-    The final length (a_final) may be specified, but if not specified then a_final will be set as the critical crack length (a_crit) which causes failure due to rapid fracture.
-    This functions performs the same calculation using two methods: similified and iterative.
-    The simplified method assumes that the geometry factor (f(g)), the stress (S_net), and the critical crack length (a_crit) are constant. THis method is the way most textbooks show these problems solved as they can be done in a few steps.
-    The iterative method does not make the assumptions that the simplified method does and as a result, the parameters f(g), S_net and a_crit must be recalculated based on the current crack length at every cycle.
+    This function uses the principles of fracture mechanics to find the number
+    of cycles required to grow a crack from an initial length until a final
+    length. The final length (a_final) may be specified, but if not specified
+    then a_final will be set as the critical crack length (a_crit) which causes
+    failure due to rapid fracture.
 
-    This function is applicable only to thin plates with an edge crack or a centre crack (which is to be specified using the parameter crack_type).
-    You may also use this function for notched components by specifying the parameters Kt and D which are based on the geometry of the notch.
-    For any notched components, this method assumes the notched component has a "shallow notch" where the notch depth (D) is much less than the plate width (W).
-    The value of Kt for notched components may be found at https://www.efatigue.com/constantamplitude/stressconcentration/
-    In the case of notched components, the local stress concentration from the notch will often cause slower crack growth.
-    In these cases, the crack length is calculated in two parts (stage 1 and stage 2) which can clearly be seen on the plot using the iterative method.
-    The only geometry this function is designed for is unnotched and notched thin flat plates. No centre holes are allowed.
+    This functions performs the same calculation using two methods; similified
+    and iterative. The simplified method assumes that the geometry factor
+    (f(g)), the stress (S_net), and the critical crack length (a_crit) are
+    constant. This method is the way most textbooks show these problems solved
+    as they can be done in a few steps. The iterative method does not make the
+    assumptions that the simplified method does and as a result, the parameters
+    f(g), S_net and a_crit must be recalculated based on the current crack
+    length at every cycle.
 
-    Inputs:
-    Kc - fracture toughness
-    Kt - stress concentration factor (default is 1 for no notch).
-    D - depth of the notch (default is None for no notch). A notched specimen is assumed to be doubly-notched (equal notches on both sides)
-    C - material constant (sometimes referred to as A)
-    m - material constant (sometimes referred to as n). This value must not be 2.
-    P - external load on the material (MPa)
-    t - plate thickness (mm)
-    W - plate width (mm)
-    a_initial - initial crack length (mm) - default is 1 mm
-    a_final - final crack length (mm) - default is None in which case a_final is assumed to be a_crit (length at failure). It is useful to be able to enter a_final in cases where there are multiple loading regimes over time.
-    crack_type - must be either 'edge' or 'center'. Default is 'edge'. The geometry factor used for each of these in the simplified method is 1.12 for edge and 1.0 for center. The iterative method calculates these values exactly using a_initial and W (plate width).
-    print_results - True/False. Default is True
-    show_plot - True/False. Default is True. If True the Iterative method's crack growth will be plotted.
+    This function is applicable only to thin plates with an edge crack or a
+    centre crack (which is to be specified using the parameter crack_type).
 
-    Outputs:
-    If print_results is True, all outputs will be printed with some description of the process.
-    If show_plot is True, the crack growth plot will be shown for the iterative method.
-    You may also access the following parameters from the calculated object:
-    - Nf_stage_1_simplified
-    - Nf_stage_2_simplified
-    - Nf_total_simplified
-    - final_crack_length_simplified
-    - transition_length_simplified
-    - Nf_stage_1_iterative
-    - Nf_stage_2_iterative
-    - Nf_total_iterative
-    - final_crack_length_iterative
-    - transition_length_iterative
+    You may also use this function for notched components by specifying the
+    parameters Kt and D which are based on the geometry of the notch.
+    For any notched components, this method assumes the notched component has
+    a "shallow notch" where the notch depth (D) is much less than the plate
+    width (W). The value of Kt for notched components may be found using the
+    `efatigue website <https://www.efatigue.com/constantamplitude/stressconcentration/>`_.
+    In the case of notched components, the local stress concentration from the
+    notch will often cause slower crack growth. In these cases, the crack length
+    is calculated in two parts (stage 1 and stage 2) which can clearly be seen
+    on the plot using the iterative method. The only geometry this function is
+    designed for is unnotched and notched thin flat plates. No centre holes are
+    allowed.
 
+    Parameters
+    ----------
+    Kc : float, int
+        fracture toughness
+    Kt : float, int, optional
+        The stress concentration factor. Default is 1 for no notch.
+    D : float, int, None, optional
+        Depth of the notch. Default is None for no notch. A notched specimen is
+        assumed to be doubly-notched (equal notches on both sides).
+    C : float, int
+        Material constant (sometimes referred to as A).
+    m : float, int
+        Material constant (sometimes referred to as n). This value must not be
+        2 due to the way the formula works.
+    P : float, int
+        External load on the material (MPa)
+    t : float, int
+        Plate thickness (mm)
+    W : float, int
+        Plate width (mm)
+    a_initial : float, int, optional
+        Initial crack length (mm). Default is 1 mm.
+    a_final : float, int, None, optional
+        Final crack length (mm) - default is None in which case a_final is
+        assumed to be a_crit (length at failure). It is useful to be able to
+        enter a_final in cases where there are multiple loading regimes over
+        time.
+    crack_type : str, optional
+        Must be either 'edge' or 'center'. Default is 'edge'. The geometry
+        factor used for each of these in the simplified method is 1.12 for edge
+        and 1.0 for center. The iterative method calculates these values exactly
+        using a_initial and W (plate width).
+    print_results : bool, optional
+        Default is True. If True, the results will be printed to the console.
+    show_plot : bool, optional
+        Default is True. If True the iterative method's crack growth will be
+        plotted.
+
+    Returns
+    -------
+    Nf_stage_1_simplified : float
+        Number of cycles in stage 1 of crack growth using the simplified method.
+    Nf_stage_2_simplified : float
+        Number of cycles in stage 2 of crack growth using the simplified method.
+    Nf_total_simplified : float
+        Total number of cycles (Nf_stage_1_simplified + Nf_stage_2_simplified)
+    final_crack_length_simplified : float
+        Final crack length using the simplified method
+    transition_length_simplified : float
+        The transition length (stage 1 - 2 interface) using the simplified
+        method.
+    Nf_stage_1_iterative : float
+        Number of cycles in stage 1 of crack growth using the iterative method.
+    Nf_stage_2_iterative : float
+        Number of cycles in stage 2 of crack growth using the iterative method.
+    Nf_total_iterative : float
+        Total number of cycles (Nf_stage_1_iterative + Nf_stage_2_iterative)
+    final_crack_length_iterative : float
+        Final crack length using the iterative method
+    transition_length_iterative : float
+        The transition length (stage 1 - 2 interface) using the iterative
+        method.
+
+    Notes
+    -----
     Example usage:
-    fracture_mechanics_crack_growth(Kc=66,C=6.91*10**-12,m=3,P=0.15,W=100,t=5,Kt=2.41,a_initial=1,D=10,crack_type='edge')
-    fracture_mechanics_crack_growth(Kc=66,C=3.81*10**-12,m=3,P=0.103,W=100,t=5,crack_type='center')
+
+    .. code:: python
+
+        from reliability.PoF import fracture_mechanics_crack_growth
+        fracture_mechanics_crack_growth(Kc=66,C=6.91*10**-12,m=3,P=0.15,W=100,t=5,Kt=2.41,a_initial=1,D=10,crack_type='edge')
+        print('')
+        fracture_mechanics_crack_growth(Kc=66,C=3.81*10**-12,m=3,P=0.103,W=100,t=5,crack_type='center')
+
+        >>> Results from fracture_mechanics_crack_growth:
+        >>> SIMPLIFIED METHOD (keeping f(g), S_max, and a_crit as constant):
+        >>> Crack growth was found in two stages since the transition length ( 2.08 mm ) due to the notch, was greater than the initial crack length ( 1 mm ).
+        >>> Stage 1 (a_initial to transition length): 6802 cycles
+        >>> Stage 2 (transition length to a_final): 1133 cycles
+        >>> Total cycles to failure: 7935 cycles.
+        >>> Critical crack length to cause failure was found to be: 7.86 mm.
+
+        >>> ITERATIVE METHOD (recalculating f(g), S_max, and a_crit for each cycle):
+        >>> Crack growth was found in two stages since the transition length ( 2.45 mm ) due to the notch, was greater than the initial crack length ( 1 mm ).
+        >>> Stage 1 (a_initial to transition length): 7576 cycles
+        >>> Stage 2 (transition length to a_final): 671 cycles
+        >>> Total cycles to failure: 8247 cycles.
+        >>> Critical crack length to cause failure was found to be: 6.39 mm.
+
+        >>> Results from fracture_mechanics_crack_growth:
+        >>> SIMPLIFIED METHOD (keeping f(g), S_max, and a_crit as constant):
+        >>> Crack growth was found in a single stage since the transition length ( 0.0 mm ) was less than the initial crack length 1.0 mm.
+        >>> Total cycles to failure: 281359 cycles.
+        >>> Critical crack length to cause failure was found to be: 32.67 mm.
+
+        >>> ITERATIVE METHOD (recalculating f(g), S_max, and a_crit for each cycle):
+        >>> Crack growth was found in a single stage since the transition length ( 0.0 mm ) was less than the initial crack length 1.0 mm.
+        >>> Total cycles to failure: 225827 cycles.
+        >>> Critical crack length to cause failure was found to be: 18.3 mm.
     """
 
     def __init__(
@@ -1912,27 +2181,49 @@ class fracture_mechanics_crack_growth:
 def creep_rupture_curves(
     temp_array, stress_array, TTF_array, stress_trace=None, temp_trace=None
 ):
-    '''
-    Plots the creep rupture curves for a given set of creep data. Also fits the lines of best fit to each temperature.
-    The time to failure for a given temperature can be found by specifying stress_trace and temp_trace.
+    """
+    This function plots the creep rupture curves for a given set of creep data.
+    It also fits the lines of best fit to each temperature.
 
-    Inputs:
-    temp_array: an array or list of temperatures
-    stress_array: an array or list of stresses
-    TTF_array: an array or list of times to failure at the given temperatures and stresses
-    stress_trace: *only 1 value is accepted
-    temp_trace: *only 1 value is accepted
+    The time to failure for a given temperature can be found by specifying
+    stress_trace and temp_trace.
 
-    Outputs:
-    The plot is the only output. Use plt.show() to show it.
+    Parameters
+    ----------
+    temp_array : array, list
+        The temperatures
+    stress_array : array, list
+        The stresses
+    TTF_array : array, list
+        The times to failure at the given temperatures and stresses
+    stress_trace : float, int, optional
+        The stress value used to determine the time to failure. Both
+        stress_trace and temp_trace must be provided to calculate the time to
+        failure.
+    temp_trace : float, int
+        The temperature value used to determine the time to failure. Both
+        stress_trace and temp_trace must be provided to calculate the time to
+        failure.
 
+    Returns
+    -------
+    None
+        The plot is the only output. Use plt.show() to show it.
+
+    Notes
+    -----
     Example Usage:
-    TEMP = [900,900,900,900,1000,1000,1000,1000,1000,1000,1000,1000,1100,1100,1100,1100,1100,1200,1200,1200,1200,1350,1350,1350]
-    STRESS = [90,82,78,70,80,75,68,60,56,49,43,38,60.5,50,40,29,22,40,30,25,20,20,15,10]
-    TTF = [37,975,3581,9878,7,17,213,1493,2491,5108,7390,10447,18,167,615,2220,6637,19,102,125,331,3.7,8.9,31.8]
-    creep_rupture_curves(temp_array=TEMP, stress_array=STRESS, TTF_array=TTF, stress_trace=70, temp_trace=1100)
-    plt.show()
-    '''
+
+    .. code:: python
+
+        from reliability.PoF import creep_rupture_curves
+        import matplotlib.pyplot as plt
+        TEMP = [900,900,900,900,1000,1000,1000,1000,1000,1000,1000,1000,1100,1100,1100,1100,1100,1200,1200,1200,1200,1350,1350,1350]
+        STRESS = [90,82,78,70,80,75,68,60,56,49,43,38,60.5,50,40,29,22,40,30,25,20,20,15,10]
+        TTF = [37,975,3581,9878,7,17,213,1493,2491,5108,7390,10447,18,167,615,2220,6637,19,102,125,331,3.7,8.9,31.8]
+        creep_rupture_curves(temp_array=TEMP, stress_array=STRESS, TTF_array=TTF, stress_trace=70, temp_trace=1100)
+        plt.show()
+    """
 
     if (stress_trace is not None and temp_trace is None) or (
         stress_trace is None and temp_trace is not None
@@ -2003,24 +2294,40 @@ def creep_rupture_curves(
 
 def creep_failure_time(temp_low, temp_high, time_low, C=20, print_results=True):
     """
-    This function uses the Larson-Miller relation to find the time to failure due to creep.
-    The method uses a known failure time (time_low) at a lower failure temperature (temp_low) to find the unknown failure time at the higher temperature (temp_high).
-    This relation requires the input temperatures in Fahrenheit. To convert Celsius to Fahrenheit use F = C*(9/5)+32
-    Note that the conversion between Fahrenheit and Rankine used in this calculation is R = F+459.67
-    For more information see Wikipedia: https://en.wikipedia.org/wiki/Larson%E2%80%93Miller_relation
+    This function uses the Larson-Miller relation to find the time to failure
+    due to creep.
 
-    Inputs:
-    temp_low - temperature (in degrees Fahrenheit) where the time_low is known
-    temp_high - temperature (in degrees Fahrenheit) which time_high is unknown and will be found by this function
-    time_low - time to failure at temp_low
-    C - creep constant (default is 20). Typically 20-22 for metals
-    print_results - True/False
+    The method uses a known failure time (time_low) at a lower failure
+    temperature (temp_low) to find the unknown failure time at the higher
+    temperature (temp_high).
 
-    Outputs:
-    The time to failure at the higher temperature.
-    If print_results is True, the output will also be printed to the console.
+    This relation requires the input temperatures in Fahrenheit. To convert
+    Celsius to Fahrenheit use F = C*(9/5)+32
+
+    Note that the conversion between Fahrenheit and Rankine used in this
+    calculation is R = F+459.67
+
+    For more information see `Wikipedia <https://en.wikipedia.org/wiki/Larson%E2%80%93Miller_relation>`_.
+
+    Parameters
+    ----------
+    temp_low : float, int
+        The temperature (in degrees Fahrenheit) where the time_low is known
+    temp_high : float, int
+        The temperature (in degrees Fahrenheit) which time_high is unknown and
+        will be found by this function
+    time_low : float, int
+        The time to failure at temp_low
+    C : float, int, optional
+        The creep constant. The default is 20. Typically 20-22 for metals.
+    print_results : bool, optional
+        If print_results is True, the output will also be printed to the console.
+
+    Returns
+    -------
+    time_high : float
+        The time to failure at the higher temperature.
     """
-    
     LMP = (temp_low + 459.67) * (
         C + np.log10(time_low)
     )  # larson-miller parameter. 459.67 converts Fahrenheit to Rankine
@@ -2035,23 +2342,42 @@ def creep_failure_time(temp_low, temp_high, time_low, C=20, print_results=True):
 class acceleration_factor:
     """
     The Arrhenius model for Acceleration factor due to higher temperature is:
-    AF = exp(Ea/K(1/T_use-1/T_acc))
-    This function accepts T_use as a mandatory input and the user may specify any two of the three other variables, and the third variable will be found.
 
-    Inputs:
-    T_use - Temp of usage in Celsius
-    T_acc - Temp of acceleration in Celsius (optional input)
-    Ea - Activation energy in eV (optional input)
-    AF - Acceleration factor (optional input)
-    Two of the three optional inputs must be specified and the third one will be found.
-    print_results - True/False. Default is True
+    :math: `AF = exp\left(\frac{Ea}{K\left(\frac{1}{T_{use}}-\frac{1}{T_{acc}}\right)}\right)`
 
-    Outputs:
-    Outputs will be printed to console if print_results is True
-    AF - Acceleration Factor
-    T_acc - Accelerated temperature
-    T_use - Use temperature
-    Ea - Activation energy (in eV)
+    K is the Boltzmann constant: 8.617333262145*10^-5 eV/Kelvin
+
+    This function accepts T_use as a mandatory input and the user may specify
+    any two of the three other variables, and the third variable will be found.
+
+    Parameters
+    ----------
+    T_use : float, int
+        Temperature of usage (Celsius)
+    T_acc : float, int, optional
+        Temperature of acceleration (Celsius)
+    Ea : float, int, optional
+        Activation energy (eV)
+    AF : float, int, optional
+        Acceleration factor
+    print_results : bool, optional
+        Default is True. If True the results will be printed to the console.
+
+    Returns
+    -------
+    AF : float
+        Acceleration Factor
+    T_acc : float
+        Accelerated temperature
+    T_use : float
+        Use temperature
+    Ea : float
+        Activation energy (eV)
+
+    Notes
+    -----
+    Two of the three optional inputs must be specified and the third one will be
+    found.
     """
 
     def __init__(self, AF=None, T_use=None, T_acc=None, Ea=None, print_results=True):

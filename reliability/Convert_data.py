@@ -55,7 +55,7 @@ class xlsx_to_XCN:
     failure_code_in_xlsx : str, int, optional
         The failure code you have used if it does not appear in the defaults.
         The default failure codes that will be recognised (not case sensitive)
-         are 'F', 'FAIL', 'FAILED', 'FAILURE', 0
+        are 'F', 'FAIL', 'FAILED', 'FAILURE', 0
     censor_code_in_XCN : str, int, optional
         The censor code to be used in XCN format. Default is 'C'
     failure_code_in_XCN : str, int, optional
