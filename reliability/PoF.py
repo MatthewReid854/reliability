@@ -2290,7 +2290,7 @@ def creep_failure_time(temp_low, temp_high, time_low, C=20, print_results=True):
     temperature (temp_high).
 
     This relation requires the input temperatures in Fahrenheit. To convert
-    Celsius to Fahrenheit use :math:`F = C × \left(9/5\right) + 32`
+    Celsius to Fahrenheit use :math:`F = C × 1.8 + 32`
 
     Note that the conversion between Fahrenheit and Rankine used in this
     calculation is :math:`R = F+459.67`
