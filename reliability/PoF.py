@@ -2290,7 +2290,7 @@ def creep_failure_time(temp_low, temp_high, time_low, C=20, print_results=True):
     temperature (temp_high).
 
     This relation requires the input temperatures in Fahrenheit. To convert
-    Celsius to Fahrenheit use :math:`F = C × \left(\frac{9}{5}\right)+32`
+    Celsius to Fahrenheit use :math:`F = C × \left( \frac{9}{5} \right) + 32`
 
     Note that the conversion between Fahrenheit and Rankine used in this
     calculation is :math:`R = F+459.67`
@@ -2329,11 +2329,8 @@ def creep_failure_time(temp_low, temp_high, time_low, C=20, print_results=True):
 
 class acceleration_factor:
     """
-    The Arrhenius model for Acceleration factor due to higher temperature is:
-
-    :math:`AF = {\rm exp} \left(\frac{Ea}{K\left(\frac{1}{T_{use}}-\frac{1}{T_{acc}}\right)}\right)`
-
-    K is the Boltzmann constant :math:`8.617333262145 × 10^{-5}` eV/Kelvin
+    The Arrhenius model for Acceleration factor due to higher temperature is :math:`AF = {\rm exp} \left(\frac{Ea}{K\left(\frac{1}{T_{use}}-\frac{1}{T_{acc}}\right)}\right)`.
+    Where K is the Boltzmann constant :math:`8.617333262145 × 10^{-5}` eV/Kelvin
 
     This function accepts T_use as a mandatory input and the user may specify
     any two of the three other variables, and the third variable will be found.
