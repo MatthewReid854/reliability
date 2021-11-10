@@ -2329,8 +2329,10 @@ def creep_failure_time(temp_low, temp_high, time_low, C=20, print_results=True):
 
 class acceleration_factor:
     """
-    The Arrhenius model for Acceleration factor due to higher temperature is :math:`AF = {\rm exp} \left(\frac{Ea}{K\left(\frac{1}{T_{use}}-\frac{1}{T_{acc}}\right)}\right)`.
-    Where K is the Boltzmann constant :math:`8.617333262145 × 10^{-5}` eV/Kelvin
+    This function uses the Arrhenius model for Acceleration factor to determine
+    the relationship between temperature and reaction rate.
+
+    Please see the `online documentation <https://reliability.readthedocs.io/en/latest/Acceleration%20factor.html>`_ for more details and formulas.
 
     This function accepts T_use as a mandatory input and the user may specify
     any two of the three other variables, and the third variable will be found.
