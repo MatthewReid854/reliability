@@ -11,69 +11,32 @@ The module Convert_data contains three functions for importing data from Microso
 - xlsx_to_FNRN
 - xlsx_to_FR
 
-These three functions should be used only for data in their respective format (XCN, FNRN, FR). This means that the columns of the xlsx file should be in the same order as the name of the data format. For example, xlsx_to_XCN is expecting to receive an xlsx file with 3 columns corresponding to X, C, and N. If these are in a different order they may be misinterpreted or trigger an error. You should correct the column order in the xlsx file before importing into Python.
-
 Each of the three data formats has an acceptable reduced form as follows:
 
 - XCN reduced form is XC and all rows are assumed to have a quantity of 1
 - FNRN reduced form is FN and it is assumed that there is no right censored data
 - FR reduced form is F and it is assumed that there is no right censored data
 
-For more information on these three data formats as well as how to convert data between the different formats, please see the section on `Converting data between different formats <https://reliability.readthedocs.io/en/latest/Converting%20data%20between%20different%20formats.html>`_.
+.. admonition:: API Reference
 
-**xlsx_to_XCN**
+   For inputs and outputs see the `API reference <https://reliability.readthedocs.io/en/latest/API/Convert_data.html>`_.
 
-This format is the default in most commercial software including Reliasoft and Minitab. The sequence of XCN and the names may change between different software, but the format is essentially the same. Within `reliability` the XCN format may be reduced to XC (and all items are assumed to have quantity of 1). Some other software accepts the further reduced form of X (where there are no censored items and all items have a quantity of 1). If you have only failure data that is not grouped, then you should use the FR format as FR has a reduced form of F which is equivalent to X from XCN.
-
-Inputs:
-
--   path - the filepath for the xlsx file. Note that you MUST prefix this with r to specify it is raw text. eg. path=r'C:/Users/Current User/Desktop/XCN.xlsx'
--   censor_code_in_xlsx - specify the censor code you have used if it does not appear in the defaults. Default censor codes that will be recognised (not case sensitive): 'R', 'RC', 'RIGHT CENS', 'RIGHT CENSORED', 'C', 'CENSORED', 'CENS', 'S', 'SUSP', 'SUSPENSION', 'SUSPENDED', 'UF', 'UNFAILED', 'UNFAIL', 'NF', 'NO FAIL', 'NO FAILURE', 'NOT FAILED', 1
--   failure_code_in_xlsx - specify the failure code you have used if it does not appear in the defaults. Default failure codes that will be recognised (not case sensitive): 'F', 'FAIL', 'FAILED', 'FAILURE', 0
--   censor_code_in_XCN - specify the censor code to be used in XCN format. Default is 'C'
--   failure_code_in_XCN - specify the failure code to be used in XCN format. Default is 'F'
--   kwargs are accepted and passed to `pandas.read_excel <https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_excel.html>`_ as args.
- 
-Outputs:
-
--   X - event time
--   C - censor code
--   N - number of events at each event time
-
-**xlsx_to_FNRN**
-
-This format is not used as a data entry format for `reliability` or any commercial software (that the author has used), but is still a valid format which combines aspects of the XCN and FR formats together. FNRN is used internally within reliability as part of the MLE algorithms.
-
-Inputs:
-
--   path - the filepath for the xlsx file. Note that you must prefix this with r to specify it as raw text. eg. path=r'C:/Users/Current User/Desktop/FNRN.xlsx' 
--   kwargs are accepted and passed to `pandas.read_excel <https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_excel.html>`_ as args.
-
-Outputs:
-
--   failures
--   num_failures
--   right_censored
--   num_right_censored
-
-**xlsx_to_FR**
-
-This is the standard data entry format for `reliability`. The FR format is the most simple, but for data with many repeated values it is not as efficient at representing the data in a table as FNRN or XCN. Python has no problems with long arrays so the FR format is chosen as the data entry format for its simplicity.
-
-Inputs:
-
--   path - the filepath for the xlsx file. Note that you must prefix this with r to specify it as raw text. eg. path=r'C:/Users/Current User/Desktop/FR.xlsx' 
--   kwargs are accepted and passed to `pandas.read_excel <https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_excel.html>`_ as args.
-
-Outputs:
-
--   failures
--   right_censored
+These three functions should be used only for data in their respective format (XCN, FNRN, FR). This means that the columns of the xlsx file should be in the same order as the name of the data format. For example, xlsx_to_XCN is expecting to receive an xlsx file with 3 columns corresponding to X, C, and N. If these are in a different order they may be misinterpreted or trigger an error. You should correct the column order in the xlsx file before importing into Python.
 
 All of the three conversion functions contain the following methods:
 
 -   print() - this will print a dataframe of the data in the output format to the console
 -   write_to_xlsx() - this will export the data in the output format to an xlsx file at the specified path. Ensure you specify the path string preceeded by r to indicate raw text. For example: write_to_xlsx(path=r'C:/Users/Current User/Desktop/mydata.xlsx'). If the file already exists in the destination folder, the user will be asked (Y/N) whether they want to overwrite the existing file. If they input N then specified filename will have (new) added to the end.
+
+**Why use different formats**
+
+There are advantages and disadvantages of each of these formats depending on the data being represented. Most importantly, we need an easy way of converting data between these formats as different software may store and receive data in different formats.
+
+- XCN - This format is the default in most commercial software including Reliasoft and Minitab. The sequence of XCN and the names may change between different software, but the format is essentially the same. Within `reliability` the XCN format may be reduced to XC (and all items are assumed to have quantity of 1). Some other software accepts the further reduced form of X (where there are no censored items and all items have a quantity of 1). If you have only failure data that is not grouped, then you should use the FR format as FR has a reduced form of F which is equivalent to X from XCN.
+- FNRN - This format is not used as a data entry format for `reliability` or any commercial software (that the author has used), but is still a valid format which combines aspects of the XCN and FR formats together. FNRN is used internally within reliability as part of the MLE algorithms.
+- FR - This is the standard data entry format for `reliability`. The FR format is the most simple, but for data with many repeated values it is not as efficient at representing the data in a table as FNRN or XCN. Python has no problems with long arrays so the FR format is chosen as the data entry format for its simplicity.
+
+For more information on these three data formats as well as how to convert data between the different formats, please see the section on `Converting data between different formats <https://reliability.readthedocs.io/en/latest/Converting%20data%20between%20different%20formats.html>`_.
 
 Example 1
 ---------

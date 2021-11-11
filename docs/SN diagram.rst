@@ -7,23 +7,9 @@ SN diagram
 
 This function will plot the stress vs number of cycles (S-N) diagram when supplied with data from a series of fatigue tests. An S-N diagram is a common procedure used to model the fatigue life of metals which are subject to known cyclic loads. Typically, the plot is done using a semilog scale where the number of cycles is scaled logarithmically. This has the effect of linearizing the plot and making the accuracy of the model much easier to visualize. For steels, titanium alloys, and some other metals, there exists an endurance limit. This limit is the minimum stress required to propagate faigue cracks, and all stresses below this endurance limit do not contribute to fatigue growth. The plot can be adjusted to use an endurance limit using the optional inputs, however, there must be runout data (equivalent to right censored data) supplied in order for the program to determine where to set the endurance limit. 
 
-Inputs:
+.. admonition:: API Reference
 
--    stress - an array or list of stress values at failure
--    cycles - an array or list of cycles values at failure
--    stress_runout - an array or list of stress values that did not result in failure Optional
--    cycles_runout - an array or list of cycles values that did not result in failure. Optional
--    xscale - 'log' or 'linear'. Default is 'log'. Adjusts the x-scale.
--    stress_trace - an array or list of stress values to be traced across to cycles values.
--    cycles_trace - an array or list of cycles values to be traced across to stress values.
--    show_endurance_limit - This will adjust all lines of best fit to be greater than or equal to the average stress_runout. Defaults to False if stress_runout is not specified. Defaults to True if stress_runout is specified.
--    method_for_bounds - 'statistical', 'residual', or None. Defaults to 'statistical'. If set to 'statistical' the CI value is used, otherwise it is not used for the 'residual' method. Residual uses the maximum residual datapoint for symmetric bounds. Setting the method for bounds to None will turn off the confidence bounds.
--    CI - Must be between 0 and 1. Default is 0.95 for 95% confidence interval. Only used if method_for_bounds = 'statistical'
--    Other plotting keywords (eg. color, linestyle, etc) are accepted for the line of best fit.
-
-Outputs:
-
--    The plot is the only output. All calculated values are shown on the plot.
+   For inputs and outputs see the `API reference <https://reliability.readthedocs.io/en/latest/API/PoF/SN_diagram.html>`_.
 
 Example 1
 ---------

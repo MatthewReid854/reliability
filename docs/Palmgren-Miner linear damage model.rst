@@ -7,20 +7,9 @@ Palmgren-Miner linear damage model
 
 The function `palmgren_miner_linear_damage` uses the Palmgren-Miner linear damage hypothesis to find the outputs listed below.
 
-Inputs:
+.. admonition:: API Reference
 
-    - rated_life - an array or list of how long the component will last at a given stress level
-    - time_at_stress - an array or list of how long the component is subjected to the stress that gives the rated_life
-    - stress - what stress the component is subjected to. Not used in the calculation but is required for printing the output.
-    .. note::
-       1. Ensure that the time_at_stress and rated_life are in the same units. The answer will also be in those units.
-       2. The number of items in each input must be the same.
-
-Outputs:
-
-    - Fraction of life consumed per load cycle
-    - Service life of the component
-    - Fraction of damage caused at each stress level
+   For inputs and outputs see the `API reference <https://reliability.readthedocs.io/en/latest/API/PoF/palmgren_miner_linear_damage.html>`_.
 
 In the following example, we consider a scenario in which ball bearings fail after 50000 hrs, 6500 hrs, and 1000 hrs, after being subjected to a stress of 1kN, 2kN, and 4kN respectively. If each load cycle involves 40 mins at 1kN, 15 mins at 2kN, and 5 mins at 4kN, how long will the ball bearings last?
 

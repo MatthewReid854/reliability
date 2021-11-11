@@ -22,6 +22,7 @@ Changelog
 
 **Other**
 
+-    Improvements to the API documentation for Convert_data, Datasets, PoF, and Utils modules. This has been a long term body of work to reformat the documentation, and it is finally complete.
 
 **Version: 0.7.1 --- Released 26 Oct 2021**
 '''''''''''''''''''''''''''''''''''''''''''

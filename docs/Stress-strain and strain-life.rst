@@ -29,27 +29,9 @@ If cycles is provided it will also produce the strain-life parameters (sigma_f, 
 You cannot find the strain-life parameters without stress as we must use stress to find elastic strain.
 Note that if you already have the parameters K, n, sigma_f, epsilon_f, b, c, then you can use the functions 'stress_strain_diagram' or 'strain_life_diagram' as described below.
 
-Inputs:
+.. admonition:: API Reference
 
-- strain - an array or list of strain
-- stress - an array or list of stress
-- E - The modulus of elasticity. Ensure this is in the same units as stress (typically MPa)
-- cycles - the number of cycles to failure. Optional input. Required if you want to obtain the parameters sigma_f, epsilon_f, b, c
-- print_results - True/False. Default is True.
-- show_plot - True/False. Default is True.
-
-Outputs:
-
-- The stress-strain plot will a be generated if show_plot is True. If cycles is provided then the strain-life plot will also be generated. Use plt.show() to show any plots.
-- The results will be printed in the console if print_results is True.
-- K - the cyclic strength coefficient
-- n - the cyclic strain hardening exponent
-- sigma_f - the fatigue strength coefficient. Only generated if cycles is provided.
-- epsilon_f - the fatigue strain coefficient. Only generated if cycles is provided.
-- b - the elastic strain exponent. Only generated if cycles is provided.
-- c - the plastic strain exponent. Only generated if cycles is provided.
-
-Note that the parameters generated are stored to an object, so you may find it useful to use this function with print_results=False and show_plot=False, and then access the calculated parameters later. This is done in the first example for the section on stress-strain diagram.
+   For inputs and outputs see the `API reference <https://reliability.readthedocs.io/en/latest/API/PoF/stress_strain_life_parameters_from_data.html>`_.
 
 Example 1
 ---------
@@ -89,25 +71,9 @@ The cyclic loading sequence defaults to begin with tension, but can be changed u
 
 Note that if you do not have the parameters K, n, but you do have stress and strain data then you can use the function 'stress_strain_life_parameters_from_data'. This will be shown in the first example below.
 
-Inputs:
+.. admonition:: API Reference
 
-- K - cyclic strength coefficient
-- n - strain hardening exponent
-- E - The modulus of elasticity. Ensure this is in the same units for which K and n were obtained (typically MPa)
-- max_strain - the maximum strain to use for cyclic loading when plotting the hysteresis loop.
-- max_stress - the maximum stress to use for cyclic loading when plotting the hysteresis loop. When specifying min and max stress or strain, do not specify both stress and strain as the corresponding value will be automatically calculated.
-- min_strain - if this is not -max_strain then specify it here. Optional input.
-- min_stress - if this is not -max_stress then specify it here. Optional input.
-- initial_load_direction - 'tension' or 'compression'. Default is 'tension'.
-
-Outputs:
-
-- The stress-strain plot will always be generated. Use plt.show() to show it.
-- If print_results is True, the calculated parameters below will be printed.
-- max_stress
-- max_strain
-- min_stress
-- min_strain
+   For inputs and outputs see the `API reference <https://reliability.readthedocs.io/en/latest/API/PoF/stress_strain_diagram.html>`_.
 
 Example 2
 ---------
@@ -183,27 +149,9 @@ Note that if you do not have the parameters sigma_f, epsilon_f, b, c, but you do
 
 The residual stress in a material subjected to non-zero mean stress (as shown in the previous example) are not considered in this analysis, and the specified max and min values for stress or strain are taken as the true values to which the material is subjected.
 
-Inputs:
+.. admonition:: API Reference
 
-- E - The modulus of elasticity. Ensure this is in the same units for which K and n were obtained (typically MPa)
-- sigma_f - fatigue strength coefficient
-- epsilon_f - fatigue strain coefficient
-- b - elastic strain exponent
-- c - plastic strain exponent
-- K - cyclic strength coefficient. Optional input. Only required if you specify max_stress or max_strain.
-- n - strain hardening exponent. Optional input. Only required if you specify max_stress or max_strain.
-- max_stress - specify the max_stress if you want cycles to failure. If specified, you will also need to specify K and n.
-- max_strain - specify the max_strain if you want cycles to failure.
-- min_stress - if this is not -max_stress then specify it here. Optional input.
-- min_strain - if this is not -max_strain then specify it here. Optional input. When specifying min and max stress or strain, do not specify both stress and strain as the corresponding value will be automatically calculated. Only specify the min if it is not -max
-- mean_stress_correction_method - must be either 'morrow','modified_morrow', or 'SWT'. Default is 'SWT'. This is only used if mean_stress is found to be non-zero.
-- print_results - True/False. Defaults to True. If use_level_stress or use_level_strain is specified then the printed results will be the cycles_to_failure
-- show_plot - True/False. Default is True
-
-Outputs:
-
-- The strain-life plot will be generated if show_plot = True. Use plt.show() to show it.
-- cycles_to_failure - only calculated if max_stress OR max_strain is specified. This will be printed if print_results = True.
+   For inputs and outputs see the `API reference <https://reliability.readthedocs.io/en/latest/API/PoF/strain_life_diagram.html>`_.
 
 Example 4
 ---------

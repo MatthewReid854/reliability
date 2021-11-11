@@ -5,7 +5,11 @@
 Datasets
 ''''''''
 
-There are a few datasets that have been included with reliability that users may find useful for testing and experimenting. While this list is currently small, expect it to increase significantly over time. Within `reliability.Datasets` the following datasets are available:
+.. admonition:: API Reference
+
+   For inputs and outputs see the `API reference <https://reliability.readthedocs.io/en/latest/API/Datasets.html>`_.
+
+There are a few datasets that have been included with reliability that users may find useful for testing and experimenting. Within `reliability.Datasets` the following datasets are available:
 
 **Standard datasets**
 

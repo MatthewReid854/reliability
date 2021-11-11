@@ -9,17 +9,9 @@ Creep is the progressive accumulation of plastic strain in a component under str
 
 The function `creep_rupture_curves` plots the creep rupture curves for a given set of creep data. The function also fits the lines of best fit to each temperature. The time to failure for a given temperature can be found by specifying stress_trace and temp_trace.
 
-Inputs:
+.. admonition:: API Reference
 
--   temp_array - an array or list of temperatures
--   stress_array- an array or list of stresses
--   TTF_array - an array or list of times to failure at the given temperatures and stresses
--   stress_trace - The stress to use for finding the time to failure (only 1 value is accepted)
--   temp_trace - The temperature to use for finding the time to failure (only 1 value is accepted)
-
-Outputs:
-
--   The plot is the only output. Use plt.show() to show it.
+   For inputs and outputs see the `API reference <https://reliability.readthedocs.io/en/latest/API/PoF/creep_rupture_curves.html>`_.
 
 Example 1
 ---------
@@ -40,18 +32,9 @@ In the following example (taken from example 2.16 of Probabilistic Physics of Fa
 
 The function `creep_failure_time` uses the Larson-Miller relation to find the time to failure due to creep. The method uses a known failure time (time_low) at a lower failure temperature (temp_low) to find the unknown failure time at the higher temperature (temp_high). This relation requires the input temperatures in Fahrenheit. To convert Celsius to Fahrenheit use :math:`F = C\times(9/5)+32`. Also note that the conversion between Fahrenheit and Rankine used in this calculation is :math:`R = F+459.67`.
 
-Inputs:
+.. admonition:: API Reference
 
--   temp_low - temperature (in degrees Fahrenheit) where the time_low is known
--   temp_high - temperature (in degrees Fahrenheit) which time_high is unknown and will be found by this function
--   time_low - time to failure at temp_low
--   C - creep constant (default is 20). Typically 20-22 for metals
--   print_results - True/False
-
-Outputs:
-
--   The time to failure at the higher temperature.
--   If print_results is True, the output will also be printed to the console.
+   For inputs and outputs see the `API reference <https://reliability.readthedocs.io/en/latest/API/PoF/creep_failure_time.html>`_.
 
 Example 2
 ---------

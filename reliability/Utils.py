@@ -1,42 +1,44 @@
 """
 Utils (utilities)
 
-This is a collection of utilities that are used throughout the python reliability library.
-Functions have been placed here as to declutter the dropdown lists of your IDE and to provide a common resource across multiple modules.
-It is not expected that users will be using any utils directly.
+This is a collection of utilities that are used throughout the python
+reliability library. Functions have been placed here as to declutter the
+dropdown lists of your IDE and to provide a common resource across multiple
+modules. It is not expected that users will be using any utils directly.
 
 Included functions are:
-ALT_MLE_optimization - performs optimization for the ALT_Fitters
-ALT_fitters_input_checking - performs input checking for the ALT_Fitters
-ALT_least_squares - least squares estimation for ALT_Fitters
-ALT_prob_plot - probability plotting for ALT_Fitters
-LS_optimization - least squares optimization for Fitters
-MLE_optimization - maximum likelihood estimation optimization for Fitters
-anderson_darling - calculated the anderson darling (AD) goodness of fit statistic
-axes_transforms - Custom scale functions used in Probability_plotting
-clean_CI_arrays - cleans the CI arrays of nan and illegal values
-colorprint - prints to the console in color, bold, italic, and underline
-distribution_confidence_intervals - calculates and plots the confidence intervals for the distributions
-fill_no_autoscale - creates a shaded region without adding it to the global list of objects to consider when autoscale is calculated
-fitters_input_checking - error checking and default values for all the fitters
-generate_X_array - generates the X values for all distributions
-get_axes_limits - gets the current axes limits
-least_squares - provides parameter estimates for distributions using the method of least squares. Used extensively by Fitters.
-life_stress_plot - generates the life stress plot for ALT_Fitters
-line_no_autoscale - creates a line without adding it to the global list of objects to consider when autoscale is calculated
-linear_regression - given x and y data it will return slope and intercept of line of best fit. Includes options to specify slope or intercept.
-make_fitted_dist_params_for_ALT_probplots - creates a class structure for the ALT probability plots to give to Probability_plotting
-no_reverse - corrects for reversals in confidence intervals
-probability_plot_xylims - sets the x and y limits on probability plots
-probability_plot_xyticks - sets the x and y ticks on probability plots
-removeNaNs - removes nan
-restore_axes_limits - restores the axes limits based on values from get_axes_limits()
-round_to_decimals - applies different rounding rules to numbers above and below 1 so that small numbers do not get rounded to 0.
-transform_spaced - Creates linearly spaced array (in transform space) based on a specified transform. This is like np.logspace but it can make an array that is weibull spaced, normal spaced, etc.
-validate_CI_params - checks that the confidence intervals have all the right parameters to be generated
-write_df_to_xlsx - converts a dataframe to an xlsx file
-xy_transform - provides conversions between spatial (-inf,inf) and axes coordinates (0,1).
-zeroise_below_gamma - sets all y values to zero when x < gamma. Used when the HF and CHF equations are specified
+
+- ALT_MLE_optimization - performs optimization for the ALT_Fitters
+- ALT_fitters_input_checking - performs input checking for the ALT_Fitters
+- ALT_least_squares - least squares estimation for ALT_Fitters
+- ALT_prob_plot - probability plotting for ALT_Fitters
+- LS_optimization - least squares optimization for Fitters
+- MLE_optimization - maximum likelihood estimation optimization for Fitters
+- anderson_darling - calculated the anderson darling (AD) goodness of fit statistic
+- axes_transforms - Custom scale functions used in Probability_plotting
+- clean_CI_arrays - cleans the CI arrays of nan and illegal values
+- colorprint - prints to the console in color, bold, italic, and underline
+- distribution_confidence_intervals - calculates and plots the confidence intervals for the distributions
+- fill_no_autoscale - creates a shaded region without adding it to the global list of objects to consider when autoscale is calculated
+- fitters_input_checking - error checking and default values for all the fitters
+- generate_X_array - generates the X values for all distributions
+- get_axes_limits - gets the current axes limits
+- least_squares - provides parameter estimates for distributions using the method of least squares. Used extensively by Fitters.
+- life_stress_plot - generates the life stress plot for ALT_Fitters
+- line_no_autoscale - creates a line without adding it to the global list of objects to consider when autoscale is calculated
+- linear_regression - given x and y data it will return slope and intercept of line of best fit. Includes options to specify slope or intercept.
+- make_fitted_dist_params_for_ALT_probplots - creates a class structure for the ALT probability plots to give to Probability_plotting
+- no_reverse - corrects for reversals in confidence intervals
+- probability_plot_xylims - sets the x and y limits on probability plots
+- probability_plot_xyticks - sets the x and y ticks on probability plots
+- removeNaNs - removes nan
+- restore_axes_limits - restores the axes limits based on values from get_axes_limits()
+- round_to_decimals - applies different rounding rules to numbers above and below 1 so that small numbers do not get rounded to 0.
+- transform_spaced - Creates linearly spaced array (in transform space) based on a specified transform. This is like np.logspace but it can make an array that is weibull spaced, normal spaced, etc.
+- validate_CI_params - checks that the confidence intervals have all the right parameters to be generated
+- write_df_to_xlsx - converts a dataframe to an xlsx file
+- xy_transform - provides conversions between spatial (-inf,inf) and axes coordinates (0,1).
+- zeroise_below_gamma - sets all y values to zero when x < gamma. Used when the HF and CHF equations are specified
 """
 
 import numpy as np
@@ -67,15 +69,33 @@ warnings.filterwarnings(
 
 def round_to_decimals(number, decimals=5, integer_floats_to_ints=True):
     """
-    This function is used to round a number to a specified number of decimals. It is used heavily in the formatting of the parameter titles within reliability.Distributions
-    It is not the same as rounding to a number of significant figures as it keeps preceeding zeros for numbers less than 1.
+    This function is used to round a number to a specified number of decimals.
+    It is used heavily in the formatting of the parameter titles within
+    reliability.Distributions
 
-    Inputs:
-    number - the number to be rounded
-    decimals - the number of decimals (not including preceeding zeros) that are to be in the output
-    integer_floats_to_ints - True/False. Default is True. Removes trailing zeros if there are no significant decimals (eg. 12.0 becomes 12).
+    It is not the same as rounding to a number of significant figures as it
+    keeps preceeding zeros for numbers less than 1.
 
-    examples (with decimals = 5):
+    Parameters
+    ----------
+    number : float
+        The number to be rounded
+    decimals : int
+        The number of decimals (not including preceeding zeros) that are to be
+        in the output
+    integer_floats_to_ints : bool, optional
+        Default is True. Removes trailing zeros from floats if there are no
+        significant decimals (eg. 12.0 becomes 12).
+
+    Returns
+    -------
+    number_rounded : float, int
+        The number rounded. If the number has no trailing zeros and
+        integer_floats_to_int is True then the output will be an int.
+
+    Notes
+    -----
+    Examples (with decimals = 5):
     1234567.1234567 ==> 1234567.12345
     0.0001234567 ==> 0.00012345
     1234567 ==> 1234567
@@ -126,18 +146,44 @@ def transform_spaced(
     beta=None,
 ):
     """
-    Creates linearly spaced array based on a specified transform
-    This is similar to np.linspace or np.logspace but is designed for weibull space, exponential space, normal space, gamma space, loglogistic space, and beta space.
-    It is useful if the points generated are going to be plotted on axes that are scaled using the same transform and need to look equally spaced in the transform space
-    Note that lognormal is the same as normal, since the x-axis is what is transformed, not the y-axis.
+    Creates linearly spaced array based on a specified transform.
 
-    :param transform (str): the transform name. Must be either weibull, exponential, normal, gamma, or beta.
-    :param y_upper (float): the lower bound (must be within the bounds 0 to 1). Default is 1e-8
-    :param y_lower (float): the upper bound (must be within the bounds 0 to 1). Default is 1-1e-8
-    :param num (int): the number of values in the array. Default is 1000.
-    :param alpha (int, float): the alpha value of the beta distribution. Only used if the transform is beta
-    :param beta (int, float): the beta value of the beta or gamma distribution. Only used if the transform is beta or gamma
-    :return: linearly spaced array (appears linearly spaced when plotted in transform space)
+    This is similar to np.linspace or np.logspace but is designed for weibull
+    space, exponential space, normal space, gamma space, loglogistic space,
+    gumbel space and beta space.
+
+    It is useful if the points generated are going to be plotted on axes that
+    are scaled using the same transform and need to look equally spaced in the
+    transform space.
+
+    Parameters
+    ----------
+    transform : str
+        The transform name. Must be either weibull, exponential, normal, gamma,
+        gumbel, loglogistic, or beta.
+    y_upper : float, optional
+        The lower bound (must be within the bounds 0 to 1). Default is 1e-8
+    y_lower : float, optional
+        The upper bound (must be within the bounds 0 to 1). Default is 1-1e-8
+    num : int, optional
+        The number of values in the array. Default is 1000.
+    alpha : int, float, optional
+        The alpha value of the beta distribution. Only used if the transform is
+        beta
+    beta : int, float, optional
+        The beta value of the beta or gamma distribution. Only used if the
+        transform is beta or gamma
+
+    Returns
+    -------
+    transformed_array : array
+        transform spaced array. This appears linearly spaced when plotted in
+        transform space.
+
+    Notes
+    -----
+    Note that lognormal is the same as normal, since the x-axis is what is
+    transformed in lognormal, not the y-axis.
     """
     np.seterr("ignore")  # this is required due to an error in scipy.stats
     if y_lower > y_upper:
@@ -204,6 +250,10 @@ def transform_spaced(
 class axes_transforms:
     """
     Custom scale functions used in Probability_plotting
+    Each of these functions is either a forward or inverse transform.
+
+    There are no parameters for this class, only a collection of subfunctions
+    which can be called individually to perform the transforms.
     """
 
     @staticmethod
@@ -266,8 +316,24 @@ class axes_transforms:
 def get_axes_limits():
     """
     This function works in a pair with restore_axes_limits
-    This function gets the previous xlim and ylim and also checks whether there was a previous plot (based on whether the default 0,1 axes had been changed.
-    It returns a list of items that are used by restore_axes_limits after the plot has been performed
+    This function gets the previous xlim and ylim and also checks whether there
+    was a previous plot (based on whether the default 0,1 axes had been
+    changed).
+
+    It returns a list of items that are used by restore_axes_limits after the
+    plot has been performed.
+
+    Parameters
+    ----------
+    None
+        The plot properties are extracted automatically for analysis
+
+    Returns
+    -------
+    output : list
+        A list of [xlims, ylims, use_prev_lims]. These values are used by
+        restore_axes_limits to determine how the axes limits need to be
+        changed after plotting.
     """
     xlims = plt.xlim(auto=None)  # get previous xlim
     ylims = plt.ylim(auto=None)  # get previous ylim
@@ -284,15 +350,39 @@ def get_axes_limits():
 
 def restore_axes_limits(limits, dist, func, X, Y, xvals=None, xmin=None, xmax=None):
     """
-    This function works in a pair with get_axes_limits
-    Inputs:
-    limits - a list of xlim, ylim, use_prev_lims created by get_axes_limits
-    dist - the distribution object to which it is applied
-    X - the xvalues of the plot
-    Y - the yvalues of the plot
-    xvals - the xvals specified. May be None if not specified
+    This function works in a pair with get_axes_limits. Using the values
+    producted by get_axes_limits which are [xlims, ylims, use_prev_lims], this
+    function will determine how to change the axes limits to meet the style
+    requirements of the library.
 
-    No scaling will be done if the axes are not linear due to errors that result from log and function scaled axes when a limit of 0 is used.
+    Parameters
+    ----------
+    limits : list
+        A list of [xlims, ylims, use_prev_lims] created by get_axes_limits
+    dist : object
+        The distribution object which the axes limits are influenced by.
+    X : array, list
+        The x-values of the plot
+    Y : array, list
+        The y-values of the plot
+    xvals : array, list, optional
+        The plot xvals if specified. May be None if not specified.
+    xmin : int, float, optional
+        The plot xmin if specified. May be None if not specified.
+    xmax : int, float, optional
+        The plot xmax if specified. May be None if not specified.
+
+    Returns
+    -------
+    None
+        This function will scale the plot but it does not return anything
+
+    Notes
+    -----
+    No scaling will be done if the axes are not linear due to errors that result
+    from log and function scaled axes when a limit of 0 is used. This means that
+    this function is not able to be applied to the probability plots are they
+    have non-linear scaled axes.
     """
     xlims = limits[0]
     ylims = limits[1]
@@ -421,10 +511,31 @@ def restore_axes_limits(limits, dist, func, X, Y, xvals=None, xmin=None, xmax=No
 
 def generate_X_array(dist, xvals=None, xmin=None, xmax=None):
     """
-    generates the array of X values for each of the PDf, CDF, SF, HF, CHF functions within reliability.Distributions
-    This is done with a variety of cases in order to ensure that for regions of high gradient (particularly asymptotes to inf) the points are more concentrated.
-    This ensures that the line always looks as smooth as possible using only 200 data points
+    Generates the array of X values for each of the PDf, CDF, SF, HF, CHF
+    functions within reliability.Distributions
+
+    This is done with a variety of cases in order to ensure that for regions of
+    high gradient (particularly asymptotes to inf) the points are more
+    concentrated. This ensures that the line always looks as smooth as possible
+    using only 200 data points.
+
+    Parameters
+    ----------
+    dist : object
+        The distribution object
+    xvals : array, list, optional
+        The xvals for the plot if specified
+    xmin : array, list, optional
+        The xmin for the plot if specified
+    xmax : array, list, optional
+        The xmax for the plot if specified
+
+    Returns
+    -------
+    X : array
+        The X array that was generated.
     """
+
 
     # obtain the xvals array
     points = 200  # the number of points to use when generating the X array
@@ -625,9 +736,28 @@ def no_reverse(x, CI_type, plot_type):
     """
     This is used to convert an array that decreases and then increases into an
     array that decreases then is constant at its minimum.
-    The always decreasing rule will apply unless CI_type = 'time' and plot_type = 'CHF'
+
+    The always decreasing rule will apply unless CI_type = 'time' and
+    plot_type = 'CHF'
+
     This function is used to provide a correction to the confidence intervals
     which mathematically are correct but practically should never decrease.
+
+    Parameters
+    ----------
+    x : array, list
+        The array or list to which the no_reverse correction is applied
+    CI_type : str
+        Must be either 'time' or 'reliability'
+    plot_type : str
+        Must be either 'CDF', 'SF', or 'CHF'
+
+    Returns
+    -------
+    x : array
+        A corrected form of the input x that obeys the always decreasing rule
+        (or the always increasing rule in the case of CI_type = 'time' and
+        plot_type = 'CHF').
     """
     if type(x) not in [np.ndarray, list]:
         raise ValueError("x must be a list or array")
@@ -656,8 +786,28 @@ def no_reverse(x, CI_type, plot_type):
 
 def zeroise_below_gamma(X, Y, gamma):
     """
-    This will make all Y values 0 for the corresponding X values being below gamma.
-    Used by HF and CHF which need to be zeroized if the gamma shifted form of the equation is used.
+    This will make all Y values 0 for the corresponding X values being below
+    gamma (the threshold parameter for Weibull, Exponential, Gamma, Loglogistic,
+    and Lognormal).
+
+    Used by HF and CHF which need to be zeroized if the gamma shifted form of
+    the equation is used.
+
+    Parameters
+    ----------
+    X : array, list
+        The x values of the distribution. These areused to determine whis Y
+        values to zeroize.
+    Y : array, list
+        The y-values of the distribution
+    gamma : float, int
+        The gamma parameter. This is the point at which Y values corresponding
+        to X values below gamma will be zeroized.
+
+    Returns
+    -------
+    Y : array
+        The zeroized Y array
     """
     if gamma > 0:
         if len(np.where(X > gamma)[0]) == 0:
@@ -669,10 +819,30 @@ def zeroise_below_gamma(X, Y, gamma):
 
 def xy_transform(value, direction="forward", axis="x"):
     """
-    Converts between data values and axes coordinates (based on xlim() or ylim()).
-    If direction is forward the returned value will always be between 0 and 1 provided value is on the plot.
-    If direction is reverse the input should be between 0 and 1 and the returned value will be the data value based on the current plot lims
-    axis must be x or y
+    This function converts between data values and axes coordinates (based on
+    xlim() or ylim()).
+
+    If direction is forward the returned value will always be between 0 and 1
+    provided the value is on the plot.
+
+    If direction is reverse the input should be between 0 and 1 and the returned
+    value will be the data value based on the current plot lims
+
+    Parameters
+    ----------
+    value: int, float, list, array
+        The value/s to be transformed
+    direction : str, optional
+        Must be "forward" or "inverse". Default is "forward"
+    axis : str, optional
+        Must be "x" or "y". Default is "x".
+
+    Returns
+    -------
+    transformed_values : float, array
+        The transformed values. This will be a float if the input was int or
+        float, or an array if the input was list or array.
+
     """
     if direction not in ["reverse", "inverse", "inv", "rev", "forward", "fwd"]:
         raise ValueError('direction must be "forward" or "reverse"')
@@ -683,17 +853,15 @@ def xy_transform(value, direction="forward", axis="x"):
     if direction in ["reverse", "inverse", "inv", "rev"]:
         if type(value) in [int, float, np.float64]:
             if axis == "x":
+                # x transform
                 transformed_values = ax.transData.inverted().transform(
                     (ax.transAxes.transform((value, 0.5))[0], 0.5)
-                )[
-                    0
-                ]  # x transform
+                )[0]
             else:
+                # y transform
                 transformed_values = ax.transData.inverted().transform(
                     (1, ax.transAxes.transform((1, value))[1])
-                )[
-                    1
-                ]  # y transform
+                )[1]
         elif type(value) in [list, np.ndarray]:
             transformed_values = []
             for item in value:
@@ -749,8 +917,39 @@ def probability_plot_xylims(
     x, y, dist, spacing=0.1, gamma_beta=None, beta_alpha=None, beta_beta=None
 ):
     """
-    finds the x and y limits of probability plots.
-    This function is called by probability_plotting
+    This function finds what the x and y limits of probability plots should be
+    and sets these limits. This is similar to autoscaling, but the rules here
+    are different to the matplotlib defaults.
+    It is used extensively by the functions within the probability_plotting
+    module to achieve the plotting style used within this library.
+
+    Parameters
+    ----------
+    x : list, array
+        The x-values from the plot
+    y : list, array
+        The y-values from the plot
+    dist : str
+        Must be either "weibull", "lognormal", "loglogistic", "normal", "gamma",
+        "exponential", "beta", or "gumbel".
+    spacing : float
+        The spacing between the points and the edge of the plot. Default is 0.1
+        for 10% spacing.
+    gamma_beta : float, int, optional
+        The beta parameter from the gamma distribution. Only required if dist =
+        "gamma".
+    beta_alpha : float, int, optional
+        The alpha parameter from the beta distribution. Only required if dist =
+        "beta".
+    beta_beta : float, int, optional
+        The beta parameter from the beta distribution. Only required if dist =
+        "beta".
+
+    Returns
+    -------
+    None
+        There are no outputs from this function. It will set the xlim() and
+        ylim() of the probability plot automatically.
     """
 
     # remove inf
@@ -860,19 +1059,52 @@ def probability_plot_xylims(
 
 def probability_plot_xyticks(yticks=None):
     """
-    Sets the x and y ticks for probability plots
-    X ticks are selected using either MaxNLocator or LogLocator.
-    X ticks are formatted using a custom formatter.
-    Y ticks are specified with FixedLocator due to their irregular spacing. Minor y ticks use MaxNLocator
-    Y ticks are formatted using a custom Percent Formatter that handles decimals better
-    This function is called by probability_plotting
+    This function sets the x and y ticks for probability plots.
+
+    X ticks are selected using either MaxNLocator or LogLocator. X ticks are
+    formatted using a custom formatter.
+
+    Y ticks are specified with FixedLocator due to their irregular spacing.
+    Minor y ticks use MaxNLocator. Y ticks are formatted using a custom Percent
+    Formatter that handles decimals better than the default.
+
+    This function is used by all the probability plots.
+
+    Within this function are several sub functions that are called internally.
+
+    Parameters
+    ----------
+    yticks : list, array
+        The yticks to use. If unspecified, the default yticks are [0.0001, 0.001,
+        0.002, 0.005, 0.01, 0.02, 0.03, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7,
+        0.8, 0.9, 0.95, 0.99, 0.999, 0.9999, 0.999999].
+
+    Returns
+    -------
+    None
+        This function will set the ticks but it does not return anything.
     """
 
     def get_tick_locations(major_or_minor, in_lims=True, axis="x"):
         """
-        returns the major or minor tick locations for the current axis
-        if in_lims=True then it will only return the ticks that are within the current xlim() or ylim(). Default is True
-        axis must be x or y. Default is x
+        returns the major or minor tick locations for the current axis.
+
+        Parameters
+        ----------
+        major_or_minor : str
+            Specifies which ticks to get. Must be either "major" or
+            "minor".
+        in_lims : bool, optional
+            If in_lims=True then it will only return the ticks that are within
+            the current xlim() or ylim(). Default is True.
+        axis : str, optional
+            Specifies which axis to get the ticks for. Must be "x" or "y".
+            Default is "x".
+
+        Returns
+        -------
+        locations : array
+            The tick locations
         """
         if axis == "x":
             AXIS = ax.xaxis
@@ -903,6 +1135,16 @@ def probability_plot_xyticks(yticks=None):
     def customFormatter(value, _):
         """
         Provides custom string formatting that is used for the xticks
+
+        Parameters
+        ----------
+        value : int, float
+            The value to be formatted
+
+        Returns
+        -------
+        label : str
+            The formatted string
         """
         if value == 0:
             label = "0"
@@ -929,7 +1171,19 @@ def probability_plot_xyticks(yticks=None):
     def customPercentFormatter(value, _):
         """
         Provides custom percent string formatting that is used for the yticks
-        Slightly different than PercentFormatter as it does not force a particular number of decimals. ie. 99.00 becomes 99 while 99.99 still displays as such.
+        This function is slightly different than matplotlib's PercentFormatter
+        as it does not force a particular number of decimals. ie. in this
+        function 99.00 becomes 99 while 99.99 still displays as such.
+
+        Parameters
+        ----------
+        value : int, float
+            The value to be formatted
+
+        Returns
+        -------
+        label : str
+            The formatted string
         """
         value100 = value * 100
         value100dec = round(
@@ -943,7 +1197,19 @@ def probability_plot_xyticks(yticks=None):
         return label
 
     def get_edge_distances():
-        "finds the sum of the distance (in axes coords (0 to 1)) of the distances from the edge ticks to the edges"
+        """
+        Finds the sum of the distance (in axes coords (0 to 1)) of the distances
+        from the edge ticks to the edges
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        distances : float
+            The edge distances
+        """
         xtick_locations = get_tick_locations("major", axis="x")
         left_tick_distance = xy_transform(
             xtick_locations[0], direction="forward", axis="x"
@@ -1039,8 +1305,21 @@ def probability_plot_xyticks(yticks=None):
 
 def anderson_darling(fitted_cdf, empirical_cdf):
     """
-    Calculates the Anderson-Darling goodness of fit statistic
-    These formulas are based on the method used in MINITAB which gives an adjusted form of the original AD statistic described on Wikipedia
+    Calculates the Anderson-Darling goodness of fit statistic.
+    These formulas are based on the method used in MINITAB which gives an
+    adjusted form of the original AD statistic described on Wikipedia.
+
+    Parameters
+    ----------
+    fitted_cdf : list, array
+        The fitted CDF values at the data points
+    empirical_cdf  : list, array
+        The empirical (rank adjustment) CDF values at the data points
+
+    Returns
+    -------
+    AD : float
+        The anderson darling (adjusted) test statistic.
     """
     Z = np.sort(np.asarray(fitted_cdf))
     Zi = np.hstack([Z, 1 - 1e-12])
@@ -1072,9 +1351,38 @@ def colorprint(
     italic=False,
 ):
     """
-    colorprint - Provides easy access to color printing in the console
-    Parameter names are self explanatory. Color options are grey, red, green, yellow, blue, pink, turquoise.
+    Provides easy access to color printing in the console.
+
+    This function is used to print warnings in red text, but it can also do a
+    lot more.
+
+    Parameters
+    ----------
+    string
+    text_color : str, None, optional
+        Must be either grey, red, green, yellow, blue, pink, or turquoise. Use
+        None to leave the color as white. Default is None.
+    background_color : str, None, optional
+        Must be either grey, red, green, yellow, blue, pink, or turquoise. Use
+        None to leave the color as the transparent. Default is None.
+    bold : bool, optional
+        Default is False.
+    underline : bool, optional
+        Default is False.
+    italic : bool, optional
+        Default is False.
+
+    Returns
+    -------
+    None
+        The output is printed to the console.
+
+    Notes
+    -----
     Some flexibility in color names is allowed. eg. red and r will both give red.
+
+    As there is only one string argument, if you have multiple strings to print,
+    you must first combine them using str(string_1,string_2,...).
     """
     text_colors = {
         "grey": "\033[90m",
@@ -1190,7 +1498,10 @@ def colorprint(
 
 class fitters_input_checking:
     """
-    performs error checking and some basic default operations for all the inputs given to each of the fitters
+    This function performs error checking and some basic default operations for
+    all the inputs given to each of the fitters.
+
+    
     """
 
     def __init__(

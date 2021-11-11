@@ -32,97 +32,9 @@ Each of the three data formats has an acceptable reduced form as follows:
 
 For more information on these three data formats as well as how to import data from Microsoft Excel (.xlsx files) into Python, please see the section on `Importing data from Excel <https://reliability.readthedocs.io/en/latest/Importing%20data%20from%20Excel.html>`_.
 
-**XCN_to_FR**
+.. admonition:: API Reference
 
-Inputs:
-
--   X - the failure or right_censored time. This must be an array or list.
--   C -  the censoring code for each X. This must be an array or list. Defaults are recognised from the lists shown below.
--   N - the quantity for each X. This must be an array or list. Optional Input. If omitted all items are assumed to have quantity (N) of 1.
--   censor_code - specify the censor code you have used if it does not appear in the defaults. Optional input. Default censor codes that will be recognised (not case sensitive): 'R', 'RC', 'RIGHT CENS', 'RIGHT CENSORED', 'C', 'CENSORED', 'CENS', 'S', 'SUSP', 'SUSPENSION', 'SUSPENDED', 'UF', 'UNFAILED', 'UNFAIL', 'NF', 'NO FAIL', 'NO FAILURE', 'NOT FAILED', 1
-- failure_code - specify the failure code you have used if it does not appear in the defaults. Optional Input. Default failure codes that will be recognised (not case sensitive): 'F', 'FAIL', 'FAILED', 'FAILURE', 0
-
-Outputs:
-
--   failures
--   right_censored
-
-**XCN_to_FNRN**
-
-Inputs:
-
--   X - the failure or right_censored time. This must be an array or list.
--   C -  the censoring code for each X. This must be an array or list. Defaults are recognised from the lists shown below.
--   N - the quantity for each X. This must be an array or list. Optional Input. If omitted all items are assumed to have quantity (N) of 1.
--   censor_code - specify the censor code you have used if it does not appear in the defaults. Optional input. Default censor codes that will be recognised (not case sensitive): 'R', 'RC', 'RIGHT CENS', 'RIGHT CENSORED', 'C', 'CENSORED', 'CENS', 'S', 'SUSP', 'SUSPENSION', 'SUSPENDED', 'UF', 'UNFAILED', 'UNFAIL', 'NF', 'NO FAIL', 'NO FAILURE', 'NOT FAILED', 1
-- failure_code - specify the failure code you have used if it does not appear in the defaults. Optional Input. Default failure codes that will be recognised (not case sensitive): 'F', 'FAIL', 'FAILED', 'FAILURE', 0
-
-Outputs:
-
--   failures
--   num_failures
--   right_censored
--   num_right_censored
-
-**FNRN_to_XCN**
-
-Inputs:
-
--   failures - array or list
--   num_failures - array or list. Length must match length of failures
--   right_censored -  array or list. Optional input.
--   num_right_censored - array or list. Optional Input. Length must match length of right_censored
--   censor_code - the int or str to use for the censored items. Optional input. Default is 'C'
--   failure_code - the int or str to use for the failed items. Optional input. Default is 'F'
-
-Outputs:
- 
--   X - event time
--   C - censor code
--   N - number of events at each event time
-
-**FR_to_XCN**
-
-Inputs:
-
--   failures - array or list
--   right_censored -  array or list. Optional input.
--   censor_code - the int or str to use for the censored items. Optional input. Default is 'C'
--   failure_code - the int or str to use for the failed items. Optional input. Default is 'F'
-
-Outputs:
- 
--   X - event time
--   C - censor code
--   N - number of events at each event time
-
-**FNRN_to_FR**
-
-Inputs:
-
--   failures - array or list
--   num_failures - array or list. Length must match length of failures
--   right_censored -  array or list. Optional input.
--   num_right_censored - array or list. Optional Input. Length must match length of right_censored
-
-Outputs:
-
--   failures
--   right_censored
-
-**FR_to_FNRN**
-
-Inputs:
-
--   failures - array or list
--   right_censored - array or list. Optional Input.
-
-Outputs:
-
--   failures
--   num_failures
--   right_censored
--   num_right_censored
+   For inputs and outputs see the `API reference <https://reliability.readthedocs.io/en/latest/API/Convert_data.html>`_.
 
 All of the six conversion functions contain the following methods:
 
