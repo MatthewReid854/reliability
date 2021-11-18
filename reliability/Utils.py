@@ -536,7 +536,6 @@ def generate_X_array(dist, xvals=None, xmin=None, xmax=None):
         The X array that was generated.
     """
 
-
     # obtain the xvals array
     points = 200  # the number of points to use when generating the X array
     points_right = 25  # the number of points given to the area above QU. The total points is still equal to 'points' so the area below QU receives 'points - points_right'
@@ -1501,7 +1500,77 @@ class fitters_input_checking:
     This function performs error checking and some basic default operations for
     all the inputs given to each of the fitters.
 
-    
+    Parameters
+    ----------
+    dist : str
+        Must be one of "Everything", "Weibull_2P", "Weibull_3P", "Gamma_2P",
+        "Gamma_3P", "Exponential_1P", "Exponential_2P", "Gumbel_2P",
+        "Normal_2P", "Lognormal_2P", "Lognormal_3P", "Loglogistic_2P",
+        "Loglogistic_3P", "Beta_2P", "Weibull_Mixture", "Weibull_CR",
+        "Weibull_DSZI", "Weibull_DS", "Weibull_ZI".
+    failures : array, list
+        The failure data
+    right_censored : array, list, optional
+        The right censored data
+    method : str, optional
+        Must be either "MLE","LS","RRX", or "RRY". Some flexibility in input is
+        tolerated. eg "LS", "LEAST SQUARES", "LSQ", "NLRR", "NLLS" will all be
+        recogsised as "LS". Default is MLE
+    optimizer : str, optional
+        Must be one of "TNC", "L-BFGS-B", "nelder-mead", "powell", "best".
+        Default is None which will result in each being tried until one
+        succeeds. For more detail see the `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
+    CI : float, optional
+        Confidence interval. Must be between 0 and 1. Default is 0.95 for 95%
+        confidence interval (2 sided).
+    percentiles : array, list, bool, optional
+        An array or list of the percentiles to calculate. If True then the
+        default array will be used. Default array is [1, 5, 10, 20, 25, 50, 75,
+        80, 90, 95, 99]. If False then no percentiles will be calculated.
+        Default is False.
+    force_beta : float, int, optional
+        Used to force beta for the Weibull_2P distribution. Default is None
+        which will not force beta.
+    force_sigma : float, int, optional
+        Used to force sigma for the Normal_2P and Lognormal_2P distributions.
+        Default is None which will not force sigma.
+    CI_type : str, optional
+        Must be either "time" or "reliability". Default is None which results in
+        "time" being used (controlled in Fitters). Some flexibility is strings
+        is allowed. eg. "r", "R", "rel", "REL", "reliability", "RELIABILITY"
+        will all be recognized as "reliability".
+
+    Returns
+    -------
+    failures : array
+        The failure times
+    right_censored : array
+        The right censored times. This will be an empty array if the input was
+        None.
+    CI : float
+        The confidence interval (between 0 and 1)
+    method : str, None
+        This will return "MLE", "LS", "RRX", "RRY" or None.
+    optimizer : str, None
+        This will return "TNC", "L-BFGS-B", "nelder-mead", "powell", "best", or
+        None.
+    percentiles : array, None
+        The percentiles or None.
+    force_beta : float, None
+        The beta parameter to be forced in Weibull_2P
+    force_sigma : float, None
+            The sigma parameter to be forced in Normal_2P, or Lognormal_2P
+    CI_type : str, None
+        "time", "reliability", or None
+
+    Notes
+    -----
+    For full detail on what is checked and the errors produced, you should read
+    the source code.
+
+    Some returns are None if the input is None. How None affects the behavior
+    is governed by other functions such as the individual fitters and other
+    Utils.
     """
 
     def __init__(
@@ -1796,7 +1865,86 @@ class fitters_input_checking:
 
 class ALT_fitters_input_checking:
     """
-    performs error checking and some basic default operations for all the inputs given to each of the ALT_fitters
+    This function performs error checking and some basic default operations for
+    all the inputs given to each of the ALT_fitters.
+
+    Parameters
+    ----------
+    dist : str
+        Must be one of "Exponential", "Weibull", "Lognormal", "Normal",
+        "Everything".
+    life_stress_model : str
+        Must be one of "Exponential", "Eyring", "Power","Dual_Exponential",
+        "Power_Exponential", "Dual_Power", "Everything".
+    failures : array, list
+        The failure data
+    failure_stress_1 : array, list
+        The stresses corresponding to the failure data
+    failure_stress_2 : array, list, optional
+        The second stresses corresponding to the failure data. Only required for
+        dual stress models. Default is None.
+    right_censored : array, list, optional
+        The right censored data. Default is None.
+    right_censored_stress_1 : array, list, optional
+        The stresses corresponding to the right censored data. Default is None.
+    right_censored_stress_2 : array, list, optional
+        The second stresses corresponding to the right censored data. Only
+        required for dual stress models. Default is None.
+    CI : float, optional
+        The confidence interval (between 0 and 1). Default is 0.95 for 95%
+        confidence interval (two sided).
+    optimizer : str, None
+        This will return "TNC", "L-BFGS-B", "nelder-mead", "powell", "best", or
+        None. Default is None.
+    use_level_stress : float, int, list, array, optional
+        The use level stress. Must be float or int for single stress models.
+        Must be array or list [stress_1, stress_2] for dual stress models.
+        Default is None.
+
+    Returns
+    -------
+    failures : array
+        The failure times
+    failure_stress_1 : array
+        The failure stresses
+    failure_stress_2 : array
+        The second failure stresses. This will be an empty array if the input
+        was None.
+    right_censored : array
+        The right censored times. This will be an empty array if the input was
+        None.
+    right_censored_stress_1 : array
+        The right censored failure stresses. This will be an empty array if the
+        input was None.
+    right_censored_stress_2 : array
+        The right censored second failure stresses. This will be an empty array
+        if the input was None.
+    CI : float
+        The confidence interval (between 0 and 1)
+    optimizer : str, None
+        This will return "TNC", "L-BFGS-B", "nelder-mead", "powell", "best", or
+        None.
+    use_level_stress : float, array, None
+        The use level stress. This will be a float for single stress models, or
+        an array for dual stress models. This will be None if the input was
+        None.
+    failure_groups : array
+        An array of arrays. This is the failure data grouped by failure
+        stresses.
+    right_censored_groups : array
+        An array of arrays. This is the right censored data grouped by right
+        censored stresses.
+    stresses_for_groups : array
+        An array of arrays. These are the stresses for each of the groups.
+
+    Notes
+    -----
+    For full detail on what is checked and the errors produced, you should read
+    the source code.
+
+    Some returns are None if the input is None. How None affects the behavior
+    is governed by other functions such as the individual ALT fitters and other
+    Utils.
     """
 
     def __init__(
@@ -2214,8 +2362,19 @@ class ALT_fitters_input_checking:
 
 def validate_CI_params(*args):
     """
-    Returns False if any of the args is None or Nan
-    Else returns True.
+    Returns False if any of the args is None or Nan, else returns True.
+    This function is different to using all() because it performs the checks
+    using np.isfinite(arg).
+
+    Parameters
+    ----------
+    *args : bool
+        Any number of boolean arguments
+
+    Returns
+    -------
+    is_valid : bool
+        False if any of the args is None or Nan else returns True.
     """
     is_valid = True
     for arg in args:
@@ -2226,8 +2385,39 @@ def validate_CI_params(*args):
 
 def clean_CI_arrays(xlower, xupper, ylower, yupper, plot_type="CDF"):
     """
-    cleans the CI arrays of nans and numbers <= 0
-    also removes numbers >= 1 if plot type is CDF or SF
+    This function cleans the CI arrays of nans and numbers <= 0 and also removes
+    numbers >= 1 if plot_type is CDF or SF.
+
+    Parameters
+    ----------
+    xlower : list, array
+        The lower x array for the confidence interval
+    xupper : list, array
+        The upper x array for the confidence interval
+    ylower : list, array
+        The lower y array for the confidence interval
+    yupper : list, array
+        The upper y array for the confidence interval
+    plot_type : str, optional
+        Must be "CDF", "SF", "CHF". Default is "CDF"
+
+    Returns
+    -------
+    xlower : array
+        The "cleaned" lower x array for the confidence interval
+    xupper : array
+        The "cleaned" upper x array for the confidence interval
+    ylower : array
+        The "cleaned" lower y array for the confidence interval
+    ylower : array
+        The "cleaned" upper y array for the confidence interval
+
+    Notes
+    -----
+    The returned arrays will all be the same length
+
+    The cleaning is done by deleting values. If the cleaned arrays are < 2 items
+    in length then an error will be triggered.
     """
     # format the input as arrays
     xlower = np.asarray(xlower)
@@ -2304,8 +2494,27 @@ def clean_CI_arrays(xlower, xupper, ylower, yupper, plot_type="CDF"):
 
 def fill_no_autoscale(xlower, xupper, ylower, yupper, **kwargs):
     """
-    creates a filled region (polygon) without adding it to the global list of autoscale objects.
-    Use this when you want to plot something but not have it considered when autoscale sets the range
+    Creates a filled region (polygon) without adding it to the global list of
+    autoscale objects. Use this function when you want to plot something but not
+    have it considered when autoscale sets the range.
+
+    Parameters
+    ----------
+    xlower : list, array
+        The lower x array for the polygon.
+    xupper : list, array
+        The upper x array for the polygon.
+    ylower : list, array
+        The lower y array for the polygon.
+    ylower : list, array
+        The upper y array for the polygon.
+    kwargs
+        keyword arguments passed to the matplotlib PolyCollection
+
+    Returns
+    -------
+    None
+        The filled polygon will be added to the plot.
     """
     # generate the polygon
     xstack = np.hstack([xlower, xupper[::-1]])
@@ -2324,8 +2533,23 @@ def fill_no_autoscale(xlower, xupper, ylower, yupper, **kwargs):
 
 def line_no_autoscale(x, y, **kwargs):
     """
-    creates a line without adding it to the global list of autoscale objects.
-    Use this when you want to plot something but not have it considered when autoscale sets the range
+    Creates a line without adding it to the global list of autoscale objects.
+    Use this when you want to plot something but not have it considered when
+    autoscale sets the range.
+
+    Parameters
+    ----------
+    x : array, list
+        The x values for the line
+    y : array, list
+        The y values for the line
+    kwargs
+        keyword arguments passed to the matplotlib LineCollection
+
+    Returns
+    -------
+    None
+        The line will be added to the plot.
     """
     # this is equivalent to plot as it makes a line
     line = np.column_stack([x, y])
@@ -2335,14 +2559,51 @@ def line_no_autoscale(x, y, **kwargs):
 
 class distribution_confidence_intervals:
     """
-    Contains functions that provide all the confidence intervals for CDF, SF, CHF for each distribution for which it is implemented
+    This class contains several subfunctions that provide all the confidence
+    intervals for CDF, SF, CHF for each distribution for which it is
+    implemented.
+
+    The class has no parameters or returns as it is used primarily to create the
+    confidence interval object which is used by the subfunctions.
+
+    Parameters
+    ----------
+    None
+
+    Returns
+    -------
+    None
     """
 
     @staticmethod
     def CI_kwarg_handler(self, kwargs):
         """
-        Processes specific arguments from kwargs and self to ensure the CI_type and plot_CI are extracted appropriately and passed to the confidence interval methods, without being passed to the plot method.
-        This function is used within each CDF, SF, CHF before the plt.plot method is used.
+        Processes specific arguments from kwargs and self to ensure the CI_type
+        and plot_CI are extracted appropriately and passed to the confidence
+        interval methods, without being passed to the plot method. This function
+        is used within each CDF, SF, CHF before the plt.plot() method is used.
+
+        Parameters
+        ----------
+        self : object
+            The distribution object
+        kwargs
+            Keyword arguments passed from CDF, SF, CHF. There are 3 kwargs that
+            are used. These are CI, plot_CI, CI_type. These will be extracted,
+            analyzed and returned.
+
+        Returns
+        -------
+        CI_type : str
+            The confidence interval type. Must be "reliability" or "time".
+        plot_CI : bool
+            If False then the CI will not be shown.
+        CI : float
+            The confidence interval. Must be between 0 and 1.
+
+        Notes
+        -----
+        The returns are provided in a tuple of CI_type, plot_CI, CI
         """
         kwargs_list = kwargs.keys()
         if "plot_CI" in kwargs_list:
@@ -2393,8 +2654,50 @@ class distribution_confidence_intervals:
         self, func, plot_CI=None, CI=None, text_title="", color=None, q=None
     ):
         """
-        Generates the confidence intervals for CDF, SF, and CHF
-        This is a utility function intended only for use by the Exponential CDF, SF, and CHF functions.
+        Generates the confidence intervals for CDF, SF, and CHF of the
+        Exponential distribution.
+
+        Parameters
+        ----------
+        self : object
+            The distribution object
+        func : str
+            Must be either "CDF", "SF" or "CHF"
+        plot_CI : bool, None
+            The confidence intervals will only be plotted if plot_CI is True.
+        CI : float
+            The confidence interval. Must be between 0 and 1
+        text_title : str
+            The existing CDF/SF/CHF text title to which the confidence interval
+            string will be added.
+        color : str
+            The color to be used to fill the confidence intervals.
+        q : int, float, array, list, optional
+            The percentiles to be calculated. Default is None.
+
+        Returns
+        -------
+        t_lower : array
+            The lower bounds. Only returned if plot_CI is None and q is not
+            None.
+        t_upper :array
+            The upper bounds. Only returned if plot_CI is None and q is not
+            None.
+
+        Notes
+        -----
+        self must contain particular values for this function to work. These
+        include self.Lambda_SE and self.Z.
+
+        As a Utils function, there is very limited error checking done, as this
+        function is not intended for users to access directly.
+
+        For the Exponential distribution, the bounds on time and reliability are
+        the same.
+
+        For an explaination of how the confidence inervals are calculated,
+        please see the `documentation <https://reliability.readthedocs.io/en/latest/How%20are%20the%20confidence%20intervals%20calculated.html>`_.
+
         """
         points = 200
 
@@ -2501,8 +2804,48 @@ class distribution_confidence_intervals:
         q=None,
     ):
         """
-        Generates the confidence intervals for CDF, SF, and CHF
-        This is a utility function intended only for use by the Weibull CDF, SF, and CHF functions.
+        Generates the confidence intervals for CDF, SF, and CHF of the
+        Weibull distribution.
+
+        Parameters
+        ----------
+        self : object
+            The distribution object
+        func : str
+            Must be either "CDF", "SF" or "CHF"
+        plot_CI : bool, None
+            The confidence intervals will only be plotted if plot_CI is True.
+        CI_type : str
+            Must be either "time" or "reliability"
+        CI : float
+            The confidence interval. Must be between 0 and 1
+        text_title : str
+            The existing CDF/SF/CHF text title to which the confidence interval
+            string will be added.
+        color : str
+            The color to be used to fill the confidence intervals.
+        q : int, float, array, list, optional
+            The percentiles to be calculated. Default is None.
+
+        Returns
+        -------
+        t_lower : array
+            The lower bounds on time. Only returned if CI_type is "time",
+            plot_CI is None and q is not None.
+        t_upper :array
+            The upper bounds on time. Only returned if CI_type is "time",
+            plot_CI is None and q is not None.
+
+        Notes
+        -----
+        self must contain particular values for this function to work. These
+        include self.alpha_SE, self.beta_SE, self.Cov_alpha_beta, self.Z.
+
+        As a Utils function, there is very limited error checking done, as this
+        function is not intended for users to access directly.
+
+        For an explaination of how the confidence inervals are calculated,
+        please see the `documentation <https://reliability.readthedocs.io/en/latest/How%20are%20the%20confidence%20intervals%20calculated.html>`_.
         """
         points = 200  # the number of data points in each confidence interval (upper and lower) line
 
@@ -2706,8 +3049,48 @@ class distribution_confidence_intervals:
         q=None,
     ):
         """
-        Generates the confidence intervals for CDF, SF, and CHF
-        This is a utility function intended only for use by the Gamma CDF, SF, and CHF functions.
+        Generates the confidence intervals for CDF, SF, and CHF of the
+        Gamma distribution.
+
+        Parameters
+        ----------
+        self : object
+            The distribution object
+        func : str
+            Must be either "CDF", "SF" or "CHF"
+        plot_CI : bool, None
+            The confidence intervals will only be plotted if plot_CI is True.
+        CI_type : str
+            Must be either "time" or "reliability"
+        CI : float
+            The confidence interval. Must be between 0 and 1
+        text_title : str
+            The existing CDF/SF/CHF text title to which the confidence interval
+            string will be added.
+        color : str
+            The color to be used to fill the confidence intervals.
+        q : int, float, array, list, optional
+            The percentiles to be calculated. Default is None.
+
+        Returns
+        -------
+        t_lower : array
+            The lower bounds on time. Only returned if CI_type is "time",
+            plot_CI is None and q is not None.
+        t_upper :array
+            The upper bounds on time. Only returned if CI_type is "time",
+            plot_CI is None and q is not None.
+
+        Notes
+        -----
+        self must contain particular values for this function to work. These
+        include self.mu_SE, self.beta_SE, self.Cov_mu_beta, self.Z.
+
+        As a Utils function, there is very limited error checking done, as this
+        function is not intended for users to access directly.
+
+        For an explaination of how the confidence inervals are calculated,
+        please see the `documentation <https://reliability.readthedocs.io/en/latest/How%20are%20the%20confidence%20intervals%20calculated.html>`_.
         """
         points = 200  # the number of data points in each confidence interval (upper and lower) line
 
@@ -2921,8 +3304,48 @@ class distribution_confidence_intervals:
         q=None,
     ):
         """
-        Generates the confidence intervals for CDF, SF, and CHF
-        This is a utility function intended only for use by the Normal CDF, SF, and CHF functions.
+        Generates the confidence intervals for CDF, SF, and CHF of the
+        Normal distribution.
+
+        Parameters
+        ----------
+        self : object
+            The distribution object
+        func : str
+            Must be either "CDF", "SF" or "CHF"
+        plot_CI : bool, None
+            The confidence intervals will only be plotted if plot_CI is True.
+        CI_type : str
+            Must be either "time" or "reliability"
+        CI : float
+            The confidence interval. Must be between 0 and 1
+        text_title : str
+            The existing CDF/SF/CHF text title to which the confidence interval
+            string will be added.
+        color : str
+            The color to be used to fill the confidence intervals.
+        q : int, float, array, list, optional
+            The percentiles to be calculated. Default is None.
+
+        Returns
+        -------
+        t_lower : array
+            The lower bounds on time. Only returned if CI_type is "time",
+            plot_CI is None and q is not None.
+        t_upper :array
+            The upper bounds on time. Only returned if CI_type is "time",
+            plot_CI is None and q is not None.
+
+        Notes
+        -----
+        self must contain particular values for this function to work. These
+        include self.mu_SE, self.sigma_SE, self.Cov_mu_sigma, self.Z.
+
+        As a Utils function, there is very limited error checking done, as this
+        function is not intended for users to access directly.
+
+        For an explaination of how the confidence inervals are calculated,
+        please see the `documentation <https://reliability.readthedocs.io/en/latest/How%20are%20the%20confidence%20intervals%20calculated.html>`_.
         """
         points = 200  # the number of data points in each confidence interval (upper and lower) line
 
@@ -3113,8 +3536,48 @@ class distribution_confidence_intervals:
         q=None,
     ):
         """
-        Generates the confidence intervals for CDF, SF, and CHF
-        This is a utility function intended only for use by the Lognormal CDF, SF, and CHF functions.
+        Generates the confidence intervals for CDF, SF, and CHF of the
+        Lognormal distribution.
+
+        Parameters
+        ----------
+        self : object
+            The distribution object
+        func : str
+            Must be either "CDF", "SF" or "CHF"
+        plot_CI : bool, None
+            The confidence intervals will only be plotted if plot_CI is True.
+        CI_type : str
+            Must be either "time" or "reliability"
+        CI : float
+            The confidence interval. Must be between 0 and 1
+        text_title : str
+            The existing CDF/SF/CHF text title to which the confidence interval
+            string will be added.
+        color : str
+            The color to be used to fill the confidence intervals.
+        q : int, float, array, list, optional
+            The percentiles to be calculated. Default is None.
+
+        Returns
+        -------
+        t_lower : array
+            The lower bounds on time. Only returned if CI_type is "time",
+            plot_CI is None and q is not None.
+        t_upper :array
+            The upper bounds on time. Only returned if CI_type is "time",
+            plot_CI is None and q is not None.
+
+        Notes
+        -----
+        self must contain particular values for this function to work. These
+        include self.mu_SE, self.sigma_SE, self.Cov_mu_sigma, self.Z.
+
+        As a Utils function, there is very limited error checking done, as this
+        function is not intended for users to access directly.
+
+        For an explaination of how the confidence inervals are calculated,
+        please see the `documentation <https://reliability.readthedocs.io/en/latest/How%20are%20the%20confidence%20intervals%20calculated.html>`_.
         """
         points = 200  # the number of data points in each confidence interval (upper and lower) line
 
@@ -3315,8 +3778,48 @@ class distribution_confidence_intervals:
         q=None,
     ):
         """
-        Generates the confidence intervals for CDF, SF, and CHF
-        This is a utility function intended only for use by the Loglogistic CDF, SF, and CHF functions.
+        Generates the confidence intervals for CDF, SF, and CHF of the
+        Loglogistic distribution.
+
+        Parameters
+        ----------
+        self : object
+            The distribution object
+        func : str
+            Must be either "CDF", "SF" or "CHF"
+        plot_CI : bool, None
+            The confidence intervals will only be plotted if plot_CI is True.
+        CI_type : str
+            Must be either "time" or "reliability"
+        CI : float
+            The confidence interval. Must be between 0 and 1
+        text_title : str
+            The existing CDF/SF/CHF text title to which the confidence interval
+            string will be added.
+        color : str
+            The color to be used to fill the confidence intervals.
+        q : int, float, array, list, optional
+            The percentiles to be calculated. Default is None.
+
+        Returns
+        -------
+        t_lower : array
+            The lower bounds on time. Only returned if CI_type is "time",
+            plot_CI is None and q is not None.
+        t_upper :array
+            The upper bounds on time. Only returned if CI_type is "time",
+            plot_CI is None and q is not None.
+
+        Notes
+        -----
+        self must contain particular values for this function to work. These
+        include self.alpha_SE, self.beta_SE, self.Cov_alpha_beta, self.Z.
+
+        As a Utils function, there is very limited error checking done, as this
+        function is not intended for users to access directly.
+
+        For an explaination of how the confidence inervals are calculated,
+        please see the `documentation <https://reliability.readthedocs.io/en/latest/How%20are%20the%20confidence%20intervals%20calculated.html>`_.
         """
         points = 200  # the number of data points in each confidence interval (upper and lower) line
 
@@ -3520,8 +4023,48 @@ class distribution_confidence_intervals:
         q=None,
     ):
         """
-        Generates the confidence intervals for CDF, SF, and CHF
-        This is a utility function intended only for use by the Gumbel CDF, SF, and CHF functions.
+        Generates the confidence intervals for CDF, SF, and CHF of the
+        Gumbel distribution.
+
+        Parameters
+        ----------
+        self : object
+            The distribution object
+        func : str
+            Must be either "CDF", "SF" or "CHF"
+        plot_CI : bool, None
+            The confidence intervals will only be plotted if plot_CI is True.
+        CI_type : str
+            Must be either "time" or "reliability"
+        CI : float
+            The confidence interval. Must be between 0 and 1
+        text_title : str
+            The existing CDF/SF/CHF text title to which the confidence interval
+            string will be added.
+        color : str
+            The color to be used to fill the confidence intervals.
+        q : int, float, array, list, optional
+            The percentiles to be calculated. Default is None.
+
+        Returns
+        -------
+        t_lower : array
+            The lower bounds on time. Only returned if CI_type is "time",
+            plot_CI is None and q is not None.
+        t_upper :array
+            The upper bounds on time. Only returned if CI_type is "time",
+            plot_CI is None and q is not None.
+
+        Notes
+        -----
+        self must contain particular values for this function to work. These
+        include self.mu_SE, self.sigma_SE, self.Cov_mu_sigma, self.Z.
+
+        As a Utils function, there is very limited error checking done, as this
+        function is not intended for users to access directly.
+
+        For an explaination of how the confidence inervals are calculated,
+        please see the `documentation <https://reliability.readthedocs.io/en/latest/How%20are%20the%20confidence%20intervals%20calculated.html>`_.
         """
         points = 200  # the number of data points in each confidence interval (upper and lower) line
 
@@ -3713,8 +4256,8 @@ class distribution_confidence_intervals:
     #     q=None,
     # ):
     #     """
-    #     Generates the confidence intervals for CDF, SF, and CHF
-    #     This is a utility function intended only for use by the Beta CDF, SF, and CHF functions.
+    #     Generates the confidence intervals for CDF, SF, and CHF of the Beta
+    #     Distribution.
     #     """
     #     points = 200  # the number of data points in each confidence interval (upper and lower) line
     #
@@ -3922,12 +4465,48 @@ def linear_regression(
     **kwargs
 ):
     """
-    linear algebra solution to find line of best fix passing through points (x,y)
-    specify slope or intercept to force these parameters.
-    Rank regression can be on X (RRX) or Y (RRY). Default is RRX.
-    note that slope depends on RRX_or_RRY. If you use RRY then slope is dy/dx but if you use RRX then slope is dx/dy.
-    :returns slope,intercept in terms of Y = slope * X + intercept
+    This function provides the linear algebra solution to find line of best fit
+    passing through points (x,y). Options to specify slope or intercept enable
+    these parameters to be forced.
 
+    Rank regression can be on X (RRX) or Y (RRY). Default is RRX.
+    Note that slope depends on RRX_or_RRY. If you use RRY then slope is dy/dx
+    but if you use RRX then slope is dx/dy.
+
+    Parameters
+    ----------
+    x : array, list
+        The x values
+    y : array, list
+        The y values
+    slope : float, int, optional
+        Used to force the slope. Default is None.
+    x_intercept : float, int, optional
+        Used to force the x-intercept. Default is None. Only used for RRY.
+    y_intercept : float, int, optional
+        Used to force the y-intercept. Default is None. Only used for RRX.
+    RRX_or_RRY : str, optional
+        Must be "RRY" or "RRX". Default is "RRY".
+    show_plot : bool, optional
+        If True, a plot of the line and points will be generated. Use plt.show()
+        to show it.
+    kwargs
+        Keyword arguments for the plot that are passed to matplotlib for the
+        line.
+
+    Returns
+    -------
+    slope : float
+        The slope of the line.
+    intercept : float
+        The intercept (x or y depending on RRX_or_RRY) of the line.
+
+    Notes
+    -----
+    The equation of a line used here is Y = slope * X + intercept. This is the
+    RRY form. For RRX it can be rearranged to X = (Y - intercept)/slope
+
+    For more information on linear regression, see the `documentation <https://reliability.readthedocs.io/en/latest/How%20does%20Least%20Squares%20Estimation%20work.html>`_.
     """
     x = np.asarray(x)
     y = np.asarray(y)
@@ -4048,14 +4627,47 @@ def linear_regression(
 
 def least_squares(dist, failures, right_censored, method="RRX", force_shape=None):
     """
-    Uses least squares or non-linear least squares estimation to fit the parameters of the distribution to the plotting positions.
-    Plotting positions are based on failures and right_censored so while least squares estimation does not consider the right_censored data in the same way as MLE, the plotting positions do.
-    The output of this method may be used as the initial guess for the MLE method.
-    method may be RRX or RRY. Default is RRX.
+    Uses least squares or non-linear least squares estimation to fit the
+    parameters of the distribution to the plotting positions.
 
-    return the model's parameters in a list.
-        E.g. for "Weibull_2P" it will return [alpha,beta]
-             for "Weibull_3P" it will return [alpha,beta,gamma]
+    Plotting positions are based on failures and right_censored so while least
+    squares estimation does not consider the right_censored data in the same way
+    as MLE, the plotting positions do. This means that right censored data are
+    not ignored by least squares estimation, but the way the values are treated
+    differs between least squares and MLE.
+
+    The output of this method may be used as the initial guess for the MLE
+    method.
+
+    Parameters
+    ----------
+    dist : object
+        Thew distribution object
+    failures : array, list
+        The failure data
+    right_censored : array, list
+        The right censored data. If there is no data then this should be an
+        empty list.
+    method : str, optional
+        Must be "RRX" or "RRY". Default is RRX.
+    force_shape : float, int, optional
+        Used to force the shape (beta or sigma) parameter. Default is None which
+        will not force the slope.
+
+    Returns
+    -------
+    model_parameters : list
+        The model's parameters in a list. eg. for "Weibull_2P" it will return
+        [alpha,beta]. For "Weibull_3P" it will return [alpha,beta,gamma].
+
+    Notes
+    -----
+    For more information on least squares estimation, see the `documentation <https://reliability.readthedocs.io/en/latest/How%20does%20Least%20Squares%20Estimation%20work.html>`_.
+
+    For cases where the CDF is not linearizable (eg. Weibull_3P), this function
+    uses non-linear least squares (NLLS) which uses scipy's curve_fit to find
+    the parameters. This may sometimes fail as curve_fit is an optimization
+    routine that needs an initial guess provided by this function.
     """
 
     if min(failures) <= 0 and dist not in ["Normal_2P", "Gumbel_2P"]:
@@ -4496,21 +5108,73 @@ def least_squares(dist, failures, right_censored, method="RRX", force_shape=None
 
 def ALT_least_squares(model, failures, stress_1_array, stress_2_array=None):
     """
-    Uses least squares regression (with linear algebra) to fit the parameters of the ALT stress-life distribution to the time to failure data.
-    The output of this method may be used as the initial guess for the MLE method.
+    Uses least squares estimation to fit the parameters of the ALT stress-life
+    model to the time to failure data.
 
-    return the model's parameters in a list
-        Exponential - [a,b]
-        Eyring - [a,c]
-        Power - [a,n]
-        Dual_Exponential - [a,b,c]
-        Power_Exponential - [a,c,n]
+    Unlike least_squares for probability distributions, this function does not
+    use the plotting positions because it is working on the life-stress model
+    L(S) and not the life distribution F(t), so it uses the failure data directly.
+
+    This function therefore only fits the parameters of the model to the failure
+    data and does not take into account the right censored data. Right censored
+    data is only used when fitting the life-stress distribution (eg. "Weibull
+    Eyring") which is done using MLE.
+
+    The output of this function is used as the initial guess for the MLE
+    method for the life-stress distribution.
+
+    Parameters
+    ----------
+    model : str
+        Must be either "Exponential", "Eyring", "Power", "Dual_Exponential",
+        "Power_Exponential", or "Dual_Power"
+    failures : array, list
+        The failure data
+    stress_1_array : list, array
+        The stresses corresponding to the failure data.
+    stress_2_array : list, array, optional
+        The second stresses corresponding to the failure data. Used only for
+        dual-stress models. Default is None.
+
+    Returns
+    -------
+    model_parameters : list
+        The model's parameters in a list. This depends on the model.
+        Exponential - [a,b], Eyring - [a,c], Power - [a,n],
+        Dual_Exponential - [a,b,c], Power_Exponential - [a,c,n],
         Dual_Power - [c,m,n]
+
+    Notes
+    -----
+    For more information on least squares estimation, see the `documentation <https://reliability.readthedocs.io/en/latest/How%20does%20Least%20Squares%20Estimation%20work.html>`_.
+    For more information on fitting ALT models, see the `documentation <https://reliability.readthedocs.io/en/latest/Equations%20of%20ALT%20models.html>`_.
+
+    For models with more than two parameters, linear algebra is equally valid,
+    but in these cases it is not finding the line of best fit, it is instead
+    finding the plane of best fit.
     """
 
     def non_invertable_handler(xx, yy, model):
-        # this performs the linear algebra to find the solution
-        # it also handles the occasional case of a non-invertable matrix
+        """
+        This subfunction performs the linear algebra to find the solution.
+        It also handles the occasional case of a non-invertable matrix.
+        This function is separated out for repeated use.
+
+        Parameters
+        ----------
+        xx : list, array
+            The x data
+        yy : list, array
+            The y data
+        model : str
+            The model. Used only for printing the correct error string.
+
+        Returns
+        -------
+        model_parameters : list
+            The model parameters in a list. These are the linearized form and
+            need to be converted back to find the actual model parameters.
+        """
         try:
             # linear regression formula for RRY
             out = np.linalg.inv(xx.T.dot(xx)).dot(xx.T).dot(yy)
@@ -4579,9 +5243,44 @@ def ALT_least_squares(model, failures, stress_1_array, stress_2_array=None):
 
 class LS_optimization:
     """
-    Performs optimization using least squares regression.
-    There is no actual "optimization" done here, with the exception of checking which method (RRX or RRY) gave the better solution.
-    This function is used be each of the Fitters.
+    This function is a control function for least squares regression and it is
+    used by each of the Fitters. There is no actual "optimization" done here,
+    with the exception of checking which method (RRX or RRY) gives the better
+    solution.
+
+    Parameters
+    ----------
+    func_name : str
+        The function to be fitted. Eg. "Weibull_2P".
+    LL_func : function
+        The log-likelihood function from the fitter
+    failures : list, array
+        The failure data
+    right_censored : list, array
+        The right censored data. If there is no right censored data then this
+        should be an empty array.
+    method : str, optional
+        Must be either "RRX", "RRY", "LS", or "NLLS". Default is "LS".
+    force_shape : float, int, optional
+        The shape parameter to be forced. Default is None which results in no
+        forcing of the shape parameter.
+    LL_func_force : function
+        The log-likelihood function for when the shape parameter is forced. Only
+        required if force_shape is not None.
+
+    Returns
+    -------
+    guess : list
+        The guess of the models parameters. The length of this list depends on
+        the number of parameters in the model. The guess is obtained using
+        Utils.least_squares
+    method : str
+        The method used. This will be either "RRX", "RRY" or "NLLS".
+
+    Notes
+    -----
+    If method="LS" then both "RRX" and "RRY" will be tried and the best one will
+    be returned.
     """
 
     def __init__(
@@ -4662,8 +5361,81 @@ class LS_optimization:
 
 class MLE_optimization:
     """
-    This function performs the heavy lifting of finding the optimal parameters using the method of maximum likelihood expectation (MLE).
-    This functions is used by each of the fitters.
+    This function performs Maximum Likelihood Estimation (MLE) to find the
+    optimal parameters of the probability distribution. This functions is used
+    by each of the fitters.
+
+    Parameters
+    ----------
+    func_name : str
+        The function to be fitted. Eg. "Weibull_2P".
+    LL_func : function
+        The log-likelihood function from the fitter
+    initial_guess : list, array
+        The initial guess of the model parameters that is used by the optimizer.
+    failures : list, array
+        The failure data
+    right_censored : list, array
+        The right censored data. If there is no right censored data then this
+        should be an empty array.
+    optimizer : str, None
+        This must be either "TNC", "L-BFGS-B", "nelder-mead", "powell", "best",
+        "all" or None. Fot detail on how these optimizers are used, please see
+        the `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
+    force_shape : float, int, optional
+        The shape parameter to be forced. Default is None which results in no
+        forcing of the shape parameter.
+    LL_func_force : function
+        The log-likelihood function for when the shape parameter is forced. Only
+        required if force_shape is not None.
+
+    Returns
+    -------
+    scale : float
+        Only returned for Weibull_2P, Weibull_3P, Lognormal_2P, Lognormal_3P,
+        Gamma_2P, Gamma_3P, Loglogistic_2P, Loglogistic_3P, Exponential_1P,
+        Exponential_2P, Normal_2P, Beta_2P, and Gumbel_2P
+    shape : float
+        Only returned for Weibull_2P, Weibull_3P, Lognormal_2P, Lognormal_3P,
+        Gamma_2P, Gamma_3P, Loglogistic_2P, Loglogistic_3P, Normal_2P, Beta_2P,
+        and Gumbel_2P
+    alpha : float
+        Only returned for Weibull_DS, Weibull_ZI and Weibull_DSZI
+    beta : float
+        Only returned for Weibull_DS, Weibull_ZI and Weibull_DSZI
+    gamma : float
+        Only returned for Weibull_3P, Exponential_2P, Gamma_3P, Lognormal_3P,
+        and Loglogistic_3P.
+    DS : float
+        Only returned for Weibull_DS and Weibull_DSZI
+    ZI : float
+        Only returned for Weibull_ZI and Weibull_DSZI
+    alpha_1 : float
+        Only returned for Weibull_mixture and Weibull_CR
+    beta_1 : float
+        Only returned for Weibull_mixture and Weibull_CR
+    alpha_2 : float
+        Only returned for Weibull_mixture and Weibull_CR
+    beta_2 : float
+        Only returned for Weibull_mixture and Weibull_CR
+    proportion_1 : float
+        Only returned for Weibull_mixture
+    proportion_2 : float
+        Only returned for Weibull_mixture
+    success : bool
+        Whether at least one optimizer succeeded. If False then the least
+        squares result will be returned in place of the MLE result.
+    optimizer : str, None
+        The optimizer used. If MLE failed then None is returned as the
+        optimizer.
+
+    Notes
+    -----
+    Not all of the above returns are always returned. It depends on which model
+    is being used.
+
+    I the MLE method fails then the initial guess (from least squares) will be
+    returned with a printed warning.
     """
 
     def __init__(
@@ -4689,6 +5461,49 @@ class MLE_optimization:
             LL_func_force,
             func_name,
         ):
+            """
+            This sub-function does the actual optimization. It is called each
+            time a new optimizer is tried.
+
+            Parameters
+            ----------
+            LL_func : function
+                The log-likelihood function from the fitter
+            guess : list, array
+                The initial guess of the model parameters that is used by the optimizer.
+            failures : list, array
+                The failure data
+            right_censored : list, array
+                The right censored data. If there is no right censored data then this
+                should be an empty array.
+            bounds : list
+                The bounds on the solution
+            optimizer : str, None
+                This must be either "TNC", "L-BFGS-B", "nelder-mead", or
+                "powell".
+            force_shape : float, int, optional
+                The shape parameter to be forced. Default is None which results in no
+                forcing of the shape parameter.
+            LL_func_force : function
+                The log-likelihood function for when the shape parameter is forced. Only
+                required if force_shape is not None.
+            func_name : str
+                The function name. eg. "Weibull_2P"
+
+            Returns
+            -------
+            success : bool
+                Whether the optimizer was successful
+            log_likelihood : float
+                The log-likelihood of the solution
+            model_parameters : array
+                The model parameters of the solution
+
+            Notes
+            -----
+            The returns are provided in a tuple of success, log_likelihood,
+            model_parameters.
+            """
             delta_LL = 1
             LL_array = [1000000]
             runs = 0
@@ -4992,8 +5807,77 @@ class MLE_optimization:
 class ALT_MLE_optimization:
     """
     This performs the MLE method to find the parameters.
-    If the optimizer is None then all bounded optimizers will be tried and the best result (lowest log-likelihood) will be returned.
-    If the optimizer is specified then it will be used. If it fails then the initial guess will be returned with a warning.
+    If the optimizer is None then all bounded optimizers will be tried and the
+    best result (lowest log-likelihood) will be returned. If the optimizer is
+    specified then it will be used. If it fails then the initial guess will be
+    returned with a warning.
+
+    Parameters
+    ----------
+    model : str
+        Must be either "Exponential", "Eyring", "Power", "Dual_Exponential",
+        "Power_Exponential", or "Dual_Power".
+    dist : str
+        Must be either "Weibull", "Exponential", "Lognormal", or "Normal".
+    LL_func : function
+        The log-likelihood function from the fitter
+    initial_guess : list, array
+        The initial guess of the model parameters that is used by the
+        optimizer.
+    optimizer : str, None
+        This must be either "TNC", "L-BFGS-B", "nelder-mead", "powell", "best",
+        "all" or None. Fot detail on how these optimizers are used, please see
+        the `documentation <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_.
+    failures : list, array
+        The failure data
+    right_censored : list, array
+        The right censored data. If there is no right censored data then this
+        should be an empty array.
+    failure_stress_1 : array, list
+        The failure stresses.
+    failure_stress_2 : array, list
+        The failure second stresses. This is only used for daul stress
+        models.
+    right_censored_stress_1 : array, list
+        The right censored stresses. If there is no right censored data
+        then this should be an empty array.
+    right_censored_stress_2 : array, list
+        The right censored second stresses. If there is no right
+        censored data then this should be an empty array. This is only
+        used for daul stress models.
+
+    Returns
+    -------
+    a : float
+        Only returned for Exponential, Eyring, Power, Dual_exponential, and
+        Power_Exponential
+    b : float
+        Only returned for Exponential and Dual_Exponential
+    c : float
+        Only returned for Eyring, Dual_Exponential, Power_Exponential and
+        Dual_Power
+    n : float
+        Only returned for Power, Power_Exponential, and Dual_Power
+    m : float
+        Only returned for Dual_Power
+    beta : float
+        Only returned for Weibull models
+    sigma : float
+        Only returned for Normal and Lognormal models
+    success : bool
+        Whether at least one optimizer succeeded. If False then the least
+        squares result will be returned in place of the MLE result.
+    optimizer : str, None
+        The optimizer used. If MLE failed then None is returned as the
+        optimizer.
+
+    Notes
+    -----
+    Not all of the above returns are always returned. It depends on which model
+    is being used.
+
+    I the MLE method fails then the initial guess (from least squares) will be
+    returned with a printed warning.
     """
 
     def __init__(
@@ -5010,7 +5894,6 @@ class ALT_MLE_optimization:
         right_censored_stress_1=None,
         right_censored_stress_2=None,
     ):
-        # this sub-function does the actual optimization. It is called each time a new optimizer is tried
         def loglik_optimizer(
             initial_guess,
             dual_stress,
@@ -5024,6 +5907,56 @@ class ALT_MLE_optimization:
             bounds,
             optimizer,
         ):
+            """
+            This sub-function does the actual optimization. It is called each
+            time a new optimizer is tried.
+
+            Parameters
+            ----------
+            initial_guess : list, array
+                The initial guess of the model parameters that is used by the
+                optimizer.
+            dual_stress : bool
+                Whether this is a dual_stress model.
+            LL_func : function
+                The log-likelihood function from the fitter
+            failures : list, array
+                The failure data
+            right_censored : list, array
+                The right censored data. If there is no right censored data then this
+                should be an empty array.
+            failure_stress_1 : array, list
+                The failure stresses.
+            failure_stress_2 : array, list
+                The failure second stresses. This is only used for daul stress
+                models.
+            right_censored_stress_1 : array, list
+                The right censored stresses. If there is no right censored data
+                then this should be an empty array.
+            right_censored_stress_2 : array, list
+                The right censored second stresses. If there is no right
+                censored data then this should be an empty array. This is only
+                used for daul stress models.
+            bounds : list
+                The bounds on the solution
+            optimizer : str, None
+                This must be either "TNC", "L-BFGS-B", "nelder-mead", or
+                "powell".
+
+            Returns
+            -------
+            success : bool
+                Whether the optimizer was successful
+            log_likelihood : float
+                The log-likelihood of the solution
+            model_parameters : array
+                The model parameters of the solution
+
+            Notes
+            -----
+            The returns are provided in a tuple of success, log_likelihood,
+            model_parameters.
+            """
             delta_LL = 1
             LL_array = [1000000]
             runs = 0
@@ -5298,6 +6231,24 @@ def write_df_to_xlsx(df, path, **kwargs):
     """
     Writes a dataframe to an xlsx file
     For use exclusively by the Convert_data module
+
+    Parameters
+    ----------
+    df : dataframe
+        The dataframe to be written
+    path : str
+        The file path to the xlsx file.
+
+    Returns
+    -------
+    None
+        Writing the dataframe is the only action from this function.
+
+    Notes
+    -----
+    The path must include the full file path including the extension. It is also
+    necessary to use r at the start to specify raw text. See the
+    `documentation <https://reliability.readthedocs.io/en/latest/Converting%20data%20between%20different%20formats.html>`_ for an example.
     """
     # this section checks whether the file exists and reprompts the user based on their choices
     ready_to_write = False
@@ -5353,8 +6304,22 @@ def write_df_to_xlsx(df, path, **kwargs):
 
 def removeNaNs(X):
     """
-    removes NaNs from a list or array. This is better than simply using "x = x[numpy.logical_not(numpy.isnan(x))]" as numpy crashes for str and bool.
-    returns a list or array of the same type as the input
+    Removes NaNs from a list or array.
+
+    Parameters
+    ----------
+    X : array, list
+        The array or list to be processed.
+
+    Returns
+    -------
+    output : list, array
+        A list or array of the same type as the input with the NaNs removed.
+
+    Notes
+    -----
+    This is better than simply using "x = x[numpy.logical_not(numpy.isnan(x))]"
+    as numpy crashes for str and bool.
     """
     if type(X) == np.ndarray:
         X = list(X)
@@ -5375,7 +6340,48 @@ def removeNaNs(X):
 
 class make_fitted_dist_params_for_ALT_probplots:
     """
-    creates a class structure for the ALT probability plots to give to Probability_plotting
+    This function creates a class structure for the ALT probability plots to
+    give to Probability_plotting.
+
+    Parameters
+    ----------
+    dist : str
+        The distribution. Must be either "Weibull", "Lognormal", "Normal", or
+        "Exponential".
+    params : list, array
+        The parameters of the model. Must be 2 elements for Weibull, Lognormal,
+        and Normal, and must be 1 element for Exponential.
+
+    Returns
+    -------
+    alpha : float
+        Only returned for Weibull
+    beta : float
+        Only returned for Weibull
+    gamma : int
+        This will always be 0. Only returned for Weibull, Lognormal, and
+        Exponential.
+    alpha_SE : None
+        Only returned for Weibull
+    beta_SE : None
+        Only returned for Weibull
+    Cov_alpha_beta : None
+        Only returned for Weibull
+    mu : float
+        Only returned for Normal and Lognormal
+    sigma : float
+        Only returned for Normal and Lognormal
+    Cov_mu_sigma : None
+        Only returned for Normal and Lognormal
+    Lambda : float
+        Only returned for Exponential
+    Lambda_SE : None
+        Only returned for Exponential
+
+    Notes
+    -----
+    This function only exists to convert a list or array of parameters into a
+    class with the correct parameters for the probability plots to use.
     """
 
     def __init__(self, dist, params):
@@ -5419,11 +6425,45 @@ def ALT_prob_plot(
     shape,
     scale_for_change_df,
     shape_for_change_df,
-    use_level_stress,
+    use_level_stress=None,
     ax=True,
 ):
     """
     Generates an ALT probability plot using the inputs provided.
+
+    Parameters
+    ----------
+    dist : str
+        Must be either "Weibull", "Exponential", "Lognormal", or "Normal"
+    model : str
+        Must be either "Exponential", "Eyring", "Power", "Dual_Exponential",
+        "Power_Exponential", or "Dual_Power".
+    stresses_for_groups : list
+        The stresses for the failure groups
+    failure_groups : list
+        The failure groups. This is a list of lists.
+    right_censored_groups
+        The failure groups. This is a list of lists.
+    life_func : function
+        The life function for the ALT life model.
+    shape : float, int
+        The shape parameter of the model.
+    scale_for_change_df : array, list
+        The list of scale parameters for the lines.
+    shape_for_change_df
+        The list of shape parameters for the lines.
+    use_level_stress : float, int, array, list, None
+        The use level stress. This must be an array or list for dual stress
+        models. Default is None.
+    ax : axis, bool, optional
+        The axis handle to use. Default is True which will create a new plot.
+        If False then no plot will be generated.
+
+    Returns
+    -------
+    current_axis : axis
+        The axis handle of the plot. If ax is specified in the inputs then this
+        will be the same handle.
     """
 
     if ax is True or issubclass(type(ax), SubplotBase) is True:
@@ -5626,11 +6666,38 @@ def life_stress_plot(
     life_func,
     failure_groups,
     stresses_for_groups,
-    use_level_stress,
+    use_level_stress=None,
     ax=True,
 ):
     """
-    Generates a life stress plot using the inputs provided. The life stress plot is an output from each of the ALT_fitters.
+    Generates a life stress plot using the inputs provided. The life stress plot
+    is an output from each of the ALT_fitters.
+
+    Parameters
+    ----------
+    model : str
+        Must be either "Exponential", "Eyring", "Power", "Dual_Exponential",
+        "Power_Exponential", or "Dual_Power".
+    dist : str
+        Must be either "Weibull", "Exponential", "Lognormal", or "Normal"
+    life_func : function
+        The life function for the ALT life model.
+    failure_groups : list
+        The failure groups. This is a list of lists.
+    stresses_for_groups : list
+        The stresses for the failure groups
+    use_level_stress : float, int, array, list, None
+        The use level stress. This must be an array or list for dual stress
+        models. Default is None.
+    ax : axis, bool, optional
+        The axis handle to use. Default is True which will create a new plot.
+        If False then no plot will be generated.
+
+    Returns
+    -------
+    current_axis : axis
+        The axis handle of the plot. If ax is specified in the inputs then this
+        will be the same handle.
     """
     if ax is True or issubclass(type(ax), SubplotBase) is True:
         if model in ["Dual_Exponential", "Power_Exponential", "Dual_Power"]:
@@ -5728,6 +6795,7 @@ def life_stress_plot(
                 linewidth=1,
                 antialiased=False,
                 alpha=0.5,
+                zorder=0,
             )
             for i, stress in enumerate(stresses_for_groups):
                 # plot the failures as a scatter plot
@@ -5743,6 +6811,7 @@ def life_stress_plot(
                         + ", "
                         + str(round_to_decimals(stress[1]))
                     ),
+                    zorder=1,
                 )
             if use_level_stress is not None:
                 # plot the use level stress
@@ -5759,9 +6828,11 @@ def life_stress_plot(
                         + str(round_to_decimals(use_level_stress[1]))
                     ),
                     marker="^",
+                    zorder=2,
                 )
             ax.set_zlabel("Life")
             ax.set_zlim(bottom=0)
+            ax.computed_zorder = False  # computed_zorder ensures the specified zorder is respected so that the scatter plot sits on top of the surface
             plt.xlabel("Stress 1")
             plt.ylabel("Stress 2")
             plt.xlim(min(stress_1_array), max(stress_1_array))
@@ -5830,13 +6901,40 @@ def life_stress_plot(
 
 def xy_downsample(x, y, downsample_factor=None, default_max_values=1000):
     """
-    Downsamples the x and y arrays.
+    This function downsamples the x and y arrays. This exists to make plotting
+    much faster, particularly when matplotlib becomes very slow for tens of
+    thousands of datapoints.
+
+    Parameters
+    ----------
+    x : array, list
+        The x values
+    y : array, list
+        The y values
+    downsample_factor : int, optional
+        How must downsampling to do. See Notes for more detail.
+    default_max_values : int, optional
+        The maximum number of values to be returned if downsample_factor is
+        None. See Notes for more detail.
+
+    Returns
+    -------
+    x : array
+        The downsampled x values
+    y : array
+        The downsampled y values
+
+    Notes
+    -----
     Downsampling is done using the downsample_factor. If the down_sample factor
     is 2 then every second value will be returned, if 3 then every third value
     will be returned. The first and last items will always be included in the
-    downsampled dataset. If downsample_factor is not specified, downsampling
-    will only occur if there are more than default_max_values and the downsample
-    factor will aim for a minimum of 500 values to be returned.
+    downsampled dataset.
+
+    If downsample_factor is not specified, downsampling will only occur if there
+    are more than default_max_values. The downsample factor will aim for the
+    number of values to be returned to be between default_max_values/2 and
+    default_max_values. By default this is between 500 and 1000.
     """
 
     x_sorted = np.sort(x)

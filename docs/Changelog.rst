@@ -19,10 +19,12 @@ Changelog
 
 **Bug Fixes**
 
+-    The ALT life stress plots for dual stress models now plot the scatter plot above the surface plot. This is enabled from matplotlib 3.5.0 onwards using the new parameter computed_zorder which respects the zorder specified rather than always plotting surfaces above scatter points.
 
 **Other**
 
 -    Improvements to the API documentation for Convert_data, Datasets, PoF, and Utils modules. This has been a long term body of work to reformat the documentation, and it is finally complete.
+-    The required version of matplotlib has been upgraded to 3.5.0 to enable the above bugfix for the computed_zorder in ALT life stress plots.
 
 **Version: 0.7.1 --- Released 26 Oct 2021**
 '''''''''''''''''''''''''''''''''''''''''''

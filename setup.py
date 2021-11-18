@@ -75,7 +75,7 @@ setuptools.setup(
         "autograd>=1.3",
         "scipy>=1.7.0",
         "numpy>=1.19.2",
-        "matplotlib>=3.3.2",
+        "matplotlib>=3.5.0",
         "pandas>=1.1.2",
         "autograd-gamma>=0.5.0",
         "mplcursors>=0.3",

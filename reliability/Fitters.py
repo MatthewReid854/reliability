@@ -8927,6 +8927,7 @@ class Fit_Beta_2P:
                 right_censored=right_censored,
                 optimizer=optimizer,
             )
+            # for Beta_2P there are actually 2 shape parameters but this just uses the scale and shape nomenclature
             self.alpha = MLE_results.scale
             self.beta = MLE_results.shape
             self.method = "Maximum Likelihood Estimation (MLE)"

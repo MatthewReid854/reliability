@@ -131,7 +131,7 @@ Two of the outputs returned are the axes handles for the probability plot and th
 
 .. image:: images/Lognormal_power_exponential_lifestress.png
 
-.. note:: The 3D surface plot with scatter plot has a known visibility issue where the 3D surface will appear to be in front of the scatter plot even when it should be shown behind it. This `issue is internal to matplotlib <https://matplotlib.org/mpl_toolkits/mplot3d/faq.html#my-3d-plot-doesn-t-look-right-at-certain-viewing-angles>`_ and the only current fix is to change the plotting library to MayaVi.
+.. note:: In the dual-stress life stress plots, there is a known visibility issue inherent in matplotlib where the 3D surface plot and the scatter plots are drawn in layers (relative to the observer). This results in the scatter plot always appearing in front of the 3D surface, even when some of the points should actually be occluded by the surface. The layering was chosen to show the scatter plot above the 3D surface plot as this provides better visibility than the alternative.
 
 **References:**
 
