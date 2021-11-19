@@ -10,6 +10,7 @@ Changelog
 
 **Summary of changes**
 
+This will be writted closer to the release date.
 
 **New features**
 
@@ -26,8 +27,8 @@ Changelog
 -    Improvements to the API documentation for Convert_data, Datasets, PoF, and Utils modules. This has been a long term body of work to reformat the documentation, and it is finally complete.
 -    The required version of matplotlib has been upgraded to 3.5.0 to enable the above bugfix for the computed_zorder in ALT life stress plots.
 
-**Version: 0.7.1 --- Released 26 Oct 2021**
-'''''''''''''''''''''''''''''''''''''''''''
+**Version: 0.7.1 --- Released: 26 Oct 2021**
+''''''''''''''''''''''''''''''''''''''''''''
 
 **Summary of changes**
 

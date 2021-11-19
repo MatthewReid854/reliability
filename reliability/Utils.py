@@ -96,10 +96,11 @@ def round_to_decimals(number, decimals=5, integer_floats_to_ints=True):
     Notes
     -----
     Examples (with decimals = 5):
-    1234567.1234567 ==> 1234567.12345
-    0.0001234567 ==> 0.00012345
-    1234567 ==> 1234567
-    0.00 ==> 0
+
+    - 1234567.1234567 ==> 1234567.12345
+    - 0.0001234567 ==> 0.00012345
+    - 1234567 ==> 1234567
+    - 0.00 ==> 0
     """
 
     if np.isfinite(number):  # check the input is not NaN
@@ -5434,7 +5435,7 @@ class MLE_optimization:
     Not all of the above returns are always returned. It depends on which model
     is being used.
 
-    I the MLE method fails then the initial guess (from least squares) will be
+    If the MLE method fails then the initial guess (from least squares) will be
     returned with a printed warning.
     """
 
@@ -5876,7 +5877,7 @@ class ALT_MLE_optimization:
     Not all of the above returns are always returned. It depends on which model
     is being used.
 
-    I the MLE method fails then the initial guess (from least squares) will be
+    If the MLE method fails then the initial guess (from least squares) will be
     returned with a printed warning.
     """
 

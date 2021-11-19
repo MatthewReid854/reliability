@@ -17,16 +17,15 @@ The current release schedule is approximately every 6 to 8 weeks for minor relea
 
 **Planned for version 0.8.0 (around Dec 2021)**
 
--    Correct the formatting in the API docs for every function - still need to do Convert_data, Datasets, PoF, and Utils
 -    Within all fitters, use the FNRN format to give speed improvements in the same way as Fit_Weibull_2P_grouped works internally. This will subsequently result in the deprecation of Fit_Weibull_2P_grouped once its advantage is integrated in Fit_Weibull_2P. Need to confirm this method does not introduce too much cumulative error due to floating point precision limitations.
 -    Improvement to the online documentation for how some of these methods work, including the addition of more formulas, algorithms, and better referencing.
--    Make tests for everything that doesn't have a test yet.
--    Add plotting to all things that can plot in order to increase test coverage.
 
 **Planned for version 0.9.0 (around Mar 2022)**
 
 -    Add confidence intervals for Weibull_Mixture, Weibull_CR, Weibull_DS, Weibull_ZI, and Weibull_DSZI
 -    Enable the confidence intervals for CDF, SF, CHF to be extracted programatically from the distribution object.
+-    Make tests for everything that doesn't have a test yet.
+-    Add plotting to all things that can plot in order to increase test coverage.
 
 **Low priority (more of a wish list at this point)**
 
