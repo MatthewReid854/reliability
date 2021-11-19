@@ -45,16 +45,16 @@ As mentioned in step 2, different types of data need to be handled differently:
 | Interval censored data | :math:`L_i(\theta|t_i)=F(t_i^{RI}|\theta) - F(t_i^{LI}|\theta)` |
 +------------------------+-----------------------------------------------------------------+
 
-In words, the first equation above means "the likelihood of the parameters (:math:`\theta`) given the data (:math:`t_i`) is equal to the probability of failure at that time (the PDF (:math:`f(t)`)) with that given set of parameters (:math:`\theta`).
+In words, the first equation above means "the likelihood of the parameters (:math:`\theta`) given the data (:math:`t_i`) is equal to the probability of failure (:math:`f(t)`) evaluated at each time :math:`t_i` with that given set of parameters (:math:`\theta`).
 
 Once we have the likelihood (:math:`L_i` ) for each data point, we need to combine them. This is done by multiplying them together (think of this as an AND condition).
 If we just had failures and right censored data then the equation would be:
 
-:math:`L(\theta|D) = c`\prod_{i=1}^{n} f_i(t_i_{failures}|\theta) \times R_i(t_i_{right censored}|\theta)`
+:math:`L(\theta|D) = \prod_{i=1}^{n} f_i(t_i^{failures}|\theta) \times R_i(t_i^{right censored}|\theta)`
 
-In words this means that the likelihood of the parameters of the model (:math:`\theta`) given the data (D) is equal to the product of the values of the PDF (:math:`f(t)`) with the given set of parameters (:math:`\theta`) evaluated at each failure (:math:`t_i_{failures}`), multiplied by the product of the values of the SF (:math:`R(t)`) with the given set of parameters (:math:`\theta`) evaluated at each right censored value (:math:`t_i_{right censored}`).
+In words this means that the likelihood of the parameters of the model (:math:`\theta`) given the data (D) is equal to the product of the values of the PDF (:math:`f(t)`) with the given set of parameters (:math:`\theta`) evaluated at each failure (:math:`t_i^{failures}`), multiplied by the product of the values of the SF (:math:`R(t)`) with the given set of parameters (:math:`\theta`) evaluated at each right censored value (:math:`t_i^{right censored}`).
 
-Probabilities are numbers between 0 and 1, and when you have a lot of these values, their product gets very very small.
+Since probabilities are between 0 and 1, multiplying many of these results in a very small number.
 A loss precision occurs because computers can only store so many decimals. Multiplication is also slower than addition for computers.
 To overcome this problem, we can use a logarithm rule to add the log-likelihoods rather than multiply the likelihoods.
 We just need to take the log of the likelihood function (the PDF for failure data and the SF for right censored data), evaluate the probability, and sum the values.
@@ -67,18 +67,18 @@ Let's say we have some failure times: t = [27, 64, 3, 18, 8]
 
 We need an initial estimate for time model parameter (:math:`\lambda`) which we would typically get using Least Squares Estimation. For this example, lets start with 0.1 as our first guess for :math:`\lambda`.
 
-For each of these values, we need to calculate the value of the PDF (with the given value of :math:`\Lambda`).
+For each of these values, we need to calculate the value of the PDF (with the given value of :math:`\lambda`).
 
-Exponential PDF: :math:`\lambda {\rm e}^{-\lambda t}`
+Exponential PDF:     :math:`f(t) = \lambda {\rm e}^{-\lambda t}`
 
-Exponential Log-PDF: :math:`ln(\lambda)-\lambda t`
+Exponential Log-PDF: :math:`ln(f(t)) = ln(\lambda)-\lambda t`
 
 Now we substitute in :math:`\lambda=0.1 and t = [27, 64, 3, 18, 8]`
 
 :math:`L(\lambda=0.1|t=[27, 64, 3, 18, 8]) = (ln(0.1)-0.1 \times 27) + (ln(0.1)-0.1 \times 64) + (ln(0.1)-0.1 \times 3) + (ln(0.1)-0.1 \times 18) + (ln(0.1)-0.1 \times 8) = -23.512925`
 
 Here's where the optimization part comes in. We need to vary :math:`\lambda` until we maximize the log-likelihood.
-The following graph shows how the log-likelihood varies as lambda varies.
+The following graph shows how the log-likelihood varies as :math:`\lambda` varies.
 
 .. image:: images/LL_range.png
 
@@ -106,8 +106,8 @@ This was produced using the following Python code:
 The optimization process can be done in Python (using scipy) or in Excel (using Solver), or a variety of other software packages. It could even be done by hand, though this is not only tedious, but also limited to single parameter distributions. 
 In the next section, we will look at how the optimization process becomes much harder when there are 2 or more parameters that need to be optimized simultaneously.
 
-So, using the above method, we see that the maximum for the log-likelihood occurred when lambda was around 0.041.
-We can check the value using `reliability` like this:
+So, using the above method, we see that the maximum for the log-likelihood occurred when :math:`\lambda` was around 0.041.
+We can check the value using `reliability` as shown below which achieves an answer of 0.0146667:
 
 .. code:: python
 
