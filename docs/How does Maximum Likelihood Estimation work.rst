@@ -50,9 +50,9 @@ In words, the first equation above means "the likelihood of the parameters (:mat
 Once we have the likelihood (:math:`L_i` ) for each data point, we need to combine them. This is done by multiplying them together (think of this as an AND condition).
 If we just had failures and right censored data then the equation would be:
 
-:math:`L(\theta|D) = \prod_{i=1}^{n} f_i(t_i^{failures}|\theta) \times R_i(t_i^{right censored}|\theta)`
+:math:`L(\theta|D) = \prod_{i=1}^{n} f_i(t_i^{\textrm{failures}}|\theta) \times R_i(t_i^{\textrm{right censored}}|\theta)`
 
-In words this means that the likelihood of the parameters of the model (:math:`\theta`) given the data (D) is equal to the product of the values of the PDF (:math:`f(t)`) with the given set of parameters (:math:`\theta`) evaluated at each failure (:math:`t_i^{failures}`), multiplied by the product of the values of the SF (:math:`R(t)`) with the given set of parameters (:math:`\theta`) evaluated at each right censored value (:math:`t_i^{right censored}`).
+In words this means that the likelihood of the parameters of the model (:math:`\theta`) given the data (D) is equal to the product of the values of the PDF (:math:`f(t)`) with the given set of parameters (:math:`\theta`) evaluated at each failure (:math:`t_i^{\textrm{failures}}`), multiplied by the product of the values of the SF (:math:`R(t)`) with the given set of parameters (:math:`\theta`) evaluated at each right censored value (:math:`t_i^{\textrm{right censored}}`).
 
 Since probabilities are between 0 and 1, multiplying many of these results in a very small number.
 A loss precision occurs because computers can only store so many decimals. Multiplication is also slower than addition for computers.
@@ -73,7 +73,7 @@ Exponential PDF:     :math:`f(t) = \lambda {\rm e}^{-\lambda t}`
 
 Exponential Log-PDF: :math:`ln(f(t)) = ln(\lambda)-\lambda t`
 
-Now we substitute in :math:`\lambda=0.1 and t = [27, 64, 3, 18, 8]`
+Now we substitute in :math:`\lambda=0.1` and :math:`t = [27, 64, 3, 18, 8]`
 
 :math:`L(\lambda=0.1|t=[27, 64, 3, 18, 8]) = (ln(0.1)-0.1 \times 27) + (ln(0.1)-0.1 \times 64) + (ln(0.1)-0.1 \times 3) + (ln(0.1)-0.1 \times 18) + (ln(0.1)-0.1 \times 8) = -23.512925`
 
@@ -106,8 +106,8 @@ This was produced using the following Python code:
 The optimization process can be done in Python (using scipy) or in Excel (using Solver), or a variety of other software packages. It could even be done by hand, though this is not only tedious, but also limited to single parameter distributions. 
 In the next section, we will look at how the optimization process becomes much harder when there are 2 or more parameters that need to be optimized simultaneously.
 
-So, using the above method, we see that the maximum for the log-likelihood occurred when :math:`\lambda` was around 0.041.
-We can check the value using `reliability` as shown below which achieves an answer of 0.0146667:
+So, using the above method, we see that the maximum for the log-likelihood occurred when :math:`\lambda` was around 0.041 at a log-likelihood of -20.89.
+We can check the value using `reliability` as shown below which achieves an answer of :math:`\lambda = 0.0416667` at a log-likelihood of -20.8903:
 
 .. code:: python
 
@@ -137,8 +137,8 @@ We can check the value using `reliability` as shown below which achieves an answ
 
 .. image:: images/MLE_expon.png
 
-An example using the Weibull Distribution
-"""""""""""""""""""""""""""""""""""""""""
+Another example using the Exponential Distribution with censored data
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 Lets use a new dataset that includes both failures and right censored values.
 
@@ -146,6 +146,11 @@ failures = []
 right_censored = []
 
 Once again, we need an initial estimate for the model parameters, and for that we would typically use Least Squares Estimation.
-For the purposes of this example, we will use an initial guess of :math:`\alpha = 20`, :math:`\beta=2`
+For the purposes of this example, we will use an initial guess of :math:`\lambda = 0.5`.
+
+The rest of this will be writted soon.
+
+An example using the Weibull Distribution
+"""""""""""""""""""""""""""""""""""""""""
 
 The rest of this will be writted soon.
