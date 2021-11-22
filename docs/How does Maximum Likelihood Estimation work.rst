@@ -46,6 +46,7 @@ As mentioned in step 2, different types of data need to be handled differently:
 +------------------------+-----------------------------------------------------------------+
 
 In words, the first equation above means "the likelihood of the parameters (:math:`\theta`) given the data (:math:`t_i`) is equal to the probability of failure (:math:`f(t)`) evaluated at each time :math:`t_i` with that given set of parameters (:math:`\theta`)".
+The equations for the PDF (:math:`f(t)`), CDF (:math:`F(t)`), and SF (:math:`R(t)`) for each distribution is provided `here <https://reliability.readthedocs.io/en/latest/Equations%20of%20supported%20distributions.html>`_. 
 
 Once we have the likelihood (:math:`L_i` ) for each data point, we need to combine them. This is done by multiplying them together (think of this as an AND condition).
 If we just had failures and right censored data then the equation would be:
@@ -75,7 +76,14 @@ Exponential Log-PDF: :math:`ln(f(t)) = ln(\lambda)-\lambda t`
 
 Now we substitute in :math:`\lambda=0.1` and :math:`t = [27, 64, 3, 18, 8]`
 
-:math:`L(\lambda=0.1|t=[27, 64, 3, 18, 8]) = (ln(0.1)-0.1 \times 27) + (ln(0.1)-0.1 \times 64) + (ln(0.1)-0.1 \times 3) + (ln(0.1)-0.1 \times 18) + (ln(0.1)-0.1 \times 8) = -23.512925`
+.. math::
+
+    \begin{align}
+    L(\lambda=0.1|t=[27, 64, 3, 18, 8]) = (ln(0.1)-0.1 \times 27)\\
+    &\qquad + (ln(0.1)-0.1 \times 64) + (ln(0.1)-0.1 \times 3)\\
+    &\qquad + (ln(0.1)-0.1 \times 18) + (ln(0.1)-0.1 \times 8)\\
+    &\qquad = -23.512925
+    \end{align}
 
 Here's where the optimization part comes in. We need to vary :math:`\lambda` until we maximize the log-likelihood.
 The following graph shows how the log-likelihood varies as :math:`\lambda` varies.
@@ -139,8 +147,7 @@ Another example using the Exponential Distribution with censored data
 
 Lets use a new dataset that includes both failures and right censored values.
 
-failures = [17, 5, 12]
-right_censored = [20, 25]
+failures = [17, 5, 12] and right_censored = [20, 25]
 
 Once again, we need an initial estimate for the model parameters, and for that we would typically use Least Squares Estimation.
 For the purposes of this example, we will again use an initial guess of :math:`\lambda = 0.1`.
@@ -157,7 +164,14 @@ Exponential Log-SF: :math:`ln(R(t)) = -\lambda t`
 
 Now we substitute in :math:`\lambda=0.1`, :math:`t_{\textrm{failures}} = [17, 5, 12]`, and :math:`t_{\textrm{right censored}} = [20, 25]`.
 
-:math:`L(\lambda=0.1|t_{\textrm{failures}}=[17,5,12],t_{\textrm{right censored}}=[20, 25]) = (ln(0.1)-0.1 \times 17) + (ln(0.1)-0.1 \times 5) + (ln(0.1)-0.1 \times 12) + (-0.1 \times 20) + (-0.1 \times 25) = -14.8077528`
+.. math::
+
+    \begin{align}
+    L(\lambda=0.1|t_{\textrm{failures}}=[17,5,12] {\textrm{ and }}t_{\textrm{right censored}}=[20, 25]) = (ln(0.1)-0.1 \times 17)\\
+    &\qquad + (ln(0.1)-0.1 \times 5) + (ln(0.1)-0.1 \times 12)\\
+    &\qquad + (-0.1 \times 20) + (-0.1 \times 25)\\
+    &\qquad = -14.8077528
+    \end{align}
 
 Note that the last two terms are the right censored values. Their contribution to the log-likelihood is added in the same way that the contribution from each of the failures is added, except that right censored values use the the log-SF.
 
