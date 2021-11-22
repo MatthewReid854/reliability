@@ -28,7 +28,7 @@ The MLE algorithm is as follows:
 
 1. Obtain an initial guess for the model parameters (typically done using least squares estimation).
 2. Calculate the probability of occurrence of each data point (f(t) for failures, R(t) for right censored, F(t) for left censored).
-3. Multiply the probabilities (or sum their logarithms which is must more computationally efficient)
+3. Multiply the probabilities (or sum their logarithms which is much more computationally efficient).
 4. Use an optimizer to change the model parameters and repeat steps 2 and 3 until the total probability is maximized.
 
 As mentioned in step 2, different types of data need to be handled differently:
@@ -152,7 +152,7 @@ failures = [17, 5, 12] and right_censored = [20, 25]
 Once again, we need an initial estimate for the model parameters, and for that we would typically use Least Squares Estimation.
 For the purposes of this example, we will again use an initial guess of :math:`\lambda = 0.1`.
 
-For each of these values, we need to calculate the value of the PDF (with the given value of :math:`\lambda`).
+For each of the failures, we need to calculate the value of the PDF, and for each of the right censored values, we need to calculate the value of the SF (with the given value of :math:`\lambda`).
 
 Exponential PDF:     :math:`f(t) = \lambda {\rm e}^{-\lambda t}`
 
@@ -201,7 +201,6 @@ This was produced using the following Python code:
     plt.xlabel('$\lambda$')
     plt.ylabel('Log-likelihood')
     plt.title('Log likelihood over a range of $\lambda$ values')
-    crosshairs()
     plt.show()
 
 So, using the above method, we see that the maximum for the log-likelihood occurred when :math:`\lambda` was around 0.038 at a log-likelihood of -12.81.
@@ -235,4 +234,33 @@ We can check the value using `reliability` as shown below which achieves an answ
 An example using the Weibull Distribution
 """""""""""""""""""""""""""""""""""""""""
 
+Because it requires optimization, MLE is only practical using software if there is more than one parameter in the distribution.
+The rest of the process is the same, but instead of the likelihood plot (the curves shown above) being a line, for 2 parameters it would be a surface, as shown in the example below.
+
+We'll use the same dataset as in the previous example with failures = [17,5,12] and right_censored = [20, 25].
+
+We also need an estimate for the parameters of the Weibull Distribution. We will use :math:`\alpha=15` and :math:`\beta=2`
+
+For each of the failures, we need to calculate the value of the PDF, and for each of the right censored values, we need to calculate the value of the SF (with the given value of :math:`\lambda`).
+
+Weibull PDF:     :math:`f(t) = \frac{\beta}{\alpha}\left(\frac{t}{\alpha}\right)^{(\beta-1)}{\rm e}^{-(\frac{t}{\alpha })^ \beta }`
+
+Weibull Log-PDF: :math:`ln(f(t)) = ln\left(\frac{\beta}{\alpha}\right)+(\beta-1).ln\left(\frac{t}{\alpha}\right)-(\frac{t}{\alpha })^ \beta`
+
+Weibull SF:     :math:`R(t) = {\rm e}^{-(\frac{t}{\alpha })^ \beta }`
+
+Weibull Log-SF: :math:`ln(R(t)) = -(\frac{t}{\alpha })^ \beta`
+
+Now we substitute in :math:`\alpha=15`, :math:`\beta=2`, :math:`t_{\textrm{failures}} = [17, 5, 12]`, and :math:`t_{\textrm{right censored}} = [20, 25]` to the log-PDF and log-SF.
+
+
+
+
+
+How does the optimization routine work in Python
+""""""""""""""""""""""""""""""""""""""""""""""""
+
 This will be writted soon.
+
+
+
