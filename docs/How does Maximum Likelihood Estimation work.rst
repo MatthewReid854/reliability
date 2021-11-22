@@ -81,25 +81,29 @@ doing some equation testing here
 .. math::
 
     \begin{align}
-    L(\lambda=0.1|t=[27, 64, 3, 18, 8])\\
-    = (ln(0.1)-0.1 \times 27) + (ln(0.1)-0.1 \times 64) + (ln(0.1)-0.1 \times 3)\\
-    + (ln(0.1)-0.1 \times 18) + (ln(0.1)-0.1 \times 8)\\
-    = -23.512925
+    \\L(\lambda=0.1|t=[27, 64, 3, 18, 8])
+    \\ = (ln(0.1)-0.1 \times 27) + (ln(0.1)-0.1 \times 64) + (ln(0.1)-0.1 \times 3)
+    \\ + (ln(0.1)-0.1 \times 18) + (ln(0.1)-0.1 \times 8)
+    \\ = -23.512925
     \end{align}
 
 .. math::
 
-    L(\lambda=0.1|t=[27, 64, 3, 18, 8])\\
-    = (ln(0.1)-0.1 \times 27) + (ln(0.1)-0.1 \times 64) + (ln(0.1)-0.1 \times 3)\\
-    + (ln(0.1)-0.1 \times 18) + (ln(0.1)-0.1 \times 8)\\
-    = -23.512925
+    \begin{align}
+    &L(\lambda=0.1|t=[27, 64, 3, 18, 8])
+    & = (ln(0.1)-0.1 \times 27) + (ln(0.1)-0.1 \times 64) + (ln(0.1)-0.1 \times 3)
+    & + (ln(0.1)-0.1 \times 18) + (ln(0.1)-0.1 \times 8)
+    & = -23.512925
+    \end{align}
 
 .. math::
 
-    L(\lambda=0.1|t=[27, 64, 3, 18, 8])
-    = (ln(0.1)-0.1 \times 27) + (ln(0.1)-0.1 \times 64) + (ln(0.1)-0.1 \times 3)
-    + (ln(0.1)-0.1 \times 18) + (ln(0.1)-0.1 \times 8)
-    = -23.512925
+    \begin{align}
+    &L(\lambda=0.1|t=[27, 64, 3, 18, 8])\\
+    & = (ln(0.1)-0.1 \times 27) + (ln(0.1)-0.1 \times 64) + (ln(0.1)-0.1 \times 3)\\
+    & + (ln(0.1)-0.1 \times 18) + (ln(0.1)-0.1 \times 8)\\
+    & = -23.512925
+    \end{align}
 
 Here's where the optimization part comes in. We need to vary :math:`\lambda` until we maximize the log-likelihood.
 The following graph shows how the log-likelihood varies as :math:`\lambda` varies.
