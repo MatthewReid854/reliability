@@ -76,32 +76,12 @@ Exponential Log-PDF: :math:`ln(f(t)) = ln(\lambda)-\lambda t`
 
 Now we substitute in :math:`\lambda=0.1` and :math:`t = [27, 64, 3, 18, 8]`
 
-doing some equation testing here
-
 .. math::
 
     \begin{align}
-    \\L(\lambda=0.1|t=[27, 64, 3, 18, 8])
-    \\ = (ln(0.1)-0.1 \times 27) + (ln(0.1)-0.1 \times 64) + (ln(0.1)-0.1 \times 3)
-    \\ + (ln(0.1)-0.1 \times 18) + (ln(0.1)-0.1 \times 8)
-    \\ = -23.512925
-    \end{align}
-
-.. math::
-
-    \begin{align}
-    &L(\lambda=0.1|t=[27, 64, 3, 18, 8])
-    & = (ln(0.1)-0.1 \times 27) + (ln(0.1)-0.1 \times 64) + (ln(0.1)-0.1 \times 3)
-    & + (ln(0.1)-0.1 \times 18) + (ln(0.1)-0.1 \times 8)
-    & = -23.512925
-    \end{align}
-
-.. math::
-
-    \begin{align}
-    &L(\lambda=0.1|t=[27, 64, 3, 18, 8])\\
-    & = (ln(0.1)-0.1 \times 27) + (ln(0.1)-0.1 \times 64) + (ln(0.1)-0.1 \times 3)\\
-    & + (ln(0.1)-0.1 \times 18) + (ln(0.1)-0.1 \times 8)\\
+    & L(\lambda=0.1|t=[27, 64, 3, 18, 8]) = \\
+    & \qquad (ln(0.1)-0.1 \times 27) + (ln(0.1)-0.1 \times 64) + (ln(0.1)-0.1 \times 3)\\
+    & \qquad + (ln(0.1)-0.1 \times 18) + (ln(0.1)-0.1 \times 8)\\
     & = -23.512925
     \end{align}
 
@@ -187,10 +167,10 @@ Now we substitute in :math:`\lambda=0.1`, :math:`t_{\textrm{failures}} = [17, 5,
 .. math::
 
     \begin{align}
-    L(\lambda=0.1|t_{\textrm{failures}}=[17,5,12] {\textrm{ and }}t_{\textrm{right censored}}=[20, 25]) = (ln(0.1)-0.1 \times 17)\\
-    &\qquad + (ln(0.1)-0.1 \times 5) + (ln(0.1)-0.1 \times 12)\\
-    &\qquad + (-0.1 \times 20) + (-0.1 \times 25)\\
-    &\qquad = -14.8077528
+    & L(\lambda=0.1|t_{\textrm{failures}}=[17,5,12] {\textrm{ and }}t_{\textrm{right censored}}=[20, 25]) = \\
+    & \qquad (ln(0.1)-0.1 \times 17) + (ln(0.1)-0.1 \times 5) + (ln(0.1)-0.1 \times 12)\\
+    & \qquad + (-0.1 \times 20) + (-0.1 \times 25)\\
+    & = -14.8077528
     \end{align}
 
 Note that the last two terms are the right censored values. Their contribution to the log-likelihood is added in the same way that the contribution from each of the failures is added, except that right censored values use the the log-SF.
@@ -255,15 +235,4 @@ We can check the value using `reliability` as shown below which achieves an answ
 An example using the Weibull Distribution
 """""""""""""""""""""""""""""""""""""""""
 
-This is just a test of equation text wrapping:
-
-.. math::
-
-    \begin{align}
-      m_{12}(\{Red,Blue\})&=K'*[m_1 (\{Red,Blue\})*m_2(\{Red,Blue\})\\
-                          &\qquad +m_1(\{Red,Blue\})*m_2(\{Red,Blue,Green\})\\
-                          &\qquad +m_2(\{Red,Blue\})*m_1(\{Red,Blue,Green\})]
-    \end{align}
-
-
-The rest of this will be writted soon.
+This will be writted soon.
