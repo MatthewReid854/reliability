@@ -253,14 +253,115 @@ Weibull Log-SF: :math:`ln(R(t)) = -(\frac{t}{\alpha })^ \beta`
 
 Now we substitute in :math:`\alpha=15`, :math:`\beta=2`, :math:`t_{\textrm{failures}} = [17, 5, 12]`, and :math:`t_{\textrm{right censored}} = [20, 25]` to the log-PDF and log-SF.
 
+.. math::
 
+    \begin{align}
+    & L(\alpha=15,\beta=2|t_{\textrm{failures}}=[17,5,12] {\textrm{ and }}t_{\textrm{right censored}}=[20, 25]) = \\
+    & \qquad ln\left(\frac{2}{15}\right)+(2-1).ln\left(\frac{17}{15}\right)-(\frac{17}{15})^2\\
+    & \qquad + ln\left(\frac{2}{15}\right)+(2-1).ln\left(\frac{5}{15}\right)-(\frac{5}{15})^2\\
+    & \qquad + ln\left(\frac{2}{15}\right)+(2-1).ln\left(\frac{12}{15}\right)-(\frac{12}{15})^2
+    & \qquad + (-(\frac{20}{15})^2)\\
+    & \qquad + (-(\frac{25}{15})^2)\\
+    & = -13.8324
+    \end{align}
 
+As with the previous example, we again need to use optimization to vary :math:`\alpha` and :math:`\beta` until we maximize the log-likelihood.
+The following surface plot shows how the log-likelihood varies as :math:`\alpha` and :math:`\beta` are varied. The maximum log-likelihood is shown as a scatter point on the plot.
 
+.. image:: images/LL_range3.png
+
+This was produced using the following Python code:
+
+.. code:: python
+
+    import matplotlib.pyplot as plt
+    from mpl_toolkits.mplot3d import Axes3D
+    import numpy as np
+    
+    
+    failures = np.array([17,5,12])
+    right_censored = np.array([20, 25])
+    
+    points = 50
+    alpha_array = np.linspace(15, 45, points)
+    beta_array = np.linspace(0.8,3,points)
+    
+    A,B = np.meshgrid(alpha_array, beta_array)
+    
+    LL = np.empty((len(alpha_array),len(beta_array)))
+    for i, alpha in enumerate(alpha_array):
+        for j, beta in enumerate(beta_array):
+            loglik_failures = np.log(beta/alpha)+(beta-1)*np.log(failures/alpha)-(failures/alpha)**beta
+            loglik_right_censored = -(right_censored/alpha)**beta
+            LL[i][j] = loglik_failures.sum()+loglik_right_censored.sum()
+    
+    LL_max = LL.max()
+    idx = np.where(LL==LL_max)
+    alpha_fit = alpha_array[idx[0]][0]
+    beta_fit = beta_array[idx[1]][0]
+    
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    ax.plot_surface(A,B,LL.transpose(),cmap="coolwarm",linewidth=1,antialiased=True,alpha=0.7,zorder=0)
+    ax.set_xlabel(r'$\alpha$')
+    ax.set_ylabel(r'$\beta$')
+    ax.set_zlabel('Log-likelihood')
+    ax.scatter([alpha_fit],[beta_fit],[LL_max],color='k',zorder=1)
+    text_string = str(r'$\alpha=$'+str(round(alpha_fit,2))+'\n'+r'$\beta=$'+str(round(beta_fit,2))+'\nLL='+str(round(LL_max,2)))
+    ax.text(x=alpha_fit,y=beta_fit,z=LL_max+0.1,s=text_string)
+    ax.computed_zorder = False
+    plt.title(r'Log-likelihood over a range of $\alpha$ and $\beta$ values')
+    plt.show()
+
+So, using the above method, we see that the maximum for the log-likelihood (shown by the scatter point) occurred when :math:`\alpha` was around 22.96 and :math:`beta` was around 1.56 at a log-likelihood of -12.48.
+Once again, we can check the value using `reliability` as shown below which achieves an answer of :math:`\alpha = 23.0653` and :math:`\beta = 1.57474` at a log-likelihood of -12.4823:
+The trickiest part about MLE is the optimization step, which is discussed briefly in the next section.
+
+.. code:: python
+
+    from reliability.Fitters import Fit_Weibull_2P
+    failures = [17,5,12]
+    right_censored = [20, 25]
+    Fit_Weibull_2P(failures=failures,right_censored=right_censored,show_probability_plot=False)
+
+    '''
+    Results from Fit_Weibull_2P (95% CI):
+    Analysis method: Maximum Likelihood Estimation (MLE)
+    Optimizer: TNC
+    Failures / Right censored: 3/2 (40% right censored) 
+    
+    Parameter  Point Estimate  Standard Error  Lower CI  Upper CI
+        Alpha         23.0653         8.76119   10.9556   48.5604
+         Beta         1.57474        0.805575  0.577786    4.2919 
+    
+    Goodness of fit    Value
+     Log-likelihood -12.4823
+               AICc  34.9647
+                BIC  28.1836
+                 AD  19.2756
+    '''
 
 How does the optimization routine work in Python
 """"""""""""""""""""""""""""""""""""""""""""""""
 
-This will be writted soon.
+Optimization is a complex field of study, but thankfully there are several software packages where optimizers are built into (relatively) easy-to-use tools.
+Excel's `Solver <https://www.educba.com/excel-solver-tool/>`_ is a perfect example of an easy to use optimizer, and it is capable of changing multiple cells so it can be used to fit the Weibull Distribution.
+In this section, we will look at how optimization can be done in Python using `scipy.optimize.minimize <https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html>`_.
 
+Scipy requires four primary inputs:
 
+- An objective function that should be minimized
+- An initial guess
+- The optimization routine to use
+- Bounds on the solution
 
+The objective function is the log-likelihood function as we used in the previous examples.
+For the initial guess, we use `least squares estimation <https://reliability.readthedocs.io/en/latest/How%20does%20Least%20Squares%20Estimation%20work.html>`_.
+The optimization routine is a string that tells scipy which optimizer to use. There are several options, but `reliability` only uses four bounded `optimizers <https://reliability.readthedocs.io/en/latest/Optimizers.html>`_, which are 'TNC', 'L-BFGS-B', 'powell', and 'nelder-mead'.
+The bounds on the solution are things like specifying :math:`\alpha>0` and :math:`\beta>0`. Bounds are not essential, but they do help a lot with stability (preventing the optimizer from failing).
+
+Another important point to highlight is that when using an optimizer for the log-likelihood function in Python, it is more computationally efficient to find the point of minimum slope (which is the same as the peak of the log-likelihood function).
+The slope is evaluated using the gradient (:math:`\nabla`), which is done using the Python library `autograd <https://github.com/HIPS/autograd/blob/master/docs/tutorial.md>`_ using the `value_and_grad <https://github.com/HIPS/autograd/blob/master/autograd/differential_operators.py#L132>`_ function.
+This process is quite mathematically complicated, but `reliability` does all of this internally and as a user you do not need to worry too much about how the optimizer works.
+The most important thing to understand is that as part of MLE, an optimizer is trying to maximize the log-likelihood by varying the parameters of the model.
+Sometimes the optimizer will be unsuccessful or will give a poor solution. In such cases, you should try another optimizer, or ask `reliability` to try all optimizers by specifying optimizer='best'.
