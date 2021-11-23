@@ -112,8 +112,7 @@ This was produced using the following Python code:
     plt.show()
 
 The optimization process can be done in Python (using `scipy.optimize.minimize <https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html>`_) or in Excel (using `Solver <https://www.wikihow.com/Use-Solver-in-Microsoft-Excel>`_), or a variety of other software packages.
-It could even be done by hand, though this is not only tedious, but also limited in practicality to single parameter distributions. 
-The optimization process becomes much harder when there are 2 or more parameters that need to be optimized simultaneously.
+Optimization becomes a bit more complicated when there are two or more parameters that need to be optimized simultaneously (such as in a Weibull Distribution).
 
 So, using the above method, we see that the maximum for the log-likelihood occurred when :math:`\lambda` was around 0.041 at a log-likelihood of -20.89.
 We can check the value using `reliability` as shown below which achieves an answer of :math:`\lambda = 0.0416667` at a log-likelihood of -20.8903:
@@ -257,16 +256,16 @@ Now we substitute in :math:`\alpha=15`, :math:`\beta=2`, :math:`t_{\textrm{failu
 
     \begin{align}
     & L(\alpha=15,\beta=2|t_{\textrm{failures}}=[17,5,12] {\textrm{ and }}t_{\textrm{right censored}}=[20, 25]) = \\
-    & \qquad ln\left(\frac{2}{15}\right)+(2-1).ln\left(\frac{17}{15}\right)-(\frac{17}{15})^2\\
-    & \qquad + ln\left(\frac{2}{15}\right)+(2-1).ln\left(\frac{5}{15}\right)-(\frac{5}{15})^2\\
-    & \qquad + ln\left(\frac{2}{15}\right)+(2-1).ln\left(\frac{12}{15}\right)-(\frac{12}{15})^2
-    & \qquad + (-(\frac{20}{15})^2)\\
-    & \qquad + (-(\frac{25}{15})^2)\\
+    & \qquad ln\left(\frac{2}{15}\right)+(2-1).ln\left(\frac{17}{15}\right)-\left(\frac{17}{15}\right)^2\\
+    & \qquad + ln\left(\frac{2}{15}\right)+(2-1).ln\left(\frac{5}{15}\right)-\left(\frac{5}{15}\right)^2\\
+    & \qquad + ln\left(\frac{2}{15}\right)+(2-1).ln\left(\frac{12}{15}\right)-\left(\frac{12}{15}\right)^2\\
+    & \qquad + \left(-\left(\frac{20}{15}\right)^2\right)\\
+    & \qquad + \left(-\left(\frac{25}{15}\right)^2\right)\\
     & = -13.8324
     \end{align}
 
 As with the previous example, we again need to use optimization to vary :math:`\alpha` and :math:`\beta` until we maximize the log-likelihood.
-The following surface plot shows how the log-likelihood varies as :math:`\alpha` and :math:`\beta` are varied. The maximum log-likelihood is shown as a scatter point on the plot.
+The following 3D surface plot shows how the log-likelihood varies as :math:`\alpha` and :math:`\beta` are varied. The maximum log-likelihood is shown as a scatter point on the plot.
 
 .. image:: images/LL_range3.png
 
@@ -313,8 +312,8 @@ This was produced using the following Python code:
     plt.title(r'Log-likelihood over a range of $\alpha$ and $\beta$ values')
     plt.show()
 
-So, using the above method, we see that the maximum for the log-likelihood (shown by the scatter point) occurred when :math:`\alpha` was around 22.96 and :math:`beta` was around 1.56 at a log-likelihood of -12.48.
-Once again, we can check the value using `reliability` as shown below which achieves an answer of :math:`\alpha = 23.0653` and :math:`\beta = 1.57474` at a log-likelihood of -12.4823:
+So, using the above method, we see that the maximum for the log-likelihood (shown by the scatter point) occurred when :math:`\alpha` was around 22.96 and :math:`\beta` was around 1.56 at a log-likelihood of -12.48.
+Once again, we can check the value using `reliability` as shown below which achieves an answer of :math:`\alpha = 23.0653` and :math:`\beta = 1.57474` at a log-likelihood of -12.4823.
 The trickiest part about MLE is the optimization step, which is discussed briefly in the next section.
 
 .. code:: python
