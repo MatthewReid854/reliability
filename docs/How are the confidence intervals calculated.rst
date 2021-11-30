@@ -17,7 +17,7 @@ We can use autograd.differential_operators.hessian to calculate the hessian matr
 The inverse of the hessian matrix gives us the covariance matrix, which contains the numbers we need for finding the confidence intervals.
 The covariance matrix is a matrix containing the variance of the parameters along the diagonal, and the covariance of the parameters outside of the diagonal.
 Depending on the number of parameters, the covariance matrix may be quite large.
-For the Weibull Distribution (with parameters :math:`\alpha` and :math:`\beta`, the covariance matrix looks like this:
+For the Weibull Distribution (with parameters :math:`\alpha` and :math:`\beta`), the covariance matrix looks like this:
 
 .. math::
 
@@ -26,26 +26,26 @@ For the Weibull Distribution (with parameters :math:`\alpha` and :math:`\beta`, 
     Cov(\alpha,\beta) & Var(\beta)
     \end{bmatrix}
 
-To find the confidence intervals on the parameters, we need the parameters, the standard error (:math:`\sqrt{variance}`), and the desired confidence interval. For this example, we will use the default of 95% confidence (two sided).
-The formulas for the confidence intervals on the parameters have two forms, depending on whether they are strictly positive (like :math:`\alpha` and :math:`\beta` are for the Weibull Distribution) or unbounded (like :math:`\mu` for the Normal Distribution).
+To find the confidence intervals on the parameters, we need the parameters, the standard error :math:`\left(\sqrt{variance}\right)`, and the desired confidence interval. For this example, we will use the default of 95% confidence (two sided).
+The formulas for the confidence intervals on the parameters have two forms, depending on whether they are strictly positive (like :math:`\alpha` and :math:`\beta` are for the Weibull Distribution) or unbounded (like :math:`\mu` is for the Normal Distribution).
 
 For strictly positive parameters, the formula is:
 
-:math:`\X_{lower} = X . {\rm e}^{-Z.\frac{X_{SE}}{X}} `
+:math:`X_{lower} = \hat{X} . {\rm e}^{-Z.\frac{\hat{X}_{SE}}{\hat{X}}}`
 
-:math:`\X_{upper} = X . {\rm e}^{+Z.\frac{X_{SE}}{X}} `
+:math:`X_{upper} = \hat{X} . {\rm e}^{+Z.\frac{\hat{X}_{SE}}{\hat{X}}}`
 
-For unbounded parameters, the formula is:
+For unbounded parameters (which can be positive or negative), the formula is:
 
-:math:`\X_{lower} = X - Z.X_{SE}`
+:math:`X_{lower} = \hat{X} - Z.\hat{X}_{SE}`
 
-:math:`\X_{upper} = X + Z.X_{SE}`
+:math:`X_{upper} = \hat{X} + Z.\hat{X}_{SE}`
 
 Where:
 
-- Z = Standard Normal Distribution Quantile of :math:`\frac{1 - CI}{2}`. This can be calculated using ``-scipy.stats.norm.ppf((1 - CI) / 2)``. For CI = 0.95, Z = 1.959963984540054. If finding a 1 sided interval, don't divide by 2 in the formula.
+- Z = Standard Normal Distribution Quantile of :math:`\frac{1 - CI}{2}`. This can be calculated using ``-scipy.stats.norm.ppf((1 - CI) / 2)``. For CI = 0.95, Z = 1.95996. If finding a 1 sided interval, don't divide by 2 in the formula.
 
-- :math:`X_{SE}` = The standard error (:math:`\sqrt{Var(X)}`).
+- :math:`\hat{X}_{SE}` = The standard error :math:`\left(\sqrt{Var(\hat{X})}\right)`.
 
 - :math:`X_{lower}` = The lower confidence bound on the parameter based on the specified confidence interval (CI). 
 
@@ -84,7 +84,7 @@ The bounds for :math:`\alpha` and :math:`\beta` are calculated using the Weibull
 This method is used by `reliability` and reliasoft's Weibull++ software.
 
 In the case of the Exponential Distribution, the covariance matrix is a 1 x 1 matrix containing just :math:`Var(\lambda)`.
-The upper and lower bounds :math:`\lambda` are found using the formula above for strictly positive parameters.
+The upper and lower bounds on :math:`\lambda` are found using the formula above for strictly positive parameters.
 
 Some matrices are non-invertable due to their values. While rare, if it occurs for the hessian matrix, it means that the inverse of the hessian matrix cannot be calculated so the covariance matrix is not able to be obtained.
 In such cases, a warning will be printed by `reliability`, the standard errors will be set to 0 and the upper and lower bounds of the parameters will match the parameters.
@@ -93,7 +93,7 @@ Confidence intervals on the plots
 """""""""""""""""""""""""""""""""
 
 The confidence intervals on the plots (usually called confidence bounds) are available for the CDF, SF, and CHF. It is not possible to calculate confidence intervals for the PDF or HF.
-There are two types of confidence bounds, these are bounds on time (type I) and bounds on reliability (type II). Depending on the amount of data, these bounds may be almost the same (for large sample sizes) or quite different (for small sample sizes).
+There are two types of confidence bounds, these are bounds on time (Type I) and bounds on reliability (Type II). Depending on the amount of data, these bounds may be almost the same (for large sample sizes) or quite different (for small sample sizes).
 The following example shows the differences in these bounds for the CDF, SF, and CHF.
 
 .. code:: python
@@ -138,19 +138,19 @@ Bounds on time
 
 The formulas for the confidence bounds on time (T) for the Weibull Distribution can be obtained as follows:
 
-Begin with the equation for the SF: :math:`R = {\rm e}^{-(\frac{T}{\alpha })^ \beta }`
+Begin with the equation for the SF: :math:`\qquad R = {\rm e}^{-(\frac{T}{\alpha })^ \beta }`
 
-Linearize the equation: :math:`ln(-ln(R)) = \beta.(\ln(T)-ln(\alpha))`
+Linearize the equation: :math:`\qquad ln(-ln(R)) = \beta.(\ln(T)-ln(\alpha))`
 
-Rearrange to make T the subject: :math:`ln(T) = \frac{1}{\beta}ln(-ln(R))+ln(\alpha)`
+Rearrange to make T the subject: :math:`\qquad ln(T) = \frac{1}{\beta}ln(-ln(R))+ln(\alpha)`
 
-Substitute :math:`\u = ln(T)`: :math:`u = \frac{1}{\beta}ln(-ln(R))+ln(\alpha)`
+Substitute :math:`u = ln(T)`: :math:`\qquad u = \frac{1}{\beta}ln(-ln(R))+ln(\alpha)`
 
 The upper and lower bounds on :math:`u` are:
 
-:math:`u_U = \hat{u} + Z.\hat{u}_{SE}` or :math:`u_U = \hat{u} + Z.\sqrt{Var(\hat{u})}`.
+:math:`u_U = \hat{u} + Z.\sqrt{Var(\hat{u})}`.
 
-:math:`u_L = \hat{u} - Z.\hat{u}_{SE}` or :math:`u_L = \hat{u} - Z.\sqrt{Var(\hat{u})}`.
+:math:`u_L = \hat{u} - Z.\sqrt{Var(\hat{u})}`.
 
 You'll notice that this is the same formula for the bounds on the parameters (when unbounded) provided in the previous section. The formula for Z is also listed in the previous section.
 
@@ -167,25 +167,15 @@ Applying this to :math:`u = \frac{1}{\beta}ln(-ln(R))+ln(\alpha)` gives:
                                        & + \left( \frac{\partial u}{\partial \alpha} \right)^2 \operatorname{Var}\left( \alpha \right)\\
                                        & + \left( \frac{ \partial u }{ \partial \beta } \right) \left( \frac{ \partial u }{ \partial \alpha } \right) \operatorname{Cov}\left( \alpha, \beta \right)\\
                                        & + \left( \frac{ \partial u }{ \partial \beta } \right) \left( \frac{ \partial u }{ \partial \alpha } \right) \operatorname{Cov}\left( \alpha, \beta \right)
-    \end{align}
-
-.. math::
-
-    \begin{align}
-    \operatorname{Var} \left(u \right) & = \left( -\frac{1}{\beta^2} ln(-ln(R)) \right)^2 \operatorname{Var}\left( \beta \right)\\
+                                       & = \left( -\frac{1}{\beta^2} ln(-ln(R)) \right)^2 \operatorname{Var}\left( \beta \right)\\
                                        & + \left( \frac{1}{\alpha} \right)^2 \operatorname{Var} \left( \alpha \right)\\
                                        & + 2 \left( -\frac{1}{\beta^2} ln(-ln(R)) \right) \left( \frac{1}{\alpha} \right) \operatorname{Cov} \left( \alpha, \beta \right)\\
-    \end{align}
-
-.. math::
-
-    \begin{align}
-    \operatorname{Var} \left(u \right) & = \frac{1}{\beta^4} \left( ln(-ln(R)) \right)^2 \operatorname{Var}\left( \beta \right)\\
+                                       & = \frac{1}{\beta^4} \left( ln(-ln(R)) \right)^2 \operatorname{Var}\left( \beta \right)\\
                                        & + \frac{1}{\alpha^2} \operatorname{Var} \left( \alpha \right)\\
                                        & + 2 \left(-\frac{1}{\beta^2} \right) \left(\frac{ln(-ln(R))}{\alpha} \right) \operatorname{Cov} \left(\alpha, \beta \right)
     \end{align}
 
-Since we made the substitution :math:`u = ln(T)`, we can obtain the upper and lower bounds on T using the reverse transform:
+Since we made the substitution :math:`u = ln(T)`, we can obtain the upper and lower bounds on T using the reverse of this substitution:
 
 :math:`T_U = {\rm e}^u_U`
 
@@ -197,10 +187,10 @@ It tells us that we can be 95% certain that the reliability (R) of the system li
 Bounds on reliability
 ---------------------
 
-Beginning with the linearized equation for the SF: :math:`ln(-ln(R)) = \beta.(\ln(T)-ln(\alpha))`
+Beginning with the linearized equation for the SF: :math:`\qquad ln(-ln(R)) = \beta.(\ln(T)-ln(\alpha))`
 
 We make R the subject, which it already is (yay!) so no rearranging needed.
 
-Now substitute :math:`u = ln(-ln(R))`: :math:`u = \beta.(\ln(T)-ln(\alpha))`
+Now substitute :math:`u = ln(-ln(R))`: :math:`\qquad u = \beta.(\ln(T)-ln(\alpha))`
 
 The rest of this will be written soon.
