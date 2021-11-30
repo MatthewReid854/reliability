@@ -79,7 +79,7 @@ If you would like to calculate these values yourself, you can check your result 
     alpha_upper from Fitter = 68.8096875640737
     '''
 
-There are a few exceptions to the above formalas for confidence intervals on the parameters. For three parameter distributions (such as Weibull_3P), the mathematics somewhat breaks down, requiring a minor modification.
+There are a few exceptions to the above formulas for confidence intervals on the parameters. For three parameter distributions (such as Weibull_3P), the mathematics somewhat breaks down, requiring a minor modification.
 The bounds for :math:`\alpha` and :math:`\beta` are calculated using the Weibull_2P log-likelihood function and the bounds on :math:`\gamma` are calculated using the Weibull_3P log-likelihood function.
 This method is used by `reliability` and reliasoft's Weibull++ software.
 
@@ -165,8 +165,7 @@ Applying this to :math:`u = \frac{1}{\beta}ln(-ln(R))+ln(\alpha)` gives:
     \begin{align}
     \operatorname{Var} \left(u \right) & = \left( \frac{\partial u}{\partial \beta} \right)^2 \operatorname{Var}\left( \beta \right)\\
                                        & + \left( \frac{\partial u}{\partial \alpha} \right)^2 \operatorname{Var}\left( \alpha \right)\\
-                                       & + \left( \frac{ \partial u }{ \partial \beta } \right) \left( \frac{ \partial u }{ \partial \alpha } \right) \operatorname{Cov}\left( \alpha, \beta \right)\\
-                                       & + \left( \frac{ \partial u }{ \partial \beta } \right) \left( \frac{ \partial u }{ \partial \alpha } \right) \operatorname{Cov}\left( \alpha, \beta \right)
+                                       & + 2\left( \frac{ \partial u }{ \partial \beta } \right) \left( \frac{ \partial u }{ \partial \alpha } \right) \operatorname{Cov}\left( \alpha, \beta \right)\\
                                        & = \left( -\frac{1}{\beta^2} ln(-ln(R)) \right)^2 \operatorname{Var}\left( \beta \right)\\
                                        & + \left( \frac{1}{\alpha} \right)^2 \operatorname{Var} \left( \alpha \right)\\
                                        & + 2 \left( -\frac{1}{\beta^2} ln(-ln(R)) \right) \left( \frac{1}{\alpha} \right) \operatorname{Cov} \left( \alpha, \beta \right)\\
@@ -177,12 +176,12 @@ Applying this to :math:`u = \frac{1}{\beta}ln(-ln(R))+ln(\alpha)` gives:
 
 Since we made the substitution :math:`u = ln(T)`, we can obtain the upper and lower bounds on T using the reverse of this substitution:
 
-:math:`T_U = {\rm e}^u_U`
+:math:`T_U = {\rm e}^{u_U}`
 
-:math:`T_L = {\rm e}^u_L`
+:math:`T_L = {\rm e}^{u_L}`
 
-The result we have produced will accept a range of values from the SF (between 0 and 1) and output the corresponding upper and lower times.
-It tells us that we can be 95% certain that the reliability (R) of the system lies between :math:`T_L` and :math:`T_U` (if CI=0.95).
+The result we have produced will accept a value from the SF (a reliability between 0 and 1) and output the corresponding upper and lower times.
+It tells us that we can be 95% certain that the system reliability (R) will be reached somewhere between :math:`T_L` and :math:`T_U` (if CI=0.95).
 
 Bounds on reliability
 ---------------------
@@ -193,4 +192,65 @@ We make R the subject, which it already is (yay!) so no rearranging needed.
 
 Now substitute :math:`u = ln(-ln(R))`: :math:`\qquad u = \beta.(\ln(T)-ln(\alpha))`
 
-The rest of this will be written soon.
+As with the bounds on time, the bounds on reliability in terms of :math:`u` are:
+
+The upper and lower bounds on :math:`u` are:
+
+:math:`u_U = \hat{u} + Z.\sqrt{Var(\hat{u})}`.
+
+:math:`u_L = \hat{u} - Z.\sqrt{Var(\hat{u})}`.
+
+This time we have a different formula for :math:`\operatorname{Var} \left(u \right)`. Using the delta method on :math:`u = \beta.(\ln(T)-ln(\alpha))` we can derive the following expression:
+
+.. math::
+
+    \begin{align}
+    \operatorname{Var} \left(u \right) & = \left( \frac{\partial u}{\partial \beta} \right)^2 \operatorname{Var}\left( \beta \right)\\
+                                       & + \left( \frac{\partial u}{\partial \alpha} \right)^2 \operatorname{Var}\left( \alpha \right)\\
+                                       & + 2\left( \frac{ \partial u }{ \partial \beta } \right) \left( \frac{ \partial u }{ \partial \alpha } \right) \operatorname{Cov}\left( \alpha, \beta \right)\\
+                                       & = \left(ln(T) - ln(\alpha) \right)^2 \operatorname{Var}\left( \beta \right)\\
+                                       & + \left(-\frac{\beta}{\alpha} \right)^2 \operatorname{Var}\left( \alpha \right)\\
+                                       & + 2 \left(ln(T)-ln(\alpha) \right) \left(-\frac{\beta}{\alpha} \right) \operatorname{Cov} \left(\alpha, \beta \right)
+    \end{align}
+
+Once we have the full expression for :math:`u` we need to make the reverse substitution:
+
+:math:`T_U = {\rm e}^{-\rm e}^{u_U}`
+
+:math:`T_L = {\rm e}^{-\rm e}^{u_L}`
+
+The result we have produced will accept any time value (above zero) and will output the bounds on reliability (R) between 0 and 1 at that corresponding time.
+It tells us that we can be 95% certain that the reliability (R) of the system lies between :math:`R_L` and :math:`R_U` (if CI=0.95) at the specified time (T).
+
+How are the confidence bounds calculated using Python
+-----------------------------------------------------
+
+The above derivations are tedious and become extremely difficult for more complicated equations (such as the Gamma Distribution).
+Within `reliability` the linearized forms of the SF (in terms of time and reliability) are specified, and then the partial derivatives are calculated using autograd.jacobian.
+In code (for bounds on time) it looks like this:
+
+.. code:: python
+
+    # weibull SF rearranged for t with v = ln(t)
+    def v(R, alpha, beta):
+        return (1 / beta) * anp.log(-anp.log(R)) + anp.log(alpha)
+
+    dv_da = jacobian(v, 1)  # derivative w.r.t. alpha
+    dv_db = jacobian(v, 2)  # derivative w.r.t. beta
+
+    def var_v(self, u):  # u is reliability
+        return (
+            dv_da(u, self.alpha, self.beta) ** 2 * self.alpha_SE ** 2
+            + dv_db(u, self.alpha, self.beta) ** 2 * self.beta_SE ** 2
+            + 2 * dv_da(u, self.alpha, self.beta) * dv_db(u, self.alpha, self.beta) * self.Cov_alpha_beta
+        )
+
+     # v is ln(t) and Y is reliability
+     v_lower = v(Y, self.alpha, self.beta) - Z * (var_v(self, Y) ** 0.5)
+     v_upper = v(Y, self.alpha, self.beta) + Z * (var_v(self, Y) ** 0.5)
+
+     # transform back from v = ln(t)
+     t_lower = np.exp(v_lower)
+     t_upper = np.exp(v_upper)
+
+There are several other intricacies to getting Python to do this correctly, such as where to incorporate :math:`\gamma` for location shifted distributions, how to distribute the points so they look smooth, how to correct for things (like reversals in the bounds) that are mathematically correct but practically (in the world of reliability engineering) incorrect, and how to correctly transform the bounds on the SF to get the bounds on the CDF or CHF.
