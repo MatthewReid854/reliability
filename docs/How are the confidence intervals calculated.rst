@@ -6,8 +6,8 @@ How are the confidence intervals calculated
 '''''''''''''''''''''''''''''''''''''''''''
 
 There confidence intervals on the model parameters, and confidence intervals on the plots.
-The confidence intervals on the plots use the confidence intervals on the model parameters, and in the procedure that is explained in the second section of this document.
-Before reading this document, you should have a reasonable understanding of how `Maximum Likelihood Estimation (MLE) works <https://reliability.readthedocs.io/en/latest/How%20does%20Maximum%20Likelihood%20Estimation%20work.html>`_.
+The confidence intervals on the plots use the confidence intervals on the model parameters in the procedure that is explained in the second section of this document.
+Before reading this document, you should have a reasonable understanding of how `Maximum Likelihood Estimation (MLE) works <https://reliability.readthedocs.io/en/latest/How%20does%20Maximum%20Likelihood%20Estimation%20work.html>`_ and also understand what `partial derivatives <https://www.derivative-calculator.net/>`_ are.
 
 Confidence intervals on the parameters
 """"""""""""""""""""""""""""""""""""""
@@ -16,7 +16,7 @@ Once the model parameters have been found (whether by Least Squares Estimation o
 We can use autograd.differential_operators.hessian to calculate the hessian matrix, which is a square matrix of partial derivatives.
 The inverse of the hessian matrix gives us the covariance matrix, which contains the numbers we need for finding the confidence intervals.
 The covariance matrix is a matrix containing the variance of the parameters along the diagonal, and the covariance of the parameters outside of the diagonal.
-Depending on the number of parameters, the covariance matrix may be quite large.
+The size of the covariance matrix will match the number of parameters.
 For the Weibull Distribution (with parameters :math:`\alpha` and :math:`\beta`), the covariance matrix looks like this:
 
 .. math::
@@ -188,13 +188,11 @@ Bounds on reliability
 
 Beginning with the linearized equation for the SF: :math:`\qquad ln(-ln(R)) = \beta.(\ln(T)-ln(\alpha))`
 
-We make R the subject, which it already is (yay!) so no rearranging needed.
+We make :math:`R` the subject, which it already is (yay!) so no rearranging needed.
 
 Now substitute :math:`u = ln(-ln(R))`: :math:`\qquad u = \beta.(\ln(T)-ln(\alpha))`
 
 As with the bounds on time, the bounds on reliability in terms of :math:`u` are:
-
-The upper and lower bounds on :math:`u` are:
 
 :math:`u_U = \hat{u} + Z.\sqrt{Var(\hat{u})}`.
 
@@ -215,12 +213,12 @@ This time we have a different formula for :math:`\operatorname{Var} \left(u \rig
 
 Once we have the full expression for :math:`u` we need to make the reverse substitution:
 
-:math:`T_U = {\rm e}^{-\rm e}^{u_U}`
+:math:`R_U = {\rm e}^{-{\rm e}}^{u_U}`
 
-:math:`T_L = {\rm e}^{-\rm e}^{u_L}`
+:math:`R_L = {\rm e}^{-{\rm e}}^{u_L}`
 
-The result we have produced will accept any time value (above zero) and will output the bounds on reliability (R) between 0 and 1 at that corresponding time.
-It tells us that we can be 95% certain that the reliability (R) of the system lies between :math:`R_L` and :math:`R_U` (if CI=0.95) at the specified time (T).
+The result we have produced will accept any time value (T) and will output the bounds on reliability (R) between 0 and 1 at that corresponding time.
+It tells us that we can be 95% certain that the reliability of the system lies between :math:`R_L` and :math:`R_U` (if CI=0.95) at the specified time.
 
 How are the confidence bounds calculated using Python
 -----------------------------------------------------
@@ -254,3 +252,9 @@ In code (for bounds on time) it looks like this:
      t_upper = np.exp(v_upper)
 
 There are several other intricacies to getting Python to do this correctly, such as where to incorporate :math:`\gamma` for location shifted distributions, how to distribute the points so they look smooth, how to correct for things (like reversals in the bounds) that are mathematically correct but practically (in the world of reliability engineering) incorrect, and how to correctly transform the bounds on the SF to get the bounds on the CDF or CHF.
+
+More information and formulas are available in the following references from reliawiki:
+
+- `Differences Between Type I (Time) and Type II (Reliability) Confidence Bounds <https://www.weibull.com/hotwire/issue17/relbasics17.htm>`_
+- `Confidence Bounds <http://reliawiki.org/index.php/Confidence_Bounds>`_
+- `The Weibull Distribution <http://reliawiki.org/index.php/The_Weibull_Distribution#Bounds_on_Reliability_2>`_
