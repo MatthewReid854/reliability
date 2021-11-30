@@ -174,11 +174,11 @@ Applying this to :math:`u = \frac{1}{\beta}ln(-ln(R))+ln(\alpha)` gives:
                                        & + 2 \left(-\frac{1}{\beta^2} \right) \left(\frac{ln(-ln(R))}{\alpha} \right) \operatorname{Cov} \left(\alpha, \beta \right)
     \end{align}
 
-Since we made the substitution :math:`u = ln(T)`, we can obtain the upper and lower bounds on T using the reverse of this substitution:
+Since we made the substitution :math:`u = ln(T)`, we can obtain the upper and lower bounds on :math:`T` using the reverse of this substitution:
 
-:math:`T_U = {\rm e}^{u_U}`
+:math:`T_U = {\rm exp}(u_U)`
 
-:math:`T_L = {\rm e}^{u_L}`
+:math:`T_L = {\rm exp}(u_L)`
 
 The result we have produced will accept a value from the SF (a reliability between 0 and 1) and output the corresponding upper and lower times.
 It tells us that we can be 95% certain that the system reliability (R) will be reached somewhere between :math:`T_L` and :math:`T_U` (if CI=0.95).
@@ -213,9 +213,9 @@ This time we have a different formula for :math:`\operatorname{Var} \left(u \rig
 
 Once we have the full expression for :math:`u` we need to make the reverse substitution:
 
-:math:`R_U = {\rm e}^{-{\rm e}}^{u_U}`
+:math:`R_U = {\rm exp}\left(-{\rm exp}\left(u_U\right)\right)`
 
-:math:`R_L = {\rm e}^{-{\rm e}}^{u_L}`
+:math:`R_L = {\rm exp}\left(-{\rm exp}\left(u_L\right)\right)`
 
 The result we have produced will accept any time value (T) and will output the bounds on reliability (R) between 0 and 1 at that corresponding time.
 It tells us that we can be 95% certain that the reliability of the system lies between :math:`R_L` and :math:`R_U` (if CI=0.95) at the specified time.
@@ -251,7 +251,43 @@ In code (for bounds on time) it looks like this:
      t_lower = np.exp(v_lower)
      t_upper = np.exp(v_upper)
 
-There are several other intricacies to getting Python to do this correctly, such as where to incorporate :math:`\gamma` for location shifted distributions, how to distribute the points so they look smooth, how to correct for things (like reversals in the bounds) that are mathematically correct but practically (in the world of reliability engineering) incorrect, and how to correctly transform the bounds on the SF to get the bounds on the CDF or CHF.
+There are several other challenges to getting Python to do this correctly, such as where to incorporate :math:`\gamma` for location shifted distributions, how to distribute the points so they look smooth, how to correct for things (like reversals in the bounds) that are mathematically correct but practically (in the world of reliability engineering) incorrect, and how to correctly transform the bounds on the SF to get the bounds on the CDF or CHF.
+Some distributions (such as the Gamma Distribution) are particularly difficult and require a slightly different method to that which is explained above.
+
+How can I extract the confidence bounds from the plot
+-----------------------------------------------------
+
+For bounds on time, this can be done programatically using the percentiles option in the fitter like this:
+
+.. code:: python
+
+    from reliability.Fitters import Fit_Weibull_2P
+    import matplotlib.pyplot as plt
+    import numpy as np
+    
+    data = [43, 81, 41, 44, 52, 99, 64, 25, 41, 7]
+    q = np.array([0.2,0.3,0.4])
+    
+    fit = Fit_Weibull_2P(failures=data,show_probability_plot=False,print_results=False,CI=0.95,percentiles=q*100)
+    lower = fit.percentiles['Lower Estimate']
+    point = fit.percentiles['Point Estimate']
+    upper = fit.percentiles['Upper Estimate']
+
+    fit.distribution.CDF()
+    plt.scatter(point,q,color='darkorange')
+    plt.scatter(lower,q,color='blue')
+    plt.scatter(upper,q,color='red')
+    plt.show()
+
+.. image:: images/CI_example2.png
+
+For bounds on reliability, extracting the parameters programatically is not currently enabled. It will be part of a future release (likely in January 2021), and will be available directly from the plotting method (avoiding the complicated ways shown above).
+
+For bounds on either time or reliability, the ``Other_functions.crosshairs`` function provides an interactive set of crosshairs which can be used to find the values using the mouse.
+A demo of how this works is shown `here <https://reliability.readthedocs.io/en/latest/Crosshairs.html>`_.
+
+Further reading
+---------------
 
 More information and formulas are available in the following references from reliawiki:
 
