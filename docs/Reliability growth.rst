@@ -15,7 +15,7 @@ The function `Repairable_systems.reliability_growth` fits a model to the failure
 The two models available within `reliability` are the Duane model and the Crow-AMSAA model.
 
 In both the Duane and Crow-AMSAA models, the input is a list of failure times (actual times not interarrival times).
-The point estimate for the cumulative MTBF is calculated as :math:`\frac{{\rm failure time}}{{\rm failure number}}`.
+The point estimate for the cumulative MTBF is calculated as :math:`\frac{\textrm{failure times}}{\textrm{failure numbers}}`.
 This produces the scatter plot shown in the plots below.
 
 The smooth curve shows the model (Duane or Crow-AMSAA) that is fitted to the data. The forumlation of these models is explained below.
@@ -26,25 +26,25 @@ Duane model
 The algorithm to fit the model is as follows:
 
 1. accept an input of the failures times and sort the times in ascending order. Let the largest time be :math:`T`.
-2. create an array of failure numbers from 1 to n.
-3. calculate :math:`MTBF_{cumulative} = \frac{{\rm failure times}}{{\rm failure number}}`. This is the scatter points seen on the plot.
-4. Convert to log space: :math:`x = ln({\rm failure times})` and :math:`y = ln(MTBF_{cumulative})`
-5. fit a straight line (:math:`y=m.x+c`) to the data to get the model parameters.
+2. create an array of failure numbers from :math:`1` to :math:`n`.
+3. calculate :math:`MTBF_{cumulative} = \frac{\textrm{failure times}}{\textrm{failure numbers}}`. This is the scatter points seen on the plot.
+4. Convert to log space: :math:`x = ln(\textrm{failure times})` and :math:`y = ln(MTBF_{cumulative})`
+5. fit a straight line (:math:`y=m . x + c`) to the data to get the model parameters.
 6. extract the model parameters from the parameters of the straight line, such that :math:`\alpha = m` and :math:`b = exp(c)`
 
 This gives us the model parameters of :math:`b` and :math:`\alpha`. The formulas for the other reported values are:
 
-:math:`DMTBF_C = b \times (T^{\alpha})`. This is the demonstrated MTBF (cumulative) and is reported in the results as DMTBF_C.
+:math:`DMTBF_C = b.(T^{\alpha})`. This is the demonstrated MTBF (cumulative) and is reported in the results as DMTBF_C.
 
 :math:`DFI_C = \frac{1}{DMTBF_C}`. This is the demonstrated failure intensity (cumulative) and is reported in the results as DFI_C.
 
-:math:`DFI_I = (1 - \alpha) \times DFI_C`. This is the demonstrated failure intensity (instantaneous) and is reported in the results as DFI_I.
+:math:`DFI_I = DFI_C . (1 - \alpha)`. This is the demonstrated failure intensity (instantaneous) and is reported in the results as DFI_I.
 
 :math:`DMTBF_I = \frac{1}{DFI_I}`. This is the demonstrated MTBF (instantaneous) and is reported in the results as DMTBF_I.
 
 :math:`A = \frac{1}{b}`. This is reported in the results as A.
 
-The time to reach the target MTBF is calculated as :math:`t_{target} = \left( \frac{target_{MTBF}}{b} \right)^{\frac{1}{\alpha}}`
+The time to reach the target MTBF is calculated as :math:`t_{target} = \left( \frac{\textrm{target MTBF}}{b} \right)^{\frac{1}{\alpha}}`
 
 For more information see `reliawiki <http://reliawiki.org/index.php/Duane_Model>`_.
 
@@ -54,24 +54,24 @@ Crow-AMSAA model
 The algorithm to fit the model is as follows:
 
 1. accept an input of the failures times and sort the times in ascending order. Let the largest time be :math:`T`.
-2. create an array of failure numbers from 1 to n.
-3. calculate :math:`MTBF_{cumulative} = \frac{{\rm failure times}}{{\rm failure number}}`. This is the scatter points seen on the plot.
-4. calculate :math:`\beta = \frac{n}{n \times ln(T) - \sum ln({\rm failure times})}`
+2. create an array of failure numbers from :math:`1` to :math:`n`.
+3. calculate :math:`MTBF_{cumulative} = \frac{\textrm{failure times}}{\textrm{failure numbers}}`. This is the scatter points seen on the plot.
+4. calculate :math:`\beta = \frac{n}{n . ln(T) - \sum ln(\textrm{failure times})}`
 5. calculate :math:`\lambda = \frac{n}{T^{\beta}}`
 
 This gives us the model parameters :math:`\beta` and :math:`\lambda`. The formulas for the other reported values are:
 
 :math:`growth rate = 1 - \beta`. This is reported in the results as growth_rate.
 
-:math:`DMTBF_I = \frac{1}{\lambda \times \beta \times T^{\beta - 1}}`. This is the demonstrated MTBF (instantaneous) and is reported in the results as DMTBF_I.
+:math:`DMTBF_I = \frac{1}{\lambda . \beta . T^{\beta - 1}}`. This is the demonstrated MTBF (instantaneous) and is reported in the results as DMTBF_I.
 
 :math:`DFI_I = \frac{1}{DMTBF_I}`. This is the demonstrated failure intensity (instantaneous) and is reported in the results as DFI_I.
 
-:math:`DMTBF_C = \frac{1}{\lambda} \times T^{1 - \beta}`. This is the demonstrated MTBF (cumulative) and is reported in the results as DMTBF_C.
+:math:`DMTBF_C = \frac{T^{1 - \beta}}{\lambda}`. This is the demonstrated MTBF (cumulative) and is reported in the results as DMTBF_C.
 
 :math:`DFI_C = \frac{1}{DMTBF_C}`. This is the demonstrated failure intensity (cumulative) and is reported in the results as DFI_C.
 
-The time to reach the target MTBF is calculated as :math:`t_{target} = \left(\frac{1}{\lambda \times \target_{MTBF}} \right)^ \frac{1}{\beta - 1}`
+The time to reach the target MTBF is calculated as :math:`t_{target} = \left(\frac{1}{\lambda . \textrm{target_MTBF}} \right)^ \frac{1}{\beta - 1}`
 
 For more information see `reliawiki <http://reliawiki.org/index.php/Crow-AMSAA_(NHPP)>`_.
 
@@ -93,7 +93,7 @@ In this first example, we import a dataset and fit the Duane model. Log_scale is
     plt.show()
 
     '''
-    Duane Reliability growth model parameters:
+    Duane reliability growth model parameters:
     Alpha: 0.42531
     A: 0.57338
     Demonstrated MTBF (cumulative): 26.86511
@@ -121,7 +121,7 @@ Once again, the target MTBF of 35 is specified and the results tell us the time 
     plt.show()
 
     '''
-    Crow-AMSAA Reliability growth model parameters:
+    Crow-AMSAA reliability growth model parameters:
     Beta: 0.61421
     Lambda: 0.42394
     Growth rate: 0.38579
@@ -159,7 +159,7 @@ Depending on whether the last data point sits above or below the average will af
     plt.show()
 
     '''
-    Crow-AMSAA Reliability growth model parameters:
+    Crow-AMSAA reliability growth model parameters:
     Beta: 0.67922
     Lambda: 0.0033282
     Growth rate: 0.32078
@@ -169,7 +169,7 @@ Depending on whether the last data point sits above or below the average will af
     Demonstrated failure intensity (instantaneous): 5.1495e-05
     Time to reach target MTBF: 158830.62457
     
-    Duane Reliability growth model parameters:
+    Duane reliability growth model parameters:
     Alpha: 0.3148
     A: 0.0038522
     Demonstrated MTBF (cumulative): 10620.71841
