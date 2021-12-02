@@ -252,11 +252,12 @@ class reliability_growth:
             plt.legend()
 
             if log_scale is True:
-                xmin = 10 ** np.floor(np.log10(min(min(times),target_MTBF)))
                 ymin = 10 ** np.floor(np.log10(min(MTBF_c)))
                 if target_MTBF is not None:
+                    xmin = 10 ** np.floor(np.log10(min(min(times), target_MTBF)))
                     ymax = 10 ** np.ceil(np.log10(max(max(MTBF_c), target_MTBF) * 1.2))
                 else:
+                    xmin = 10 ** np.floor(np.log10(min(times)))
                     ymax = 10 ** np.ceil(np.log10(max(MTBF_c) * 1.2))
                 plt.xlim(xmin, xmax)
                 plt.ylim(ymin, ymax)
