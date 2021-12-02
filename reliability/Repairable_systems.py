@@ -84,8 +84,7 @@ class reliability_growth:
 
     Notes
     -----
-    For more information see http://reliawiki.org/index.php/Crow-AMSAA_(NHPP)
-    and http://reliawiki.org/index.php/Duane_Model
+    For more information see the `documentation <https://reliability.readthedocs.io/en/latest/Reliability%20growth.html>`_.
     """
 
     def __init__(
@@ -163,7 +162,7 @@ class reliability_growth:
         if print_results is True:
             if model == "Crow-AMSAA":
                 colorprint(
-                    "Crow-AMSAA Reliability growth model parameters:",
+                    "Crow-AMSAA reliability growth model parameters:",
                     bold=True,
                     underline=True,
                 )
@@ -172,7 +171,7 @@ class reliability_growth:
                 print("Growth rate:", round_to_decimals(self.growth_rate))
             else:  # Duane
                 colorprint(
-                    "Duane Reliability growth model parameters:",
+                    "Duane reliability growth model parameters:",
                     bold=True,
                     underline=True,
                 )

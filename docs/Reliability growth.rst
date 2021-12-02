@@ -34,7 +34,7 @@ The algorithm to fit the model is as follows:
 
 This gives us the model parameters of :math:`b` and :math:`\alpha`. The formulas for the other reported values are:
 
-:math:`DMTBF_C = b.(T^{\alpha})`. This is the demonstrated MTBF (cumulative) and is reported in the results as DMTBF_C.
+:math:`DMTBF_C = b.T^{\alpha}`. This is the demonstrated MTBF (cumulative) and is reported in the results as DMTBF_C.
 
 :math:`DFI_C = \frac{1}{DMTBF_C}`. This is the demonstrated failure intensity (cumulative) and is reported in the results as DFI_C.
 
@@ -71,7 +71,7 @@ This gives us the model parameters :math:`\beta` and :math:`\lambda`. The formul
 
 :math:`DFI_C = \frac{1}{DMTBF_C}`. This is the demonstrated failure intensity (cumulative) and is reported in the results as DFI_C.
 
-The time to reach the target MTBF is calculated as :math:`t_{target} = \left(\frac{1}{\lambda . \textrm{target_MTBF}} \right)^ \frac{1}{\beta - 1}`
+The time to reach the target MTBF is calculated as :math:`t_{target} = \left(\frac{1}{\lambda . (\textrm{target MTBF}}) \right)^ \frac{1}{\beta - 1}`
 
 For more information see `reliawiki <http://reliawiki.org/index.php/Crow-AMSAA_(NHPP)>`_.
 
@@ -82,7 +82,7 @@ For more information see `reliawiki <http://reliawiki.org/index.php/Crow-AMSAA_(
 Example 1
 """""""""
 
-In this first example, we import a dataset and fit the Duane model. Log_scale is set to True (which only affects the plot). The target MTBF is 35 which will give us the time to reach the target MTBF based on the model.
+In this first example, we import a dataset and fit the Duane model. For the plot log_scale is set to True. The target MTBF is 35 which will give us the time to reach the target MTBF based on the model.
 
 .. code:: python
 

@@ -16,3 +16,4 @@ During the process of writing *reliability* there have been many problems that I
 - `Karthick Mani <https://www.linkedin.com/in/manikarthick/>`_ for help implementing the Loglogistic and Gumbel Distributions including implementation of these distributions in Fitters and Probability_plotting.
 - Jake Sadie for identifying an error in the formula used for stress-strength interference of any two distributions. This error has been corrected in version 0.5.7.
 - Ed Burrows for x10 speed improvement to optimal_replacement_time by using numpy.vectorize.
+- Adam Gary for help incorporating the Crow-AMSAA model into the reliability_growth function.
