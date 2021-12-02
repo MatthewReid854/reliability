@@ -5,9 +5,9 @@
 How are the confidence intervals calculated
 '''''''''''''''''''''''''''''''''''''''''''
 
-There confidence intervals on the model parameters, and confidence intervals on the plots.
+There are confidence intervals on the model parameters, and confidence intervals on the plots. This document explains how both are calculated.
 The confidence intervals on the plots use the confidence intervals on the model parameters in the procedure that is explained in the second section of this document.
-Before reading this document, you should have a reasonable understanding of how `Maximum Likelihood Estimation (MLE) works <https://reliability.readthedocs.io/en/latest/How%20does%20Maximum%20Likelihood%20Estimation%20work.html>`_ and also understand what `partial derivatives <https://www.derivative-calculator.net/>`_ are.
+Before reading this document, you should have a reasonable understanding of how `Maximum Likelihood Estimation (MLE) works <https://reliability.readthedocs.io/en/latest/How%20does%20Maximum%20Likelihood%20Estimation%20work.html>`_ and also understand `what partial derivatives are <https://en.wikipedia.org/wiki/Partial_derivative>`_ and `how to calculate them <https://www.derivative-calculator.net/>`_.
 
 Confidence intervals on the parameters
 """"""""""""""""""""""""""""""""""""""
@@ -243,13 +243,13 @@ In code (for bounds on time) it looks like this:
             + 2 * dv_da(u, self.alpha, self.beta) * dv_db(u, self.alpha, self.beta) * self.Cov_alpha_beta
         )
 
-     # v is ln(t) and Y is reliability
-     v_lower = v(Y, self.alpha, self.beta) - Z * (var_v(self, Y) ** 0.5)
-     v_upper = v(Y, self.alpha, self.beta) + Z * (var_v(self, Y) ** 0.5)
+    # v is ln(t) and Y is reliability
+    v_lower = v(Y, self.alpha, self.beta) - Z * (var_v(self, Y) ** 0.5)
+    v_upper = v(Y, self.alpha, self.beta) + Z * (var_v(self, Y) ** 0.5)
 
-     # transform back from v = ln(t)
-     t_lower = np.exp(v_lower)
-     t_upper = np.exp(v_upper)
+    # transform back from v = ln(t)
+    t_lower = np.exp(v_lower)
+    t_upper = np.exp(v_upper)
 
 There are several other challenges to getting Python to do this correctly, such as where to incorporate :math:`\gamma` for location shifted distributions, how to distribute the points so they look smooth, how to correct for things (like reversals in the bounds) that are mathematically correct but practically (in the world of reliability engineering) incorrect, and how to correctly transform the bounds on the SF to get the bounds on the CDF or CHF.
 Some distributions (such as the Gamma Distribution) are particularly difficult and require a slightly different method to that which is explained above.
@@ -281,7 +281,7 @@ For bounds on time, this can be done programatically using the percentiles optio
 
 .. image:: images/CI_example2.png
 
-For bounds on reliability, extracting the parameters programatically is not currently enabled. It will be part of a future release (likely in January 2021), and will be available directly from the plotting method (avoiding the complicated ways shown above).
+For bounds on reliability, extracting the parameters programatically is not currently enabled. It will be part of a future release (likely in January 2021), and will be available directly from the plotting method (avoiding the complicated method shown above).
 
 For bounds on either time or reliability, the ``Other_functions.crosshairs`` function provides an interactive set of crosshairs which can be used to find the values using the mouse.
 A demo of how this works is shown `here <https://reliability.readthedocs.io/en/latest/Crosshairs.html>`_.

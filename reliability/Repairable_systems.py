@@ -1,8 +1,8 @@
 """
 Repairable systems
 
-reliability_growth - uses the Duane method to find the instantaneous MTBF and
-    produce a reliability growth plot.
+reliability_growth - Fits a reliability growth model to failure data using
+    either the Duane model or the Crow-AMSAA model.
 optimal_replacement_time - Calculates the cost model to determine how cost
     varies with replacement time. The cost model may be NHPP (as good as old)
     or HPP (as good as new).
@@ -22,122 +22,256 @@ import pandas as pd
 import scipy.stats as ss
 from scipy.optimize import curve_fit
 from reliability.Utils import colorprint, round_to_decimals
+from matplotlib.ticker import ScalarFormatter
 from matplotlib.axes import SubplotBase
 
 
 class reliability_growth:
     """
-    Uses the Duane method to find the instantaneous MTBF and produce a
-    reliability growth plot.
+    Fits a reliability growth model to failure data using either the Duane
+    model or the Crow-AMSAA model.
 
     Parameters
     ----------
     times : list, array
-        The failure times.
-    xmax : int, float, optional
-        The xlim to plot up to. Default is 1.5*max(times)
-    target_MTBF : int, float, optional
-        Specify the target MTBF to obtain the total time on test required to
-        reach it. Default = None
+        The failure times relative to an initial start time. These are actual
+        failure times measured from the start of the test NOT failure
+        interarrival times.
+    target_MTBF : float, int, optional
+        The target MTBF for the reliability growth curve. Default is None.
+    log_scale : bool, optional
+        Sets the x and y scales to log scales. Only used if show_plot is True.
     show_plot : bool, optional
-        If True the plot will be produced. Default is True.
+        Default is True. If True the plot will be generated. Use plt.show() to
+        show it.
+    model : str, optional
+        The model to use. Must be 'Duane' or 'Crow-AMSAA'. Default is 'Duane'.
     print_results : bool, optional
-        If True the results will be printed to console. Default = True.
+        Default is True. If True the results will be printed to the console.
     kwargs
-        Plotting keywords that are passed directly to matplotlib (e.g. color,
-        label, linestyle).
+        Other keyword arguments passed to matplotlib.
 
     Returns
     -------
     Lambda : float
-        The lambda parameter from the Duane model
+        The Lambda parameter from the Crow-AMSAA model. Only returned if
+        model='Crow-AMSAA'.
     Beta : float
-        The beta parameter from the Duane model
-    time_to_target : float
-        The time to reach the target is only returned if target_MTBF is
-        specified.
+        The Beta parameter from the Crow-AMSAA model. Only returned if
+        model='Crow-AMSAA'.
+    growth_rate : float
+        The growth rate of the Crow-AMSAA model. Growth rate = 1 - Beta.
+        Only returned if model='Crow-AMSAA'.
+    A : float
+        The A parameter from the Duane model. Only returned if model='Duane'.
+    Alpha : float
+        The Alpha parameter from the Duane model. Only returned if
+        model='Duane'.
+    DMTBF_C : float
+        The Demonstrated cumulative MTBF. The is the cumulative MTBF at the
+        final failure time.
+    DMTBF_I : float
+        The Demonstrated instantaneous MTBF. The is the instantaneous MTBF at
+        the final failure time.
+    DFI_C : float
+        The demonstrated cumulative failure intensity. This is 1/DMTBF_C.
+    DFI_I : float
+        The demonstrated instantaneous failure intensity. This is 1/DMTBF_I.
+    time_to_target : float, str
+        The time to reach target_MTBF. If target_MTBF is None then
+        time_to_target will be a str asking for the target_MTBF to be specified.
+        This uses the model for cumulative MTBF.
 
     Notes
     -----
-    If show_plot is True, the reliability growth plot will be produced. Use
-    plt.show() to show the plot.
+    For more information see http://reliawiki.org/index.php/Crow-AMSAA_(NHPP)
+    and http://reliawiki.org/index.php/Duane_Model
     """
 
     def __init__(
         self,
         times=None,
-        xmax=None,
         target_MTBF=None,
         show_plot=True,
         print_results=True,
+        log_scale=False,
+        model="Duane",
         **kwargs
     ):
-        if times is None:
-            raise ValueError("times must be an array or list of failure times")
-        if type(times) == list:
-            times = np.sort(np.array(times))
-        elif type(times) == np.ndarray:
-            times = np.sort(times)
+        if type(times) in [list, np.ndarray]:
+            times = np.sort(np.asarray(times))
         else:
             raise ValueError("times must be an array or list of failure times")
-        if min(times) < 0:
+
+        if min(times) <= 0:
             raise ValueError(
                 "failure times cannot be negative. times must be an array or list of failure times"
             )
-        if xmax is None:
-            xmax = int(max(times) * 1.5)
-        if "color" in kwargs:
-            c = kwargs.pop("color")
+        if type(model) is not str:
+            raise ValueError('model must be either "Duane" or "Crow-AMSAA".')
+        if model.upper() in ["DUANE", "D"]:
+            model = "Duane"
+        elif model.upper() in [
+            "CROW AMSAA",
+            "CROW-AMSAA",
+            "CROWAMSAA",
+            "CROW",
+            "AMSAA",
+            "CA",
+            "C",
+        ]:
+            model = "Crow-AMSAA"
         else:
-            c = "steelblue"
+            raise ValueError('method must be either "Duane" or "Crow-AMSAA".')
 
-        N = np.arange(1, len(times) + 1)
-        theta_c = times / N
-        ln_t = np.log(times)
-        ln_theta_c = np.log(theta_c)
-        z = np.polyfit(
-            ln_t, ln_theta_c, 1
-        )  # fit a straight line to the data to get the parameters lambda and beta
-        beta = 1 - z[0]
-        Lambda = np.exp(-z[1])
-        xvals = np.linspace(0, xmax, 1000)
-        theta_i = (xvals ** (1 - beta)) / (Lambda * beta)  # the smooth line
-        theta_i_points = (times ** (1 - beta)) / (
-            Lambda * beta
-        )  # the failure times highlighted along the line
-        self.Lambda = Lambda
-        self.Beta = beta
+        n = len(times)
+        max_time = max(times)
+        failure_numbers = np.array(range(1, n + 1))
+        MTBF_c = times / failure_numbers
 
-        if print_results is True:
-            colorprint(
-                "Reliability growth model parameters:", bold=True, underline=True
-            )
-            print("lambda:", Lambda)
-            print("beta:", beta)
+        if model == "Crow-AMSAA":
+            self.Beta = n / (n * np.log(max_time) - np.log(times).sum())
+            self.Lambda = n / (max_time ** self.Beta)
+            self.growth_rate = 1 - self.Beta
+            self.DMTBF_I = 1 / (self.Lambda * self.Beta * max_time ** (self.Beta - 1)) # Demonstrated MTBF (instantaneous). Reported by reliasoft
+            self.DFI_I = 1 / self.DMTBF_I # Demonstrated failure intensity (instantaneous). Reported by reliasoft
+            self.DMTBF_C = (1/self.Lambda)*max_time**(1-self.Beta) # Demonstrated failure intensity (cumulative)
+            self.DFI_C = 1/ self.DMTBF_C # Demonstrated MTBF (cumulative)
+        else:  # Duane
+            x = np.log(times)
+            y = np.log(MTBF_c)
+            # fit a straight line to the data to get the model parameters
+            z = np.polyfit(x, y, 1)
+            self.Alpha = z[0]
+            b = np.exp(z[1])
+            self.DMTBF_C = b * (max_time ** self.Alpha)  # Demonstrated MTBF (cumulative)
+            self.DFI_C = 1 / self.DMTBF_C  # Demonstrated failure intensity (cumulative)
+            self.DFI_I = (1 - self.Alpha) * self.DFI_C # Demonstrated failure intensity (instantaneous). Reported by reliasoft
+            self.DMTBF_I = 1 / self.DFI_I # Demonstrated MTBF (instantaneous). Reported by reliasoft
+            self.A = 1 / b
 
         if target_MTBF is not None:
-            t_target = (target_MTBF * Lambda * beta) ** (1 / (1 - beta))
+            if model == "Crow-AMSAA":
+                t_target = (1 / (self.Lambda * target_MTBF)) ** (1 / (self.Beta - 1))
+            else:  # Duane
+                t_target = (target_MTBF / b) ** (1 / self.Alpha)
             self.time_to_target = t_target
-            print("Time to reach target MTBF:", t_target)
         else:
-            self.time_to_target = "specify a target to obtain the time_to_target"
+            t_target = 0
+            self.time_to_target = "specify target_MTBF to obtain the time_to_target"
+
+        if print_results is True:
+            if model == "Crow-AMSAA":
+                colorprint(
+                    "Crow-AMSAA Reliability growth model parameters:",
+                    bold=True,
+                    underline=True,
+                )
+                print("Beta:", round_to_decimals(self.Beta))
+                print("Lambda:", round_to_decimals(self.Lambda))
+                print("Growth rate:", round_to_decimals(self.growth_rate))
+            else:  # Duane
+                colorprint(
+                    "Duane Reliability growth model parameters:",
+                    bold=True,
+                    underline=True,
+                )
+                print("Alpha:", round_to_decimals(self.Alpha))
+                print("A:", round_to_decimals(self.A))
+            print("Demonstrated MTBF (cumulative):", round_to_decimals(self.DMTBF_C))
+            print("Demonstrated MTBF (instantaneous):", round_to_decimals(self.DMTBF_I))
+            print("Demonstrated failure intensity (cumulative):", round_to_decimals(self.DFI_C))
+            print("Demonstrated failure intensity (instantaneous):", round_to_decimals(self.DFI_I))
+
+            if target_MTBF is not None:
+                print(
+                    "Time to reach target MTBF:", round_to_decimals(self.time_to_target)
+                )
+            print('') #blank line
 
         if show_plot is True:
-            plt.plot(xvals, theta_i, color=c, **kwargs)
-            plt.plot(times, theta_i_points, "o", color=c, alpha=0.5)
+            if log_scale is True:
+                xmax = 10 ** np.ceil(np.log10(max(max_time, t_target)))
+                x_array = np.geomspace(0.00001, xmax * 100, 1000)
+            else:
+                xmax = max(max_time, t_target) * 2
+                x_array = np.linspace(0, xmax, 1000)
+
+            if model == "Crow-AMSAA":
+                MTBF = 1 / (self.Lambda * x_array ** (self.Beta - 1))
+            else:  # Duane
+                MTBF = b * x_array ** self.Alpha
+
+            # kwargs handling
+            if "color" in kwargs:
+                c = kwargs.pop("color")
+            else:
+                c = "steelblue"
+            if "marker" in kwargs:
+                marker = kwargs.pop("marker")
+            else:
+                marker = "o"
+            if "label" in kwargs:
+                label = kwargs.pop("label")
+            else:
+                if model == "Crow-AMSAA":
+                    label = "Crow-AMSAA reliability growth curve"
+                else:
+                    label = "Duane reliability growth curve"
+
+            plt.plot(x_array, MTBF, color=c, label=label, **kwargs)
+            plt.scatter(times, MTBF_c, color="k", marker=marker)
+
             if target_MTBF is not None:
+                # this section checks if "Target MTBF" is already in the legend
+                # and if so it doesn't add it again. This is done since plotting
+                # Duane on top of Crow-AMSAA would create duplicates in the
+                # legend
+                leg = plt.gca().get_legend()
+                if leg is not None:
+                    target_plotted = False
+                    for item in leg.texts:
+                        if item._text == "Target MTBF":
+                            target_plotted = True
+                    if target_plotted is True:
+                        target_label = None
+                    else:
+                        target_label = "Target MTBF"
+                else:
+                    target_label = "Target MTBF"
+                # plot the red line tracing the target MTBF
                 plt.plot(
                     [0, t_target, t_target],
                     [target_MTBF, target_MTBF, 0],
-                    "red",
-                    label="Reliability target",
+                    color="red",
                     linewidth=1,
+                    label=target_label,
                 )
-            plt.title("Reliability Growth")
-            plt.xlabel("Total time on test")
-            plt.ylabel("Instantaneous MTBF")
-            plt.xlim([0, max(xvals)])
-            plt.ylim([0, max(theta_i) * 1.2])
+            plt.title("MTBF vs Time")
+            plt.xlabel("Time")
+            plt.ylabel("Cumulative MTBF")
+            plt.legend()
+
+            if log_scale is True:
+                xmin = 10 ** np.floor(np.log10(min(min(times),target_MTBF)))
+                ymin = 10 ** np.floor(np.log10(min(MTBF_c)))
+                if target_MTBF is not None:
+                    ymax = 10 ** np.ceil(np.log10(max(max(MTBF_c), target_MTBF) * 1.2))
+                else:
+                    ymax = 10 ** np.ceil(np.log10(max(MTBF_c) * 1.2))
+                plt.xlim(xmin, xmax)
+                plt.ylim(ymin, ymax)
+                plt.xscale("log")
+                plt.yscale("log")
+                plt.gca().xaxis.set_major_formatter(ScalarFormatter(useOffset=False))
+                plt.gca().yaxis.set_major_formatter(ScalarFormatter(useOffset=False))
+            else:
+                plt.xlim(0, xmax)
+                if target_MTBF is not None:
+                    plt.ylim(0, max(max(MTBF_c), target_MTBF) * 1.2)
+                else:
+                    plt.ylim(0, max(MTBF_c) * 1.2)
+            plt.tight_layout()
 
 
 class optimal_replacement_time:

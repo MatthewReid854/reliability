@@ -10,13 +10,16 @@ Changelog
 
 **Summary of changes**
 
-This will be writted closer to the release date.
+This will be written closer to the release date.
 
 **New features**
 
+-    New dataset called system_growth has been added to the Datasets module.
+-    Repairable_systems.reliability growth has been completely rewritten. This function now includes both the Duane and Crow-AMSAA reliability growth models. The parametrisation of the Duane model has been modified to match what reliasoft uses.
 
 **API Changes**
 
+-    Repairable_systems.reliability growth has been completely rewritten, so the inputs and outputs are completely different. The old version of the Duane model has been replaced without deprecation. Users needing to use the old version should use v0.7.1 of reliability.
 
 **Bug Fixes**
 
@@ -26,6 +29,8 @@ This will be writted closer to the release date.
 
 -    Improvements to the API documentation for Convert_data, Datasets, PoF, and Utils modules. This has been a long term body of work to reformat the documentation, and it is finally complete.
 -    The required version of matplotlib has been upgraded to 3.5.0 to enable the above bugfix for the computed_zorder in ALT life stress plots.
+-    Theory documents are finished for `censored data <https://reliability.readthedocs.io/en/latest/What%20is%20censored%20data.html>`_, `plotting positions <https://reliability.readthedocs.io/en/latest/How%20are%20the%20plotting%20positions%20calculated.html>`_, `Least Squares Estimation <https://reliability.readthedocs.io/en/latest/How%20does%20Least%20Squares%20Estimation%20work.html>`_, `Maximum Likelihood Estimation <https://reliability.readthedocs.io/en/latest/How%20does%20Maximum%20Likelihood%20Estimation%20work.html>`_, and `Confidence Intervals <https://reliability.readthedocs.io/en/latest/How%20are%20the%20confidence%20intervals%20calculated.html>`_.
+-    Updates pytests for new reliability_growth function.
 
 **Version: 0.7.1 --- Released: 26 Oct 2021**
 ''''''''''''''''''''''''''''''''''''''''''''

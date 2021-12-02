@@ -4,12 +4,29 @@ from numpy.testing import assert_allclose
 atol = 1e-8
 rtol = 1e-7
 
-def test_reliability_growth():
+def test_reliability_growth_duane():
     times = [10400, 26900, 43400, 66400, 89400, 130400, 163400, 232000, 242000, 340700]
-    rg = reliability_growth(times=times, target_MTBF=50000, print_results=False,show_plot=False)
-    assert_allclose(rg.Beta,0.6638280053477188,rtol=rtol,atol=atol)
-    assert_allclose(rg.Lambda, 0.002355878294089656, rtol=rtol, atol=atol)
-    assert_allclose(rg.time_to_target, 428131.18039448344, rtol=rtol, atol=atol)
+    rg_duane = reliability_growth(times=times, model='Duane', target_MTBF=50000, print_results=False,show_plot=False)
+    assert_allclose(rg_duane.A,0.002355878294089656,rtol=rtol,atol=atol)
+    assert_allclose(rg_duane.Alpha,0.33617199465228115,rtol=rtol,atol=atol)
+    assert_allclose(rg_duane.DMTBF_I,46304.175358824315,rtol=rtol,atol=atol)
+    assert_allclose(rg_duane.DMTBF_C,30738.008367719336,rtol=rtol,atol=atol)
+    assert_allclose(rg_duane.DFI_I,2.1596324570100073e-05,rtol=rtol,atol=atol)
+    assert_allclose(rg_duane.DFI_C,3.253301215996112e-05,rtol=rtol,atol=atol)
+    assert_allclose(rg_duane.time_to_target,1448446.368611323,rtol=rtol,atol=atol)
+
+
+def test_reliability_growth_crow_amsaa():
+    times = [10400, 26900, 43400, 66400, 89400, 130400, 163400, 232000, 242000, 340700]
+    rg_crow = reliability_growth(times=times, model='Crow-AMSAA', target_MTBF=50000, print_results=False,show_plot=False)
+    assert_allclose(rg_crow.Beta,0.741656619656656,rtol=rtol,atol=atol)
+    assert_allclose(rg_crow.Lambda,0.0007886414235385733,rtol=rtol,atol=atol)
+    assert_allclose(rg_crow.growth_rate,0.25834338034334403,rtol=rtol,atol=atol)
+    assert_allclose(rg_crow.DMTBF_I,45937.70094814556,rtol=rtol,atol=atol)
+    assert_allclose(rg_crow.DMTBF_C,34070.0,rtol=rtol,atol=atol)
+    assert_allclose(rg_crow.DFI_I,2.176861225878063e-05,rtol=rtol,atol=atol)
+    assert_allclose(rg_crow.DFI_C,2.9351335485764603e-05,rtol=rtol,atol=atol)
+    assert_allclose(rg_crow.time_to_target,1503979.9172547427,rtol=rtol,atol=atol)
 
 
 def test_optimal_replacement_time():

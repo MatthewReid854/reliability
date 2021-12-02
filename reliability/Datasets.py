@@ -114,6 +114,50 @@ class mileage:
         self.info = df
 
 
+class system_growth:
+    """
+    This dataset is contains 22 values with no right censoring.
+    The data is from a system that has an increasing MTBF.
+
+    Returns
+    -------
+    failures : list
+        The failure times
+    info : dataframe
+        Descriptive statistics about the dataset
+
+    Notes
+    -----
+    When importing the dataset, ensure it is called using the brackets after the
+    name. Example Usage:
+
+    .. code:: python
+
+        from reliability.Datasets import system_growth
+        from reliability.Fitters import Fit_Weibull_2P
+        Fit_Weibull_2P(failures=system_growth().failures)
+    """
+
+    def __init__(self):
+        self.failures = [2.7, 10.3, 12.5, 30.6, 57, 61.3, 80, 109.5, 125, 128.6, 143.8, 167.9, 229.2, 296.7, 320.6, 328.2, 366.2, 396.7, 421.1, 438.2, 501.2, 620]
+        rc = 0
+        f = len(self.failures)
+        tot = f + rc
+        data = {
+            "Stat": ["Name", "Total Values", "Failures", "Right Censored"],
+            "Value": [
+                "system_growth",
+                tot,
+                str(str(f) + " (" + str(round(f / tot * 100, 2)) + "%)"),
+                str(str(rc) + " (" + str(round(rc / tot * 100, 2)) + "%)"),
+            ],
+        }
+        df = pd.DataFrame(data, columns=["Stat", "Value"])
+        blankIndex = [""] * len(df)
+        df.index = blankIndex
+        self.info = df
+
+
 class defective_sample:
     """
     This dataset is heavily right censored with intermixed multiply censored
