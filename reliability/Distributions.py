@@ -43,6 +43,8 @@ from reliability.Utils import (
     zeroise_below_gamma,
     distribution_confidence_intervals,
     colorprint,
+    extract_CI,
+    distributions_input_checking,
 )
 
 dec = 4  # number of decimals to use when rounding descriptive statistics and parameter titles
@@ -226,9 +228,9 @@ class Weibull_Distribution:
         accepted.
         """
 
-        X = generate_X_array(
-            dist=self, xvals=xvals, xmin=xmin, xmax=xmax
-        )  # obtain the X array
+        X, xvals, xmin, xmax = distributions_input_checking(
+            self, "ALL", xvals, xmin, xmax
+        )
 
         pdf = ss.weibull_min.pdf(X, self.beta, scale=self.alpha, loc=self.gamma)
         cdf = ss.weibull_min.cdf(X, self.beta, scale=self.alpha, loc=self.gamma)
@@ -381,22 +383,13 @@ class Weibull_Distribution:
         created using these limits. If nothing is specified then the range will
         be based on the distribution's parameters.
         """
-        # obtain the X array
-        if (
-            xmin is None
-            and xmax is None
-            and type(xvals) not in [list, np.ndarray, type(None)]
-        ):
-            X = xvals
-            show_plot = False
-        else:
-            X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
+        X, xvals, xmin, xmax, show_plot = distributions_input_checking(
+            self, "PDF", xvals, xmin, xmax, show_plot
+        )
 
         pdf = ss.weibull_min.pdf(X, self.beta, scale=self.alpha, loc=self.gamma)
 
-        if show_plot == False:
-            return pdf
-        else:
+        if show_plot == True:
             limits = get_axes_limits()  # get the previous axes limits
 
             plt.plot(X, pdf, **kwargs)
@@ -422,22 +415,50 @@ class Weibull_Distribution:
                 xmax=xmax,
             )
 
-            return pdf
+        return pdf
 
-    def CDF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
+    def CDF(
+        self,
+        xvals=None,
+        xmin=None,
+        xmax=None,
+        show_plot=True,
+        plot_CI=True,
+        CI_type="time",
+        CI=0.95,
+        CI_y=None,
+        CI_x=None,
+        **kwargs
+    ):
         """
         Plots the CDF (cumulative distribution function)
 
         Parameters
         ----------
-        show_plot : bool, optional
-            True or False. Default = True
         xvals : array, list, optional
             x-values for plotting
         xmin : int, float, optional
             minimum x-value for plotting
         xmax : int, float, optional
             maximum x-value for plotting
+        show_plot : bool, optional
+            True or False. Default = True
+        plot_CI : bool, optional
+            True or False. Default = True. Only used if the distribution object
+            was created by Fitters.
+        CI_type : str, optional
+            Must be either "time" or "reliability". Default is "time". Only used
+            if the distribution object was created by Fitters.
+        CI : float, optional
+            The confidence interval between 0 and 1. Only used if the
+            distribution object was created by Fitters.
+        CI_y : list, array, optional
+            The confidence interval y-values to trace. Only used if the
+            distribution object was created by Fitters and CI_type='time'.
+        CI_x : list, array, optional
+            The confidence interval x-values to trace. Only used if the
+            distribution object was created by Fitters and
+            CI_type='reliability'.
         kwargs
             Plotting keywords that are passed directly to matplotlib
             (e.g. color, linestyle)
@@ -445,37 +466,44 @@ class Weibull_Distribution:
         Returns
         -------
         yvals : array
-            The y-values of the plot
-        The plot will be shown if show_plot is True (which it is by default).
+            The y-values of the plot. Only returned if CI_x and CI_y are not
+            specified.
+        lower_estimate, point_estimate, upper_estimate : tuple
+            A tuple of arrays of the confidence interval estimates based on CI_x
+            or CI_y. Only returned if CI_x or CI_y is specified and the
+            confidence intervals are available. If CI_x is specified, the point
+            estimate is the y-values from the distribution at CI_x. If CI_y is
+            specified, the point estimate is the x-values from the distribution
+            at CI_y.
 
         Notes
         -----
+        The plot will be shown if show_plot is True (which it is by default).
+
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
         created using these limits. If nothing is specified then the range will
         be based on the distribution's parameters.
         """
 
-        # obtain the X array
-        if (
-            xmin is None
-            and xmax is None
-            and type(xvals) not in [list, np.ndarray, type(None)]
-        ):
-            X = xvals
-            show_plot = False
-        else:
-            X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
+        (
+            X,
+            xvals,
+            xmin,
+            xmax,
+            show_plot,
+            plot_CI,
+            CI_type,
+            CI,
+            CI_y,
+            CI_x,
+        ) = distributions_input_checking(
+            self, "CDF", xvals, xmin, xmax, show_plot, plot_CI, CI_type, CI, CI_y, CI_x
+        )
 
         cdf = ss.weibull_min.cdf(X, self.beta, scale=self.alpha, loc=self.gamma)
 
-        if show_plot == False:
-            return cdf
-        else:
-            CI_type, plot_CI, CI = distribution_confidence_intervals.CI_kwarg_handler(
-                self, kwargs
-            )
-
+        if show_plot == True:
             limits = get_axes_limits()  # get the previous axes limits
 
             p = plt.plot(X, cdf, **kwargs)
@@ -511,22 +539,65 @@ class Weibull_Distribution:
                 color=p[0].get_color(),
             )
 
+        lower_CI, upper_CI = extract_CI(
+            dist=self, func="CDF", CI_type=CI_type, CI=CI, CI_y=CI_y, CI_x=CI_x
+        )
+        if lower_CI is not None and upper_CI is not None:
+            if CI_type == "time":
+                return lower_CI, self.quantile(CI_y), upper_CI
+            elif CI_type == "reliability":
+                return (
+                    lower_CI,
+                    ss.weibull_min.cdf(
+                        CI_x, self.beta, scale=self.alpha, loc=self.gamma
+                    ),
+                    upper_CI,
+                )
+        else:
             return cdf
 
-    def SF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
+    def SF(
+        self,
+        xvals=None,
+        xmin=None,
+        xmax=None,
+        show_plot=True,
+        plot_CI=True,
+        CI_type="time",
+        CI=0.95,
+        CI_y=None,
+        CI_x=None,
+        **kwargs
+    ):
         """
         Plots the SF (survival function)
 
         Parameters
         ----------
-        show_plot : bool, optional
-            True or False. Default = True
         xvals : array, list, optional
             x-values for plotting
         xmin : int, float, optional
             minimum x-value for plotting
         xmax : int, float, optional
             maximum x-value for plotting
+        show_plot : bool, optional
+            True or False. Default = True
+        plot_CI : bool, optional
+            True or False. Default = True. Only used if the distribution object
+            was created by Fitters.
+        CI_type : str, optional
+            Must be either "time" or "reliability". Default is "time". Only used
+            if the distribution object was created by Fitters.
+        CI : float, optional
+            The confidence interval between 0 and 1. Only used if the
+            distribution object was created by Fitters.
+        CI_y : list, array, optional
+            The confidence interval y-values to trace. Only used if the
+            distribution object was created by Fitters and CI_type='time'.
+        CI_x : list, array, optional
+            The confidence interval x-values to trace. Only used if the
+            distribution object was created by Fitters and
+            CI_type='reliability'.
         kwargs
             Plotting keywords that are passed directly to matplotlib
             (e.g. color, linestyle)
@@ -534,37 +605,44 @@ class Weibull_Distribution:
         Returns
         -------
         yvals : array
-            The y-values of the plot
-        The plot will be shown if show_plot is True (which it is by default).
+            The y-values of the plot. Only returned if CI_x and CI_y are not
+            specified.
+        lower_estimate, point_estimate, upper_estimate : tuple
+            A tuple of arrays of the confidence interval estimates based on CI_x
+            or CI_y. Only returned if CI_x or CI_y is specified and the
+            confidence intervals are available. If CI_x is specified, the point
+            estimate is the y-values from the distribution at CI_x. If CI_y is
+            specified, the point estimate is the x-values from the distribution
+            at CI_y.
 
         Notes
         -----
+        The plot will be shown if show_plot is True (which it is by default).
+
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
         created using these limits. If nothing is specified then the range will
         be based on the distribution's parameters.
         """
 
-        # obtain the X array
-        if (
-            xmin is None
-            and xmax is None
-            and type(xvals) not in [list, np.ndarray, type(None)]
-        ):
-            X = xvals
-            show_plot = False
-        else:
-            X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
+        (
+            X,
+            xvals,
+            xmin,
+            xmax,
+            show_plot,
+            plot_CI,
+            CI_type,
+            CI,
+            CI_y,
+            CI_x,
+        ) = distributions_input_checking(
+            self, "SF", xvals, xmin, xmax, show_plot, plot_CI, CI_type, CI, CI_y, CI_x
+        )
 
         sf = ss.weibull_min.sf(X, self.beta, scale=self.alpha, loc=self.gamma)
 
-        if show_plot == False:
-            return sf
-        else:
-            CI_type, plot_CI, CI = distribution_confidence_intervals.CI_kwarg_handler(
-                self, kwargs
-            )
-
+        if show_plot == True:
             limits = get_axes_limits()  # get the previous axes limits
 
             p = plt.plot(X, sf, **kwargs)
@@ -600,6 +678,21 @@ class Weibull_Distribution:
                 color=p[0].get_color(),
             )
 
+        lower_CI, upper_CI = extract_CI(
+            dist=self, func="SF", CI_type=CI_type, CI=CI, CI_y=CI_y, CI_x=CI_x
+        )
+        if lower_CI is not None and upper_CI is not None:
+            if CI_type == "time":
+                return lower_CI, self.inverse_SF(CI_y), upper_CI
+            elif CI_type == "reliability":
+                return (
+                    lower_CI,
+                    ss.weibull_min.sf(
+                        CI_x, self.beta, scale=self.alpha, loc=self.gamma
+                    ),
+                    upper_CI,
+                )
+        else:
             return sf
 
     def HF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
@@ -624,26 +717,20 @@ class Weibull_Distribution:
         -------
         yvals : array
             The y-values of the plot
-        The plot will be shown if show_plot is True (which it is by default).
 
         Notes
         -----
+        The plot will be shown if show_plot is True (which it is by default).
+
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
         created using these limits. If nothing is specified then the range will
         be based on the distribution's parameters.
         """
 
-        # obtain the X array
-        if (
-            xmin is None
-            and xmax is None
-            and type(xvals) not in [list, np.ndarray, type(None)]
-        ):
-            X = xvals
-            show_plot = False
-        else:
-            X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
+        X, xvals, xmin, xmax, show_plot = distributions_input_checking(
+            self, "HF", xvals, xmin, xmax, show_plot
+        )
 
         hf = (self.beta / self.alpha) * ((X - self.gamma) / self.alpha) ** (
             self.beta - 1
@@ -652,9 +739,7 @@ class Weibull_Distribution:
         self._hf = hf  # required by the CI plotting part
         self._X = X
 
-        if show_plot == False:
-            return hf
-        else:
+        if show_plot is True:
             limits = get_axes_limits()  # get the previous axes limits
 
             plt.plot(X, hf, **kwargs)
@@ -677,22 +762,50 @@ class Weibull_Distribution:
                 xmax=xmax,
             )
 
-            return hf
+        return hf
 
-    def CHF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
+    def CHF(
+        self,
+        xvals=None,
+        xmin=None,
+        xmax=None,
+        show_plot=True,
+        plot_CI=True,
+        CI_type="time",
+        CI=0.95,
+        CI_y=None,
+        CI_x=None,
+        **kwargs
+    ):
         """
         Plots the CHF (cumulative hazard function)
 
         Parameters
         ----------
-        show_plot : bool, optional
-            True or False. Default = True
         xvals : array, list, optional
             x-values for plotting
         xmin : int, float, optional
             minimum x-value for plotting
         xmax : int, float, optional
             maximum x-value for plotting
+        show_plot : bool, optional
+            True or False. Default = True
+        plot_CI : bool, optional
+            True or False. Default = True. Only used if the distribution object
+            was created by Fitters.
+        CI_type : str, optional
+            Must be either "time" or "reliability". Default is "time". Only used
+            if the distribution object was created by Fitters.
+        CI : float, optional
+            The confidence interval between 0 and 1. Only used if the
+            distribution object was created by Fitters.
+        CI_y : list, array, optional
+            The confidence interval y-values to trace. Only used if the
+            distribution object was created by Fitters and CI_type='time'.
+        CI_x : list, array, optional
+            The confidence interval x-values to trace. Only used if the
+            distribution object was created by Fitters and
+            CI_type='reliability'.
         kwargs
             Plotting keywords that are passed directly to matplotlib
             (e.g. color, linestyle)
@@ -700,40 +813,47 @@ class Weibull_Distribution:
         Returns
         -------
         yvals : array
-            The y-values of the plot
-        The plot will be shown if show_plot is True (which it is by default).
+            The y-values of the plot. Only returned if CI_x and CI_y are not
+            specified.
+        lower_estimate, point_estimate, upper_estimate : tuple
+            A tuple of arrays of the confidence interval estimates based on CI_x
+            or CI_y. Only returned if CI_x or CI_y is specified and the
+            confidence intervals are available. If CI_x is specified, the point
+            estimate is the y-values from the distribution at CI_x. If CI_y is
+            specified, the point estimate is the x-values from the distribution
+            at CI_y.
 
         Notes
         -----
+        The plot will be shown if show_plot is True (which it is by default).
+
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
         created using these limits. If nothing is specified then the range will
         be based on the distribution's parameters.
         """
 
-        # obtain the X array
-        if (
-            xmin is None
-            and xmax is None
-            and type(xvals) not in [list, np.ndarray, type(None)]
-        ):
-            X = xvals
-            show_plot = False
-        else:
-            X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
+        (
+            X,
+            xvals,
+            xmin,
+            xmax,
+            show_plot,
+            plot_CI,
+            CI_type,
+            CI,
+            CI_y,
+            CI_x,
+        ) = distributions_input_checking(
+            self, "CHF", xvals, xmin, xmax, show_plot, plot_CI, CI_type, CI, CI_y, CI_x
+        )
 
         chf = ((X - self.gamma) / self.alpha) ** self.beta
         chf = zeroise_below_gamma(X=X, Y=chf, gamma=self.gamma)
         self._chf = chf  # required by the CI plotting part
         self._X = X
 
-        if show_plot == False:
-            return chf
-        else:
-            CI_type, plot_CI, CI = distribution_confidence_intervals.CI_kwarg_handler(
-                self, kwargs
-            )
-
+        if show_plot == True:
             limits = get_axes_limits()  # get the previous axes limits
 
             p = plt.plot(X, chf, **kwargs)
@@ -769,6 +889,20 @@ class Weibull_Distribution:
                 color=p[0].get_color(),
             )
 
+        lower_CI, upper_CI = extract_CI(
+            dist=self, func="CHF", CI_type=CI_type, CI=CI, CI_y=CI_y, CI_x=CI_x
+        )
+        if lower_CI is not None and upper_CI is not None:
+            if CI_type == "time":
+                return lower_CI, self.inverse_SF(np.exp(-CI_y)), upper_CI
+            elif CI_type == "reliability":
+                chf_point = zeroise_below_gamma(
+                    X=CI_x,
+                    Y=((CI_x - self.gamma) / self.alpha) ** self.beta,
+                    gamma=self.gamma,
+                )
+                return lower_CI, chf_point, upper_CI
+        else:
             return chf
 
     def quantile(self, q):
@@ -777,7 +911,7 @@ class Weibull_Distribution:
 
         Parameters
         ----------
-        q : float
+        q : float, list, array
             Quantile to be calculated. Must be between 0 and 1.
 
         Returns
@@ -793,7 +927,7 @@ class Weibull_Distribution:
             if min(q) < 0 or max(q) > 1:
                 raise ValueError("Quantile must be between 0 and 1")
         else:
-            raise ValueError("Quantile must be of type int, float, list, array")
+            raise ValueError("Quantile must be of type float, list, array")
         return ss.weibull_min.ppf(q, self.beta, scale=self.alpha, loc=self.gamma)
 
     def inverse_SF(self, q):
@@ -802,7 +936,7 @@ class Weibull_Distribution:
 
         Parameters
         ----------
-        q : float
+        q : float, list, array
             Quantile to be calculated. Must be between 0 and 1.
 
         Returns
@@ -817,7 +951,7 @@ class Weibull_Distribution:
             if min(q) < 0 or max(q) > 1:
                 raise ValueError("Quantile must be between 0 and 1")
         else:
-            raise ValueError("Quantile must be of type int, float, list, array")
+            raise ValueError("Quantile must be of type float, list, array")
         return ss.weibull_min.isf(q, self.beta, scale=self.alpha, loc=self.gamma)
 
     def mean_residual_life(self, t):
@@ -1055,9 +1189,9 @@ class Normal_Distribution:
         be based on the distribution's parameters. No plotting keywords are
         accepted.
         """
-        X = generate_X_array(
-            dist=self, xvals=xvals, xmin=xmin, xmax=xmax
-        )  # obtain the X array
+        X, xvals, xmin, xmax = distributions_input_checking(
+            self, "ALL", xvals, xmin, xmax
+        )
 
         pdf = ss.norm.pdf(X, self.mu, self.sigma)
         cdf = ss.norm.cdf(X, self.mu, self.sigma)
@@ -1206,23 +1340,13 @@ class Normal_Distribution:
         created using these limits. If nothing is specified then the range will
         be based on the distribution's parameters.
         """
-        if (
-            xmin is None
-            and xmax is None
-            and type(xvals) not in [list, np.ndarray, type(None)]
-        ):
-            X = xvals
-            show_plot = False
-        else:
-            X = generate_X_array(
-                dist=self, xvals=xvals, xmin=xmin, xmax=xmax
-            )  # obtain the X array
+        X, xvals, xmin, xmax, show_plot = distributions_input_checking(
+            self, "PDF", xvals, xmin, xmax, show_plot
+        )
 
         pdf = ss.norm.pdf(X, self.mu, self.sigma)
 
-        if show_plot == False:
-            return pdf
-        else:
+        if show_plot == True:
             limits = get_axes_limits()  # get the previous axes limits
 
             plt.plot(X, pdf, **kwargs)
@@ -1248,9 +1372,21 @@ class Normal_Distribution:
                 xmax=xmax,
             )
 
-            return pdf
+        return pdf
 
-    def CDF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
+    def CDF(
+        self,
+        xvals=None,
+        xmin=None,
+        xmax=None,
+        show_plot=True,
+        plot_CI=True,
+        CI_type="time",
+        CI=0.95,
+        CI_y=None,
+        CI_x=None,
+        **kwargs
+    ):
         """
         Plots the CDF (cumulative distribution function)
 
@@ -1281,27 +1417,24 @@ class Normal_Distribution:
         created using these limits. If nothing is specified then the range will
         be based on the distribution's parameters.
         """
-        if (
-            xmin is None
-            and xmax is None
-            and type(xvals) not in [list, np.ndarray, type(None)]
-        ):
-            X = xvals
-            show_plot = False
-        else:
-            X = generate_X_array(
-                dist=self, xvals=xvals, xmin=xmin, xmax=xmax
-            )  # obtain the X array
+        (
+            X,
+            xvals,
+            xmin,
+            xmax,
+            show_plot,
+            plot_CI,
+            CI_type,
+            CI,
+            CI_y,
+            CI_x,
+        ) = distributions_input_checking(
+            self, "CDF", xvals, xmin, xmax, show_plot, plot_CI, CI_type, CI, CI_y, CI_x
+        )
 
         cdf = ss.norm.cdf(X, self.mu, self.sigma)
 
-        if show_plot == False:
-            return cdf
-        else:
-            CI_type, plot_CI, CI = distribution_confidence_intervals.CI_kwarg_handler(
-                self, kwargs
-            )
-
+        if show_plot == True:
             limits = get_axes_limits()  # get the previous axes limits
 
             p = plt.plot(X, cdf, **kwargs)
@@ -1337,9 +1470,30 @@ class Normal_Distribution:
                 xmax=xmax,
             )
 
+        lower_CI, upper_CI = extract_CI(
+            dist=self, func="CDF", CI_type=CI_type, CI=CI, CI_y=CI_y, CI_x=CI_x
+        )
+        if lower_CI is not None and upper_CI is not None:
+            if CI_type == "time":
+                return lower_CI, self.quantile(CI_y), upper_CI
+            elif CI_type == "reliability":
+                return lower_CI, ss.norm.cdf(CI_x, self.mu, self.sigma), upper_CI
+        else:
             return cdf
 
-    def SF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
+    def SF(
+        self,
+        xvals=None,
+        xmin=None,
+        xmax=None,
+        show_plot=True,
+        plot_CI=True,
+        CI_type="time",
+        CI=0.95,
+        CI_y=None,
+        CI_x=None,
+        **kwargs
+    ):
         """
         Plots the SF (survival function)
 
@@ -1370,27 +1524,24 @@ class Normal_Distribution:
         created using these limits. If nothing is specified then the range will
         be based on the distribution's parameters.
         """
-        if (
-            xmin is None
-            and xmax is None
-            and type(xvals) not in [list, np.ndarray, type(None)]
-        ):
-            X = xvals
-            show_plot = False
-        else:
-            X = generate_X_array(
-                dist=self, xvals=xvals, xmin=xmin, xmax=xmax
-            )  # obtain the X array
+        (
+            X,
+            xvals,
+            xmin,
+            xmax,
+            show_plot,
+            plot_CI,
+            CI_type,
+            CI,
+            CI_y,
+            CI_x,
+        ) = distributions_input_checking(
+            self, "SF", xvals, xmin, xmax, show_plot, plot_CI, CI_type, CI, CI_y, CI_x
+        )
 
         sf = ss.norm.sf(X, self.mu, self.sigma)
 
-        if show_plot == False:
-            return sf
-        else:
-            CI_type, plot_CI, CI = distribution_confidence_intervals.CI_kwarg_handler(
-                self, kwargs
-            )
-
+        if show_plot == True:
             limits = get_axes_limits()  # get the previous axes limits
 
             p = plt.plot(X, sf, **kwargs)
@@ -1426,6 +1577,15 @@ class Normal_Distribution:
                 xmax=xmax,
             )
 
+        lower_CI, upper_CI = extract_CI(
+            dist=self, func="SF", CI_type=CI_type, CI=CI, CI_y=CI_y, CI_x=CI_x
+        )
+        if lower_CI is not None and upper_CI is not None:
+            if CI_type == "time":
+                return lower_CI, self.inverse_SF(CI_y), upper_CI
+            elif CI_type == "reliability":
+                return lower_CI, ss.norm.sf(CI_x, self.mu, self.sigma), upper_CI
+        else:
             return sf
 
     def HF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
@@ -1459,23 +1619,13 @@ class Normal_Distribution:
         created using these limits. If nothing is specified then the range will
         be based on the distribution's parameters.
         """
-        if (
-            xmin is None
-            and xmax is None
-            and type(xvals) not in [list, np.ndarray, type(None)]
-        ):
-            X = xvals
-            show_plot = False
-        else:
-            X = generate_X_array(
-                dist=self, xvals=xvals, xmin=xmin, xmax=xmax
-            )  # obtain the X array
+        X, xvals, xmin, xmax, show_plot = distributions_input_checking(
+            self, "HF", xvals, xmin, xmax, show_plot
+        )
 
         hf = ss.norm.pdf(X, self.mu, self.sigma) / ss.norm.sf(X, self.mu, self.sigma)
 
-        if show_plot == False:
-            return hf
-        else:
+        if show_plot == True:
             limits = get_axes_limits()  # get the previous axes limits
 
             plt.plot(X, hf, **kwargs)
@@ -1498,9 +1648,21 @@ class Normal_Distribution:
                 xmax=xmax,
             )
 
-            return hf
+        return hf
 
-    def CHF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
+    def CHF(
+        self,
+        xvals=None,
+        xmin=None,
+        xmax=None,
+        show_plot=True,
+        plot_CI=True,
+        CI_type="time",
+        CI=0.95,
+        CI_y=None,
+        CI_x=None,
+        **kwargs
+    ):
         """
         Plots the CHF (cumulative hazard function)
 
@@ -1531,29 +1693,26 @@ class Normal_Distribution:
         created using these limits. If nothing is specified then the range will
         be based on the distribution's parameters.
         """
-        if (
-            xmin is None
-            and xmax is None
-            and type(xvals) not in [list, np.ndarray, type(None)]
-        ):
-            X = xvals
-            show_plot = False
-        else:
-            X = generate_X_array(
-                dist=self, xvals=xvals, xmin=xmin, xmax=xmax
-            )  # obtain the X array
+        (
+            X,
+            xvals,
+            xmin,
+            xmax,
+            show_plot,
+            plot_CI,
+            CI_type,
+            CI,
+            CI_y,
+            CI_x,
+        ) = distributions_input_checking(
+            self, "CHF", xvals, xmin, xmax, show_plot, plot_CI, CI_type, CI, CI_y, CI_x
+        )
 
         chf = -np.log(ss.norm.sf(X, self.mu, self.sigma))
         self._chf = chf  # required by the CI plotting part
         self._X = X
 
-        if show_plot == False:
-            return chf
-        else:
-            CI_type, plot_CI, CI = distribution_confidence_intervals.CI_kwarg_handler(
-                self, kwargs
-            )
-
+        if show_plot == True:
             limits = get_axes_limits()  # get the previous axes limits
 
             p = plt.plot(X, chf, **kwargs)
@@ -1589,6 +1748,19 @@ class Normal_Distribution:
                 xmax=xmax,
             )
 
+        lower_CI, upper_CI = extract_CI(
+            dist=self, func="CHF", CI_type=CI_type, CI=CI, CI_y=CI_y, CI_x=CI_x
+        )
+        if lower_CI is not None and upper_CI is not None:
+            if CI_type == "time":
+                return lower_CI, self.inverse_SF(np.exp(-CI_y)), upper_CI
+            elif CI_type == "reliability":
+                return (
+                    lower_CI,
+                    -np.log(ss.norm.sf(CI_x, self.mu, self.sigma)),
+                    upper_CI,
+                )
+        else:
             return chf
 
     def quantile(self, q):
@@ -1597,7 +1769,7 @@ class Normal_Distribution:
 
         Parameters
         ----------
-        q : float
+        q : float, list, array
             Quantile to be calculated. Must be between 0 and 1.
 
         Returns
@@ -1613,7 +1785,7 @@ class Normal_Distribution:
             if min(q) < 0 or max(q) > 1:
                 raise ValueError("Quantile must be between 0 and 1")
         else:
-            raise ValueError("Quantile must be of type int, float, list, array")
+            raise ValueError("Quantile must be of type float, list, array")
         return ss.norm.ppf(q, loc=self.mu, scale=self.sigma)
 
     def inverse_SF(self, q):
@@ -1622,7 +1794,7 @@ class Normal_Distribution:
 
         Parameters
         ----------
-        q : float
+        q : float, list, array
             Quantile to be calculated. Must be between 0 and 1.
 
         Returns
@@ -1637,7 +1809,7 @@ class Normal_Distribution:
             if min(q) < 0 or max(q) > 1:
                 raise ValueError("Quantile must be between 0 and 1")
         else:
-            raise ValueError("Quantile must be of type int, float, list, array")
+            raise ValueError("Quantile must be of type float, list, array")
         return ss.norm.isf(q, loc=self.mu, scale=self.sigma)
 
     def mean_residual_life(self, t):
@@ -1893,9 +2065,9 @@ class Lognormal_Distribution:
         be based on the distribution's parameters. No plotting keywords are
         accepted.
         """
-        X = generate_X_array(
-            dist=self, xvals=xvals, xmin=xmin, xmax=xmax
-        )  # obtain the X array
+        X, xvals, xmin, xmax = distributions_input_checking(
+            self, "ALL", xvals, xmin, xmax
+        )
 
         pdf = ss.lognorm.pdf(X, self.sigma, self.gamma, np.exp(self.mu))
         cdf = ss.lognorm.cdf(X, self.sigma, self.gamma, np.exp(self.mu))
@@ -2044,17 +2216,9 @@ class Lognormal_Distribution:
         created using these limits. If nothing is specified then the range will
         be based on the distribution's parameters.
         """
-        if (
-            xmin is None
-            and xmax is None
-            and type(xvals) not in [list, np.ndarray, type(None)]
-        ):
-            X = xvals
-            show_plot = False
-        else:
-            X = generate_X_array(
-                dist=self, xvals=xvals, xmin=xmin, xmax=xmax
-            )  # obtain the X array
+        X, xvals, xmin, xmax, show_plot = distributions_input_checking(
+            self, "PDF", xvals, xmin, xmax, show_plot
+        )
 
         pdf = ss.lognorm.pdf(X, self.sigma, self.gamma, np.exp(self.mu))
 
@@ -2088,7 +2252,19 @@ class Lognormal_Distribution:
 
             return pdf
 
-    def CDF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
+    def CDF(
+        self,
+        xvals=None,
+        xmin=None,
+        xmax=None,
+        show_plot=True,
+        plot_CI=True,
+        CI_type="time",
+        CI=0.95,
+        CI_y=None,
+        CI_x=None,
+        **kwargs
+    ):
         """
         Plots the CDF (cumulative distribution function)
 
@@ -2119,27 +2295,24 @@ class Lognormal_Distribution:
         created using these limits. If nothing is specified then the range will
         be based on the distribution's parameters.
         """
-        if (
-            xmin is None
-            and xmax is None
-            and type(xvals) not in [list, np.ndarray, type(None)]
-        ):
-            X = xvals
-            show_plot = False
-        else:
-            X = generate_X_array(
-                dist=self, xvals=xvals, xmin=xmin, xmax=xmax
-            )  # obtain the X array
+        (
+            X,
+            xvals,
+            xmin,
+            xmax,
+            show_plot,
+            plot_CI,
+            CI_type,
+            CI,
+            CI_y,
+            CI_x,
+        ) = distributions_input_checking(
+            self, "CDF", xvals, xmin, xmax, show_plot, plot_CI, CI_type, CI, CI_y, CI_x
+        )
 
         cdf = ss.lognorm.cdf(X, self.sigma, self.gamma, np.exp(self.mu))
 
-        if show_plot == False:
-            return cdf
-        else:
-            CI_type, plot_CI, CI = distribution_confidence_intervals.CI_kwarg_handler(
-                self, kwargs
-            )
-
+        if show_plot is True:
             limits = get_axes_limits()  # get the previous axes limits
 
             p = plt.plot(X, cdf, **kwargs)
@@ -2175,9 +2348,34 @@ class Lognormal_Distribution:
                 xmax=xmax,
             )
 
+        lower_CI, upper_CI = extract_CI(
+            dist=self, func="CDF", CI_type=CI_type, CI=CI, CI_y=CI_y, CI_x=CI_x
+        )
+        if lower_CI is not None and upper_CI is not None:
+            if CI_type == "time":
+                return lower_CI, self.quantile(CI_y), upper_CI
+            elif CI_type == "reliability":
+                return (
+                    lower_CI,
+                    ss.lognorm.cdf(CI_x, self.sigma, self.gamma, np.exp(self.mu)),
+                    upper_CI,
+                )
+        else:
             return cdf
 
-    def SF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
+    def SF(
+        self,
+        xvals=None,
+        xmin=None,
+        xmax=None,
+        show_plot=True,
+        plot_CI=True,
+        CI_type="time",
+        CI=0.95,
+        CI_y=None,
+        CI_x=None,
+        **kwargs
+    ):
         """
         Plots the SF (survival function)
 
@@ -2208,27 +2406,24 @@ class Lognormal_Distribution:
         created using these limits. If nothing is specified then the range will
         be based on the distribution's parameters.
         """
-        if (
-            xmin is None
-            and xmax is None
-            and type(xvals) not in [list, np.ndarray, type(None)]
-        ):
-            X = xvals
-            show_plot = False
-        else:
-            X = generate_X_array(
-                dist=self, xvals=xvals, xmin=xmin, xmax=xmax
-            )  # obtain the X array
+        (
+            X,
+            xvals,
+            xmin,
+            xmax,
+            show_plot,
+            plot_CI,
+            CI_type,
+            CI,
+            CI_y,
+            CI_x,
+        ) = distributions_input_checking(
+            self, "SF", xvals, xmin, xmax, show_plot, plot_CI, CI_type, CI, CI_y, CI_x
+        )
 
         sf = ss.lognorm.sf(X, self.sigma, self.gamma, np.exp(self.mu))
 
-        if show_plot == False:
-            return sf
-        else:
-            CI_type, plot_CI, CI = distribution_confidence_intervals.CI_kwarg_handler(
-                self, kwargs
-            )
-
+        if show_plot == True:
             limits = get_axes_limits()  # get the previous axes limits
 
             p = plt.plot(X, sf, **kwargs)
@@ -2264,6 +2459,19 @@ class Lognormal_Distribution:
                 xmax=xmax,
             )
 
+        lower_CI, upper_CI = extract_CI(
+            dist=self, func="SF", CI_type=CI_type, CI=CI, CI_y=CI_y, CI_x=CI_x
+        )
+        if lower_CI is not None and upper_CI is not None:
+            if CI_type == "time":
+                return lower_CI, self.inverse_SF(CI_y), upper_CI
+            elif CI_type == "reliability":
+                return (
+                    lower_CI,
+                    ss.lognorm.sf(CI_x, self.sigma, self.gamma, np.exp(self.mu)),
+                    upper_CI,
+                )
+        else:
             return sf
 
     def HF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
@@ -2297,17 +2505,9 @@ class Lognormal_Distribution:
         created using these limits. If nothing is specified then the range will
         be based on the distribution's parameters.
         """
-        if (
-            xmin is None
-            and xmax is None
-            and type(xvals) not in [list, np.ndarray, type(None)]
-        ):
-            X = xvals
-            show_plot = False
-        else:
-            X = generate_X_array(
-                dist=self, xvals=xvals, xmin=xmin, xmax=xmax
-            )  # obtain the X array
+        X, xvals, xmin, xmax, show_plot = distributions_input_checking(
+            self, "HF", xvals, xmin, xmax, show_plot
+        )
 
         hf = ss.lognorm.pdf(X, self.sigma, self.gamma, np.exp(self.mu)) / ss.lognorm.sf(
             X, self.sigma, self.gamma, np.exp(self.mu)
@@ -2343,7 +2543,19 @@ class Lognormal_Distribution:
 
             return hf
 
-    def CHF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
+    def CHF(
+        self,
+        xvals=None,
+        xmin=None,
+        xmax=None,
+        show_plot=True,
+        plot_CI=True,
+        CI_type="time",
+        CI=0.95,
+        CI_y=None,
+        CI_x=None,
+        **kwargs
+    ):
         """
         Plots the CHF (cumulative hazard function)
 
@@ -2374,29 +2586,26 @@ class Lognormal_Distribution:
         created using these limits. If nothing is specified then the range will
         be based on the distribution's parameters.
         """
-        if (
-            xmin is None
-            and xmax is None
-            and type(xvals) not in [list, np.ndarray, type(None)]
-        ):
-            X = xvals
-            show_plot = False
-        else:
-            X = generate_X_array(
-                dist=self, xvals=xvals, xmin=xmin, xmax=xmax
-            )  # obtain the X array
+        (
+            X,
+            xvals,
+            xmin,
+            xmax,
+            show_plot,
+            plot_CI,
+            CI_type,
+            CI,
+            CI_y,
+            CI_x,
+        ) = distributions_input_checking(
+            self, "CHF", xvals, xmin, xmax, show_plot, plot_CI, CI_type, CI, CI_y, CI_x
+        )
 
         chf = -np.log(ss.lognorm.sf(X, self.sigma, self.gamma, np.exp(self.mu)))
         self._chf = chf  # required by the CI plotting part
         self._X = X
 
-        if show_plot == False:
-            return chf
-        else:
-            CI_type, plot_CI, CI = distribution_confidence_intervals.CI_kwarg_handler(
-                self, kwargs
-            )
-
+        if show_plot == True:
             limits = get_axes_limits()  # get the previous axes limits
 
             p = plt.plot(X, chf, **kwargs)
@@ -2432,6 +2641,21 @@ class Lognormal_Distribution:
                 xmax=xmax,
             )
 
+        lower_CI, upper_CI = extract_CI(
+            dist=self, func="CHF", CI_type=CI_type, CI=CI, CI_y=CI_y, CI_x=CI_x
+        )
+        if lower_CI is not None and upper_CI is not None:
+            if CI_type == "time":
+                return lower_CI, self.inverse_SF(np.exp(-CI_y)), upper_CI
+            elif CI_type == "reliability":
+                return (
+                    lower_CI,
+                    -np.log(
+                        ss.lognorm.sf(CI_x, self.sigma, self.gamma, np.exp(self.mu))
+                    ),
+                    upper_CI,
+                )
+        else:
             return chf
 
     def quantile(self, q):
@@ -2440,7 +2664,7 @@ class Lognormal_Distribution:
 
         Parameters
         ----------
-        q : float
+        q : float, list, array
             Quantile to be calculated. Must be between 0 and 1.
 
         Returns
@@ -2456,7 +2680,7 @@ class Lognormal_Distribution:
             if min(q) < 0 or max(q) > 1:
                 raise ValueError("Quantile must be between 0 and 1")
         else:
-            raise ValueError("Quantile must be of type int, float, list, array")
+            raise ValueError("Quantile must be of type float, list, array")
         return ss.lognorm.ppf(q, self.sigma, self.gamma, np.exp(self.mu))
 
     def inverse_SF(self, q):
@@ -2465,7 +2689,7 @@ class Lognormal_Distribution:
 
         Parameters
         ----------
-        q : float
+        q : float, list, array
             Quantile to be calculated. Must be between 0 and 1.
 
         Returns
@@ -2480,7 +2704,7 @@ class Lognormal_Distribution:
             if min(q) < 0 or max(q) > 1:
                 raise ValueError("Quantile must be between 0 and 1")
         else:
-            raise ValueError("Quantile must be of type int, float, list, array")
+            raise ValueError("Quantile must be of type float, list, array")
         return ss.lognorm.isf(q, self.sigma, self.gamma, np.exp(self.mu))
 
     def mean_residual_life(self, t):
@@ -2724,9 +2948,9 @@ class Exponential_Distribution:
         accepted.
         """
 
-        X = generate_X_array(
-            dist=self, xvals=xvals, xmin=xmin, xmax=xmax
-        )  # obtain the X array
+        X, xvals, xmin, xmax = distributions_input_checking(
+            self, "ALL", xvals, xmin, xmax
+        )
 
         pdf = ss.expon.pdf(X, scale=1 / self.Lambda, loc=self.gamma)
         cdf = ss.expon.cdf(X, scale=1 / self.Lambda, loc=self.gamma)
@@ -2877,15 +3101,9 @@ class Exponential_Distribution:
         created using these limits. If nothing is specified then the range will
         be based on the distribution's parameters.
         """
-        if (
-            xmin is None
-            and xmax is None
-            and type(xvals) not in [list, np.ndarray, type(None)]
-        ):
-            X = xvals
-            show_plot = False
-        else:
-            X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
+        X, xvals, xmin, xmax, show_plot = distributions_input_checking(
+            self, "PDF", xvals, xmin, xmax, show_plot
+        )
 
         pdf = ss.expon.pdf(X, scale=1 / self.Lambda, loc=self.gamma)
 
@@ -2919,7 +3137,18 @@ class Exponential_Distribution:
 
             return pdf
 
-    def CDF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
+    def CDF(
+        self,
+        xvals=None,
+        xmin=None,
+        xmax=None,
+        show_plot=True,
+        plot_CI=True,
+        CI=0.95,
+        CI_y=None,
+        CI_x=None,
+        **kwargs
+    ):
         """
         Plots the CDF (cumulative distribution function)
 
@@ -2950,26 +3179,30 @@ class Exponential_Distribution:
         created using these limits. If nothing is specified then the range will
         be based on the distribution's parameters.
         """
-        # obtain the X array
-        if (
-            xmin is None
-            and xmax is None
-            and type(xvals) not in [list, np.ndarray, type(None)]
-        ):
-            X = xvals
-            show_plot = False
-        else:
-            X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
+        if "CI_type" in kwargs:
+            kwargs.pop("CI_type")
+            colorprint(
+                "WARNING: CI_type is not required for the Exponential Distribution since bounds on time and bounds on reliability are identical.",
+                text_color="red",
+            )
+        (
+            X,
+            xvals,
+            xmin,
+            xmax,
+            show_plot,
+            plot_CI,
+            _,
+            CI,
+            CI_y,
+            CI_x,
+        ) = distributions_input_checking(
+            self, "CDF", xvals, xmin, xmax, show_plot, plot_CI, None, CI, CI_y, CI_x
+        )
 
         cdf = ss.expon.cdf(X, scale=1 / self.Lambda, loc=self.gamma)
 
-        if show_plot == False:
-            return cdf
-        else:
-            _, plot_CI, CI = distribution_confidence_intervals.CI_kwarg_handler(
-                self, kwargs
-            )
-
+        if show_plot == True:
             limits = get_axes_limits()
 
             p = plt.plot(X, cdf, **kwargs)
@@ -3004,9 +3237,33 @@ class Exponential_Distribution:
                 color=p[0].get_color(),
             )
 
+        lower_CI, upper_CI = extract_CI(
+            dist=self, func="CDF", CI=CI, CI_y=CI_y, CI_x=CI_x
+        )
+        if lower_CI is not None and upper_CI is not None:
+            if CI_y is not None:
+                return lower_CI, self.quantile(CI_y), upper_CI
+            elif CI_x is not None:
+                return (
+                    lower_CI,
+                    ss.expon.cdf(CI_x, scale=1 / self.Lambda, loc=self.gamma),
+                    upper_CI,
+                )
+        else:
             return cdf
 
-    def SF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
+    def SF(
+        self,
+        xvals=None,
+        xmin=None,
+        xmax=None,
+        show_plot=True,
+        plot_CI=True,
+        CI=0.95,
+        CI_y=None,
+        CI_x=None,
+        **kwargs
+    ):
         """
         Plots the SF (survival function)
 
@@ -3037,25 +3294,30 @@ class Exponential_Distribution:
         created using these limits. If nothing is specified then the range will
         be based on the distribution's parameters.
         """
-        # obtain the X array
-        if (
-            xmin is None
-            and xmax is None
-            and type(xvals) not in [list, np.ndarray, type(None)]
-        ):
-            X = xvals
-            show_plot = False
-        else:
-            X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
+        if "CI_type" in kwargs:
+            kwargs.pop("CI_type")
+            colorprint(
+                "WARNING: CI_type is not required for the Exponential Distribution since bounds on time and bounds on reliability are identical.",
+                text_color="red",
+            )
+        (
+            X,
+            xvals,
+            xmin,
+            xmax,
+            show_plot,
+            plot_CI,
+            _,
+            CI,
+            CI_y,
+            CI_x,
+        ) = distributions_input_checking(
+            self, "SF", xvals, xmin, xmax, show_plot, plot_CI, None, CI, CI_y, CI_x
+        )
 
         sf = ss.expon.sf(X, scale=1 / self.Lambda, loc=self.gamma)
-        if show_plot == False:
-            return sf
-        else:
-            _, plot_CI, CI = distribution_confidence_intervals.CI_kwarg_handler(
-                self, kwargs
-            )
 
+        if show_plot == True:
             limits = get_axes_limits()
 
             p = plt.plot(X, sf, **kwargs)
@@ -3090,6 +3352,19 @@ class Exponential_Distribution:
                 color=p[0].get_color(),
             )
 
+        lower_CI, upper_CI = extract_CI(
+            dist=self, func="SF", CI=CI, CI_y=CI_y, CI_x=CI_x
+        )
+        if lower_CI is not None and upper_CI is not None:
+            if CI_y is not None:
+                return lower_CI, self.inverse_SF(CI_y), upper_CI
+            elif CI_x is not None:
+                return (
+                    lower_CI,
+                    ss.expon.sf(CI_x, scale=1 / self.Lambda, loc=self.gamma),
+                    upper_CI,
+                )
+        else:
             return sf
 
     def HF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
@@ -3123,16 +3398,9 @@ class Exponential_Distribution:
         created using these limits. If nothing is specified then the range will
         be based on the distribution's parameters.
         """
-        # obtain the X array
-        if (
-            xmin is None
-            and xmax is None
-            and type(xvals) not in [list, np.ndarray, type(None)]
-        ):
-            X = xvals
-            show_plot = False
-        else:
-            X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
+        X, xvals, xmin, xmax, show_plot = distributions_input_checking(
+            self, "HF", xvals, xmin, xmax, show_plot
+        )
 
         hf = np.ones_like(X) * self.Lambda
         hf = zeroise_below_gamma(X=X, Y=hf, gamma=self.gamma)
@@ -3167,7 +3435,18 @@ class Exponential_Distribution:
 
             return hf
 
-    def CHF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
+    def CHF(
+        self,
+        xvals=None,
+        xmin=None,
+        xmax=None,
+        show_plot=True,
+        plot_CI=True,
+        CI=0.95,
+        CI_y=None,
+        CI_x=None,
+        **kwargs
+    ):
         """
         Plots the CHF (cumulative hazard function)
 
@@ -3198,28 +3477,31 @@ class Exponential_Distribution:
         created using these limits. If nothing is specified then the range will
         be based on the distribution's parameters.
         """
-
-        # obtain the X array
-        if (
-            xmin is None
-            and xmax is None
-            and type(xvals) not in [list, np.ndarray, type(None)]
-        ):
-            X = xvals
-            show_plot = False
-        else:
-            X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
+        if "CI_type" in kwargs:
+            kwargs.pop("CI_type")
+            colorprint(
+                "WARNING: CI_type is not required for the Exponential Distribution since bounds on time and bounds on reliability are identical.",
+                text_color="red",
+            )
+        (
+            X,
+            xvals,
+            xmin,
+            xmax,
+            show_plot,
+            plot_CI,
+            _,
+            CI,
+            CI_y,
+            CI_x,
+        ) = distributions_input_checking(
+            self, "CHF", xvals, xmin, xmax, show_plot, plot_CI, None, CI, CI_y, CI_x
+        )
 
         chf = (X - self.gamma) * self.Lambda
         chf = zeroise_below_gamma(X=X, Y=chf, gamma=self.gamma)
 
-        if show_plot == False:
-            return chf
-        else:
-            _, plot_CI, CI = distribution_confidence_intervals.CI_kwarg_handler(
-                self, kwargs
-            )
-
+        if show_plot == True:
             limits = get_axes_limits()
 
             p = plt.plot(X, chf, **kwargs)
@@ -3254,6 +3536,18 @@ class Exponential_Distribution:
                 color=p[0].get_color(),
             )
 
+        lower_CI, upper_CI = extract_CI(
+            dist=self, func="CHF", CI=CI, CI_y=CI_y, CI_x=CI_x
+        )
+        if lower_CI is not None and upper_CI is not None:
+            if CI_y is not None:
+                return lower_CI, self.inverse_SF(np.exp(-CI_y)), upper_CI
+            elif CI_x is not None:
+                chf_point = zeroise_below_gamma(
+                    X=CI_x, Y=(CI_x - self.gamma) * self.Lambda, gamma=self.gamma
+                )
+                return lower_CI, chf_point, upper_CI
+        else:
             return chf
 
     def quantile(self, q):
@@ -3262,7 +3556,7 @@ class Exponential_Distribution:
 
         Parameters
         ----------
-        q : float
+        q : float, list, array
             Quantile to be calculated. Must be between 0 and 1.
 
         Returns
@@ -3278,7 +3572,7 @@ class Exponential_Distribution:
             if min(q) < 0 or max(q) > 1:
                 raise ValueError("Quantile must be between 0 and 1")
         else:
-            raise ValueError("Quantile must be of type int, float, list, array")
+            raise ValueError("Quantile must be of type float, list, array")
         return ss.expon.ppf(q, scale=1 / self.Lambda, loc=self.gamma)
 
     def inverse_SF(self, q):
@@ -3287,7 +3581,7 @@ class Exponential_Distribution:
 
         Parameters
         ----------
-        q : float
+        q : float, list, array
             Quantile to be calculated. Must be between 0 and 1.
 
         Returns
@@ -3302,7 +3596,7 @@ class Exponential_Distribution:
             if min(q) < 0 or max(q) > 1:
                 raise ValueError("Quantile must be between 0 and 1")
         else:
-            raise ValueError("Quantile must be of type int, float, list, array")
+            raise ValueError("Quantile must be of type float, list, array")
         return ss.expon.isf(q, scale=1 / self.Lambda, loc=self.gamma)
 
     def mean_residual_life(self, t):
@@ -3583,9 +3877,9 @@ class Gamma_Distribution:
         be based on the distribution's parameters. No plotting keywords are
         accepted.
         """
-        X = generate_X_array(
-            dist=self, xvals=xvals, xmin=xmin, xmax=xmax
-        )  # obtain the X array
+        X, xvals, xmin, xmax = distributions_input_checking(
+            self, "ALL", xvals, xmin, xmax
+        )
 
         pdf = ss.gamma.pdf(X, self.beta, scale=self.alpha, loc=self.gamma)
         cdf = ss.gamma.cdf(X, self.beta, scale=self.alpha, loc=self.gamma)
@@ -3734,17 +4028,9 @@ class Gamma_Distribution:
         created using these limits. If nothing is specified then the range will
         be based on the distribution's parameters.
         """
-        if (
-            xmin is None
-            and xmax is None
-            and type(xvals) not in [list, np.ndarray, type(None)]
-        ):
-            X = xvals
-            show_plot = False
-        else:
-            X = generate_X_array(
-                dist=self, xvals=xvals, xmin=xmin, xmax=xmax
-            )  # obtain the X array
+        X, xvals, xmin, xmax, show_plot = distributions_input_checking(
+            self, "PDF", xvals, xmin, xmax, show_plot
+        )
 
         pdf = ss.gamma.pdf(X, self.beta, scale=self.alpha, loc=self.gamma)
 
@@ -3778,7 +4064,19 @@ class Gamma_Distribution:
 
             return pdf
 
-    def CDF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
+    def CDF(
+        self,
+        xvals=None,
+        xmin=None,
+        xmax=None,
+        show_plot=True,
+        plot_CI=True,
+        CI_type="time",
+        CI=0.95,
+        CI_y=None,
+        CI_x=None,
+        **kwargs
+    ):
         """
         Plots the CDF (cumulative distribution function)
 
@@ -3809,27 +4107,24 @@ class Gamma_Distribution:
         created using these limits. If nothing is specified then the range will
         be based on the distribution's parameters.
         """
-        if (
-            xmin is None
-            and xmax is None
-            and type(xvals) not in [list, np.ndarray, type(None)]
-        ):
-            X = xvals
-            show_plot = False
-        else:
-            X = generate_X_array(
-                dist=self, xvals=xvals, xmin=xmin, xmax=xmax
-            )  # obtain the X array
+        (
+            X,
+            xvals,
+            xmin,
+            xmax,
+            show_plot,
+            plot_CI,
+            CI_type,
+            CI,
+            CI_y,
+            CI_x,
+        ) = distributions_input_checking(
+            self, "CDF", xvals, xmin, xmax, show_plot, plot_CI, CI_type, CI, CI_y, CI_x
+        )
 
         cdf = ss.gamma.cdf(X, self.beta, scale=self.alpha, loc=self.gamma)
 
-        if show_plot == False:
-            return cdf
-        else:
-            CI_type, plot_CI, CI = distribution_confidence_intervals.CI_kwarg_handler(
-                self, kwargs
-            )
-
+        if show_plot == True:
             limits = get_axes_limits()
 
             p = plt.plot(X, cdf, **kwargs)
@@ -3865,9 +4160,34 @@ class Gamma_Distribution:
                 color=p[0].get_color(),
             )
 
+        lower_CI, upper_CI = extract_CI(
+            dist=self, func="CDF", CI_type=CI_type, CI=CI, CI_y=CI_y, CI_x=CI_x
+        )
+        if lower_CI is not None and upper_CI is not None:
+            if CI_type == "time":
+                return lower_CI, self.quantile(CI_y), upper_CI
+            elif CI_type == "reliability":
+                return (
+                    lower_CI,
+                    ss.gamma.cdf(CI_x, self.beta, scale=self.alpha, loc=self.gamma),
+                    upper_CI,
+                )
+        else:
             return cdf
 
-    def SF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
+    def SF(
+        self,
+        xvals=None,
+        xmin=None,
+        xmax=None,
+        show_plot=True,
+        plot_CI=True,
+        CI_type="time",
+        CI=0.95,
+        CI_y=None,
+        CI_x=None,
+        **kwargs
+    ):
         """
         Plots the SF (survival function)
 
@@ -3898,27 +4218,24 @@ class Gamma_Distribution:
         created using these limits. If nothing is specified then the range will
         be based on the distribution's parameters.
         """
-        if (
-            xmin is None
-            and xmax is None
-            and type(xvals) not in [list, np.ndarray, type(None)]
-        ):
-            X = xvals
-            show_plot = False
-        else:
-            X = generate_X_array(
-                dist=self, xvals=xvals, xmin=xmin, xmax=xmax
-            )  # obtain the X array
+        (
+            X,
+            xvals,
+            xmin,
+            xmax,
+            show_plot,
+            plot_CI,
+            CI_type,
+            CI,
+            CI_y,
+            CI_x,
+        ) = distributions_input_checking(
+            self, "SF", xvals, xmin, xmax, show_plot, plot_CI, CI_type, CI, CI_y, CI_x
+        )
 
         sf = ss.gamma.sf(X, self.beta, scale=self.alpha, loc=self.gamma)
 
-        if show_plot == False:
-            return sf
-        else:
-            CI_type, plot_CI, CI = distribution_confidence_intervals.CI_kwarg_handler(
-                self, kwargs
-            )
-
+        if show_plot == True:
             limits = get_axes_limits()
 
             p = plt.plot(X, sf, **kwargs)
@@ -3951,6 +4268,19 @@ class Gamma_Distribution:
                 color=p[0].get_color(),
             )
 
+        lower_CI, upper_CI = extract_CI(
+            dist=self, func="SF", CI_type=CI_type, CI=CI, CI_y=CI_y, CI_x=CI_x
+        )
+        if lower_CI is not None and upper_CI is not None:
+            if CI_type == "time":
+                return lower_CI, self.inverse_SF(CI_y), upper_CI
+            elif CI_type == "reliability":
+                return (
+                    lower_CI,
+                    ss.gamma.sf(CI_x, self.beta, scale=self.alpha, loc=self.gamma),
+                    upper_CI,
+                )
+        else:
             return sf
 
     def HF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
@@ -3984,17 +4314,9 @@ class Gamma_Distribution:
         created using these limits. If nothing is specified then the range will
         be based on the distribution's parameters.
         """
-        if (
-            xmin is None
-            and xmax is None
-            and type(xvals) not in [list, np.ndarray, type(None)]
-        ):
-            X = xvals
-            show_plot = False
-        else:
-            X = generate_X_array(
-                dist=self, xvals=xvals, xmin=xmin, xmax=xmax
-            )  # obtain the X array
+        X, xvals, xmin, xmax, show_plot = distributions_input_checking(
+            self, "HF", xvals, xmin, xmax, show_plot
+        )
 
         hf = ss.gamma.pdf(X, self.beta, scale=self.alpha, loc=self.gamma) / ss.gamma.sf(
             X, self.beta, scale=self.alpha, loc=self.gamma
@@ -4027,7 +4349,19 @@ class Gamma_Distribution:
 
             return hf
 
-    def CHF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
+    def CHF(
+        self,
+        xvals=None,
+        xmin=None,
+        xmax=None,
+        show_plot=True,
+        plot_CI=True,
+        CI_type="time",
+        CI=0.95,
+        CI_y=None,
+        CI_x=None,
+        **kwargs
+    ):
         """
         Plots the CHF (cumulative hazard function)
 
@@ -4058,29 +4392,26 @@ class Gamma_Distribution:
         created using these limits. If nothing is specified then the range will
         be based on the distribution's parameters.
         """
-        if (
-            xmin is None
-            and xmax is None
-            and type(xvals) not in [list, np.ndarray, type(None)]
-        ):
-            X = xvals
-            show_plot = False
-        else:
-            X = generate_X_array(
-                dist=self, xvals=xvals, xmin=xmin, xmax=xmax
-            )  # obtain the X array
+        (
+            X,
+            xvals,
+            xmin,
+            xmax,
+            show_plot,
+            plot_CI,
+            CI_type,
+            CI,
+            CI_y,
+            CI_x,
+        ) = distributions_input_checking(
+            self, "CHF", xvals, xmin, xmax, show_plot, plot_CI, CI_type, CI, CI_y, CI_x
+        )
 
         chf = -np.log(ss.gamma.sf(X, self.beta, scale=self.alpha, loc=self.gamma))
         self._chf = chf  # required by the CI plotting part
         self._X = X
 
-        if show_plot == False:
-            return chf
-        else:
-            CI_type, plot_CI, CI = distribution_confidence_intervals.CI_kwarg_handler(
-                self, kwargs
-            )
-
+        if show_plot == True:
             limits = get_axes_limits()
 
             p = plt.plot(X, chf, **kwargs)
@@ -4116,6 +4447,21 @@ class Gamma_Distribution:
                 color=p[0].get_color(),
             )
 
+        lower_CI, upper_CI = extract_CI(
+            dist=self, func="CHF", CI_type=CI_type, CI=CI, CI_y=CI_y, CI_x=CI_x
+        )
+        if lower_CI is not None and upper_CI is not None:
+            if CI_type == "time":
+                return lower_CI, self.inverse_SF(np.exp(-CI_y)), upper_CI
+            elif CI_type == "reliability":
+                return (
+                    lower_CI,
+                    -np.log(
+                        ss.gamma.sf(CI_x, self.beta, scale=self.alpha, loc=self.gamma)
+                    ),
+                    upper_CI,
+                )
+        else:
             return chf
 
     def quantile(self, q):
@@ -4124,7 +4470,7 @@ class Gamma_Distribution:
 
         Parameters
         ----------
-        q : float
+        q : float, list, array
             Quantile to be calculated. Must be between 0 and 1.
 
         Returns
@@ -4140,7 +4486,7 @@ class Gamma_Distribution:
             if min(q) < 0 or max(q) > 1:
                 raise ValueError("Quantile must be between 0 and 1")
         else:
-            raise ValueError("Quantile must be of type int, float, list, array")
+            raise ValueError("Quantile must be of type float, list, array")
         return ss.gamma.ppf(q, self.beta, scale=self.alpha, loc=self.gamma)
 
     def inverse_SF(self, q):
@@ -4149,7 +4495,7 @@ class Gamma_Distribution:
 
         Parameters
         ----------
-        q : float
+        q : float, list, array
             Quantile to be calculated. Must be between 0 and 1.
 
         Returns
@@ -4164,7 +4510,7 @@ class Gamma_Distribution:
             if min(q) < 0 or max(q) > 1:
                 raise ValueError("Quantile must be between 0 and 1")
         else:
-            raise ValueError("Quantile must be of type int, float, list, array")
+            raise ValueError("Quantile must be of type float, list, array")
         return ss.gamma.isf(q, self.beta, scale=self.alpha, loc=self.gamma)
 
     def mean_residual_life(self, t):
@@ -4381,9 +4727,9 @@ class Beta_Distribution:
         be based on the distribution's parameters. No plotting keywords are
         accepted.
         """
-        X = generate_X_array(
-            dist=self, xvals=xvals, xmin=xmin, xmax=xmax
-        )  # obtain the X array
+        X, xvals, xmin, xmax = distributions_input_checking(
+            self, "ALL", xvals, xmin, xmax
+        )
 
         pdf = ss.beta.pdf(X, self.alpha, self.beta, 0, 1)
         cdf = ss.beta.cdf(X, self.alpha, self.beta, 0, 1)
@@ -4535,17 +4881,9 @@ class Beta_Distribution:
         created using these limits. If nothing is specified then the range will
         be based on the distribution's parameters.
         """
-        if (
-            xmin is None
-            and xmax is None
-            and type(xvals) not in [list, np.ndarray, type(None)]
-        ):
-            X = xvals
-            show_plot = False
-        else:
-            X = generate_X_array(
-                dist=self, xvals=xvals, xmin=xmin, xmax=xmax
-            )  # obtain the X array
+        X, xvals, xmin, xmax, show_plot = distributions_input_checking(
+            self, "PDF", xvals, xmin, xmax, show_plot
+        )
 
         pdf = ss.beta.pdf(X, self.alpha, self.beta, 0, 1)
 
@@ -4610,17 +4948,9 @@ class Beta_Distribution:
         created using these limits. If nothing is specified then the range will
         be based on the distribution's parameters.
         """
-        if (
-            xmin is None
-            and xmax is None
-            and type(xvals) not in [list, np.ndarray, type(None)]
-        ):
-            X = xvals
-            show_plot = False
-        else:
-            X = generate_X_array(
-                dist=self, xvals=xvals, xmin=xmin, xmax=xmax
-            )  # obtain the X array
+        X, xvals, xmin, xmax, show_plot = distributions_input_checking(
+            self, "CDF", xvals, xmin, xmax, show_plot
+        )
 
         cdf = ss.beta.cdf(X, self.alpha, self.beta, 0, 1)
 
@@ -4685,17 +5015,9 @@ class Beta_Distribution:
         created using these limits. If nothing is specified then the range will
         be based on the distribution's parameters.
         """
-        if (
-            xmin is None
-            and xmax is None
-            and type(xvals) not in [list, np.ndarray, type(None)]
-        ):
-            X = xvals
-            show_plot = False
-        else:
-            X = generate_X_array(
-                dist=self, xvals=xvals, xmin=xmin, xmax=xmax
-            )  # obtain the X array
+        X, xvals, xmin, xmax, show_plot = distributions_input_checking(
+            self, "SF", xvals, xmin, xmax, show_plot
+        )
 
         sf = ss.beta.sf(X, self.alpha, self.beta, 0, 1)
 
@@ -4757,17 +5079,9 @@ class Beta_Distribution:
         created using these limits. If nothing is specified then the range will
         be based on the distribution's parameters.
         """
-        if (
-            xmin is None
-            and xmax is None
-            and type(xvals) not in [list, np.ndarray, type(None)]
-        ):
-            X = xvals
-            show_plot = False
-        else:
-            X = generate_X_array(
-                dist=self, xvals=xvals, xmin=xmin, xmax=xmax
-            )  # obtain the X array
+        X, xvals, xmin, xmax, show_plot = distributions_input_checking(
+            self, "HF", xvals, xmin, xmax, show_plot
+        )
 
         hf = ss.beta.pdf(X, self.alpha, self.beta, 0, 1) / ss.beta.sf(
             X, self.alpha, self.beta, 0, 1
@@ -4831,17 +5145,9 @@ class Beta_Distribution:
         created using these limits. If nothing is specified then the range will
         be based on the distribution's parameters.
         """
-        if (
-            xmin is None
-            and xmax is None
-            and type(xvals) not in [list, np.ndarray, type(None)]
-        ):
-            X = xvals
-            show_plot = False
-        else:
-            X = generate_X_array(
-                dist=self, xvals=xvals, xmin=xmin, xmax=xmax
-            )  # obtain the X array
+        X, xvals, xmin, xmax, show_plot = distributions_input_checking(
+            self, "CHF", xvals, xmin, xmax, show_plot
+        )
 
         chf = -np.log(ss.beta.sf(X, self.alpha, self.beta, 0, 1))
         self._chf = chf  # required by the CI plotting part
@@ -4883,7 +5189,7 @@ class Beta_Distribution:
 
         Parameters
         ----------
-        q : float
+        q : float, list, array
             Quantile to be calculated. Must be between 0 and 1.
 
         Returns
@@ -4899,7 +5205,7 @@ class Beta_Distribution:
             if min(q) < 0 or max(q) > 1:
                 raise ValueError("Quantile must be between 0 and 1")
         else:
-            raise ValueError("Quantile must be of type int, float, list, array")
+            raise ValueError("Quantile must be of type float, list, array")
         return ss.beta.ppf(q, self.alpha, self.beta, 0, 1)
 
     def inverse_SF(self, q):
@@ -4908,7 +5214,7 @@ class Beta_Distribution:
 
         Parameters
         ----------
-        q : float
+        q : float, list, array
             Quantile to be calculated. Must be between 0 and 1.
 
         Returns
@@ -4923,7 +5229,7 @@ class Beta_Distribution:
             if min(q) < 0 or max(q) > 1:
                 raise ValueError("Quantile must be between 0 and 1")
         else:
-            raise ValueError("Quantile must be of type int, float, list, array")
+            raise ValueError("Quantile must be of type float, list, array")
         return ss.beta.isf(q, self.alpha, self.beta, 0, 1)
 
     def mean_residual_life(self, t):
@@ -5222,9 +5528,9 @@ class Loglogistic_Distribution:
         accepted.
         """
 
-        X = generate_X_array(
-            dist=self, xvals=xvals, xmin=xmin, xmax=xmax
-        )  # obtain the X array
+        X, xvals, xmin, xmax = distributions_input_checking(
+            self, "ALL", xvals, xmin, xmax
+        )
 
         pdf = ss.fisk.pdf(X, self.beta, scale=self.alpha, loc=self.gamma)
         cdf = ss.fisk.cdf(X, self.beta, scale=self.alpha, loc=self.gamma)
@@ -5408,16 +5714,9 @@ class Loglogistic_Distribution:
         be based on the distribution's parameters.
         """
 
-        # obtain the X array
-        if (
-            xmin is None
-            and xmax is None
-            and type(xvals) not in [list, np.ndarray, type(None)]
-        ):
-            X = xvals
-            show_plot = False
-        else:
-            X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
+        X, xvals, xmin, xmax, show_plot = distributions_input_checking(
+            self, "PDF", xvals, xmin, xmax, show_plot
+        )
 
         pdf = ss.fisk.pdf(X, self.beta, scale=self.alpha, loc=self.gamma)
 
@@ -5451,7 +5750,19 @@ class Loglogistic_Distribution:
 
             return pdf
 
-    def CDF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
+    def CDF(
+        self,
+        xvals=None,
+        xmin=None,
+        xmax=None,
+        show_plot=True,
+        plot_CI=True,
+        CI_type="time",
+        CI=0.95,
+        CI_y=None,
+        CI_x=None,
+        **kwargs
+    ):
         """
         Plots the CDF (cumulative distribution function)
 
@@ -5482,26 +5793,24 @@ class Loglogistic_Distribution:
         created using these limits. If nothing is specified then the range will
         be based on the distribution's parameters.
         """
-        # obtain the X array
-        if (
-            xmin is None
-            and xmax is None
-            and type(xvals) not in [list, np.ndarray, type(None)]
-        ):
-            X = xvals
-            show_plot = False
-        else:
-            X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
+        (
+            X,
+            xvals,
+            xmin,
+            xmax,
+            show_plot,
+            plot_CI,
+            CI_type,
+            CI,
+            CI_y,
+            CI_x,
+        ) = distributions_input_checking(
+            self, "CDF", xvals, xmin, xmax, show_plot, plot_CI, CI_type, CI, CI_y, CI_x
+        )
 
         cdf = ss.fisk.cdf(X, self.beta, scale=self.alpha, loc=self.gamma)
 
-        if show_plot == False:
-            return cdf
-        else:
-            CI_type, plot_CI, CI = distribution_confidence_intervals.CI_kwarg_handler(
-                self, kwargs
-            )
-
+        if show_plot == True:
             limits = get_axes_limits()  # get the previous axes limits
 
             p = plt.plot(X, cdf, **kwargs)
@@ -5537,9 +5846,34 @@ class Loglogistic_Distribution:
                 color=p[0].get_color(),
             )
 
+        lower_CI, upper_CI = extract_CI(
+            dist=self, func="CDF", CI_type=CI_type, CI=CI, CI_y=CI_y, CI_x=CI_x
+        )
+        if lower_CI is not None and upper_CI is not None:
+            if CI_type == "time":
+                return lower_CI, self.quantile(CI_y), upper_CI
+            elif CI_type == "reliability":
+                return (
+                    lower_CI,
+                    ss.fisk.cdf(CI_x, self.beta, scale=self.alpha, loc=self.gamma),
+                    upper_CI,
+                )
+        else:
             return cdf
 
-    def SF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
+    def SF(
+        self,
+        xvals=None,
+        xmin=None,
+        xmax=None,
+        show_plot=True,
+        plot_CI=True,
+        CI_type="time",
+        CI=0.95,
+        CI_y=None,
+        CI_x=None,
+        **kwargs
+    ):
         """
         Plots the SF (survival function)
 
@@ -5571,26 +5905,24 @@ class Loglogistic_Distribution:
         be based on the distribution's parameters.
         """
 
-        # obtain the X array
-        if (
-            xmin is None
-            and xmax is None
-            and type(xvals) not in [list, np.ndarray, type(None)]
-        ):
-            X = xvals
-            show_plot = False
-        else:
-            X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
+        (
+            X,
+            xvals,
+            xmin,
+            xmax,
+            show_plot,
+            plot_CI,
+            CI_type,
+            CI,
+            CI_y,
+            CI_x,
+        ) = distributions_input_checking(
+            self, "SF", xvals, xmin, xmax, show_plot, plot_CI, CI_type, CI, CI_y, CI_x
+        )
 
         sf = ss.fisk.sf(X, self.beta, scale=self.alpha, loc=self.gamma)
 
-        if show_plot == False:
-            return sf
-        else:
-            CI_type, plot_CI, CI = distribution_confidence_intervals.CI_kwarg_handler(
-                self, kwargs
-            )
-
+        if show_plot == True:
             limits = get_axes_limits()  # get the previous axes limits
 
             p = plt.plot(X, sf, **kwargs)
@@ -5626,6 +5958,19 @@ class Loglogistic_Distribution:
                 color=p[0].get_color(),
             )
 
+        lower_CI, upper_CI = extract_CI(
+            dist=self, func="SF", CI_type=CI_type, CI=CI, CI_y=CI_y, CI_x=CI_x
+        )
+        if lower_CI is not None and upper_CI is not None:
+            if CI_type == "time":
+                return lower_CI, self.inverse_SF(CI_y), upper_CI
+            elif CI_type == "reliability":
+                return (
+                    lower_CI,
+                    ss.fisk.sf(CI_x, self.beta, scale=self.alpha, loc=self.gamma),
+                    upper_CI,
+                )
+        else:
             return sf
 
     def HF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
@@ -5660,16 +6005,9 @@ class Loglogistic_Distribution:
         be based on the distribution's parameters.
         """
 
-        # obtain the X array
-        if (
-            xmin is None
-            and xmax is None
-            and type(xvals) not in [list, np.ndarray, type(None)]
-        ):
-            X = xvals
-            show_plot = False
-        else:
-            X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
+        X, xvals, xmin, xmax, show_plot = distributions_input_checking(
+            self, "HF", xvals, xmin, xmax, show_plot
+        )
 
         hf = (self.beta / self.alpha) * ((X - self.gamma) / self.alpha) ** (
             self.beta - 1
@@ -5706,7 +6044,19 @@ class Loglogistic_Distribution:
 
             return hf
 
-    def CHF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
+    def CHF(
+        self,
+        xvals=None,
+        xmin=None,
+        xmax=None,
+        show_plot=True,
+        plot_CI=True,
+        CI_type="time",
+        CI=0.95,
+        CI_y=None,
+        CI_x=None,
+        **kwargs
+    ):
         """
         Plots the CHF (cumulative hazard function)
 
@@ -5738,29 +6088,27 @@ class Loglogistic_Distribution:
         be based on the distribution's parameters.
         """
 
-        # obtain the X array
-        if (
-            xmin is None
-            and xmax is None
-            and type(xvals) not in [list, np.ndarray, type(None)]
-        ):
-            X = xvals
-            show_plot = False
-        else:
-            X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
+        (
+            X,
+            xvals,
+            xmin,
+            xmax,
+            show_plot,
+            plot_CI,
+            CI_type,
+            CI,
+            CI_y,
+            CI_x,
+        ) = distributions_input_checking(
+            self, "CHF", xvals, xmin, xmax, show_plot, plot_CI, CI_type, CI, CI_y, CI_x
+        )
 
         chf = np.log(1 + ((X - self.gamma) / self.alpha) ** self.beta)
         chf = zeroise_below_gamma(X=X, Y=chf, gamma=self.gamma)
         self._chf = chf  # required by the CI plotting part
         self._X = X
 
-        if show_plot == False:
-            return chf
-        else:
-            CI_type, plot_CI, CI = distribution_confidence_intervals.CI_kwarg_handler(
-                self, kwargs
-            )
-
+        if show_plot == True:
             limits = get_axes_limits()  # get the previous axes limits
 
             p = plt.plot(X, chf, **kwargs)
@@ -5796,6 +6144,20 @@ class Loglogistic_Distribution:
                 color=p[0].get_color(),
             )
 
+        lower_CI, upper_CI = extract_CI(
+            dist=self, func="CHF", CI_type=CI_type, CI=CI, CI_y=CI_y, CI_x=CI_x
+        )
+        if lower_CI is not None and upper_CI is not None:
+            if CI_type == "time":
+                return lower_CI, self.inverse_SF(np.exp(-CI_y)), upper_CI
+            elif CI_type == "reliability":
+                chf_point = zeroise_below_gamma(
+                    X=CI_x,
+                    Y=np.log(1 + ((CI_x - self.gamma) / self.alpha) ** self.beta),
+                    gamma=self.gamma,
+                )
+                return lower_CI, chf_point, upper_CI
+        else:
             return chf
 
     def quantile(self, q):
@@ -5804,7 +6166,7 @@ class Loglogistic_Distribution:
 
         Parameters
         ----------
-        q : float
+        q : float, list, array
             Quantile to be calculated. Must be between 0 and 1.
 
         Returns
@@ -5820,7 +6182,7 @@ class Loglogistic_Distribution:
             if min(q) < 0 or max(q) > 1:
                 raise ValueError("Quantile must be between 0 and 1")
         else:
-            raise ValueError("Quantile must be of type int, float, list, array")
+            raise ValueError("Quantile must be of type float, list, array")
         return ss.fisk.ppf(q, self.beta, scale=self.alpha, loc=self.gamma)
 
     def inverse_SF(self, q):
@@ -5829,7 +6191,7 @@ class Loglogistic_Distribution:
 
         Parameters
         ----------
-        q : float
+        q : float, list, array
             Quantile to be calculated. Must be between 0 and 1.
 
         Returns
@@ -5844,7 +6206,7 @@ class Loglogistic_Distribution:
             if min(q) < 0 or max(q) > 1:
                 raise ValueError("Quantile must be between 0 and 1")
         else:
-            raise ValueError("Quantile must be of type int, float, list, array")
+            raise ValueError("Quantile must be of type float, list, array")
         return ss.fisk.isf(q, self.beta, scale=self.alpha, loc=self.gamma)
 
     def mean_residual_life(self, t):
@@ -6083,9 +6445,9 @@ class Gumbel_Distribution:
         be based on the distribution's parameters. No plotting keywords are
         accepted.
         """
-        X = generate_X_array(
-            dist=self, xvals=xvals, xmin=xmin, xmax=xmax
-        )  # obtain the X array
+        X, xvals, xmin, xmax = distributions_input_checking(
+            self, "ALL", xvals, xmin, xmax
+        )
 
         pdf = ss.gumbel_l.pdf(X, self.mu, self.sigma)
         cdf = ss.gumbel_l.cdf(X, self.mu, self.sigma)
@@ -6235,17 +6597,9 @@ class Gumbel_Distribution:
         created using these limits. If nothing is specified then the range will
         be based on the distribution's parameters.
         """
-        if (
-            xmin is None
-            and xmax is None
-            and type(xvals) not in [list, np.ndarray, type(None)]
-        ):
-            X = xvals
-            show_plot = False
-        else:
-            X = generate_X_array(
-                dist=self, xvals=xvals, xmin=xmin, xmax=xmax
-            )  # obtain the X array
+        X, xvals, xmin, xmax, show_plot = distributions_input_checking(
+            self, "PDF", xvals, xmin, xmax, show_plot
+        )
 
         pdf = ss.gumbel_l.pdf(X, self.mu, self.sigma)
 
@@ -6279,7 +6633,19 @@ class Gumbel_Distribution:
 
             return pdf
 
-    def CDF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
+    def CDF(
+        self,
+        xvals=None,
+        xmin=None,
+        xmax=None,
+        show_plot=True,
+        plot_CI=True,
+        CI_type="time",
+        CI=0.95,
+        CI_y=None,
+        CI_x=None,
+        **kwargs
+    ):
         """
         Plots the CDF (cumulative distribution function)
 
@@ -6310,27 +6676,24 @@ class Gumbel_Distribution:
         created using these limits. If nothing is specified then the range will
         be based on the distribution's parameters.
         """
-        if (
-            xmin is None
-            and xmax is None
-            and type(xvals) not in [list, np.ndarray, type(None)]
-        ):
-            X = xvals
-            show_plot = False
-        else:
-            X = generate_X_array(
-                dist=self, xvals=xvals, xmin=xmin, xmax=xmax
-            )  # obtain the X array
+        (
+            X,
+            xvals,
+            xmin,
+            xmax,
+            show_plot,
+            plot_CI,
+            CI_type,
+            CI,
+            CI_y,
+            CI_x,
+        ) = distributions_input_checking(
+            self, "CDF", xvals, xmin, xmax, show_plot, plot_CI, CI_type, CI, CI_y, CI_x
+        )
 
         cdf = ss.gumbel_l.cdf(X, self.mu, self.sigma)
 
-        if show_plot == False:
-            return cdf
-        else:
-            CI_type, plot_CI, CI = distribution_confidence_intervals.CI_kwarg_handler(
-                self, kwargs
-            )
-
+        if show_plot == True:
             limits = get_axes_limits()  # get the previous axes limits
 
             p = plt.plot(X, cdf, **kwargs)
@@ -6366,9 +6729,30 @@ class Gumbel_Distribution:
                 color=p[0].get_color(),
             )
 
+        lower_CI, upper_CI = extract_CI(
+            dist=self, func="CDF", CI_type=CI_type, CI=CI, CI_y=CI_y, CI_x=CI_x
+        )
+        if lower_CI is not None and upper_CI is not None:
+            if CI_type == "time":
+                return lower_CI, self.quantile(CI_y), upper_CI
+            elif CI_type == "reliability":
+                return lower_CI, ss.gumbel_l.cdf(CI_x, self.mu, self.sigma), upper_CI
+        else:
             return cdf
 
-    def SF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
+    def SF(
+        self,
+        xvals=None,
+        xmin=None,
+        xmax=None,
+        show_plot=True,
+        plot_CI=True,
+        CI_type="time",
+        CI=0.95,
+        CI_y=None,
+        CI_x=None,
+        **kwargs
+    ):
         """
         Plots the SF (survival function)
 
@@ -6399,27 +6783,24 @@ class Gumbel_Distribution:
         created using these limits. If nothing is specified then the range will
         be based on the distribution's parameters.
         """
-        if (
-            xmin is None
-            and xmax is None
-            and type(xvals) not in [list, np.ndarray, type(None)]
-        ):
-            X = xvals
-            show_plot = False
-        else:
-            X = generate_X_array(
-                dist=self, xvals=xvals, xmin=xmin, xmax=xmax
-            )  # obtain the X array
+        (
+            X,
+            xvals,
+            xmin,
+            xmax,
+            show_plot,
+            plot_CI,
+            CI_type,
+            CI,
+            CI_y,
+            CI_x,
+        ) = distributions_input_checking(
+            self, "SF", xvals, xmin, xmax, show_plot, plot_CI, CI_type, CI, CI_y, CI_x
+        )
 
         sf = ss.gumbel_l.sf(X, self.mu, self.sigma)
 
-        if show_plot == False:
-            return sf
-        else:
-            CI_type, plot_CI, CI = distribution_confidence_intervals.CI_kwarg_handler(
-                self, kwargs
-            )
-
+        if show_plot == True:
             limits = get_axes_limits()  # get the previous axes limits
 
             p = plt.plot(X, sf, **kwargs)
@@ -6455,6 +6836,15 @@ class Gumbel_Distribution:
                 color=p[0].get_color(),
             )
 
+        lower_CI, upper_CI = extract_CI(
+            dist=self, func="SF", CI_type=CI_type, CI=CI, CI_y=CI_y, CI_x=CI_x
+        )
+        if lower_CI is not None and upper_CI is not None:
+            if CI_type == "time":
+                return lower_CI, self.inverse_SF(CI_y), upper_CI
+            elif CI_type == "reliability":
+                return lower_CI, ss.gumbel_l.sf(CI_x, self.mu, self.sigma), upper_CI
+        else:
             return sf
 
     def HF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
@@ -6488,17 +6878,9 @@ class Gumbel_Distribution:
         created using these limits. If nothing is specified then the range will
         be based on the distribution's parameters.
         """
-        if (
-            xmin is None
-            and xmax is None
-            and type(xvals) not in [list, np.ndarray, type(None)]
-        ):
-            X = xvals
-            show_plot = False
-        else:
-            X = generate_X_array(
-                dist=self, xvals=xvals, xmin=xmin, xmax=xmax
-            )  # obtain the X array
+        X, xvals, xmin, xmax, show_plot = distributions_input_checking(
+            self, "HF", xvals, xmin, xmax, show_plot
+        )
 
         hf = np.exp((X - self.mu) / self.sigma) / self.sigma
 
@@ -6529,7 +6911,19 @@ class Gumbel_Distribution:
 
             return hf
 
-    def CHF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
+    def CHF(
+        self,
+        xvals=None,
+        xmin=None,
+        xmax=None,
+        show_plot=True,
+        plot_CI=True,
+        CI_type="time",
+        CI=0.95,
+        CI_y=None,
+        CI_x=None,
+        **kwargs
+    ):
         """
         Plots the CHF (cumulative hazard function)
 
@@ -6560,29 +6954,26 @@ class Gumbel_Distribution:
         created using these limits. If nothing is specified then the range will
         be based on the distribution's parameters.
         """
-        if (
-            xmin is None
-            and xmax is None
-            and type(xvals) not in [list, np.ndarray, type(None)]
-        ):
-            X = xvals
-            show_plot = False
-        else:
-            X = generate_X_array(
-                dist=self, xvals=xvals, xmin=xmin, xmax=xmax
-            )  # obtain the X array
+        (
+            X,
+            xvals,
+            xmin,
+            xmax,
+            show_plot,
+            plot_CI,
+            CI_type,
+            CI,
+            CI_y,
+            CI_x,
+        ) = distributions_input_checking(
+            self, "CHF", xvals, xmin, xmax, show_plot, plot_CI, CI_type, CI, CI_y, CI_x
+        )
 
         chf = np.exp((X - self.mu) / self.sigma)
         self._X = X
         self._chf = chf
 
-        if show_plot == False:
-            return chf
-        else:
-            CI_type, plot_CI, CI = distribution_confidence_intervals.CI_kwarg_handler(
-                self, kwargs
-            )
-
+        if show_plot == True:
             limits = get_axes_limits()  # get the previous axes limits
 
             p = plt.plot(X, chf, **kwargs)
@@ -6618,6 +7009,15 @@ class Gumbel_Distribution:
                 color=p[0].get_color(),
             )
 
+        lower_CI, upper_CI = extract_CI(
+            dist=self, func="CHF", CI_type=CI_type, CI=CI, CI_y=CI_y, CI_x=CI_x
+        )
+        if lower_CI is not None and upper_CI is not None:
+            if CI_type == "time":
+                return lower_CI, self.inverse_SF(np.exp(-CI_y)), upper_CI
+            elif CI_type == "reliability":
+                return lower_CI, np.exp((CI_x - self.mu) / self.sigma), upper_CI
+        else:
             return chf
 
     def quantile(self, q):
@@ -6626,7 +7026,7 @@ class Gumbel_Distribution:
 
         Parameters
         ----------
-        q : float
+        q : float, list, array
             Quantile to be calculated. Must be between 0 and 1.
 
         Returns
@@ -6642,7 +7042,7 @@ class Gumbel_Distribution:
             if min(q) < 0 or max(q) > 1:
                 raise ValueError("Quantile must be between 0 and 1")
         else:
-            raise ValueError("Quantile must be of type int, float, list, array")
+            raise ValueError("Quantile must be of type float, list, array")
         return ss.gumbel_l.ppf(q, loc=self.mu, scale=self.sigma)
 
     def inverse_SF(self, q):
@@ -6651,7 +7051,7 @@ class Gumbel_Distribution:
 
         Parameters
         ----------
-        q : float
+        q : float, list, array
             Quantile to be calculated. Must be between 0 and 1.
 
         Returns
@@ -6666,7 +7066,7 @@ class Gumbel_Distribution:
             if min(q) < 0 or max(q) > 1:
                 raise ValueError("Quantile must be between 0 and 1")
         else:
-            raise ValueError("Quantile must be of type int, float, list, array")
+            raise ValueError("Quantile must be of type float, list, array")
         return ss.gumbel_l.isf(q, loc=self.mu, scale=self.sigma)
 
     def mean_residual_life(self, t):
@@ -7530,7 +7930,7 @@ class Competing_Risks_Model:
 
         Parameters
         ----------
-        q : float
+        q : float, list, array
             Quantile to be calculated. Must be between 0 and 1.
 
         Returns
@@ -7546,7 +7946,7 @@ class Competing_Risks_Model:
             if min(q) < 0 or max(q) > 1:
                 raise ValueError("Quantile must be between 0 and 1")
         else:
-            raise ValueError("Quantile must be of type int, float, list, array")
+            raise ValueError("Quantile must be of type float, list, array")
         return self.__xvals_init[np.argmin(abs((1 - self.__sf_init) - q))]
 
     def inverse_SF(self, q):
@@ -7555,7 +7955,7 @@ class Competing_Risks_Model:
 
         Parameters
         ----------
-        q : float
+        q : float, list, array
             Quantile to be calculated. Must be between 0 and 1.
 
         Returns
@@ -7570,7 +7970,7 @@ class Competing_Risks_Model:
             if min(q) < 0 or max(q) > 1:
                 raise ValueError("Quantile must be between 0 and 1")
         else:
-            raise ValueError("Quantile must be of type int, float, list, array")
+            raise ValueError("Quantile must be of type float, list, array")
         return self.__xvals_init[np.argmin(abs(self.__sf_init - q))]
 
     def stats(self):
@@ -8488,7 +8888,7 @@ class Mixture_Model:
 
         Parameters
         ----------
-        q : float
+        q : float, list, array
             Quantile to be calculated. Must be between 0 and 1.
 
         Returns
@@ -8504,7 +8904,7 @@ class Mixture_Model:
             if min(q) < 0 or max(q) > 1:
                 raise ValueError("Quantile must be between 0 and 1")
         else:
-            raise ValueError("Quantile must be of type int, float, list, array")
+            raise ValueError("Quantile must be of type float, list, array")
         return self.__xvals_init[np.argmin(abs(self.__cdf_init - q))]
 
     def inverse_SF(self, q):
@@ -8513,7 +8913,7 @@ class Mixture_Model:
 
         Parameters
         ----------
-        q : float
+        q : float, list, array
             Quantile to be calculated. Must be between 0 and 1.
 
         Returns
@@ -8528,7 +8928,7 @@ class Mixture_Model:
             if min(q) < 0 or max(q) > 1:
                 raise ValueError("Quantile must be between 0 and 1")
         else:
-            raise ValueError("Quantile must be of type int, float, list, array")
+            raise ValueError("Quantile must be of type float, list, array")
         return self.__xvals_init[np.argmin(abs((1 - self.__cdf_init) - q))]
 
     def stats(self):
@@ -8985,7 +9385,7 @@ class DSZI_Model:
             plt.plot(X, pdf, **kwargs)
             plt.xlabel("x values")
             plt.ylabel("Probability density")
-            text_title = str(self.__model_title+"\n" + "Probability Density Function")
+            text_title = str(self.__model_title + "\n" + "Probability Density Function")
             plt.title(text_title)
             plt.subplots_adjust(top=0.85)
 
@@ -9057,7 +9457,9 @@ class DSZI_Model:
             plt.plot(X, cdf, **kwargs)
             plt.xlabel("x values")
             plt.ylabel("Fraction failing")
-            text_title = str(self.__model_title+"\n" + "Cumulative Distribution Function")
+            text_title = str(
+                self.__model_title + "\n" + "Cumulative Distribution Function"
+            )
             plt.title(text_title)
             plt.subplots_adjust(top=0.85)
 
@@ -9130,7 +9532,7 @@ class DSZI_Model:
             plt.plot(X, sf, **kwargs)
             plt.xlabel("x values")
             plt.ylabel("Fraction surviving")
-            text_title = str(self.__model_title+"\n" + "Survival Function")
+            text_title = str(self.__model_title + "\n" + "Survival Function")
             plt.title(text_title)
             plt.subplots_adjust(top=0.85)
 
@@ -9205,7 +9607,7 @@ class DSZI_Model:
             plt.plot(X, hf, **kwargs)
             plt.xlabel("x values")
             plt.ylabel("Hazard")
-            text_title = str(self.__model_title+"\n" + "Hazard Function")
+            text_title = str(self.__model_title + "\n" + "Hazard Function")
             plt.title(text_title)
             plt.subplots_adjust(top=0.85)
 
@@ -9278,7 +9680,7 @@ class DSZI_Model:
             plt.plot(X, chf, **kwargs)
             plt.xlabel("x values")
             plt.ylabel("Cumulative hazard")
-            text_title = str(self.__model_title+"\n" + "Cumulative Hazard Function")
+            text_title = str(self.__model_title + "\n" + "Cumulative Hazard Function")
             plt.title(text_title)
             plt.subplots_adjust(top=0.85)
 
@@ -9301,7 +9703,7 @@ class DSZI_Model:
 
         Parameters
         ----------
-        q : float
+        q : float, list, array
             Quantile to be calculated. Must be between ZI and DS.
             If q < ZI or q > DS then a ValueError will be raised.
 
@@ -9330,7 +9732,7 @@ class DSZI_Model:
                     + "."
                 )
         else:
-            raise ValueError("Quantile must be of type int, float, list, array")
+            raise ValueError("Quantile must be of type float, list, array")
         return self.__xvals_init[np.argmin(abs(self.__cdf_init - q))]
 
     def inverse_SF(self, q):
@@ -9339,7 +9741,7 @@ class DSZI_Model:
 
         Parameters
         ----------
-        q : float
+        q : float, list, array
             Quantile to be calculated. Must be between 0 and 1.
 
         Returns
@@ -9354,7 +9756,7 @@ class DSZI_Model:
             if min(q) < 0 or max(q) > 1:
                 raise ValueError("Quantile must be between 0 and 1")
         else:
-            raise ValueError("Quantile must be of type int, float, list, array")
+            raise ValueError("Quantile must be of type float, list, array")
         return self.__xvals_init[np.argmin(abs((1 - self.__cdf_init) - q))]
 
     def mean_residual_life(self, t):
@@ -9456,7 +9858,9 @@ class DSZI_Model:
             np.random.seed(seed)
 
         samples0 = np.random.choice(
-            [0, 1, 2], size=number_of_samples, p=[self.ZI, self.DS - self.ZI, 1 - self.DS]
+            [0, 1, 2],
+            size=number_of_samples,
+            p=[self.ZI, self.DS - self.ZI, 1 - self.DS],
         )  # 0 is number of ZI, 1 is number of failures, 2 is number of right censored
         frequency = np.histogram(samples0, bins=[0, 1, 2, 3])[0]
         num_ZI = frequency[0]

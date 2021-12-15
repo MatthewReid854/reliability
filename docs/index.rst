@@ -29,6 +29,7 @@ Contents:
   Creating and plotting distributions
   Fitting a specific distribution to data
   Fitting all available distributions to data
+  Working with fitted distributions
   Mixture models
   Competing risk models
   DSZI models

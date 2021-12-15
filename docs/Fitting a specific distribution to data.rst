@@ -78,13 +78,9 @@ To learn how we can fit a distribution, we will start by using a simple example 
 
 The above probability plot is the typical way to visualise how the CDF (the blue line) models the failure data (the black points). If you would like to view the failure points alongside the PDF, CDF, SF, HF, or CHF without the axis being scaled then you can generate the scatter plot using the function plot_points which is available within reliability.Probability_plotting. In the example below we create some data, then fit a Weibull distribution to the data (ensuring we turn off the probability plot). From the fitted distribution object we plot the Survival Function (SF). We then use plot_points to generate a scatter plot of the plotting positions for the survival function.
 
-For the function plot_points the inputs are:
+.. admonition:: API Reference
 
--   failures - an array or list of failure data
--   right_censored - an array or list of right censored data. Optional input
--   func - the function to be plotted. Must be 'PDF', 'CDF', 'SF', 'HF', or 'CHF'. Default is 'CDF'. Note that the options for 'PDF' and 'HF' will look much more scattered as they are found using the integral of a non-continuous function.
--   a - this is the plotting heuristic. Default is 0.3. See `probability plotting <https://reliability.readthedocs.io/en/latest/Probability%20plots.html>`_ and `Wikipedia <https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics>`_ for more details.
--   keywords for the scatter plot are also accepted.
+   For inputs and outputs of the plot_points function see the `API reference <https://reliability.readthedocs.io/en/latest/API/Probability_plotting/plot_points.html>`_.
 
 Example 2
 ---------
@@ -205,7 +201,7 @@ As another example, we will fit a Gamma_2P distribution to some partially right 
 Example 5
 ---------
 
-To obtain details of the percentiles (lower estimate, point estimate, upper estimate), we can use the percentiles input for each Fitter. In this example, we will create some data and fit a Weibull_2P distribution. When percentiles are requested the results printed includes both the table of results and the table of percentiles. Setting percentiles as True will use a default list of percentiles (as shown in the first output). Alternatively we can specify the exact percentiles to use (as shown in the second output). The use of the `crosshairs <https://reliability.readthedocs.io/en/latest/Crosshairs.html>`_ function is also shown which was used to annotate the plot manually. Note that the percentiles provided are the percentiles of the confidence intervals on time. Percentiles for the confidence intervals on reliability are not implemented, but can be accessed manually from the plots using the crosshairs function when confidence intervals on reliability have been plotted.
+To obtain details of the quantiles (y-values from the CDF) which include the lower estimate, point estimate, and upper estimate, we can use the quantiles input for each Fitter. In this example, we will create some data and fit a Weibull_2P distribution. When quantiles is specified the results printed includes both the table of results and the table of quantiles. Setting quantiles as True will use a default list of quantiles (as shown in the first output). Alternatively we can specify the exact quantiles to use (as shown in the second output). The use of the `crosshairs <https://reliability.readthedocs.io/en/latest/Crosshairs.html>`_ function is also shown which was used to annotate the plot manually. Note that the quantiles provided are the quantiles of the confidence bounds on time. You can extract the confidence bounds on on reliability using the fitted distribution object as shown `here <https://reliability.readthedocs.io/en/latest/Working%20with%20fitted%20distributions.html>`_.
 
 .. code:: python
 
@@ -213,21 +209,25 @@ To obtain details of the percentiles (lower estimate, point estimate, upper esti
     from reliability.Fitters import Fit_Weibull_2P
     from reliability.Other_functions import crosshairs
     import matplotlib.pyplot as plt
-
+    
     dist = Weibull_Distribution(alpha=500, beta=6)
-    data = dist.random_samples(50, seed=1) # generate some data
+    data = dist.random_samples(50, seed=1)  # generate some data
     # this will produce the large table of percentiles below the first table of results
-    Fit_Weibull_2P(failures=data, percentiles=True, CI=0.8, show_probability_plot=False)
+    Fit_Weibull_2P(failures=data, quantiles=True, CI=0.8, show_probability_plot=False)
     print('----------------------------------------------------------')
     # repeat the process but using specified percentiles.
-    output = Fit_Weibull_2P(failures=data, percentiles=[5, 50, 95], CI=0.8)
+    output = Fit_Weibull_2P(failures=data, quantiles=[0.05, 0.5, 0.95], CI=0.8)
     # these points have been manually annotated on the plot using crosshairs
     crosshairs()
     plt.show()
     
-    #the values from the percentiles dataframe can be extracted as follows:
-    lower_estimates = output.percentiles['Lower Estimate'].values
-    print('Lower estimates:',lower_estimates)
+    # the values from the quantiles dataframe can be extracted using pandas:
+    lower_estimates = output.quantiles['Lower Estimate'].values
+    print('Lower estimates:', lower_estimates)
+    
+    #alternatively, the bounds can be extracted from the distribution object
+    lower,point,upper = output.distribution.CDF(CI_y=[0.05, 0.5, 0.95], CI=0.8)
+    print('Upper estimates:', upper)
 
     '''
     Results from Fit_Weibull_2P (80% CI):
@@ -245,19 +245,19 @@ To obtain details of the percentiles (lower estimate, point estimate, upper esti
                 BIC   611.14
                  AD  0.48267 
     
-    Table of percentiles (80% CI bounds on time):
-     Percentile  Lower Estimate  Point Estimate  Upper Estimate
-              1         175.215         202.212         233.368
-              5         250.235         276.521         305.569
-             10         292.686         317.508         344.435
-             20         344.277         366.719         390.623
-             25         363.578          385.05          407.79
-             50          437.69         455.879         474.824
-             75          502.94         520.776         539.245
-             80         517.547         535.917         554.938
-             90         553.267         574.068         595.651
-             95         580.174          603.82          628.43
-             99         625.682          655.79         687.347 
+    Table of quantiles (80% CI bounds on time):
+     Quantile  Lower Estimate  Point Estimate  Upper Estimate
+         0.01         175.215         202.212         233.368
+         0.05         250.235         276.521         305.569
+          0.1         292.686         317.508         344.435
+          0.2         344.277         366.719         390.623
+         0.25         363.578          385.05          407.79
+          0.5          437.69         455.879         474.824
+         0.75          502.94         520.776         539.245
+          0.8         517.547         535.917         554.938
+          0.9         553.267         574.068         595.651
+         0.95         580.174          603.82          628.43
+         0.99         625.682          655.79         687.347 
     
     ----------------------------------------------------------
     Results from Fit_Weibull_2P (80% CI):
@@ -275,13 +275,14 @@ To obtain details of the percentiles (lower estimate, point estimate, upper esti
                 BIC   611.14
                  AD  0.48267 
     
-    Table of percentiles (80% CI bounds on time):
-     Percentile  Lower Estimate  Point Estimate  Upper Estimate
-              5         250.235         276.521         305.569
-             50          437.69         455.879         474.824
-             95         580.174          603.82          628.43 
+    Table of quantiles (80% CI bounds on time):
+     Quantile  Lower Estimate  Point Estimate  Upper Estimate
+         0.05         250.235         276.521         305.569
+          0.5          437.69         455.879         474.824
+         0.95         580.174          603.82          628.43 
     
     Lower estimates: [250.23461473 437.69015375 580.17421254]
+    Upper estimates: [305.56872227 474.82362169 628.43042835]
     '''
 
 .. image:: images/weibull_percentiles.png

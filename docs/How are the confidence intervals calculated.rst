@@ -257,33 +257,41 @@ Some distributions (such as the Gamma Distribution) are particularly difficult a
 How can I extract the confidence bounds from the plot
 -----------------------------------------------------
 
-For bounds on time, this can be done programatically using the percentiles option in the fitter like this:
+For bounds on time, this can be done using the quantiles option in the fitter as shown below in option 1.
+Alternatively, once we have the fitted distribution object, we can extract values from bounds on time or reliability directly from the CDF, SF, or CHF. This is shown below in option 2.
+Multiple examples of the second method are provided in the document on `working with fitted distributions <https://reliability.readthedocs.io/en/latest/Working%20with%20fitted%20distributions.html>`_.
 
 .. code:: python
 
     from reliability.Fitters import Fit_Weibull_2P
     import matplotlib.pyplot as plt
-    import numpy as np
     
     data = [43, 81, 41, 44, 52, 99, 64, 25, 41, 7]
-    q = np.array([0.2,0.3,0.4])
+    q = [0.2, 0.3, 0.4]
     
-    fit = Fit_Weibull_2P(failures=data,show_probability_plot=False,print_results=False,CI=0.95,percentiles=q*100)
-    lower = fit.percentiles['Lower Estimate']
-    point = fit.percentiles['Point Estimate']
-    upper = fit.percentiles['Upper Estimate']
-
+    # option 1 using quantiles argument
+    fit = Fit_Weibull_2P(failures=data, show_probability_plot=False, print_results=False, CI=0.95, quantiles=q)
+    lower = fit.quantiles['Lower Estimate']
+    point = fit.quantiles['Point Estimate']
+    upper = fit.quantiles['Upper Estimate']
     fit.distribution.CDF()
-    plt.scatter(point,q,color='darkorange')
-    plt.scatter(lower,q,color='blue')
-    plt.scatter(upper,q,color='red')
+    
+    # option 2 extracting values directly from the CDF
+    lower2, point2, upper2 = fit.distribution.CDF(CI_y=q,show_plot=False)
+    
+    plt.scatter(lower, q, color='blue')
+    plt.scatter(point, q, color='purple')
+    plt.scatter(upper, q, color='red')
+    
+    plt.scatter(lower2, q, color='white',marker='x')
+    plt.scatter(point2, q, color='lime',marker='x')
+    plt.scatter(upper2, q, color='yellow',marker='x')
+    
     plt.show()
 
 .. image:: images/CI_example2.png
 
-For bounds on reliability, extracting the parameters programatically is not currently enabled. It will be part of a future release (likely in January 2021), and will be available directly from the plotting method (avoiding the complicated method shown above).
-
-For bounds on either time or reliability, the ``Other_functions.crosshairs`` function provides an interactive set of crosshairs which can be used to find the values using the mouse.
+Lastly, for bounds on either time or reliability, the ``Other_functions.crosshairs`` function provides an interactive set of crosshairs which can be used to find the values using the mouse.
 A demo of how this works is shown `here <https://reliability.readthedocs.io/en/latest/Crosshairs.html>`_.
 
 Further reading

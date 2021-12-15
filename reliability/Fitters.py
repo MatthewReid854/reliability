@@ -71,6 +71,7 @@ from reliability.Utils import (
     MLE_optimization,
     LS_optimization,
     xy_downsample,
+    extract_CI,
 )
 import autograd.numpy as anp
 from autograd import value_and_grad
@@ -1883,14 +1884,14 @@ class Fit_Weibull_2P:
         Used to specify the beta value if you need to force beta to be a certain
         value. Used in ALT probability plotting. Optional input. If specified it
         must be > 0.
-    percentiles : bool, str, list, array, None, optional
-        percentiles (y-values) to produce a table of percentiles failed with
+    quantiles : bool, str, list, array, None, optional
+        quantiles (y-values) to produce a table of quantiles failed with
         lower, point, and upper estimates. Default is None which results in no
-        output. To use default array [1, 5, 10,..., 95, 99] set percentiles as
+        output. To use default array [1, 5, 10,..., 95, 99] set quantiles as
         either 'auto', True, 'default', 'on'.
         If an array or list is specified then it will be used instead of the
         default array. Any array or list specified must contain values between
-        0 and 100.
+        0 and 1.
     downsample_scatterplot : bool, int, optional
         If True or None, and there are over 1000 points, then the scatterplot
         will be downsampled by a factor. The default downsample factor will seek
@@ -1941,9 +1942,9 @@ class Fit_Weibull_2P:
     goodness_of_fit : dataframe
         a pandas dataframe of the goodness of fit values (Log-likelihood, AICc,
         BIC, AD).
-    percentiles : dataframe
-        a pandas dataframe of the percentiles with bounds on time. This is only
-        produced if percentiles is not None. Since percentiles defaults to None,
+    quantiles : dataframe
+        a pandas dataframe of the quantiles with bounds on time. This is only
+        produced if quantiles is not None. Since quantiles defaults to None,
         this output is not normally produced.
     probability_plot : object
         the axes handle for the probability plot. This is only returned if
@@ -1964,7 +1965,7 @@ class Fit_Weibull_2P:
         show_probability_plot=True,
         print_results=True,
         CI=0.95,
-        percentiles=None,
+        quantiles=None,
         CI_type="time",
         method="MLE",
         optimizer=None,
@@ -1980,7 +1981,7 @@ class Fit_Weibull_2P:
             method=method,
             optimizer=optimizer,
             CI=CI,
-            percentiles=percentiles,
+            quantiles=quantiles,
             force_beta=force_beta,
             CI_type=CI_type,
         )
@@ -1989,7 +1990,7 @@ class Fit_Weibull_2P:
         CI = inputs.CI
         method = inputs.method
         optimizer = inputs.optimizer
-        percentiles = inputs.percentiles
+        quantiles = inputs.quantiles
         force_beta = inputs.force_beta
         CI_type = inputs.CI_type
         self.gamma = 0
@@ -2141,28 +2142,25 @@ class Fit_Weibull_2P:
             CI_type=CI_type,
         )
 
-        if percentiles is not None:
-            point_estimate = self.distribution.quantile(q=percentiles / 100)
-            (
-                lower_estimate,
-                upper_estimate,
-            ) = distribution_confidence_intervals.weibull_CI(
-                self=self.distribution,
+        if quantiles is not None:
+            point_estimate = self.distribution.quantile(q=quantiles)
+            lower_estimate, upper_estimate = extract_CI(
+                dist=self.distribution,
                 func="CDF",
                 CI_type="time",
                 CI=CI,
-                q=1 - (percentiles / 100),
+                CI_y=quantiles,
             )
-            percentile_data = {
-                "Percentile": percentiles,
+            quantile_data = {
+                "Quantile": quantiles,
                 "Lower Estimate": lower_estimate,
                 "Point Estimate": point_estimate,
                 "Upper Estimate": upper_estimate,
             }
-            self.percentiles = pd.DataFrame(
-                percentile_data,
+            self.quantiles = pd.DataFrame(
+                quantile_data,
                 columns=[
-                    "Percentile",
+                    "Quantile",
                     "Lower Estimate",
                     "Point Estimate",
                     "Upper Estimate",
@@ -2221,15 +2219,15 @@ class Fit_Weibull_2P:
             print(self.results.to_string(index=False), "\n")
             print(self.goodness_of_fit.to_string(index=False), "\n")
 
-            if percentiles is not None:
+            if quantiles is not None:
                 print(
                     str(
-                        "Table of percentiles ("
+                        "Table of quantiles ("
                         + str(CI_rounded)
                         + "% CI bounds on time):"
                     )
                 )
-                print(self.percentiles.to_string(index=False), "\n")
+                print(self.quantiles.to_string(index=False), "\n")
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Weibull_probability_plot
@@ -2310,14 +2308,14 @@ class Fit_Weibull_2P_grouped:
         Used to specify the beta value if you need to force beta to be a certain
         value. Used in ALT probability plotting. Optional input. If specified it
         must be > 0.
-    percentiles : bool, str, list, array, None, optional
-        percentiles (y-values) to produce a table of percentiles failed with
+    quantiles : bool, str, list, array, None, optional
+        quantiles (y-values) to produce a table of quantiles failed with
         lower, point, and upper estimates. Default is None which results in no
-        output. To use default array [1, 5, 10,..., 95, 99] set percentiles as
-        either 'auto', True, 'default', 'on'.
+        output. To use default array [0.01, 0.05, 0.1,..., 0.95, 0.99] set
+        quantiles as either 'auto', True, 'default', 'on'.
         If an array or list is specified then it will be used instead of the
         default array. Any array or list specified must contain values between
-        0 and 100.
+        0 and 1.
     downsample_scatterplot : bool, int, optional
         If True or None, and there are over 1000 points, then the scatterplot
         will be downsampled by a factor. The default downsample factor will seek
@@ -2368,9 +2366,9 @@ class Fit_Weibull_2P_grouped:
     goodness_of_fit : dataframe
         a pandas dataframe of the goodness of fit values (Log-likelihood, AICc,
         BIC, AD).
-    percentiles : dataframe
-        a pandas dataframe of the percentiles with bounds on time. This is only
-        produced if percentiles is not None. Since percentiles defaults to None,
+    quantiles : dataframe
+        a pandas dataframe of the quantiles with bounds on time. This is only
+        produced if quantiles is not None. Since quantiles defaults to None,
         this output is not normally produced.
     probability_plot : object
         the axes handle for the probability plot. This is only returned if
@@ -2435,7 +2433,7 @@ class Fit_Weibull_2P_grouped:
         print_results=True,
         CI=0.95,
         force_beta=None,
-        percentiles=None,
+        quantiles=None,
         method="MLE",
         optimizer=None,
         CI_type="time",
@@ -2497,7 +2495,7 @@ class Fit_Weibull_2P_grouped:
             method=method,
             optimizer=optimizer,
             CI=CI,
-            percentiles=percentiles,
+            quantiles=quantiles,
             force_beta=force_beta,
             CI_type=CI_type,
         )
@@ -2506,7 +2504,7 @@ class Fit_Weibull_2P_grouped:
         CI = inputs.CI
         method = inputs.method
         optimizer = inputs.optimizer
-        percentiles = inputs.percentiles
+        quantiles = inputs.quantiles
         force_beta = inputs.force_beta
         CI_type = inputs.CI_type
         self.gamma = 0
@@ -2809,28 +2807,25 @@ class Fit_Weibull_2P_grouped:
             CI_type=CI_type,
         )
 
-        if percentiles is not None:
-            point_estimate = self.distribution.quantile(q=percentiles / 100)
-            (
-                lower_estimate,
-                upper_estimate,
-            ) = distribution_confidence_intervals.weibull_CI(
-                self=self.distribution,
+        if quantiles is not None:
+            point_estimate = self.distribution.quantile(q=quantiles)
+            lower_estimate, upper_estimate = extract_CI(
+                dist=self.distribution,
                 func="CDF",
                 CI_type="time",
                 CI=CI,
-                q=1 - (percentiles / 100),
+                CI_y=quantiles,
             )
-            percentile_data = {
-                "Percentile": percentiles,
+            quantile_data = {
+                "Quantile": quantiles,
                 "Lower Estimate": lower_estimate,
                 "Point Estimate": point_estimate,
                 "Upper Estimate": upper_estimate,
             }
-            self.percentiles = pd.DataFrame(
-                percentile_data,
+            self.quantiles = pd.DataFrame(
+                quantile_data,
                 columns=[
-                    "Percentile",
+                    "Quantile",
                     "Lower Estimate",
                     "Point Estimate",
                     "Upper Estimate",
@@ -2904,15 +2899,15 @@ class Fit_Weibull_2P_grouped:
             print(self.results.to_string(index=False), "\n")
             print(self.goodness_of_fit.to_string(index=False), "\n")
 
-            if percentiles is not None:
+            if quantiles is not None:
                 print(
                     str(
-                        "Table of percentiles ("
+                        "Table of quantiles ("
                         + str(CI_rounded)
                         + "% CI bounds on time):"
                     )
                 )
-                print(self.percentiles.to_string(index=False), "\n")
+                print(self.quantiles.to_string(index=False), "\n")
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Weibull_probability_plot
@@ -2993,14 +2988,14 @@ class Fit_Weibull_3P:
         Use None to turn off the confidence intervals. Must be either 'time',
         'reliability', or None. Default is 'time'. Some flexibility in names is
         allowed (eg. 't', 'time', 'r', 'rel', 'reliability' are all valid).
-    percentiles : bool, str, list, array, None, optional
-        percentiles (y-values) to produce a table of percentiles failed with
+    quantiles : bool, str, list, array, None, optional
+        quantiles (y-values) to produce a table of quantiles failed with
         lower, point, and upper estimates. Default is None which results in no
-        output. To use default array [1, 5, 10,..., 95, 99] set percentuiles as
-        either 'auto', True, 'default', 'on'.
+        output. To use default array [0.01, 0.05, 0.1,..., 0.95, 0.99] set
+        quantiles as either 'auto', True, 'default', 'on'.
         If an array or list is specified then it will be used instead of the
         default array. Any array or list specified must contain values between
-        0 and 100.
+        0 and 1.
     downsample_scatterplot : bool, int, optional
         If True or None, and there are over 1000 points, then the scatterplot
         will be downsampled by a factor. The default downsample factor will seek
@@ -3059,9 +3054,9 @@ class Fit_Weibull_3P:
     goodness_of_fit : dataframe
         a pandas dataframe of the goodness of fit values (Log-likelihood, AICc,
         BIC, AD).
-    percentiles : dataframe
-        a pandas dataframe of the percentiles with bounds on time. This is only
-        produced if percentiles is not None. Since percentiles defaults to None,
+    quantiles : dataframe
+        a pandas dataframe of the quantiles with bounds on time. This is only
+        produced if quantiles is not None. Since quantiles defaults to None,
         this output is not normally produced.
     probability_plot : object
         the axes handle for the probability plot. This is only returned if
@@ -3086,7 +3081,7 @@ class Fit_Weibull_3P:
         show_probability_plot=True,
         print_results=True,
         CI=0.95,
-        percentiles=None,
+        quantiles=None,
         CI_type="time",
         optimizer=None,
         method="MLE",
@@ -3101,7 +3096,7 @@ class Fit_Weibull_3P:
             method=method,
             optimizer=optimizer,
             CI=CI,
-            percentiles=percentiles,
+            quantiles=quantiles,
             CI_type=CI_type,
         )
         failures = inputs.failures
@@ -3109,7 +3104,7 @@ class Fit_Weibull_3P:
         CI = inputs.CI
         method = inputs.method
         optimizer = inputs.optimizer
-        percentiles = inputs.percentiles
+        quantiles = inputs.quantiles
         CI_type = inputs.CI_type
 
         # Obtain least squares estimates
@@ -3266,28 +3261,25 @@ class Fit_Weibull_3P:
             CI_type=CI_type,
         )
 
-        if percentiles is not None:
-            point_estimate = self.distribution.quantile(q=percentiles / 100)
-            (
-                lower_estimate,
-                upper_estimate,
-            ) = distribution_confidence_intervals.weibull_CI(
-                self=self.distribution,
+        if quantiles is not None:
+            point_estimate = self.distribution.quantile(q=quantiles)
+            lower_estimate, upper_estimate = extract_CI(
+                dist=self.distribution,
                 func="CDF",
                 CI_type="time",
                 CI=CI,
-                q=1 - (percentiles / 100),
+                CI_y=quantiles,
             )
-            percentile_data = {
-                "Percentile": percentiles,
+            quantile_data = {
+                "Quantile": quantiles,
                 "Lower Estimate": lower_estimate,
                 "Point Estimate": point_estimate,
                 "Upper Estimate": upper_estimate,
             }
-            self.percentiles = pd.DataFrame(
-                percentile_data,
+            self.quantiles = pd.DataFrame(
+                quantile_data,
                 columns=[
-                    "Percentile",
+                    "Quantile",
                     "Lower Estimate",
                     "Point Estimate",
                     "Upper Estimate",
@@ -3342,15 +3334,15 @@ class Fit_Weibull_3P:
             print(self.results.to_string(index=False), "\n")
             print(self.goodness_of_fit.to_string(index=False), "\n")
 
-            if percentiles is not None:
+            if quantiles is not None:
                 print(
                     str(
-                        "Table of percentiles ("
+                        "Table of quantiles ("
                         + str(CI_rounded)
                         + "% CI bounds on time):"
                     )
                 )
-                print(self.percentiles.to_string(index=False), "\n")
+                print(self.quantiles.to_string(index=False), "\n")
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Weibull_probability_plot
@@ -5416,14 +5408,14 @@ class Fit_Exponential_1P:
     CI : float, optional
         confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
-    percentiles : bool, str, list, array, None, optional
-        percentiles (y-values) to produce a table of percentiles failed with
+    quantiles : bool, str, list, array, None, optional
+        quantiles (y-values) to produce a table of quantiles failed with
         lower, point, and upper estimates. Default is None which results in no
-        output. To use default array [1, 5, 10,..., 95, 99] set percentiles as
-        either 'auto', True, 'default', 'on'.
+        output. To use default array [0.01, 0.05, 0.1,..., 0.95, 0.99] set
+        quantiles as either 'auto', True, 'default', 'on'.
         If an array or list is specified then it will be used instead of the
         default array. Any array or list specified must contain values between
-        0 and 100.
+        0 and 1.
     downsample_scatterplot : bool, int, optional
         If True or None, and there are over 1000 points, then the scatterplot
         will be downsampled by a factor. The default downsample factor will seek
@@ -5472,9 +5464,9 @@ class Fit_Exponential_1P:
     goodness_of_fit : dataframe
         a pandas dataframe of the goodness of fit values (Log-likelihood, AICc,
         BIC, AD).
-    percentiles : dataframe
-        a pandas dataframe of the percentiles. This is only produced if
-        percentiles is not None. Since percentiles defaults to None, this output
+    quantiles : dataframe
+        a pandas dataframe of the quantiles. This is only produced if
+        quantiles is not None. Since quantiles defaults to None, this output
         is not normally produced.
     probability_plot : object
         the axes handle for the probability plot. This is only returned if
@@ -5501,7 +5493,7 @@ class Fit_Exponential_1P:
         show_probability_plot=True,
         print_results=True,
         CI=0.95,
-        percentiles=None,
+        quantiles=None,
         method="MLE",
         optimizer=None,
         downsample_scatterplot=True,
@@ -5515,14 +5507,14 @@ class Fit_Exponential_1P:
             method=method,
             optimizer=optimizer,
             CI=CI,
-            percentiles=percentiles,
+            quantiles=quantiles,
         )
         failures = inputs.failures
         right_censored = inputs.right_censored
         CI = inputs.CI
         method = inputs.method
         optimizer = inputs.optimizer
-        percentiles = inputs.percentiles
+        quantiles = inputs.quantiles
         self.gamma = 0
 
         # Obtain least squares estimates
@@ -5621,24 +5613,25 @@ class Fit_Exponential_1P:
             Lambda=self.Lambda, Lambda_SE=self.Lambda_SE, CI=CI
         )
 
-        if percentiles is not None:
-            point_estimate = self.distribution.quantile(q=percentiles / 100)
-            (
-                lower_estimate,
-                upper_estimate,
-            ) = distribution_confidence_intervals.exponential_CI(
-                self=self.distribution, func="CDF", CI=CI, q=1 - (percentiles / 100)
+        if quantiles is not None:
+            point_estimate = self.distribution.quantile(q=quantiles)
+            lower_estimate, upper_estimate = extract_CI(
+                dist=self.distribution,
+                func="CDF",
+                CI_type="time",
+                CI=CI,
+                CI_y=quantiles,
             )
-            percentile_data = {
-                "Percentile": percentiles,
+            quantile_data = {
+                "Quantile": quantiles,
                 "Lower Estimate": lower_estimate,
                 "Point Estimate": point_estimate,
                 "Upper Estimate": upper_estimate,
             }
-            self.percentiles = pd.DataFrame(
-                percentile_data,
+            self.quantiles = pd.DataFrame(
+                quantile_data,
                 columns=[
-                    "Percentile",
+                    "Quantile",
                     "Lower Estimate",
                     "Point Estimate",
                     "Upper Estimate",
@@ -5693,15 +5686,15 @@ class Fit_Exponential_1P:
             print(self.results.to_string(index=False), "\n")
             print(self.goodness_of_fit.to_string(index=False), "\n")
 
-            if percentiles is not None:
+            if quantiles is not None:
                 print(
                     str(
-                        "Table of percentiles ("
+                        "Table of quantiles ("
                         + str(CI_rounded)
                         + "% CI bounds on time):"
                     )
                 )
-                print(self.percentiles.to_string(index=False), "\n")
+                print(self.quantiles.to_string(index=False), "\n")
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import (
@@ -5772,14 +5765,14 @@ class Fit_Exponential_2P:
     CI : float, optional
         confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
-    percentiles : bool, str, list, array, None, optional
-        percentiles (y-values) to produce a table of percentiles failed with
+    quantiles : bool, str, list, array, None, optional
+        quantiles (y-values) to produce a table of quantiles failed with
         lower, point, and upper estimates. Default is None which results in no
-        output. To use default array [1, 5, 10,..., 95, 99] set percentiles as
-        either 'auto', True, 'default', 'on'.
+        output. To use default array [0.01, 0.05, 0.1,..., 0.95, 0.99] set
+        quantiles as either 'auto', True, 'default', 'on'.
         If an array or list is specified then it will be used instead of the
         default array. Any array or list specified must contain values between
-        0 and 100.
+        0 and 1.
     downsample_scatterplot : bool, int, optional
         If True or None, and there are over 1000 points, then the scatterplot
         will be downsampled by a factor. The default downsample factor will seek
@@ -5836,9 +5829,9 @@ class Fit_Exponential_2P:
     goodness_of_fit : dataframe
         a pandas dataframe of the goodness of fit values (Log-likelihood, AICc,
         BIC, AD).
-    percentiles : dataframe
-        a pandas dataframe of the percentiles. This is only produced if
-        percentiles is not None. Since percentiles defaults to None, this output
+    quantiles : dataframe
+        a pandas dataframe of the quantiles. This is only produced if
+        quantiles is not None. Since quantiles defaults to None, this output
         is not normally produced.
     probability_plot : object
         the axes handle for the probability plot. This is only returned if
@@ -5865,7 +5858,7 @@ class Fit_Exponential_2P:
         show_probability_plot=True,
         print_results=True,
         CI=0.95,
-        percentiles=None,
+        quantiles=None,
         method="MLE",
         optimizer=None,
         downsample_scatterplot=True,
@@ -5882,14 +5875,14 @@ class Fit_Exponential_2P:
             failures=failures,
             right_censored=right_censored,
             CI=CI,
-            percentiles=percentiles,
+            quantiles=quantiles,
             method=method,
             optimizer=optimizer,
         )
         failures = inputs.failures
         right_censored = inputs.right_censored
         CI = inputs.CI
-        percentiles = inputs.percentiles
+        quantiles = inputs.quantiles
         method = inputs.method
         optimizer = inputs.optimizer
 
@@ -6012,24 +6005,25 @@ class Fit_Exponential_2P:
             Lambda=self.Lambda, gamma=self.gamma, Lambda_SE=self.Lambda_SE, CI=CI
         )
 
-        if percentiles is not None:
-            point_estimate = self.distribution.quantile(q=percentiles / 100)
-            (
-                lower_estimate,
-                upper_estimate,
-            ) = distribution_confidence_intervals.exponential_CI(
-                self=self.distribution, func="CDF", CI=CI, q=1 - (percentiles / 100)
+        if quantiles is not None:
+            point_estimate = self.distribution.quantile(q=quantiles)
+            lower_estimate, upper_estimate = extract_CI(
+                dist=self.distribution,
+                func="CDF",
+                CI_type="time",
+                CI=CI,
+                CI_y=quantiles,
             )
-            percentile_data = {
-                "Percentile": percentiles,
+            quantile_data = {
+                "Quantile": quantiles,
                 "Lower Estimate": lower_estimate,
                 "Point Estimate": point_estimate,
                 "Upper Estimate": upper_estimate,
             }
-            self.percentiles = pd.DataFrame(
-                percentile_data,
+            self.quantiles = pd.DataFrame(
+                quantile_data,
                 columns=[
-                    "Percentile",
+                    "Quantile",
                     "Lower Estimate",
                     "Point Estimate",
                     "Upper Estimate",
@@ -6084,15 +6078,15 @@ class Fit_Exponential_2P:
             print(self.results.to_string(index=False), "\n")
             print(self.goodness_of_fit.to_string(index=False), "\n")
 
-            if percentiles is not None:
+            if quantiles is not None:
                 print(
                     str(
-                        "Table of percentiles ("
+                        "Table of quantiles ("
                         + str(CI_rounded)
                         + "% CI bounds on time):"
                     )
                 )
-                print(self.percentiles.to_string(index=False), "\n")
+                print(self.quantiles.to_string(index=False), "\n")
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import (
@@ -6183,14 +6177,14 @@ class Fit_Normal_2P:
         Used to specify the beta value if you need to force sigma to be a
         certain value. Used in ALT probability plotting. Optional input. If
         specified it must be > 0.
-    percentiles : bool, str, list, array, None, optional
-        percentiles (y-values) to produce a table of percentiles failed with
+    quantiles : bool, str, list, array, None, optional
+        quantiles (y-values) to produce a table of quantiles failed with
         lower, point, and upper estimates. Default is None which results in no
-        output. To use default array [1, 5, 10,..., 95, 99] set percentiles as
-        either 'auto', True, 'default', 'on'.
+        output. To use default array [0.01, 0.05, 0.1,..., 0.95, 0.99] set
+        quantiles as either 'auto', True, 'default', 'on'.
         If an array or list is specified then it will be used instead of the
         default array. Any array or list specified must contain values between
-        0 and 100.
+        0 and 1.
     downsample_scatterplot : bool, int, optional
         If True or None, and there are over 1000 points, then the scatterplot
         will be downsampled by a factor. The default downsample factor will seek
@@ -6241,9 +6235,9 @@ class Fit_Normal_2P:
     goodness_of_fit : dataframe
         a pandas dataframe of the goodness of fit values (Log-likelihood, AICc,
         BIC, AD).
-    percentiles : dataframe
-        a pandas dataframe of the percentiles with bounds on time. This is only
-        produced if percentiles is not None. Since percentiles defaults to None,
+    quantiles : dataframe
+        a pandas dataframe of the quantiles with bounds on time. This is only
+        produced if quantiles is not None. Since quantiles defaults to None,
         this output is not normally produced.
     probability_plot : object
         the axes handle for the probability plot. This is only returned if
@@ -6264,7 +6258,7 @@ class Fit_Normal_2P:
         show_probability_plot=True,
         print_results=True,
         CI=0.95,
-        percentiles=None,
+        quantiles=None,
         optimizer=None,
         CI_type="time",
         method="MLE",
@@ -6280,7 +6274,7 @@ class Fit_Normal_2P:
             method=method,
             optimizer=optimizer,
             CI=CI,
-            percentiles=percentiles,
+            quantiles=quantiles,
             force_sigma=force_sigma,
             CI_type=CI_type,
         )
@@ -6289,7 +6283,7 @@ class Fit_Normal_2P:
         CI = inputs.CI
         method = inputs.method
         optimizer = inputs.optimizer
-        percentiles = inputs.percentiles
+        quantiles = inputs.quantiles
         force_sigma = inputs.force_sigma
         CI_type = inputs.CI_type
 
@@ -6440,28 +6434,25 @@ class Fit_Normal_2P:
             CI_type=CI_type,
         )
 
-        if percentiles is not None:
-            point_estimate = self.distribution.quantile(q=percentiles / 100)
-            (
-                lower_estimate,
-                upper_estimate,
-            ) = distribution_confidence_intervals.normal_CI(
-                self=self.distribution,
+        if quantiles is not None:
+            point_estimate = self.distribution.quantile(q=quantiles)
+            lower_estimate, upper_estimate = extract_CI(
+                dist=self.distribution,
                 func="CDF",
                 CI_type="time",
                 CI=CI,
-                q=1 - (percentiles / 100),
+                CI_y=quantiles,
             )
-            percentile_data = {
-                "Percentile": percentiles,
+            quantile_data = {
+                "Quantile": quantiles,
                 "Lower Estimate": lower_estimate,
                 "Point Estimate": point_estimate,
                 "Upper Estimate": upper_estimate,
             }
-            self.percentiles = pd.DataFrame(
-                percentile_data,
+            self.quantiles = pd.DataFrame(
+                quantile_data,
                 columns=[
-                    "Percentile",
+                    "Quantile",
                     "Lower Estimate",
                     "Point Estimate",
                     "Upper Estimate",
@@ -6522,15 +6513,15 @@ class Fit_Normal_2P:
             print(self.results.to_string(index=False), "\n")
             print(self.goodness_of_fit.to_string(index=False), "\n")
 
-            if percentiles is not None:
+            if quantiles is not None:
                 print(
                     str(
-                        "Table of percentiles ("
+                        "Table of quantiles ("
                         + str(CI_rounded)
                         + "% CI bounds on time):"
                     )
                 )
-                print(self.percentiles.to_string(index=False), "\n")
+                print(self.quantiles.to_string(index=False), "\n")
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Normal_probability_plot
@@ -6615,14 +6606,14 @@ class Fit_Gumbel_2P:
         Use None to turn off the confidence intervals. Must be either 'time',
         'reliability', or None. Default is 'time'. Some flexibility in names is
         allowed (eg. 't', 'time', 'r', 'rel', 'reliability' are all valid).
-    percentiles : bool, str, list, array, None, optional
-        percentiles (y-values) to produce a table of percentiles failed with
+    quantiles : bool, str, list, array, None, optional
+        quantiles (y-values) to produce a table of quantiles failed with
         lower, point, and upper estimates. Default is None which results in no
-        output. To use default array [1, 5, 10,..., 95, 99] set percentiles as
-        either 'auto', True, 'default', 'on'.
+        output. To use default array [0.01, 0.05, 0.1,..., 0.95, 0.99] set
+        quantiles as either 'auto', True, 'default', 'on'.
         If an array or list is specified then it will be used instead of the
         default array. Any array or list specified must contain values between
-        0 and 100.
+        0 and 1.
     downsample_scatterplot : bool, int, optional
         If True or None, and there are over 1000 points, then the scatterplot
         will be downsampled by a factor. The default downsample factor will seek
@@ -6673,9 +6664,9 @@ class Fit_Gumbel_2P:
     goodness_of_fit : dataframe
         a pandas dataframe of the goodness of fit values (Log-likelihood, AICc,
         BIC, AD).
-    percentiles : dataframe
-        a pandas dataframe of the percentiles with bounds on time. This is only
-        produced if percentiles is not None. Since percentiles defaults to None,
+    quantiles : dataframe
+        a pandas dataframe of the quantiles with bounds on time. This is only
+        produced if quantiles is not None. Since quantiles defaults to None,
         this output is not normally produced.
     probability_plot : object
         the axes handle for the probability plot. This is only returned if
@@ -6699,7 +6690,7 @@ class Fit_Gumbel_2P:
         show_probability_plot=True,
         print_results=True,
         CI=0.95,
-        percentiles=None,
+        quantiles=None,
         CI_type="time",
         method="MLE",
         optimizer=None,
@@ -6714,7 +6705,7 @@ class Fit_Gumbel_2P:
             method=method,
             optimizer=optimizer,
             CI=CI,
-            percentiles=percentiles,
+            quantiles=quantiles,
             CI_type=CI_type,
         )
         failures = inputs.failures
@@ -6722,7 +6713,7 @@ class Fit_Gumbel_2P:
         CI = inputs.CI
         method = inputs.method
         optimizer = inputs.optimizer
-        percentiles = inputs.percentiles
+        quantiles = inputs.quantiles
         CI_type = inputs.CI_type
 
         # Obtain least squares estimates
@@ -6825,28 +6816,25 @@ class Fit_Gumbel_2P:
             CI_type=CI_type,
         )
 
-        if percentiles is not None:
-            point_estimate = self.distribution.quantile(q=percentiles / 100)
-            (
-                lower_estimate,
-                upper_estimate,
-            ) = distribution_confidence_intervals.gumbel_CI(
-                self=self.distribution,
+        if quantiles is not None:
+            point_estimate = self.distribution.quantile(q=quantiles)
+            lower_estimate, upper_estimate = extract_CI(
+                dist=self.distribution,
                 func="CDF",
                 CI_type="time",
                 CI=CI,
-                q=1 - (percentiles / 100),
+                CI_y=quantiles,
             )
-            percentile_data = {
-                "Percentile": percentiles,
+            quantile_data = {
+                "Quantile": quantiles,
                 "Lower Estimate": lower_estimate,
                 "Point Estimate": point_estimate,
                 "Upper Estimate": upper_estimate,
             }
-            self.percentiles = pd.DataFrame(
-                percentile_data,
+            self.quantiles = pd.DataFrame(
+                quantile_data,
                 columns=[
-                    "Percentile",
+                    "Quantile",
                     "Lower Estimate",
                     "Point Estimate",
                     "Upper Estimate",
@@ -6901,15 +6889,15 @@ class Fit_Gumbel_2P:
             print(self.results.to_string(index=False), "\n")
             print(self.goodness_of_fit.to_string(index=False), "\n")
 
-            if percentiles is not None:
+            if quantiles is not None:
                 print(
                     str(
-                        "Table of percentiles ("
+                        "Table of quantiles ("
                         + str(CI_rounded)
                         + "% CI bounds on time):"
                     )
                 )
-                print(self.percentiles.to_string(index=False), "\n")
+                print(self.quantiles.to_string(index=False), "\n")
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Gumbel_probability_plot
@@ -6988,14 +6976,14 @@ class Fit_Lognormal_2P:
         Used to specify the sigma value if you need to force sigma to be a
         certain value. Used in ALT probability plotting. Optional input. If
         specified it must be > 0.
-    percentiles : bool, str, list, array, None, optional
-        percentiles (y-values) to produce a table of percentiles failed with
+    quantiles : bool, str, list, array, None, optional
+        quantiles (y-values) to produce a table of quantiles failed with
         lower, point, and upper estimates. Default is None which results in no
-        output. To use default array [1, 5, 10,..., 95, 99] set percentiles as
-        either 'auto', True, 'default', 'on'.
+        output. To use default array [0.01, 0.05, 0.1,..., 0.95, 0.99] set
+        quantiles as either 'auto', True, 'default', 'on'.
         If an array or list is specified then it will be used instead of the
         default array. Any array or list specified must contain values between
-        0 and 100.
+        0 and 1.
     downsample_scatterplot : bool, int, optional
         If True or None, and there are over 1000 points, then the scatterplot
         will be downsampled by a factor. The default downsample factor will seek
@@ -7046,9 +7034,9 @@ class Fit_Lognormal_2P:
     goodness_of_fit : dataframe
         a pandas dataframe of the goodness of fit values (Log-likelihood, AICc,
         BIC, AD).
-    percentiles : dataframe
-        a pandas dataframe of the percentiles with bounds on time. This is only
-        produced if percentiles is not None. Since percentiles defaults to None,
+    quantiles : dataframe
+        a pandas dataframe of the quantiles with bounds on time. This is only
+        produced if quantiles is not None. Since quantiles defaults to None,
         this output is not normally produced.
     probability_plot : object
         the axes handle for the probability plot. This is only returned if
@@ -7069,7 +7057,7 @@ class Fit_Lognormal_2P:
         show_probability_plot=True,
         print_results=True,
         CI=0.95,
-        percentiles=None,
+        quantiles=None,
         optimizer=None,
         CI_type="time",
         method="MLE",
@@ -7085,7 +7073,7 @@ class Fit_Lognormal_2P:
             method=method,
             optimizer=optimizer,
             CI=CI,
-            percentiles=percentiles,
+            quantiles=quantiles,
             force_sigma=force_sigma,
             CI_type=CI_type,
         )
@@ -7094,7 +7082,7 @@ class Fit_Lognormal_2P:
         CI = inputs.CI
         method = inputs.method
         optimizer = inputs.optimizer
-        percentiles = inputs.percentiles
+        quantiles = inputs.quantiles
         force_sigma = inputs.force_sigma
         CI_type = inputs.CI_type
         self.gamma = 0
@@ -7241,28 +7229,25 @@ class Fit_Lognormal_2P:
             CI_type=CI_type,
         )
 
-        if percentiles is not None:
-            point_estimate = self.distribution.quantile(q=percentiles / 100)
-            (
-                lower_estimate,
-                upper_estimate,
-            ) = distribution_confidence_intervals.lognormal_CI(
-                self=self.distribution,
+        if quantiles is not None:
+            point_estimate = self.distribution.quantile(q=quantiles)
+            lower_estimate, upper_estimate = extract_CI(
+                dist=self.distribution,
                 func="CDF",
                 CI_type="time",
                 CI=CI,
-                q=1 - (percentiles / 100),
+                CI_y=quantiles,
             )
-            percentile_data = {
-                "Percentile": percentiles,
+            quantile_data = {
+                "Quantile": quantiles,
                 "Lower Estimate": lower_estimate,
                 "Point Estimate": point_estimate,
                 "Upper Estimate": upper_estimate,
             }
-            self.percentiles = pd.DataFrame(
-                percentile_data,
+            self.quantiles = pd.DataFrame(
+                quantile_data,
                 columns=[
-                    "Percentile",
+                    "Quantile",
                     "Lower Estimate",
                     "Point Estimate",
                     "Upper Estimate",
@@ -7323,15 +7308,15 @@ class Fit_Lognormal_2P:
             print(self.results.to_string(index=False), "\n")
             print(self.goodness_of_fit.to_string(index=False), "\n")
 
-            if percentiles is not None:
+            if quantiles is not None:
                 print(
                     str(
-                        "Table of percentiles ("
+                        "Table of quantiles ("
                         + str(CI_rounded)
                         + "% CI bounds on time):"
                     )
                 )
-                print(self.percentiles.to_string(index=False), "\n")
+                print(self.quantiles.to_string(index=False), "\n")
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Lognormal_probability_plot
@@ -7415,14 +7400,14 @@ class Fit_Lognormal_3P:
         Use None to turn off the confidence intervals. Must be either 'time',
         'reliability', or None. Default is 'time'. Some flexibility in names is
         allowed (eg. 't', 'time', 'r', 'rel', 'reliability' are all valid).
-    percentiles : bool, str, list, array, None, optional
-        percentiles (y-values) to produce a table of percentiles failed with
+    quantiles : bool, str, list, array, None, optional
+        quantiles (y-values) to produce a table of quantiles failed with
         lower, point, and upper estimates. Default is None which results in no
-        output. To use default array [1, 5, 10,..., 95, 99] set percentiles as
-        either 'auto', True, 'default', 'on'.
+        output. To use default array [0.01, 0.05, 0.1,..., 0.95, 0.99] set
+        quantiles as either 'auto', True, 'default', 'on'.
         If an array or list is specified then it will be used instead of the
         default array. Any array or list specified must contain values between
-        0 and 100.
+        0 and 1.
     downsample_scatterplot : bool, int, optional
         If True or None, and there are over 1000 points, then the scatterplot
         will be downsampled by a factor. The default downsample factor will seek
@@ -7481,9 +7466,9 @@ class Fit_Lognormal_3P:
     goodness_of_fit : dataframe
         a pandas dataframe of the goodness of fit values (Log-likelihood, AICc,
         BIC, AD).
-    percentiles : dataframe
-        a pandas dataframe of the percentiles with bounds on time. This is only
-        produced if percentiles is not None. Since percentiles defaults to None,
+    quantiles : dataframe
+        a pandas dataframe of the quantiles with bounds on time. This is only
+        produced if quantiles is not None. Since quantiles defaults to None,
         this output is not normally produced.
     probability_plot : object
         the axes handle for the probability plot. This is only returned if
@@ -7508,7 +7493,7 @@ class Fit_Lognormal_3P:
         show_probability_plot=True,
         print_results=True,
         CI=0.95,
-        percentiles=None,
+        quantiles=None,
         CI_type="time",
         optimizer=None,
         method="MLE",
@@ -7523,7 +7508,7 @@ class Fit_Lognormal_3P:
             method=method,
             optimizer=optimizer,
             CI=CI,
-            percentiles=percentiles,
+            quantiles=quantiles,
             CI_type=CI_type,
         )
         failures = inputs.failures
@@ -7531,7 +7516,7 @@ class Fit_Lognormal_3P:
         CI = inputs.CI
         method = inputs.method
         optimizer = inputs.optimizer
-        percentiles = inputs.percentiles
+        quantiles = inputs.quantiles
         CI_type = inputs.CI_type
 
         # Obtain least squares estimates
@@ -7690,28 +7675,25 @@ class Fit_Lognormal_3P:
             CI_type=CI_type,
         )
 
-        if percentiles is not None:
-            point_estimate = self.distribution.quantile(q=percentiles / 100)
-            (
-                lower_estimate,
-                upper_estimate,
-            ) = distribution_confidence_intervals.lognormal_CI(
-                self=self.distribution,
+        if quantiles is not None:
+            point_estimate = self.distribution.quantile(q=quantiles)
+            lower_estimate, upper_estimate = extract_CI(
+                dist=self.distribution,
                 func="CDF",
                 CI_type="time",
                 CI=CI,
-                q=1 - (percentiles / 100),
+                CI_y=quantiles,
             )
-            percentile_data = {
-                "Percentile": percentiles,
+            quantile_data = {
+                "Quantile": quantiles,
                 "Lower Estimate": lower_estimate,
                 "Point Estimate": point_estimate,
                 "Upper Estimate": upper_estimate,
             }
-            self.percentiles = pd.DataFrame(
-                percentile_data,
+            self.quantiles = pd.DataFrame(
+                quantile_data,
                 columns=[
-                    "Percentile",
+                    "Quantile",
                     "Lower Estimate",
                     "Point Estimate",
                     "Upper Estimate",
@@ -7766,15 +7748,15 @@ class Fit_Lognormal_3P:
             print(self.results.to_string(index=False), "\n")
             print(self.goodness_of_fit.to_string(index=False), "\n")
 
-            if percentiles is not None:
+            if quantiles is not None:
                 print(
                     str(
-                        "Table of percentiles ("
+                        "Table of quantiles ("
                         + str(CI_rounded)
                         + "% CI bounds on time):"
                     )
                 )
-                print(self.percentiles.to_string(index=False), "\n")
+                print(self.quantiles.to_string(index=False), "\n")
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Lognormal_probability_plot
@@ -7864,14 +7846,14 @@ class Fit_Gamma_2P:
         Use None to turn off the confidence intervals. Must be either 'time',
         'reliability', or None. Default is 'time'. Some flexibility in names is
         allowed (eg. 't', 'time', 'r', 'rel', 'reliability' are all valid).
-    percentiles : bool, str, list, array, None, optional
-        percentiles (y-values) to produce a table of percentiles failed with
+    quantiles : bool, str, list, array, None, optional
+        quantiles (y-values) to produce a table of quantiles failed with
         lower, point, and upper estimates. Default is None which results in no
-        output. To use default array [1, 5, 10,..., 95, 99] set percentiles as
-        either 'auto', True, 'default', 'on'.
+        output. To use default array [0.01, 0.05, 0.1,..., 0.95, 0.99] set
+        quantiles as either 'auto', True, 'default', 'on'.
         If an array or list is specified then it will be used instead of the
         default array. Any array or list specified must contain values between
-        0 and 100.
+        0 and 1.
     downsample_scatterplot : bool, int, optional
         If True or None, and there are over 1000 points, then the scatterplot
         will be downsampled by a factor. The default downsample factor will seek
@@ -7933,9 +7915,9 @@ class Fit_Gamma_2P:
     goodness_of_fit : dataframe
         a pandas dataframe of the goodness of fit values (Log-likelihood, AICc,
         BIC, AD).
-    percentiles : dataframe
-        a pandas dataframe of the percentiles with bounds on time. This is only
-        produced if percentiles is not None. Since percentiles defaults to None,
+    quantiles : dataframe
+        a pandas dataframe of the quantiles with bounds on time. This is only
+        produced if quantiles is not None. Since quantiles defaults to None,
         this output is not normally produced.
     probability_plot : object
         the axes handle for the probability plot. This is only returned if
@@ -7969,7 +7951,7 @@ class Fit_Gamma_2P:
         CI=0.95,
         method="MLE",
         optimizer=None,
-        percentiles=None,
+        quantiles=None,
         CI_type="time",
         downsample_scatterplot=True,
         **kwargs,
@@ -7983,14 +7965,14 @@ class Fit_Gamma_2P:
             optimizer=optimizer,
             CI=CI,
             CI_type=CI_type,
-            percentiles=percentiles,
+            quantiles=quantiles,
         )
         failures = inputs.failures
         right_censored = inputs.right_censored
         CI = inputs.CI
         method = inputs.method
         optimizer = inputs.optimizer
-        percentiles = inputs.percentiles
+        quantiles = inputs.quantiles
         CI_type = inputs.CI_type
         self.gamma = 0
 
@@ -8111,25 +8093,25 @@ class Fit_Gamma_2P:
             CI_type=CI_type,
         )
 
-        if percentiles is not None:
-            point_estimate = self.distribution.quantile(q=percentiles / 100)
-            lower_estimate, upper_estimate = distribution_confidence_intervals.gamma_CI(
-                self=self.distribution,
+        if quantiles is not None:
+            point_estimate = self.distribution.quantile(q=quantiles)
+            lower_estimate, upper_estimate = extract_CI(
+                dist=self.distribution,
                 func="CDF",
                 CI_type="time",
                 CI=CI,
-                q=1 - (percentiles / 100),
+                CI_y=quantiles,
             )
-            percentile_data = {
-                "Percentile": percentiles,
+            quantile_data = {
+                "Quantile": quantiles,
                 "Lower Estimate": lower_estimate,
                 "Point Estimate": point_estimate,
                 "Upper Estimate": upper_estimate,
             }
-            self.percentiles = pd.DataFrame(
-                percentile_data,
+            self.quantiles = pd.DataFrame(
+                quantile_data,
                 columns=[
-                    "Percentile",
+                    "Quantile",
                     "Lower Estimate",
                     "Point Estimate",
                     "Upper Estimate",
@@ -8184,15 +8166,15 @@ class Fit_Gamma_2P:
             print(self.results.to_string(index=False), "\n")
             print(self.goodness_of_fit.to_string(index=False), "\n")
 
-            if percentiles is not None:
+            if quantiles is not None:
                 print(
                     str(
-                        "Table of percentiles ("
+                        "Table of quantiles ("
                         + str(CI_rounded)
                         + "% CI bounds on time):"
                     )
                 )
-                print(self.percentiles.to_string(index=False), "\n")
+                print(self.quantiles.to_string(index=False), "\n")
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Gamma_probability_plot
@@ -8285,14 +8267,14 @@ class Fit_Gamma_3P:
         Use None to turn off the confidence intervals. Must be either 'time',
         'reliability', or None. Default is 'time'. Some flexibility in names is
         allowed (eg. 't', 'time', 'r', 'rel', 'reliability' are all valid).
-    percentiles : bool, str, list, array, None, optional
-        percentiles (y-values) to produce a table of percentiles failed with
+    quantiles : bool, str, list, array, None, optional
+        quantiles (y-values) to produce a table of quantiles failed with
         lower, point, and upper estimates. Default is None which results in no
-        output. To use default array [1, 5, 10,..., 95, 99] set percentiles as
-        either 'auto', True, 'default', 'on'.
+        output. To use default array [0.01, 0.05, 0.1,..., 0.95, 0.99] set
+        quantiles as either 'auto', True, 'default', 'on'.
         If an array or list is specified then it will be used instead of the
         default array. Any array or list specified must contain values between
-        0 and 100.
+        0 and 1.
     downsample_scatterplot : bool, int, optional
         If True or None, and there are over 1000 points, then the scatterplot
         will be downsampled by a factor. The default downsample factor will seek
@@ -8362,9 +8344,9 @@ class Fit_Gamma_3P:
     goodness_of_fit : dataframe
         a pandas dataframe of the goodness of fit values (Log-likelihood, AICc,
         BIC, AD).
-    percentiles : dataframe
-        a pandas dataframe of the percentiles with bounds on time. This is only
-        produced if percentiles is not None. Since percentiles defaults to None,
+    quantiles : dataframe
+        a pandas dataframe of the quantiles with bounds on time. This is only
+        produced if quantiles is not None. Since quantiles defaults to None,
         this output is not normally produced.
     probability_plot : object
         the axes handle for the probability plot. This is only returned if
@@ -8403,7 +8385,7 @@ class Fit_Gamma_3P:
         CI=0.95,
         optimizer=None,
         method="MLE",
-        percentiles=None,
+        quantiles=None,
         CI_type="time",
         downsample_scatterplot=True,
         **kwargs,
@@ -8417,14 +8399,14 @@ class Fit_Gamma_3P:
             optimizer=optimizer,
             CI=CI,
             CI_type=CI_type,
-            percentiles=percentiles,
+            quantiles=quantiles,
         )
         failures = inputs.failures
         right_censored = inputs.right_censored
         CI = inputs.CI
         method = inputs.method
         optimizer = inputs.optimizer
-        percentiles = inputs.percentiles
+        quantiles = inputs.quantiles
         CI_type = inputs.CI_type
 
         # Obtain least squares estimates
@@ -8607,25 +8589,25 @@ class Fit_Gamma_3P:
             CI_type=CI_type,
         )
 
-        if percentiles is not None:
-            point_estimate = self.distribution.quantile(q=percentiles / 100)
-            lower_estimate, upper_estimate = distribution_confidence_intervals.gamma_CI(
-                self=self.distribution,
+        if quantiles is not None:
+            point_estimate = self.distribution.quantile(q=quantiles)
+            lower_estimate, upper_estimate = extract_CI(
+                dist=self.distribution,
                 func="CDF",
                 CI_type="time",
                 CI=CI,
-                q=1 - (percentiles / 100),
+                CI_y=quantiles,
             )
-            percentile_data = {
-                "Percentile": percentiles,
+            quantile_data = {
+                "Quantile": quantiles,
                 "Lower Estimate": lower_estimate,
                 "Point Estimate": point_estimate,
                 "Upper Estimate": upper_estimate,
             }
-            self.percentiles = pd.DataFrame(
-                percentile_data,
+            self.quantiles = pd.DataFrame(
+                quantile_data,
                 columns=[
-                    "Percentile",
+                    "Quantile",
                     "Lower Estimate",
                     "Point Estimate",
                     "Upper Estimate",
@@ -8680,15 +8662,15 @@ class Fit_Gamma_3P:
             print(self.results.to_string(index=False), "\n")
             print(self.goodness_of_fit.to_string(index=False), "\n")
 
-            if percentiles is not None:
+            if quantiles is not None:
                 print(
                     str(
-                        "Table of percentiles ("
+                        "Table of quantiles ("
                         + str(CI_rounded)
                         + "% CI bounds on time):"
                     )
                 )
-                print(self.percentiles.to_string(index=False), "\n")
+                print(self.quantiles.to_string(index=False), "\n")
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Gamma_probability_plot
@@ -8792,14 +8774,13 @@ class Fit_Beta_2P:
     CI : float, optional
         confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
-    percentiles : bool, str, list, array, None, optional
-        percentiles (y-values) to produce a table of percentiles failed with
-        lower, point, and upper estimates. Default is None which results in no
-        output. To use default array [1, 5, 10,..., 95, 99] set percentiles as
-        either 'auto', True, 'default', 'on'.
-        If an array or list is specified then it will be used instead of the
-        default array. Any array or list specified must contain values between
-        0 and 100.
+    quantiles : bool, str, list, array, None, optional
+        quantiles (y-values) to produce a table of quantiles failed with
+        point estimates. Default is None which results in no output. To use
+        default array [0.01, 0.05, 0.1,..., 0.95, 0.99] set quantiles as either
+        'auto', True, 'default', 'on'. If an array or list is specified then it
+        will be used instead of the default array. Any array or list specified
+        must contain values between 0 and 1.
     downsample_scatterplot : bool, int, optional
         If True or None, and there are over 1000 points, then the scatterplot
         will be downsampled by a factor. The default downsample factor will seek
@@ -8850,9 +8831,9 @@ class Fit_Beta_2P:
     goodness_of_fit : dataframe
         a pandas dataframe of the goodness of fit values (Log-likelihood, AICc,
         BIC, AD).
-    percentiles : dataframe
-        a pandas dataframe of the percentiles with bounds on time. This is only
-        produced if percentiles is not None. Since percentiles defaults to None,
+    quantiles : dataframe
+        a pandas dataframe of the quantiles with bounds on time. This is only
+        produced if quantiles is not None. Since quantiles defaults to None,
         this output is not normally produced.
     probability_plot : object
         the axes handle for the probability plot. This is only returned if
@@ -8875,7 +8856,7 @@ class Fit_Beta_2P:
         show_probability_plot=True,
         print_results=True,
         CI=0.95,
-        percentiles=None,
+        quantiles=None,
         method="MLE",
         optimizer=None,
         downsample_scatterplot=True,
@@ -8889,14 +8870,14 @@ class Fit_Beta_2P:
             method=method,
             optimizer=optimizer,
             CI=CI,
-            percentiles=percentiles,
+            quantiles=quantiles,
         )
         failures = inputs.failures
         right_censored = inputs.right_censored
         CI = inputs.CI
         method = inputs.method
         optimizer = inputs.optimizer
-        percentiles = inputs.percentiles
+        quantiles = inputs.quantiles
 
         # Obtain least squares estimates
         if method == "MLE":
@@ -8992,16 +8973,16 @@ class Fit_Beta_2P:
             beta=self.beta,
         )
 
-        if percentiles is not None:
-            point_estimate = self.distribution.quantile(q=percentiles / 100)
-            percentile_data = {
-                "Percentile": percentiles,
+        if quantiles is not None:
+            point_estimate = self.distribution.quantile(q=quantiles)
+            quantile_data = {
+                "Quantile": quantiles,
                 "Point Estimate": point_estimate,
             }
-            self.percentiles = pd.DataFrame(
-                percentile_data,
+            self.quantiles = pd.DataFrame(
+                quantile_data,
                 columns=[
-                    "Percentile",
+                    "Quantile",
                     "Point Estimate",
                 ],
             )
@@ -9054,15 +9035,15 @@ class Fit_Beta_2P:
             print(self.results.to_string(index=False), "\n")
             print(self.goodness_of_fit.to_string(index=False), "\n")
 
-            if percentiles is not None:
+            if quantiles is not None:
                 print(
                     str(
-                        "Table of percentiles ("
+                        "Table of quantiles ("
                         + str(CI_rounded)
                         + "% CI bounds on time):"
                     )
                 )
-                print(self.percentiles.to_string(index=False), "\n")
+                print(self.quantiles.to_string(index=False), "\n")
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Beta_probability_plot
@@ -9135,14 +9116,14 @@ class Fit_Loglogistic_2P:
         Use None to turn off the confidence intervals. Must be either 'time',
         'reliability', or None. Default is 'time'. Some flexibility in names is
         allowed (eg. 't', 'time', 'r', 'rel', 'reliability' are all valid).
-    percentiles : bool, str, list, array, None, optional
-        percentiles (y-values) to produce a table of percentiles failed with
+    quantiles : bool, str, list, array, None, optional
+        quantiles (y-values) to produce a table of quantiles failed with
         lower, point, and upper estimates. Default is None which results in no
-        output. To use default array [1, 5, 10,..., 95, 99] set percentiles as
-        either 'auto', True, 'default', 'on'.
+        output. To use default array [0.01, 0.05, 0.1,..., 0.95, 0.99] set
+        quantiles as either 'auto', True, 'default', 'on'.
         If an array or list is specified then it will be used instead of the
         default array. Any array or list specified must contain values between
-        0 and 100.
+        0 and 1.
     downsample_scatterplot : bool, int, optional
         If True or None, and there are over 1000 points, then the scatterplot
         will be downsampled by a factor. The default downsample factor will seek
@@ -9193,9 +9174,9 @@ class Fit_Loglogistic_2P:
     goodness_of_fit : dataframe
         a pandas dataframe of the goodness of fit values (Log-likelihood, AICc,
         BIC, AD).
-    percentiles : dataframe
-        a pandas dataframe of the percentiles with bounds on time. This is only
-        produced if percentiles is not None. Since percentiles defaults to None,
+    quantiles : dataframe
+        a pandas dataframe of the quantiles with bounds on time. This is only
+        produced if quantiles is not None. Since quantiles defaults to None,
         this output is not normally produced.
     probability_plot : object
         the axes handle for the probability plot. This is only returned if
@@ -9216,7 +9197,7 @@ class Fit_Loglogistic_2P:
         show_probability_plot=True,
         print_results=True,
         CI=0.95,
-        percentiles=None,
+        quantiles=None,
         CI_type="time",
         method="MLE",
         optimizer=None,
@@ -9231,7 +9212,7 @@ class Fit_Loglogistic_2P:
             method=method,
             optimizer=optimizer,
             CI=CI,
-            percentiles=percentiles,
+            quantiles=quantiles,
             CI_type=CI_type,
         )
         failures = inputs.failures
@@ -9239,7 +9220,7 @@ class Fit_Loglogistic_2P:
         CI = inputs.CI
         method = inputs.method
         optimizer = inputs.optimizer
-        percentiles = inputs.percentiles
+        quantiles = inputs.quantiles
         CI_type = inputs.CI_type
         self.gamma = 0
 
@@ -9341,28 +9322,25 @@ class Fit_Loglogistic_2P:
             CI_type=CI_type,
         )
 
-        if percentiles is not None:
-            point_estimate = self.distribution.quantile(q=percentiles / 100)
-            (
-                lower_estimate,
-                upper_estimate,
-            ) = distribution_confidence_intervals.loglogistic_CI(
-                self=self.distribution,
+        if quantiles is not None:
+            point_estimate = self.distribution.quantile(q=quantiles)
+            lower_estimate, upper_estimate = extract_CI(
+                dist=self.distribution,
                 func="CDF",
                 CI_type="time",
                 CI=CI,
-                q=1 - (percentiles / 100),
+                CI_y=quantiles,
             )
-            percentile_data = {
-                "Percentile": percentiles,
+            quantile_data = {
+                "Quantile": quantiles,
                 "Lower Estimate": lower_estimate,
                 "Point Estimate": point_estimate,
                 "Upper Estimate": upper_estimate,
             }
-            self.percentiles = pd.DataFrame(
-                percentile_data,
+            self.quantiles = pd.DataFrame(
+                quantile_data,
                 columns=[
-                    "Percentile",
+                    "Quantile",
                     "Lower Estimate",
                     "Point Estimate",
                     "Upper Estimate",
@@ -9417,15 +9395,15 @@ class Fit_Loglogistic_2P:
             print(self.results.to_string(index=False), "\n")
             print(self.goodness_of_fit.to_string(index=False), "\n")
 
-            if percentiles is not None:
+            if quantiles is not None:
                 print(
                     str(
-                        "Table of percentiles ("
+                        "Table of quantiles ("
                         + str(CI_rounded)
                         + "% CI bounds on time):"
                     )
                 )
-                print(self.percentiles.to_string(index=False), "\n")
+                print(self.quantiles.to_string(index=False), "\n")
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Loglogistic_probability_plot
@@ -9501,14 +9479,14 @@ class Fit_Loglogistic_3P:
         Use None to turn off the confidence intervals. Must be either 'time',
         'reliability', or None. Default is 'time'. Some flexibility in names is
         allowed (eg. 't', 'time', 'r', 'rel', 'reliability' are all valid).
-    percentiles : bool, str, list, array, None, optional
-        percentiles (y-values) to produce a table of percentiles failed with
+    quantiles : bool, str, list, array, None, optional
+        quantiles (y-values) to produce a table of quantiles failed with
         lower, point, and upper estimates. Default is None which results in no
-        output. To use default array [1, 5, 10,..., 95, 99] set percentiles as
-        either 'auto', True, 'default', 'on'.
+        output. To use default array [0.01, 0.05, 0.1,..., 0.95, 0.99] set
+        quantiles as either 'auto', True, 'default', 'on'.
         If an array or list is specified then it will be used instead of the
         default array. Any array or list specified must contain values between
-        0 and 100.
+        0 and 1.
     downsample_scatterplot : bool, int, optional
         If True or None, and there are over 1000 points, then the scatterplot
         will be downsampled by a factor. The default downsample factor will seek
@@ -9567,9 +9545,9 @@ class Fit_Loglogistic_3P:
     goodness_of_fit : dataframe
         a pandas dataframe of the goodness of fit values (Log-likelihood, AICc,
         BIC, AD).
-    percentiles : dataframe
-        a pandas dataframe of the percentiles with bounds on time. This is only
-        produced if percentiles is not None. Since percentiles defaults to None,
+    quantiles : dataframe
+        a pandas dataframe of the quantiles with bounds on time. This is only
+        produced if quantiles is not None. Since quantiles defaults to None,
         this output is not normally produced.
     probability_plot : object
         the axes handle for the probability plot. This is only returned if
@@ -9597,7 +9575,7 @@ class Fit_Loglogistic_3P:
         CI_type="time",
         optimizer=None,
         method="MLE",
-        percentiles=None,
+        quantiles=None,
         downsample_scatterplot=True,
         **kwargs,
     ):
@@ -9609,7 +9587,7 @@ class Fit_Loglogistic_3P:
             method=method,
             optimizer=optimizer,
             CI=CI,
-            percentiles=percentiles,
+            quantiles=quantiles,
             CI_type=CI_type,
         )
         failures = inputs.failures
@@ -9617,7 +9595,7 @@ class Fit_Loglogistic_3P:
         CI = inputs.CI
         method = inputs.method
         optimizer = inputs.optimizer
-        percentiles = inputs.percentiles
+        quantiles = inputs.quantiles
         CI_type = inputs.CI_type
 
         # Obtain least squares estimates
@@ -9773,28 +9751,25 @@ class Fit_Loglogistic_3P:
             CI_type=CI_type,
         )
 
-        if percentiles is not None:
-            point_estimate = self.distribution.quantile(q=percentiles / 100)
-            (
-                lower_estimate,
-                upper_estimate,
-            ) = distribution_confidence_intervals.loglogistic_CI(
-                self=self.distribution,
+        if quantiles is not None:
+            point_estimate = self.distribution.quantile(q=quantiles)
+            lower_estimate, upper_estimate = extract_CI(
+                dist=self.distribution,
                 func="CDF",
                 CI_type="time",
                 CI=CI,
-                q=1 - (percentiles / 100),
+                CI_y=quantiles,
             )
-            percentile_data = {
-                "Percentile": percentiles,
+            quantile_data = {
+                "Quantile": quantiles,
                 "Lower Estimate": lower_estimate,
                 "Point Estimate": point_estimate,
                 "Upper Estimate": upper_estimate,
             }
-            self.percentiles = pd.DataFrame(
-                percentile_data,
+            self.quantiles = pd.DataFrame(
+                quantile_data,
                 columns=[
-                    "Percentile",
+                    "Quantile",
                     "Lower Estimate",
                     "Point Estimate",
                     "Upper Estimate",
@@ -9849,15 +9824,15 @@ class Fit_Loglogistic_3P:
             print(self.results.to_string(index=False), "\n")
             print(self.goodness_of_fit.to_string(index=False), "\n")
 
-            if percentiles is not None:
+            if quantiles is not None:
                 print(
                     str(
-                        "Table of percentiles ("
+                        "Table of quantiles ("
                         + str(CI_rounded)
                         + "% CI bounds on time):"
                     )
                 )
-                print(self.percentiles.to_string(index=False), "\n")
+                print(self.quantiles.to_string(index=False), "\n")
 
         if show_probability_plot is True:
             from reliability.Probability_plotting import Loglogistic_probability_plot
