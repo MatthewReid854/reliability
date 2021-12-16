@@ -64,7 +64,7 @@ from reliability.Probability_plotting import plotting_positions
 from reliability.Utils import (
     round_to_decimals,
     anderson_darling,
-    distribution_confidence_intervals,
+    fitters_input_checking,
     fitters_input_checking,
     colorprint,
     least_squares,

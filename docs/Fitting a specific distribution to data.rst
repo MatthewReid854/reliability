@@ -212,10 +212,10 @@ To obtain details of the quantiles (y-values from the CDF) which include the low
     
     dist = Weibull_Distribution(alpha=500, beta=6)
     data = dist.random_samples(50, seed=1)  # generate some data
-    # this will produce the large table of percentiles below the first table of results
+    # this will produce the large table of quantiles below the first table of results
     Fit_Weibull_2P(failures=data, quantiles=True, CI=0.8, show_probability_plot=False)
     print('----------------------------------------------------------')
-    # repeat the process but using specified percentiles.
+    # repeat the process but using specified quantiles.
     output = Fit_Weibull_2P(failures=data, quantiles=[0.05, 0.5, 0.95], CI=0.8)
     # these points have been manually annotated on the plot using crosshairs
     crosshairs()

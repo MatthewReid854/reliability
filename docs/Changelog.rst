@@ -15,14 +15,14 @@ There are also several minor changes, mainly to the documentation and a minor bu
 
 **New features**
 
--    Extracting confidence bounds on CDF, SF, and CHF for bounds on time or bounds on reliability can now be done directly from the distribution object that is created by the fitter, as shown `here <https://reliability.readthedocs.io/en/latest/Working%20with%20fitted%20distributions.html>`_. This required a large number of functions to be rewritten and resulted in several API changes (see below).
+-    Extracting confidence bounds on CDF, SF, and CHF for bounds on time or bounds on reliability can now be done directly from the distribution object that is created by the fitter, as shown `here <https://reliability.readthedocs.io/en/latest/Working%20with%20fitted%20distributions.html>`_. This required a large number of functions to be modified and resulted in several API changes (see below).
 -    Repairable_systems.reliability growth has been completely rewritten. This function now includes both the Duane and Crow-AMSAA reliability growth models. The parametrisation of the Duane model has been modified to match what reliasoft uses.
 -    New dataset called system_growth has been added to the Datasets module.
 
 **API Changes**
 
 -    Repairable_systems.reliability growth has been completely rewritten, so the inputs and outputs are completely different. The old version of the Duane model has been replaced without deprecation. Users needing to use the old version should use v0.7.1 of reliability.
--    All references to percentiles have now been replaced by quantiles. Note that the previous percentiles argument in the Fitters mandated values between 0 and 100. The quantiles argument mandates values between 0 and 1. They are otherwise the same, just a factor of 100 different. This has been changed without deprecation, so it may cause your code to break if you are using the percentiles argument.
+-    All references to percentiles have now been replaced by quantiles. Note that the previous percentiles argument in the Fitters mandated values between 0 and 100. The quantiles argument mandates values between 0 and 1. They are otherwise the same, just a factor of 100 different. This has been changed without deprecation, so it may cause your code to break if you are using the percentiles argument. This change was made for simplicity, since the plots show quantiles so there was no real need to have a new argument for the same thing multiplied by 100.
 -    The subfunctions (.CDF(), .SF(), .CHF()) for each Distribution (that has confidence intervals) now have all relevant arguments visible as args rather than kwargs. This refers to plot_CI, CI_type, CI, CI_y, CI_x. Previously plot_CI, CI_type, and CI were kwargs so your IDE would not show you these. They have been converted to args for ease of use. The arguments CI_x and CI_y are new, and are used to extract the confidence bounds from the plot of a fitted distribution object.
 
 **Bug Fixes**
@@ -36,6 +36,9 @@ There are also several minor changes, mainly to the documentation and a minor bu
 -    Theory documents are finished for `censored data <https://reliability.readthedocs.io/en/latest/What%20is%20censored%20data.html>`_, `plotting positions <https://reliability.readthedocs.io/en/latest/How%20are%20the%20plotting%20positions%20calculated.html>`_, `Least Squares Estimation <https://reliability.readthedocs.io/en/latest/How%20does%20Least%20Squares%20Estimation%20work.html>`_, `Maximum Likelihood Estimation <https://reliability.readthedocs.io/en/latest/How%20does%20Maximum%20Likelihood%20Estimation%20work.html>`_, and `Confidence Intervals <https://reliability.readthedocs.io/en/latest/How%20are%20the%20confidence%20intervals%20calculated.html>`_.
 -    Updates pytests for new reliability_growth function.
 -    New document on `working with fitted distributions <https://reliability.readthedocs.io/en/latest/Working%20with%20fitted%20distributions.html>`_.
+-    Added several new utils functions including, distributions_input_checking, extract_CIs, unpack_single_arrays
+-    Within the Distributions module, the returns from each PDF, CDF, SF, HF, CHF, quantile, inverse_SF function will automatically unpack arrays of length 1. This means that if given an array of length 1 as input, you will now get a float instead of an array as output. This makes it easier for users to avoid the need to manually unpack single values for later use.
+-    Updated API documentation for Distributions to reflect the numerous changes to the inputs and outputs.
 
 **Version: 0.7.1 --- Released: 26 Oct 2021**
 ''''''''''''''''''''''''''''''''''''''''''''

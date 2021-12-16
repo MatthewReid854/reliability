@@ -14,8 +14,8 @@ The confidence interval is also required, though this defaults to 0.95 for 95% c
 
 The confidence bounds available are bounds on time or bounds on reliability. For an detailed explaination of how these are calculated, please see the `theory document <https://reliability.readthedocs.io/en/latest/How%20are%20the%20confidence%20intervals%20calculated.html#confidence-intervals-on-the-plots>`_ on confidence intervals.
 The important thing to note here is that they are different, and which one you should use depends on what you want to know.
-If you want to know the system reliability at a certain time, then you are specifying time (CI_x) and seeking bounds on reliability (CI_type='reliability).
-If you want to know the time that the system will reach a certain reliability, then you are specifying reliability (CI_y) and seeking bounds on time (CI_type='time).
+If you want to know the system reliability at a certain time, then you are specifying time (CI_x) and seeking bounds on reliability (CI_type='reliability').
+If you want to know the time that the system will reach a certain reliability, then you are specifying reliability (CI_y) and seeking bounds on time (CI_type='time').
 Note that these are paired, so CI_y only works with CI_type='time' and CI_x only works with CI_type='reliability'. The only exception to this is the Exponential Distribution which does not accept CI_type since bounds on time and reliability are identical.
 
 Example 1
@@ -38,31 +38,31 @@ In this example, we see how the confidence bounds on time or reliability should 
     arrow_x = 25
     arrow_y = 0.025
     
-    X_lower,X_point,X_upper = fit.distribution.CDF(CI_type='time',CI_y=[0.7])
-    plt.arrow(x=0,y=0.7,dx=X_upper[0],dy=0,color='red',head_width=arrow_y,head_length=arrow_x,length_includes_head=True)
-    plt.arrow(x=X_lower[0],y=0.7,dx=0,dy=-0.7,color='red',head_width=arrow_x,head_length=arrow_y,length_includes_head=True)
-    plt.arrow(x=X_point[0],y=0.7,dx=0,dy=-0.7,color='red',head_width=arrow_x,head_length=arrow_y,length_includes_head=True)
-    plt.arrow(x=X_upper[0],y=0.7,dx=0,dy=-0.7,color='red',head_width=arrow_x,head_length=arrow_y,length_includes_head=True)
+    X_lower,X_point,X_upper = fit.distribution.CDF(CI_type='time',CI_y=0.7)
+    plt.arrow(x=0,y=0.7,dx=X_upper,dy=0,color='red',head_width=arrow_y,head_length=arrow_x,length_includes_head=True)
+    plt.arrow(x=X_lower,y=0.7,dx=0,dy=-0.7,color='red',head_width=arrow_x,head_length=arrow_y,length_includes_head=True)
+    plt.arrow(x=X_point,y=0.7,dx=0,dy=-0.7,color='red',head_width=arrow_x,head_length=arrow_y,length_includes_head=True)
+    plt.arrow(x=X_upper,y=0.7,dx=0,dy=-0.7,color='red',head_width=arrow_x,head_length=arrow_y,length_includes_head=True)
     plt.xlim(0,dist.quantile(0.99))
     plt.ylim(0,1.1)
-    plt.text(x=0,y=0.705,s='CI_x=[0.7]',va='bottom')
-    plt.text(x=X_lower[0],y=0.035,s='lower',va='bottom',ha='right',rotation=90)
-    plt.text(x=X_point[0],y=0.035,s='point',va='bottom',ha='right',rotation=90)
-    plt.text(x=X_upper[0],y=0.035,s='upper',va='bottom',ha='right',rotation=90)
+    plt.text(x=0,y=0.705,s='CI_x=0.7',va='bottom')
+    plt.text(x=X_lower,y=0.035,s='lower',va='bottom',ha='right',rotation=90)
+    plt.text(x=X_point,y=0.035,s='point',va='bottom',ha='right',rotation=90)
+    plt.text(x=X_upper,y=0.035,s='upper',va='bottom',ha='right',rotation=90)
     plt.title('Weibull CDF\nConfidence bounds on time')
     
     plt.subplot(122)
-    Y_lower,Y_point,Y_upper = fit.distribution.CDF(CI_type='reliability',CI_x=[300])
-    plt.arrow(x=300,y=0,dx=0,dy=Y_upper[0],color='red',head_width=arrow_x,head_length=arrow_y,length_includes_head=True)
-    plt.arrow(x=300,y=Y_lower[0],dx=-300,dy=0,color='red',head_width=arrow_y,head_length=arrow_x,length_includes_head=True)
-    plt.arrow(x=300,y=Y_point[0],dx=-300,dy=0,color='red',head_width=arrow_y,head_length=arrow_x,length_includes_head=True)
-    plt.arrow(x=300,y=Y_upper[0],dx=-300,dy=0,color='red',head_width=arrow_y,head_length=arrow_x,length_includes_head=True)
+    Y_lower,Y_point,Y_upper = fit.distribution.CDF(CI_type='reliability',CI_x=300)
+    plt.arrow(x=300,y=0,dx=0,dy=Y_upper,color='red',head_width=arrow_x,head_length=arrow_y,length_includes_head=True)
+    plt.arrow(x=300,y=Y_lower,dx=-300,dy=0,color='red',head_width=arrow_y,head_length=arrow_x,length_includes_head=True)
+    plt.arrow(x=300,y=Y_point,dx=-300,dy=0,color='red',head_width=arrow_y,head_length=arrow_x,length_includes_head=True)
+    plt.arrow(x=300,y=Y_upper,dx=-300,dy=0,color='red',head_width=arrow_y,head_length=arrow_x,length_includes_head=True)
     plt.xlim(0,dist.quantile(0.99))
     plt.ylim(0,1.1)
-    plt.text(x=301,y=0.001,s='CI_y=[300]',va='bottom')
-    plt.text(x=40,y=Y_lower[0]+0.002,s='lower')
-    plt.text(x=40,y=Y_point[0]+0.002,s='point')
-    plt.text(x=40,y=Y_upper[0]+0.002,s='upper')
+    plt.text(x=301,y=0.001,s='CI_y=300',va='bottom')
+    plt.text(x=40,y=Y_lower+0.002,s='lower')
+    plt.text(x=40,y=Y_point+0.002,s='point')
+    plt.text(x=40,y=Y_upper+0.002,s='upper')
     
     plt.title('Weibull CDF\nConfidence bounds on reliability')
     plt.tight_layout()
@@ -175,17 +175,18 @@ We will fit a Weibull Distribution, and then from the fitted distribution, we wa
     fit = Fit_Weibull_2P(failures=automotive().failures,right_censored=automotive().right_censored,show_probability_plot=False)
     
     # we want to know the system reliability after 100000 miles
-    lower,point,upper = fit.distribution.SF(CI_x=[100000],CI_type='reliability',CI=0.8)
-    plt.scatter([100000,100000,100000],[lower[0],point[0],upper[0]],color='black')
+    lower,point,upper = fit.distribution.SF(CI_x=100000,CI_type='reliability',CI=0.8)
+    plt.scatter([100000,100000,100000],[lower,point,upper],color='black')
     
     print('Failures:',automotive().failures)
     print('Right censored:',automotive().right_censored)
     print('')
     print("The 80% reliability estimates at 100000 miles are:")
-    print("lower bound: "+"{:.2%}".format(lower[0]))
-    print("point estimate: "+"{:.2%}".format(point[0]))
-    print("upper bound: "+"{:.2%}".format(upper[0]))
+    print("lower bound: "+"{:.2%}".format(lower))
+    print("point estimate: "+"{:.2%}".format(point))
+    print("upper bound: "+"{:.2%}".format(upper))
     plt.show()
+
 
     '''
     Results from Fit_Weibull_2P (95% CI):

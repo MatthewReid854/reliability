@@ -45,6 +45,7 @@ from reliability.Utils import (
     colorprint,
     extract_CI,
     distributions_input_checking,
+    unpack_single_arrays,
 )
 
 dec = 4  # number of decimals to use when rounding descriptive statistics and parameter titles
@@ -229,7 +230,11 @@ class Weibull_Distribution:
         """
 
         X, xvals, xmin, xmax = distributions_input_checking(
-            self, "ALL", xvals, xmin, xmax
+            self,
+            "ALL",
+            xvals,
+            xmin,
+            xmax,
         )
 
         pdf = ss.weibull_min.pdf(X, self.beta, scale=self.alpha, loc=self.gamma)
@@ -372,12 +377,13 @@ class Weibull_Distribution:
 
         Returns
         -------
-        yvals : array
+        yvals : array, float
             The y-values of the plot
-        The plot will be shown if show_plot is True (which it is by default).
 
         Notes
         -----
+        The plot will be shown if show_plot is True (which it is by default).
+
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
         created using these limits. If nothing is specified then the range will
@@ -388,6 +394,7 @@ class Weibull_Distribution:
         )
 
         pdf = ss.weibull_min.pdf(X, self.beta, scale=self.alpha, loc=self.gamma)
+        pdf = unpack_single_arrays(pdf)
 
         if show_plot == True:
             limits = get_axes_limits()  # get the previous axes limits
@@ -465,16 +472,16 @@ class Weibull_Distribution:
 
         Returns
         -------
-        yvals : array
+        yvals : array, float
             The y-values of the plot. Only returned if CI_x and CI_y are not
             specified.
         lower_estimate, point_estimate, upper_estimate : tuple
-            A tuple of arrays of the confidence interval estimates based on CI_x
-            or CI_y. Only returned if CI_x or CI_y is specified and the
-            confidence intervals are available. If CI_x is specified, the point
-            estimate is the y-values from the distribution at CI_x. If CI_y is
-            specified, the point estimate is the x-values from the distribution
-            at CI_y.
+            A tuple of arrays or floats of the confidence interval estimates
+            based on CI_x or CI_y. Only returned if CI_x or CI_y is specified
+            and the confidence intervals are available. If CI_x is specified,
+            the point estimate is the y-values from the distribution at CI_x. If
+            CI_y is specified, the point estimate is the x-values from the
+            distribution at CI_y.
 
         Notes
         -----
@@ -502,6 +509,7 @@ class Weibull_Distribution:
         )
 
         cdf = ss.weibull_min.cdf(X, self.beta, scale=self.alpha, loc=self.gamma)
+        cdf = unpack_single_arrays(cdf)
 
         if show_plot == True:
             limits = get_axes_limits()  # get the previous axes limits
@@ -546,13 +554,10 @@ class Weibull_Distribution:
             if CI_type == "time":
                 return lower_CI, self.quantile(CI_y), upper_CI
             elif CI_type == "reliability":
-                return (
-                    lower_CI,
-                    ss.weibull_min.cdf(
-                        CI_x, self.beta, scale=self.alpha, loc=self.gamma
-                    ),
-                    upper_CI,
+                cdf_point = ss.weibull_min.cdf(
+                    CI_x, self.beta, scale=self.alpha, loc=self.gamma
                 )
+                return lower_CI, unpack_single_arrays(cdf_point), upper_CI
         else:
             return cdf
 
@@ -604,16 +609,16 @@ class Weibull_Distribution:
 
         Returns
         -------
-        yvals : array
+        yvals : array, float
             The y-values of the plot. Only returned if CI_x and CI_y are not
             specified.
         lower_estimate, point_estimate, upper_estimate : tuple
-            A tuple of arrays of the confidence interval estimates based on CI_x
-            or CI_y. Only returned if CI_x or CI_y is specified and the
-            confidence intervals are available. If CI_x is specified, the point
-            estimate is the y-values from the distribution at CI_x. If CI_y is
-            specified, the point estimate is the x-values from the distribution
-            at CI_y.
+            A tuple of arrays or floats of the confidence interval estimates
+            based on CI_x or CI_y. Only returned if CI_x or CI_y is specified
+            and the confidence intervals are available. If CI_x is specified,
+            the point estimate is the y-values from the distribution at CI_x. If
+            CI_y is specified, the point estimate is the x-values from the
+            distribution at CI_y.
 
         Notes
         -----
@@ -641,6 +646,7 @@ class Weibull_Distribution:
         )
 
         sf = ss.weibull_min.sf(X, self.beta, scale=self.alpha, loc=self.gamma)
+        sf = unpack_single_arrays(sf)
 
         if show_plot == True:
             limits = get_axes_limits()  # get the previous axes limits
@@ -685,13 +691,10 @@ class Weibull_Distribution:
             if CI_type == "time":
                 return lower_CI, self.inverse_SF(CI_y), upper_CI
             elif CI_type == "reliability":
-                return (
-                    lower_CI,
-                    ss.weibull_min.sf(
-                        CI_x, self.beta, scale=self.alpha, loc=self.gamma
-                    ),
-                    upper_CI,
+                sf_point = ss.weibull_min.sf(
+                    CI_x, self.beta, scale=self.alpha, loc=self.gamma
                 )
+                return lower_CI, unpack_single_arrays(sf_point), upper_CI
         else:
             return sf
 
@@ -715,7 +718,7 @@ class Weibull_Distribution:
 
         Returns
         -------
-        yvals : array
+        yvals : array, float
             The y-values of the plot
 
         Notes
@@ -736,6 +739,7 @@ class Weibull_Distribution:
             self.beta - 1
         )
         hf = zeroise_below_gamma(X=X, Y=hf, gamma=self.gamma)
+        hf = unpack_single_arrays(hf)
         self._hf = hf  # required by the CI plotting part
         self._X = X
 
@@ -812,16 +816,16 @@ class Weibull_Distribution:
 
         Returns
         -------
-        yvals : array
+        yvals : array, float
             The y-values of the plot. Only returned if CI_x and CI_y are not
             specified.
         lower_estimate, point_estimate, upper_estimate : tuple
-            A tuple of arrays of the confidence interval estimates based on CI_x
-            or CI_y. Only returned if CI_x or CI_y is specified and the
-            confidence intervals are available. If CI_x is specified, the point
-            estimate is the y-values from the distribution at CI_x. If CI_y is
-            specified, the point estimate is the x-values from the distribution
-            at CI_y.
+            A tuple of arrays or floats of the confidence interval estimates
+            based on CI_x or CI_y. Only returned if CI_x or CI_y is specified
+            and the confidence intervals are available. If CI_x is specified,
+            the point estimate is the y-values from the distribution at CI_x. If
+            CI_y is specified, the point estimate is the x-values from the
+            distribution at CI_y.
 
         Notes
         -----
@@ -850,6 +854,7 @@ class Weibull_Distribution:
 
         chf = ((X - self.gamma) / self.alpha) ** self.beta
         chf = zeroise_below_gamma(X=X, Y=chf, gamma=self.gamma)
+        chf = unpack_single_arrays(chf)
         self._chf = chf  # required by the CI plotting part
         self._X = X
 
@@ -901,7 +906,7 @@ class Weibull_Distribution:
                     Y=((CI_x - self.gamma) / self.alpha) ** self.beta,
                     gamma=self.gamma,
                 )
-                return lower_CI, chf_point, upper_CI
+                return lower_CI, unpack_single_arrays(chf_point), upper_CI
         else:
             return chf
 
@@ -916,7 +921,7 @@ class Weibull_Distribution:
 
         Returns
         -------
-        x : float
+        x : float, array
             The inverse of the CDF at q. This is the probability that a random
             variable from the distribution is < q
         """
@@ -928,7 +933,8 @@ class Weibull_Distribution:
                 raise ValueError("Quantile must be between 0 and 1")
         else:
             raise ValueError("Quantile must be of type float, list, array")
-        return ss.weibull_min.ppf(q, self.beta, scale=self.alpha, loc=self.gamma)
+        ppf = ss.weibull_min.ppf(q, self.beta, scale=self.alpha, loc=self.gamma)
+        return unpack_single_arrays(ppf)
 
     def inverse_SF(self, q):
         """
@@ -941,7 +947,7 @@ class Weibull_Distribution:
 
         Returns
         -------
-        x : float
+        x : float, array
             The inverse of the SF at q.
         """
         if type(q) in [int, float, np.float64]:
@@ -952,7 +958,8 @@ class Weibull_Distribution:
                 raise ValueError("Quantile must be between 0 and 1")
         else:
             raise ValueError("Quantile must be of type float, list, array")
-        return ss.weibull_min.isf(q, self.beta, scale=self.alpha, loc=self.gamma)
+        isf = ss.weibull_min.isf(q, self.beta, scale=self.alpha, loc=self.gamma)
+        return unpack_single_arrays(isf)
 
     def mean_residual_life(self, t):
         """
@@ -1329,12 +1336,13 @@ class Normal_Distribution:
 
         Returns
         -------
-        yvals : array
+        yvals : array, float
             The y-values of the plot
-        The plot will be shown if show_plot is True (which it is by default).
 
         Notes
         -----
+        The plot will be shown if show_plot is True (which it is by default).
+
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
         created using these limits. If nothing is specified then the range will
@@ -1345,6 +1353,7 @@ class Normal_Distribution:
         )
 
         pdf = ss.norm.pdf(X, self.mu, self.sigma)
+        pdf = unpack_single_arrays(pdf)
 
         if show_plot == True:
             limits = get_axes_limits()  # get the previous axes limits
@@ -1406,12 +1415,21 @@ class Normal_Distribution:
 
         Returns
         -------
-        yvals : array
-            The y-values of the plot
-        The plot will be shown if show_plot is True (which it is by default).
+        yvals : array, float
+            The y-values of the plot. Only returned if CI_x and CI_y are not
+            specified.
+        lower_estimate, point_estimate, upper_estimate : tuple
+            A tuple of arrays or floats of the confidence interval estimates
+            based on CI_x or CI_y. Only returned if CI_x or CI_y is specified
+            and the confidence intervals are available. If CI_x is specified,
+            the point estimate is the y-values from the distribution at CI_x. If
+            CI_y is specified, the point estimate is the x-values from the
+            distribution at CI_y.
 
         Notes
         -----
+        The plot will be shown if show_plot is True (which it is by default).
+
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
         created using these limits. If nothing is specified then the range will
@@ -1433,6 +1451,7 @@ class Normal_Distribution:
         )
 
         cdf = ss.norm.cdf(X, self.mu, self.sigma)
+        cdf = unpack_single_arrays(cdf)
 
         if show_plot == True:
             limits = get_axes_limits()  # get the previous axes limits
@@ -1477,7 +1496,8 @@ class Normal_Distribution:
             if CI_type == "time":
                 return lower_CI, self.quantile(CI_y), upper_CI
             elif CI_type == "reliability":
-                return lower_CI, ss.norm.cdf(CI_x, self.mu, self.sigma), upper_CI
+                cdf_point = ss.norm.cdf(CI_x, self.mu, self.sigma)
+                return lower_CI, unpack_single_arrays(cdf_point), upper_CI
         else:
             return cdf
 
@@ -1513,12 +1533,21 @@ class Normal_Distribution:
 
         Returns
         -------
-        yvals : array
-            The y-values of the plot
-        The plot will be shown if show_plot is True (which it is by default).
+        yvals : array, float
+            The y-values of the plot. Only returned if CI_x and CI_y are not
+            specified.
+        lower_estimate, point_estimate, upper_estimate : tuple
+            A tuple of arrays or floats of the confidence interval estimates
+            based on CI_x or CI_y. Only returned if CI_x or CI_y is specified
+            and the confidence intervals are available. If CI_x is specified,
+            the point estimate is the y-values from the distribution at CI_x. If
+            CI_y is specified, the point estimate is the x-values from the
+            distribution at CI_y.
 
         Notes
         -----
+        The plot will be shown if show_plot is True (which it is by default).
+
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
         created using these limits. If nothing is specified then the range will
@@ -1540,6 +1569,7 @@ class Normal_Distribution:
         )
 
         sf = ss.norm.sf(X, self.mu, self.sigma)
+        sf = unpack_single_arrays(sf)
 
         if show_plot == True:
             limits = get_axes_limits()  # get the previous axes limits
@@ -1584,7 +1614,8 @@ class Normal_Distribution:
             if CI_type == "time":
                 return lower_CI, self.inverse_SF(CI_y), upper_CI
             elif CI_type == "reliability":
-                return lower_CI, ss.norm.sf(CI_x, self.mu, self.sigma), upper_CI
+                sf_point = ss.norm.sf(CI_x, self.mu, self.sigma)
+                return lower_CI, unpack_single_arrays(sf_point), upper_CI
         else:
             return sf
 
@@ -1608,12 +1639,13 @@ class Normal_Distribution:
 
         Returns
         -------
-        yvals : array
+        yvals : array, float
             The y-values of the plot
-        The plot will be shown if show_plot is True (which it is by default).
 
         Notes
         -----
+        The plot will be shown if show_plot is True (which it is by default).
+
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
         created using these limits. If nothing is specified then the range will
@@ -1624,6 +1656,7 @@ class Normal_Distribution:
         )
 
         hf = ss.norm.pdf(X, self.mu, self.sigma) / ss.norm.sf(X, self.mu, self.sigma)
+        hf = unpack_single_arrays(hf)
 
         if show_plot == True:
             limits = get_axes_limits()  # get the previous axes limits
@@ -1682,12 +1715,21 @@ class Normal_Distribution:
 
         Returns
         -------
-        yvals : array
-            The y-values of the plot
-        The plot will be shown if show_plot is True (which it is by default).
+        yvals : array, float
+            The y-values of the plot. Only returned if CI_x and CI_y are not
+            specified.
+        lower_estimate, point_estimate, upper_estimate : tuple
+            A tuple of arrays or floats of the confidence interval estimates
+            based on CI_x or CI_y. Only returned if CI_x or CI_y is specified
+            and the confidence intervals are available. If CI_x is specified,
+            the point estimate is the y-values from the distribution at CI_x. If
+            CI_y is specified, the point estimate is the x-values from the
+            distribution at CI_y.
 
         Notes
         -----
+        The plot will be shown if show_plot is True (which it is by default).
+
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
         created using these limits. If nothing is specified then the range will
@@ -1709,6 +1751,7 @@ class Normal_Distribution:
         )
 
         chf = -np.log(ss.norm.sf(X, self.mu, self.sigma))
+        chf = unpack_single_arrays(chf)
         self._chf = chf  # required by the CI plotting part
         self._X = X
 
@@ -1755,11 +1798,8 @@ class Normal_Distribution:
             if CI_type == "time":
                 return lower_CI, self.inverse_SF(np.exp(-CI_y)), upper_CI
             elif CI_type == "reliability":
-                return (
-                    lower_CI,
-                    -np.log(ss.norm.sf(CI_x, self.mu, self.sigma)),
-                    upper_CI,
-                )
+                chf_point = -np.log(ss.norm.sf(CI_x, self.mu, self.sigma))
+                return lower_CI, unpack_single_arrays(chf_point), upper_CI
         else:
             return chf
 
@@ -1786,7 +1826,8 @@ class Normal_Distribution:
                 raise ValueError("Quantile must be between 0 and 1")
         else:
             raise ValueError("Quantile must be of type float, list, array")
-        return ss.norm.ppf(q, loc=self.mu, scale=self.sigma)
+        ppf = ss.norm.ppf(q, loc=self.mu, scale=self.sigma)
+        return unpack_single_arrays(ppf)
 
     def inverse_SF(self, q):
         """
@@ -1810,7 +1851,8 @@ class Normal_Distribution:
                 raise ValueError("Quantile must be between 0 and 1")
         else:
             raise ValueError("Quantile must be of type float, list, array")
-        return ss.norm.isf(q, loc=self.mu, scale=self.sigma)
+        isf = ss.norm.isf(q, loc=self.mu, scale=self.sigma)
+        return unpack_single_arrays(isf)
 
     def mean_residual_life(self, t):
         """
@@ -2205,12 +2247,13 @@ class Lognormal_Distribution:
 
         Returns
         -------
-        yvals : array
+        yvals : array, float
             The y-values of the plot
-        The plot will be shown if show_plot is True (which it is by default).
 
         Notes
         -----
+        The plot will be shown if show_plot is True (which it is by default).
+
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
         created using these limits. If nothing is specified then the range will
@@ -2221,10 +2264,9 @@ class Lognormal_Distribution:
         )
 
         pdf = ss.lognorm.pdf(X, self.sigma, self.gamma, np.exp(self.mu))
+        pdf = unpack_single_arrays(pdf)
 
-        if show_plot == False:
-            return pdf
-        else:
+        if show_plot == True:
             limits = get_axes_limits()  # get the previous axes limits
 
             plt.plot(X, pdf, **kwargs)
@@ -2250,7 +2292,7 @@ class Lognormal_Distribution:
                 xmax=xmax,
             )
 
-            return pdf
+        return pdf
 
     def CDF(
         self,
@@ -2284,12 +2326,21 @@ class Lognormal_Distribution:
 
         Returns
         -------
-        yvals : array
-            The y-values of the plot
-        The plot will be shown if show_plot is True (which it is by default).
+        yvals : array, float
+            The y-values of the plot. Only returned if CI_x and CI_y are not
+            specified.
+        lower_estimate, point_estimate, upper_estimate : tuple
+            A tuple of arrays or floats of the confidence interval estimates
+            based on CI_x or CI_y. Only returned if CI_x or CI_y is specified
+            and the confidence intervals are available. If CI_x is specified,
+            the point estimate is the y-values from the distribution at CI_x. If
+            CI_y is specified, the point estimate is the x-values from the
+            distribution at CI_y.
 
         Notes
         -----
+        The plot will be shown if show_plot is True (which it is by default).
+
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
         created using these limits. If nothing is specified then the range will
@@ -2311,6 +2362,7 @@ class Lognormal_Distribution:
         )
 
         cdf = ss.lognorm.cdf(X, self.sigma, self.gamma, np.exp(self.mu))
+        cdf = unpack_single_arrays(cdf)
 
         if show_plot is True:
             limits = get_axes_limits()  # get the previous axes limits
@@ -2355,11 +2407,10 @@ class Lognormal_Distribution:
             if CI_type == "time":
                 return lower_CI, self.quantile(CI_y), upper_CI
             elif CI_type == "reliability":
-                return (
-                    lower_CI,
+                cdf_point = (
                     ss.lognorm.cdf(CI_x, self.sigma, self.gamma, np.exp(self.mu)),
-                    upper_CI,
                 )
+                return lower_CI, unpack_single_arrays(cdf_point), upper_CI
         else:
             return cdf
 
@@ -2395,12 +2446,21 @@ class Lognormal_Distribution:
 
         Returns
         -------
-        yvals : array
-            The y-values of the plot
-        The plot will be shown if show_plot is True (which it is by default).
+        yvals : array, float
+            The y-values of the plot. Only returned if CI_x and CI_y are not
+            specified.
+        lower_estimate, point_estimate, upper_estimate : tuple
+            A tuple of arrays or floats of the confidence interval estimates
+            based on CI_x or CI_y. Only returned if CI_x or CI_y is specified
+            and the confidence intervals are available. If CI_x is specified,
+            the point estimate is the y-values from the distribution at CI_x. If
+            CI_y is specified, the point estimate is the x-values from the
+            distribution at CI_y.
 
         Notes
         -----
+        The plot will be shown if show_plot is True (which it is by default).
+
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
         created using these limits. If nothing is specified then the range will
@@ -2422,6 +2482,7 @@ class Lognormal_Distribution:
         )
 
         sf = ss.lognorm.sf(X, self.sigma, self.gamma, np.exp(self.mu))
+        sf = unpack_single_arrays(sf)
 
         if show_plot == True:
             limits = get_axes_limits()  # get the previous axes limits
@@ -2466,11 +2527,8 @@ class Lognormal_Distribution:
             if CI_type == "time":
                 return lower_CI, self.inverse_SF(CI_y), upper_CI
             elif CI_type == "reliability":
-                return (
-                    lower_CI,
-                    ss.lognorm.sf(CI_x, self.sigma, self.gamma, np.exp(self.mu)),
-                    upper_CI,
-                )
+                sf_point = ss.lognorm.sf(CI_x, self.sigma, self.gamma, np.exp(self.mu))
+                return lower_CI, unpack_single_arrays(sf_point), upper_CI
         else:
             return sf
 
@@ -2494,12 +2552,13 @@ class Lognormal_Distribution:
 
         Returns
         -------
-        yvals : array
+        yvals : array, float
             The y-values of the plot
-        The plot will be shown if show_plot is True (which it is by default).
 
         Notes
         -----
+        The plot will be shown if show_plot is True (which it is by default).
+
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
         created using these limits. If nothing is specified then the range will
@@ -2512,10 +2571,9 @@ class Lognormal_Distribution:
         hf = ss.lognorm.pdf(X, self.sigma, self.gamma, np.exp(self.mu)) / ss.lognorm.sf(
             X, self.sigma, self.gamma, np.exp(self.mu)
         )
+        hf = unpack_single_arrays(hf)
 
-        if show_plot == False:
-            return hf
-        else:
+        if show_plot == True:
             limits = get_axes_limits()  # get the previous axes limits
 
             plt.plot(X, hf, **kwargs)
@@ -2541,7 +2599,7 @@ class Lognormal_Distribution:
                 xmax=xmax,
             )
 
-            return hf
+        return hf
 
     def CHF(
         self,
@@ -2575,12 +2633,21 @@ class Lognormal_Distribution:
 
         Returns
         -------
-        yvals : array
-            The y-values of the plot
-        The plot will be shown if show_plot is True (which it is by default).
+        yvals : array, float
+            The y-values of the plot. Only returned if CI_x and CI_y are not
+            specified.
+        lower_estimate, point_estimate, upper_estimate : tuple
+            A tuple of arrays or floats of the confidence interval estimates
+            based on CI_x or CI_y. Only returned if CI_x or CI_y is specified
+            and the confidence intervals are available. If CI_x is specified,
+            the point estimate is the y-values from the distribution at CI_x. If
+            CI_y is specified, the point estimate is the x-values from the
+            distribution at CI_y.
 
         Notes
         -----
+        The plot will be shown if show_plot is True (which it is by default).
+
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
         created using these limits. If nothing is specified then the range will
@@ -2602,6 +2669,7 @@ class Lognormal_Distribution:
         )
 
         chf = -np.log(ss.lognorm.sf(X, self.sigma, self.gamma, np.exp(self.mu)))
+        chf = unpack_single_arrays(chf)
         self._chf = chf  # required by the CI plotting part
         self._X = X
 
@@ -2648,13 +2716,10 @@ class Lognormal_Distribution:
             if CI_type == "time":
                 return lower_CI, self.inverse_SF(np.exp(-CI_y)), upper_CI
             elif CI_type == "reliability":
-                return (
-                    lower_CI,
-                    -np.log(
-                        ss.lognorm.sf(CI_x, self.sigma, self.gamma, np.exp(self.mu))
-                    ),
-                    upper_CI,
+                chf_point = -np.log(
+                    ss.lognorm.sf(CI_x, self.sigma, self.gamma, np.exp(self.mu))
                 )
+                return lower_CI, unpack_single_arrays(chf_point), upper_CI
         else:
             return chf
 
@@ -2681,7 +2746,8 @@ class Lognormal_Distribution:
                 raise ValueError("Quantile must be between 0 and 1")
         else:
             raise ValueError("Quantile must be of type float, list, array")
-        return ss.lognorm.ppf(q, self.sigma, self.gamma, np.exp(self.mu))
+        ppf = ss.lognorm.ppf(q, self.sigma, self.gamma, np.exp(self.mu))
+        return unpack_single_arrays(ppf)
 
     def inverse_SF(self, q):
         """
@@ -2705,7 +2771,8 @@ class Lognormal_Distribution:
                 raise ValueError("Quantile must be between 0 and 1")
         else:
             raise ValueError("Quantile must be of type float, list, array")
-        return ss.lognorm.isf(q, self.sigma, self.gamma, np.exp(self.mu))
+        isf = ss.lognorm.isf(q, self.sigma, self.gamma, np.exp(self.mu))
+        return unpack_single_arrays(isf)
 
     def mean_residual_life(self, t):
         """
@@ -3090,12 +3157,13 @@ class Exponential_Distribution:
 
         Returns
         -------
-        yvals : array
+        yvals : array, float
             The y-values of the plot
-        The plot will be shown if show_plot is True (which it is by default).
 
         Notes
         -----
+        The plot will be shown if show_plot is True (which it is by default).
+
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
         created using these limits. If nothing is specified then the range will
@@ -3106,10 +3174,9 @@ class Exponential_Distribution:
         )
 
         pdf = ss.expon.pdf(X, scale=1 / self.Lambda, loc=self.gamma)
+        pdf = unpack_single_arrays(pdf)
 
-        if show_plot == False:
-            return pdf
-        else:
+        if show_plot == True:
             limits = get_axes_limits()
 
             plt.plot(X, pdf, **kwargs)
@@ -3135,7 +3202,7 @@ class Exponential_Distribution:
                 xmax=xmax,
             )
 
-            return pdf
+        return pdf
 
     def CDF(
         self,
@@ -3168,12 +3235,21 @@ class Exponential_Distribution:
 
         Returns
         -------
-        yvals : array
-            The y-values of the plot
-        The plot will be shown if show_plot is True (which it is by default).
+        yvals : array, float
+            The y-values of the plot. Only returned if CI_x and CI_y are not
+            specified.
+        lower_estimate, point_estimate, upper_estimate : tuple
+            A tuple of arrays or floats of the confidence interval estimates
+            based on CI_x or CI_y. Only returned if CI_x or CI_y is specified
+            and the confidence intervals are available. If CI_x is specified,
+            the point estimate is the y-values from the distribution at CI_x. If
+            CI_y is specified, the point estimate is the x-values from the
+            distribution at CI_y.
 
         Notes
         -----
+        The plot will be shown if show_plot is True (which it is by default).
+
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
         created using these limits. If nothing is specified then the range will
@@ -3201,6 +3277,7 @@ class Exponential_Distribution:
         )
 
         cdf = ss.expon.cdf(X, scale=1 / self.Lambda, loc=self.gamma)
+        cdf = unpack_single_arrays(cdf)
 
         if show_plot == True:
             limits = get_axes_limits()
@@ -3244,11 +3321,8 @@ class Exponential_Distribution:
             if CI_y is not None:
                 return lower_CI, self.quantile(CI_y), upper_CI
             elif CI_x is not None:
-                return (
-                    lower_CI,
-                    ss.expon.cdf(CI_x, scale=1 / self.Lambda, loc=self.gamma),
-                    upper_CI,
-                )
+                cdf_point = ss.expon.cdf(CI_x, scale=1 / self.Lambda, loc=self.gamma)
+                return lower_CI, unpack_single_arrays(cdf_point), upper_CI
         else:
             return cdf
 
@@ -3283,12 +3357,21 @@ class Exponential_Distribution:
 
         Returns
         -------
-        yvals : array
-            The y-values of the plot
-        The plot will be shown if show_plot is True (which it is by default).
+        yvals : array, float
+            The y-values of the plot. Only returned if CI_x and CI_y are not
+            specified.
+        lower_estimate, point_estimate, upper_estimate : tuple
+            A tuple of arrays or floats of the confidence interval estimates
+            based on CI_x or CI_y. Only returned if CI_x or CI_y is specified
+            and the confidence intervals are available. If CI_x is specified,
+            the point estimate is the y-values from the distribution at CI_x. If
+            CI_y is specified, the point estimate is the x-values from the
+            distribution at CI_y.
 
         Notes
         -----
+        The plot will be shown if show_plot is True (which it is by default).
+
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
         created using these limits. If nothing is specified then the range will
@@ -3316,6 +3399,7 @@ class Exponential_Distribution:
         )
 
         sf = ss.expon.sf(X, scale=1 / self.Lambda, loc=self.gamma)
+        sf = unpack_single_arrays(sf)
 
         if show_plot == True:
             limits = get_axes_limits()
@@ -3359,11 +3443,8 @@ class Exponential_Distribution:
             if CI_y is not None:
                 return lower_CI, self.inverse_SF(CI_y), upper_CI
             elif CI_x is not None:
-                return (
-                    lower_CI,
-                    ss.expon.sf(CI_x, scale=1 / self.Lambda, loc=self.gamma),
-                    upper_CI,
-                )
+                sf_point = ss.expon.sf(CI_x, scale=1 / self.Lambda, loc=self.gamma)
+                return lower_CI, unpack_single_arrays(sf_point), upper_CI
         else:
             return sf
 
@@ -3387,12 +3468,13 @@ class Exponential_Distribution:
 
         Returns
         -------
-        yvals : array
+        yvals : array, float
             The y-values of the plot
-        The plot will be shown if show_plot is True (which it is by default).
 
         Notes
         -----
+        The plot will be shown if show_plot is True (which it is by default).
+
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
         created using these limits. If nothing is specified then the range will
@@ -3404,10 +3486,9 @@ class Exponential_Distribution:
 
         hf = np.ones_like(X) * self.Lambda
         hf = zeroise_below_gamma(X=X, Y=hf, gamma=self.gamma)
+        hf = unpack_single_arrays(hf)
 
-        if show_plot == False:
-            return hf
-        else:
+        if show_plot == True:
             limits = get_axes_limits()
 
             plt.plot(X, hf, **kwargs)
@@ -3433,7 +3514,7 @@ class Exponential_Distribution:
                 xmax=xmax,
             )
 
-            return hf
+        return hf
 
     def CHF(
         self,
@@ -3466,12 +3547,21 @@ class Exponential_Distribution:
 
         Returns
         -------
-        yvals : array
-            The y-values of the plot
-        The plot will be shown if show_plot is True (which it is by default).
+        yvals : array, float
+            The y-values of the plot. Only returned if CI_x and CI_y are not
+            specified.
+        lower_estimate, point_estimate, upper_estimate : tuple
+            A tuple of arrays or floats of the confidence interval estimates
+            based on CI_x or CI_y. Only returned if CI_x or CI_y is specified
+            and the confidence intervals are available. If CI_x is specified,
+            the point estimate is the y-values from the distribution at CI_x. If
+            CI_y is specified, the point estimate is the x-values from the
+            distribution at CI_y.
 
         Notes
         -----
+        The plot will be shown if show_plot is True (which it is by default).
+
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
         created using these limits. If nothing is specified then the range will
@@ -3500,6 +3590,7 @@ class Exponential_Distribution:
 
         chf = (X - self.gamma) * self.Lambda
         chf = zeroise_below_gamma(X=X, Y=chf, gamma=self.gamma)
+        chf = unpack_single_arrays(chf)
 
         if show_plot == True:
             limits = get_axes_limits()
@@ -3546,7 +3637,7 @@ class Exponential_Distribution:
                 chf_point = zeroise_below_gamma(
                     X=CI_x, Y=(CI_x - self.gamma) * self.Lambda, gamma=self.gamma
                 )
-                return lower_CI, chf_point, upper_CI
+                return lower_CI, unpack_single_arrays(chf_point), upper_CI
         else:
             return chf
 
@@ -3573,7 +3664,8 @@ class Exponential_Distribution:
                 raise ValueError("Quantile must be between 0 and 1")
         else:
             raise ValueError("Quantile must be of type float, list, array")
-        return ss.expon.ppf(q, scale=1 / self.Lambda, loc=self.gamma)
+        ppf = ss.expon.ppf(q, scale=1 / self.Lambda, loc=self.gamma)
+        return unpack_single_arrays(ppf)
 
     def inverse_SF(self, q):
         """
@@ -3597,7 +3689,8 @@ class Exponential_Distribution:
                 raise ValueError("Quantile must be between 0 and 1")
         else:
             raise ValueError("Quantile must be of type float, list, array")
-        return ss.expon.isf(q, scale=1 / self.Lambda, loc=self.gamma)
+        isf = ss.expon.isf(q, scale=1 / self.Lambda, loc=self.gamma)
+        return unpack_single_arrays(isf)
 
     def mean_residual_life(self, t):
         """
@@ -4017,12 +4110,13 @@ class Gamma_Distribution:
 
         Returns
         -------
-        yvals : array
+        yvals : array, float
             The y-values of the plot
-        The plot will be shown if show_plot is True (which it is by default).
 
         Notes
         -----
+        The plot will be shown if show_plot is True (which it is by default).
+
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
         created using these limits. If nothing is specified then the range will
@@ -4033,10 +4127,9 @@ class Gamma_Distribution:
         )
 
         pdf = ss.gamma.pdf(X, self.beta, scale=self.alpha, loc=self.gamma)
+        pdf = unpack_single_arrays(pdf)
 
-        if show_plot == False:
-            return pdf
-        else:
+        if show_plot == True:
             limits = get_axes_limits()
 
             plt.plot(X, pdf, **kwargs)
@@ -4062,7 +4155,7 @@ class Gamma_Distribution:
                 xmax=xmax,
             )
 
-            return pdf
+        return pdf
 
     def CDF(
         self,
@@ -4096,12 +4189,21 @@ class Gamma_Distribution:
 
         Returns
         -------
-        yvals : array
-            The y-values of the plot
-        The plot will be shown if show_plot is True (which it is by default).
+        yvals : array, float
+            The y-values of the plot. Only returned if CI_x and CI_y are not
+            specified.
+        lower_estimate, point_estimate, upper_estimate : tuple
+            A tuple of arrays or floats of the confidence interval estimates
+            based on CI_x or CI_y. Only returned if CI_x or CI_y is specified
+            and the confidence intervals are available. If CI_x is specified,
+            the point estimate is the y-values from the distribution at CI_x. If
+            CI_y is specified, the point estimate is the x-values from the
+            distribution at CI_y.
 
         Notes
         -----
+        The plot will be shown if show_plot is True (which it is by default).
+
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
         created using these limits. If nothing is specified then the range will
@@ -4123,6 +4225,7 @@ class Gamma_Distribution:
         )
 
         cdf = ss.gamma.cdf(X, self.beta, scale=self.alpha, loc=self.gamma)
+        cdf = unpack_single_arrays(cdf)
 
         if show_plot == True:
             limits = get_axes_limits()
@@ -4167,11 +4270,10 @@ class Gamma_Distribution:
             if CI_type == "time":
                 return lower_CI, self.quantile(CI_y), upper_CI
             elif CI_type == "reliability":
-                return (
-                    lower_CI,
-                    ss.gamma.cdf(CI_x, self.beta, scale=self.alpha, loc=self.gamma),
-                    upper_CI,
+                cdf_point = ss.gamma.cdf(
+                    CI_x, self.beta, scale=self.alpha, loc=self.gamma
                 )
+                return lower_CI, unpack_single_arrays(cdf_point), upper_CI
         else:
             return cdf
 
@@ -4207,12 +4309,21 @@ class Gamma_Distribution:
 
         Returns
         -------
-        yvals : array
-            The y-values of the plot
-        The plot will be shown if show_plot is True (which it is by default).
+        yvals : array, float
+            The y-values of the plot. Only returned if CI_x and CI_y are not
+            specified.
+        lower_estimate, point_estimate, upper_estimate : tuple
+            A tuple of arrays or floats of the confidence interval estimates
+            based on CI_x or CI_y. Only returned if CI_x or CI_y is specified
+            and the confidence intervals are available. If CI_x is specified,
+            the point estimate is the y-values from the distribution at CI_x. If
+            CI_y is specified, the point estimate is the x-values from the
+            distribution at CI_y.
 
         Notes
         -----
+        The plot will be shown if show_plot is True (which it is by default).
+
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
         created using these limits. If nothing is specified then the range will
@@ -4234,6 +4345,7 @@ class Gamma_Distribution:
         )
 
         sf = ss.gamma.sf(X, self.beta, scale=self.alpha, loc=self.gamma)
+        sf = unpack_single_arrays(sf)
 
         if show_plot == True:
             limits = get_axes_limits()
@@ -4275,11 +4387,10 @@ class Gamma_Distribution:
             if CI_type == "time":
                 return lower_CI, self.inverse_SF(CI_y), upper_CI
             elif CI_type == "reliability":
-                return (
-                    lower_CI,
-                    ss.gamma.sf(CI_x, self.beta, scale=self.alpha, loc=self.gamma),
-                    upper_CI,
+                sf_point = ss.gamma.sf(
+                    CI_x, self.beta, scale=self.alpha, loc=self.gamma
                 )
+                return lower_CI, unpack_single_arrays(sf_point), upper_CI
         else:
             return sf
 
@@ -4303,12 +4414,13 @@ class Gamma_Distribution:
 
         Returns
         -------
-        yvals : array
+        yvals : array, float
             The y-values of the plot
-        The plot will be shown if show_plot is True (which it is by default).
 
         Notes
         -----
+        The plot will be shown if show_plot is True (which it is by default).
+
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
         created using these limits. If nothing is specified then the range will
@@ -4321,10 +4433,9 @@ class Gamma_Distribution:
         hf = ss.gamma.pdf(X, self.beta, scale=self.alpha, loc=self.gamma) / ss.gamma.sf(
             X, self.beta, scale=self.alpha, loc=self.gamma
         )
+        hf = unpack_single_arrays(hf)
 
-        if show_plot == False:
-            return hf
-        else:
+        if show_plot == True:
             limits = get_axes_limits()
 
             plt.plot(X, hf, **kwargs)
@@ -4347,7 +4458,7 @@ class Gamma_Distribution:
                 xmax=xmax,
             )
 
-            return hf
+        return hf
 
     def CHF(
         self,
@@ -4381,12 +4492,21 @@ class Gamma_Distribution:
 
         Returns
         -------
-        yvals : array
-            The y-values of the plot
-        The plot will be shown if show_plot is True (which it is by default).
+        yvals : array, float
+            The y-values of the plot. Only returned if CI_x and CI_y are not
+            specified.
+        lower_estimate, point_estimate, upper_estimate : tuple
+            A tuple of arrays or floats of the confidence interval estimates
+            based on CI_x or CI_y. Only returned if CI_x or CI_y is specified
+            and the confidence intervals are available. If CI_x is specified,
+            the point estimate is the y-values from the distribution at CI_x. If
+            CI_y is specified, the point estimate is the x-values from the
+            distribution at CI_y.
 
         Notes
         -----
+        The plot will be shown if show_plot is True (which it is by default).
+
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
         created using these limits. If nothing is specified then the range will
@@ -4408,6 +4528,7 @@ class Gamma_Distribution:
         )
 
         chf = -np.log(ss.gamma.sf(X, self.beta, scale=self.alpha, loc=self.gamma))
+        chf = unpack_single_arrays(chf)
         self._chf = chf  # required by the CI plotting part
         self._X = X
 
@@ -4454,13 +4575,10 @@ class Gamma_Distribution:
             if CI_type == "time":
                 return lower_CI, self.inverse_SF(np.exp(-CI_y)), upper_CI
             elif CI_type == "reliability":
-                return (
-                    lower_CI,
-                    -np.log(
-                        ss.gamma.sf(CI_x, self.beta, scale=self.alpha, loc=self.gamma)
-                    ),
-                    upper_CI,
+                chf_point = -np.log(
+                    ss.gamma.sf(CI_x, self.beta, scale=self.alpha, loc=self.gamma)
                 )
+                return lower_CI, unpack_single_arrays(chf_point), upper_CI
         else:
             return chf
 
@@ -4487,7 +4605,8 @@ class Gamma_Distribution:
                 raise ValueError("Quantile must be between 0 and 1")
         else:
             raise ValueError("Quantile must be of type float, list, array")
-        return ss.gamma.ppf(q, self.beta, scale=self.alpha, loc=self.gamma)
+        ppf = ss.gamma.ppf(q, self.beta, scale=self.alpha, loc=self.gamma)
+        return unpack_single_arrays(ppf)
 
     def inverse_SF(self, q):
         """
@@ -4511,7 +4630,8 @@ class Gamma_Distribution:
                 raise ValueError("Quantile must be between 0 and 1")
         else:
             raise ValueError("Quantile must be of type float, list, array")
-        return ss.gamma.isf(q, self.beta, scale=self.alpha, loc=self.gamma)
+        isf = ss.gamma.isf(q, self.beta, scale=self.alpha, loc=self.gamma)
+        return unpack_single_arrays(isf)
 
     def mean_residual_life(self, t):
         """
@@ -4870,12 +4990,13 @@ class Beta_Distribution:
 
         Returns
         -------
-        yvals : array
+        yvals : array, float
             The y-values of the plot
-        The plot will be shown if show_plot is True (which it is by default).
 
         Notes
         -----
+        The plot will be shown if show_plot is True (which it is by default).
+
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
         created using these limits. If nothing is specified then the range will
@@ -4886,10 +5007,9 @@ class Beta_Distribution:
         )
 
         pdf = ss.beta.pdf(X, self.alpha, self.beta, 0, 1)
+        pdf = unpack_single_arrays(pdf)
 
-        if show_plot == False:
-            return pdf
-        else:
+        if show_plot == True:
             limits = get_axes_limits()
 
             plt.plot(X, pdf, **kwargs)
@@ -4915,7 +5035,7 @@ class Beta_Distribution:
                 xmax=xmax,
             )
 
-            return pdf
+        return pdf
 
     def CDF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
         """
@@ -4937,12 +5057,13 @@ class Beta_Distribution:
 
         Returns
         -------
-        yvals : array
+        yvals : array, float
             The y-values of the plot
-        The plot will be shown if show_plot is True (which it is by default).
 
         Notes
         -----
+        The plot will be shown if show_plot is True (which it is by default).
+
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
         created using these limits. If nothing is specified then the range will
@@ -4953,10 +5074,9 @@ class Beta_Distribution:
         )
 
         cdf = ss.beta.cdf(X, self.alpha, self.beta, 0, 1)
+        cdf = unpack_single_arrays(cdf)
 
-        if show_plot == False:
-            return cdf
-        else:
+        if show_plot == True:
             limits = get_axes_limits()
 
             plt.plot(X, cdf, **kwargs)
@@ -4982,7 +5102,7 @@ class Beta_Distribution:
                 xmax=xmax,
             )
 
-            return cdf
+        return cdf
 
     def SF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
         """
@@ -5004,12 +5124,13 @@ class Beta_Distribution:
 
         Returns
         -------
-        yvals : array
+        yvals : array, float
             The y-values of the plot
-        The plot will be shown if show_plot is True (which it is by default).
 
         Notes
         -----
+        The plot will be shown if show_plot is True (which it is by default).
+
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
         created using these limits. If nothing is specified then the range will
@@ -5020,10 +5141,9 @@ class Beta_Distribution:
         )
 
         sf = ss.beta.sf(X, self.alpha, self.beta, 0, 1)
+        sf = unpack_single_arrays(sf)
 
-        if show_plot == False:
-            return sf
-        else:
+        if show_plot == True:
             limits = get_axes_limits()
 
             plt.plot(X, sf, **kwargs)
@@ -5046,7 +5166,7 @@ class Beta_Distribution:
                 xmax=xmax,
             )
 
-            return sf
+        return sf
 
     def HF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
         """
@@ -5068,12 +5188,13 @@ class Beta_Distribution:
 
         Returns
         -------
-        yvals : array
+        yvals : array, float
             The y-values of the plot
-        The plot will be shown if show_plot is True (which it is by default).
 
         Notes
         -----
+        The plot will be shown if show_plot is True (which it is by default).
+
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
         created using these limits. If nothing is specified then the range will
@@ -5086,10 +5207,9 @@ class Beta_Distribution:
         hf = ss.beta.pdf(X, self.alpha, self.beta, 0, 1) / ss.beta.sf(
             X, self.alpha, self.beta, 0, 1
         )
+        hf = unpack_single_arrays(hf)
 
-        if show_plot == False:
-            return hf
-        else:
+        if show_plot == True:
             limits = get_axes_limits()
 
             plt.plot(X, hf, **kwargs)
@@ -5112,7 +5232,7 @@ class Beta_Distribution:
                 xmax=xmax,
             )
 
-            return hf
+        return hf
 
     def CHF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
         """
@@ -5134,12 +5254,13 @@ class Beta_Distribution:
 
         Returns
         -------
-        yvals : array
+        yvals : array, float
             The y-values of the plot
-        The plot will be shown if show_plot is True (which it is by default).
 
         Notes
         -----
+        The plot will be shown if show_plot is True (which it is by default).
+
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
         created using these limits. If nothing is specified then the range will
@@ -5150,12 +5271,11 @@ class Beta_Distribution:
         )
 
         chf = -np.log(ss.beta.sf(X, self.alpha, self.beta, 0, 1))
+        chf = unpack_single_arrays(chf)
         self._chf = chf  # required by the CI plotting part
         self._X = X
 
-        if show_plot == False:
-            return chf
-        else:
+        if show_plot == True:
             limits = get_axes_limits()
 
             plt.plot(X, chf, **kwargs)
@@ -5181,7 +5301,7 @@ class Beta_Distribution:
                 xmax=xmax,
             )
 
-            return chf
+        return chf
 
     def quantile(self, q):
         """
@@ -5206,7 +5326,8 @@ class Beta_Distribution:
                 raise ValueError("Quantile must be between 0 and 1")
         else:
             raise ValueError("Quantile must be of type float, list, array")
-        return ss.beta.ppf(q, self.alpha, self.beta, 0, 1)
+        ppf = ss.beta.ppf(q, self.alpha, self.beta, 0, 1)
+        return unpack_single_arrays(ppf)
 
     def inverse_SF(self, q):
         """
@@ -5230,7 +5351,8 @@ class Beta_Distribution:
                 raise ValueError("Quantile must be between 0 and 1")
         else:
             raise ValueError("Quantile must be of type float, list, array")
-        return ss.beta.isf(q, self.alpha, self.beta, 0, 1)
+        isf = ss.beta.isf(q, self.alpha, self.beta, 0, 1)
+        return unpack_single_arrays(isf)
 
     def mean_residual_life(self, t):
         """
@@ -5702,12 +5824,13 @@ class Loglogistic_Distribution:
 
         Returns
         -------
-        yvals : array
+        yvals : array, float
             The y-values of the plot
-        The plot will be shown if show_plot is True (which it is by default).
 
         Notes
         -----
+        The plot will be shown if show_plot is True (which it is by default).
+
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
         created using these limits. If nothing is specified then the range will
@@ -5719,10 +5842,9 @@ class Loglogistic_Distribution:
         )
 
         pdf = ss.fisk.pdf(X, self.beta, scale=self.alpha, loc=self.gamma)
+        pdf = unpack_single_arrays(pdf)
 
-        if show_plot == False:
-            return pdf
-        else:
+        if show_plot == True:
             limits = get_axes_limits()  # get the previous axes limits
 
             plt.plot(X, pdf, **kwargs)
@@ -5748,7 +5870,7 @@ class Loglogistic_Distribution:
                 xmax=xmax,
             )
 
-            return pdf
+        return pdf
 
     def CDF(
         self,
@@ -5782,12 +5904,21 @@ class Loglogistic_Distribution:
 
         Returns
         -------
-        yvals : array
-            The y-values of the plot
-        The plot will be shown if show_plot is True (which it is by default).
+        yvals : array, float
+            The y-values of the plot. Only returned if CI_x and CI_y are not
+            specified.
+        lower_estimate, point_estimate, upper_estimate : tuple
+            A tuple of arrays or floats of the confidence interval estimates
+            based on CI_x or CI_y. Only returned if CI_x or CI_y is specified
+            and the confidence intervals are available. If CI_x is specified,
+            the point estimate is the y-values from the distribution at CI_x. If
+            CI_y is specified, the point estimate is the x-values from the
+            distribution at CI_y.
 
         Notes
         -----
+        The plot will be shown if show_plot is True (which it is by default).
+
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
         created using these limits. If nothing is specified then the range will
@@ -5809,6 +5940,7 @@ class Loglogistic_Distribution:
         )
 
         cdf = ss.fisk.cdf(X, self.beta, scale=self.alpha, loc=self.gamma)
+        cdf = unpack_single_arrays(cdf)
 
         if show_plot == True:
             limits = get_axes_limits()  # get the previous axes limits
@@ -5853,11 +5985,10 @@ class Loglogistic_Distribution:
             if CI_type == "time":
                 return lower_CI, self.quantile(CI_y), upper_CI
             elif CI_type == "reliability":
-                return (
-                    lower_CI,
-                    ss.fisk.cdf(CI_x, self.beta, scale=self.alpha, loc=self.gamma),
-                    upper_CI,
+                cdf_point = ss.fisk.cdf(
+                    CI_x, self.beta, scale=self.alpha, loc=self.gamma
                 )
+                return lower_CI, unpack_single_arrays(cdf_point), upper_CI
         else:
             return cdf
 
@@ -5893,12 +6024,21 @@ class Loglogistic_Distribution:
 
         Returns
         -------
-        yvals : array
-            The y-values of the plot
-        The plot will be shown if show_plot is True (which it is by default).
+        yvals : array, float
+            The y-values of the plot. Only returned if CI_x and CI_y are not
+            specified.
+        lower_estimate, point_estimate, upper_estimate : tuple
+            A tuple of arrays or floats of the confidence interval estimates
+            based on CI_x or CI_y. Only returned if CI_x or CI_y is specified
+            and the confidence intervals are available. If CI_x is specified,
+            the point estimate is the y-values from the distribution at CI_x. If
+            CI_y is specified, the point estimate is the x-values from the
+            distribution at CI_y.
 
         Notes
         -----
+        The plot will be shown if show_plot is True (which it is by default).
+
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
         created using these limits. If nothing is specified then the range will
@@ -5921,6 +6061,7 @@ class Loglogistic_Distribution:
         )
 
         sf = ss.fisk.sf(X, self.beta, scale=self.alpha, loc=self.gamma)
+        sf = unpack_single_arrays(sf)
 
         if show_plot == True:
             limits = get_axes_limits()  # get the previous axes limits
@@ -5965,11 +6106,8 @@ class Loglogistic_Distribution:
             if CI_type == "time":
                 return lower_CI, self.inverse_SF(CI_y), upper_CI
             elif CI_type == "reliability":
-                return (
-                    lower_CI,
-                    ss.fisk.sf(CI_x, self.beta, scale=self.alpha, loc=self.gamma),
-                    upper_CI,
-                )
+                sf_point = ss.fisk.sf(CI_x, self.beta, scale=self.alpha, loc=self.gamma)
+                return lower_CI, unpack_single_arrays(sf_point), upper_CI
         else:
             return sf
 
@@ -5993,12 +6131,13 @@ class Loglogistic_Distribution:
 
         Returns
         -------
-        yvals : array
+        yvals : array, float
             The y-values of the plot
-        The plot will be shown if show_plot is True (which it is by default).
 
         Notes
         -----
+        The plot will be shown if show_plot is True (which it is by default).
+
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
         created using these limits. If nothing is specified then the range will
@@ -6013,10 +6152,9 @@ class Loglogistic_Distribution:
             self.beta - 1
         )
         hf = zeroise_below_gamma(X=X, Y=hf, gamma=self.gamma)
+        hf = unpack_single_arrays(hf)
 
-        if show_plot == False:
-            return hf
-        else:
+        if show_plot == True:
             limits = get_axes_limits()  # get the previous axes limits
 
             plt.plot(X, hf, **kwargs)
@@ -6042,7 +6180,7 @@ class Loglogistic_Distribution:
                 xmax=xmax,
             )
 
-            return hf
+        return hf
 
     def CHF(
         self,
@@ -6076,12 +6214,21 @@ class Loglogistic_Distribution:
 
         Returns
         -------
-        yvals : array
-            The y-values of the plot
-        The plot will be shown if show_plot is True (which it is by default).
+        yvals : array, float
+            The y-values of the plot. Only returned if CI_x and CI_y are not
+            specified.
+        lower_estimate, point_estimate, upper_estimate : tuple
+            A tuple of arrays or floats of the confidence interval estimates
+            based on CI_x or CI_y. Only returned if CI_x or CI_y is specified
+            and the confidence intervals are available. If CI_x is specified,
+            the point estimate is the y-values from the distribution at CI_x. If
+            CI_y is specified, the point estimate is the x-values from the
+            distribution at CI_y.
 
         Notes
         -----
+        The plot will be shown if show_plot is True (which it is by default).
+
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
         created using these limits. If nothing is specified then the range will
@@ -6105,6 +6252,7 @@ class Loglogistic_Distribution:
 
         chf = np.log(1 + ((X - self.gamma) / self.alpha) ** self.beta)
         chf = zeroise_below_gamma(X=X, Y=chf, gamma=self.gamma)
+        chf = unpack_single_arrays(chf)
         self._chf = chf  # required by the CI plotting part
         self._X = X
 
@@ -6156,7 +6304,7 @@ class Loglogistic_Distribution:
                     Y=np.log(1 + ((CI_x - self.gamma) / self.alpha) ** self.beta),
                     gamma=self.gamma,
                 )
-                return lower_CI, chf_point, upper_CI
+                return lower_CI, unpack_single_arrays(chf_point), upper_CI
         else:
             return chf
 
@@ -6183,7 +6331,8 @@ class Loglogistic_Distribution:
                 raise ValueError("Quantile must be between 0 and 1")
         else:
             raise ValueError("Quantile must be of type float, list, array")
-        return ss.fisk.ppf(q, self.beta, scale=self.alpha, loc=self.gamma)
+        ppf = ss.fisk.ppf(q, self.beta, scale=self.alpha, loc=self.gamma)
+        return unpack_single_arrays(ppf)
 
     def inverse_SF(self, q):
         """
@@ -6207,7 +6356,8 @@ class Loglogistic_Distribution:
                 raise ValueError("Quantile must be between 0 and 1")
         else:
             raise ValueError("Quantile must be of type float, list, array")
-        return ss.fisk.isf(q, self.beta, scale=self.alpha, loc=self.gamma)
+        isf = ss.fisk.isf(q, self.beta, scale=self.alpha, loc=self.gamma)
+        return unpack_single_arrays(isf)
 
     def mean_residual_life(self, t):
         """
@@ -6586,12 +6736,13 @@ class Gumbel_Distribution:
 
         Returns
         -------
-        yvals : array
+        yvals : array, float
             The y-values of the plot
-        The plot will be shown if show_plot is True (which it is by default).
 
         Notes
         -----
+        The plot will be shown if show_plot is True (which it is by default).
+
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
         created using these limits. If nothing is specified then the range will
@@ -6602,10 +6753,9 @@ class Gumbel_Distribution:
         )
 
         pdf = ss.gumbel_l.pdf(X, self.mu, self.sigma)
+        pdf = unpack_single_arrays(pdf)
 
-        if show_plot == False:
-            return pdf
-        else:
+        if show_plot == True:
             limits = get_axes_limits()  # get the previous axes limits
 
             plt.plot(X, pdf, **kwargs)
@@ -6631,7 +6781,7 @@ class Gumbel_Distribution:
                 xmax=xmax,
             )
 
-            return pdf
+        return pdf
 
     def CDF(
         self,
@@ -6665,12 +6815,21 @@ class Gumbel_Distribution:
 
         Returns
         -------
-        yvals : array
-            The y-values of the plot
-        The plot will be shown if show_plot is True (which it is by default).
+        yvals : array, float
+            The y-values of the plot. Only returned if CI_x and CI_y are not
+            specified.
+        lower_estimate, point_estimate, upper_estimate : tuple
+            A tuple of arrays or floats of the confidence interval estimates
+            based on CI_x or CI_y. Only returned if CI_x or CI_y is specified
+            and the confidence intervals are available. If CI_x is specified,
+            the point estimate is the y-values from the distribution at CI_x. If
+            CI_y is specified, the point estimate is the x-values from the
+            distribution at CI_y.
 
         Notes
         -----
+        The plot will be shown if show_plot is True (which it is by default).
+
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
         created using these limits. If nothing is specified then the range will
@@ -6692,6 +6851,7 @@ class Gumbel_Distribution:
         )
 
         cdf = ss.gumbel_l.cdf(X, self.mu, self.sigma)
+        cdf = unpack_single_arrays(cdf)
 
         if show_plot == True:
             limits = get_axes_limits()  # get the previous axes limits
@@ -6736,7 +6896,8 @@ class Gumbel_Distribution:
             if CI_type == "time":
                 return lower_CI, self.quantile(CI_y), upper_CI
             elif CI_type == "reliability":
-                return lower_CI, ss.gumbel_l.cdf(CI_x, self.mu, self.sigma), upper_CI
+                cdf_point = ss.gumbel_l.cdf(CI_x, self.mu, self.sigma)
+                return lower_CI, unpack_single_arrays(cdf_point), upper_CI
         else:
             return cdf
 
@@ -6772,12 +6933,21 @@ class Gumbel_Distribution:
 
         Returns
         -------
-        yvals : array
-            The y-values of the plot
-        The plot will be shown if show_plot is True (which it is by default).
+        yvals : array, float
+            The y-values of the plot. Only returned if CI_x and CI_y are not
+            specified.
+        lower_estimate, point_estimate, upper_estimate : tuple
+            A tuple of arrays or floats of the confidence interval estimates
+            based on CI_x or CI_y. Only returned if CI_x or CI_y is specified
+            and the confidence intervals are available. If CI_x is specified,
+            the point estimate is the y-values from the distribution at CI_x. If
+            CI_y is specified, the point estimate is the x-values from the
+            distribution at CI_y.
 
         Notes
         -----
+        The plot will be shown if show_plot is True (which it is by default).
+
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
         created using these limits. If nothing is specified then the range will
@@ -6799,6 +6969,7 @@ class Gumbel_Distribution:
         )
 
         sf = ss.gumbel_l.sf(X, self.mu, self.sigma)
+        sf = unpack_single_arrays(sf)
 
         if show_plot == True:
             limits = get_axes_limits()  # get the previous axes limits
@@ -6843,7 +7014,8 @@ class Gumbel_Distribution:
             if CI_type == "time":
                 return lower_CI, self.inverse_SF(CI_y), upper_CI
             elif CI_type == "reliability":
-                return lower_CI, ss.gumbel_l.sf(CI_x, self.mu, self.sigma), upper_CI
+                sf_point = ss.gumbel_l.sf(CI_x, self.mu, self.sigma)
+                return lower_CI, unpack_single_arrays(sf_point), upper_CI
         else:
             return sf
 
@@ -6867,12 +7039,13 @@ class Gumbel_Distribution:
 
         Returns
         -------
-        yvals : array
+        yvals : array, float
             The y-values of the plot
-        The plot will be shown if show_plot is True (which it is by default).
 
         Notes
         -----
+        The plot will be shown if show_plot is True (which it is by default).
+
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
         created using these limits. If nothing is specified then the range will
@@ -6883,10 +7056,9 @@ class Gumbel_Distribution:
         )
 
         hf = np.exp((X - self.mu) / self.sigma) / self.sigma
+        hf = unpack_single_arrays(hf)
 
-        if show_plot == False:
-            return hf
-        else:
+        if show_plot == True:
             limits = get_axes_limits()  # get the previous axes limits
 
             plt.plot(X, hf, **kwargs)
@@ -6909,7 +7081,7 @@ class Gumbel_Distribution:
                 xmax=xmax,
             )
 
-            return hf
+        return hf
 
     def CHF(
         self,
@@ -6943,12 +7115,21 @@ class Gumbel_Distribution:
 
         Returns
         -------
-        yvals : array
-            The y-values of the plot
-        The plot will be shown if show_plot is True (which it is by default).
+        yvals : array, float
+            The y-values of the plot. Only returned if CI_x and CI_y are not
+            specified.
+        lower_estimate, point_estimate, upper_estimate : tuple
+            A tuple of arrays or floats of the confidence interval estimates
+            based on CI_x or CI_y. Only returned if CI_x or CI_y is specified
+            and the confidence intervals are available. If CI_x is specified,
+            the point estimate is the y-values from the distribution at CI_x. If
+            CI_y is specified, the point estimate is the x-values from the
+            distribution at CI_y.
 
         Notes
         -----
+        The plot will be shown if show_plot is True (which it is by default).
+
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
         created using these limits. If nothing is specified then the range will
@@ -6970,6 +7151,7 @@ class Gumbel_Distribution:
         )
 
         chf = np.exp((X - self.mu) / self.sigma)
+        chf = unpack_single_arrays(chf)
         self._X = X
         self._chf = chf
 
@@ -7016,7 +7198,8 @@ class Gumbel_Distribution:
             if CI_type == "time":
                 return lower_CI, self.inverse_SF(np.exp(-CI_y)), upper_CI
             elif CI_type == "reliability":
-                return lower_CI, np.exp((CI_x - self.mu) / self.sigma), upper_CI
+                chf_point = np.exp((CI_x - self.mu) / self.sigma)
+                return lower_CI, unpack_single_arrays(chf_point), upper_CI
         else:
             return chf
 
@@ -7043,7 +7226,8 @@ class Gumbel_Distribution:
                 raise ValueError("Quantile must be between 0 and 1")
         else:
             raise ValueError("Quantile must be of type float, list, array")
-        return ss.gumbel_l.ppf(q, loc=self.mu, scale=self.sigma)
+        ppf = ss.gumbel_l.ppf(q, loc=self.mu, scale=self.sigma)
+        return unpack_single_arrays(ppf)
 
     def inverse_SF(self, q):
         """
@@ -7067,7 +7251,8 @@ class Gumbel_Distribution:
                 raise ValueError("Quantile must be between 0 and 1")
         else:
             raise ValueError("Quantile must be of type float, list, array")
-        return ss.gumbel_l.isf(q, loc=self.mu, scale=self.sigma)
+        isf = ss.gumbel_l.isf(q, loc=self.mu, scale=self.sigma)
+        return unpack_single_arrays(isf)
 
     def mean_residual_life(self, t):
         """
@@ -7549,12 +7734,13 @@ class Competing_Risks_Model:
 
         Returns
         -------
-        yvals : array
+        yvals : array, float
             The y-values of the plot
-        The plot will be shown if show_plot is True (which it is by default).
 
         Notes
         -----
+        The plot will be shown if show_plot is True (which it is by default).
+
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
         created using these limits. If nothing is specified then the range will
@@ -7562,9 +7748,7 @@ class Competing_Risks_Model:
         """
         Competing_Risks_Model.__combiner(self, xvals=xvals, xmin=xmin, xmax=xmax)
 
-        if show_plot == False:
-            return self.__pdf
-        else:
+        if show_plot == True:
             if (
                 plot_components is True
             ):  # this will plot the distributions that make up the components of the model
@@ -7599,7 +7783,7 @@ class Competing_Risks_Model:
                 xmax=xmax,
             )
 
-            return self.__pdf
+        return unpack_single_arrays(self.__pdf)
 
     def CDF(
         self,
@@ -7631,12 +7815,13 @@ class Competing_Risks_Model:
 
         Returns
         -------
-        yvals : array
+        yvals : array, float
             The y-values of the plot
-        The plot will be shown if show_plot is True (which it is by default).
 
         Notes
         -----
+        The plot will be shown if show_plot is True (which it is by default).
+
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
         created using these limits. If nothing is specified then the range will
@@ -7645,9 +7830,7 @@ class Competing_Risks_Model:
 
         Competing_Risks_Model.__combiner(self, xvals=xvals, xmin=xmin, xmax=xmax)
 
-        if show_plot == False:
-            return self.__cdf
-        else:
+        if show_plot == True:
             if (
                 plot_components is True
             ):  # this will plot the distributions that make up the components of the model
@@ -7682,7 +7865,7 @@ class Competing_Risks_Model:
                 xmax=xmax,
             )
 
-            return self.__cdf
+        return unpack_single_arrays(self.__cdf)
 
     def SF(
         self,
@@ -7714,12 +7897,13 @@ class Competing_Risks_Model:
 
         Returns
         -------
-        yvals : array
+        yvals : array, float
             The y-values of the plot
-        The plot will be shown if show_plot is True (which it is by default).
 
         Notes
         -----
+        The plot will be shown if show_plot is True (which it is by default).
+
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
         created using these limits. If nothing is specified then the range will
@@ -7727,9 +7911,7 @@ class Competing_Risks_Model:
         """
         Competing_Risks_Model.__combiner(self, xvals=xvals, xmin=xmin, xmax=xmax)
 
-        if show_plot == False:
-            return self.__sf
-        else:
+        if show_plot == True:
             if (
                 plot_components is True
             ):  # this will plot the distributions that make up the components of the model
@@ -7762,7 +7944,7 @@ class Competing_Risks_Model:
                 xmax=xmax,
             )
 
-            return self.__sf
+        return unpack_single_arrays(self.__sf)
 
     def HF(
         self,
@@ -7794,12 +7976,13 @@ class Competing_Risks_Model:
 
         Returns
         -------
-        yvals : array
+        yvals : array, float
             The y-values of the plot
-        The plot will be shown if show_plot is True (which it is by default).
 
         Notes
         -----
+        The plot will be shown if show_plot is True (which it is by default).
+
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
         created using these limits. If nothing is specified then the range will
@@ -7807,9 +7990,7 @@ class Competing_Risks_Model:
         """
         Competing_Risks_Model.__combiner(self, xvals=xvals, xmin=xmin, xmax=xmax)
 
-        if show_plot == False:
-            return self.__hf
-        else:
+        if show_plot == True:
             if (
                 plot_components is True
             ):  # this will plot the distributions that make up the components of the model
@@ -7842,7 +8023,7 @@ class Competing_Risks_Model:
                 xmax=xmax,
             )
 
-            return self.__hf
+        return unpack_single_arrays(self.__hf)
 
     def CHF(
         self,
@@ -7874,12 +8055,13 @@ class Competing_Risks_Model:
 
         Returns
         -------
-        yvals : array
+        yvals : array, float
             The y-values of the plot
-        The plot will be shown if show_plot is True (which it is by default).
 
         Notes
         -----
+        The plot will be shown if show_plot is True (which it is by default).
+
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
         created using these limits. If nothing is specified then the range will
@@ -7887,9 +8069,7 @@ class Competing_Risks_Model:
         """
         Competing_Risks_Model.__combiner(self, xvals=xvals, xmin=xmin, xmax=xmax)
 
-        if show_plot == False:
-            return self.__chf
-        else:
+        if show_plot == True:
             if (
                 plot_components is True
             ):  # this will plot the distributions that make up the components of the model
@@ -7922,7 +8102,7 @@ class Competing_Risks_Model:
                 xmax=xmax,
             )
 
-            return self.__chf
+        return unpack_single_arrays(self.__chf)
 
     def quantile(self, q):
         """
@@ -7947,7 +8127,8 @@ class Competing_Risks_Model:
                 raise ValueError("Quantile must be between 0 and 1")
         else:
             raise ValueError("Quantile must be of type float, list, array")
-        return self.__xvals_init[np.argmin(abs((1 - self.__sf_init) - q))]
+        ppf = self.__xvals_init[np.argmin(abs((1 - self.__sf_init) - q))]
+        return unpack_single_arrays(ppf)
 
     def inverse_SF(self, q):
         """
@@ -7971,7 +8152,8 @@ class Competing_Risks_Model:
                 raise ValueError("Quantile must be between 0 and 1")
         else:
             raise ValueError("Quantile must be of type float, list, array")
-        return self.__xvals_init[np.argmin(abs(self.__sf_init - q))]
+        isf = self.__xvals_init[np.argmin(abs(self.__sf_init - q))]
+        return unpack_single_arrays(isf)
 
     def stats(self):
         """
@@ -8510,12 +8692,13 @@ class Mixture_Model:
 
         Returns
         -------
-        yvals : array
+        yvals : array, float
             The y-values of the plot
-        The plot will be shown if show_plot is True (which it is by default).
 
         Notes
         -----
+        The plot will be shown if show_plot is True (which it is by default).
+
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
         created using these limits. If nothing is specified then the range will
@@ -8523,9 +8706,7 @@ class Mixture_Model:
         """
         Mixture_Model.__combiner(self, xvals=xvals, xmin=xmin, xmax=xmax)
 
-        if show_plot == False:
-            return self.__pdf
-        else:
+        if show_plot == True:
             if (
                 plot_components is True
             ):  # this will plot the distributions that make up the components of the model
@@ -8559,7 +8740,7 @@ class Mixture_Model:
                 xmax=xmax,
             )
 
-            return self.__pdf
+        return unpack_single_arrays(self.__pdf)
 
     def CDF(
         self,
@@ -8591,12 +8772,13 @@ class Mixture_Model:
 
         Returns
         -------
-        yvals : array
+        yvals : array, float
             The y-values of the plot
-        The plot will be shown if show_plot is True (which it is by default).
 
         Notes
         -----
+        The plot will be shown if show_plot is True (which it is by default).
+
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
         created using these limits. If nothing is specified then the range will
@@ -8604,9 +8786,7 @@ class Mixture_Model:
         """
         Mixture_Model.__combiner(self, xvals=xvals, xmin=xmin, xmax=xmax)
 
-        if show_plot == False:
-            return self.__cdf
-        else:
+        if show_plot == True:
             if (
                 plot_components is True
             ):  # this will plot the distributions that make up the components of the model
@@ -8639,7 +8819,7 @@ class Mixture_Model:
                 xmax=xmax,
             )
 
-            return self.__cdf
+        return unpack_single_arrays(self.__cdf)
 
     def SF(
         self,
@@ -8671,12 +8851,13 @@ class Mixture_Model:
 
         Returns
         -------
-        yvals : array
+        yvals : array, float
             The y-values of the plot
-        The plot will be shown if show_plot is True (which it is by default).
 
         Notes
         -----
+        The plot will be shown if show_plot is True (which it is by default).
+
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
         created using these limits. If nothing is specified then the range will
@@ -8684,9 +8865,7 @@ class Mixture_Model:
         """
         Mixture_Model.__combiner(self, xvals=xvals, xmin=xmin, xmax=xmax)
 
-        if show_plot == False:
-            return self.__sf
-        else:
+        if show_plot == True:
             if (
                 plot_components is True
             ):  # this will plot the distributions that make up the components of the model
@@ -8719,7 +8898,7 @@ class Mixture_Model:
                 xmax=xmax,
             )
 
-            return self.__sf
+        return unpack_single_arrays(self.__sf)
 
     def HF(
         self,
@@ -8751,12 +8930,13 @@ class Mixture_Model:
 
         Returns
         -------
-        yvals : array
+        yvals : array, float
             The y-values of the plot
-        The plot will be shown if show_plot is True (which it is by default).
 
         Notes
         -----
+        The plot will be shown if show_plot is True (which it is by default).
+
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
         created using these limits. If nothing is specified then the range will
@@ -8764,9 +8944,7 @@ class Mixture_Model:
         """
         Mixture_Model.__combiner(self, xvals=xvals, xmin=xmin, xmax=xmax)
 
-        if show_plot == False:
-            return self.__hf
-        else:
+        if show_plot == True:
             limits = get_axes_limits()
             if (
                 plot_components is True
@@ -8799,7 +8977,7 @@ class Mixture_Model:
                 xmax=xmax,
             )
 
-            return self.__hf
+        return unpack_single_arrays(self.__hf)
 
     def CHF(
         self,
@@ -8831,12 +9009,13 @@ class Mixture_Model:
 
         Returns
         -------
-        yvals : array
+        yvals : array, float
             The y-values of the plot
-        The plot will be shown if show_plot is True (which it is by default).
 
         Notes
         -----
+        The plot will be shown if show_plot is True (which it is by default).
+
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
         created using these limits. If nothing is specified then the range will
@@ -8844,9 +9023,7 @@ class Mixture_Model:
         """
         Mixture_Model.__combiner(self, xvals=xvals, xmin=xmin, xmax=xmax)
 
-        if show_plot == False:
-            return self.__chf
-        else:
+        if show_plot == True:
             limits = get_axes_limits()
             if (
                 plot_components is True
@@ -8880,7 +9057,7 @@ class Mixture_Model:
                 xmax=xmax,
             )
 
-            return self.__chf
+        return unpack_single_arrays(self.__chf)
 
     def quantile(self, q):
         """
@@ -8905,7 +9082,8 @@ class Mixture_Model:
                 raise ValueError("Quantile must be between 0 and 1")
         else:
             raise ValueError("Quantile must be of type float, list, array")
-        return self.__xvals_init[np.argmin(abs(self.__cdf_init - q))]
+        ppf = self.__xvals_init[np.argmin(abs(self.__cdf_init - q))]
+        return unpack_single_arrays(ppf)
 
     def inverse_SF(self, q):
         """
@@ -8929,7 +9107,8 @@ class Mixture_Model:
                 raise ValueError("Quantile must be between 0 and 1")
         else:
             raise ValueError("Quantile must be of type float, list, array")
-        return self.__xvals_init[np.argmin(abs((1 - self.__cdf_init) - q))]
+        isf = self.__xvals_init[np.argmin(abs((1 - self.__cdf_init) - q))]
+        return unpack_single_arrays(isf)
 
     def stats(self):
         """
@@ -9350,12 +9529,13 @@ class DSZI_Model:
 
         Returns
         -------
-        yvals : array
+        yvals : array, float
             The y-values of the plot
-        The plot will be shown if show_plot is True (which it is by default).
 
         Notes
         -----
+        The plot will be shown if show_plot is True (which it is by default).
+
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
         created using these limits. If nothing is specified then the range will
@@ -9376,10 +9556,9 @@ class DSZI_Model:
 
         pdf0 = self.__base_distribution.PDF(xvals=X, show_plot=False)
         pdf = pdf0 * (self.DS - self.ZI)  # the DSZI formula for the PDF
+        pdf = unpack_single_arrays(pdf)
 
-        if show_plot == False:
-            return pdf
-        else:
+        if show_plot == True:
             limits = get_axes_limits()  # get the previous axes limits
 
             plt.plot(X, pdf, **kwargs)
@@ -9400,7 +9579,7 @@ class DSZI_Model:
                 xmax=xmax,
             )
 
-            return pdf
+        return pdf
 
     def CDF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
         """
@@ -9422,12 +9601,13 @@ class DSZI_Model:
 
         Returns
         -------
-        yvals : array
+        yvals : array, float
             The y-values of the plot
-        The plot will be shown if show_plot is True (which it is by default).
 
         Notes
         -----
+        The plot will be shown if show_plot is True (which it is by default).
+
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
         created using these limits. If nothing is specified then the range will
@@ -9448,10 +9628,9 @@ class DSZI_Model:
 
         cdf0 = self.__base_distribution.CDF(xvals=X, show_plot=False)
         cdf = cdf0 * (self.DS - self.ZI) + self.ZI  # the DSZI formula for the CDF
+        cdf = unpack_single_arrays(cdf)
 
-        if show_plot == False:
-            return cdf
-        else:
+        if show_plot == True:
             limits = get_axes_limits()  # get the previous axes limits
 
             plt.plot(X, cdf, **kwargs)
@@ -9474,7 +9653,7 @@ class DSZI_Model:
                 xmax=xmax,
             )
 
-            return cdf
+        return cdf
 
     def SF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
         """
@@ -9496,12 +9675,13 @@ class DSZI_Model:
 
         Returns
         -------
-        yvals : array
+        yvals : array, float
             The y-values of the plot
-        The plot will be shown if show_plot is True (which it is by default).
 
         Notes
         -----
+        The plot will be shown if show_plot is True (which it is by default).
+
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
         created using these limits. If nothing is specified then the range will
@@ -9523,10 +9703,9 @@ class DSZI_Model:
         cdf0 = self.__base_distribution.CDF(xvals=X, show_plot=False)
         cdf = cdf0 * (self.DS - self.ZI) + self.ZI  # the DSZI formula for the CDF
         sf = 1 - cdf
+        sf = unpack_single_arrays(sf)
 
-        if show_plot == False:
-            return sf
-        else:
+        if show_plot == True:
             limits = get_axes_limits()  # get the previous axes limits
 
             plt.plot(X, sf, **kwargs)
@@ -9547,7 +9726,7 @@ class DSZI_Model:
                 xmax=xmax,
             )
 
-            return sf
+        return sf
 
     def HF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
         """
@@ -9569,12 +9748,13 @@ class DSZI_Model:
 
         Returns
         -------
-        yvals : array
+        yvals : array, float
             The y-values of the plot
-        The plot will be shown if show_plot is True (which it is by default).
 
         Notes
         -----
+        The plot will be shown if show_plot is True (which it is by default).
+
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
         created using these limits. If nothing is specified then the range will
@@ -9598,10 +9778,9 @@ class DSZI_Model:
         cdf0 = self.__base_distribution.CDF(xvals=X, show_plot=False)
         cdf = cdf0 * (self.DS - self.ZI) + self.ZI  # the DSZI formula for the CDF
         hf = pdf / (1 - cdf)  # pdf/sf
+        hf = unpack_single_arrays(hf)
 
-        if show_plot == False:
-            return hf
-        else:
+        if show_plot == True:
             limits = get_axes_limits()  # get the previous axes limits
 
             plt.plot(X, hf, **kwargs)
@@ -9622,7 +9801,7 @@ class DSZI_Model:
                 xmax=xmax,
             )
 
-            return hf
+        return hf
 
     def CHF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
         """
@@ -9644,12 +9823,13 @@ class DSZI_Model:
 
         Returns
         -------
-        yvals : array
+        yvals : array, float
             The y-values of the plot
-        The plot will be shown if show_plot is True (which it is by default).
 
         Notes
         -----
+        The plot will be shown if show_plot is True (which it is by default).
+
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
         created using these limits. If nothing is specified then the range will
@@ -9671,10 +9851,9 @@ class DSZI_Model:
         cdf0 = self.__base_distribution.CDF(xvals=X, show_plot=False)
         cdf = cdf0 * (self.DS - self.ZI) + self.ZI  # the DSZI formula for the CDF
         chf = -np.log(1 - cdf)  # -ln(sf)
+        chf = unpack_single_arrays(chf)
 
-        if show_plot == False:
-            return chf
-        else:
+        if show_plot == True:
             limits = get_axes_limits()  # get the previous axes limits
 
             plt.plot(X, chf, **kwargs)
@@ -9695,7 +9874,7 @@ class DSZI_Model:
                 xmax=xmax,
             )
 
-            return chf
+        return chf
 
     def quantile(self, q):
         """
@@ -9733,7 +9912,8 @@ class DSZI_Model:
                 )
         else:
             raise ValueError("Quantile must be of type float, list, array")
-        return self.__xvals_init[np.argmin(abs(self.__cdf_init - q))]
+        ppf = self.__xvals_init[np.argmin(abs(self.__cdf_init - q))]
+        return unpack_single_arrays(ppf)
 
     def inverse_SF(self, q):
         """
@@ -9757,7 +9937,8 @@ class DSZI_Model:
                 raise ValueError("Quantile must be between 0 and 1")
         else:
             raise ValueError("Quantile must be of type float, list, array")
-        return self.__xvals_init[np.argmin(abs((1 - self.__cdf_init) - q))]
+        isf = self.__xvals_init[np.argmin(abs((1 - self.__cdf_init) - q))]
+        return unpack_single_arrays(isf)
 
     def mean_residual_life(self, t):
         """

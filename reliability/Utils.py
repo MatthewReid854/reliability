@@ -6975,7 +6975,7 @@ def distributions_input_checking(
     xvals,
     xmin,
     xmax,
-    show_plot,
+    show_plot=None,
     plot_CI=None,
     CI_type=None,
     CI=0.95,
@@ -7037,10 +7037,10 @@ def distributions_input_checking(
     CI : float
         The confidence intervals between 0 and 1. Default is 0.95. Only returned
         if func is 'CDF', 'SF', or 'CHF' and self.name !='Beta'.
-    CI_y : list, array
+    CI_y : list, array, float, int
         The confidence interval y-values to trace. Default is None. Only
         returned if func is 'CDF', 'SF', or 'CHF' and self.name !='Beta'.
-    CI_x : list, array
+    CI_x : list, array, float, int
         The confidence interval x-values to trace. Default is None. Only
         returned if func is 'CDF', 'SF', or 'CHF' and self.name !='Beta'.
     """
@@ -7068,13 +7068,13 @@ def distributions_input_checking(
         raise ValueError(
             "CI must be between 0 and 1. Default is 0.95 for 95% confidence interval. Only used if the distribution object was created by Fitters."
         )
-    if type(CI_y) not in [type(None), list, np.ndarray]:
+    if type(CI_y) not in [type(None), list, np.ndarray, float, int]:
         raise ValueError(
-            'CI_y must be a list or array. Default is None. Only used if the distribution object was created by Fitters anc CI_type="time".'
+            'CI_y must be a list, array, float, or int. Default is None. Only used if the distribution object was created by Fitters anc CI_type="time".'
         )
-    if type(CI_x) not in [type(None), list, np.ndarray]:
+    if type(CI_x) not in [type(None), list, np.ndarray, float, int]:
         raise ValueError(
-            'CI_x must be a list or array. Default is None. Only used if the distribution object was created by Fitters anc CI_type="reliability".'
+            'CI_x must be a list, array, float, or int. Default is None. Only used if the distribution object was created by Fitters anc CI_type="reliability".'
         )
 
     # default values
@@ -7096,10 +7096,10 @@ def distributions_input_checking(
     else:
         CI = 0.95
 
-    if show_plot == None:
+    if show_plot is None:
         show_plot = True
 
-    if plot_CI == None:
+    if plot_CI is None:
         plot_CI == True
 
     if self.name == "Exponential":
@@ -7110,7 +7110,7 @@ def distributions_input_checking(
             )
             CI_type = None
     else:
-        if CI_type == None:
+        if CI_type is None:
             CI_type = "time"
         if CI_type.upper() in ["T", "TIME"]:
             CI_type = "time"
@@ -7132,16 +7132,28 @@ def distributions_input_checking(
             CI_x = None
 
     if CI_x is not None:
-        CI_x = np.asarray(CI_x)
-        if min(CI_x) <= 0 and self.name not in ["Normal", "Gumbel"]:
-            raise ValueError("CI_x values must all be above 0")
+        if type(CI_x) in [float, int]:
+            if CI_x <= 0 and self.name not in ["Normal", "Gumbel"]:
+                raise ValueError("CI_x must be greater than 0")
+            CI_x = np.array([CI_x])  # package as array. Will be unpacked later
+        else:
+            CI_x = np.asarray(CI_x)
+            if min(CI_x) <= 0 and self.name not in ["Normal", "Gumbel"]:
+                raise ValueError("CI_x values must all be greater than 0")
 
     if CI_y is not None:
-        CI_y = np.asarray(CI_y)
-        if min(CI_y) <= 0:
-            raise ValueError("CI_y values must all be above 0")
-        if max(CI_y) >= 1 and func in ["CDF", "SF"]:
-            raise ValueError("CI_y values must all be below 1")
+        if type(CI_y) in [float, int]:
+            if CI_y <= 0:
+                raise ValueError("CI_y must be greater than 0")
+            if CI_y >= 1 and func in ["CDF", "SF"]:
+                raise ValueError("CI_y must be less than 1")
+            CI_y = np.array([CI_y])  # package as array. Will be unpacked later
+        else:
+            CI_y = np.asarray(CI_y)
+            if min(CI_y) <= 0:
+                raise ValueError("CI_y values must all be above 0")
+            if max(CI_y) >= 1 and func in ["CDF", "SF"]:
+                raise ValueError("CI_y values must all be below 1")
 
     if self.name == "Beta":
         if func in ["PDF", "CDF", "SF", "HF", "CHF"]:
@@ -7196,7 +7208,7 @@ def extract_CI(dist, func="CDF", CI_type="time", CI=0.95, CI_y=None, CI_x=None):
 
     if dist.name == "Exponential":
         if CI_y is not None and CI_x is not None:
-            ValueError(
+            raise ValueError(
                 "Both CI_x and CI_y have been provided. Please provide only one."
             )
         if CI_y is not None:
@@ -7228,7 +7240,7 @@ def extract_CI(dist, func="CDF", CI_type="time", CI=0.95, CI_y=None, CI_x=None):
             lower, upper = None, None
     else:
         if CI_y is not None and CI_x is not None:
-            ValueError(
+            raise ValueError(
                 "Both CI_x and CI_y have been provided. Please provide only one."
             )
         if CI_x is not None and CI_y is None and CI_type == "time":
@@ -7355,4 +7367,33 @@ def extract_CI(dist, func="CDF", CI_type="time", CI=0.95, CI_y=None, CI_x=None):
                 raise ValueError("Unknown distribution")
         else:
             lower, upper = None, None
+    if type(lower) is not type(None):
+        if len(lower) == 1:  # unpack arrays of length 1
+            lower, upper = lower[0], upper[0]
     return lower, upper
+
+
+def unpack_single_arrays(array):
+    """
+    Unpacks arrays with a single element to return just that element
+
+    Parameters
+    ----------
+    array : float, int, list, array
+        The value for unpacking
+
+    Returns
+    -------
+    output : float, list, int, array
+        If the input was a single length numpy array then the output will be the
+        item from the array. If the input was anything else then the output will
+        match the input
+    """
+    if type(array) == np.ndarray:
+        if len(array) == 1:
+            out = array[0]
+        else:
+            out = array
+    else:
+        out = array
+    return out
