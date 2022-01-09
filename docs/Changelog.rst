@@ -5,8 +5,8 @@
 Changelog
 ---------
 
-**Version: 0.8.0 --- Currently Unreleased --- Scheduled for release around Dec 2021**
-'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+**Version: 0.8.0 --- Released: 09 Jan 2022**
+''''''''''''''''''''''''''''''''''''''''''''
 
 **Summary of changes**
 
