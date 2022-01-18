@@ -7064,6 +7064,11 @@ def distributions_input_checking(
         raise ValueError(
             'CI_type must be "time" or "reliability". Default is "time". Only used if the distribution object was created by Fitters.'
         )
+    if CI is True:
+        CI = 0.95
+    if CI is False:
+        CI = 0.95
+        plot_CI = False
     if type(CI) not in [type(None), float]:
         raise ValueError(
             "CI must be between 0 and 1. Default is 0.95 for 95% confidence interval. Only used if the distribution object was created by Fitters."

@@ -5,6 +5,17 @@
 Changelog
 ---------
 
+**Version: 0.8.1 --- Released: 18 Jan 2022**
+''''''''''''''''''''''''''''''''''''''''''''
+
+**Summary of changes**
+
+This is bugfix release to deal with a minor bug.
+
+**Bug Fixes**
+
+-    The histogram plot in Fit_Everything had a bug which caused plotting to fail, as identified by `this issue <https://github.com/MatthewReid854/reliability/issues/27>`_. This is now resolved.
+
 **Version: 0.8.0 --- Released: 09 Jan 2022**
 ''''''''''''''''''''''''''''''''''''''''''''
 

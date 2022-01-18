@@ -1494,9 +1494,9 @@ class Fit_Everything:
             if counter > 10:
                 ls = "--"
             if item == "Weibull_2P":
-                self.__Weibull_2P_params.distribution.CDF(CI=False, linestyle=ls)
+                self.__Weibull_2P_params.distribution.CDF(plot_CI=False, linestyle=ls)
             elif item == "Weibull_3P":
-                self.__Weibull_3P_params.distribution.CDF(CI=False, linestyle=ls)
+                self.__Weibull_3P_params.distribution.CDF(plot_CI=False, linestyle=ls)
             elif item == "Weibull_Mixture":
                 self.__Weibull_Mixture_params.distribution.CDF(
                     linestyle=ls, xmax=xmax * 2
@@ -1506,25 +1506,33 @@ class Fit_Everything:
             elif item == "Weibull_DS":
                 self.__Weibull_DS_params.distribution.CDF(linestyle=ls, xmax=xmax * 2)
             elif item == "Gamma_2P":
-                self.__Gamma_2P_params.distribution.CDF(CI=False, linestyle=ls)
+                self.__Gamma_2P_params.distribution.CDF(plot_CI=False, linestyle=ls)
             elif item == "Gamma_3P":
-                self.__Gamma_3P_params.distribution.CDF(CI=False, linestyle=ls)
+                self.__Gamma_3P_params.distribution.CDF(plot_CI=False, linestyle=ls)
             elif item == "Exponential_1P":
-                self.__Exponential_1P_params.distribution.CDF(CI=False, linestyle=ls)
+                self.__Exponential_1P_params.distribution.CDF(
+                    plot_CI=False, linestyle=ls
+                )
             elif item == "Exponential_2P":
-                self.__Exponential_2P_params.distribution.CDF(CI=False, linestyle=ls)
+                self.__Exponential_2P_params.distribution.CDF(
+                    plot_CI=False, linestyle=ls
+                )
             elif item == "Lognormal_2P":
-                self.__Lognormal_2P_params.distribution.CDF(CI=False, linestyle=ls)
+                self.__Lognormal_2P_params.distribution.CDF(plot_CI=False, linestyle=ls)
             elif item == "Lognormal_3P":
-                self.__Lognormal_3P_params.distribution.CDF(CI=False, linestyle=ls)
+                self.__Lognormal_3P_params.distribution.CDF(plot_CI=False, linestyle=ls)
             elif item == "Normal_2P":
-                self.__Normal_2P_params.distribution.CDF(CI=False, linestyle=ls)
+                self.__Normal_2P_params.distribution.CDF(plot_CI=False, linestyle=ls)
             elif item == "Gumbel_2P":
-                self.__Gumbel_2P_params.distribution.CDF(CI=False, linestyle=ls)
+                self.__Gumbel_2P_params.distribution.CDF(plot_CI=False, linestyle=ls)
             elif item == "Loglogistic_2P":
-                self.__Loglogistic_2P_params.distribution.CDF(CI=False, linestyle=ls)
+                self.__Loglogistic_2P_params.distribution.CDF(
+                    plot_CI=False, linestyle=ls
+                )
             elif item == "Loglogistic_3P":
-                self.__Loglogistic_3P_params.distribution.CDF(CI=False, linestyle=ls)
+                self.__Loglogistic_3P_params.distribution.CDF(
+                    plot_CI=False, linestyle=ls
+                )
             elif item == "Beta_2P":
                 self.__Beta_2P_params.distribution.CDF(linestyle=ls)
         plt.xlim(xmin, xmax)
