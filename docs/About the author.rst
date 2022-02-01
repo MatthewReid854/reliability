@@ -5,7 +5,7 @@
 About the author
 ''''''''''''''''
 
-The Python reliability library was written by Matthew Reid. Matthew holds a Masters of Reliability Engineering from the University of Maryland, a Masters of Project Management from the University of New South Wales, and a Bachelor of Aeronautical Engineering from the University of New South Wales. Matthew lives in Melbourne, Australia and currently works as a reliability engineer on a variety of acquisition and sustainment projects for land materiel. If you would like to contact Matthew, you can send a message via `LinkedIn <https://www.linkedin.com/in/matthewreid854/>`_.
+The Python reliability library was written by Matthew Reid. Matthew holds a Masters of Reliability Engineering from the University of Maryland, a Masters of Project Management from the University of New South Wales, and a Bachelor of Aeronautical Engineering from the University of New South Wales. Matthew lives in Canberra, Australia and currently works as an Aeronautical Engineer. If you would like to contact Matthew, you can send a message via `LinkedIn <https://www.linkedin.com/in/matthewreid854/>`_.
 
 The Python reliability library was written because there were no dedicated reliability engineering libraries for Python, and Matthew found himself needing to use scipy.stats, lifelines, Minitab, MATLAB, JMP Pro, and his own Python scripts, for a variety of common reliability engineering tasks that were not available in one place. This library is intended to make reliability engineering more accessible to the world, particularly to those individuals and small businesses who find the high cost of proprietary software to be a barrier to entry into conducting reliability engineering analysis.
 
