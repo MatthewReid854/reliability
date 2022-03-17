@@ -10,6 +10,7 @@ Standard distributions are:
     Beta_Distribution
     Loglogistic_Distribution
     Gumbel_Distribution
+    GeneralizedPareto_Distribution
 
 Mixture distributions are:
     Mixture_Model - this must be created using 2 or more of the above standard distributions
@@ -10070,3 +10071,908 @@ class DSZI_Model:
             )
 
         return failures, right_censored
+
+class GeneralizedPareto_Distribution:
+    """
+    Generalized Pareto probability distribution. Creates a probability distribution object.
+
+    Parameters
+    ----------
+    Lambda : float, int
+        Scale parameter. Must be > 0
+    xi: float, int
+        Shape parameter.  Defaults to 0 when Gen Pareto becomes the exponential distribution
+    gamma : float, int, optional
+        threshold (offset) parameter. Must be >= 0. Default = 0
+
+    Returns
+    -------
+    name : str
+        'GeneralizedPareto'
+    name2 : 'str
+        'GeneralizedPareto_3P'
+    param_title_long : str
+        'Generalized Pareto Distribution (λ=5,ξ=2,ɣ=1)'
+    param_title : str
+        'λ=5,ξ=2,ɣ=1'
+    parameters : list
+        [lambda,xi,gamma]
+    lambda : float
+    xi : float
+    gamma: float
+    mean : float
+    variance : float
+    standard_deviation : float
+    skewness : float
+    kurtosis : float
+    excess_kurtosis : float
+    median : float
+    mode : float
+    b5 : float
+    b95 : float
+
+    Notes
+    -----
+    kwargs are used internally to generate the confidence intervals
+    """
+    def __init__(self, Lambda=None, xi=None, gamma=None, **kwargs):
+        self.name = "GeneralizedPareto"
+        self.name2 = "GeneralizedPareto_3P"
+        if Lambda is None or xi is None:
+            raise ValueError(
+                "Parameters mu and sigma must be specified. Eg. GeneralizedPareto(mu=5,sigma=2,xi=1)"
+            )
+        self.Lambda = float(Lambda)
+        if Lambda <= 0:
+            raise ValueError(
+                "Parameters Lambda must be > 0"
+            )
+        if gamma is None:
+            gamma = .0
+        self.xi= float(xi)
+        self.gamma = float(gamma)
+        self.parameters = np.array([self.Lambda, self.xi, self.gamma])
+        mean, var, skew, kurt = ss.genpareto.stats(self.xi, moments="mvsk")
+        self.mean = float(mean)
+        self.standard_deviation = float(var ** 0.5)
+        self.variance = float(var)
+        self.skewness = float(skew)
+        self.kurtosis = float(kurt + 3)
+        self.excess_kurtosis = float(kurt)
+        #self.median = mu + sigma * np.log(np.log(2))
+        self.median = ss.genpareto.median(self.xi, loc=self.gamma, scale=self.Lambda)
+        self.mode = self.gamma
+        self.param_title = str(
+            "λ="
+            + str(round_to_decimals(self.Lambda, dec))
+            + ",ξ="
+            + str(round_to_decimals(self.xi, dec))
+            + ",ɣ="
+            + str(round_to_decimals(self.gamma, dec))
+        )
+        self.param_title_long = str(
+            "Generalized Pareto Distribution (λ="
+            + str(round_to_decimals(self.Lambda, dec))
+            + ",ξ="
+            + str(round_to_decimals(self.xi, dec))
+            + ",ɣ="
+            + str(round_to_decimals(self.gamma, dec))
+            + ")"
+        )
+        self.b5 = ss.genpareto.ppf(0.05, self.xi, loc=self.gamma, scale=self.Lambda)
+        self.b95 = ss.genpareto.ppf(0.95, self.xi, loc=self.gamma, scale=self.Lambda)
+
+        # extracts values for confidence interval plotting
+        if "xi_SE" in kwargs:
+            self.xi_SE = kwargs.pop("xi_SE")
+        else:
+            self.xi_SE = None
+        if "Lambda_SE" in kwargs:
+            self.Lambda_SE = kwargs.pop("Lambda_SE")
+        else:
+            self.Lambda_SE = None
+        if "Cov_mu_Lambda" in kwargs:
+            self.Cov_mu_Lambda = kwargs.pop("Cov_mu_Lambda")
+        else:
+            self.Cov_mu_Lambda = None
+        if "CI" in kwargs:
+            CI = kwargs.pop("CI")
+            self.Z = -ss.norm.ppf((1 - CI) / 2)
+        else:
+            self.Z = None
+        if "CI_type" in kwargs:
+            self.CI_type = kwargs.pop("CI_type")
+        else:
+            self.CI_type = "time"
+        for item in kwargs.keys():
+            colorprint(
+                str(
+                    "WARNING: "
+                    + item
+                    + "is not recognised as an appropriate entry in kwargs. Appropriate entries are mu_SE, Lambda_SE, Cov_xi_Lambda, CI, and CI_type."
+                ),
+                text_color="red",
+            )
+
+        self._pdf0 = 0  # the pdf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
+        self._hf0 = 0  # the hf at 0. Used by Utils.restore_axes_limits and Utils.generate_X_array
+
+    def plot(self, xvals=None, xmin=None, xmax=None):
+        """
+        Plots all functions (PDF, CDF, SF, HF, CHF) and descriptive statistics
+        in a single figure
+
+        Parameters
+        ----------
+        xvals : list, array, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
+
+        Returns
+        -------
+        None
+
+        Notes
+        -----
+        The plot will be shown. No need to use plt.show().
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters. No plotting keywords are
+        accepted.
+        """
+        X, xvals, xmin, xmax = distributions_input_checking(
+            self, "ALL", xvals, xmin, xmax
+        )
+
+        pdf = ss.genpareto.pdf(X, self.xi, loc=self.gamma, scale=self.Lambda)
+        cdf = ss.genpareto.cdf(X, self.xi, loc=self.gamma, scale=self.Lambda)
+        sf = ss.genpareto.sf(X, self.xi, loc=self.gamma, scale=self.Lambda)
+
+        hf = pdf/sf
+        chf  = - np.log(sf)
+        #hf = np.exp((X - self.mu) / self.Lambda) / self.Lambda
+        #chf = np.exp((X - self.mu) / self.Lambda)
+
+        plt.figure(figsize=(9, 7))
+        text_title = str("Generalized Pareto Distribution" + "\n" + self.param_title)
+        plt.suptitle(text_title, fontsize=15)
+
+        plt.subplot(231)
+        plt.plot(X, pdf)
+        restore_axes_limits(
+            [(0, 1), (0, 1), False],
+            dist=self,
+            func="PDF",
+            X=X,
+            Y=pdf,
+            xvals=xvals,
+            xmin=xmin,
+            xmax=xmax,
+        )
+        plt.title("Probability Density\nFunction")
+
+        plt.subplot(232)
+        plt.plot(X, cdf)
+        restore_axes_limits(
+            [(0, 1), (0, 1), False],
+            dist=self,
+            func="CDF",
+            X=X,
+            Y=cdf,
+            xvals=xvals,
+            xmin=xmin,
+            xmax=xmax,
+        )
+        plt.title("Cumulative Distribution\nFunction")
+
+        plt.subplot(233)
+        plt.plot(X, sf)
+        restore_axes_limits(
+            [(0, 1), (0, 1), False],
+            dist=self,
+            func="SF",
+            X=X,
+            Y=sf,
+            xvals=xvals,
+            xmin=xmin,
+            xmax=xmax,
+        )
+        plt.title("Survival Function")
+
+        plt.subplot(234)
+        plt.plot(X, hf)
+        restore_axes_limits(
+            [(0, 1), (0, 1), False],
+            dist=self,
+            func="HF",
+            X=X,
+            Y=hf,
+            xvals=xvals,
+            xmin=xmin,
+            xmax=xmax,
+        )
+        plt.title("Hazard Function")
+
+        plt.subplot(235)
+        plt.plot(X, chf)
+        restore_axes_limits(
+            [(0, 1), (0, 1), False],
+            dist=self,
+            func="CHF",
+            X=X,
+            Y=chf,
+            xvals=xvals,
+            xmin=xmin,
+            xmax=xmax,
+        )
+        plt.title("Cumulative Hazard\nFunction")
+
+        # descriptive statistics section
+        plt.subplot(236)
+        plt.axis("off")
+        plt.ylim([0, 10])
+        plt.xlim([0, 10])
+        text_mean = str("Mean = " + str(round_to_decimals(float(self.mean), dec)))
+        text_median = str("Median = " + str(round_to_decimals(self.median, dec)))
+        text_mode = str("Mode = " + str(round_to_decimals(self.mode, dec)))
+        text_b5 = str("$5^{th}$ quantile = " + str(round_to_decimals(self.b5, dec)))
+        text_b95 = str("$95^{th}$ quantile = " + str(round_to_decimals(self.b95, dec)))
+        text_std = str(
+            "Standard deviation = "
+            + str(round_to_decimals(self.standard_deviation, dec))
+        )
+        text_var = str(
+            "Variance = " + str(round_to_decimals(float(self.variance), dec))
+        )
+        text_skew = str(
+            "Skewness = " + str(round_to_decimals(float(self.skewness), dec))
+        )
+        text_ex_kurt = str(
+            "Excess kurtosis = "
+            + str(round_to_decimals(float(self.excess_kurtosis), dec))
+        )
+        plt.text(0, 9, text_mean)
+        plt.text(0, 8, text_median)
+        plt.text(0, 7, text_mode)
+        plt.text(0, 6, text_b5)
+        plt.text(0, 5, text_b95)
+        plt.text(0, 4, text_std)
+        plt.text(0, 3, text_var)
+        plt.text(0, 2, text_skew)
+        plt.text(0, 1, text_ex_kurt)
+        plt.tight_layout()
+        plt.subplots_adjust(hspace=0.3, top=0.84)
+        plt.show()
+
+    def PDF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
+        """
+        Plots the PDF (probability density function)
+
+        Parameters
+        ----------
+        show_plot : bool, optional
+            True or False. Default = True
+        xvals : array, list, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
+        kwargs
+            Plotting keywords that are passed directly to matplotlib
+            (e.g. color, linestyle)
+
+        Returns
+        -------
+        yvals : array, float
+            The y-values of the plot
+
+        Notes
+        -----
+        The plot will be shown if show_plot is True (which it is by default).
+
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters.
+        """
+        X, xvals, xmin, xmax, show_plot = distributions_input_checking(
+            self, "PDF", xvals, xmin, xmax, show_plot
+        )
+
+        pdf = ss.genpareto.pdf(X, self.xi, loc=self.gamma, scale=self.Lambda)
+        pdf = unpack_single_arrays(pdf)
+
+        if show_plot == True:
+            limits = get_axes_limits()  # get the previous axes limits
+
+            plt.plot(X, pdf, **kwargs)
+            plt.xlabel("x values")
+            plt.ylabel("Probability density")
+            text_title = str(
+                "Generalized Pareto Distribution\n"
+                + " Probability Density Function "
+                + "\n"
+                + self.param_title
+            )
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.85)
+
+            restore_axes_limits(
+                limits,
+                dist=self,
+                func="PDF",
+                X=X,
+                Y=pdf,
+                xvals=xvals,
+                xmin=xmin,
+                xmax=xmax,
+            )
+
+        return pdf
+
+    def CDF(
+        self,
+        xvals=None,
+        xmin=None,
+        xmax=None,
+        show_plot=True,
+        plot_CI=True,
+        CI_type="time",
+        CI=0.95,
+        CI_y=None,
+        CI_x=None,
+        **kwargs
+    ):
+        """
+        Plots the CDF (cumulative distribution function)
+
+        Parameters
+        ----------
+        show_plot : bool, optional
+            True or False. Default = True
+        xvals : array, list, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
+        kwargs
+            Plotting keywords that are passed directly to matplotlib
+            (e.g. color, linestyle)
+
+        Returns
+        -------
+        yvals : array, float
+            The y-values of the plot. Only returned if CI_x and CI_y are not
+            specified.
+        lower_estimate, point_estimate, upper_estimate : tuple
+            A tuple of arrays or floats of the confidence interval estimates
+            based on CI_x or CI_y. Only returned if CI_x or CI_y is specified
+            and the confidence intervals are available. If CI_x is specified,
+            the point estimate is the y-values from the distribution at CI_x. If
+            CI_y is specified, the point estimate is the x-values from the
+            distribution at CI_y.
+
+        Notes
+        -----
+        The plot will be shown if show_plot is True (which it is by default).
+
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters.
+        """
+        (
+            X,
+            xvals,
+            xmin,
+            xmax,
+            show_plot,
+            plot_CI,
+            CI_type,
+            CI,
+            CI_y,
+            CI_x,
+        ) = distributions_input_checking(
+            self, "CDF", xvals, xmin, xmax, show_plot, plot_CI, CI_type, CI, CI_y, CI_x
+        )
+
+        cdf = ss.genpareto.cdf(X, self.xi, loc=self.gamma, scale=self.Lambda)
+        pdf = ss.genpareto.pdf(X, self.xi, loc=self.gamma, scale=self.Lambda)
+        sf = ss.genpareto.sf(X, self.xi, loc=self.gamma, scale=self.Lambda)
+        cdf = unpack_single_arrays(cdf)
+
+        if show_plot == True:
+            limits = get_axes_limits()  # get the previous axes limits
+
+            p = plt.plot(X, cdf, **kwargs)
+            plt.xlabel("x values")
+            plt.ylabel("Fraction failing")
+            text_title = str(
+                "Generalized Pareto Distribution\n"
+                + " Cumulative Distribution Function "
+                + "\n"
+                + self.param_title
+            )
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.85)
+
+            restore_axes_limits(
+                limits,
+                dist=self,
+                func="CDF",
+                X=X,
+                Y=cdf,
+                xvals=xvals,
+                xmin=xmin,
+                xmax=xmax,
+            )
+
+            # TODO - currently we use exponential_CI
+            distribution_confidence_intervals.genpareto_CI(
+                self,
+                func="CDF",
+                # CI_type=CI_type,
+                plot_CI=plot_CI,
+                CI=CI,
+                text_title=text_title,
+                color=p[0].get_color(),
+            )
+
+        lower_CI, upper_CI = extract_CI(
+            dist=self, func="CDF", CI_type=CI_type, CI=CI, CI_y=CI_y, CI_x=CI_x
+        )
+        if lower_CI is not None and upper_CI is not None:
+            if CI_type == "time":
+                return lower_CI, self.quantile(CI_y), upper_CI
+            elif CI_type == "reliability":
+                cdf_point = ss.genpareto.cdf(CI_x, self.xi, loc=self.gamma, scale=self.Lambda)
+                return lower_CI, unpack_single_arrays(cdf_point), upper_CI
+        else:
+            return cdf
+
+    def SF(
+        self,
+        xvals=None,
+        xmin=None,
+        xmax=None,
+        show_plot=True,
+        plot_CI=True,
+        CI_type="time",
+        CI=0.95,
+        CI_y=None,
+        CI_x=None,
+        **kwargs
+    ):
+        """
+        Plots the SF (survival function)
+
+        Parameters
+        ----------
+        show_plot : bool, optional
+            True or False. Default = True
+        xvals : array, list, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
+        kwargs
+            Plotting keywords that are passed directly to matplotlib
+            (e.g. color, linestyle)
+
+        Returns
+        -------
+        yvals : array, float
+            The y-values of the plot. Only returned if CI_x and CI_y are not
+            specified.
+        lower_estimate, point_estimate, upper_estimate : tuple
+            A tuple of arrays or floats of the confidence interval estimates
+            based on CI_x or CI_y. Only returned if CI_x or CI_y is specified
+            and the confidence intervals are available. If CI_x is specified,
+            the point estimate is the y-values from the distribution at CI_x. If
+            CI_y is specified, the point estimate is the x-values from the
+            distribution at CI_y.
+
+        Notes
+        -----
+        The plot will be shown if show_plot is True (which it is by default).
+
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters.
+        """
+        (
+            X,
+            xvals,
+            xmin,
+            xmax,
+            show_plot,
+            plot_CI,
+            CI_type,
+            CI,
+            CI_y,
+            CI_x,
+        ) = distributions_input_checking(
+            self, "SF", xvals, xmin, xmax, show_plot, plot_CI, CI_type, CI, CI_y, CI_x
+        )
+
+        sf = ss.genpareto.sf(X, self.xi, loc=self.gamma, scale=self.Lambda)
+        sf = unpack_single_arrays(sf)
+
+        if show_plot == True:
+            limits = get_axes_limits()  # get the previous axes limits
+
+            p = plt.plot(X, sf, **kwargs)
+            plt.xlabel("x values")
+            plt.ylabel("Fraction surviving")
+            text_title = str(
+                "Gumbel Distribution\n"
+                + " Survival Function "
+                + "\n"
+                + self.param_title
+            )
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.85)
+
+            restore_axes_limits(
+                limits,
+                dist=self,
+                func="SF",
+                X=X,
+                Y=sf,
+                xvals=xvals,
+                xmin=xmin,
+                xmax=xmax,
+            )
+
+            distribution_confidence_intervals.gumbel_CI(
+                self,
+                func="SF",
+                CI_type=CI_type,
+                plot_CI=plot_CI,
+                CI=CI,
+                text_title=text_title,
+                color=p[0].get_color(),
+            )
+
+        lower_CI, upper_CI = extract_CI(
+            dist=self, func="SF", CI_type=CI_type, CI=CI, CI_y=CI_y, CI_x=CI_x
+        )
+        if lower_CI is not None and upper_CI is not None:
+            if CI_type == "time":
+                return lower_CI, self.inverse_SF(CI_y), upper_CI
+            elif CI_type == "reliability":
+                sf_point = ss.genpareto.sf(CI_x, self.xi, loc=self.gamma, scale=self.Lambda)
+                return lower_CI, unpack_single_arrays(sf_point), upper_CI
+        else:
+            return sf
+
+    def HF(self, xvals=None, xmin=None, xmax=None, show_plot=True, **kwargs):
+        """
+        Plots the HF (hazard function)
+
+        Parameters
+        ----------
+        show_plot : bool, optional
+            True or False. Default = True
+        xvals : array, list, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
+        kwargs
+            Plotting keywords that are passed directly to matplotlib
+            (e.g. color, linestyle)
+
+        Returns
+        -------
+        yvals : array, float
+            The y-values of the plot
+
+        Notes
+        -----
+        The plot will be shown if show_plot is True (which it is by default).
+
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters.
+        """
+        X, xvals, xmin, xmax, show_plot = distributions_input_checking(
+            self, "HF", xvals, xmin, xmax, show_plot
+        )
+
+        #hf = np.exp((X - self.mu) / self.Lambda) / self.Lambda
+        pdf = ss.genpareto.pdf(X, self.xi, loc=self.gamma, scale=self.Lambda)
+        sf = ss.genpareto.sf(X, self.xi, loc=self.gamma, scale=self.Lambda)
+        hf = pdf/sf
+        hf = unpack_single_arrays(hf)
+
+        if show_plot == True:
+            limits = get_axes_limits()  # get the previous axes limits
+
+            plt.plot(X, hf, **kwargs)
+            plt.xlabel("x values")
+            plt.ylabel("Hazard")
+            text_title = str(
+                "Generalized Pareto Distribution\n" + " Hazard Function " + "\n" + self.param_title
+            )
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.85)
+
+            restore_axes_limits(
+                limits,
+                dist=self,
+                func="HF",
+                X=X,
+                Y=hf,
+                xvals=xvals,
+                xmin=xmin,
+                xmax=xmax,
+            )
+
+        return hf
+
+    def CHF(
+        self,
+        xvals=None,
+        xmin=None,
+        xmax=None,
+        show_plot=True,
+        plot_CI=True,
+        CI_type="time",
+        CI=0.95,
+        CI_y=None,
+        CI_x=None,
+        **kwargs
+    ):
+        """
+        Plots the CHF (cumulative hazard function)
+
+        Parameters
+        ----------
+        show_plot : bool, optional
+            True or False. Default = True
+        xvals : array, list, optional
+            x-values for plotting
+        xmin : int, float, optional
+            minimum x-value for plotting
+        xmax : int, float, optional
+            maximum x-value for plotting
+        kwargs
+            Plotting keywords that are passed directly to matplotlib
+            (e.g. color, linestyle)
+
+        Returns
+        -------
+        yvals : array, float
+            The y-values of the plot. Only returned if CI_x and CI_y are not
+            specified.
+        lower_estimate, point_estimate, upper_estimate : tuple
+            A tuple of arrays or floats of the confidence interval estimates
+            based on CI_x or CI_y. Only returned if CI_x or CI_y is specified
+            and the confidence intervals are available. If CI_x is specified,
+            the point estimate is the y-values from the distribution at CI_x. If
+            CI_y is specified, the point estimate is the x-values from the
+            distribution at CI_y.
+
+        Notes
+        -----
+        The plot will be shown if show_plot is True (which it is by default).
+
+        If xvals is specified, it will be used. If xvals is not specified but
+        xmin and/or xmax are specified then an array with 200 elements will be
+        created using these limits. If nothing is specified then the range will
+        be based on the distribution's parameters.
+        """
+        (
+            X,
+            xvals,
+            xmin,
+            xmax,
+            show_plot,
+            plot_CI,
+            CI_type,
+            CI,
+            CI_y,
+            CI_x,
+        ) = distributions_input_checking(
+            self, "CHF", xvals, xmin, xmax, show_plot, plot_CI, CI_type, CI, CI_y, CI_x
+        )
+
+        #chf = np.exp((X - self.mu) / self.Lambda)
+        sf = ss.genpareto.sf(X, self.xi, loc=self.gamma, scale=self.Lambda)
+        chf  = - np.log(sf)
+        chf = unpack_single_arrays(chf)
+        self._X = X
+        self._chf = chf
+
+        if show_plot == True:
+            limits = get_axes_limits()  # get the previous axes limits
+
+            p = plt.plot(X, chf, **kwargs)
+            plt.xlabel("x values")
+            plt.ylabel("Cumulative hazard")
+            text_title = str(
+                "Gumbel Distribution\n"
+                + " Cumulative Hazard Function "
+                + "\n"
+                + self.param_title
+            )
+            plt.title(text_title)
+            plt.subplots_adjust(top=0.85)
+
+            restore_axes_limits(
+                limits,
+                dist=self,
+                func="CHF",
+                X=X,
+                Y=chf,
+                xvals=xvals,
+                xmin=xmin,
+                xmax=xmax,
+            )
+
+            distribution_confidence_intervals.gumbel_CI(
+                self,
+                func="CHF",
+                CI_type=CI_type,
+                plot_CI=plot_CI,
+                CI=CI,
+                text_title=text_title,
+                color=p[0].get_color(),
+            )
+
+        lower_CI, upper_CI = extract_CI(
+            dist=self, func="CHF", CI_type=CI_type, CI=CI, CI_y=CI_y, CI_x=CI_x
+        )
+        if lower_CI is not None and upper_CI is not None:
+            if CI_type == "time":
+                return lower_CI, self.inverse_SF(np.exp(-CI_y)), upper_CI
+            elif CI_type == "reliability":
+                chf_point = np.exp((CI_x - self.mu) / self.Lambda)
+                return lower_CI, unpack_single_arrays(chf_point), upper_CI
+        else:
+            return chf
+
+    def quantile(self, q):
+        """
+        Quantile calculator
+
+        Parameters
+        ----------
+        q : float, list, array
+            Quantile to be calculated. Must be between 0 and 1.
+
+        Returns
+        -------
+        x : float
+            The inverse of the CDF at q. This is the probability that a random
+            variable from the distribution is < q
+        """
+        if type(q) in [int, float, np.float64]:
+            if q < 0 or q > 1:
+                raise ValueError("Quantile must be between 0 and 1")
+        elif type(q) in [list, np.ndarray]:
+            if min(q) < 0 or max(q) > 1:
+                raise ValueError("Quantile must be between 0 and 1")
+        else:
+            raise ValueError("Quantile must be of type float, list, array")
+        ppf = ss.genpareto.ppf(q, self.xi, loc=self.gamma, scale=self.Lambda)
+        return unpack_single_arrays(ppf)
+
+    def inverse_SF(self, q):
+        """
+        Inverse survival function calculator
+
+        Parameters
+        ----------
+        q : float, list, array
+            Quantile to be calculated. Must be between 0 and 1.
+
+        Returns
+        -------
+        x : float
+            The inverse of the SF at q.
+        """
+        if type(q) in [int, float, np.float64]:
+            if q < 0 or q > 1:
+                raise ValueError("Quantile must be between 0 and 1")
+        elif type(q) in [list, np.ndarray]:
+            if min(q) < 0 or max(q) > 1:
+                raise ValueError("Quantile must be between 0 and 1")
+        else:
+            raise ValueError("Quantile must be of type float, list, array")
+        isf = ss.genpareto.isf(q, self.xi, loc=self.gamma, scale=self.Lambda)
+        return unpack_single_arrays(isf)
+
+    def mean_residual_life(self, t):
+        """
+        Mean Residual Life calculator
+
+        Parameters
+        ----------
+        t : int, float
+            Time (x-value) at which mean residual life is to be evaluated
+
+        Returns
+        -------
+        MRL : float
+            The mean residual life
+        """
+        R = lambda x: ss.genpareto.sf(x, self.xi, loc=self.gamma, scale=self.Lambda)
+        integral_R, error = integrate.quad(R, t, np.inf)
+        MRL = integral_R / R(t)
+        return MRL
+
+    def stats(self):
+        """
+        Descriptive statistics of the probability distribution.
+        These are the same as the statistics shown using .plot() but printed to
+        the console.
+
+        Parameters
+        ----------
+        None
+
+        Return
+        ------
+        None
+
+        """
+        colorprint(
+            str(
+                "Descriptive statistics for Gumbel distribution with xi = "
+                + str(self.xi)
+                + " and Lambda = "
+                + str(self.Lambda)
+            ),
+            bold=True,
+            underline=True,
+        )
+        print("Mean = ", self.mean)
+        print("Median =", self.median)
+        print("Mode =", self.mode)
+        print("5th quantile =", self.b5)
+        print("95th quantile =", self.b95)
+        print("Standard deviation =", self.standard_deviation)
+        print("Variance =", self.variance)
+        print("Skewness =", self.skewness)
+        print("Excess kurtosis =", self.excess_kurtosis)
+
+    def random_samples(self, number_of_samples, seed=None):
+        """
+        Draws random samples from the probability distribution
+
+        Parameters
+        ----------
+        number_of_samples : int
+            The number of samples to be drawn. Must be greater than 0.
+        seed : int, optional
+            The random seed passed to numpy. Default = None
+
+        Returns
+        -------
+        samples : array
+            The random samples
+
+        Notes
+        -----
+        This is the same as rvs in scipy.stats
+        """
+        if type(number_of_samples) != int or number_of_samples < 1:
+            raise ValueError("number_of_samples must be an integer greater than 0")
+        if seed is not None:
+            np.random.seed(seed)
+        RVS = ss.genpareto.rvs(self.xi, loc=self.gamma, scale=self.Lambda, size=number_of_samples)
+        return RVS
+
+

@@ -298,6 +298,14 @@ class axes_transforms:
         return ss.gumbel_l.cdf(R)
 
     @staticmethod
+    def generalizedpareto_forward(F, xi):
+        return ss.genpareto.ppf(F, xi)
+
+    @staticmethod
+    def generalizedpareto_inverse(R, xi):
+        return ss.genpareto.cdf(R, xi)
+
+    @staticmethod
     def gamma_forward(F, beta):
         return ss.gamma.ppf(F, a=beta)
 
@@ -407,7 +415,7 @@ def restore_axes_limits(limits, dist, func, X, Y, xvals=None, xmin=None, xmax=No
                     xlim_lower = max(0, dist.quantile(0.001) - diff * 0.1)
             elif dist.name in ["Normal", "Gumbel"]:
                 xlim_lower = dist.quantile(0.001)
-            elif dist.name == "Beta":
+            elif dist.name in ["Beta", "GeneralizedPareto"]:
                 xlim_lower = 0
             elif dist.name in ["Mixture", "Competing risks"]:
                 # DSZI not required here as limits are same as base distribution
@@ -571,7 +579,7 @@ def generate_X_array(dist, xvals=None, xmin=None, xmax=None):
                 "xvals was found to contain values above 1. The beta distribution is bounded between 0 and 1."
             )
     else:
-        if dist.name in ["Weibull", "Lognormal", "Loglogistic", "Exponential", "Gamma"]:
+        if dist.name in ["Weibull", "Lognormal", "Loglogistic", "Exponential", "Gamma", "GeneralizedPareto"]:
             if xmin is None:
                 xmin = 0
             if xmin < 0:
@@ -1508,7 +1516,7 @@ class fitters_input_checking:
         "Gamma_3P", "Exponential_1P", "Exponential_2P", "Gumbel_2P",
         "Normal_2P", "Lognormal_2P", "Lognormal_3P", "Loglogistic_2P",
         "Loglogistic_3P", "Beta_2P", "Weibull_Mixture", "Weibull_CR",
-        "Weibull_DSZI", "Weibull_DS", "Weibull_ZI".
+        "Weibull_DSZI", "Weibull_DS", "Weibull_ZI", "GeneralizedPareto_3P"
     failures : array, list
         The failure data
     right_censored : array, list, optional
@@ -1608,6 +1616,7 @@ class fitters_input_checking:
             "Weibull_DSZI",
             "Weibull_DS",
             "Weibull_ZI",
+            "GeneralizedPareto_3P",
         ]:
             raise ValueError(
                 "incorrect dist specified. Use the correct name. eg. Weibull_2P"
@@ -1778,7 +1787,7 @@ class fitters_input_checking:
                 )  # autograd needs floats. crashes with ints
 
         # minimum number of failures checking
-        if dist in ["Weibull_3P", "Gamma_3P", "Lognormal_3P", "Loglogistic_3P"]:
+        if dist in ["Weibull_3P", "Gamma_3P", "Lognormal_3P", "Loglogistic_3P", "GeneralizedPareto_3P"]:
             min_failures = 3
         elif dist in [
             "Weibull_2P",
@@ -2593,6 +2602,178 @@ class distribution_confidence_intervals:
 
     @staticmethod
     def exponential_CI(
+        self,
+        func="CDF",
+        plot_CI=None,
+        CI=None,
+        text_title="",
+        color=None,
+        q=None,
+        x=None,
+    ):
+        """
+        Generates the confidence intervals for CDF, SF, and CHF of the
+        Exponential distribution.
+
+        Parameters
+        ----------
+        self : object
+            The distribution object
+        func : str
+            Must be either "CDF", "SF" or "CHF". Default is "CDF"
+        plot_CI : bool, None
+            The confidence intervals will only be plotted if plot_CI is True.
+        CI : float
+            The confidence interval. Must be between 0 and 1
+        text_title : str
+            The existing CDF/SF/CHF text title to which the confidence interval
+            string will be added.
+        color : str
+            The color to be used to fill the confidence intervals.
+        q : array, list, optional
+            The quantiles to be calculated. Default is None.
+        x : array, list, optional
+            The x-values to be calculated. Default is None.
+
+        Returns
+        -------
+        t_lower : array
+            The lower bounds on time. Only returned if q is not None.
+        t_upper :array
+            The upper bounds on time. Only returned if q is not None.
+        R_lower : array
+            The lower bounds on reliability. Only returned if x is not None.
+        R_upper :array
+            The upper bounds on reliability. Only returned if x is not None.
+
+        Notes
+        -----
+        self must contain particular values for this function to work. These
+        include self.Lambda_SE and self.Z.
+
+        As a Utils function, there is very limited error checking done, as this
+        function is not intended for users to access directly.
+
+        For the Exponential distribution, the bounds on time and reliability are
+        the same.
+
+        For an explaination of how the confidence inervals are calculated,
+        please see the `documentation <https://reliability.readthedocs.io/en/latest/How%20are%20the%20confidence%20intervals%20calculated.html>`_.
+
+        """
+        points = 200
+
+        # this section plots the confidence interval
+        if (
+            self.Lambda_SE is not None
+            and self.Z is not None
+            and (plot_CI is True or q is not None or x is not None)
+        ):
+
+            if func not in ["CDF", "SF", "CHF"]:
+                raise ValueError("func must be either CDF, SF, or CHF")
+            if type(q) not in [list, np.ndarray, type(None)]:
+                raise ValueError(
+                    "q must be a list or array of quantiles. Default is None"
+                )
+            if type(x) not in [list, np.ndarray, type(None)]:
+                raise ValueError(
+                    "x must be a list or array of x-values. Default is None"
+                )
+            if q is not None:
+                q = np.asarray(q)
+            if x is not None:
+                x = np.asarray(x)
+
+            Z = -ss.norm.ppf((1 - CI) / 2)  # converts CI to Z
+
+            if plot_CI is True:
+                # formats the confidence interval value ==> 0.95 becomes 95
+                CI_100 = round(CI * 100, 4)
+
+                if CI_100 % 1 == 0:
+                    CI_100 = int(CI_100)  # removes decimals if the only decimal is 0
+                # Adds the CI and CI_type to the title
+                text_title = str(
+                    text_title + "\n" + str(CI_100) + "% confidence bounds"
+                )
+                # add a line to the plot title to include the confidence bounds information
+                plt.title(text_title)
+                plt.subplots_adjust(top=0.81)
+
+            Lambda_upper = self.Lambda * (np.exp(Z * (self.Lambda_SE / self.Lambda)))
+            Lambda_lower = self.Lambda * (np.exp(-Z * (self.Lambda_SE / self.Lambda)))
+
+            if x is not None:
+                t = x - self.gamma
+            else:
+                t0 = self.quantile(0.00001) - self.gamma
+                if t0 <= 0:
+                    t0 = 0.0001
+                t = np.geomspace(
+                    t0,
+                    self.quantile(0.99999) - self.gamma,
+                    points,
+                )
+
+            # calculate the CIs using the formula for SF
+            Y_lower = np.exp(-Lambda_lower * t)
+            Y_upper = np.exp(-Lambda_upper * t)
+
+            # clean the arrays of illegal values (<=0, nans, >=1 (if CDF or SF))
+            t, t, Y_lower, Y_upper = clean_CI_arrays(
+                xlower=t,
+                xupper=t,
+                ylower=Y_lower,
+                yupper=Y_upper,
+                plot_type=func,
+                q=q,
+                x=x,
+            )
+            # artificially correct for any reversals
+            if (x is None or q is None) and len(Y_lower) > 2 and len(Y_upper) > 2:
+                Y_lower = no_reverse(Y_lower, CI_type=None, plot_type=func)
+                Y_upper = no_reverse(Y_upper, CI_type=None, plot_type=func)
+
+            if func == "CDF":
+                yy_upper = 1 - Y_upper
+                yy_lower = 1 - Y_lower
+            elif func == "SF":
+                yy_upper = Y_upper
+                yy_lower = Y_lower
+            elif func == "CHF":
+                yy_upper = -np.log(Y_upper)  # same as -np.log(SF)
+                yy_lower = -np.log(Y_lower)
+
+            if plot_CI is True:
+                fill_no_autoscale(
+                    xlower=t + self.gamma,
+                    xupper=t + self.gamma,
+                    ylower=yy_lower,
+                    yupper=yy_upper,
+                    color=color,
+                    alpha=0.3,
+                    linewidth=0,
+                )
+                line_no_autoscale(
+                    x=t + self.gamma, y=yy_lower, color=color, linewidth=0
+                )  # these are invisible but need to be added to the plot for crosshairs() to find them
+                line_no_autoscale(
+                    x=t + self.gamma, y=yy_upper, color=color, linewidth=0
+                )  # still need to specify color otherwise the invisible CI lines will consume default colors
+                # plt.scatter(t + self.gamma, yy_lower,color='blue',marker='.')
+                # plt.scatter(t + self.gamma, yy_upper, color='red', marker='.')
+
+            if q is not None:
+                t_lower = -np.log(q) / Lambda_upper + self.gamma
+                t_upper = -np.log(q) / Lambda_lower + self.gamma
+                return t_lower, t_upper
+            elif x is not None:
+                return Y_lower, Y_upper
+
+    # TODO change for exponential to genpareto !!!
+    @staticmethod
+    def genpareto_CI(
         self,
         func="CDF",
         plot_CI=None,
@@ -5527,6 +5708,7 @@ class MLE_optimization:
                 while delta_LL > 0.001 and runs < 5:
                     # exits after LL convergence or 5 iterations
                     runs += 1
+
                     result = minimize(
                         value_and_grad(LL_func),
                         guess,
@@ -5535,6 +5717,7 @@ class MLE_optimization:
                         method=optimizer,
                         bounds=bounds,
                     )
+
                     guess = result.x  # update the guess each iteration
                     if ZI is True:
                         LL2 = 2 * LL_func(
@@ -5585,6 +5768,8 @@ class MLE_optimization:
             bounds = [(0, None)]
         elif func_name == "Exponential_2P":
             bounds = [(0, None), (0, gamma0)]
+        elif func_name == "GeneralizedPareto_3P":
+            bounds = [(0, None), (0, gamma0), (0,0.001)]   # TODO
         elif func_name == "Weibull_mixture":
             bounds = [
                 (0.0001, None),
@@ -5800,6 +5985,7 @@ class MLE_optimization:
                         "Gamma_3P",
                         "Loglogistic_3P",
                         "Lognormal_3P",
+                        "GeneralizedPareto_3P",
                     ]:
                         self.gamma = params[
                             2
