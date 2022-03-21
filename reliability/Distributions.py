@@ -10171,10 +10171,10 @@ class GeneralizedPareto_Distribution:
             self.Lambda_SE = kwargs.pop("Lambda_SE")
         else:
             self.Lambda_SE = None
-        if "Cov_mu_Lambda" in kwargs:
-            self.Cov_mu_Lambda = kwargs.pop("Cov_mu_Lambda")
+        if "Cov_Lambda" in kwargs:
+            self.Cov_Lambda = kwargs.pop("Cov_Lambda")
         else:
-            self.Cov_mu_Lambda = None
+            self.Cov_Lambda = None
         if "CI" in kwargs:
             CI = kwargs.pop("CI")
             self.Z = -ss.norm.ppf((1 - CI) / 2)

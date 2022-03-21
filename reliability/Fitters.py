@@ -400,6 +400,7 @@ class Fit_Everything:
                 "Mu",
                 "Sigma",
                 "Lambda",
+                "Xi",
                 "Log-likelihood",
                 "AICc",
                 "BIC",
@@ -443,6 +444,7 @@ class Fit_Everything:
                     "Mu": "",
                     "Sigma": "",
                     "Lambda": "",
+                    "Xi": "",
                     "Log-likelihood": self.Weibull_3P_loglik,
                     "AICc": self.Weibull_3P_AICc,
                     "BIC": self.Weibull_3P_BIC,
@@ -488,6 +490,7 @@ class Fit_Everything:
                     "Mu": "",
                     "Sigma": "",
                     "Lambda": "",
+                    "Xi": "",
                     "Log-likelihood": self.Gamma_3P_loglik,
                     "AICc": self.Gamma_3P_AICc,
                     "BIC": self.Gamma_3P_BIC,
@@ -531,6 +534,7 @@ class Fit_Everything:
                     "Mu": "",
                     "Sigma": "",
                     "Lambda": self.Exponential_2P_lambda,
+                    "Xi": "",
                     "Log-likelihood": self.Exponential_2P_loglik,
                     "AICc": self.Exponential_2P_AICc,
                     "BIC": self.Exponential_2P_BIC,
@@ -575,6 +579,7 @@ class Fit_Everything:
                     "Mu": self.Lognormal_3P_mu,
                     "Sigma": self.Lognormal_3P_sigma,
                     "Lambda": "",
+                    "Xi": "",
                     "Log-likelihood": self.Lognormal_3P_loglik,
                     "AICc": self.Lognormal_3P_AICc,
                     "BIC": self.Lognormal_3P_BIC,
@@ -618,6 +623,7 @@ class Fit_Everything:
                     "Mu": self.Normal_2P_mu,
                     "Sigma": self.Normal_2P_sigma,
                     "Lambda": "",
+                    "Xi": "",
                     "Log-likelihood": self.Normal_2P_loglik,
                     "AICc": self.Normal_2P_AICc,
                     "BIC": self.Normal_2P_BIC,
@@ -662,6 +668,7 @@ class Fit_Everything:
                     "Mu": self.Lognormal_2P_mu,
                     "Sigma": self.Lognormal_2P_sigma,
                     "Lambda": "",
+                    "Xi": "",
                     "Log-likelihood": self.Lognormal_2P_loglik,
                     "AICc": self.Lognormal_2P_AICc,
                     "BIC": self.Lognormal_2P_BIC,
@@ -705,6 +712,7 @@ class Fit_Everything:
                     "Mu": self.Gumbel_2P_mu,
                     "Sigma": self.Gumbel_2P_sigma,
                     "Lambda": "",
+                    "Xi": "",
                     "Log-likelihood": self.Gumbel_2P_loglik,
                     "AICc": self.Gumbel_2P_AICc,
                     "BIC": self.Gumbel_2P_BIC,
@@ -749,6 +757,7 @@ class Fit_Everything:
                     "Mu": "",
                     "Sigma": "",
                     "Lambda": "",
+                    "Xi": "",
                     "Log-likelihood": self.Weibull_2P_loglik,
                     "AICc": self.Weibull_2P_AICc,
                     "BIC": self.Weibull_2P_BIC,
@@ -797,6 +806,7 @@ class Fit_Everything:
                     "Mu": "",
                     "Sigma": "",
                     "Lambda": "",
+                    "Xi": "",
                     "Log-likelihood": self.Weibull_Mixture_loglik,
                     "AICc": self.Weibull_Mixture_AICc,
                     "BIC": self.Weibull_Mixture_BIC,
@@ -842,6 +852,7 @@ class Fit_Everything:
                     "Mu": "",
                     "Sigma": "",
                     "Lambda": "",
+                    "Xi": "",
                     "Log-likelihood": self.Weibull_CR_loglik,
                     "AICc": self.Weibull_CR_AICc,
                     "BIC": self.Weibull_CR_BIC,
@@ -886,6 +897,7 @@ class Fit_Everything:
                     "Mu": "",
                     "Sigma": "",
                     "Lambda": "",
+                    "Xi": "",
                     "Log-likelihood": self.Weibull_DS_loglik,
                     "AICc": self.Weibull_DS_AICc,
                     "BIC": self.Weibull_DS_BIC,
@@ -931,6 +943,7 @@ class Fit_Everything:
                     "Mu": "",
                     "Sigma": "",
                     "Lambda": "",
+                    "Xi": "",
                     "Log-likelihood": self.Gamma_2P_loglik,
                     "AICc": self.Gamma_2P_AICc,
                     "BIC": self.Gamma_2P_BIC,
@@ -974,6 +987,7 @@ class Fit_Everything:
                     "Mu": "",
                     "Sigma": "",
                     "Lambda": self.Exponential_1P_lambda,
+                    "Xi": "",
                     "Log-likelihood": self.Exponential_1P_loglik,
                     "AICc": self.Exponential_1P_AICc,
                     "BIC": self.Exponential_1P_BIC,
@@ -1018,6 +1032,7 @@ class Fit_Everything:
                     "Mu": "",
                     "Sigma": "",
                     "Lambda": "",
+                    "Xi": "",
                     "Log-likelihood": self.Loglogistic_2P_loglik,
                     "AICc": self.Loglogistic_2P_AICc,
                     "BIC": self.Loglogistic_2P_BIC,
@@ -1062,6 +1077,7 @@ class Fit_Everything:
                     "Mu": "",
                     "Sigma": "",
                     "Lambda": "",
+                    "Xi": "",
                     "Log-likelihood": self.Loglogistic_3P_loglik,
                     "AICc": self.Loglogistic_3P_AICc,
                     "BIC": self.Loglogistic_3P_BIC,
@@ -1105,6 +1121,7 @@ class Fit_Everything:
                     "Mu": "",
                     "Sigma": "",
                     "Lambda": "",
+                    "Xi": "",
                     "Log-likelihood": self.Beta_2P_loglik,
                     "AICc": self.Beta_2P_AICc,
                     "BIC": self.Beta_2P_BIC,
@@ -1113,6 +1130,52 @@ class Fit_Everything:
                 },
                 ignore_index=True,
             )
+
+        if "GeneralizedPareto_3P" not in self.excluded_distributions:
+            self.__GeneralizedPareto_3P_params = Fit_GeneralizedPareto_3P(
+                failures=failures,
+                right_censored=right_censored,
+                method=method,
+                optimizer=optimizer,
+                show_probability_plot=False,
+                print_results=False,
+            )
+            self.GeneralizedPareto_3P_lambda = self.__GeneralizedPareto_3P_params.Lambda
+            self.GeneralizedPareto_3P_xi = self.__GeneralizedPareto_3P_params.xi
+            self.GeneralizedPareto_3P_gamma = self.__GeneralizedPareto_3P_params.gamma
+            self.GeneralizedPareto_3P_loglik = self.__GeneralizedPareto_3P_params.loglik
+            self.GeneralizedPareto_3P_BIC = self.__GeneralizedPareto_3P_params.BIC
+            self.GeneralizedPareto_3P_AICc = self.__GeneralizedPareto_3P_params.AICc
+            self.GeneralizedPareto_3P_AD = self.__GeneralizedPareto_3P_params.AD
+            self.GeneralizedPareto_3P_optimizer = self.__GeneralizedPareto_3P_params.optimizer
+            self._parametric_CDF_GeneralizedPareto_3P = (
+                self.__GeneralizedPareto_3P_params.distribution.CDF(xvals=d, show_plot=False)
+            )
+            df = df.append(
+                {
+                    "Distribution": "GeneralizedPareto_3P",
+                    "Alpha": "",
+                    "Beta": "",
+                    "Gamma": self.GeneralizedPareto_3P_gamma,
+                    "Alpha 1": "",
+                    "Beta 1": "",
+                    "Alpha 2": "",
+                    "Beta 2": "",
+                    "Proportion 1": "",
+                    "DS": "",
+                    "Mu": "",
+                    "Sigma": "",
+                    "Lambda": self.GeneralizedPareto_3P_lambda,
+                    "Xi": self.GeneralizedPareto_3P_xi,
+                    "Log-likelihood": self.GeneralizedPareto_3P_loglik,
+                    "AICc": self.GeneralizedPareto_3P_AICc,
+                    "BIC": self.GeneralizedPareto_3P_BIC,
+                    "AD": self.GeneralizedPareto_3P_AD,
+                    "optimizer": self.GeneralizedPareto_3P_optimizer,
+                },
+                ignore_index=True,
+            )
+
 
         # change to sorting by BIC if there is insufficient data to get the AICc for everything that was fitted
         if (
@@ -1652,6 +1715,11 @@ class Fit_Everything:
                 max_yy = max(yy)
                 if max_yy > plotlim:
                     plotlim = max_yy
+            elif item == "GeneralizedPareto_3P":
+                yy = self._parametric_CDF_GeneralizedPareto_3P
+                max_yy = max(yy)
+                if max_yy > plotlim:
+                    plotlim = max_yy
 
             # downsample if necessary
             x_scatter, y_scatter = xy_downsample(
@@ -1683,6 +1751,7 @@ class Fit_Everything:
             Exponential_probability_plot_Weibull_Scale,
             Loglogistic_probability_plot,
             Gumbel_probability_plot,
+            GeneralizedPareto_probability_plot,
         )
 
         plt.figure()
@@ -1818,6 +1887,13 @@ class Fit_Everything:
                     failures=self.failures,
                     right_censored=self.right_censored,
                     __fitted_dist_params=self.__Beta_2P_params,
+                    downsample_scatterplot=self.__downsample_scatterplot,
+                )
+            elif item == "GeneralizedPareto_3P":
+                GeneralizedPareto_probability_plot(
+                    failures=self.failures,
+                    right_censored=self.right_censored,
+                    __fitted_dist_params=self.__GeneralizedPareto_3P_params,
                     downsample_scatterplot=self.__downsample_scatterplot,
                 )
 
@@ -7193,7 +7269,7 @@ class Fit_GeneralizedPareto_3P:
                 self.Lambda_SE = abs(covariance_matrix[0][0]) ** 0.5
                 self.xi_SE = abs(covariance_matrix[1][1]) ** 0.5
                 self.gamma_SE = abs(covariance_matrix_for_gamma[2][2]) ** 0.5
-                self.Cov_Lambda_beta = covariance_matrix[0][1]
+                self.Cov_Lambda = covariance_matrix[0][1]
                 # TODO ?
                 self.Lambda_upper = self.Lambda * (
                     np.exp(Z * (self.Lambda_SE / self.Lambda))
@@ -7228,7 +7304,7 @@ class Fit_GeneralizedPareto_3P:
                 self.Lambda_SE = 0
                 self.xi_SE = 0
                 self.gamma_SE = 0
-                self.Cov_Lambda_beta = 0
+                self.Cov_Lambda = 0
                 self.Lambda_upper = self.Lambda
                 self.Lambda_lower = self.Lambda
                 self.xi_upper = self.xi
@@ -7259,7 +7335,7 @@ class Fit_GeneralizedPareto_3P:
             gamma=self.gamma,
             Lambda_SE=self.Lambda_SE,
             xi_SE=self.xi_SE,
-            Cov_Lambda_beta=self.Cov_Lambda_beta,
+            Cov_Lambda=self.Cov_Lambda,
             CI=CI,
             CI_type=CI_type,
         )
