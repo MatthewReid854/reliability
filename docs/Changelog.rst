@@ -5,6 +5,17 @@
 Changelog
 ---------
 
+**Version: 0.8.2 --- Released: 23 Mar 2022**
+''''''''''''''''''''''''''''''''''''''''''''
+
+**Summary of changes**
+
+This is bugfix release to deal with a minor bug.
+
+**Bug Fixes**
+
+-    When only 1 failure time was entered and the shape parameter was specified, the Anderson Darling calculation would crash due to receiving a float not an array. Thanks to Francois Besnard for reporting this. This is now resolved.
+
 **Version: 0.8.1 --- Released: 18 Jan 2022**
 ''''''''''''''''''''''''''''''''''''''''''''
 

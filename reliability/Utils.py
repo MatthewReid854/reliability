@@ -1321,6 +1321,8 @@ def anderson_darling(fitted_cdf, empirical_cdf):
     AD : float
         The anderson darling (adjusted) test statistic.
     """
+    if type(fitted_cdf) != np.ndarray:
+        fitted_cdf = [fitted_cdf] # required when there is only 1 failure
     Z = np.sort(np.asarray(fitted_cdf))
     Zi = np.hstack([Z, 1 - 1e-12])
     Zi_1 = (np.hstack([0, Zi]))[0:-1]  # Z_i-1

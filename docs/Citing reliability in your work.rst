@@ -9,14 +9,14 @@ If `reliability` contributes to a project that leads to a scientific publication
 
 The following reference is using APA:
 
-**Reid, M. (2022). Reliability – a Python library for reliability engineering (Version 0.8.1) [Computer software]. Zenodo. https://doi.org/10.5281/ZENODO.3938000**
+**Reid, M. (2022). Reliability – a Python library for reliability engineering (Version 0.8.2) [Computer software]. Zenodo. https://doi.org/10.5281/ZENODO.3938000**
 
 If you would like to use another referencing style, the details you may need are:
 
 - **Author:** Matthew Reid
 - **Year published:** 2022
 - **Title:** Reliability – a Python library for reliability engineering
-- **Version:** 0.8.1
+- **Version:** 0.8.2
 - **Platform:** Python
 - **Available from:** https://pypi.org/project/reliability/
 - **DOI:** 10.5281/zenodo.3938000
