@@ -431,8 +431,8 @@ class Weibull_Distribution:
         xmax=None,
         show_plot=True,
         plot_CI=True,
-        CI_type="time",
-        CI=0.95,
+        CI_type=None,
+        CI=None,
         CI_y=None,
         CI_x=None,
         **kwargs
@@ -568,8 +568,8 @@ class Weibull_Distribution:
         xmax=None,
         show_plot=True,
         plot_CI=True,
-        CI_type="time",
-        CI=0.95,
+        CI_type=None,
+        CI=None,
         CI_y=None,
         CI_x=None,
         **kwargs
@@ -775,8 +775,8 @@ class Weibull_Distribution:
         xmax=None,
         show_plot=True,
         plot_CI=True,
-        CI_type="time",
-        CI=0.95,
+        CI_type=None,
+        CI=None,
         CI_y=None,
         CI_x=None,
         **kwargs
@@ -1390,8 +1390,8 @@ class Normal_Distribution:
         xmax=None,
         show_plot=True,
         plot_CI=True,
-        CI_type="time",
-        CI=0.95,
+        CI_type=None,
+        CI=None,
         CI_y=None,
         CI_x=None,
         **kwargs
@@ -1508,8 +1508,8 @@ class Normal_Distribution:
         xmax=None,
         show_plot=True,
         plot_CI=True,
-        CI_type="time",
-        CI=0.95,
+        CI_type=None,
+        CI=None,
         CI_y=None,
         CI_x=None,
         **kwargs
@@ -1690,8 +1690,8 @@ class Normal_Distribution:
         xmax=None,
         show_plot=True,
         plot_CI=True,
-        CI_type="time",
-        CI=0.95,
+        CI_type=None,
+        CI=None,
         CI_y=None,
         CI_x=None,
         **kwargs
@@ -2301,8 +2301,8 @@ class Lognormal_Distribution:
         xmax=None,
         show_plot=True,
         plot_CI=True,
-        CI_type="time",
-        CI=0.95,
+        CI_type=None,
+        CI=None,
         CI_y=None,
         CI_x=None,
         **kwargs
@@ -2421,8 +2421,8 @@ class Lognormal_Distribution:
         xmax=None,
         show_plot=True,
         plot_CI=True,
-        CI_type="time",
-        CI=0.95,
+        CI_type=None,
+        CI=None,
         CI_y=None,
         CI_x=None,
         **kwargs
@@ -2608,8 +2608,8 @@ class Lognormal_Distribution:
         xmax=None,
         show_plot=True,
         plot_CI=True,
-        CI_type="time",
-        CI=0.95,
+        CI_type=None,
+        CI=None,
         CI_y=None,
         CI_x=None,
         **kwargs
@@ -3211,7 +3211,7 @@ class Exponential_Distribution:
         xmax=None,
         show_plot=True,
         plot_CI=True,
-        CI=0.95,
+        CI=None,
         CI_y=None,
         CI_x=None,
         **kwargs
@@ -3333,7 +3333,7 @@ class Exponential_Distribution:
         xmax=None,
         show_plot=True,
         plot_CI=True,
-        CI=0.95,
+        CI=None,
         CI_y=None,
         CI_x=None,
         **kwargs
@@ -3523,7 +3523,7 @@ class Exponential_Distribution:
         xmax=None,
         show_plot=True,
         plot_CI=True,
-        CI=0.95,
+        CI=None,
         CI_y=None,
         CI_x=None,
         **kwargs
@@ -4164,8 +4164,8 @@ class Gamma_Distribution:
         xmax=None,
         show_plot=True,
         plot_CI=True,
-        CI_type="time",
-        CI=0.95,
+        CI_type=None,
+        CI=None,
         CI_y=None,
         CI_x=None,
         **kwargs
@@ -4284,8 +4284,8 @@ class Gamma_Distribution:
         xmax=None,
         show_plot=True,
         plot_CI=True,
-        CI_type="time",
-        CI=0.95,
+        CI_type=None,
+        CI=None,
         CI_y=None,
         CI_x=None,
         **kwargs
@@ -4467,8 +4467,8 @@ class Gamma_Distribution:
         xmax=None,
         show_plot=True,
         plot_CI=True,
-        CI_type="time",
-        CI=0.95,
+        CI_type=None,
+        CI=None,
         CI_y=None,
         CI_x=None,
         **kwargs
@@ -4819,6 +4819,7 @@ class Beta_Distribution:
         self._hf0 = ss.beta.pdf(0, self.alpha, self.beta, 0, 1) / ss.beta.sf(
             0, self.alpha, self.beta, 0, 1
         )
+        self.Z = None  # this is necessary because distributions_input_checking looks for this value
 
     def plot(self, xvals=None, xmin=None, xmax=None):
         """
@@ -5879,8 +5880,8 @@ class Loglogistic_Distribution:
         xmax=None,
         show_plot=True,
         plot_CI=True,
-        CI_type="time",
-        CI=0.95,
+        CI_type=None,
+        CI=None,
         CI_y=None,
         CI_x=None,
         **kwargs
@@ -5999,8 +6000,8 @@ class Loglogistic_Distribution:
         xmax=None,
         show_plot=True,
         plot_CI=True,
-        CI_type="time",
-        CI=0.95,
+        CI_type=None,
+        CI=None,
         CI_y=None,
         CI_x=None,
         **kwargs
@@ -6189,8 +6190,8 @@ class Loglogistic_Distribution:
         xmax=None,
         show_plot=True,
         plot_CI=True,
-        CI_type="time",
-        CI=0.95,
+        CI_type=None,
+        CI=None,
         CI_y=None,
         CI_x=None,
         **kwargs
@@ -6790,8 +6791,8 @@ class Gumbel_Distribution:
         xmax=None,
         show_plot=True,
         plot_CI=True,
-        CI_type="time",
-        CI=0.95,
+        CI_type=None,
+        CI=None,
         CI_y=None,
         CI_x=None,
         **kwargs
@@ -6908,8 +6909,8 @@ class Gumbel_Distribution:
         xmax=None,
         show_plot=True,
         plot_CI=True,
-        CI_type="time",
-        CI=0.95,
+        CI_type=None,
+        CI=None,
         CI_y=None,
         CI_x=None,
         **kwargs
@@ -7090,8 +7091,8 @@ class Gumbel_Distribution:
         xmax=None,
         show_plot=True,
         plot_CI=True,
-        CI_type="time",
-        CI=0.95,
+        CI_type=None,
+        CI=None,
         CI_y=None,
         CI_x=None,
         **kwargs

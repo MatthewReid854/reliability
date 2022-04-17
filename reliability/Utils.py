@@ -1322,7 +1322,7 @@ def anderson_darling(fitted_cdf, empirical_cdf):
         The anderson darling (adjusted) test statistic.
     """
     if type(fitted_cdf) != np.ndarray:
-        fitted_cdf = [fitted_cdf] # required when there is only 1 failure
+        fitted_cdf = [fitted_cdf]  # required when there is only 1 failure
     Z = np.sort(np.asarray(fitted_cdf))
     Zi = np.hstack([Z, 1 - 1e-12])
     Zi_1 = (np.hstack([0, Zi]))[0:-1]  # Z_i-1
@@ -6980,7 +6980,7 @@ def distributions_input_checking(
     show_plot=None,
     plot_CI=None,
     CI_type=None,
-    CI=0.95,
+    CI=None,
     CI_y=None,
     CI_x=None,
 ):
@@ -7035,10 +7035,13 @@ def distributions_input_checking(
     CI_type : str
         The type of confidence interval. Will be either "time" or "reliability".
         Default is "time". Only returned if func is 'CDF', 'SF', or 'CHF' and
-        self.name !='Beta'. If self.name=='Exponential' it will return None.
+        self.name !='Beta'. If self.name=='Exponential' it will return None. If
+        self.CI_type is specified and CI_type is None then self.CI_type will be
+        used for CI_type.
     CI : float
         The confidence intervals between 0 and 1. Default is 0.95. Only returned
-        if func is 'CDF', 'SF', or 'CHF' and self.name !='Beta'.
+        if func is 'CDF', 'SF', or 'CHF' and self.name !='Beta'. If self.CI is
+        specified and CI is None then self.CI will be used for CI.
     CI_y : list, array, float, int
         The confidence interval y-values to trace. Default is None. Only
         returned if func is 'CDF', 'SF', or 'CHF' and self.name !='Beta'.
@@ -7095,13 +7098,13 @@ def distributions_input_checking(
     else:
         X = generate_X_array(dist=self, xvals=xvals, xmin=xmin, xmax=xmax)
 
-    if CI is not None:
+    if CI is None and self.Z is None:
+        CI = 0.95
+    elif CI is not None:  # CI takes precedence over Z
         if CI <= 0 or CI >= 1:
             raise ValueError("CI must be between 0 and 1")
-    elif self.Z is not None:
+    else:  # CI is None and Z is not None
         CI = 1 - ss.norm.cdf(-self.Z) * 2  # converts Z to CI
-    else:
-        CI = 0.95
 
     if show_plot is None:
         show_plot = True
@@ -7116,13 +7119,23 @@ def distributions_input_checking(
                 text_color="red",
             )
             CI_type = None
+    elif self.name == "Beta":
+        if CI_type is not None:
+            colorprint(
+                "WARNING: CI_type is not used for the Beta distribution since the confidence intervals are not implemented",
+                text_color="red",
+            )
+            CI_type = None
     else:
-        if CI_type is None:
+        if CI_type is None and self.CI_type is None:
             CI_type = "time"
-        if CI_type.upper() in ["T", "TIME"]:
-            CI_type = "time"
-        elif CI_type.upper() in ["R", "REL", "RELIABILITY"]:
-            CI_type = "reliability"
+        elif CI_type is None and self.CI_type is not None:
+            CI_type = self.CI_type
+        else:  # CI_type is not None
+            if CI_type.upper() in ["T", "TIME"]:
+                CI_type = "time"
+            elif CI_type.upper() in ["R", "REL", "RELIABILITY"]:
+                CI_type = "reliability"
 
     if CI_x is not None and CI_y is not None:
         if CI_type == "reliability":

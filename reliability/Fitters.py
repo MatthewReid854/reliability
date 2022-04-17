@@ -426,28 +426,32 @@ class Fit_Everything:
             self._parametric_CDF_Weibull_3P = self.__Weibull_3P_params.distribution.CDF(
                 xvals=d, show_plot=False
             )
-            df = df.append(
-                {
-                    "Distribution": "Weibull_3P",
-                    "Alpha": self.Weibull_3P_alpha,
-                    "Beta": self.Weibull_3P_beta,
-                    "Gamma": self.Weibull_3P_gamma,
-                    "Alpha 1": "",
-                    "Beta 1": "",
-                    "Alpha 2": "",
-                    "Beta 2": "",
-                    "Proportion 1": "",
-                    "DS": "",
-                    "Mu": "",
-                    "Sigma": "",
-                    "Lambda": "",
-                    "Log-likelihood": self.Weibull_3P_loglik,
-                    "AICc": self.Weibull_3P_AICc,
-                    "BIC": self.Weibull_3P_BIC,
-                    "AD": self.Weibull_3P_AD,
-                    "optimizer": self.Weibull_3P_optimizer,
-                },
-                ignore_index=True,
+            df = pd.concat(
+                [
+                    df,
+                    pd.DataFrame(
+                        data={
+                            "Distribution": ["Weibull_3P"],
+                            "Alpha": [self.Weibull_3P_alpha],
+                            "Beta": [self.Weibull_3P_beta],
+                            "Gamma": [self.Weibull_3P_gamma],
+                            "Alpha 1": [""],
+                            "Beta 1": [""],
+                            "Alpha 2": [""],
+                            "Beta 2": [""],
+                            "Proportion 1": [""],
+                            "DS": [""],
+                            "Mu": [""],
+                            "Sigma": [""],
+                            "Lambda": [""],
+                            "Log-likelihood": [self.Weibull_3P_loglik],
+                            "AICc": [self.Weibull_3P_AICc],
+                            "BIC": [self.Weibull_3P_BIC],
+                            "AD": [self.Weibull_3P_AD],
+                            "optimizer": [self.Weibull_3P_optimizer],
+                        }
+                    ),
+                ]
             )
 
         if "Gamma_3P" not in self.excluded_distributions:
@@ -471,28 +475,32 @@ class Fit_Everything:
             self._parametric_CDF_Gamma_3P = self.__Gamma_3P_params.distribution.CDF(
                 xvals=d, show_plot=False
             )
-            df = df.append(
-                {
-                    "Distribution": "Gamma_3P",
-                    "Alpha": self.Gamma_3P_alpha,
-                    "Beta": self.Gamma_3P_beta,
-                    "Gamma": self.Gamma_3P_gamma,
-                    "Alpha 1": "",
-                    "Beta 1": "",
-                    "Alpha 2": "",
-                    "Beta 2": "",
-                    "Proportion 1": "",
-                    "DS": "",
-                    "Mu": "",
-                    "Sigma": "",
-                    "Lambda": "",
-                    "Log-likelihood": self.Gamma_3P_loglik,
-                    "AICc": self.Gamma_3P_AICc,
-                    "BIC": self.Gamma_3P_BIC,
-                    "AD": self.Gamma_3P_AD,
-                    "optimizer": self.Gamma_3P_optimizer,
-                },
-                ignore_index=True,
+            df = pd.concat(
+                [
+                    df,
+                    pd.DataFrame(
+                        data={
+                            "Distribution": ["Gamma_3P"],
+                            "Alpha": [self.Gamma_3P_alpha],
+                            "Beta": [self.Gamma_3P_beta],
+                            "Gamma": [self.Gamma_3P_gamma],
+                            "Alpha 1": [""],
+                            "Beta 1": [""],
+                            "Alpha 2": [""],
+                            "Beta 2": [""],
+                            "Proportion 1": [""],
+                            "DS": [""],
+                            "Mu": [""],
+                            "Sigma": [""],
+                            "Lambda": [""],
+                            "Log-likelihood": [self.Gamma_3P_loglik],
+                            "AICc": [self.Gamma_3P_AICc],
+                            "BIC": [self.Gamma_3P_BIC],
+                            "AD": [self.Gamma_3P_AD],
+                            "optimizer": [self.Gamma_3P_optimizer],
+                        }
+                    ),
+                ]
             )
 
         if "Exponential_2P" not in self.excluded_distributions:
@@ -514,28 +522,32 @@ class Fit_Everything:
             self._parametric_CDF_Exponential_2P = (
                 self.__Exponential_2P_params.distribution.CDF(xvals=d, show_plot=False)
             )
-            df = df.append(
-                {
-                    "Distribution": "Exponential_2P",
-                    "Alpha": "",
-                    "Beta": "",
-                    "Gamma": self.Exponential_2P_gamma,
-                    "Alpha 1": "",
-                    "Beta 1": "",
-                    "Alpha 2": "",
-                    "Beta 2": "",
-                    "Proportion 1": "",
-                    "DS": "",
-                    "Mu": "",
-                    "Sigma": "",
-                    "Lambda": self.Exponential_2P_lambda,
-                    "Log-likelihood": self.Exponential_2P_loglik,
-                    "AICc": self.Exponential_2P_AICc,
-                    "BIC": self.Exponential_2P_BIC,
-                    "AD": self.Exponential_2P_AD,
-                    "optimizer": self.Exponential_2P_optimizer,
-                },
-                ignore_index=True,
+            df = pd.concat(
+                [
+                    df,
+                    pd.DataFrame(
+                        data={
+                            "Distribution": ["Exponential_2P"],
+                            "Alpha": [""],
+                            "Beta": [""],
+                            "Gamma": [self.Exponential_2P_gamma],
+                            "Alpha 1": [""],
+                            "Beta 1": [""],
+                            "Alpha 2": [""],
+                            "Beta 2": [""],
+                            "Proportion 1": [""],
+                            "DS": [""],
+                            "Mu": [""],
+                            "Sigma": [""],
+                            "Lambda": [self.Exponential_2P_lambda],
+                            "Log-likelihood": [self.Exponential_2P_loglik],
+                            "AICc": [self.Exponential_2P_AICc],
+                            "BIC": [self.Exponential_2P_BIC],
+                            "AD": [self.Exponential_2P_AD],
+                            "optimizer": [self.Exponential_2P_optimizer],
+                        }
+                    ),
+                ]
             )
 
         if "Lognormal_3P" not in self.excluded_distributions:
@@ -558,28 +570,32 @@ class Fit_Everything:
             self._parametric_CDF_Lognormal_3P = (
                 self.__Lognormal_3P_params.distribution.CDF(xvals=d, show_plot=False)
             )
-            df = df.append(
-                {
-                    "Distribution": "Lognormal_3P",
-                    "Alpha": "",
-                    "Beta": "",
-                    "Gamma": self.Lognormal_3P_gamma,
-                    "Alpha 1": "",
-                    "Beta 1": "",
-                    "Alpha 2": "",
-                    "Beta 2": "",
-                    "Proportion 1": "",
-                    "DS": "",
-                    "Mu": self.Lognormal_3P_mu,
-                    "Sigma": self.Lognormal_3P_sigma,
-                    "Lambda": "",
-                    "Log-likelihood": self.Lognormal_3P_loglik,
-                    "AICc": self.Lognormal_3P_AICc,
-                    "BIC": self.Lognormal_3P_BIC,
-                    "AD": self.Lognormal_3P_AD,
-                    "optimizer": self.Lognormal_3P_optimizer,
-                },
-                ignore_index=True,
+            df = pd.concat(
+                [
+                    df,
+                    pd.DataFrame(
+                        data={
+                            "Distribution": ["Lognormal_3P"],
+                            "Alpha": [""],
+                            "Beta": [""],
+                            "Gamma": [self.Lognormal_3P_gamma],
+                            "Alpha 1": [""],
+                            "Beta 1": [""],
+                            "Alpha 2": [""],
+                            "Beta 2": [""],
+                            "Proportion 1": [""],
+                            "DS": [""],
+                            "Mu": [self.Lognormal_3P_mu],
+                            "Sigma": [self.Lognormal_3P_sigma],
+                            "Lambda": [""],
+                            "Log-likelihood": [self.Lognormal_3P_loglik],
+                            "AICc": [self.Lognormal_3P_AICc],
+                            "BIC": [self.Lognormal_3P_BIC],
+                            "AD": [self.Lognormal_3P_AD],
+                            "optimizer": [self.Lognormal_3P_optimizer],
+                        }
+                    ),
+                ]
             )
 
         if "Normal_2P" not in self.excluded_distributions:
@@ -601,28 +617,32 @@ class Fit_Everything:
             self._parametric_CDF_Normal_2P = self.__Normal_2P_params.distribution.CDF(
                 xvals=d, show_plot=False
             )
-            df = df.append(
-                {
-                    "Distribution": "Normal_2P",
-                    "Alpha": "",
-                    "Beta": "",
-                    "Gamma": "",
-                    "Alpha 1": "",
-                    "Beta 1": "",
-                    "Alpha 2": "",
-                    "Beta 2": "",
-                    "Proportion 1": "",
-                    "DS": "",
-                    "Mu": self.Normal_2P_mu,
-                    "Sigma": self.Normal_2P_sigma,
-                    "Lambda": "",
-                    "Log-likelihood": self.Normal_2P_loglik,
-                    "AICc": self.Normal_2P_AICc,
-                    "BIC": self.Normal_2P_BIC,
-                    "AD": self.Normal_2P_AD,
-                    "optimizer": self.Normal_2P_optimizer,
-                },
-                ignore_index=True,
+            df = pd.concat(
+                [
+                    df,
+                    pd.DataFrame(
+                        data={
+                            "Distribution": ["Normal_2P"],
+                            "Alpha": [""],
+                            "Beta": [""],
+                            "Gamma": [""],
+                            "Alpha 1": [""],
+                            "Beta 1": [""],
+                            "Alpha 2": [""],
+                            "Beta 2": [""],
+                            "Proportion 1": [""],
+                            "DS": [""],
+                            "Mu": [self.Normal_2P_mu],
+                            "Sigma": [self.Normal_2P_sigma],
+                            "Lambda": [""],
+                            "Log-likelihood": [self.Normal_2P_loglik],
+                            "AICc": [self.Normal_2P_AICc],
+                            "BIC": [self.Normal_2P_BIC],
+                            "AD": [self.Normal_2P_AD],
+                            "optimizer": [self.Normal_2P_optimizer],
+                        }
+                    ),
+                ]
             )
 
         if "Lognormal_2P" not in self.excluded_distributions:
@@ -645,28 +665,32 @@ class Fit_Everything:
             self._parametric_CDF_Lognormal_2P = (
                 self.__Lognormal_2P_params.distribution.CDF(xvals=d, show_plot=False)
             )
-            df = df.append(
-                {
-                    "Distribution": "Lognormal_2P",
-                    "Alpha": "",
-                    "Beta": "",
-                    "Gamma": "",
-                    "Alpha 1": "",
-                    "Beta 1": "",
-                    "Alpha 2": "",
-                    "Beta 2": "",
-                    "Proportion 1": "",
-                    "DS": "",
-                    "Mu": self.Lognormal_2P_mu,
-                    "Sigma": self.Lognormal_2P_sigma,
-                    "Lambda": "",
-                    "Log-likelihood": self.Lognormal_2P_loglik,
-                    "AICc": self.Lognormal_2P_AICc,
-                    "BIC": self.Lognormal_2P_BIC,
-                    "AD": self.Lognormal_2P_AD,
-                    "optimizer": self.Lognormal_2P_optimizer,
-                },
-                ignore_index=True,
+            df = pd.concat(
+                [
+                    df,
+                    pd.DataFrame(
+                        data={
+                            "Distribution": ["Lognormal_2P"],
+                            "Alpha": [""],
+                            "Beta": [""],
+                            "Gamma": [""],
+                            "Alpha 1": [""],
+                            "Beta 1": [""],
+                            "Alpha 2": [""],
+                            "Beta 2": [""],
+                            "Proportion 1": [""],
+                            "DS": [""],
+                            "Mu": [self.Lognormal_2P_mu],
+                            "Sigma": [self.Lognormal_2P_sigma],
+                            "Lambda": [""],
+                            "Log-likelihood": [self.Lognormal_2P_loglik],
+                            "AICc": [self.Lognormal_2P_AICc],
+                            "BIC": [self.Lognormal_2P_BIC],
+                            "AD": [self.Lognormal_2P_AD],
+                            "optimizer": [self.Lognormal_2P_optimizer],
+                        }
+                    ),
+                ]
             )
 
         if "Gumbel_2P" not in self.excluded_distributions:
@@ -688,28 +712,32 @@ class Fit_Everything:
             self._parametric_CDF_Gumbel_2P = self.__Gumbel_2P_params.distribution.CDF(
                 xvals=d, show_plot=False
             )
-            df = df.append(
-                {
-                    "Distribution": "Gumbel_2P",
-                    "Alpha": "",
-                    "Beta": "",
-                    "Gamma": "",
-                    "Alpha 1": "",
-                    "Beta 1": "",
-                    "Alpha 2": "",
-                    "Beta 2": "",
-                    "Proportion 1": "",
-                    "DS": "",
-                    "Mu": self.Gumbel_2P_mu,
-                    "Sigma": self.Gumbel_2P_sigma,
-                    "Lambda": "",
-                    "Log-likelihood": self.Gumbel_2P_loglik,
-                    "AICc": self.Gumbel_2P_AICc,
-                    "BIC": self.Gumbel_2P_BIC,
-                    "AD": self.Gumbel_2P_AD,
-                    "optimizer": self.Gumbel_2P_optimizer,
-                },
-                ignore_index=True,
+            df = pd.concat(
+                [
+                    df,
+                    pd.DataFrame(
+                        data={
+                            "Distribution": ["Gumbel_2P"],
+                            "Alpha": [""],
+                            "Beta": [""],
+                            "Gamma": [""],
+                            "Alpha 1": [""],
+                            "Beta 1": [""],
+                            "Alpha 2": [""],
+                            "Beta 2": [""],
+                            "Proportion 1": [""],
+                            "DS": [""],
+                            "Mu": [self.Gumbel_2P_mu],
+                            "Sigma": [self.Gumbel_2P_sigma],
+                            "Lambda": [""],
+                            "Log-likelihood": [self.Gumbel_2P_loglik],
+                            "AICc": [self.Gumbel_2P_AICc],
+                            "BIC": [self.Gumbel_2P_BIC],
+                            "AD": [self.Gumbel_2P_AD],
+                            "optimizer": [self.Gumbel_2P_optimizer],
+                        }
+                    ),
+                ]
             )
 
         if "Weibull_2P" not in self.excluded_distributions:
@@ -732,28 +760,32 @@ class Fit_Everything:
             self._parametric_CDF_Weibull_2P = self.__Weibull_2P_params.distribution.CDF(
                 xvals=d, show_plot=False
             )
-            df = df.append(
-                {
-                    "Distribution": "Weibull_2P",
-                    "Alpha": self.Weibull_2P_alpha,
-                    "Beta": self.Weibull_2P_beta,
-                    "Gamma": "",
-                    "Alpha 1": "",
-                    "Beta 1": "",
-                    "Alpha 2": "",
-                    "Beta 2": "",
-                    "Proportion 1": "",
-                    "DS": "",
-                    "Mu": "",
-                    "Sigma": "",
-                    "Lambda": "",
-                    "Log-likelihood": self.Weibull_2P_loglik,
-                    "AICc": self.Weibull_2P_AICc,
-                    "BIC": self.Weibull_2P_BIC,
-                    "AD": self.Weibull_2P_AD,
-                    "optimizer": self.Weibull_2P_optimizer,
-                },
-                ignore_index=True,
+            df = pd.concat(
+                [
+                    df,
+                    pd.DataFrame(
+                        data={
+                            "Distribution": ["Weibull_2P"],
+                            "Alpha": [self.Weibull_2P_alpha],
+                            "Beta": [self.Weibull_2P_beta],
+                            "Gamma": [""],
+                            "Alpha 1": [""],
+                            "Beta 1": [""],
+                            "Alpha 2": [""],
+                            "Beta 2": [""],
+                            "Proportion 1": [""],
+                            "DS": [""],
+                            "Mu": [""],
+                            "Sigma": [""],
+                            "Lambda": [""],
+                            "Log-likelihood": [self.Weibull_2P_loglik],
+                            "AICc": [self.Weibull_2P_AICc],
+                            "BIC": [self.Weibull_2P_BIC],
+                            "AD": [self.Weibull_2P_AD],
+                            "optimizer": [self.Weibull_2P_optimizer],
+                        }
+                    ),
+                ]
             )
 
         if "Weibull_Mixture" not in self.excluded_distributions:
@@ -780,28 +812,32 @@ class Fit_Everything:
             self._parametric_CDF_Weibull_Mixture = (
                 self.__Weibull_Mixture_params.distribution.CDF(xvals=d, show_plot=False)
             )
-            df = df.append(
-                {
-                    "Distribution": "Weibull_Mixture",
-                    "Alpha": "",
-                    "Beta": "",
-                    "Gamma": "",
-                    "Alpha 1": self.Weibull_Mixture_alpha_1,
-                    "Beta 1": self.Weibull_Mixture_beta_1,
-                    "Alpha 2": self.Weibull_Mixture_alpha_2,
-                    "Beta 2": self.Weibull_Mixture_beta_2,
-                    "Proportion 1": self.Weibull_Mixture_proportion_1,
-                    "DS": "",
-                    "Mu": "",
-                    "Sigma": "",
-                    "Lambda": "",
-                    "Log-likelihood": self.Weibull_Mixture_loglik,
-                    "AICc": self.Weibull_Mixture_AICc,
-                    "BIC": self.Weibull_Mixture_BIC,
-                    "AD": self.Weibull_Mixture_AD,
-                    "optimizer": self.Weibull_Mixture_optimizer,
-                },
-                ignore_index=True,
+            df = pd.concat(
+                [
+                    df,
+                    pd.DataFrame(
+                        data={
+                            "Distribution": ["Weibull_Mixture"],
+                            "Alpha": [""],
+                            "Beta": [""],
+                            "Gamma": [""],
+                            "Alpha 1": [self.Weibull_Mixture_alpha_1],
+                            "Beta 1": [self.Weibull_Mixture_beta_1],
+                            "Alpha 2": [self.Weibull_Mixture_alpha_2],
+                            "Beta 2": [self.Weibull_Mixture_beta_2],
+                            "Proportion 1": [self.Weibull_Mixture_proportion_1],
+                            "DS": [""],
+                            "Mu": [""],
+                            "Sigma": [""],
+                            "Lambda": [""],
+                            "Log-likelihood": [self.Weibull_Mixture_loglik],
+                            "AICc": [self.Weibull_Mixture_AICc],
+                            "BIC": [self.Weibull_Mixture_BIC],
+                            "AD": [self.Weibull_Mixture_AD],
+                            "optimizer": [self.Weibull_Mixture_optimizer],
+                        }
+                    ),
+                ]
             )
 
         if "Weibull_CR" not in self.excluded_distributions:
@@ -825,28 +861,32 @@ class Fit_Everything:
             self._parametric_CDF_Weibull_CR = self.__Weibull_CR_params.distribution.CDF(
                 xvals=d, show_plot=False
             )
-            df = df.append(
-                {
-                    "Distribution": "Weibull_CR",
-                    "Alpha": "",
-                    "Beta": "",
-                    "Gamma": "",
-                    "Alpha 1": self.Weibull_CR_alpha_1,
-                    "Beta 1": self.Weibull_CR_beta_1,
-                    "Alpha 2": self.Weibull_CR_alpha_2,
-                    "Beta 2": self.Weibull_CR_beta_2,
-                    "Proportion 1": "",
-                    "DS": "",
-                    "Mu": "",
-                    "Sigma": "",
-                    "Lambda": "",
-                    "Log-likelihood": self.Weibull_CR_loglik,
-                    "AICc": self.Weibull_CR_AICc,
-                    "BIC": self.Weibull_CR_BIC,
-                    "AD": self.Weibull_CR_AD,
-                    "optimizer": self.Weibull_CR_optimizer,
-                },
-                ignore_index=True,
+            df = pd.concat(
+                [
+                    df,
+                    pd.DataFrame(
+                        data={
+                            "Distribution": ["Weibull_CR"],
+                            "Alpha": [""],
+                            "Beta": [""],
+                            "Gamma": [""],
+                            "Alpha 1": [self.Weibull_CR_alpha_1],
+                            "Beta 1": [self.Weibull_CR_beta_1],
+                            "Alpha 2": [self.Weibull_CR_alpha_2],
+                            "Beta 2": [self.Weibull_CR_beta_2],
+                            "Proportion 1": [""],
+                            "DS": [""],
+                            "Mu": [""],
+                            "Sigma": [""],
+                            "Lambda": [""],
+                            "Log-likelihood": [self.Weibull_CR_loglik],
+                            "AICc": [self.Weibull_CR_AICc],
+                            "BIC": [self.Weibull_CR_BIC],
+                            "AD": [self.Weibull_CR_AD],
+                            "optimizer": [self.Weibull_CR_optimizer],
+                        }
+                    ),
+                ]
             )
 
         if "Weibull_DS" not in self.excluded_distributions:
@@ -869,28 +909,32 @@ class Fit_Everything:
             self._parametric_CDF_Weibull_DS = self.__Weibull_DS_params.distribution.CDF(
                 xvals=d, show_plot=False
             )
-            df = df.append(
-                {
-                    "Distribution": "Weibull_DS",
-                    "Alpha": self.Weibull_DS_alpha,
-                    "Beta": self.Weibull_DS_beta,
-                    "Gamma": "",
-                    "Alpha 1": "",
-                    "Beta 1": "",
-                    "Alpha 2": "",
-                    "Beta 2": "",
-                    "Proportion 1": "",
-                    "DS": self.Weibull_DS_DS,
-                    "Mu": "",
-                    "Sigma": "",
-                    "Lambda": "",
-                    "Log-likelihood": self.Weibull_DS_loglik,
-                    "AICc": self.Weibull_DS_AICc,
-                    "BIC": self.Weibull_DS_BIC,
-                    "AD": self.Weibull_DS_AD,
-                    "optimizer": self.Weibull_DS_optimizer,
-                },
-                ignore_index=True,
+            df = pd.concat(
+                [
+                    df,
+                    pd.DataFrame(
+                        data={
+                            "Distribution": ["Weibull_DS"],
+                            "Alpha": [self.Weibull_DS_alpha],
+                            "Beta": [self.Weibull_DS_beta],
+                            "Gamma": [""],
+                            "Alpha 1": [""],
+                            "Beta 1": [""],
+                            "Alpha 2": [""],
+                            "Beta 2": [""],
+                            "Proportion 1": [""],
+                            "DS": [self.Weibull_DS_DS],
+                            "Mu": [""],
+                            "Sigma": [""],
+                            "Lambda": [""],
+                            "Log-likelihood": [self.Weibull_DS_loglik],
+                            "AICc": [self.Weibull_DS_AICc],
+                            "BIC": [self.Weibull_DS_BIC],
+                            "AD": [self.Weibull_DS_AD],
+                            "optimizer": [self.Weibull_DS_optimizer],
+                        }
+                    ),
+                ]
             )
 
         if "Gamma_2P" not in self.excluded_distributions:
@@ -914,28 +958,32 @@ class Fit_Everything:
             self._parametric_CDF_Gamma_2P = self.__Gamma_2P_params.distribution.CDF(
                 xvals=d, show_plot=False
             )
-            df = df.append(
-                {
-                    "Distribution": "Gamma_2P",
-                    "Alpha": self.Gamma_2P_alpha,
-                    "Beta": self.Gamma_2P_beta,
-                    "Gamma": "",
-                    "Alpha 1": "",
-                    "Beta 1": "",
-                    "Alpha 2": "",
-                    "Beta 2": "",
-                    "Proportion 1": "",
-                    "DS": "",
-                    "Mu": "",
-                    "Sigma": "",
-                    "Lambda": "",
-                    "Log-likelihood": self.Gamma_2P_loglik,
-                    "AICc": self.Gamma_2P_AICc,
-                    "BIC": self.Gamma_2P_BIC,
-                    "AD": self.Gamma_2P_AD,
-                    "optimizer": self.Gamma_2P_optimizer,
-                },
-                ignore_index=True,
+            df = pd.concat(
+                [
+                    df,
+                    pd.DataFrame(
+                        data={
+                            "Distribution": ["Gamma_2P"],
+                            "Alpha": [self.Gamma_2P_alpha],
+                            "Beta": [self.Gamma_2P_beta],
+                            "Gamma": [""],
+                            "Alpha 1": [""],
+                            "Beta 1": [""],
+                            "Alpha 2": [""],
+                            "Beta 2": [""],
+                            "Proportion 1": [""],
+                            "DS": [""],
+                            "Mu": [""],
+                            "Sigma": [""],
+                            "Lambda": [""],
+                            "Log-likelihood": [self.Gamma_2P_loglik],
+                            "AICc": [self.Gamma_2P_AICc],
+                            "BIC": [self.Gamma_2P_BIC],
+                            "AD": [self.Gamma_2P_AD],
+                            "optimizer": [self.Gamma_2P_optimizer],
+                        }
+                    ),
+                ]
             )
 
         if "Exponential_1P" not in self.excluded_distributions:
@@ -957,28 +1005,32 @@ class Fit_Everything:
             self._parametric_CDF_Exponential_1P = (
                 self.__Exponential_1P_params.distribution.CDF(xvals=d, show_plot=False)
             )
-            df = df.append(
-                {
-                    "Distribution": "Exponential_1P",
-                    "Alpha": "",
-                    "Beta": "",
-                    "Gamma": "",
-                    "Alpha 1": "",
-                    "Beta 1": "",
-                    "Alpha 2": "",
-                    "Beta 2": "",
-                    "Proportion 1": "",
-                    "DS": "",
-                    "Mu": "",
-                    "Sigma": "",
-                    "Lambda": self.Exponential_1P_lambda,
-                    "Log-likelihood": self.Exponential_1P_loglik,
-                    "AICc": self.Exponential_1P_AICc,
-                    "BIC": self.Exponential_1P_BIC,
-                    "AD": self.Exponential_1P_AD,
-                    "optimizer": self.Exponential_1P_optimizer,
-                },
-                ignore_index=True,
+            df = pd.concat(
+                [
+                    df,
+                    pd.DataFrame(
+                        data={
+                            "Distribution": ["Exponential_1P"],
+                            "Alpha": [""],
+                            "Beta": [""],
+                            "Gamma": [""],
+                            "Alpha 1": [""],
+                            "Beta 1": [""],
+                            "Alpha 2": [""],
+                            "Beta 2": [""],
+                            "Proportion 1": [""],
+                            "DS": [""],
+                            "Mu": [""],
+                            "Sigma": [""],
+                            "Lambda": [self.Exponential_1P_lambda],
+                            "Log-likelihood": [self.Exponential_1P_loglik],
+                            "AICc": [self.Exponential_1P_AICc],
+                            "BIC": [self.Exponential_1P_BIC],
+                            "AD": [self.Exponential_1P_AD],
+                            "optimizer": [self.Exponential_1P_optimizer],
+                        }
+                    ),
+                ]
             )
 
         if "Loglogistic_2P" not in self.excluded_distributions:
@@ -1001,28 +1053,32 @@ class Fit_Everything:
             self._parametric_CDF_Loglogistic_2P = (
                 self.__Loglogistic_2P_params.distribution.CDF(xvals=d, show_plot=False)
             )
-            df = df.append(
-                {
-                    "Distribution": "Loglogistic_2P",
-                    "Alpha": self.Loglogistic_2P_alpha,
-                    "Beta": self.Loglogistic_2P_beta,
-                    "Gamma": "",
-                    "Alpha 1": "",
-                    "Beta 1": "",
-                    "Alpha 2": "",
-                    "Beta 2": "",
-                    "Proportion 1": "",
-                    "DS": "",
-                    "Mu": "",
-                    "Sigma": "",
-                    "Lambda": "",
-                    "Log-likelihood": self.Loglogistic_2P_loglik,
-                    "AICc": self.Loglogistic_2P_AICc,
-                    "BIC": self.Loglogistic_2P_BIC,
-                    "AD": self.Loglogistic_2P_AD,
-                    "optimizer": self.Loglogistic_2P_optimizer,
-                },
-                ignore_index=True,
+            df = pd.concat(
+                [
+                    df,
+                    pd.DataFrame(
+                        data={
+                            "Distribution": ["Loglogistic_2P"],
+                            "Alpha": [self.Loglogistic_2P_alpha],
+                            "Beta": [self.Loglogistic_2P_beta],
+                            "Gamma": [""],
+                            "Alpha 1": [""],
+                            "Beta 1": [""],
+                            "Alpha 2": [""],
+                            "Beta 2": [""],
+                            "Proportion 1": [""],
+                            "DS": [""],
+                            "Mu": [""],
+                            "Sigma": [""],
+                            "Lambda": [""],
+                            "Log-likelihood": [self.Loglogistic_2P_loglik],
+                            "AICc": [self.Loglogistic_2P_AICc],
+                            "BIC": [self.Loglogistic_2P_BIC],
+                            "AD": [self.Loglogistic_2P_AD],
+                            "optimizer": [self.Loglogistic_2P_optimizer],
+                        }
+                    ),
+                ]
             )
 
         if "Loglogistic_3P" not in self.excluded_distributions:
@@ -1045,28 +1101,32 @@ class Fit_Everything:
             self._parametric_CDF_Loglogistic_3P = (
                 self.__Loglogistic_3P_params.distribution.CDF(xvals=d, show_plot=False)
             )
-            df = df.append(
-                {
-                    "Distribution": "Loglogistic_3P",
-                    "Alpha": self.Loglogistic_3P_alpha,
-                    "Beta": self.Loglogistic_3P_beta,
-                    "Gamma": self.Loglogistic_3P_gamma,
-                    "Alpha 1": "",
-                    "Beta 1": "",
-                    "Alpha 2": "",
-                    "Beta 2": "",
-                    "Proportion 1": "",
-                    "DS": "",
-                    "Mu": "",
-                    "Sigma": "",
-                    "Lambda": "",
-                    "Log-likelihood": self.Loglogistic_3P_loglik,
-                    "AICc": self.Loglogistic_3P_AICc,
-                    "BIC": self.Loglogistic_3P_BIC,
-                    "AD": self.Loglogistic_3P_AD,
-                    "optimizer": self.Loglogistic_3P_optimizer,
-                },
-                ignore_index=True,
+            df = pd.concat(
+                [
+                    df,
+                    pd.DataFrame(
+                        data={
+                            "Distribution": ["Loglogistic_3P"],
+                            "Alpha": [self.Loglogistic_3P_alpha],
+                            "Beta": [self.Loglogistic_3P_beta],
+                            "Gamma": [self.Loglogistic_3P_gamma],
+                            "Alpha 1": [""],
+                            "Beta 1": [""],
+                            "Alpha 2": [""],
+                            "Beta 2": [""],
+                            "Proportion 1": [""],
+                            "DS": [""],
+                            "Mu": [""],
+                            "Sigma": [""],
+                            "Lambda": [""],
+                            "Log-likelihood": [self.Loglogistic_3P_loglik],
+                            "AICc": [self.Loglogistic_3P_AICc],
+                            "BIC": [self.Loglogistic_3P_BIC],
+                            "AD": [self.Loglogistic_3P_AD],
+                            "optimizer": [self.Loglogistic_3P_optimizer],
+                        }
+                    ),
+                ]
             )
 
         if "Beta_2P" not in self.excluded_distributions:
@@ -1088,28 +1148,32 @@ class Fit_Everything:
             self._parametric_CDF_Beta_2P = self.__Beta_2P_params.distribution.CDF(
                 xvals=d, show_plot=False
             )
-            df = df.append(
-                {
-                    "Distribution": "Beta_2P",
-                    "Alpha": self.Beta_2P_alpha,
-                    "Beta": self.Beta_2P_beta,
-                    "Gamma": "",
-                    "Alpha 1": "",
-                    "Beta 1": "",
-                    "Alpha 2": "",
-                    "Beta 2": "",
-                    "Proportion 1": "",
-                    "DS": "",
-                    "Mu": "",
-                    "Sigma": "",
-                    "Lambda": "",
-                    "Log-likelihood": self.Beta_2P_loglik,
-                    "AICc": self.Beta_2P_AICc,
-                    "BIC": self.Beta_2P_BIC,
-                    "AD": self.Beta_2P_AD,
-                    "optimizer": self.Beta_2P_optimizer,
-                },
-                ignore_index=True,
+            df = pd.concat(
+                [
+                    df,
+                    pd.DataFrame(
+                        data={
+                            "Distribution": ["Beta_2P"],
+                            "Alpha": [self.Beta_2P_alpha],
+                            "Beta": [self.Beta_2P_beta],
+                            "Gamma": [""],
+                            "Alpha 1": [""],
+                            "Beta 1": [""],
+                            "Alpha 2": [""],
+                            "Beta 2": [""],
+                            "Proportion 1": [""],
+                            "DS": [""],
+                            "Mu": [""],
+                            "Sigma": [""],
+                            "Lambda": [""],
+                            "Log-likelihood": [self.Beta_2P_loglik],
+                            "AICc": [self.Beta_2P_AICc],
+                            "BIC": [self.Beta_2P_BIC],
+                            "AD": [self.Beta_2P_AD],
+                            "optimizer": [self.Beta_2P_optimizer],
+                        }
+                    ),
+                ]
             )
 
         # change to sorting by BIC if there is insufficient data to get the AICc for everything that was fitted
@@ -1124,11 +1188,11 @@ class Fit_Everything:
                 "Invalid input to sort_by. Options are 'BIC', 'AICc', 'AD', or 'Log-likelihood'. Default is 'BIC'."
             )
         if sort_by.upper() == "BIC":
-            df2 = df.reindex(df.BIC.sort_values().index)
+            df2 = df.sort_values(by="BIC")
         elif sort_by.upper() in ["AICC", "AIC"]:
-            df2 = df.reindex(df.AICc.sort_values().index)
+            df2 = df.sort_values(by="AICc")
         elif sort_by.upper() == "AD":
-            df2 = df.reindex(df.AD.sort_values().index)
+            df2 = df.sort_values(by="AD")
         elif sort_by.upper() in [
             "LOGLIK",
             "LOG LIK",
@@ -1137,7 +1201,13 @@ class Fit_Everything:
             "LOGLIKELIHOOD",
             "LOG LIKELIHOOD",
         ]:
-            df2 = df.reindex(abs(df["Log-likelihood"]).sort_values().index)
+            df["LLabs"] = abs(
+                df["Log-likelihood"]
+            )  # need to create a new column for the absolute value before sorting
+            df2 = df.sort_values(by="LLabs")
+            df2.drop(
+                "LLabs", axis=1, inplace=True
+            )  # remove the column created just for sorting
         else:
             raise ValueError(
                 "Invalid input to sort_by. Options are 'BIC', 'AICc', 'AD', or 'Log-likelihood'. Default is 'BIC'."

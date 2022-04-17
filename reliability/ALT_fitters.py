@@ -357,21 +357,25 @@ class Fit_Everything_ALT:
                 self.__Weibull_Exponential_params.optimizer
             )
 
-            df = df.append(
-                {
-                    "ALT_model": "Weibull_Exponential",
-                    "a": self.Weibull_Exponential_a,
-                    "b": self.Weibull_Exponential_b,
-                    "c": "",
-                    "n": "",
-                    "beta": self.Weibull_Exponential_beta,
-                    "sigma": "",
-                    "Log-likelihood": self.Weibull_Exponential_loglik,
-                    "AICc": self.Weibull_Exponential_AICc,
-                    "BIC": self.Weibull_Exponential_BIC,
-                    "optimizer": self.Weibull_Exponential_optimizer,
-                },
-                ignore_index=True,
+            df = pd.concat(
+                [
+                    df,
+                    pd.DataFrame(
+                        data={
+                            "ALT_model": ["Weibull_Exponential"],
+                            "a": [self.Weibull_Exponential_a],
+                            "b": [self.Weibull_Exponential_b],
+                            "c": [""],
+                            "n": [""],
+                            "beta": [self.Weibull_Exponential_beta],
+                            "sigma": [""],
+                            "Log-likelihood": [self.Weibull_Exponential_loglik],
+                            "AICc": [self.Weibull_Exponential_AICc],
+                            "BIC": [self.Weibull_Exponential_BIC],
+                            "optimizer": [self.Weibull_Exponential_optimizer],
+                        }
+                    ),
+                ]
             )
 
         if "Weibull_Eyring" not in self.excluded_models:
@@ -395,21 +399,25 @@ class Fit_Everything_ALT:
             self.Weibull_Eyring_AICc = self.__Weibull_Eyring_params.AICc
             self.Weibull_Eyring_optimizer = self.__Weibull_Eyring_params.optimizer
 
-            df = df.append(
-                {
-                    "ALT_model": "Weibull_Eyring",
-                    "a": self.Weibull_Eyring_a,
-                    "b": "",
-                    "c": self.Weibull_Eyring_c,
-                    "n": "",
-                    "beta": self.Weibull_Eyring_beta,
-                    "sigma": "",
-                    "Log-likelihood": self.Weibull_Eyring_loglik,
-                    "AICc": self.Weibull_Eyring_AICc,
-                    "BIC": self.Weibull_Eyring_BIC,
-                    "optimizer": self.Weibull_Eyring_optimizer,
-                },
-                ignore_index=True,
+            df = pd.concat(
+                [
+                    df,
+                    pd.DataFrame(
+                        data={
+                            "ALT_model": ["Weibull_Eyring"],
+                            "a": [self.Weibull_Eyring_a],
+                            "b": [""],
+                            "c": [self.Weibull_Eyring_c],
+                            "n": [""],
+                            "beta": [self.Weibull_Eyring_beta],
+                            "sigma": [""],
+                            "Log-likelihood": [self.Weibull_Eyring_loglik],
+                            "AICc": [self.Weibull_Eyring_AICc],
+                            "BIC": [self.Weibull_Eyring_BIC],
+                            "optimizer": [self.Weibull_Eyring_optimizer],
+                        }
+                    ),
+                ]
             )
 
         if "Weibull_Power" not in self.excluded_models:
@@ -433,21 +441,25 @@ class Fit_Everything_ALT:
             self.Weibull_Power_AICc = self.__Weibull_Power_params.AICc
             self.Weibull_Power_optimizer = self.__Weibull_Power_params.optimizer
 
-            df = df.append(
-                {
-                    "ALT_model": "Weibull_Power",
-                    "a": self.Weibull_Power_a,
-                    "b": "",
-                    "c": "",
-                    "n": self.Weibull_Power_n,
-                    "beta": self.Weibull_Power_beta,
-                    "sigma": "",
-                    "Log-likelihood": self.Weibull_Power_loglik,
-                    "AICc": self.Weibull_Power_AICc,
-                    "BIC": self.Weibull_Power_BIC,
-                    "optimizer": self.Weibull_Power_optimizer,
-                },
-                ignore_index=True,
+            df = pd.concat(
+                [
+                    df,
+                    pd.DataFrame(
+                        data={
+                            "ALT_model": ["Weibull_Power"],
+                            "a": [self.Weibull_Power_a],
+                            "b": [""],
+                            "c": [""],
+                            "n": [self.Weibull_Power_n],
+                            "beta": [self.Weibull_Power_beta],
+                            "sigma": [""],
+                            "Log-likelihood": [self.Weibull_Power_loglik],
+                            "AICc": [self.Weibull_Power_AICc],
+                            "BIC": [self.Weibull_Power_BIC],
+                            "optimizer": [self.Weibull_Power_optimizer],
+                        }
+                    ),
+                ]
             )
 
         if "Lognormal_Exponential" not in self.excluded_models:
@@ -475,21 +487,25 @@ class Fit_Everything_ALT:
                 self.__Lognormal_Exponential_params.optimizer
             )
 
-            df = df.append(
-                {
-                    "ALT_model": "Lognormal_Exponential",
-                    "a": self.Lognormal_Exponential_a,
-                    "b": self.Lognormal_Exponential_b,
-                    "c": "",
-                    "n": "",
-                    "beta": "",
-                    "sigma": self.Lognormal_Exponential_sigma,
-                    "Log-likelihood": self.Lognormal_Exponential_loglik,
-                    "AICc": self.Lognormal_Exponential_AICc,
-                    "BIC": self.Lognormal_Exponential_BIC,
-                    "optimizer": self.Lognormal_Exponential_optimizer,
-                },
-                ignore_index=True,
+            df = pd.concat(
+                [
+                    df,
+                    pd.DataFrame(
+                        data={
+                            "ALT_model": ["Lognormal_Exponential"],
+                            "a": [self.Lognormal_Exponential_a],
+                            "b": [self.Lognormal_Exponential_b],
+                            "c": [""],
+                            "n": [""],
+                            "beta": [""],
+                            "sigma": [self.Lognormal_Exponential_sigma],
+                            "Log-likelihood": [self.Lognormal_Exponential_loglik],
+                            "AICc": [self.Lognormal_Exponential_AICc],
+                            "BIC": [self.Lognormal_Exponential_BIC],
+                            "optimizer": [self.Lognormal_Exponential_optimizer],
+                        }
+                    ),
+                ]
             )
 
         if "Lognormal_Eyring" not in self.excluded_models:
@@ -513,21 +529,25 @@ class Fit_Everything_ALT:
             self.Lognormal_Eyring_AICc = self.__Lognormal_Eyring_params.AICc
             self.Lognormal_Eyring_optimizer = self.__Lognormal_Eyring_params.optimizer
 
-            df = df.append(
-                {
-                    "ALT_model": "Lognormal_Eyring",
-                    "a": self.Lognormal_Eyring_a,
-                    "b": "",
-                    "c": self.Lognormal_Eyring_c,
-                    "n": "",
-                    "beta": "",
-                    "sigma": self.Lognormal_Eyring_sigma,
-                    "Log-likelihood": self.Lognormal_Eyring_loglik,
-                    "AICc": self.Lognormal_Eyring_AICc,
-                    "BIC": self.Lognormal_Eyring_BIC,
-                    "optimizer": self.Lognormal_Eyring_optimizer,
-                },
-                ignore_index=True,
+            df = pd.concat(
+                [
+                    df,
+                    pd.DataFrame(
+                        data={
+                            "ALT_model": ["Lognormal_Eyring"],
+                            "a": [self.Lognormal_Eyring_a],
+                            "b": [""],
+                            "c": [self.Lognormal_Eyring_c],
+                            "n": [""],
+                            "beta": [""],
+                            "sigma": [self.Lognormal_Eyring_sigma],
+                            "Log-likelihood": [self.Lognormal_Eyring_loglik],
+                            "AICc": [self.Lognormal_Eyring_AICc],
+                            "BIC": [self.Lognormal_Eyring_BIC],
+                            "optimizer": [self.Lognormal_Eyring_optimizer],
+                        }
+                    ),
+                ]
             )
 
         if "Lognormal_Power" not in self.excluded_models:
@@ -551,21 +571,25 @@ class Fit_Everything_ALT:
             self.Lognormal_Power_AICc = self.__Lognormal_Power_params.AICc
             self.Lognormal_Power_optimizer = self.__Lognormal_Power_params.optimizer
 
-            df = df.append(
-                {
-                    "ALT_model": "Lognormal_Power",
-                    "a": self.Lognormal_Power_a,
-                    "b": "",
-                    "c": "",
-                    "n": self.Lognormal_Power_n,
-                    "beta": "",
-                    "sigma": self.Lognormal_Power_sigma,
-                    "Log-likelihood": self.Lognormal_Power_loglik,
-                    "AICc": self.Lognormal_Power_AICc,
-                    "BIC": self.Lognormal_Power_BIC,
-                    "optimizer": self.Lognormal_Power_optimizer,
-                },
-                ignore_index=True,
+            df = pd.concat(
+                [
+                    df,
+                    pd.DataFrame(
+                        data={
+                            "ALT_model": ["Lognormal_Power"],
+                            "a": [self.Lognormal_Power_a],
+                            "b": [""],
+                            "c": [""],
+                            "n": [self.Lognormal_Power_n],
+                            "beta": [""],
+                            "sigma": [self.Lognormal_Power_sigma],
+                            "Log-likelihood": [self.Lognormal_Power_loglik],
+                            "AICc": [self.Lognormal_Power_AICc],
+                            "BIC": [self.Lognormal_Power_BIC],
+                            "optimizer": [self.Lognormal_Power_optimizer],
+                        }
+                    ),
+                ]
             )
 
         if "Normal_Exponential" not in self.excluded_models:
@@ -591,21 +615,25 @@ class Fit_Everything_ALT:
                 self.__Normal_Exponential_params.optimizer
             )
 
-            df = df.append(
-                {
-                    "ALT_model": "Normal_Exponential",
-                    "a": self.Normal_Exponential_a,
-                    "b": self.Normal_Exponential_b,
-                    "c": "",
-                    "n": "",
-                    "beta": "",
-                    "sigma": self.Normal_Exponential_sigma,
-                    "Log-likelihood": self.Normal_Exponential_loglik,
-                    "AICc": self.Normal_Exponential_AICc,
-                    "BIC": self.Normal_Exponential_BIC,
-                    "optimizer": self.Normal_Exponential_optimizer,
-                },
-                ignore_index=True,
+            df = pd.concat(
+                [
+                    df,
+                    pd.DataFrame(
+                        data={
+                            "ALT_model": ["Normal_Exponential"],
+                            "a": [self.Normal_Exponential_a],
+                            "b": [self.Normal_Exponential_b],
+                            "c": [""],
+                            "n": [""],
+                            "beta": [""],
+                            "sigma": [self.Normal_Exponential_sigma],
+                            "Log-likelihood": [self.Normal_Exponential_loglik],
+                            "AICc": [self.Normal_Exponential_AICc],
+                            "BIC": [self.Normal_Exponential_BIC],
+                            "optimizer": [self.Normal_Exponential_optimizer],
+                        }
+                    ),
+                ]
             )
 
         if "Normal_Eyring" not in self.excluded_models:
@@ -629,21 +657,25 @@ class Fit_Everything_ALT:
             self.Normal_Eyring_AICc = self.__Normal_Eyring_params.AICc
             self.Normal_Eyring_optimizer = self.__Normal_Eyring_params.optimizer
 
-            df = df.append(
-                {
-                    "ALT_model": "Normal_Eyring",
-                    "a": self.Normal_Eyring_a,
-                    "b": "",
-                    "c": self.Normal_Eyring_c,
-                    "n": "",
-                    "beta": "",
-                    "sigma": self.Normal_Eyring_sigma,
-                    "Log-likelihood": self.Normal_Eyring_loglik,
-                    "AICc": self.Normal_Eyring_AICc,
-                    "BIC": self.Normal_Eyring_BIC,
-                    "optimizer": self.Normal_Eyring_optimizer,
-                },
-                ignore_index=True,
+            df = pd.concat(
+                [
+                    df,
+                    pd.DataFrame(
+                        data={
+                            "ALT_model": ["Normal_Eyring"],
+                            "a": [self.Normal_Eyring_a],
+                            "b": [""],
+                            "c": [self.Normal_Eyring_c],
+                            "n": [""],
+                            "beta": [""],
+                            "sigma": [self.Normal_Eyring_sigma],
+                            "Log-likelihood": [self.Normal_Eyring_loglik],
+                            "AICc": [self.Normal_Eyring_AICc],
+                            "BIC": [self.Normal_Eyring_BIC],
+                            "optimizer": [self.Normal_Eyring_optimizer],
+                        }
+                    ),
+                ]
             )
 
         if "Normal_Power" not in self.excluded_models:
@@ -667,21 +699,25 @@ class Fit_Everything_ALT:
             self.Normal_Power_AICc = self.__Normal_Power_params.AICc
             self.Normal_Power_optimizer = self.__Normal_Power_params.optimizer
 
-            df = df.append(
-                {
-                    "ALT_model": "Normal_Power",
-                    "a": self.Normal_Power_a,
-                    "b": "",
-                    "c": "",
-                    "n": self.Normal_Power_n,
-                    "beta": "",
-                    "sigma": self.Normal_Power_sigma,
-                    "Log-likelihood": self.Normal_Power_loglik,
-                    "AICc": self.Normal_Power_AICc,
-                    "BIC": self.Normal_Power_BIC,
-                    "optimizer": self.Normal_Power_optimizer,
-                },
-                ignore_index=True,
+            df = pd.concat(
+                [
+                    df,
+                    pd.DataFrame(
+                        data={
+                            "ALT_model": ["Normal_Power"],
+                            "a": [self.Normal_Power_a],
+                            "b": [""],
+                            "c": [""],
+                            "n": [self.Normal_Power_n],
+                            "beta": [""],
+                            "sigma": [self.Normal_Power_sigma],
+                            "Log-likelihood": [self.Normal_Power_loglik],
+                            "AICc": [self.Normal_Power_AICc],
+                            "BIC": [self.Normal_Power_BIC],
+                            "optimizer": [self.Normal_Power_optimizer],
+                        }
+                    ),
+                ]
             )
 
         if "Exponential_Exponential" not in self.excluded_models:
@@ -710,21 +746,25 @@ class Fit_Everything_ALT:
                 self.__Exponential_Exponential_params.optimizer
             )
 
-            df = df.append(
-                {
-                    "ALT_model": "Exponential_Exponential",
-                    "a": self.Exponential_Exponential_a,
-                    "b": self.Exponential_Exponential_b,
-                    "c": "",
-                    "n": "",
-                    "beta": "",
-                    "sigma": "",
-                    "Log-likelihood": self.Exponential_Exponential_loglik,
-                    "AICc": self.Exponential_Exponential_AICc,
-                    "BIC": self.Exponential_Exponential_BIC,
-                    "optimizer": self.Exponential_Exponential_optimizer,
-                },
-                ignore_index=True,
+            df = pd.concat(
+                [
+                    df,
+                    pd.DataFrame(
+                        data={
+                            "ALT_model": ["Exponential_Exponential"],
+                            "a": [self.Exponential_Exponential_a],
+                            "b": [self.Exponential_Exponential_b],
+                            "c": [""],
+                            "n": [""],
+                            "beta": [""],
+                            "sigma": [""],
+                            "Log-likelihood": [self.Exponential_Exponential_loglik],
+                            "AICc": [self.Exponential_Exponential_AICc],
+                            "BIC": [self.Exponential_Exponential_BIC],
+                            "optimizer": [self.Exponential_Exponential_optimizer],
+                        }
+                    ),
+                ]
             )
 
         if "Exponential_Eyring" not in self.excluded_models:
@@ -749,21 +789,25 @@ class Fit_Everything_ALT:
                 self.__Exponential_Eyring_params.optimizer
             )
 
-            df = df.append(
-                {
-                    "ALT_model": "Exponential_Eyring",
-                    "a": self.Exponential_Eyring_a,
-                    "b": "",
-                    "c": self.Exponential_Eyring_c,
-                    "n": "",
-                    "beta": "",
-                    "sigma": "",
-                    "Log-likelihood": self.Exponential_Eyring_loglik,
-                    "AICc": self.Exponential_Eyring_AICc,
-                    "BIC": self.Exponential_Eyring_BIC,
-                    "optimizer": self.Exponential_Eyring_optimizer,
-                },
-                ignore_index=True,
+            df = pd.concat(
+                [
+                    df,
+                    pd.DataFrame(
+                        data={
+                            "ALT_model": ["Exponential_Eyring"],
+                            "a": [self.Exponential_Eyring_a],
+                            "b": [""],
+                            "c": [self.Exponential_Eyring_c],
+                            "n": [""],
+                            "beta": [""],
+                            "sigma": [""],
+                            "Log-likelihood": [self.Exponential_Eyring_loglik],
+                            "AICc": [self.Exponential_Eyring_AICc],
+                            "BIC": [self.Exponential_Eyring_BIC],
+                            "optimizer": [self.Exponential_Eyring_optimizer],
+                        }
+                    ),
+                ]
             )
 
         if "Exponential_Power" not in self.excluded_models:
@@ -786,21 +830,25 @@ class Fit_Everything_ALT:
             self.Exponential_Power_AICc = self.__Exponential_Power_params.AICc
             self.Exponential_Power_optimizer = self.__Exponential_Power_params.optimizer
 
-            df = df.append(
-                {
-                    "ALT_model": "Exponential_Power",
-                    "a": self.Exponential_Power_a,
-                    "b": "",
-                    "c": "",
-                    "n": self.Exponential_Power_n,
-                    "beta": "",
-                    "sigma": "",
-                    "Log-likelihood": self.Exponential_Power_loglik,
-                    "AICc": self.Exponential_Power_AICc,
-                    "BIC": self.Exponential_Power_BIC,
-                    "optimizer": self.Exponential_Power_optimizer,
-                },
-                ignore_index=True,
+            df = pd.concat(
+                [
+                    df,
+                    pd.DataFrame(
+                        data={
+                            "ALT_model": ["Exponential_Power"],
+                            "a": [self.Exponential_Power_a],
+                            "b": [""],
+                            "c": [""],
+                            "n": [self.Exponential_Power_n],
+                            "beta": [""],
+                            "sigma": [""],
+                            "Log-likelihood": [self.Exponential_Power_loglik],
+                            "AICc": [self.Exponential_Power_AICc],
+                            "BIC": [self.Exponential_Power_BIC],
+                            "optimizer": [self.Exponential_Power_optimizer],
+                        }
+                    ),
+                ]
             )
 
         if "Weibull_Dual_Exponential" not in self.excluded_models:
@@ -837,22 +885,26 @@ class Fit_Everything_ALT:
                 self.__Weibull_Dual_Exponential_params.optimizer
             )
 
-            df = df.append(
-                {
-                    "ALT_model": "Weibull_Dual_Exponential",
-                    "a": self.Weibull_Dual_Exponential_a,
-                    "b": self.Weibull_Dual_Exponential_b,
-                    "c": self.Weibull_Dual_Exponential_c,
-                    "m": "",
-                    "n": "",
-                    "beta": self.Weibull_Dual_Exponential_beta,
-                    "sigma": "",
-                    "Log-likelihood": self.Weibull_Dual_Exponential_loglik,
-                    "AICc": self.Weibull_Dual_Exponential_AICc,
-                    "BIC": self.Weibull_Dual_Exponential_BIC,
-                    "optimizer": self.Weibull_Dual_Exponential_optimizer,
-                },
-                ignore_index=True,
+            df = pd.concat(
+                [
+                    df,
+                    pd.DataFrame(
+                        data={
+                            "ALT_model": ["Weibull_Dual_Exponential"],
+                            "a": [self.Weibull_Dual_Exponential_a],
+                            "b": [self.Weibull_Dual_Exponential_b],
+                            "c": [self.Weibull_Dual_Exponential_c],
+                            "m": [""],
+                            "n": [""],
+                            "beta": [self.Weibull_Dual_Exponential_beta],
+                            "sigma": [""],
+                            "Log-likelihood": [self.Weibull_Dual_Exponential_loglik],
+                            "AICc": [self.Weibull_Dual_Exponential_AICc],
+                            "BIC": [self.Weibull_Dual_Exponential_BIC],
+                            "optimizer": [self.Weibull_Dual_Exponential_optimizer],
+                        }
+                    ),
+                ]
             )
 
         if "Weibull_Power_Exponential" not in self.excluded_models:
@@ -889,22 +941,26 @@ class Fit_Everything_ALT:
                 self.__Weibull_Power_Exponential_params.optimizer
             )
 
-            df = df.append(
-                {
-                    "ALT_model": "Weibull_Power_Exponential",
-                    "a": self.Weibull_Power_Exponential_a,
-                    "b": "",
-                    "c": self.Weibull_Power_Exponential_c,
-                    "m": "",
-                    "n": self.Weibull_Power_Exponential_n,
-                    "beta": self.Weibull_Power_Exponential_beta,
-                    "sigma": "",
-                    "Log-likelihood": self.Weibull_Power_Exponential_loglik,
-                    "AICc": self.Weibull_Power_Exponential_AICc,
-                    "BIC": self.Weibull_Power_Exponential_BIC,
-                    "optimizer": self.Weibull_Power_Exponential_optimizer,
-                },
-                ignore_index=True,
+            df = pd.concat(
+                [
+                    df,
+                    pd.DataFrame(
+                        data={
+                            "ALT_model": ["Weibull_Power_Exponential"],
+                            "a": [self.Weibull_Power_Exponential_a],
+                            "b": [""],
+                            "c": [self.Weibull_Power_Exponential_c],
+                            "m": [""],
+                            "n": [self.Weibull_Power_Exponential_n],
+                            "beta": [self.Weibull_Power_Exponential_beta],
+                            "sigma": [""],
+                            "Log-likelihood": [self.Weibull_Power_Exponential_loglik],
+                            "AICc": [self.Weibull_Power_Exponential_AICc],
+                            "BIC": [self.Weibull_Power_Exponential_BIC],
+                            "optimizer": [self.Weibull_Power_Exponential_optimizer],
+                        }
+                    ),
+                ]
             )
 
         if "Weibull_Dual_Power" not in self.excluded_models:
@@ -933,22 +989,26 @@ class Fit_Everything_ALT:
                 self.__Weibull_Dual_Power_params.optimizer
             )
 
-            df = df.append(
-                {
-                    "ALT_model": "Weibull_Dual_Power",
-                    "a": "",
-                    "b": "",
-                    "c": self.Weibull_Dual_Power_c,
-                    "m": self.Weibull_Dual_Power_m,
-                    "n": self.Weibull_Dual_Power_n,
-                    "beta": self.Weibull_Dual_Power_beta,
-                    "sigma": "",
-                    "Log-likelihood": self.Weibull_Dual_Power_loglik,
-                    "AICc": self.Weibull_Dual_Power_AICc,
-                    "BIC": self.Weibull_Dual_Power_BIC,
-                    "optimizer": self.Weibull_Dual_Power_optimizer,
-                },
-                ignore_index=True,
+            df = pd.concat(
+                [
+                    df,
+                    pd.DataFrame(
+                        data={
+                            "ALT_model": ["Weibull_Dual_Power"],
+                            "a": [""],
+                            "b": [""],
+                            "c": [self.Weibull_Dual_Power_c],
+                            "m": [self.Weibull_Dual_Power_m],
+                            "n": [self.Weibull_Dual_Power_n],
+                            "beta": [self.Weibull_Dual_Power_beta],
+                            "sigma": [""],
+                            "Log-likelihood": [self.Weibull_Dual_Power_loglik],
+                            "AICc": [self.Weibull_Dual_Power_AICc],
+                            "BIC": [self.Weibull_Dual_Power_BIC],
+                            "optimizer": [self.Weibull_Dual_Power_optimizer],
+                        }
+                    ),
+                ]
             )
 
         if "Lognormal_Dual_Exponential" not in self.excluded_models:
@@ -991,22 +1051,26 @@ class Fit_Everything_ALT:
                 self.__Lognormal_Dual_Exponential_params.optimizer
             )
 
-            df = df.append(
-                {
-                    "ALT_model": "Lognormal_Dual_Exponential",
-                    "a": self.Lognormal_Dual_Exponential_a,
-                    "b": self.Lognormal_Dual_Exponential_b,
-                    "c": self.Lognormal_Dual_Exponential_c,
-                    "m": "",
-                    "n": "",
-                    "beta": "",
-                    "sigma": self.Lognormal_Dual_Exponential_sigma,
-                    "Log-likelihood": self.Lognormal_Dual_Exponential_loglik,
-                    "AICc": self.Lognormal_Dual_Exponential_AICc,
-                    "BIC": self.Lognormal_Dual_Exponential_BIC,
-                    "optimizer": self.Lognormal_Dual_Exponential_optimizer,
-                },
-                ignore_index=True,
+            df = pd.concat(
+                [
+                    df,
+                    pd.DataFrame(
+                        data={
+                            "ALT_model": ["Lognormal_Dual_Exponential"],
+                            "a": [self.Lognormal_Dual_Exponential_a],
+                            "b": [self.Lognormal_Dual_Exponential_b],
+                            "c": [self.Lognormal_Dual_Exponential_c],
+                            "m": [""],
+                            "n": [""],
+                            "beta": [""],
+                            "sigma": [self.Lognormal_Dual_Exponential_sigma],
+                            "Log-likelihood": [self.Lognormal_Dual_Exponential_loglik],
+                            "AICc": [self.Lognormal_Dual_Exponential_AICc],
+                            "BIC": [self.Lognormal_Dual_Exponential_BIC],
+                            "optimizer": [self.Lognormal_Dual_Exponential_optimizer],
+                        }
+                    ),
+                ]
             )
 
         if "Lognormal_Power_Exponential" not in self.excluded_models:
@@ -1049,22 +1113,26 @@ class Fit_Everything_ALT:
                 self.__Lognormal_Power_Exponential_params.optimizer
             )
 
-            df = df.append(
-                {
-                    "ALT_model": "Lognormal_Power_Exponential",
-                    "a": self.Lognormal_Power_Exponential_a,
-                    "b": "",
-                    "c": self.Lognormal_Power_Exponential_c,
-                    "m": "",
-                    "n": self.Lognormal_Power_Exponential_n,
-                    "beta": "",
-                    "sigma": self.Lognormal_Power_Exponential_sigma,
-                    "Log-likelihood": self.Lognormal_Power_Exponential_loglik,
-                    "AICc": self.Lognormal_Power_Exponential_AICc,
-                    "BIC": self.Lognormal_Power_Exponential_BIC,
-                    "optimizer": self.Lognormal_Power_Exponential_optimizer,
-                },
-                ignore_index=True,
+            df = pd.concat(
+                [
+                    df,
+                    pd.DataFrame(
+                        data={
+                            "ALT_model": ["Lognormal_Power_Exponential"],
+                            "a": [self.Lognormal_Power_Exponential_a],
+                            "b": [""],
+                            "c": [self.Lognormal_Power_Exponential_c],
+                            "m": [""],
+                            "n": [self.Lognormal_Power_Exponential_n],
+                            "beta": [""],
+                            "sigma": [self.Lognormal_Power_Exponential_sigma],
+                            "Log-likelihood": [self.Lognormal_Power_Exponential_loglik],
+                            "AICc": [self.Lognormal_Power_Exponential_AICc],
+                            "BIC": [self.Lognormal_Power_Exponential_BIC],
+                            "optimizer": [self.Lognormal_Power_Exponential_optimizer],
+                        }
+                    ),
+                ]
             )
 
         if "Lognormal_Dual_Power" not in self.excluded_models:
@@ -1093,22 +1161,26 @@ class Fit_Everything_ALT:
                 self.__Lognormal_Dual_Power_params.optimizer
             )
 
-            df = df.append(
-                {
-                    "ALT_model": "Lognormal_Dual_Power",
-                    "a": "",
-                    "b": "",
-                    "c": self.Lognormal_Dual_Power_c,
-                    "m": self.Lognormal_Dual_Power_m,
-                    "n": self.Lognormal_Dual_Power_n,
-                    "beta": "",
-                    "sigma": self.Lognormal_Dual_Power_sigma,
-                    "Log-likelihood": self.Lognormal_Dual_Power_loglik,
-                    "AICc": self.Lognormal_Dual_Power_AICc,
-                    "BIC": self.Lognormal_Dual_Power_BIC,
-                    "optimizer": self.Lognormal_Dual_Power_optimizer,
-                },
-                ignore_index=True,
+            df = pd.concat(
+                [
+                    df,
+                    pd.DataFrame(
+                        data={
+                            "ALT_model": ["Lognormal_Dual_Power"],
+                            "a": [""],
+                            "b": [""],
+                            "c": [self.Lognormal_Dual_Power_c],
+                            "m": [self.Lognormal_Dual_Power_m],
+                            "n": [self.Lognormal_Dual_Power_n],
+                            "beta": [""],
+                            "sigma": [self.Lognormal_Dual_Power_sigma],
+                            "Log-likelihood": [self.Lognormal_Dual_Power_loglik],
+                            "AICc": [self.Lognormal_Dual_Power_AICc],
+                            "BIC": [self.Lognormal_Dual_Power_BIC],
+                            "optimizer": [self.Lognormal_Dual_Power_optimizer],
+                        }
+                    ),
+                ]
             )
 
         if "Normal_Dual_Exponential" not in self.excluded_models:
@@ -1143,22 +1215,26 @@ class Fit_Everything_ALT:
                 self.__Normal_Dual_Exponential_params.optimizer
             )
 
-            df = df.append(
-                {
-                    "ALT_model": "Normal_Dual_Exponential",
-                    "a": self.Normal_Dual_Exponential_a,
-                    "b": self.Normal_Dual_Exponential_b,
-                    "c": self.Normal_Dual_Exponential_c,
-                    "m": "",
-                    "n": "",
-                    "beta": "",
-                    "sigma": self.Normal_Dual_Exponential_sigma,
-                    "Log-likelihood": self.Normal_Dual_Exponential_loglik,
-                    "AICc": self.Normal_Dual_Exponential_AICc,
-                    "BIC": self.Normal_Dual_Exponential_BIC,
-                    "optimizer": self.Normal_Dual_Exponential_optimizer,
-                },
-                ignore_index=True,
+            df = pd.concat(
+                [
+                    df,
+                    pd.DataFrame(
+                        data={
+                            "ALT_model": ["Normal_Dual_Exponential"],
+                            "a": [self.Normal_Dual_Exponential_a],
+                            "b": [self.Normal_Dual_Exponential_b],
+                            "c": [self.Normal_Dual_Exponential_c],
+                            "m": [""],
+                            "n": [""],
+                            "beta": [""],
+                            "sigma": [self.Normal_Dual_Exponential_sigma],
+                            "Log-likelihood": [self.Normal_Dual_Exponential_loglik],
+                            "AICc": [self.Normal_Dual_Exponential_AICc],
+                            "BIC": [self.Normal_Dual_Exponential_BIC],
+                            "optimizer": [self.Normal_Dual_Exponential_optimizer],
+                        }
+                    ),
+                ]
             )
 
         if "Normal_Power_Exponential" not in self.excluded_models:
@@ -1195,22 +1271,26 @@ class Fit_Everything_ALT:
                 self.__Normal_Power_Exponential_params.optimizer
             )
 
-            df = df.append(
-                {
-                    "ALT_model": "Normal_Power_Exponential",
-                    "a": self.Normal_Power_Exponential_a,
-                    "b": "",
-                    "c": self.Normal_Power_Exponential_c,
-                    "m": "",
-                    "n": self.Normal_Power_Exponential_n,
-                    "beta": "",
-                    "sigma": self.Normal_Power_Exponential_sigma,
-                    "Log-likelihood": self.Normal_Power_Exponential_loglik,
-                    "AICc": self.Normal_Power_Exponential_AICc,
-                    "BIC": self.Normal_Power_Exponential_BIC,
-                    "optimizer": self.Normal_Power_Exponential_optimizer,
-                },
-                ignore_index=True,
+            df = pd.concat(
+                [
+                    df,
+                    pd.DataFrame(
+                        data={
+                            "ALT_model": ["Normal_Power_Exponential"],
+                            "a": [self.Normal_Power_Exponential_a],
+                            "b": [""],
+                            "c": [self.Normal_Power_Exponential_c],
+                            "m": [""],
+                            "n": [self.Normal_Power_Exponential_n],
+                            "beta": [""],
+                            "sigma": [self.Normal_Power_Exponential_sigma],
+                            "Log-likelihood": [self.Normal_Power_Exponential_loglik],
+                            "AICc": [self.Normal_Power_Exponential_AICc],
+                            "BIC": [self.Normal_Power_Exponential_BIC],
+                            "optimizer": [self.Normal_Power_Exponential_optimizer],
+                        }
+                    ),
+                ]
             )
 
         if "Normal_Dual_Power" not in self.excluded_models:
@@ -1237,22 +1317,26 @@ class Fit_Everything_ALT:
             self.Normal_Dual_Power_AICc = self.__Normal_Dual_Power_params.AICc
             self.Normal_Dual_Power_optimizer = self.__Normal_Dual_Power_params.optimizer
 
-            df = df.append(
-                {
-                    "ALT_model": "Normal_Dual_Power",
-                    "a": "",
-                    "b": "",
-                    "c": self.Normal_Dual_Power_c,
-                    "m": self.Normal_Dual_Power_m,
-                    "n": self.Normal_Dual_Power_n,
-                    "beta": "",
-                    "sigma": self.Normal_Dual_Power_sigma,
-                    "Log-likelihood": self.Normal_Dual_Power_loglik,
-                    "AICc": self.Normal_Dual_Power_AICc,
-                    "BIC": self.Normal_Dual_Power_BIC,
-                    "optimizer": self.Normal_Dual_Power_optimizer,
-                },
-                ignore_index=True,
+            df = pd.concat(
+                [
+                    df,
+                    pd.DataFrame(
+                        data={
+                            "ALT_model": ["Normal_Dual_Power"],
+                            "a": [""],
+                            "b": [""],
+                            "c": [self.Normal_Dual_Power_c],
+                            "m": [self.Normal_Dual_Power_m],
+                            "n": [self.Normal_Dual_Power_n],
+                            "beta": [""],
+                            "sigma": [self.Normal_Dual_Power_sigma],
+                            "Log-likelihood": [self.Normal_Dual_Power_loglik],
+                            "AICc": [self.Normal_Dual_Power_AICc],
+                            "BIC": [self.Normal_Dual_Power_BIC],
+                            "optimizer": [self.Normal_Dual_Power_optimizer],
+                        }
+                    ),
+                ]
             )
 
         if "Exponential_Dual_Exponential" not in self.excluded_models:
@@ -1294,22 +1378,28 @@ class Fit_Everything_ALT:
                 self.__Exponential_Dual_Exponential_params.optimizer
             )
 
-            df = df.append(
-                {
-                    "ALT_model": "Exponential_Dual_Exponential",
-                    "a": self.Exponential_Dual_Exponential_a,
-                    "b": self.Exponential_Dual_Exponential_b,
-                    "c": self.Exponential_Dual_Exponential_c,
-                    "m": "",
-                    "n": "",
-                    "beta": "",
-                    "sigma": "",
-                    "Log-likelihood": self.Exponential_Dual_Exponential_loglik,
-                    "AICc": self.Exponential_Dual_Exponential_AICc,
-                    "BIC": self.Exponential_Dual_Exponential_BIC,
-                    "optimizer": self.Exponential_Dual_Exponential_optimizer,
-                },
-                ignore_index=True,
+            df = pd.concat(
+                [
+                    df,
+                    pd.DataFrame(
+                        data={
+                            "ALT_model": ["Exponential_Dual_Exponential"],
+                            "a": [self.Exponential_Dual_Exponential_a],
+                            "b": [self.Exponential_Dual_Exponential_b],
+                            "c": [self.Exponential_Dual_Exponential_c],
+                            "m": [""],
+                            "n": [""],
+                            "beta": [""],
+                            "sigma": [""],
+                            "Log-likelihood": [
+                                self.Exponential_Dual_Exponential_loglik
+                            ],
+                            "AICc": [self.Exponential_Dual_Exponential_AICc],
+                            "BIC": [self.Exponential_Dual_Exponential_BIC],
+                            "optimizer": [self.Exponential_Dual_Exponential_optimizer],
+                        }
+                    ),
+                ]
             )
 
         if "Exponential_Power_Exponential" not in self.excluded_models:
@@ -1351,22 +1441,28 @@ class Fit_Everything_ALT:
                 self.__Exponential_Power_Exponential_params.optimizer
             )
 
-            df = df.append(
-                {
-                    "ALT_model": "Exponential_Power_Exponential",
-                    "a": self.Exponential_Power_Exponential_a,
-                    "b": "",
-                    "c": self.Exponential_Power_Exponential_c,
-                    "m": "",
-                    "n": self.Exponential_Power_Exponential_n,
-                    "beta": "",
-                    "sigma": "",
-                    "Log-likelihood": self.Exponential_Power_Exponential_loglik,
-                    "AICc": self.Exponential_Power_Exponential_AICc,
-                    "BIC": self.Exponential_Power_Exponential_BIC,
-                    "optimizer": self.Exponential_Power_Exponential_optimizer,
-                },
-                ignore_index=True,
+            df = pd.concat(
+                [
+                    df,
+                    pd.DataFrame(
+                        data={
+                            "ALT_model": ["Exponential_Power_Exponential"],
+                            "a": [self.Exponential_Power_Exponential_a],
+                            "b": [""],
+                            "c": [self.Exponential_Power_Exponential_c],
+                            "m": [""],
+                            "n": [self.Exponential_Power_Exponential_n],
+                            "beta": [""],
+                            "sigma": [""],
+                            "Log-likelihood": [
+                                self.Exponential_Power_Exponential_loglik
+                            ],
+                            "AICc": [self.Exponential_Power_Exponential_AICc],
+                            "BIC": [self.Exponential_Power_Exponential_BIC],
+                            "optimizer": [self.Exponential_Power_Exponential_optimizer],
+                        }
+                    ),
+                ]
             )
 
         if "Exponential_Dual_Power" not in self.excluded_models:
@@ -1396,22 +1492,26 @@ class Fit_Everything_ALT:
                 self.__Exponential_Dual_Power_params.optimizer
             )
 
-            df = df.append(
-                {
-                    "ALT_model": "Exponential_Dual_Power",
-                    "a": "",
-                    "b": "",
-                    "c": self.Exponential_Dual_Power_c,
-                    "m": self.Exponential_Dual_Power_m,
-                    "n": self.Exponential_Dual_Power_n,
-                    "beta": "",
-                    "sigma": "",
-                    "Log-likelihood": self.Exponential_Dual_Power_loglik,
-                    "AICc": self.Exponential_Dual_Power_AICc,
-                    "BIC": self.Exponential_Dual_Power_BIC,
-                    "optimizer": self.Exponential_Dual_Power_optimizer,
-                },
-                ignore_index=True,
+            df = pd.concat(
+                [
+                    df,
+                    pd.DataFrame(
+                        data={
+                            "ALT_model": ["Exponential_Dual_Power"],
+                            "a": [""],
+                            "b": [""],
+                            "c": [self.Exponential_Dual_Power_c],
+                            "m": [self.Exponential_Dual_Power_m],
+                            "n": [self.Exponential_Dual_Power_n],
+                            "beta": [""],
+                            "sigma": [""],
+                            "Log-likelihood": [self.Exponential_Dual_Power_loglik],
+                            "AICc": [self.Exponential_Dual_Power_AICc],
+                            "BIC": [self.Exponential_Dual_Power_BIC],
+                            "optimizer": [self.Exponential_Dual_Power_optimizer],
+                        }
+                    ),
+                ]
             )
 
         # change to sorting by BIC if there is insufficient data to get the AICc for everything that was fitted
@@ -1426,9 +1526,9 @@ class Fit_Everything_ALT:
                 "Invalid input to sort_by. Options are 'BIC', 'AICc', or 'Log-likelihood'. Default is 'BIC'."
             )
         if sort_by.upper() == "BIC":
-            df2 = df.reindex(df.BIC.sort_values().index)
+            df2 = df.sort_values(by="BIC")
         elif sort_by.upper() in ["AICC", "AIC"]:
-            df2 = df.reindex(df.AICc.sort_values().index)
+            df2 = df.sort_values(by="AICc")
         elif sort_by.upper() in [
             "LOGLIK",
             "LOG LIK",
@@ -1437,7 +1537,13 @@ class Fit_Everything_ALT:
             "LOGLIKELIHOOD",
             "LOG LIKELIHOOD",
         ]:
-            df2 = df.reindex(abs(df["Log-likelihood"]).sort_values().index)
+            df["LLabs"] = abs(
+                df["Log-likelihood"]
+            )  # need to create a new column for the absolute value before sorting
+            df2 = df.sort_values(by="LLabs")
+            df2.drop(
+                "LLabs", axis=1, inplace=True
+            )  # remove the column created just for sorting
         else:
             raise ValueError(
                 "Invalid input to sort_by. Options are 'BIC', 'AICc', or 'Log-likelihood'. Default is 'BIC'."
