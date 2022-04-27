@@ -390,7 +390,7 @@ class Weibull_Distribution:
         be based on the distribution's parameters.
         """
         X, xvals, xmin, xmax, show_plot = distributions_input_checking(
-            self, "PDF", xvals, xmin, xmax, show_plot
+            self=self, func="PDF", xvals=xvals, xmin=xmin, xmax=xmax, show_plot=show_plot
         )
 
         pdf = ss.weibull_min.pdf(X, self.beta, scale=self.alpha, loc=self.gamma)
