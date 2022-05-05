@@ -3679,6 +3679,15 @@ class Fit_Weibull_Mixture:
         else:
             dividing_line = right_div_line
 
+        number_of_items_in_group_1 = len(np.where(failures<dividing_line)[0])
+        number_of_items_in_group_2 = len(failures) - number_of_items_in_group_1
+        if number_of_items_in_group_1 < 2:
+            failures_sorted = np.sort(failures)
+            dividing_line = (failures_sorted[1]+failures_sorted[2])/2 # adjusts the dividing line in case there aren't enough failures in the first group
+        if number_of_items_in_group_2 < 2:
+            failures_sorted = np.sort(failures)
+            dividing_line = (failures_sorted[-2]+failures_sorted[-3])/2 # adjusts the dividing line in case there aren't enough failures in the second group
+
         # this is the point at which data is assigned to one group or another for the purpose of generating the initial guess
         GROUP_1_failures = []
         GROUP_2_failures = []
@@ -4163,6 +4172,15 @@ class Fit_Weibull_CR:
             dividing_line = left_div_line
         else:
             dividing_line = right_div_line
+
+        number_of_items_in_group_1 = len(np.where(failures<dividing_line)[0])
+        number_of_items_in_group_2 = len(failures) - number_of_items_in_group_1
+        if number_of_items_in_group_1 < 2:
+            failures_sorted = np.sort(failures)
+            dividing_line = (failures_sorted[1]+failures_sorted[2])/2 # adjusts the dividing line in case there aren't enough failures in the first group
+        if number_of_items_in_group_2 < 2:
+            failures_sorted = np.sort(failures)
+            dividing_line = (failures_sorted[-2]+failures_sorted[-3])/2 # adjusts the dividing line in case there aren't enough failures in the second group
 
         # this is the point at which data is assigned to one group or another for the purpose of generating the initial guess
         GROUP_1_failures = []

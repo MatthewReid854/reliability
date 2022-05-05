@@ -5,6 +5,17 @@
 Changelog
 ---------
 
+**Version: 0.8.4 --- Released: 05 May 2022**
+''''''''''''''''''''''''''''''''''''''''''''
+
+**Summary of changes**
+
+This is bugfix release to deal with a minor bug.
+
+**Bug Fixes**
+
+-    Weibull Mixture models and Weibull Competing Risks models obtain their initial guesses by splitting the data into two groups and fitting a Weibull distribution to each group. If there are not two distinct groups, the estimate for the dividing line between the two groups may result in one of the groups having fewer than 2 failures allocated to the group. This causes an error when fitting the Weibull distribution to that group. It has been fixed by checking the number of elements in the group and moving the dividing line if required. The dividing line is only an estimate used to obtain the initial guess for the parameters and the dividing line is not used in the final MLE or LS estimates in the fitter.
+
 **Version: 0.8.3 --- Released: 17 Apr 2022**
 ''''''''''''''''''''''''''''''''''''''''''''
 
