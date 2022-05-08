@@ -75,7 +75,7 @@ Weibull ALT models
 
 :math:`\text{Weibull-Dual-Power:} \hspace{17mm} f(t,S_1,S_2) = \frac{\beta t^{ \beta - 1}}{ \left( c.S_1^m.S_2^n \right)^ \beta} .{\rm exp}\left(-\left(\frac{t}{c.S_1^m.S_2^n }\right)^ \beta \right)` 
 
-:math:`\text{Weibull-Power-Exponential:} \hspace{4mm} f(t,S_1,S_2) = \frac{\beta t^{ \beta - 1}}{ \left( c.{\rm exp} \left(\frac{a}{S_2} \right).S_1^n \right)^ \beta} .{\rm exp}\left(-\left(\frac{t}{c.{\rm exp} \left(\frac{a}{S_2} \right).S_1^n}\right)^ \beta \right)` 
+:math:`\text{Weibull-Power-Exponential:} \hspace{4mm} f(t,S_1,S_2) = \frac{\beta t^{ \beta - 1}}{ \left( c.{\rm exp} \left(\frac{a}{S_1} \right).S_2^n \right)^ \beta} .{\rm exp}\left(-\left(\frac{t}{c.{\rm exp} \left(\frac{a}{S_1} \right).S_2^n}\right)^ \beta \right)` 
  
 Lognormal ALT models
 """"""""""""""""""""
@@ -90,7 +90,7 @@ Lognormal ALT models
 
 :math:`\text{Lognormal-Dual-Power:} \hspace{17mm} f(t,S_1,S_2) = \frac{1}{\sigma t \sqrt{2\pi}} . {\rm exp} \left(-\frac{1}{2} \left(\frac{{\rm ln}(t)-{\rm ln}\left( c.{S_1}^m.{S_2}^n \right)}{\sigma}\right)^2\right)`
 
-:math:`\text{Lognormal-Power-Exponential:} \hspace{4mm} f(t,S_1,S_2) = \frac{1}{\sigma t \sqrt{2\pi}} . {\rm exp} \left(-\frac{1}{2} \left(\frac{{\rm ln}(t)-{\rm ln}\left( c.{S_1}^n.{\rm exp} \left(\frac{a}{S_2} \right) \right)}{\sigma}\right)^2\right)`
+:math:`\text{Lognormal-Power-Exponential:} \hspace{4mm} f(t,S_1,S_2) = \frac{1}{\sigma t \sqrt{2\pi}} . {\rm exp} \left(-\frac{1}{2} \left(\frac{{\rm ln}(t)-{\rm ln}\left( c.{S_2}^n.{\rm exp} \left(\frac{a}{S_1} \right) \right)}{\sigma}\right)^2\right)`
 
 
 Normal ALT models
@@ -106,7 +106,7 @@ Normal ALT models
 
 :math:`\text{Normal-Dual-Power:} \hspace{17mm} f(t,S_1,S_2) = \frac{1}{\sigma \sqrt{2 \pi}}. {\rm exp}\left(-\frac{1}{2}\left(\frac{t - c.{S_1}^m.{S_2}^n}{\sigma}\right)^2\right)`
 
-:math:`\text{Normal-Power-Exponential:} \hspace{4mm} f(t,S_1,S_2) = \frac{1}{\sigma \sqrt{2 \pi}}. {\rm exp}\left(-\frac{1}{2}\left(\frac{t - c.{S_1}^n.{\rm exp} \left(\frac{a}{S_2} \right)}{\sigma}\right)^2\right)`
+:math:`\text{Normal-Power-Exponential:} \hspace{4mm} f(t,S_1,S_2) = \frac{1}{\sigma \sqrt{2 \pi}}. {\rm exp}\left(-\frac{1}{2}\left(\frac{t - c.{S_2}^n.{\rm exp} \left(\frac{a}{S_1} \right)}{\sigma}\right)^2\right)`
 
 Exponential ALT models
 """"""""""""""""""""""
@@ -121,7 +121,7 @@ Exponential ALT models
 
 :math:`\text{Exponential-Dual-Power:} \hspace{17mm} f(t,S_1,S_2) = c.{S_1}^m.{S_2}^n . {\rm exp}\left(\frac{-t}{c.{S_1}^m.{S_2}^n} \right)`
 
-:math:`\text{Exponential-Power-Exponential:} \hspace{4mm} f(t,S_1,S_2) = c.{S_1}^n.{\rm exp} \left(\frac{a}{S_2} \right) . {\rm exp}\left(\frac{-t}{c.{S_1}^n.{\rm exp} \left(\frac{a}{S_2} \right)} \right)`
+:math:`\text{Exponential-Power-Exponential:} \hspace{4mm} f(t,S_1,S_2) = c.{S_2}^n.{\rm exp} \left(\frac{a}{S_1} \right) . {\rm exp}\left(\frac{-t}{c.{S_2}^n.{\rm exp} \left(\frac{a}{S_1} \right)} \right)`
 
 Acceleration factor
 """""""""""""""""""
