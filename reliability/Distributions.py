@@ -6149,9 +6149,10 @@ class Loglogistic_Distribution:
             self, "HF", xvals, xmin, xmax, show_plot
         )  # lgtm [py/mismatched-multiple-assignment]
 
-        hf = (self.beta / self.alpha) * ((X - self.gamma) / self.alpha) ** (
-            self.beta - 1
-        )
+        hf = (
+            (self.beta / self.alpha)
+            * ((X - self.gamma) / self.alpha) ** (self.beta - 1)
+        ) / (1 + ((X - self.gamma) / self.alpha) ** self.beta)
         hf = zeroise_below_gamma(X=X, Y=hf, gamma=self.gamma)
         hf = unpack_single_arrays(hf)
 

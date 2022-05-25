@@ -5,6 +5,17 @@
 Changelog
 ---------
 
+**Version: 0.8.5 --- Released: 25 May 2022**
+''''''''''''''''''''''''''''''''''''''''''''
+
+**Summary of changes**
+
+This is bugfix release to deal with a minor bug.
+
+**Bug Fixes**
+
+-    The equation for the Loglogistic Hazard function was wrong. It mistakenly used the equation for the Weibull Hazard Function. Fitted results are unaffected. This bug only affected the plot and numerical outputs of the Loglogistic Hazard Function. Thanks to Kaiya Raby for finding and reporting this bug.
+
 **Version: 0.8.4 --- Released: 05 May 2022**
 ''''''''''''''''''''''''''''''''''''''''''''
 
