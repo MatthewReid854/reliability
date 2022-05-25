@@ -5658,9 +5658,10 @@ class Loglogistic_Distribution:
         pdf = ss.fisk.pdf(X, self.beta, scale=self.alpha, loc=self.gamma)
         cdf = ss.fisk.cdf(X, self.beta, scale=self.alpha, loc=self.gamma)
         sf = ss.fisk.sf(X, self.beta, scale=self.alpha, loc=self.gamma)
-        hf = (self.beta / self.alpha) * ((X - self.gamma) / self.alpha) ** (
-            self.beta - 1
-        )
+        hf = (
+            (self.beta / self.alpha)
+            * ((X - self.gamma) / self.alpha) ** (self.beta - 1)
+        ) / (1 + ((X - self.gamma) / self.alpha) ** self.beta)
         hf = zeroise_below_gamma(X=X, Y=hf, gamma=self.gamma)
         chf = np.log(1 + ((X - self.gamma) / self.alpha) ** self.beta)
         chf = zeroise_below_gamma(X=X, Y=chf, gamma=self.gamma)
