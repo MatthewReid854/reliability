@@ -134,7 +134,7 @@ def test_Loglogistic_Distribution():
     assert_allclose(dist.PDF(xvals=xvals, show_plot=False), [0.0, 0.0003789929723245846, 0.0028132580909498313, 0.01895146578651591, 0.010941633873382936, 0.0008918684027148376, 6.741239934687115e-05], rtol=rtol, atol=atol)
     assert_allclose(dist.CDF(xvals=xvals, show_plot=False), [0.0, 0.001, 0.01, 0.1, 0.9, 0.99, 0.999], rtol=rtol, atol=atol)
     assert_allclose(dist.SF(xvals=xvals, show_plot=False), [1.0, 0.999, 0.99, 0.9, 0.1, 0.01, 0.001], rtol=rtol, atol=atol)
-    assert_allclose(dist.HF(xvals=xvals, show_plot=False), [0.0, 0.00037975209676602, 0.002870378625599256, 0.02339687134137767, 1.0941633873382928, 8.918684027148261, 67.412399346859], rtol=rtol, atol=atol)
+    assert_allclose(dist.HF(xvals=xvals, show_plot=False), [0, 0.000379372344669, 0.002841674839343, 0.021057184207240, 0.109416338733829, 0.089186840271483, 0.067412399346865], rtol=rtol, atol=atol)
     assert_allclose(dist.CHF(xvals=xvals, show_plot=False), [0.0, 0.001000500333583622, 0.010050335853501506, 0.10536051565782635, 2.302585092994045, 4.605170185988085, 6.907755278982047], rtol=rtol, atol=atol)
 
 
