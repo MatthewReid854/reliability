@@ -5,6 +5,17 @@
 Changelog
 ---------
 
+**Version: 0.8.6 --- Currently unreleased
+'''''''''''''''''''''''''''''''''''''''''
+
+**Summary of changes**
+
+This is bugfix release to deal with a few minor bugs.
+
+**Bug Fixes**
+
+-    There was a floating point precision error in Distributions.Mixture_Model when the check for sum(proportions) was done. See `this issue <https://github.com/MatthewReid854/reliability/issues/29>`_ for details.
+
 **Version: 0.8.5 --- Released: 25 May 2022**
 ''''''''''''''''''''''''''''''''''''''''''''
 

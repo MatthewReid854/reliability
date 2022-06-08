@@ -8271,7 +8271,7 @@ class Competing_Risks_Model:
         return np.random.choice(
             self.__xvals_init,
             size=number_of_samples,
-            p=self.__pdf_init / sum(self.__pdf_init),
+            p=self.__pdf_init / np.sum(self.__pdf_init),
         )
 
 
@@ -8365,7 +8365,7 @@ class Mixture_Model:
         self.__contains_normal_or_gumbel = contains_normal_or_gumbel
 
         if proportions is not None:
-            if sum(proportions) != 1:
+            if np.sum(proportions) != 1:
                 raise ValueError("the sum of the proportions must be 1")
             if len(proportions) != len(distributions):
                 raise ValueError(
@@ -9234,7 +9234,7 @@ class Mixture_Model:
         return np.random.choice(
             self.__xvals_init,
             size=number_of_samples,
-            p=self.__pdf_init / sum(self.__pdf_init),
+            p=self.__pdf_init / np.sum(self.__pdf_init),
         )
 
 
