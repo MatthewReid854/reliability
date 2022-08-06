@@ -20,11 +20,17 @@ This is primarily a bugfix release to deal with a few minor bugs and a few minor
 **API Changes**
 
 -    The returned figure handles from Fit_Everything and ALT_Fit_Everything are available from the results. For example "results.probability_plot" will return the figure handle for the probability plot. The the API reference of `Fit_Everything_ALT <https://reliability.readthedocs.io/en/latest/API/ALT_fitters/Fit_Everything_ALT.html>`_ and `Fit_Everything <https://reliability.readthedocs.io/en/latest/API/Fitters/Fit_Everything.html>`_ for details.
+-    ALT_Fit_Everything now accepts 2 kwargs of failure_stress and right_censored_stress as alternatives to the arguments of failure_stress_1 and right_censored_stress_1. This is used to provide consistency with the other functions in ALT_Fitters which also accept failure_stress and right_censored_stress.
 
 **Bug Fixes**
 
 -    There was a floating point precision error in Distributions.Mixture_Model when the check for sum(proportions) was done. See `this issue <https://github.com/MatthewReid854/reliability/issues/29>`_ for details.
--    Mixture_Model and Competing_Risks_Model encountered an error when provided with a single value. This was due to two bugs: a type mismatch in the combiner sub function and an inability to iterate a single element array when trying to find the plotting limits if there is only a single value provided (solved by disabling plotting for this case).
+-    Mixture_Model and Competing_Risks_Model encountered an error when provided with a single value. This was due to two bugs: a type mismatch in the combiner sub function and an inability to iterate a single element array when trying to find the plotting limits if there is only a single value provided (solved by disabling plotting for this case). Thanks to Smita for identifying this bug.
+
+**Other**
+
+-    Minor optimisations to the probability plotting in ALT_Fit_Everything to merge a function that is only used once and did not need to be its own function.
+-    Minor corrections to the docs and fixing a broken link.
 
 **Version: 0.8.5 --- Released: 25 May 2022**
 ''''''''''''''''''''''''''''''''''''''''''''
