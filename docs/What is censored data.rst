@@ -32,6 +32,8 @@ Left censored data is data for items that failed before the start of the test. L
 
 .. image:: images/Left_censored_data.png
 
+If you need to work with left censored data, please check out `lifelines <https://lifelines.readthedocs.io/en/latest/index.html>`_ or `surpyval <https://surpyval.readthedocs.io/en/latest/>`_ as reliability only supports complete and right censored data.
+
 Interval censored data
 """"""""""""""""""""""
 
@@ -44,6 +46,8 @@ We could consider all censored data to be interval censored data, with the follo
 - interval censored data: lower bound = last observation time before failure, upper bound = first observation time after failure
 
 .. image:: images/Interval_censored_data.png
+
+If you need to work with interval censored data, please check out `lifelines <https://lifelines.readthedocs.io/en/latest/index.html>`_ or `surpyval <https://surpyval.readthedocs.io/en/latest/>`_ as reliability only supports complete and right censored data.
 
 Singly censored data
 """"""""""""""""""""

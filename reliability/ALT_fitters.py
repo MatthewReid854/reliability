@@ -43,10 +43,11 @@ class Fit_Everything_ALT:
     ----------
     failures : array, list
         The failure data.
-    failure_stress_1 : array, list
+    failure_stress_1 : array, list, optional
         The corresponding stresses (such as temperature or voltage) at which
         each failure occurred. This must match the length of failures as each
-        failure is tied to a failure stress.
+        failure is tied to a failure stress. Alternative keyword of
+        failure_stress is accepted in place of failure_stress_1.
     failure_stress_2 : array, list, optional
         The corresponding stresses (such as temperature or voltage) at which
         each failure occurred. This must match the length of failures as each
@@ -60,7 +61,8 @@ class Fit_Everything_ALT:
         each right_censored data point was obtained. This must match the length
         of right_censored as each right_censored value is tied to a
         right_censored stress. Conditionally optional input. This must be
-        provided if right_censored is provided.
+        provided if right_censored is provided. Alternative keyword of
+        right_censored_stress is accepted in place of right_censored_stress_1.
     right_censored_stress_2 : array, list, optional
         The corresponding stresses (such as temperature or voltage) at which
         each right_censored data point was obtained. This must match the length
@@ -106,6 +108,11 @@ class Fit_Everything_ALT:
         Normal_Power_Exponential, Normal_Dual_Power, Exponential_Exponential,
         Exponential_Eyring, Exponential_Power, Exponential_Dual_Exponential,
         Exponential_Power_Exponential, Exponential_Dual_Power
+    kwargs
+        Accepts failure_stress and right_censored_stress as alternative keywords
+        to failure_stress_1 and right_censored_stress_1. This is used to provide
+        consistency with the other functions in ALT_Fitters which also accept
+        failure_stress and right_censored_stress.
 
     Returns
     -------
@@ -130,6 +137,12 @@ class Fit_Everything_ALT:
         A list of the models which were excluded. This will always include at
         least half the models since only single stress OR dual stress can be
         fitted depending on the data.
+    probability_plot : object
+        The figure handle from the probability plot (only provided if
+        show_probability_plot is True).
+    best_distribution_probability_plot : object
+        The figure handle from the best distribution probability plot (only
+        provided if show_best_distribution_probability_plot is True).
 
     Notes
     -----
@@ -156,7 +169,7 @@ class Fit_Everything_ALT:
     def __init__(
         self,
         failures,
-        failure_stress_1,
+        failure_stress_1=None,
         failure_stress_2=None,
         right_censored=None,
         right_censored_stress_1=None,
@@ -169,7 +182,25 @@ class Fit_Everything_ALT:
         print_results=True,
         exclude=None,
         sort_by="BIC",
+        **kwargs,
     ):
+
+        # check kwargs for failure_stress and right_censored_stress
+        if "failure_stress" in kwargs and failure_stress_1 is None:
+            failure_stress_1 = kwargs.pop("failure_stress")
+        elif "failure_stress" in kwargs and failure_stress_1 is not None:
+            colorprint(
+                "failure_stress has been ignored because failure_stress_1 was provided.",
+                text_color="red",
+            )
+
+        if "right_censored_stress" in kwargs and right_censored_stress_1 is None:
+            right_censored_stress_1 = kwargs.pop("right_censored_stress")
+        elif "right_censored_stress" in kwargs and right_censored_stress_1 is not None:
+            colorprint(
+                "right_censored_stress has been ignored because right_censored_stress_1 was provided.",
+                text_color="red",
+            )
 
         inputs = ALT_fitters_input_checking(
             dist="Everything",
@@ -1802,10 +1833,12 @@ class Fit_Everything_ALT:
 
         if show_probability_plot is True:
             # plotting occurs by default
-            Fit_Everything_ALT.probability_plot(self)
+            self.probability_plot = Fit_Everything_ALT.__probability_plot(self)
 
         if show_best_distribution_probability_plot is True:
-            Fit_Everything_ALT.probability_plot(self, best_only=True)
+            self.best_distribution_probability_plot = (
+                Fit_Everything_ALT.__probability_plot(self, best_only=True)
+            )
 
         if (
             show_probability_plot is True
@@ -1813,31 +1846,28 @@ class Fit_Everything_ALT:
         ):
             plt.show()
 
-    def probplot_layout(self):
-        items = len(self.results.index.values)  # number of items that were fitted
-        if items in [10, 11, 12]:  # --- w , h
-            cols, rows, figsize = 4, 3, (15, 8)
-        elif items in [7, 8, 9]:
-            cols, rows, figsize = 3, 3, (12.5, 8)
-        elif items in [5, 6]:
-            cols, rows, figsize = 3, 2, (12.5, 6)
-        elif items == 4:
-            cols, rows, figsize = 2, 2, (10, 6)
-        elif items == 3:
-            cols, rows, figsize = 3, 1, (12.5, 5)
-        elif items == 2:
-            cols, rows, figsize = 2, 1, (10, 4)
-        elif items == 1:
-            cols, rows, figsize = 1, 1, (7.5, 4)
-        return cols, rows, figsize
-
-    def probability_plot(self, best_only=False):
+    def __probability_plot(self, best_only=False):
         from reliability.Utils import ALT_prob_plot
 
         use_level_stress = self.__use_level_stress
         plt.figure()
         if best_only is False:
-            cols, rows, figsize = Fit_Everything_ALT.probplot_layout(self)
+            items = len(self.results.index.values)  # number of items that were fitted
+            if items in [10, 11, 12]:  # --- w , h
+                cols, rows, figsize = 4, 3, (15, 8)
+            elif items in [7, 8, 9]:
+                cols, rows, figsize = 3, 3, (12.5, 8)
+            elif items in [5, 6]:
+                cols, rows, figsize = 3, 2, (12.5, 6)
+            elif items == 4:
+                cols, rows, figsize = 2, 2, (10, 6)
+            elif items == 3:
+                cols, rows, figsize = 3, 1, (12.5, 5)
+            elif items == 2:
+                cols, rows, figsize = 2, 1, (10, 4)
+            elif items == 1:
+                cols, rows, figsize = 1, 1, (7.5, 4)
+
             # this is the order to plot to match the results dataframe
             plotting_order = self.results["ALT_model"].values
             plt.suptitle("Probability plots of each fitted ALT model\n\n")
@@ -2748,6 +2778,7 @@ class Fit_Everything_ALT:
         if best_only is False:
             plt.tight_layout()
             plt.gcf().set_size_inches(figsize)
+        return plt.gcf()  # return the figure handle
 
 
 class Fit_Weibull_Exponential:

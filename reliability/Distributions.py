@@ -7526,10 +7526,13 @@ class Competing_Risks_Model:
             )  # this is a big array because everything is numerical rather than empirical. Small array sizes will lead to blocky (inaccurate) results.
 
         # convert to numpy array if given list. raise error for other types. check for values below 0.
-        if type(X) not in [np.ndarray, list]:
-            raise ValueError("unexpected type in xvals. Must be  list, or array")
-        else:
+        if type(X) in [int, float]:
+            X = np.array([X])
+        elif type(X) in [np.ndarray, list]:
             X = np.asarray(X)
+        else:
+            raise ValueError("unexpected type in xvals. Must be  list, or array")
+
         if min(X) < 0 and self.__contains_normal_or_gumbel is False:
             raise ValueError(
                 "xvals was found to contain values below 0. This is only allowed if some of the mixture components are Normal or Gumbel distributions."
@@ -7537,11 +7540,11 @@ class Competing_Risks_Model:
 
         X_positive = X[X >= 0]
         X_negative = X[X < 0]
-        Y_negative_zeros = np.zeros_like(X_negative)
-        Y_negative_ones = np.ones_like(X_negative)
+        Y_negative_zeros = np.zeros_like(X_negative).astype(np.float64)
+        Y_negative_ones = np.ones_like(X_negative).astype(np.float64)
 
-        sf = np.ones_like(X)
-        hf = np.zeros_like(X)
+        sf = np.ones_like(X).astype(np.float64)
+        hf = np.zeros_like(X).astype(np.float64)
         for i in range(len(distributions)):
             if type(distributions[i]) in [Normal_Distribution, Gumbel_Distribution]:
                 sf *= distributions[i].SF(X, show_plot=False)
@@ -7742,7 +7745,8 @@ class Competing_Risks_Model:
 
         Notes
         -----
-        The plot will be shown if show_plot is True (which it is by default).
+        The plot will be shown if show_plot is True (which it is by default) and
+        len(xvals) >= 2.
 
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
@@ -7750,6 +7754,9 @@ class Competing_Risks_Model:
         be based on the distribution's parameters.
         """
         Competing_Risks_Model.__combiner(self, xvals=xvals, xmin=xmin, xmax=xmax)
+
+        if len(self.__xvals) < 2:
+            show_plot = False
 
         if show_plot == True:
             if (
@@ -7823,7 +7830,8 @@ class Competing_Risks_Model:
 
         Notes
         -----
-        The plot will be shown if show_plot is True (which it is by default).
+        The plot will be shown if show_plot is True (which it is by default) and
+        len(xvals) >= 2.
 
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
@@ -7832,6 +7840,9 @@ class Competing_Risks_Model:
         """
 
         Competing_Risks_Model.__combiner(self, xvals=xvals, xmin=xmin, xmax=xmax)
+
+        if len(self.__xvals) < 2:
+            show_plot = False
 
         if show_plot == True:
             if (
@@ -7905,7 +7916,8 @@ class Competing_Risks_Model:
 
         Notes
         -----
-        The plot will be shown if show_plot is True (which it is by default).
+        The plot will be shown if show_plot is True (which it is by default) and
+        len(xvals) >= 2.
 
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
@@ -7913,6 +7925,9 @@ class Competing_Risks_Model:
         be based on the distribution's parameters.
         """
         Competing_Risks_Model.__combiner(self, xvals=xvals, xmin=xmin, xmax=xmax)
+
+        if len(self.__xvals) < 2:
+            show_plot = False
 
         if show_plot == True:
             if (
@@ -7984,7 +7999,8 @@ class Competing_Risks_Model:
 
         Notes
         -----
-        The plot will be shown if show_plot is True (which it is by default).
+        The plot will be shown if show_plot is True (which it is by default) and
+        len(xvals) >= 2.
 
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
@@ -7992,6 +8008,9 @@ class Competing_Risks_Model:
         be based on the distribution's parameters.
         """
         Competing_Risks_Model.__combiner(self, xvals=xvals, xmin=xmin, xmax=xmax)
+
+        if len(self.__xvals) < 2:
+            show_plot = False
 
         if show_plot == True:
             if (
@@ -8063,7 +8082,8 @@ class Competing_Risks_Model:
 
         Notes
         -----
-        The plot will be shown if show_plot is True (which it is by default).
+        The plot will be shown if show_plot is True (which it is by default) and
+        len(xvals) >= 2.
 
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
@@ -8071,6 +8091,9 @@ class Competing_Risks_Model:
         be based on the distribution's parameters.
         """
         Competing_Risks_Model.__combiner(self, xvals=xvals, xmin=xmin, xmax=xmax)
+
+        if len(self.__xvals) < 2:
+            show_plot = False
 
         if show_plot == True:
             if (
@@ -8478,10 +8501,12 @@ class Mixture_Model:
             )  # this is a big array because everything is numerical rather than empirical. Small array sizes will lead to blocky (inaccurate) results.
 
         # convert to numpy array if given list. raise error for other types. check for values below 0.
-        if type(X) not in [np.ndarray, list]:
-            raise ValueError("unexpected type in xvals. Must be list or array")
-        else:
+        if type(X) in [int, float]:
+            X = np.array([X])
+        elif type(X) in [np.ndarray, list]:
             X = np.asarray(X)
+        else:
+            raise ValueError("unexpected type in xvals. Must be  list, or array")
         if min(X) < 0 and self.__contains_normal_or_gumbel is False:
             raise ValueError(
                 "xvals was found to contain values below 0. This is only allowed if some of the mixture components are Normal or Gumbel distributions."
@@ -8489,10 +8514,10 @@ class Mixture_Model:
 
         X_positive = X[X >= 0]
         X_negative = X[X < 0]
-        Y_negative = np.zeros_like(X_negative)
+        Y_negative = np.zeros_like(X_negative).astype(np.float64)
 
-        cdf = np.zeros_like(X)
-        pdf = np.zeros_like(X)
+        cdf = np.zeros_like(X).astype(np.float64)
+        pdf = np.zeros_like(X).astype(np.float64)
         # combine the distributions using the sum of the cumulative distribution functions: CDF_total = (CDF_1 x p_1) + (CDF_2 x p2) x (CDF_3 x p3) + .... + (CDF_n x pn)
         for i in range(len(distributions)):
             if type(distributions[i]) in [Normal_Distribution, Gumbel_Distribution]:
@@ -8700,7 +8725,8 @@ class Mixture_Model:
 
         Notes
         -----
-        The plot will be shown if show_plot is True (which it is by default).
+        The plot will be shown if show_plot is True (which it is by default) and
+        len(xvals) >= 2.
 
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
@@ -8708,6 +8734,9 @@ class Mixture_Model:
         be based on the distribution's parameters.
         """
         Mixture_Model.__combiner(self, xvals=xvals, xmin=xmin, xmax=xmax)
+
+        if len(self.__xvals) < 2:
+            show_plot = False
 
         if show_plot == True:
             if (
@@ -8780,7 +8809,8 @@ class Mixture_Model:
 
         Notes
         -----
-        The plot will be shown if show_plot is True (which it is by default).
+        The plot will be shown if show_plot is True (which it is by default) and
+        len(xvals) >= 2.
 
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
@@ -8788,6 +8818,9 @@ class Mixture_Model:
         be based on the distribution's parameters.
         """
         Mixture_Model.__combiner(self, xvals=xvals, xmin=xmin, xmax=xmax)
+
+        if len(self.__xvals) < 2:
+            show_plot = False
 
         if show_plot == True:
             if (
@@ -8859,7 +8892,8 @@ class Mixture_Model:
 
         Notes
         -----
-        The plot will be shown if show_plot is True (which it is by default).
+        The plot will be shown if show_plot is True (which it is by default) and
+        len(xvals) >= 2.
 
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
@@ -8867,6 +8901,9 @@ class Mixture_Model:
         be based on the distribution's parameters.
         """
         Mixture_Model.__combiner(self, xvals=xvals, xmin=xmin, xmax=xmax)
+
+        if len(self.__xvals) < 2:
+            show_plot = False
 
         if show_plot == True:
             if (
@@ -8938,7 +8975,8 @@ class Mixture_Model:
 
         Notes
         -----
-        The plot will be shown if show_plot is True (which it is by default).
+        The plot will be shown if show_plot is True (which it is by default) and
+        len(xvals) >= 2.
 
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
@@ -8946,6 +8984,9 @@ class Mixture_Model:
         be based on the distribution's parameters.
         """
         Mixture_Model.__combiner(self, xvals=xvals, xmin=xmin, xmax=xmax)
+
+        if len(self.__xvals) < 2:
+            show_plot = False
 
         if show_plot == True:
             limits = get_axes_limits()
@@ -9017,7 +9058,8 @@ class Mixture_Model:
 
         Notes
         -----
-        The plot will be shown if show_plot is True (which it is by default).
+        The plot will be shown if show_plot is True (which it is by default) and
+        len(xvals) >= 2.
 
         If xvals is specified, it will be used. If xvals is not specified but
         xmin and/or xmax are specified then an array with 200 elements will be
@@ -9025,6 +9067,9 @@ class Mixture_Model:
         be based on the distribution's parameters.
         """
         Mixture_Model.__combiner(self, xvals=xvals, xmin=xmin, xmax=xmax)
+
+        if len(self.__xvals) < 2:
+            show_plot = False
 
         if show_plot == True:
             limits = get_axes_limits()

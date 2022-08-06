@@ -171,6 +171,18 @@ class Fit_Everything:
         Weibull_3P_loglik
     excluded_distributions : list
         a list of strings of the excluded distributions.
+    probability_plot : object
+        The figure handle from the probability plot (only provided if
+        show_probability_plot is True).
+    best_distribution_probability_plot : object
+        The figure handle from the best distribution probability plot (only
+        provided if show_best_distribution_probability_plot is True).
+    histogram_plot : object
+        The figure handle from the histogram plot (only provided if
+        show_histogram_plot is True).
+    PP_plot : object
+        The figure handle from the probability-probability plot (only provided
+        if show_PP_plot is True).
 
     Notes
     -----
@@ -1322,19 +1334,21 @@ class Fit_Everything:
 
         if show_histogram_plot is True:
             # plotting enabled by default
-            Fit_Everything.__histogram_plot(self)
+            self.histogram_plot = Fit_Everything.__histogram_plot(self)
 
         if show_PP_plot is True:
             # plotting enabled by default
-            Fit_Everything.__P_P_plot(self)
+            self.PP_plot = Fit_Everything.__P_P_plot(self)
 
         if show_probability_plot is True:
             # plotting enabled by default
-            Fit_Everything.__probability_plot(self)
+            self.probability_plot = Fit_Everything.__probability_plot(self)
 
         if show_best_distribution_probability_plot is True:
             # plotting enabled by default
-            Fit_Everything.__probability_plot(self, best_only=True)
+            self.best_distribution_probability_plot = Fit_Everything.__probability_plot(
+                self, best_only=True
+            )
 
         if (
             show_histogram_plot is True
@@ -1419,7 +1433,7 @@ class Fit_Everything:
 
     def __histogram_plot(self):
         """
-        Generates a histogram plot of PDF and CDF of teh fitted distributions.
+        Generates a histogram plot of PDF and CDF of the fitted distributions.
         """
         X = self.failures
         # define plotting limits
@@ -1612,6 +1626,7 @@ class Fit_Everything:
         plt.ylabel("Cumulative probability density")
         plt.suptitle("Histogram plot of each fitted distribution")
         plt.subplots_adjust(left=0, bottom=0.10, right=0.97, top=0.88, wspace=0.18)
+        return plt.gcf()
 
     def __P_P_plot(self):
         """
@@ -1736,6 +1751,7 @@ class Fit_Everything:
             plt.ylim(-plotlim * 0.05, plotlim * 1.05)
             subplot_counter += 1
         plt.tight_layout()
+        return plt.gcf()
 
     def __probability_plot(self, best_only=False):
         """
@@ -1917,6 +1933,7 @@ class Fit_Everything:
         if best_only is False:
             plt.tight_layout()
             plt.gcf().set_size_inches(figsize)
+        return plt.gcf()
 
 
 class Fit_Weibull_2P:
@@ -3679,14 +3696,18 @@ class Fit_Weibull_Mixture:
         else:
             dividing_line = right_div_line
 
-        number_of_items_in_group_1 = len(np.where(failures<dividing_line)[0])
+        number_of_items_in_group_1 = len(np.where(failures < dividing_line)[0])
         number_of_items_in_group_2 = len(failures) - number_of_items_in_group_1
         if number_of_items_in_group_1 < 2:
             failures_sorted = np.sort(failures)
-            dividing_line = (failures_sorted[1]+failures_sorted[2])/2 # adjusts the dividing line in case there aren't enough failures in the first group
+            dividing_line = (
+                failures_sorted[1] + failures_sorted[2]
+            ) / 2  # adjusts the dividing line in case there aren't enough failures in the first group
         if number_of_items_in_group_2 < 2:
             failures_sorted = np.sort(failures)
-            dividing_line = (failures_sorted[-2]+failures_sorted[-3])/2 # adjusts the dividing line in case there aren't enough failures in the second group
+            dividing_line = (
+                failures_sorted[-2] + failures_sorted[-3]
+            ) / 2  # adjusts the dividing line in case there aren't enough failures in the second group
 
         # this is the point at which data is assigned to one group or another for the purpose of generating the initial guess
         GROUP_1_failures = []
@@ -4173,14 +4194,18 @@ class Fit_Weibull_CR:
         else:
             dividing_line = right_div_line
 
-        number_of_items_in_group_1 = len(np.where(failures<dividing_line)[0])
+        number_of_items_in_group_1 = len(np.where(failures < dividing_line)[0])
         number_of_items_in_group_2 = len(failures) - number_of_items_in_group_1
         if number_of_items_in_group_1 < 2:
             failures_sorted = np.sort(failures)
-            dividing_line = (failures_sorted[1]+failures_sorted[2])/2 # adjusts the dividing line in case there aren't enough failures in the first group
+            dividing_line = (
+                failures_sorted[1] + failures_sorted[2]
+            ) / 2  # adjusts the dividing line in case there aren't enough failures in the first group
         if number_of_items_in_group_2 < 2:
             failures_sorted = np.sort(failures)
-            dividing_line = (failures_sorted[-2]+failures_sorted[-3])/2 # adjusts the dividing line in case there aren't enough failures in the second group
+            dividing_line = (
+                failures_sorted[-2] + failures_sorted[-3]
+            ) / 2  # adjusts the dividing line in case there aren't enough failures in the second group
 
         # this is the point at which data is assigned to one group or another for the purpose of generating the initial guess
         GROUP_1_failures = []

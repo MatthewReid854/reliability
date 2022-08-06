@@ -34,6 +34,7 @@ Included functions are:
 - removeNaNs - removes nan
 - restore_axes_limits - restores the axes limits based on values from get_axes_limits()
 - round_to_decimals - applies different rounding rules to numbers above and below 1 so that small numbers do not get rounded to 0.
+- show_figure_from_object - Re-shows a figure from an axes or figure handle even after the figure has been closed.
 - transform_spaced - Creates linearly spaced array (in transform space) based on a specified transform. This is like np.logspace but it can make an array that is weibull spaced, normal spaced, etc.
 - validate_CI_params - checks that the confidence intervals have all the right parameters to be generated
 - write_df_to_xlsx - converts a dataframe to an xlsx file
@@ -45,6 +46,7 @@ import numpy as np
 import scipy.stats as ss
 import matplotlib.pyplot as plt
 from matplotlib.axes import SubplotBase
+from matplotlib.figure import Figure
 from matplotlib.collections import PolyCollection, LineCollection
 from matplotlib import ticker, colors
 from autograd import jacobian as jac
@@ -7417,3 +7419,38 @@ def unpack_single_arrays(array):
     else:
         out = array
     return out
+
+
+def reshow_figure(handle):
+    """
+    Shows a figure from an axes handle or figure handle.
+    This is useful if the handle is saved to a variable but the figure has been
+    closed.
+    Note that the Navigation Toolbar (for pan, zoom, and save) is still
+    connected to the old figure. There is no known work around for this issue.
+
+    Parameters
+    ----------
+    handle : object
+        The axes handle (type(SubplotBase)) or figure handle (type(Figure))
+
+    Returns
+    -------
+    None
+        The figure is automatically shown using plt.show().
+    """
+    if type(handle) is not Figure and issubclass(type(handle), SubplotBase) is False:
+        # check that the handle is either an axes or a figure
+        raise ValueError("handle must be an axes handle or a figure handle")
+    elif issubclass(type(handle), SubplotBase) is True:
+        # if the handle is an axes then extract the Figure
+        handle = handle.figure
+
+    # rebuild the figure
+    figsize = handle.get_size_inches()
+    fig_new = plt.figure()
+    new_manager = fig_new.canvas.manager
+    new_manager.canvas.figure = handle
+    handle.set_canvas(new_manager.canvas)
+    handle.set_size_inches(figsize)
+    plt.show()

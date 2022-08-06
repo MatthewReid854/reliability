@@ -13,7 +13,7 @@ There are a few datasets that have been included with reliability that users may
 
 **Standard datasets**
 
-- automotive - 10 failures, 21 right censored. It is used in `this example <https://reliability.readthedocs.io/en/latest/Kaplan-Meier%20estimate%20of%20reliability.html>`_
+- automotive - 10 failures, 21 right censored. It is used in `this example <https://reliability.readthedocs.io/en/latest/Kaplan-Meier.html>`_
 - mileage - 100 failures with no right censoring. It is used in the examples for `KStest <https://reliability.readthedocs.io/en/latest/Kolmogorov-Smirnov%20test.html>`_ and `chi2test <https://reliability.readthedocs.io/en/latest/Chi-squared%20test.html>`_.
 - system_growth - 22 failures with no right censoring. It is used in the example for `reliability_growth <https://reliability.readthedocs.io/en/latest/Reliability%20growth.html>`_.
 - defective_sample - 1350 failures, 12296 right censored. It exhibits the behavior of a defective sample (also known as Limited failure population or Defective subpopulation).

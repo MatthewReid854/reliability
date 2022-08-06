@@ -5,16 +5,26 @@
 Changelog
 ---------
 
-**Version: 0.8.6 --- Currently unreleased
-'''''''''''''''''''''''''''''''''''''''''
+**Version: 0.8.6 --- Released: 06 Aug 2022**
+''''''''''''''''''''''''''''''''''''''''''''
 
 **Summary of changes**
 
-This is bugfix release to deal with a few minor bugs.
+This is primarily a bugfix release to deal with a few minor bugs and a few minor features have been added to make it easier to save figures programatically for later use.
+
+**New features**
+
+-    Fit_Everything and ALT_Fit_Everything now return figure handles for the figures. This behaviour is similar to each of the individual functions in Fitters and ALT_Fitters which return axes handles. This was done to allow the figures to be saved programatically for use later.
+-    A new Utils function reshow_figure will reshow a figure that has been closed. The plot interactivity is lost due to an unresolved `issue <https://stackoverflow.com/questions/73221670/reshow-a-closed-matplotlib-window>`_ with matplotlib, but the function still allows a figure to be reshown from an axes or figure handle.
+
+**API Changes**
+
+-    The returned figure handles from Fit_Everything and ALT_Fit_Everything are available from the results. For example "results.probability_plot" will return the figure handle for the probability plot. The the API reference of `Fit_Everything_ALT <https://reliability.readthedocs.io/en/latest/API/ALT_fitters/Fit_Everything_ALT.html>`_ and `Fit_Everything <https://reliability.readthedocs.io/en/latest/API/Fitters/Fit_Everything.html>`_ for details.
 
 **Bug Fixes**
 
 -    There was a floating point precision error in Distributions.Mixture_Model when the check for sum(proportions) was done. See `this issue <https://github.com/MatthewReid854/reliability/issues/29>`_ for details.
+-    Mixture_Model and Competing_Risks_Model encountered an error when provided with a single value. This was due to two bugs: a type mismatch in the combiner sub function and an inability to iterate a single element array when trying to find the plotting limits if there is only a single value provided (solved by disabling plotting for this case).
 
 **Version: 0.8.5 --- Released: 25 May 2022**
 ''''''''''''''''''''''''''''''''''''''''''''
