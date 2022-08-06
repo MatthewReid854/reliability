@@ -381,7 +381,7 @@ def test_Fit_Everything_ALT_single_stress():
     assert_allclose(model.Normal_Exponential_loglik, -1947.9434991429694, rtol=rtol, atol=atol)
 
     assert_allclose(model.Exponential_Exponential_a, 1990.2598136542852, rtol=rtol, atol=atol)
-    assert_allclose(model.Exponential_Exponential_b, 9.884663513057722, rtol=rtol, atol=atol)
+    assert_allclose(model.Exponential_Exponential_b, 9.884663513057722, rtol=rtol_big, atol=atol)
     assert_allclose(model.Exponential_Exponential_AICc, 3926.5330483709013, rtol=rtol, atol=atol)
     assert_allclose(model.Exponential_Exponential_BIC, 3933.9002092798096, rtol=rtol, atol=atol)
     assert_allclose(model.Exponential_Exponential_loglik, -1961.2463221652486, rtol=rtol, atol=atol)
