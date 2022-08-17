@@ -2,8 +2,8 @@
 
 [![PyPI version](https://img.shields.io/pypi/v/reliability?color=brightgreen&logo=Python&logoColor=white&label=PyPI%20package)](https://pypi.org/project/reliability/)
 [![Documentation Status](https://img.shields.io/readthedocs/reliability/latest.svg?logo=read%20the%20docs&logoColor=white&label=Docs&version=latest)](http://reliability.readthedocs.io/?badge=latest)
-[![Actions Status](https://github.com/MatthewReid854/reliability/actions/workflows/Build%20and%20Test/badge.svg)](https://github.com/MatthewReid854/reliability/actions)
-[![Actions Status](https://github.com/MatthewReid854/reliability/actions/workflows/CodeQL/badge.svg)](https://github.com/MatthewReid854/reliability/actions)
+[![Actions Status](https://github.com/MatthewReid854/reliability/actions/Build%20and%20Test/badge.svg)](https://github.com/MatthewReid854/reliability/actions)
+[![Actions Status](https://github.com/MatthewReid854/reliability/actions/CodeQL/badge.svg)](https://github.com/MatthewReid854/reliability/actions)
 [![Scc Count Badge](https://sloc.xyz/github/MatthewReid854/reliability/?category=code)](https://github.com/MatthewReid854/reliability/)
 [![Downloads](https://static.pepy.tech/personalized-badge/reliability?period=month&units=international_system&left_color=grey&right_color=brightgreen&left_text=PyPI%20downloads/month)](https://pepy.tech/project/reliability)
 [![LGPLv3 license](https://img.shields.io/badge/License-LGPLv3-blue.svg?logo=GNU&logoColor=white)](https://www.gnu.org/licenses/lgpl-3.0.txt)
