@@ -45,7 +45,7 @@ In this example, we see how the confidence bounds on time or reliability should 
     plt.arrow(x=X_upper,y=0.7,dx=0,dy=-0.7,color='red',head_width=arrow_x,head_length=arrow_y,length_includes_head=True)
     plt.xlim(0,dist.quantile(0.99))
     plt.ylim(0,1.1)
-    plt.text(x=0,y=0.705,s='CI_x=0.7',va='bottom')
+    plt.text(x=0,y=0.705,s='CI_y=0.7',va='bottom')
     plt.text(x=X_lower,y=0.035,s='lower',va='bottom',ha='right',rotation=90)
     plt.text(x=X_point,y=0.035,s='point',va='bottom',ha='right',rotation=90)
     plt.text(x=X_upper,y=0.035,s='upper',va='bottom',ha='right',rotation=90)
@@ -59,7 +59,7 @@ In this example, we see how the confidence bounds on time or reliability should 
     plt.arrow(x=300,y=Y_upper,dx=-300,dy=0,color='red',head_width=arrow_y,head_length=arrow_x,length_includes_head=True)
     plt.xlim(0,dist.quantile(0.99))
     plt.ylim(0,1.1)
-    plt.text(x=301,y=0.001,s='CI_y=300',va='bottom')
+    plt.text(x=301,y=0.001,s='CI_x=300',va='bottom')
     plt.text(x=40,y=Y_lower+0.002,s='lower')
     plt.text(x=40,y=Y_point+0.002,s='point')
     plt.text(x=40,y=Y_upper+0.002,s='upper')
@@ -68,7 +68,7 @@ In this example, we see how the confidence bounds on time or reliability should 
     plt.tight_layout()
     plt.show()
 
-.. image:: images/confidence_bounds_trace.png
+.. image:: images/confidence_bounds_traceV2.png
 
 Example 2
 ---------
