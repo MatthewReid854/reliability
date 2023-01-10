@@ -4714,6 +4714,8 @@ def least_squares(dist, failures, right_censored, method="RRX", force_shape=None
     if dist == "Weibull_2P":
         xlin = np.log(x)
         ylin = np.log(-np.log(1 - y))
+        if force_shape is not None and method == "RRX":
+            force_shape = 1 / force_shape  # only needs to be inverted for RRX not RRY
         slope, intercept = linear_regression(
             xlin, ylin, slope=force_shape, RRX_or_RRY=method
         )
