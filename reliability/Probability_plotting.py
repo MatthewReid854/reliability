@@ -53,7 +53,7 @@ from reliability.Distributions import (
 from reliability.Nonparametric import KaplanMeier, NelsonAalen, RankAdjustment
 from reliability.Utils import (
     axes_transforms,
-    round_to_decimals,
+    round_and_string,
     probability_plot_xylims,
     probability_plot_xyticks,
     colorprint,
@@ -301,9 +301,9 @@ def Weibull_probability_plot(
             else:
                 label = str(
                     "Fitted Weibull_2P (α="
-                    + str(round_to_decimals(alpha, dec))
+                    + round_and_string(alpha, dec)
                     + ", β="
-                    + str(round_to_decimals(beta, dec))
+                    + round_and_string(beta, dec)
                     + ")"
                 )
         elif fit_gamma is True:
@@ -336,11 +336,11 @@ def Weibull_probability_plot(
             else:
                 label = str(
                     "Fitted Weibull_3P\n(α="
-                    + str(round_to_decimals(alpha, dec))
+                    + round_and_string(alpha, dec)
                     + ", β="
-                    + str(round_to_decimals(beta, dec))
+                    + round_and_string(beta, dec)
                     + ", γ="
-                    + str(round_to_decimals(gamma, dec))
+                    + round_and_string(gamma, dec)
                     + ")"
                 )
 
@@ -528,9 +528,9 @@ def Loglogistic_probability_plot(
             else:
                 label = str(
                     "Fitted Loglogistic_2P (α="
-                    + str(round_to_decimals(alpha, dec))
+                    + round_and_string(alpha, dec)
                     + ", β="
-                    + str(round_to_decimals(beta, dec))
+                    + round_and_string(beta, dec)
                     + ")"
                 )
         elif fit_gamma is True:
@@ -563,11 +563,11 @@ def Loglogistic_probability_plot(
             else:
                 label = str(
                     "Fitted Loglogistic_3P\n(α="
-                    + str(round_to_decimals(alpha, dec))
+                    + round_and_string(alpha, dec)
                     + ", β="
-                    + str(round_to_decimals(beta, dec))
+                    + round_and_string(beta, dec)
                     + ", γ="
-                    + str(round_to_decimals(gamma, dec))
+                    + round_and_string(gamma, dec)
                     + ")"
                 )
             xlabel = "Time - gamma"
@@ -757,7 +757,7 @@ def Exponential_probability_plot_Weibull_Scale(
             else:
                 label = str(
                     "Fitted Exponential_1P (λ="
-                    + str(round_to_decimals(Lambda, dec))
+                    + round_and_string(Lambda, dec)
                     + ")"
                 )
         elif fit_gamma is True:
@@ -784,9 +784,9 @@ def Exponential_probability_plot_Weibull_Scale(
             else:
                 label = str(
                     "Fitted Exponential_2P\n(λ="
-                    + str(round_to_decimals(Lambda, dec))
+                    + round_and_string(Lambda, dec)
                     + ", γ="
-                    + str(round_to_decimals(gamma, dec))
+                    + round_and_string(gamma, dec)
                     + ")"
                 )
             xlabel = "Time - gamma"
@@ -953,9 +953,9 @@ def Gumbel_probability_plot(
         else:
             label = str(
                 "Fitted Gumbel_2P (μ="
-                + str(round_to_decimals(mu, dec))
+                + round_and_string(mu, dec)
                 + ", σ="
-                + str(round_to_decimals(sigma, dec))
+                + round_and_string(sigma, dec)
                 + ")"
             )
         gbf = Gumbel_Distribution(
@@ -1116,9 +1116,9 @@ def Normal_probability_plot(
         else:
             label = str(
                 "Fitted Normal_2P (μ="
-                + str(round_to_decimals(mu, dec))
+                + round_and_string(mu, dec)
                 + ", σ="
-                + str(round_to_decimals(sigma, dec))
+                + round_and_string(sigma, dec)
                 + ")"
             )
         nf = Normal_Distribution(
@@ -1298,9 +1298,9 @@ def Lognormal_probability_plot(
             else:
                 label = str(
                     "Fitted Lognormal_2P (μ="
-                    + str(round_to_decimals(mu, dec))
+                    + round_and_string(mu, dec)
                     + ", σ="
-                    + str(round_to_decimals(sigma, dec))
+                    + round_and_string(sigma, dec)
                     + ")"
                 )
         elif fit_gamma is True:
@@ -1331,11 +1331,11 @@ def Lognormal_probability_plot(
             else:
                 label = str(
                     "Fitted Lognormal_3P (μ="
-                    + str(round_to_decimals(mu, dec))
+                    + round_and_string(mu, dec)
                     + ", σ="
-                    + str(round_to_decimals(sigma, dec))
+                    + round_and_string(sigma, dec)
                     + ", γ="
-                    + str(round_to_decimals(gamma, dec))
+                    + round_and_string(gamma, dec)
                     + ")"
                 )
             xlabel = "Time - gamma"
@@ -1497,9 +1497,9 @@ def Beta_probability_plot(
     else:
         label = str(
             "Fitted Beta_2P (α="
-            + str(round_to_decimals(alpha, dec))
+            + round_and_string(alpha, dec)
             + ", β="
-            + str(round_to_decimals(beta, dec))
+            + round_and_string(beta, dec)
             + ")"
         )
     bf = Beta_Distribution(
@@ -1686,9 +1686,9 @@ def Gamma_probability_plot(
         else:
             label = str(
                 "Fitted Gamma_2P (α="
-                + str(round_to_decimals(alpha, dec))
+                + round_and_string(alpha, dec)
                 + ", β="
-                + str(round_to_decimals(beta, dec))
+                + round_and_string(beta, dec)
                 + ")"
             )
     elif fit_gamma is True:
@@ -1724,11 +1724,11 @@ def Gamma_probability_plot(
         else:
             label = str(
                 "Fitted Gamma_3P\n(α="
-                + str(round_to_decimals(alpha, dec))
+                + round_and_string(alpha, dec)
                 + ", β="
-                + str(round_to_decimals(beta, dec))
+                + round_and_string(beta, dec)
                 + ", γ="
-                + str(round_to_decimals(gamma, dec))
+                + round_and_string(gamma, dec)
                 + ")"
             )
         xlabel = "Time - gamma"
@@ -1911,7 +1911,7 @@ def Exponential_probability_plot(
             else:
                 label = str(
                     "Fitted Exponential_1P (λ="
-                    + str(round_to_decimals(Lambda, dec))
+                    + round_and_string(Lambda, dec)
                     + ")"
                 )
         elif fit_gamma is True:
@@ -1937,9 +1937,9 @@ def Exponential_probability_plot(
             else:
                 label = str(
                     "Fitted Exponential_2P\n(λ="
-                    + str(round_to_decimals(Lambda, dec))
+                    + round_and_string(Lambda, dec)
                     + ", γ="
-                    + str(round_to_decimals(gamma, dec))
+                    + round_and_string(gamma, dec)
                     + ")"
                 )
             xlabel = "Time - gamma"

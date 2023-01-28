@@ -33,7 +33,7 @@ Included functions are:
 - probability_plot_xyticks - sets the x and y ticks on probability plots
 - removeNaNs - removes nan
 - restore_axes_limits - restores the axes limits based on values from get_axes_limits()
-- round_to_decimals - applies different rounding rules to numbers above and below 1 so that small numbers do not get rounded to 0.
+- round_and_string - applies different rounding rules and converts to string
 - show_figure_from_object - Re-shows a figure from an axes or figure handle even after the figure has been closed.
 - transform_spaced - Creates linearly spaced array (in transform space) based on a specified transform. This is like np.logspace but it can make an array that is weibull spaced, normal spaced, etc.
 - validate_CI_params - checks that the confidence intervals have all the right parameters to be generated
@@ -69,14 +69,16 @@ warnings.filterwarnings(
 )  # ignores the runtime warning from scipy when the nelder-mean or powell optimizers are used and jac is not required
 
 
-def round_to_decimals(number, decimals=5, integer_floats_to_ints=True):
+def round_and_string(number, decimals=5, integer_floats_to_ints=True, large_scientific_limit=1e9, small_scientific_limit=1e-4):
     """
-    This function is used to round a number to a specified number of decimals.
-    It is used heavily in the formatting of the parameter titles within
-    reliability.Distributions
+    This function is used to round a number to a specified number of decimals and convert to string.
+    It is used heavily in the formatting of the parameter titles within reliability.Distributions
 
-    It is not the same as rounding to a number of significant figures as it
-    keeps preceeding zeros for numbers less than 1.
+    The rules applied are slightly different than rounding to a number of significant figures as it keeps more
+    preceeding zeros. Special formatting rules are applied when:
+        abs(number) <= small_scientific_limit
+        abs(number) >= large_scientific_limit
+        number = 0
 
     Parameters
     ----------
@@ -88,57 +90,58 @@ def round_to_decimals(number, decimals=5, integer_floats_to_ints=True):
     integer_floats_to_ints : bool, optional
         Default is True. Removes trailing zeros from floats if there are no
         significant decimals (eg. 12.0 becomes 12).
+    large_scientific_limit : int, float, optional
+        The limit above which to keep numbers formatted in scientific notation. Default is 1e9.
+    small_scientific_limit : int, float, optional
+        The limit below which to keep numbers formatted in scientific notation. Default is 1e-4.
 
     Returns
     -------
-    number_rounded : float, int
-        The number rounded. If the number has no trailing zeros and
-        integer_floats_to_int is True then the output will be an int.
+    out : string
+        The number formatted and converted to string.
 
     Notes
     -----
     Examples (with decimals = 5):
-
-    - 1234567.1234567 ==> 1234567.12345
-    - 0.0001234567 ==> 0.00012345
-    - 1234567 ==> 1234567
-    - 0.00 ==> 0
+        original: -1e+20  // new: -1e+20
+        original: -100000000.0  // new: -100000000
+        original: -10.0  // new: -10
+        original: -5.4857485e-05  // new: -5.48575e-05
+        original: -2.54875415e-16  // new: -2.54875e-16
+        original: 0.0  // new: 0
+        original: 0  // new: 0
+        original: 2.54875415e-16  // new: 2.54875e-16
+        original: 5.4857485e-05  // new: 5.48575e-05
+        original: 10.0  // new: 10
+        original: 100000000.0  // new: 100000000
+        original: 1e+20  // new: 1e+20
     """
+    if decimals <1:
+        decimals = 0
 
     if np.isfinite(number):  # check the input is not NaN
-        if number < 0:
-            sign = -1
-            num = number * -1
-            skip_to_end = False
-        elif number > 0:
-            sign = 1
-            num = number
-            skip_to_end = False
-        else:  # number == 0
-            if integer_floats_to_ints is True:
-                out = int(number)
+        decimal = number % 1
+        if number == 0:
+            if integer_floats_to_ints is True and decimal == 0:
+                number = int(number)
+            out = number
+        elif abs(number) >= large_scientific_limit or abs(number) <= small_scientific_limit:
+            if decimal != 0:
+                # special formatting is only applied when the number is a float in the ranges specified above
+                out = str('{:0.' + str(decimals) + 'e}').format(number)
+                excess_zeros = "".join(['0'] * decimals)
+                out = out.replace("."+excess_zeros+"e","e")
             else:
                 out = number
-            sign = 0
-            skip_to_end = True
-        if skip_to_end is False:
-            if num > 1:
-                decimal = num % 1
-                whole = num - decimal
-                if decimal == 0:
-                    if integer_floats_to_ints is True:
-                        out = int(whole)
-                    else:
-                        out = whole
-                else:
-                    out = np.round(num, decimals)
-            else:  # num<1
-                out = np.round(num, decimals - int(np.floor(np.log10(abs(num)))) - 1)
-        output = out * sign
-    else:
-        output = number
-    return output
-
+                if integer_floats_to_ints is True and decimal == 0:
+                    out = int(out)
+        else:
+            out = round(number, decimals)
+            if integer_floats_to_ints is True and decimal == 0:
+                out = int(out)
+    else: # NaN
+        out = number
+    return str(out)
 
 def transform_spaced(
     transform,
@@ -455,11 +458,10 @@ def restore_axes_limits(limits, dist, func, X, Y, xvals=None, xmin=None, xmax=No
             Y[-1]
         ):  # asymptote on the left and right
             ylim_upper = min(Y) * 5
-        elif not np.isfinite(Y[-1]):  # asymptote on the right
+        elif (
+            not np.isfinite(Y[-1]) or dist._pdf0 == np.inf or dist._pdf0 > 10
+        ):  # asymptote on the right or on the left
             ylim_upper = max(Y)
-        elif dist._pdf0 == np.inf or dist._pdf0 > 10:  # asymptote on the left
-            idx = np.where(X >= dist.quantile(0.1))[0][0]
-            ylim_upper = Y[idx]
         else:  # an increasing pdf. Not asymptote
             ylim_upper = max(Y) * top_spacing
     elif func in ["cdf", "CDF", "SF", "sf"]:
@@ -469,11 +471,10 @@ def restore_axes_limits(limits, dist, func, X, Y, xvals=None, xmin=None, xmax=No
             Y[-1]
         ):  # asymptote on the left and right
             ylim_upper = min(Y) * 5
-        elif not np.isfinite(Y[-1]):  # asymptote of the right
+        elif (
+            not np.isfinite(Y[-1]) or dist._hf0 == np.inf or dist._hf0 > 10
+        ):  # asymptote of the right or on the left
             ylim_upper = max(Y)
-        elif dist._hf0 == np.inf or dist._hf0 > 10:  # asymptote on the left
-            idx = np.where(X >= dist.quantile(0.1))[0][0]
-            ylim_upper = Y[idx]
         elif max(Y) > Y[-1]:  # a peaked hf
             ylim_upper = max(Y) * top_spacing
         else:  # an increasing hf. Not an asymptote
@@ -1159,7 +1160,7 @@ def probability_plot_xyticks(yticks=None):
             else:
                 sign = ""
             exponent = int(np.floor(np.log10(value)))
-            multiplier = value / (10 ** exponent)
+            multiplier = value / (10**exponent)
             if multiplier % 1 < 0.0000001:
                 multiplier = int(multiplier)
             if multiplier == 1:
@@ -1336,10 +1337,10 @@ def anderson_darling(fitted_cdf, empirical_cdf):
     A = -Zi - np.log(1 - Zi) + Zi_1 + np.log(1 - Zi_1)
     B = 2 * np.log(1 - Zi) * FnZi_1 - 2 * np.log(1 - Zi_1) * FnZi_1
     C = (
-        lnZi * FnZi_1 ** 2
-        - np.log(1 - Zi) * FnZi_1 ** 2
-        - lnZi_1 * FnZi_1 ** 2
-        + np.log(1 - Zi_1) * FnZi_1 ** 2
+        lnZi * FnZi_1**2
+        - np.log(1 - Zi) * FnZi_1**2
+        - lnZi_1 * FnZi_1**2
+        + np.log(1 - Zi_1) * FnZi_1**2
     )
     n = len(fitted_cdf)
     AD = n * ((A + B + C).sum())
@@ -1566,7 +1567,7 @@ class fitters_input_checking:
     force_sigma : float, None
             The sigma parameter to be forced in Normal_2P, or Lognormal_2P
     CI_type : str, None
-        "time", "reliability", or None
+        "time", "reliability", 'None' or None
 
     Notes
     -----
@@ -1683,10 +1684,10 @@ class fitters_input_checking:
                 rc1 = right_censored
                 f1 = failures
                 right_censored = rc1[rc1 != 1]
-                failures = f1[f1 != 0]
+                failures = f1[f1 != 1]
                 if len(failures) != len(f1):
                     colorprint(
-                        "WARNING: failures contained ones. These have been removed to enable fitting of the Beta_2P distribution. Consider using Fit_Weibull_ZI or Fit_Weibull_DSZI if you need to include the zero inflation in the model.",
+                        "WARNING: failures contained ones. These have been removed to enable fitting of the Beta_2P distribution.",
                         text_color="red",
                     )
                 if len(right_censored) != len(rc1):
@@ -1849,13 +1850,17 @@ class fitters_input_checking:
                 )
 
         # error checking for CI_type
+        if type(CI_type) not in [str, type(None)]:
+            raise ValueError('CI_type must be "time", "reliability", or "none"')
         if CI_type is not None:
-            if CI_type in ["t", "time", "T", "TIME"]:
+            if CI_type.upper() in ["T", "TIME"]:
                 CI_type = "time"
-            elif CI_type in ["r", "R", "rel", "REL", "reliability", "RELIABILITY"]:
+            elif CI_type.upper() in ["R","REL","RELIABILITY"]:
                 CI_type = "reliability"
+            elif CI_type.upper() in ["NONE","OFF"]:
+                CI_type = 'none'
             else:
-                raise ValueError('CI_type must be "time" or "reliability"')
+                raise ValueError('CI_type must be "time", "reliability", or "none"')
 
         # return everything
         self.failures = failures
@@ -2902,8 +2907,8 @@ class distribution_confidence_intervals:
 
             def var_u(self, v):  # v is time
                 return (
-                    du_da(v, self.alpha, self.beta) ** 2 * self.alpha_SE ** 2
-                    + du_db(v, self.alpha, self.beta) ** 2 * self.beta_SE ** 2
+                    du_da(v, self.alpha, self.beta) ** 2 * self.alpha_SE**2
+                    + du_db(v, self.alpha, self.beta) ** 2 * self.beta_SE**2
                     + 2
                     * du_da(v, self.alpha, self.beta)
                     * du_db(v, self.alpha, self.beta)
@@ -2912,8 +2917,8 @@ class distribution_confidence_intervals:
 
             def var_v(self, u):  # u is reliability
                 return (
-                    dv_da(u, self.alpha, self.beta) ** 2 * self.alpha_SE ** 2
-                    + dv_db(u, self.alpha, self.beta) ** 2 * self.beta_SE ** 2
+                    dv_da(u, self.alpha, self.beta) ** 2 * self.alpha_SE**2
+                    + dv_db(u, self.alpha, self.beta) ** 2 * self.beta_SE**2
                     + 2
                     * dv_da(u, self.alpha, self.beta)
                     * dv_db(u, self.alpha, self.beta)
@@ -3187,8 +3192,8 @@ class distribution_confidence_intervals:
 
             def var_u(self, v):  # v is time
                 return (
-                    du_dm(v, self.mu, self.beta) ** 2 * self.mu_SE ** 2
-                    + du_db(v, self.mu, self.beta) ** 2 * self.beta_SE ** 2
+                    du_dm(v, self.mu, self.beta) ** 2 * self.mu_SE**2
+                    + du_db(v, self.mu, self.beta) ** 2 * self.beta_SE**2
                     + 2
                     * du_dm(v, self.mu, self.beta)
                     * du_db(v, self.mu, self.beta)
@@ -3197,8 +3202,8 @@ class distribution_confidence_intervals:
 
             def var_v(self, u):  # u is reliability
                 return (
-                    dv_dm(u, self.mu, self.beta) ** 2 * self.mu_SE ** 2
-                    + dv_db(u, self.mu, self.beta) ** 2 * self.beta_SE ** 2
+                    dv_dm(u, self.mu, self.beta) ** 2 * self.mu_SE**2
+                    + dv_db(u, self.mu, self.beta) ** 2 * self.beta_SE**2
                     + 2
                     * dv_dm(u, self.mu, self.beta)
                     * dv_db(u, self.mu, self.beta)
@@ -3295,8 +3300,8 @@ class distribution_confidence_intervals:
                 # note that gamma is incorporated into u but not in var_u. This is the same as just shifting a Gamma_2P across
                 R = u(t, self.mu, self.beta)
                 varR = var_u(self, t)
-                R_lower = R / (R + (1 - R) * np.exp((Z * varR ** 0.5) / (R * (1 - R))))
-                R_upper = R / (R + (1 - R) * np.exp((-Z * varR ** 0.5) / (R * (1 - R))))
+                R_lower = R / (R + (1 - R) * np.exp((Z * varR**0.5) / (R * (1 - R))))
+                R_upper = R / (R + (1 - R) * np.exp((-Z * varR**0.5) / (R * (1 - R))))
 
                 # transform back from u = R
                 Y_lower = R_lower
@@ -3481,8 +3486,8 @@ class distribution_confidence_intervals:
 
             def var_u(self, v):  # v is time
                 return (
-                    du_da(v, self.mu, self.sigma) ** 2 * self.mu_SE ** 2
-                    + du_db(v, self.mu, self.sigma) ** 2 * self.sigma_SE ** 2
+                    du_da(v, self.mu, self.sigma) ** 2 * self.mu_SE**2
+                    + du_db(v, self.mu, self.sigma) ** 2 * self.sigma_SE**2
                     + 2
                     * du_da(v, self.mu, self.sigma)
                     * du_db(v, self.mu, self.sigma)
@@ -3491,8 +3496,8 @@ class distribution_confidence_intervals:
 
             def var_v(self, u):  # u is reliability
                 return (
-                    dv_da(u, self.mu, self.sigma) ** 2 * self.mu_SE ** 2
-                    + dv_db(u, self.mu, self.sigma) ** 2 * self.sigma_SE ** 2
+                    dv_da(u, self.mu, self.sigma) ** 2 * self.mu_SE**2
+                    + dv_db(u, self.mu, self.sigma) ** 2 * self.sigma_SE**2
                     + 2
                     * dv_da(u, self.mu, self.sigma)
                     * dv_db(u, self.mu, self.sigma)
@@ -3756,8 +3761,8 @@ class distribution_confidence_intervals:
 
             def var_u(self, v):  # v is time
                 return (
-                    du_da(v, self.mu, self.sigma) ** 2 * self.mu_SE ** 2
-                    + du_db(v, self.mu, self.sigma) ** 2 * self.sigma_SE ** 2
+                    du_da(v, self.mu, self.sigma) ** 2 * self.mu_SE**2
+                    + du_db(v, self.mu, self.sigma) ** 2 * self.sigma_SE**2
                     + 2
                     * du_da(v, self.mu, self.sigma)
                     * du_db(v, self.mu, self.sigma)
@@ -3766,8 +3771,8 @@ class distribution_confidence_intervals:
 
             def var_v(self, u):  # u is reliability
                 return (
-                    dv_da(u, self.mu, self.sigma) ** 2 * self.mu_SE ** 2
-                    + dv_db(u, self.mu, self.sigma) ** 2 * self.sigma_SE ** 2
+                    dv_da(u, self.mu, self.sigma) ** 2 * self.mu_SE**2
+                    + dv_db(u, self.mu, self.sigma) ** 2 * self.sigma_SE**2
                     + 2
                     * dv_da(u, self.mu, self.sigma)
                     * dv_db(u, self.mu, self.sigma)
@@ -4039,8 +4044,8 @@ class distribution_confidence_intervals:
 
             def var_u(self, v):  # v is time
                 return (
-                    du_da(v, self.alpha, self.beta) ** 2 * self.alpha_SE ** 2
-                    + du_db(v, self.alpha, self.beta) ** 2 * self.beta_SE ** 2
+                    du_da(v, self.alpha, self.beta) ** 2 * self.alpha_SE**2
+                    + du_db(v, self.alpha, self.beta) ** 2 * self.beta_SE**2
                     + 2
                     * du_da(v, self.alpha, self.beta)
                     * du_db(v, self.alpha, self.beta)
@@ -4049,8 +4054,8 @@ class distribution_confidence_intervals:
 
             def var_v(self, u):  # u is reliability
                 return (
-                    dv_da(u, self.alpha, self.beta) ** 2 * self.alpha_SE ** 2
-                    + dv_db(u, self.alpha, self.beta) ** 2 * self.beta_SE ** 2
+                    dv_da(u, self.alpha, self.beta) ** 2 * self.alpha_SE**2
+                    + dv_db(u, self.alpha, self.beta) ** 2 * self.beta_SE**2
                     + 2
                     * dv_da(u, self.alpha, self.beta)
                     * dv_db(u, self.alpha, self.beta)
@@ -4322,8 +4327,8 @@ class distribution_confidence_intervals:
 
             def var_u(self, v):  # v is time
                 return (
-                    du_da(v, self.mu, self.sigma) ** 2 * self.mu_SE ** 2
-                    + du_db(v, self.mu, self.sigma) ** 2 * self.sigma_SE ** 2
+                    du_da(v, self.mu, self.sigma) ** 2 * self.mu_SE**2
+                    + du_db(v, self.mu, self.sigma) ** 2 * self.sigma_SE**2
                     + 2
                     * du_da(v, self.mu, self.sigma)
                     * du_db(v, self.mu, self.sigma)
@@ -4332,8 +4337,8 @@ class distribution_confidence_intervals:
 
             def var_v(self, u):  # u is reliability
                 return (
-                    dv_da(u, self.mu, self.sigma) ** 2 * self.mu_SE ** 2
-                    + dv_db(u, self.mu, self.sigma) ** 2 * self.sigma_SE ** 2
+                    dv_da(u, self.mu, self.sigma) ** 2 * self.mu_SE**2
+                    + dv_db(u, self.mu, self.sigma) ** 2 * self.sigma_SE**2
                     + 2
                     * dv_da(u, self.mu, self.sigma)
                     * dv_db(u, self.mu, self.sigma)
@@ -4624,9 +4629,9 @@ def linear_regression(
         else:
             label = str(
                 "y="
-                + str(round_to_decimals(m, 2))
+                + round_and_string(m, 2)
                 + ".x + "
-                + str(round_to_decimals(c, 2))
+                + round_and_string(c, 2)
             )
         plt.plot(xvals, yvals, label=label, **kwargs)
         plt.xlim(min(x) - delta_x * 0.2, max(x) + delta_x * 0.2)
@@ -4714,6 +4719,8 @@ def least_squares(dist, failures, right_censored, method="RRX", force_shape=None
     if dist == "Weibull_2P":
         xlin = np.log(x)
         ylin = np.log(-np.log(1 - y))
+        if force_shape is not None and method == "RRX":
+            force_shape = 1 / force_shape  # only needs to be inverted for RRX not RRY
         slope, intercept = linear_regression(
             xlin, ylin, slope=force_shape, RRX_or_RRY=method
         )
@@ -4846,11 +4853,11 @@ def least_squares(dist, failures, right_censored, method="RRX", force_shape=None
             xlin = np.log(x - gamma_guess)
             ylin = ss.norm.ppf(y)
             _, _, r, _, _ = ss.linregress(xlin, ylin)
-            return 1 - (r ** 2)
+            return 1 - (r**2)
 
         # NLLS for Normal_2P which is used by Lognormal_3P by taking the log of the data. This is more accurate than doing it with Lognormal_3P.
         def __normal_2P_CDF(t, mu, sigma):
-            return (1 + erf(((t - mu) / sigma) / 2 ** 0.5)) / 2
+            return (1 + erf(((t - mu) / sigma) / 2**0.5)) / 2
 
         res = minimize(
             __gamma_optimizer, gamma0, args=(x, y), method="TNC", bounds=[([0, gamma0])]
@@ -4942,8 +4949,8 @@ def least_squares(dist, failures, right_censored, method="RRX", force_shape=None
         LS_alpha = np.exp(-intercept / LS_beta)
 
         # conversion of weibull parameters to gamma parameters. These values were found empirically and the relationship is only an approximate model
-        beta_guess = abs(0.6932 * LS_beta ** 2 - 0.0908 * LS_beta + 0.2804)
-        alpha_guess = abs(LS_alpha / (-0.00095 * beta_guess ** 2 + 1.1119 * beta_guess))
+        beta_guess = abs(0.6932 * LS_beta**2 - 0.0908 * LS_beta + 0.2804)
+        alpha_guess = abs(LS_alpha / (-0.00095 * beta_guess**2 + 1.1119 * beta_guess))
 
         def __perform_curve_fit():  # separated out for repeated use
             curve_fit_bounds = (
@@ -4997,8 +5004,8 @@ def least_squares(dist, failures, right_censored, method="RRX", force_shape=None
         LS_alpha = np.exp(-intercept / LS_beta)
 
         # conversion of weibull parameters to gamma parameters. These values were found empirically and the relationship is only an approximate model
-        beta_guess = abs(0.6932 * LS_beta ** 2 - 0.0908 * LS_beta + 0.2804)
-        alpha_guess = abs(LS_alpha / (-0.00095 * beta_guess ** 2 + 1.1119 * beta_guess))
+        beta_guess = abs(0.6932 * LS_beta**2 - 0.0908 * LS_beta + 0.2804)
+        alpha_guess = abs(LS_alpha / (-0.00095 * beta_guess**2 + 1.1119 * beta_guess))
 
         def __perform_curve_fit_gamma_2P():  # separated out for repeated use
             curve_fit_bounds = (
@@ -6545,9 +6552,9 @@ def ALT_prob_plot(
                     __fitted_dist_params=fitted_dist_params,
                     color=color_cycle[i],
                     label=str(
-                        str(round_to_decimals(stress[0]))
+                        round_and_string(stress[0])
                         + ", "
-                        + str(round_to_decimals(stress[1]))
+                        + round_and_string(stress[1])
                     ),
                 )
                 # plot the original fitted line
@@ -6581,9 +6588,9 @@ def ALT_prob_plot(
                 distribution_at_use_stress.CDF(
                     color=color_cycle[i + 1],
                     label=str(
-                        str(round_to_decimals(use_level_stress[0]))
+                        round_and_string(use_level_stress[0])
                         + ", "
-                        + str(round_to_decimals(use_level_stress[1]))
+                        + round_and_string(use_level_stress[1])
                         + " (use stress)"
                     ),
                 )
@@ -6616,7 +6623,7 @@ def ALT_prob_plot(
                     right_censored=rc,
                     __fitted_dist_params=fitted_dist_params,
                     color=color_cycle[i],
-                    label=round_to_decimals(stress),
+                    label=round_and_string(stress),
                 )
                 # plot the original fitted line
                 if dist == "Exponential":
@@ -6646,7 +6653,7 @@ def ALT_prob_plot(
                 distribution_at_use_stress.CDF(
                     color=color_cycle[i + 1],
                     label=str(
-                        str(round_to_decimals(use_level_stress)) + " (use stress)"
+                        round_and_string(use_level_stress) + " (use stress)"
                     ),
                 )
                 x_array.extend(
@@ -6698,16 +6705,24 @@ def life_stress_plot(
     use_level_stress : float, int, array, list, None
         The use level stress. This must be an array or list for dual stress
         models. Default is None.
-    ax : axis, bool, optional
-        The axis handle to use. Default is True which will create a new plot.
+    ax : axes, bool, optional
+        The axes handle to use. Default is True which will create a new plot.
         If False then no plot will be generated.
+        This is also used to flip the x and y axes to make a stress-life plot. Use ax='swap' to make the life-stress
+        plot change its axes to be a stress-life plot (similar to SN diagram).
 
     Returns
     -------
-    current_axis : axis
-        The axis handle of the plot. If ax is specified in the inputs then this
+    current_axes : axes
+        The axes handle of the plot. If ax is specified in the inputs then this
         will be the same handle.
     """
+    if ax in ['swap','swapped','flip','flipped','SWAP','SWAPPED','FLIP','FLIPPED','Swap','Swapped','Flip','Flipped']:
+        ax = True
+        swap_xy = True
+    else:
+        swap_xy = False
+
     if ax is True or issubclass(type(ax), SubplotBase) is True:
         if model in ["Dual_Exponential", "Power_Exponential", "Dual_Power"]:
             dual_stress = True
@@ -6816,9 +6831,9 @@ def life_stress_plot(
                     s=30,
                     label=str(
                         "Failures at stress of "
-                        + str(round_to_decimals(stress[0]))
+                        + round_and_string(stress[0])
                         + ", "
-                        + str(round_to_decimals(stress[1]))
+                        + round_and_string(stress[1])
                     ),
                     zorder=1,
                 )
@@ -6832,9 +6847,9 @@ def life_stress_plot(
                     s=30,
                     label=str(
                         "Use stress of "
-                        + str(round_to_decimals(use_level_stress[0]))
+                        + round_and_string(use_level_stress[0])
                         + ", "
-                        + str(round_to_decimals(use_level_stress[1]))
+                        + round_and_string(use_level_stress[1])
                     ),
                     marker="^",
                     zorder=2,
@@ -6860,50 +6875,90 @@ def life_stress_plot(
             stress_array_lower = np.exp(np.log(min_stress) - stress_delta_log * 0.2)
             stress_array_upper = np.exp(np.log(max_stress) + stress_delta_log * 0.2)
             # array for the life-stress line
-            stress_array = np.linspace(1, stress_array_upper * 10, 1000)
+            stress_array = np.linspace(0, stress_array_upper * 10, 1000)
             life_array = life_func(S1=stress_array)
-            plt.plot(
-                stress_array,
-                life_array,
-                label=str("Characteristic life (" + line_label + ")"),
-                color="k",
-            )
-            plt.ylabel("Life")
-            plt.xlabel("Stress")
+            if swap_xy is True:
+                plt.plot(
+                    life_array,
+                    stress_array,
+                    label=str("Characteristic life (" + line_label + ")"),
+                    color="k",
+                )
+                plt.xlabel("Life")
+                plt.ylabel("Stress")
+            else:
+                plt.plot(
+                    stress_array,
+                    life_array,
+                    label=str("Characteristic life (" + line_label + ")"),
+                    color="k",
+                )
+                plt.ylabel("Life")
+                plt.xlabel("Stress")
             for i, stress in enumerate(stresses_for_groups):
                 failure_points = failure_groups[i]
                 stress_points = np.ones_like(failure_points) * stress
-                plt.scatter(
-                    stress_points,
-                    failure_points,
-                    color=color_cycle[i],
-                    alpha=0.7,
-                    label=str(
-                        "Failures at stress of " + str(round_to_decimals(stress))
-                    ),
-                )
+                if swap_xy is True:
+                    plt.scatter(
+                        failure_points,
+                        stress_points,
+                        color=color_cycle[i],
+                        alpha=0.7,
+                        label=str(
+                            "Failures at stress of " + round_and_string(stress)
+                        ),
+                    )
+                else:
+                    plt.scatter(
+                        stress_points,
+                        failure_points,
+                        color=color_cycle[i],
+                        alpha=0.7,
+                        label=str(
+                            "Failures at stress of " + round_and_string(stress)
+                        ),
+                    )
             if use_level_stress is not None:
                 alpha_at_use_stress = life_func(S1=use_level_stress)
-                plt.plot(
-                    [use_level_stress, use_level_stress, plt.xlim()[0]],
-                    [-1e20, alpha_at_use_stress, alpha_at_use_stress],
-                    label=str(
-                        "Use stress of " + str(round_to_decimals(use_level_stress))
-                    ),
-                    color=color_cycle[i + 1],
-                )
+                if swap_xy is True:
+                    plt.plot(
+                        [-1e20, alpha_at_use_stress, alpha_at_use_stress],
+                        [use_level_stress, use_level_stress, plt.xlim()[0]],
+                        label=str(
+                            "Use stress of " + round_and_string(use_level_stress)
+                        ),
+                        color=color_cycle[i + 1],
+                    )
+                else:
+                    plt.plot(
+                        [use_level_stress, use_level_stress, plt.xlim()[0]],
+                        [-1e20, alpha_at_use_stress, alpha_at_use_stress],
+                        label=str(
+                            "Use stress of " + round_and_string(use_level_stress)
+                        ),
+                        color=color_cycle[i + 1],
+                    )
             # this is a list comprehension to flatten the list of lists. np.ravel won't work here
             flattened_failure_groups = [
                 item for sublist in failure_groups for item in sublist
             ]
-            plt.ylim(
-                0,
-                1.2
-                * max(life_func(S1=stress_array_lower), max(flattened_failure_groups)),
-            )
-            plt.xlim(stress_array_lower, stress_array_upper)
+            if swap_xy is True:
+                plt.xlim(
+                    0,
+                    1.2
+                    * max(life_func(S1=stress_array_lower), max(flattened_failure_groups)),
+                )
+                plt.ylim(stress_array_lower, stress_array_upper)
+                plt.title("Stress-life plot\n" + dist + "-" + model + " model")
+            else:
+                plt.ylim(
+                    0,
+                    1.2
+                    * max(life_func(S1=stress_array_lower), max(flattened_failure_groups)),
+                )
+                plt.xlim(stress_array_lower, stress_array_upper)
+                plt.title("Life-stress plot\n" + dist + "-" + model + " model")
             plt.legend(loc="upper right")
-            plt.title("Life-stress plot\n" + dist + "-" + model + " model")
             plt.tight_layout()
         return plt.gca()
 
@@ -7035,10 +7090,10 @@ def distributions_input_checking(
         True. Only returned if func is 'CDF', 'SF', or 'CHF' and self.name
         !='Beta'.
     CI_type : str
-        The type of confidence interval. Will be either "time" or "reliability".
-        Default is "time". Only returned if func is 'CDF', 'SF', or 'CHF' and
-        self.name !='Beta'. If self.name=='Exponential' it will return None. If
-        self.CI_type is specified and CI_type is None then self.CI_type will be
+        The type of confidence interval. Will be either "time", "reliability", or "none".
+        Default is "time". Only returned if func is 'CDF', 'SF', or 'CHF'.
+        If self.name =='Beta' or self.name=='Exponential' it will return 'none'. If
+        self.CI_type is specified and CI_type is not specified then self.CI_type will be
         used for CI_type.
     CI : float
         The confidence intervals between 0 and 1. Default is 0.95. Only returned
@@ -7114,30 +7169,41 @@ def distributions_input_checking(
     if plot_CI is None:
         plot_CI == True
 
+    no_CI_array = ['None','NONE','none','OFF','Off','off']
     if self.name == "Exponential":
-        if CI_type is not None:
+        if CI_type not in no_CI_array and CI_type is not None:
             colorprint(
                 "WARNING: CI_type is not required for the Exponential distribution since the confidence intervals of time and reliability are identical",
                 text_color="red",
             )
-            CI_type = None
+        CI_type = None
     elif self.name == "Beta":
-        if CI_type is not None:
+        if CI_type not in no_CI_array and CI_type is not None:
             colorprint(
                 "WARNING: CI_type is not used for the Beta distribution since the confidence intervals are not implemented",
                 text_color="red",
             )
-            CI_type = None
+        CI_type = None
     else:
-        if CI_type is None and self.CI_type is None:
-            CI_type = "time"
-        elif CI_type is None and self.CI_type is not None:
-            CI_type = self.CI_type
-        else:  # CI_type is not None
+        if CI_type is None:
+            if self.CI_type in no_CI_array or self.CI_type is None:
+                CI_type = None
+            else:
+                CI_type = self.CI_type
+        elif CI_type in no_CI_array:
+            CI_type = None
+
+        if type(CI_type) == str:
             if CI_type.upper() in ["T", "TIME"]:
                 CI_type = "time"
             elif CI_type.upper() in ["R", "REL", "RELIABILITY"]:
                 CI_type = "reliability"
+            else:
+                colorprint(
+                    "WARNING: CI_type is not recognised. Accepted values are 'time', 'reliability' and 'none'",
+                    text_color="red",
+                )
+                CI_type = None
 
     if CI_x is not None and CI_y is not None:
         if CI_type == "reliability":

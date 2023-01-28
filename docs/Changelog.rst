@@ -5,6 +5,36 @@
 Changelog
 ---------
 
+**Version: 0.8.7 --- Released: 28 Jan 2023**
+''''''''''''''''''''''''''''''''''''''''''''
+
+**Summary of changes**
+
+This is primarily a bugfix release, with some minor API changes and new features. 
+
+**New features**
+
+-    Reliability_testing.likelihood_plot is a new function to generate a likelihood plot. See the `documentation <https://reliability.readthedocs.io/en/latest/likelihood%20plot.html>`_ for more detail.
+
+**API Changes**
+
+-    Utils.round_to_decimals has been replaced by Utils.round_and_string. This function always returns a string and the rounding rules applied are better than before as they apply scientific notation for very large and very small numbers. This was an issue in plot titles and plot text where very large numbers weren't being displayed in scientific notation.
+-    Within Fitters and Distributions that have been created by Fitters, the confidence intervals can be turned off using 'none'. Previously this was None which caused some issues with confidence interval inheritance between Fitters and Distributions and an inability to turn them off when called from Distributions.
+-    Utils.life_stress_plot will swap the x and y axes if ax='swap'. This is useful for making a stress-life plot which is similar to an SN_diagram.
+-    All of the ALT_Fitters will now accept show_life_stress_plot='swap' to return a stress-life plot by swapping the axes of the standard life-stress plot.
+
+**Bug Fixes**
+
+-    The axes limits for the histogram plot in Fit_Everything crashed when a left asymptote occurred.
+-    KStest and chi2test now accept Mixture Model, Competing Risks Model, and DSZI model for the distribution.
+-    The line of best fit in life stress plots started at 1. This was a problem for data less than 1. The line of best fit now starts at 0.
+-    When using force_beta with RRX in Fit_Weibull_2P, the beta that is returned is the inverse of force_beta. This only occurred for RRX for Fit_Weibull_2P. Thanks to Github user ctenold for identifying this bug and providing the solution in `this issue <https://github.com/MatthewReid854/reliability/issues/32>`_.
+
+**Other**
+
+-    Added a new textbook to Recommended resources.
+-    The CDF, SF, and CHF methods in Distributions did not include all the parameters in the documentation.
+
 **Version: 0.8.6 --- Released: 06 Aug 2022**
 ''''''''''''''''''''''''''''''''''''''''''''
 

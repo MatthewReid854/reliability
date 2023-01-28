@@ -5,7 +5,7 @@
 Development roadmap
 '''''''''''''''''''
 
-Development of *reliability* has transitioned to primarily codebase maintenance (bug fixes).
+As of January 2022, development of *reliability* has transitioned to primarily codebase maintenance (bug fixes).
 I am turning my attention to learning Web Development in order to bring the power of this library to an interactive Web Application.
 I hope this approach will help a wider audience who may not be familiar enough with Python to use this library in its current form.
 If you're an experienced web developer and willing to help get this project off the ground, please get in touch via email (alpha.reliability@gmail.com).

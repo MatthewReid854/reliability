@@ -37,7 +37,7 @@ from reliability.Distributions import (
     Gumbel_Distribution,
 )
 from reliability.Fitters import Fit_Everything
-from reliability.Utils import colorprint, round_to_decimals
+from reliability.Utils import colorprint, round_and_string
 from matplotlib.widgets import Slider, RadioButtons
 import scipy.stats as ss
 import time
@@ -177,8 +177,8 @@ def stress_strength(stress, strength, show_plot=True, print_results=True, warn=T
             linestyle="--",
         )
         failure_text = str(
-            "Probability of\nfailure = " + str(round_to_decimals(prob_of_failure, 4))
-        )
+            "Probability of\nfailure = " + round_and_string(prob_of_failure, 4))
+
         plt.legend(title=failure_text)
         plt.title("Stress - Strength Interference Plot")
         plt.ylabel("Probability Density")
@@ -196,7 +196,7 @@ def stress_strength(stress, strength, show_plot=True, print_results=True, warn=T
         print("Strength Distribution:", strength.param_title_long)
         print(
             "Probability of failure (stress > strength):",
-            round_to_decimals(prob_of_failure * 100),
+            round_and_string(prob_of_failure * 100),
             "%",
         )
 
@@ -297,8 +297,7 @@ def stress_strength_normal(
             linestyle="--",
         )
         failure_text = str(
-            "Probability of\nfailure = " + str(round_to_decimals(prob_of_failure, 4))
-        )
+            "Probability of\nfailure = " + round_and_string(prob_of_failure, 4))
         plt.legend(title=failure_text)
         plt.title("Stress - Strength Interference Plot")
         plt.ylabel("Probability Density")
@@ -316,7 +315,7 @@ def stress_strength_normal(
         print("Strength Distribution:", strength.param_title_long)
         print(
             "Probability of failure (stress > strength):",
-            round_to_decimals(prob_of_failure * 100),
+            round_and_string(prob_of_failure * 100),
             "%",
         )
 
@@ -1366,12 +1365,12 @@ class crosshairs:
             if decimals == 0:
                 x_string = int(x)
             else:
-                x_string = round_to_decimals(x, decimals)
+                x_string = round_and_string(x, decimals)
 
         if decimals == 0:
             y_string = int(y)
         else:
-            y_string = round_to_decimals(y, decimals)
+            y_string = round_and_string(y, decimals)
 
         texts = [
             ax.text(
@@ -1417,21 +1416,21 @@ class crosshairs:
             if decimals == 0:
                 x_string = int(x)
             else:
-                x_string = round_to_decimals(x, decimals)
+                x_string = round_and_string(x, decimals)
 
         if decimals == 0:
             y_string = int(y)
         else:
-            y_string = round_to_decimals(y, decimals)
+            y_string = round_and_string(y, decimals)
 
         text = str(
             label[0]
             + " = "
-            + str(x_string)
+            + x_string
             + "\n"
             + label[1]
             + " = "
-            + str(y_string)
+            + y_string
         )
         sel.annotation.set_text(text)
         sel.annotation.get_bbox_patch().set(fc="white")

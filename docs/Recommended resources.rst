@@ -14,6 +14,7 @@ The following collection of resources are things I have found useful during my r
 -    `Probability Distributions Used in Reliability Engineering (2011), by A. O'Conner, M. Modarres, and A. Mosleh. <https://crr.umd.edu/sites/crr.umd.edu/files/Free%20Ebook%20Probability%20Distributions%20Used%20in%20Reliability%20Engineering.pdf>`_
 -    Practical Reliability Engineering, Fifth Edition (2012), by P. O'Conner and A. Kleyner.
 -    Recurrent Events Data Analysis for Product Repairs, Disease Recurrences, and Other Applications (2003), by W. Nelson
+-    Reliability Analysis Using MINITAB and Python (2022), by J. Hwang. This textbook provides many examples using `reliability` and also a few examples with `surpyval`. The version of `reliability` used in the book is 0.8.1 which is significantly different from the most recent version.
 -    Reliasoft has compiled a much more comprehensive `list of textbooks <https://www.weibull.com/knowledge/books.htm>`_.
 -    The reliability analytics toolkit (linked below in free online tools and calculators) has also compiled a much more comprehensive `list of textbooks <https://reliabilityanalyticstoolkit.appspot.com/static/books.htm#0486438678>`_.
 

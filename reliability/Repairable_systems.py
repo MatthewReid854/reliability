@@ -21,7 +21,7 @@ from scipy import integrate
 import pandas as pd
 import scipy.stats as ss
 from scipy.optimize import curve_fit
-from reliability.Utils import colorprint, round_to_decimals
+from reliability.Utils import colorprint, round_and_string
 from matplotlib.ticker import ScalarFormatter
 from matplotlib.axes import SubplotBase
 
@@ -166,25 +166,25 @@ class reliability_growth:
                     bold=True,
                     underline=True,
                 )
-                print("Beta:", round_to_decimals(self.Beta))
-                print("Lambda:", round_to_decimals(self.Lambda))
-                print("Growth rate:", round_to_decimals(self.growth_rate))
+                print("Beta:", round_and_string(self.Beta))
+                print("Lambda:", round_and_string(self.Lambda))
+                print("Growth rate:", round_and_string(self.growth_rate))
             else:  # Duane
                 colorprint(
                     "Duane reliability growth model parameters:",
                     bold=True,
                     underline=True,
                 )
-                print("Alpha:", round_to_decimals(self.Alpha))
-                print("A:", round_to_decimals(self.A))
-            print("Demonstrated MTBF (cumulative):", round_to_decimals(self.DMTBF_C))
-            print("Demonstrated MTBF (instantaneous):", round_to_decimals(self.DMTBF_I))
-            print("Demonstrated failure intensity (cumulative):", round_to_decimals(self.DFI_C))
-            print("Demonstrated failure intensity (instantaneous):", round_to_decimals(self.DFI_I))
+                print("Alpha:", round_and_string(self.Alpha))
+                print("A:", round_and_string(self.A))
+            print("Demonstrated MTBF (cumulative):", round_and_string(self.DMTBF_C))
+            print("Demonstrated MTBF (instantaneous):", round_and_string(self.DMTBF_I))
+            print("Demonstrated failure intensity (cumulative):", round_and_string(self.DFI_C))
+            print("Demonstrated failure intensity (instantaneous):", round_and_string(self.DFI_I))
 
             if target_MTBF is not None:
                 print(
-                    "Time to reach target MTBF:", round_to_decimals(self.time_to_target)
+                    "Time to reach target MTBF:", round_and_string(self.time_to_target)
                 )
             print('') #blank line
 
@@ -381,8 +381,8 @@ class optimal_replacement_time:
             )
         self.ORT = ORT
         self.min_cost = min_cost
-        min_cost_rounded = round_to_decimals(min_cost, 2)
-        ORT_rounded = round_to_decimals(ORT, 2)
+        min_cost_rounded = round_and_string(min_cost, decimals=2)
+        ORT_rounded = round_and_string(ORT, decimals=2)
 
         if print_results is True:
             colorprint(
@@ -466,7 +466,7 @@ class optimal_replacement_time:
                     + "\n$cost_{PM} = $"
                     + str(cost_PM)
                     + "\nInterval = "
-                    + str(round_to_decimals(self.ORT, 2))
+                    + round_and_string(self.ORT, 2)
                 ),
                 x=cost_CM / cost_PM * 1.05,
                 y=self.ORT * mult,
@@ -676,9 +676,9 @@ class ROCOF:
                 )
                 print(
                     "ROCOF assuming NHPP has parameters: Beta_hat =",
-                    round_to_decimals(B, 3),
+                    round_and_string(B, decimals=3),
                     ", Lambda_hat =",
-                    round_to_decimals(L, 4),
+                    round_and_string(L, decimals=4),
                 )
             elif U > -z_crit:
                 print(
@@ -690,9 +690,9 @@ class ROCOF:
                 )
                 print(
                     "ROCOF assuming NHPP has parameters: Beta_hat =",
-                    round_to_decimals(B, 3),
+                    round_and_string(B, decimals=3),
                     ", Lambda_hat =",
-                    round_to_decimals(L, 4),
+                    round_and_string(L, decimals=4),
                 )
             else:
                 print(
@@ -704,7 +704,7 @@ class ROCOF:
                 )
                 print(
                     "ROCOF assuming HPP is",
-                    round_to_decimals(rocof, 4),
+                    round_and_string(rocof, decimals=4),
                     "failures per unit time.",
                 )
 

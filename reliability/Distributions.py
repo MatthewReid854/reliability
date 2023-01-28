@@ -36,7 +36,7 @@ import numpy as np
 from scipy import integrate
 import matplotlib.pyplot as plt
 from reliability.Utils import (
-    round_to_decimals,
+    round_and_string,
     get_axes_limits,
     restore_axes_limits,
     generate_X_array,
@@ -127,34 +127,34 @@ class Weibull_Distribution:
         if self.gamma != 0:
             self.param_title = str(
                 "α="
-                + str(round_to_decimals(self.alpha, dec))
+                + round_and_string(self.alpha, dec)
                 + ",β="
-                + str(round_to_decimals(self.beta, dec))
+                + round_and_string(self.beta, dec)
                 + ",γ="
-                + str(round_to_decimals(self.gamma, dec))
+                + round_and_string(self.gamma, dec)
             )
             self.param_title_long = str(
                 "Weibull Distribution (α="
-                + str(round_to_decimals(self.alpha, dec))
+                + round_and_string(self.alpha, dec)
                 + ",β="
-                + str(round_to_decimals(self.beta, dec))
+                + round_and_string(self.beta, dec)
                 + ",γ="
-                + str(round_to_decimals(self.gamma, dec))
+                + round_and_string(self.gamma, dec)
                 + ")"
             )
             self.name2 = "Weibull_3P"
         else:
             self.param_title = str(
                 "α="
-                + str(round_to_decimals(self.alpha, dec))
+                + round_and_string(self.alpha, dec)
                 + ",β="
-                + str(round_to_decimals(self.beta, dec))
+                + round_and_string(self.beta, dec)
             )
             self.param_title_long = str(
                 "Weibull Distribution (α="
-                + str(round_to_decimals(self.alpha, dec))
+                + round_and_string(self.alpha, dec)
                 + ",β="
-                + str(round_to_decimals(self.beta, dec))
+                + round_and_string(self.beta, dec)
                 + ")"
             )
             self.name2 = "Weibull_2P"
@@ -326,24 +326,22 @@ class Weibull_Distribution:
         plt.axis("off")
         plt.ylim([0, 10])
         plt.xlim([0, 10])
-        text_mean = str("Mean = " + str(round_to_decimals(float(self.mean), dec)))
-        text_median = str("Median = " + str(round_to_decimals(self.median, dec)))
-        text_mode = str("Mode = " + str(round_to_decimals(self.mode, dec)))
-        text_b5 = str("$5^{th}$ quantile = " + str(round_to_decimals(self.b5, dec)))
-        text_b95 = str("$95^{th}$ quantile = " + str(round_to_decimals(self.b95, dec)))
+        text_mean = str("Mean = " + round_and_string(self.mean, dec))
+        text_median = str("Median = " + round_and_string(self.median, dec))
+        text_mode = str("Mode = " + round_and_string(self.mode, dec))
+        text_b5 = str("$5^{th}$ quantile = " + round_and_string(self.b5, dec))
+        text_b95 = str("$95^{th}$ quantile = " + round_and_string(self.b95, dec))
         text_std = str(
-            "Standard deviation = " + str(round_to_decimals(self.standard_deviation))
-        )
+            "Standard deviation = " + round_and_string(self.standard_deviation,dec))
         text_var = str(
-            "Variance = " + str(round_to_decimals(float(self.variance), dec))
+            "Variance = " + round_and_string(self.variance, dec)
         )
         text_skew = str(
-            "Skewness = " + str(round_to_decimals(float(self.skewness), dec))
+            "Skewness = " + round_and_string(self.skewness, dec)
         )
         text_ex_kurt = str(
             "Excess kurtosis = "
-            + str(round_to_decimals(float(self.excess_kurtosis), dec))
-        )
+            + round_and_string(self.excess_kurtosis, dec))
         plt.text(0, 9, text_mean)
         plt.text(0, 8, text_median)
         plt.text(0, 7, text_mode)
@@ -454,7 +452,7 @@ class Weibull_Distribution:
             True or False. Default = True. Only used if the distribution object
             was created by Fitters.
         CI_type : str, optional
-            Must be either "time" or "reliability". Default is "time". Only used
+            Must be either "time", "reliability", or "none". Default is "time". Only used
             if the distribution object was created by Fitters.
         CI : float, optional
             The confidence interval between 0 and 1. Only used if the
@@ -591,7 +589,7 @@ class Weibull_Distribution:
             True or False. Default = True. Only used if the distribution object
             was created by Fitters.
         CI_type : str, optional
-            Must be either "time" or "reliability". Default is "time". Only used
+            Must be either "time", "reliability", or "none". Default is "time". Only used
             if the distribution object was created by Fitters.
         CI : float, optional
             The confidence interval between 0 and 1. Only used if the
@@ -798,7 +796,7 @@ class Weibull_Distribution:
             True or False. Default = True. Only used if the distribution object
             was created by Fitters.
         CI_type : str, optional
-            Must be either "time" or "reliability". Default is "time". Only used
+            Must be either "time", "reliability", or "none". Default is "time". Only used
             if the distribution object was created by Fitters.
         CI : float, optional
             The confidence interval between 0 and 1. Only used if the
@@ -1120,15 +1118,15 @@ class Normal_Distribution:
         self.mode = mu
         self.param_title = str(
             "μ="
-            + str(round_to_decimals(self.mu, dec))
+            + round_and_string(self.mu, dec)
             + ",σ="
-            + str(round_to_decimals(self.sigma, dec))
+            + round_and_string(self.sigma, dec)
         )
         self.param_title_long = str(
             "Normal Distribution (μ="
-            + str(round_to_decimals(self.mu, dec))
+            + round_and_string(self.mu, dec)
             + ",σ="
-            + str(round_to_decimals(self.sigma, dec))
+            + round_and_string(self.sigma, dec)
             + ")"
         )
         self.b5 = ss.norm.ppf(0.05, loc=self.mu, scale=self.sigma)
@@ -1285,23 +1283,23 @@ class Normal_Distribution:
         plt.axis("off")
         plt.ylim([0, 10])
         plt.xlim([0, 10])
-        text_mean = str("Mean = " + str(round_to_decimals(float(self.mean), dec)))
-        text_median = str("Median = " + str(round_to_decimals(self.median, dec)))
-        text_mode = str("Mode = " + str(round_to_decimals(self.mode, dec)))
-        text_b5 = str("$5^{th}$ quantile = " + str(round_to_decimals(self.b5, dec)))
-        text_b95 = str("$95^{th}$ quantile = " + str(round_to_decimals(self.b95, dec)))
+        text_mean = str("Mean = " + round_and_string(self.mean, dec))
+        text_median = str("Median = " + round_and_string(self.median, dec))
+        text_mode = str("Mode = " + round_and_string(self.mode, dec))
+        text_b5 = str("$5^{th}$ quantile = " + round_and_string(self.b5, dec))
+        text_b95 = str("$95^{th}$ quantile = " + round_and_string(self.b95, dec))
         text_std = str(
-            "Standard deviation = " + str(round_to_decimals(self.standard_deviation))
-        )
+            "Standard deviation = " + round_and_string(self.standard_deviation,dec))
+
         text_var = str(
-            "Variance = " + str(round_to_decimals(float(self.variance), dec))
+            "Variance = " + round_and_string(self.variance, dec)
         )
         text_skew = str(
-            "Skewness = " + str(round_to_decimals(float(self.skewness), dec))
+            "Skewness = " + round_and_string(self.skewness, dec)
         )
         text_ex_kurt = str(
             "Excess kurtosis = "
-            + str(round_to_decimals(float(self.excess_kurtosis), dec))
+            + round_and_string(self.excess_kurtosis, dec)
         )
         plt.text(0, 9, text_mean)
         plt.text(0, 8, text_median)
@@ -1401,14 +1399,30 @@ class Normal_Distribution:
 
         Parameters
         ----------
-        show_plot : bool, optional
-            True or False. Default = True
         xvals : array, list, optional
             x-values for plotting
         xmin : int, float, optional
             minimum x-value for plotting
         xmax : int, float, optional
             maximum x-value for plotting
+        show_plot : bool, optional
+            True or False. Default = True
+        plot_CI : bool, optional
+            True or False. Default = True. Only used if the distribution object
+            was created by Fitters.
+        CI_type : str, optional
+            Must be either "time", "reliability", or "none". Default is "time". Only used
+            if the distribution object was created by Fitters.
+        CI : float, optional
+            The confidence interval between 0 and 1. Only used if the
+            distribution object was created by Fitters.
+        CI_y : list, array, optional
+            The confidence interval y-values to trace. Only used if the
+            distribution object was created by Fitters and CI_type='time'.
+        CI_x : list, array, optional
+            The confidence interval x-values to trace. Only used if the
+            distribution object was created by Fitters and
+            CI_type='reliability'.
         kwargs
             Plotting keywords that are passed directly to matplotlib
             (e.g. color, linestyle)
@@ -1519,14 +1533,30 @@ class Normal_Distribution:
 
         Parameters
         ----------
-        show_plot : bool, optional
-            True or False. Default = True
         xvals : array, list, optional
             x-values for plotting
         xmin : int, float, optional
             minimum x-value for plotting
         xmax : int, float, optional
             maximum x-value for plotting
+        show_plot : bool, optional
+            True or False. Default = True
+        plot_CI : bool, optional
+            True or False. Default = True. Only used if the distribution object
+            was created by Fitters.
+        CI_type : str, optional
+            Must be either "time", "reliability", or "none". Default is "time". Only used
+            if the distribution object was created by Fitters.
+        CI : float, optional
+            The confidence interval between 0 and 1. Only used if the
+            distribution object was created by Fitters.
+        CI_y : list, array, optional
+            The confidence interval y-values to trace. Only used if the
+            distribution object was created by Fitters and CI_type='time'.
+        CI_x : list, array, optional
+            The confidence interval x-values to trace. Only used if the
+            distribution object was created by Fitters and
+            CI_type='reliability'.
         kwargs
             Plotting keywords that are passed directly to matplotlib
             (e.g. color, linestyle)
@@ -1701,14 +1731,30 @@ class Normal_Distribution:
 
         Parameters
         ----------
-        show_plot : bool, optional
-            True or False. Default = True
         xvals : array, list, optional
             x-values for plotting
         xmin : int, float, optional
             minimum x-value for plotting
         xmax : int, float, optional
             maximum x-value for plotting
+        show_plot : bool, optional
+            True or False. Default = True
+        plot_CI : bool, optional
+            True or False. Default = True. Only used if the distribution object
+            was created by Fitters.
+        CI_type : str, optional
+            Must be either "time", "reliability", or "none". Default is "time". Only used
+            if the distribution object was created by Fitters.
+        CI : float, optional
+            The confidence interval between 0 and 1. Only used if the
+            distribution object was created by Fitters.
+        CI_y : list, array, optional
+            The confidence interval y-values to trace. Only used if the
+            distribution object was created by Fitters and CI_type='time'.
+        CI_x : list, array, optional
+            The confidence interval x-values to trace. Only used if the
+            distribution object was created by Fitters and
+            CI_type='reliability'.
         kwargs
             Plotting keywords that are passed directly to matplotlib
             (e.g. color, linestyle)
@@ -2005,34 +2051,34 @@ class Lognormal_Distribution:
         if self.gamma != 0:
             self.param_title = str(
                 "μ="
-                + str(round_to_decimals(self.mu, dec))
+                + round_and_string(self.mu, dec)
                 + ",σ="
-                + str(round_to_decimals(self.sigma, dec))
+                + round_and_string(self.sigma, dec)
                 + ",γ="
-                + str(round_to_decimals(self.gamma, dec))
+                + round_and_string(self.gamma, dec)
             )
             self.param_title_long = str(
                 "Lognormal Distribution (μ="
-                + str(round_to_decimals(self.mu, dec))
+                + round_and_string(self.mu, dec)
                 + ",σ="
-                + str(round_to_decimals(self.sigma, dec))
+                + round_and_string(self.sigma, dec)
                 + ",γ="
-                + str(round_to_decimals(self.gamma, dec))
+                + round_and_string(self.gamma, dec)
                 + ")"
             )
             self.name2 = "Lognormal_3P"
         else:
             self.param_title = str(
                 "μ="
-                + str(round_to_decimals(self.mu, dec))
+                + round_and_string(self.mu, dec)
                 + ",σ="
-                + str(round_to_decimals(self.sigma, dec))
+                + round_and_string(self.sigma, dec)
             )
             self.param_title_long = str(
                 "Lognormal Distribution (μ="
-                + str(round_to_decimals(self.mu, dec))
+                + round_and_string(self.mu, dec)
                 + ",σ="
-                + str(round_to_decimals(self.sigma, dec))
+                + round_and_string(self.sigma, dec)
                 + ")"
             )
             self.name2 = "Lognormal_2P"
@@ -2196,23 +2242,22 @@ class Lognormal_Distribution:
         plt.axis("off")
         plt.ylim([0, 10])
         plt.xlim([0, 10])
-        text_mean = str("Mean = " + str(round_to_decimals(float(self.mean), dec)))
-        text_median = str("Median = " + str(round_to_decimals(self.median, dec)))
-        text_mode = str("Mode = " + str(round_to_decimals(self.mode, dec)))
-        text_b5 = str("$5^{th}$ quantile = " + str(round_to_decimals(self.b5, dec)))
-        text_b95 = str("$95^{th}$ quantile = " + str(round_to_decimals(self.b95, dec)))
+        text_mean = str("Mean = " + round_and_string(self.mean, dec))
+        text_median = str("Median = " + round_and_string(self.median, dec))
+        text_mode = str("Mode = " + round_and_string(self.mode, dec))
+        text_b5 = str("$5^{th}$ quantile = " + round_and_string(self.b5, dec))
+        text_b95 = str("$95^{th}$ quantile = " + round_and_string(self.b95, dec))
         text_std = str(
-            "Standard deviation = " + str(round_to_decimals(self.standard_deviation))
-        )
+            "Standard deviation = " + round_and_string(self.standard_deviation,dec))
         text_var = str(
-            "Variance = " + str(round_to_decimals(float(self.variance), dec))
+            "Variance = " + round_and_string(self.variance, dec)
         )
         text_skew = str(
-            "Skewness = " + str(round_to_decimals(float(self.skewness), dec))
+            "Skewness = " + round_and_string(self.skewness, dec)
         )
         text_ex_kurt = str(
             "Excess kurtosis = "
-            + str(round_to_decimals(float(self.excess_kurtosis), dec))
+            + round_and_string(self.excess_kurtosis, dec)
         )
         plt.text(0, 9, text_mean)
         plt.text(0, 8, text_median)
@@ -2312,14 +2357,30 @@ class Lognormal_Distribution:
 
         Parameters
         ----------
-        show_plot : bool, optional
-            True or False. Default = True
         xvals : array, list, optional
             x-values for plotting
         xmin : int, float, optional
             minimum x-value for plotting
         xmax : int, float, optional
             maximum x-value for plotting
+        show_plot : bool, optional
+            True or False. Default = True
+        plot_CI : bool, optional
+            True or False. Default = True. Only used if the distribution object
+            was created by Fitters.
+        CI_type : str, optional
+            Must be either "time", "reliability", or "none". Default is "time". Only used
+            if the distribution object was created by Fitters.
+        CI : float, optional
+            The confidence interval between 0 and 1. Only used if the
+            distribution object was created by Fitters.
+        CI_y : list, array, optional
+            The confidence interval y-values to trace. Only used if the
+            distribution object was created by Fitters and CI_type='time'.
+        CI_x : list, array, optional
+            The confidence interval x-values to trace. Only used if the
+            distribution object was created by Fitters and
+            CI_type='reliability'.
         kwargs
             Plotting keywords that are passed directly to matplotlib
             (e.g. color, linestyle)
@@ -2432,14 +2493,30 @@ class Lognormal_Distribution:
 
         Parameters
         ----------
-        show_plot : bool, optional
-            True or False. Default = True
         xvals : array, list, optional
             x-values for plotting
         xmin : int, float, optional
             minimum x-value for plotting
         xmax : int, float, optional
             maximum x-value for plotting
+        show_plot : bool, optional
+            True or False. Default = True
+        plot_CI : bool, optional
+            True or False. Default = True. Only used if the distribution object
+            was created by Fitters.
+        CI_type : str, optional
+            Must be either "time", "reliability", or "none". Default is "time". Only used
+            if the distribution object was created by Fitters.
+        CI : float, optional
+            The confidence interval between 0 and 1. Only used if the
+            distribution object was created by Fitters.
+        CI_y : list, array, optional
+            The confidence interval y-values to trace. Only used if the
+            distribution object was created by Fitters and CI_type='time'.
+        CI_x : list, array, optional
+            The confidence interval x-values to trace. Only used if the
+            distribution object was created by Fitters and
+            CI_type='reliability'.
         kwargs
             Plotting keywords that are passed directly to matplotlib
             (e.g. color, linestyle)
@@ -2619,14 +2696,30 @@ class Lognormal_Distribution:
 
         Parameters
         ----------
-        show_plot : bool, optional
-            True or False. Default = True
         xvals : array, list, optional
             x-values for plotting
         xmin : int, float, optional
             minimum x-value for plotting
         xmax : int, float, optional
             maximum x-value for plotting
+        show_plot : bool, optional
+            True or False. Default = True
+        plot_CI : bool, optional
+            True or False. Default = True. Only used if the distribution object
+            was created by Fitters.
+        CI_type : str, optional
+            Must be either "time", "reliability", or "none". Default is "time". Only used
+            if the distribution object was created by Fitters.
+        CI : float, optional
+            The confidence interval between 0 and 1. Only used if the
+            distribution object was created by Fitters.
+        CI_y : list, array, optional
+            The confidence interval y-values to trace. Only used if the
+            distribution object was created by Fitters and CI_type='time'.
+        CI_x : list, array, optional
+            The confidence interval x-values to trace. Only used if the
+            distribution object was created by Fitters and
+            CI_type='reliability'.
         kwargs
             Plotting keywords that are passed directly to matplotlib
             (e.g. color, linestyle)
@@ -2938,23 +3031,23 @@ class Exponential_Distribution:
         if self.gamma != 0:
             self.param_title = str(
                 "λ="
-                + str(round_to_decimals(self.Lambda, dec))
+                + round_and_string(self.Lambda, dec)
                 + ",γ="
-                + str(round_to_decimals(self.gamma, dec))
+                + round_and_string(self.gamma, dec)
             )
             self.param_title_long = str(
                 "Exponential Distribution (λ="
-                + str(round_to_decimals(self.Lambda, dec))
+                + round_and_string(self.Lambda, dec)
                 + ",γ="
-                + str(round_to_decimals(gamma, dec))
+                + round_and_string(gamma, dec)
                 + ")"
             )
             self.name2 = "Exponential_2P"
         else:
-            self.param_title = str("λ=" + str(round_to_decimals(self.Lambda, dec)))
+            self.param_title = str("λ=" + round_and_string(self.Lambda, dec))
             self.param_title_long = str(
                 "Exponential Distribution (λ="
-                + str(round_to_decimals(self.Lambda, dec))
+                + round_and_string(self.Lambda, dec)
                 + ")"
             )
             self.name2 = "Exponential_1P"
@@ -3106,23 +3199,22 @@ class Exponential_Distribution:
         plt.axis("off")
         plt.ylim([0, 10])
         plt.xlim([0, 10])
-        text_mean = str("Mean = " + str(round_to_decimals(float(self.mean), dec)))
-        text_median = str("Median = " + str(round_to_decimals(self.median, dec)))
-        text_mode = str("Mode = " + str(round_to_decimals(self.mode, dec)))
-        text_b5 = str("$5^{th}$ quantile = " + str(round_to_decimals(self.b5, dec)))
-        text_b95 = str("$95^{th}$ quantile = " + str(round_to_decimals(self.b95, dec)))
+        text_mean = str("Mean = " + round_and_string(self.mean, dec))
+        text_median = str("Median = " + round_and_string(self.median, dec))
+        text_mode = str("Mode = " + round_and_string(self.mode, dec))
+        text_b5 = str("$5^{th}$ quantile = " + round_and_string(self.b5, dec))
+        text_b95 = str("$95^{th}$ quantile = " + round_and_string(self.b95, dec))
         text_std = str(
-            "Standard deviation = " + str(round_to_decimals(self.standard_deviation))
-        )
+            "Standard deviation = " + round_and_string(self.standard_deviation,dec))
         text_var = str(
-            "Variance = " + str(round_to_decimals(float(self.variance), dec))
+            "Variance = " + round_and_string(self.variance, dec)
         )
         text_skew = str(
-            "Skewness = " + str(round_to_decimals(float(self.skewness), dec))
+            "Skewness = " + round_and_string(self.skewness, dec)
         )
         text_ex_kurt = str(
             "Excess kurtosis = "
-            + str(round_to_decimals(float(self.excess_kurtosis), dec))
+            + round_and_string(self.excess_kurtosis, dec)
         )
         plt.text(0, 9, text_mean)
         plt.text(0, 8, text_median)
@@ -3221,14 +3313,27 @@ class Exponential_Distribution:
 
         Parameters
         ----------
-        show_plot : bool, optional
-            True or False. Default = True
         xvals : array, list, optional
             x-values for plotting
         xmin : int, float, optional
             minimum x-value for plotting
         xmax : int, float, optional
             maximum x-value for plotting
+        show_plot : bool, optional
+            True or False. Default = True
+        plot_CI : bool, optional
+            True or False. Default = True. Only used if the distribution object
+            was created by Fitters.
+        CI : float, optional
+            The confidence interval between 0 and 1. Only used if the
+            distribution object was created by Fitters.
+        CI_y : list, array, optional
+            The confidence interval y-values to trace. Only used if the
+            distribution object was created by Fitters and CI_type='time'.
+        CI_x : list, array, optional
+            The confidence interval x-values to trace. Only used if the
+            distribution object was created by Fitters and
+            CI_type='reliability'.
         kwargs
             Plotting keywords that are passed directly to matplotlib
             (e.g. color, linestyle)
@@ -3343,14 +3448,27 @@ class Exponential_Distribution:
 
         Parameters
         ----------
-        show_plot : bool, optional
-            True or False. Default = True
         xvals : array, list, optional
             x-values for plotting
         xmin : int, float, optional
             minimum x-value for plotting
         xmax : int, float, optional
             maximum x-value for plotting
+        show_plot : bool, optional
+            True or False. Default = True
+        plot_CI : bool, optional
+            True or False. Default = True. Only used if the distribution object
+            was created by Fitters.
+        CI : float, optional
+            The confidence interval between 0 and 1. Only used if the
+            distribution object was created by Fitters.
+        CI_y : list, array, optional
+            The confidence interval y-values to trace. Only used if the
+            distribution object was created by Fitters and CI_type='time'.
+        CI_x : list, array, optional
+            The confidence interval x-values to trace. Only used if the
+            distribution object was created by Fitters and
+            CI_type='reliability'.
         kwargs
             Plotting keywords that are passed directly to matplotlib
             (e.g. color, linestyle)
@@ -3533,14 +3651,27 @@ class Exponential_Distribution:
 
         Parameters
         ----------
-        show_plot : bool, optional
-            True or False. Default = True
         xvals : array, list, optional
             x-values for plotting
         xmin : int, float, optional
             minimum x-value for plotting
         xmax : int, float, optional
             maximum x-value for plotting
+        show_plot : bool, optional
+            True or False. Default = True
+        plot_CI : bool, optional
+            True or False. Default = True. Only used if the distribution object
+            was created by Fitters.
+        CI : float, optional
+            The confidence interval between 0 and 1. Only used if the
+            distribution object was created by Fitters.
+        CI_y : list, array, optional
+            The confidence interval y-values to trace. Only used if the
+            distribution object was created by Fitters and CI_type='time'.
+        CI_x : list, array, optional
+            The confidence interval x-values to trace. Only used if the
+            distribution object was created by Fitters and
+            CI_type='reliability'.
         kwargs
             Plotting keywords that are passed directly to matplotlib
             (e.g. color, linestyle)
@@ -3780,9 +3911,7 @@ class Exponential_Distribution:
             raise ValueError("number_of_samples must be an integer greater than 0")
         if seed is not None:
             np.random.seed(seed)
-        RVS = ss.expon.rvs(
-            scale=1 / self.Lambda, loc=self.gamma, size=number_of_samples
-        )
+        RVS = ss.expon.rvs(scale=1 / self.Lambda, loc=self.gamma, size=number_of_samples)
         return RVS
 
 
@@ -3858,34 +3987,34 @@ class Gamma_Distribution:
         if self.gamma != 0:
             self.param_title = str(
                 "α="
-                + str(round_to_decimals(self.alpha, dec))
+                + round_and_string(self.alpha, dec)
                 + ",β="
-                + str(round_to_decimals(self.beta, dec))
+                + round_and_string(self.beta, dec)
                 + ",γ="
-                + str(round_to_decimals(self.gamma, dec))
+                + round_and_string(self.gamma, dec)
             )
             self.param_title_long = str(
                 "Gamma Distribution (α="
-                + str(round_to_decimals(self.alpha, dec))
+                + round_and_string(self.alpha, dec)
                 + ",β="
-                + str(round_to_decimals(self.beta, dec))
+                + round_and_string(self.beta, dec)
                 + ",γ="
-                + str(round_to_decimals(self.gamma, dec))
+                + round_and_string(self.gamma, dec)
                 + ")"
             )
             self.name2 = "Gamma_3P"
         else:
             self.param_title = str(
                 "α="
-                + str(round_to_decimals(self.alpha, dec))
+                + round_and_string(self.alpha, dec)
                 + ",β="
-                + str(round_to_decimals(self.beta, dec))
+                + round_and_string(self.beta, dec)
             )
             self.param_title_long = str(
                 "Gamma Distribution (α="
-                + str(round_to_decimals(self.alpha, dec))
+                + round_and_string(self.alpha, dec)
                 + ",β="
-                + str(round_to_decimals(self.beta, dec))
+                + round_and_string(self.beta, dec)
                 + ")"
             )
             self.name2 = "Gamma_2P"
@@ -4059,23 +4188,22 @@ class Gamma_Distribution:
         plt.axis("off")
         plt.ylim([0, 10])
         plt.xlim([0, 10])
-        text_mean = str("Mean = " + str(round_to_decimals(float(self.mean), dec)))
-        text_median = str("Median = " + str(round_to_decimals(self.median, dec)))
-        text_mode = str("Mode = " + str(round_to_decimals(self.mode, dec)))
-        text_b5 = str("$5^{th}$ quantile = " + str(round_to_decimals(self.b5, dec)))
-        text_b95 = str("$95^{th}$ quantile = " + str(round_to_decimals(self.b95, dec)))
+        text_mean = str("Mean = " + round_and_string(self.mean, dec))
+        text_median = str("Median = " + round_and_string(self.median, dec))
+        text_mode = str("Mode = " + round_and_string(self.mode, dec))
+        text_b5 = str("$5^{th}$ quantile = " + round_and_string(self.b5, dec))
+        text_b95 = str("$95^{th}$ quantile = " + round_and_string(self.b95, dec))
         text_std = str(
-            "Standard deviation = " + str(round_to_decimals(self.standard_deviation))
-        )
+            "Standard deviation = " + round_and_string(self.standard_deviation,dec))
         text_var = str(
-            "Variance = " + str(round_to_decimals(float(self.variance), dec))
+            "Variance = " + round_and_string(self.variance, dec)
         )
         text_skew = str(
-            "Skewness = " + str(round_to_decimals(float(self.skewness), dec))
+            "Skewness = " + round_and_string(self.skewness, dec)
         )
         text_ex_kurt = str(
             "Excess kurtosis = "
-            + str(round_to_decimals(float(self.excess_kurtosis), dec))
+            + round_and_string(self.excess_kurtosis, dec)
         )
         plt.text(0, 9, text_mean)
         plt.text(0, 8, text_median)
@@ -4175,14 +4303,30 @@ class Gamma_Distribution:
 
         Parameters
         ----------
-        show_plot : bool, optional
-            True or False. Default = True
         xvals : array, list, optional
             x-values for plotting
         xmin : int, float, optional
             minimum x-value for plotting
         xmax : int, float, optional
             maximum x-value for plotting
+        show_plot : bool, optional
+            True or False. Default = True
+        plot_CI : bool, optional
+            True or False. Default = True. Only used if the distribution object
+            was created by Fitters.
+        CI_type : str, optional
+            Must be either "time", "reliability", or "none". Default is "time". Only used
+            if the distribution object was created by Fitters.
+        CI : float, optional
+            The confidence interval between 0 and 1. Only used if the
+            distribution object was created by Fitters.
+        CI_y : list, array, optional
+            The confidence interval y-values to trace. Only used if the
+            distribution object was created by Fitters and CI_type='time'.
+        CI_x : list, array, optional
+            The confidence interval x-values to trace. Only used if the
+            distribution object was created by Fitters and
+            CI_type='reliability'.
         kwargs
             Plotting keywords that are passed directly to matplotlib
             (e.g. color, linestyle)
@@ -4295,14 +4439,30 @@ class Gamma_Distribution:
 
         Parameters
         ----------
-        show_plot : bool, optional
-            True or False. Default = True
         xvals : array, list, optional
             x-values for plotting
         xmin : int, float, optional
             minimum x-value for plotting
         xmax : int, float, optional
             maximum x-value for plotting
+        show_plot : bool, optional
+            True or False. Default = True
+        plot_CI : bool, optional
+            True or False. Default = True. Only used if the distribution object
+            was created by Fitters.
+        CI_type : str, optional
+            Must be either "time", "reliability", or "none". Default is "time". Only used
+            if the distribution object was created by Fitters.
+        CI : float, optional
+            The confidence interval between 0 and 1. Only used if the
+            distribution object was created by Fitters.
+        CI_y : list, array, optional
+            The confidence interval y-values to trace. Only used if the
+            distribution object was created by Fitters and CI_type='time'.
+        CI_x : list, array, optional
+            The confidence interval x-values to trace. Only used if the
+            distribution object was created by Fitters and
+            CI_type='reliability'.
         kwargs
             Plotting keywords that are passed directly to matplotlib
             (e.g. color, linestyle)
@@ -4478,14 +4638,30 @@ class Gamma_Distribution:
 
         Parameters
         ----------
-        show_plot : bool, optional
-            True or False. Default = True
         xvals : array, list, optional
             x-values for plotting
         xmin : int, float, optional
             minimum x-value for plotting
         xmax : int, float, optional
             maximum x-value for plotting
+        show_plot : bool, optional
+            True or False. Default = True
+        plot_CI : bool, optional
+            True or False. Default = True. Only used if the distribution object
+            was created by Fitters.
+        CI_type : str, optional
+            Must be either "time", "reliability", or "none". Default is "time". Only used
+            if the distribution object was created by Fitters.
+        CI : float, optional
+            The confidence interval between 0 and 1. Only used if the
+            distribution object was created by Fitters.
+        CI_y : list, array, optional
+            The confidence interval y-values to trace. Only used if the
+            distribution object was created by Fitters and CI_type='time'.
+        CI_x : list, array, optional
+            The confidence interval x-values to trace. Only used if the
+            distribution object was created by Fitters and
+            CI_type='reliability'.
         kwargs
             Plotting keywords that are passed directly to matplotlib
             (e.g. color, linestyle)
@@ -4799,15 +4975,15 @@ class Beta_Distribution:
             self.mode = r"No mode exists unless $\alpha$ > 1 and $\beta$ > 1"
         self.param_title = str(
             "α="
-            + str(round_to_decimals(self.alpha, dec))
+            + round_and_string(self.alpha, dec)
             + ",β="
-            + str(round_to_decimals(self.beta, dec))
+            + round_and_string(self.beta, dec)
         )
         self.param_title_long = str(
             "Beta Distribution (α="
-            + str(round_to_decimals(self.alpha, dec))
+            + round_and_string(self.alpha, dec)
             + ",β="
-            + str(round_to_decimals(self.beta, dec))
+            + round_and_string(self.beta, dec)
             + ")"
         )
         self.b5 = ss.beta.ppf(0.05, self.alpha, self.beta, 0, 1)
@@ -4937,26 +5113,25 @@ class Beta_Distribution:
         plt.axis("off")
         plt.ylim([0, 10])
         plt.xlim([0, 10])
-        text_mean = str("Mean = " + str(round_to_decimals(float(self.mean), dec)))
-        text_median = str("Median = " + str(round_to_decimals(self.median, dec)))
+        text_mean = str("Mean = " + round_and_string(self.mean, dec))
+        text_median = str("Median = " + round_and_string(self.median, dec))
         if type(self.mode) == str:
             text_mode = str("Mode = " + str(self.mode))  # required when mode is str
         else:
-            text_mode = str("Mode = " + str(round_to_decimals(self.mode, dec)))
-        text_b5 = str("$5^{th}$ quantile = " + str(round_to_decimals(self.b5, dec)))
-        text_b95 = str("$95^{th}$ quantile = " + str(round_to_decimals(self.b95, dec)))
+            text_mode = str("Mode = " + round_and_string(self.mode, dec))
+        text_b5 = str("$5^{th}$ quantile = " + round_and_string(self.b5, dec))
+        text_b95 = str("$95^{th}$ quantile = " + round_and_string(self.b95, dec))
         text_std = str(
-            "Standard deviation = " + str(round_to_decimals(self.standard_deviation))
-        )
+            "Standard deviation = " + round_and_string(self.standard_deviation,dec))
         text_var = str(
-            "Variance = " + str(round_to_decimals(float(self.variance), dec))
+            "Variance = " + round_and_string(self.variance, dec)
         )
         text_skew = str(
-            "Skewness = " + str(round_to_decimals(float(self.skewness), dec))
+            "Skewness = " + round_and_string(self.skewness, dec)
         )
         text_ex_kurt = str(
             "Excess kurtosis = "
-            + str(round_to_decimals(float(self.excess_kurtosis), dec))
+            + round_and_string(self.excess_kurtosis, dec)
         )
         plt.text(0, 9, text_mean)
         plt.text(0, 8, text_median)
@@ -5551,34 +5726,34 @@ class Loglogistic_Distribution:
         if self.gamma != 0:
             self.param_title = str(
                 "α="
-                + str(round_to_decimals(self.alpha, dec))
+                + round_and_string(self.alpha, dec)
                 + ",β="
-                + str(round_to_decimals(self.beta, dec))
+                + round_and_string(self.beta, dec)
                 + ",γ="
-                + str(round_to_decimals(self.gamma, dec))
+                + round_and_string(self.gamma, dec)
             )
             self.param_title_long = str(
                 "Loglogistic Distribution (α="
-                + str(round_to_decimals(self.alpha, dec))
+                + round_and_string(self.alpha, dec)
                 + ",β="
-                + str(round_to_decimals(self.beta, dec))
+                + round_and_string(self.beta, dec)
                 + ",γ="
-                + str(round_to_decimals(self.gamma, dec))
+                + round_and_string(self.gamma, dec)
                 + ")"
             )
             self.name2 = "Loglogistic_3P"
         else:
             self.param_title = str(
                 "α="
-                + str(round_to_decimals(self.alpha, dec))
+                + round_and_string(self.alpha, dec)
                 + ",β="
-                + str(round_to_decimals(self.beta, dec))
+                + round_and_string(self.beta, dec)
             )
             self.param_title_long = str(
                 "Loglogistic Distribution (α="
-                + str(round_to_decimals(self.alpha, dec))
+                + round_and_string(self.alpha, dec)
                 + ",β="
-                + str(round_to_decimals(self.beta, dec))
+                + round_and_string(self.beta, dec)
                 + ")"
             )
             self.name2 = "Loglogistic_2P"
@@ -5745,15 +5920,15 @@ class Loglogistic_Distribution:
         plt.axis("off")
         plt.ylim([0, 10])
         plt.xlim([0, 10])
-        text_median = str("Median = " + str(round_to_decimals(self.median, dec)))
-        text_b5 = str("$5^{th}$ quantile = " + str(round_to_decimals(self.b5, dec)))
-        text_b95 = str("$95^{th}$ quantile = " + str(round_to_decimals(self.b95, dec)))
-        text_mode = str("Mode = " + str(round_to_decimals(self.mode, dec)))
+        text_median = str("Median = " + round_and_string(self.median, dec))
+        text_b5 = str("$5^{th}$ quantile = " + round_and_string(self.b5, dec))
+        text_b95 = str("$95^{th}$ quantile = " + round_and_string(self.b95, dec))
+        text_mode = str("Mode = " + round_and_string(self.mode, dec))
 
         if type(self.mean) == str:
             text_mean = str("Mean = " + str(self.mean))  # required when mean is str
         else:
-            text_mean = str("Mean = " + str(round_to_decimals(float(self.mean), dec)))
+            text_mean = str("Mean = " + round_and_string(self.mean, dec))
 
         if type(self.standard_deviation) == str:
             text_std = str(
@@ -5762,7 +5937,7 @@ class Loglogistic_Distribution:
         else:
             text_std = str(
                 "Standard deviation = "
-                + str(round_to_decimals(float(self.standard_deviation), dec))
+                + round_and_string(self.standard_deviation, dec)
             )
 
         if type(self.variance) == str:
@@ -5771,7 +5946,7 @@ class Loglogistic_Distribution:
             )  # required when variance is str
         else:
             text_var = str(
-                "Variance = " + str(round_to_decimals(float(self.variance), dec))
+                "Variance = " + round_and_string(self.variance, dec)
             )
 
         if type(self.skewness) == str:
@@ -5780,7 +5955,7 @@ class Loglogistic_Distribution:
             )  # required when skewness is str
         else:
             text_skew = str(
-                "Skewness = " + str(round_to_decimals(float(self.skewness), dec))
+                "Skewness = " + round_and_string(self.skewness, dec)
             )
 
         if type(self.excess_kurtosis) == str:
@@ -5790,7 +5965,7 @@ class Loglogistic_Distribution:
         else:
             text_ex_kurt = str(
                 "Excess kurtosis = "
-                + str(round_to_decimals(float(self.excess_kurtosis), dec))
+                + round_and_string(self.excess_kurtosis, dec)
             )
 
         plt.text(0, 9, text_mean)
@@ -5892,14 +6067,30 @@ class Loglogistic_Distribution:
 
         Parameters
         ----------
-        show_plot : bool, optional
-            True or False. Default = True
         xvals : array, list, optional
             x-values for plotting
         xmin : int, float, optional
             minimum x-value for plotting
         xmax : int, float, optional
             maximum x-value for plotting
+        show_plot : bool, optional
+            True or False. Default = True
+        plot_CI : bool, optional
+            True or False. Default = True. Only used if the distribution object
+            was created by Fitters.
+        CI_type : str, optional
+            Must be either "time", "reliability", or "none". Default is "time". Only used
+            if the distribution object was created by Fitters.
+        CI : float, optional
+            The confidence interval between 0 and 1. Only used if the
+            distribution object was created by Fitters.
+        CI_y : list, array, optional
+            The confidence interval y-values to trace. Only used if the
+            distribution object was created by Fitters and CI_type='time'.
+        CI_x : list, array, optional
+            The confidence interval x-values to trace. Only used if the
+            distribution object was created by Fitters and
+            CI_type='reliability'.
         kwargs
             Plotting keywords that are passed directly to matplotlib
             (e.g. color, linestyle)
@@ -6012,14 +6203,30 @@ class Loglogistic_Distribution:
 
         Parameters
         ----------
-        show_plot : bool, optional
-            True or False. Default = True
         xvals : array, list, optional
             x-values for plotting
         xmin : int, float, optional
             minimum x-value for plotting
         xmax : int, float, optional
             maximum x-value for plotting
+        show_plot : bool, optional
+            True or False. Default = True
+        plot_CI : bool, optional
+            True or False. Default = True. Only used if the distribution object
+            was created by Fitters.
+        CI_type : str, optional
+            Must be either "time", "reliability", or "none". Default is "time". Only used
+            if the distribution object was created by Fitters.
+        CI : float, optional
+            The confidence interval between 0 and 1. Only used if the
+            distribution object was created by Fitters.
+        CI_y : list, array, optional
+            The confidence interval y-values to trace. Only used if the
+            distribution object was created by Fitters and CI_type='time'.
+        CI_x : list, array, optional
+            The confidence interval x-values to trace. Only used if the
+            distribution object was created by Fitters and
+            CI_type='reliability'.
         kwargs
             Plotting keywords that are passed directly to matplotlib
             (e.g. color, linestyle)
@@ -6203,14 +6410,30 @@ class Loglogistic_Distribution:
 
         Parameters
         ----------
-        show_plot : bool, optional
-            True or False. Default = True
         xvals : array, list, optional
             x-values for plotting
         xmin : int, float, optional
             minimum x-value for plotting
         xmax : int, float, optional
             maximum x-value for plotting
+        show_plot : bool, optional
+            True or False. Default = True
+        plot_CI : bool, optional
+            True or False. Default = True. Only used if the distribution object
+            was created by Fitters.
+        CI_type : str, optional
+            Must be either "time", "reliability", or "none". Default is "time". Only used
+            if the distribution object was created by Fitters.
+        CI : float, optional
+            The confidence interval between 0 and 1. Only used if the
+            distribution object was created by Fitters.
+        CI_y : list, array, optional
+            The confidence interval y-values to trace. Only used if the
+            distribution object was created by Fitters and CI_type='time'.
+        CI_x : list, array, optional
+            The confidence interval x-values to trace. Only used if the
+            distribution object was created by Fitters and
+            CI_type='reliability'.
         kwargs
             Plotting keywords that are passed directly to matplotlib
             (e.g. color, linestyle)
@@ -6522,15 +6745,15 @@ class Gumbel_Distribution:
         self.mode = mu
         self.param_title = str(
             "μ="
-            + str(round_to_decimals(self.mu, dec))
+            + round_and_string(self.mu, dec)
             + ",σ="
-            + str(round_to_decimals(self.sigma, dec))
+            + round_and_string(self.sigma, dec)
         )
         self.param_title_long = str(
             "Gumbel Distribution (μ="
-            + str(round_to_decimals(self.mu, dec))
+            + round_and_string(self.mu, dec)
             + ",σ="
-            + str(round_to_decimals(self.sigma, dec))
+            + round_and_string(self.sigma, dec)
             + ")"
         )
         self.b5 = ss.gumbel_l.ppf(0.05, loc=self.mu, scale=self.sigma)
@@ -6687,24 +6910,24 @@ class Gumbel_Distribution:
         plt.axis("off")
         plt.ylim([0, 10])
         plt.xlim([0, 10])
-        text_mean = str("Mean = " + str(round_to_decimals(float(self.mean), dec)))
-        text_median = str("Median = " + str(round_to_decimals(self.median, dec)))
-        text_mode = str("Mode = " + str(round_to_decimals(self.mode, dec)))
-        text_b5 = str("$5^{th}$ quantile = " + str(round_to_decimals(self.b5, dec)))
-        text_b95 = str("$95^{th}$ quantile = " + str(round_to_decimals(self.b95, dec)))
+        text_mean = str("Mean = " + round_and_string(self.mean, dec))
+        text_median = str("Median = " + round_and_string(self.median, dec))
+        text_mode = str("Mode = " + round_and_string(self.mode, dec))
+        text_b5 = str("$5^{th}$ quantile = " + round_and_string(self.b5, dec))
+        text_b95 = str("$95^{th}$ quantile = " + round_and_string(self.b95, dec))
         text_std = str(
             "Standard deviation = "
-            + str(round_to_decimals(self.standard_deviation, dec))
+            + round_and_string(self.standard_deviation, dec)
         )
         text_var = str(
-            "Variance = " + str(round_to_decimals(float(self.variance), dec))
+            "Variance = " + round_and_string(self.variance, dec)
         )
         text_skew = str(
-            "Skewness = " + str(round_to_decimals(float(self.skewness), dec))
+            "Skewness = " + round_and_string(self.skewness, dec)
         )
         text_ex_kurt = str(
             "Excess kurtosis = "
-            + str(round_to_decimals(float(self.excess_kurtosis), dec))
+            + round_and_string(self.excess_kurtosis, dec)
         )
         plt.text(0, 9, text_mean)
         plt.text(0, 8, text_median)
@@ -6804,14 +7027,30 @@ class Gumbel_Distribution:
 
         Parameters
         ----------
-        show_plot : bool, optional
-            True or False. Default = True
         xvals : array, list, optional
             x-values for plotting
         xmin : int, float, optional
             minimum x-value for plotting
         xmax : int, float, optional
             maximum x-value for plotting
+        show_plot : bool, optional
+            True or False. Default = True
+        plot_CI : bool, optional
+            True or False. Default = True. Only used if the distribution object
+            was created by Fitters.
+        CI_type : str, optional
+            Must be either "time", "reliability", or "none". Default is "time". Only used
+            if the distribution object was created by Fitters.
+        CI : float, optional
+            The confidence interval between 0 and 1. Only used if the
+            distribution object was created by Fitters.
+        CI_y : list, array, optional
+            The confidence interval y-values to trace. Only used if the
+            distribution object was created by Fitters and CI_type='time'.
+        CI_x : list, array, optional
+            The confidence interval x-values to trace. Only used if the
+            distribution object was created by Fitters and
+            CI_type='reliability'.
         kwargs
             Plotting keywords that are passed directly to matplotlib
             (e.g. color, linestyle)
@@ -6922,14 +7161,30 @@ class Gumbel_Distribution:
 
         Parameters
         ----------
-        show_plot : bool, optional
-            True or False. Default = True
         xvals : array, list, optional
             x-values for plotting
         xmin : int, float, optional
             minimum x-value for plotting
         xmax : int, float, optional
             maximum x-value for plotting
+        show_plot : bool, optional
+            True or False. Default = True
+        plot_CI : bool, optional
+            True or False. Default = True. Only used if the distribution object
+            was created by Fitters.
+        CI_type : str, optional
+            Must be either "time", "reliability", or "none". Default is "time". Only used
+            if the distribution object was created by Fitters.
+        CI : float, optional
+            The confidence interval between 0 and 1. Only used if the
+            distribution object was created by Fitters.
+        CI_y : list, array, optional
+            The confidence interval y-values to trace. Only used if the
+            distribution object was created by Fitters and CI_type='time'.
+        CI_x : list, array, optional
+            The confidence interval x-values to trace. Only used if the
+            distribution object was created by Fitters and
+            CI_type='reliability'.
         kwargs
             Plotting keywords that are passed directly to matplotlib
             (e.g. color, linestyle)
@@ -7104,14 +7359,30 @@ class Gumbel_Distribution:
 
         Parameters
         ----------
-        show_plot : bool, optional
-            True or False. Default = True
         xvals : array, list, optional
             x-values for plotting
         xmin : int, float, optional
             minimum x-value for plotting
         xmax : int, float, optional
             maximum x-value for plotting
+        show_plot : bool, optional
+            True or False. Default = True
+        plot_CI : bool, optional
+            True or False. Default = True. Only used if the distribution object
+            was created by Fitters.
+        CI_type : str, optional
+            Must be either "time", "reliability", or "none". Default is "time". Only used
+            if the distribution object was created by Fitters.
+        CI : float, optional
+            The confidence interval between 0 and 1. Only used if the
+            distribution object was created by Fitters.
+        CI_y : list, array, optional
+            The confidence interval y-values to trace. Only used if the
+            distribution object was created by Fitters and CI_type='time'.
+        CI_x : list, array, optional
+            The confidence interval x-values to trace. Only used if the
+            distribution object was created by Fitters and
+            CI_type='reliability'.
         kwargs
             Plotting keywords that are passed directly to matplotlib
             (e.g. color, linestyle)
@@ -7439,7 +7710,13 @@ class Competing_Risks_Model:
         xmax999 = -1e100
         xmin001 = 1e100
         xmax_inf = -1e100
+        number_of_params = 0
         for dist in distributions:
+            if dist.parameters[-1] == 0:
+                params_in_dist = len(dist.parameters)-1
+            else:
+                params_in_dist = len(dist.parameters)
+            number_of_params += params_in_dist
             xmax = max(xmax, dist.quantile(1 - 1e-10))
             xmin = min(xmin, dist.quantile(1e-10))
             xmax999 = max(xmax999, dist.quantile(0.999))
@@ -7447,6 +7724,7 @@ class Competing_Risks_Model:
             xmax_inf = max(
                 xmax_inf, dist.quantile(1 - 1e-10)
             )  # effective infinity used by MRL
+        self.__number_of_params = number_of_params
         self.__xmax999 = xmax999
         self.__xmin001 = xmin001
         self.__xmax_inf = xmax_inf
@@ -7678,23 +7956,22 @@ class Competing_Risks_Model:
         plt.axis("off")
         plt.ylim([0, 10])
         plt.xlim([0, 10])
-        text_mean = str("Mean = " + str(round_to_decimals(float(self.mean), dec)))
-        text_median = str("Median = " + str(round_to_decimals(self.median, dec)))
-        text_mode = str("Mode = " + str(round_to_decimals(self.mode, dec)))
-        text_b5 = str("$5^{th}$ quantile = " + str(round_to_decimals(self.b5, dec)))
-        text_b95 = str("$95^{th}$ quantile = " + str(round_to_decimals(self.b95, dec)))
+        text_mean = str("Mean = " + round_and_string(self.mean, dec))
+        text_median = str("Median = " + round_and_string(self.median, dec))
+        text_mode = str("Mode = " + round_and_string(self.mode, dec))
+        text_b5 = str("$5^{th}$ quantile = " + round_and_string(self.b5, dec))
+        text_b95 = str("$95^{th}$ quantile = " + round_and_string(self.b95, dec))
         text_std = str(
-            "Standard deviation = " + str(round_to_decimals(self.standard_deviation))
-        )
+            "Standard deviation = " + round_and_string(self.standard_deviation,dec))
         text_var = str(
-            "Variance = " + str(round_to_decimals(float(self.variance), dec))
+            "Variance = " + round_and_string(self.variance, dec)
         )
         text_skew = str(
-            "Skewness = " + str(round_to_decimals(float(self.skewness), dec))
+            "Skewness = " + round_and_string(self.skewness, dec)
         )
         text_ex_kurt = str(
             "Excess kurtosis = "
-            + str(round_to_decimals(float(self.excess_kurtosis), dec))
+            + round_and_string(self.excess_kurtosis, dec)
         )
         plt.text(0, 9, text_mean)
         plt.text(0, 8, text_median)
@@ -8411,7 +8688,13 @@ class Mixture_Model:
         xmax999 = -1e100
         xmin001 = 1e100
         xmax_inf = -1e100
+        number_of_params = 0
         for dist in distributions:
+            if dist.parameters[-1] == 0:
+                params_in_dist = len(dist.parameters)-1
+            else:
+                params_in_dist = len(dist.parameters)
+            number_of_params += (params_in_dist + 1) # plus 1 for the proportion
             xmax = max(xmax, dist.quantile(1 - 1e-10))
             xmin = min(xmin, dist.quantile(1e-10))
             xmax999 = max(xmax999, dist.quantile(0.999))
@@ -8419,6 +8702,7 @@ class Mixture_Model:
             xmax_inf = max(
                 xmax_inf, dist.quantile(1 - 1e-10)
             )  # effective infinity used by MRL
+        self.__number_of_params = number_of_params - 1 # minus 1 because last proportion is not needed as they sum to 1
         self.__xmax999 = xmax999
         self.__xmin001 = xmin001
         self.__xmax_inf = xmax_inf
@@ -8659,23 +8943,22 @@ class Mixture_Model:
         plt.axis("off")
         plt.ylim([0, 10])
         plt.xlim([0, 10])
-        text_mean = str("Mean = " + str(round_to_decimals(float(self.mean), dec)))
-        text_median = str("Median = " + str(round_to_decimals(self.median, dec)))
-        text_mode = str("Mode = " + str(round_to_decimals(self.mode, dec)))
-        text_b5 = str("$5^{th}$ quantile = " + str(round_to_decimals(self.b5, dec)))
-        text_b95 = str("$95^{th}$ quantile = " + str(round_to_decimals(self.b95, dec)))
+        text_mean = str("Mean = " + round_and_string(self.mean, dec))
+        text_median = str("Median = " + round_and_string(self.median, dec))
+        text_mode = str("Mode = " + round_and_string(self.mode, dec))
+        text_b5 = str("$5^{th}$ quantile = " + round_and_string(self.b5, dec))
+        text_b95 = str("$95^{th}$ quantile = " + round_and_string(self.b95, dec))
         text_std = str(
-            "Standard deviation = " + str(round_to_decimals(self.standard_deviation))
-        )
+            "Standard deviation = " + round_and_string(self.standard_deviation,dec))
         text_var = str(
-            "Variance = " + str(round_to_decimals(float(self.variance), dec))
+            "Variance = " + round_and_string(self.variance, dec)
         )
         text_skew = str(
-            "Skewness = " + str(round_to_decimals(float(self.skewness), dec))
+            "Skewness = " + round_and_string(self.skewness, dec)
         )
         text_ex_kurt = str(
             "Excess kurtosis = "
-            + str(round_to_decimals(float(self.excess_kurtosis), dec))
+            + round_and_string(self.excess_kurtosis, dec)
         )
         plt.text(0, 9, text_mean)
         plt.text(0, 8, text_median)
@@ -9342,12 +9625,14 @@ class DSZI_Model:
 
         if DS is None and ZI is None:
             raise ValueError(
-                "DS and ZI cannot both be unspecified. Please specify one or both of these parameters to create a DSZI model."
+                "DS and ZI cannot both be unspecified. Please specify one or both of these parameters to create a DS, ZI, or DSZI model."
             )
         if DS is None:
             DS = float(1)
         if ZI is None:
             ZI = float(0)
+        if DS == 1 and ZI == 0:
+            colorprint('WARNING: A DSZI model with DS = 1 and ZI = 0 is equivalent to the base distribution. There is no need to use a DSZI distribution if DS = 1 and ZI = 0.',text_color='red')
         if ZI > DS:
             raise ValueError(
                 "DS can not be greater than ZI. DS is the maximum of the CDF. ZI is the minimum of the CDF."
@@ -9383,17 +9668,24 @@ class DSZI_Model:
         self.median = self.__base_distribution.median
         self.mode = self.__base_distribution.mode
         self.name = "DSZI"
+        if distribution.parameters[-1] == 0:
+            params_in_dist = len(distribution.parameters) - 1
+        else:
+            params_in_dist = len(distribution.parameters)
         if ZI == 0:
             self.__model_title = "DS Model"
             self.name2 = "Defective Subpopulation " + self.__base_distribution.name
+            self.__number_of_params = params_in_dist + 1
         elif DS == 1:
             self.__model_title = "ZI Model"
             self.name2 = "Zero Inflated " + self.__base_distribution.name
+            self.__number_of_params = params_in_dist + 1
         else:  # DSZI
             self.__model_title = "DSZI Model"
             self.name2 = (
                 "Defective Subpopulation Zero Inflated " + self.__base_distribution.name
             )
+            self.__number_of_params = params_in_dist + 2
 
         xmax = self.__base_distribution.quantile(1 - 1e-10)
         xmin = self.__base_distribution.quantile(1e-10)
@@ -9526,23 +9818,22 @@ class DSZI_Model:
         plt.axis("off")
         plt.ylim([0, 10])
         plt.xlim([0, 10])
-        text_mean = str("Mean = " + str(round_to_decimals(float(self.mean), dec)))
-        text_median = str("Median = " + str(round_to_decimals(self.median, dec)))
-        text_mode = str("Mode = " + str(round_to_decimals(self.mode, dec)))
-        text_b5 = str("$5^{th}$ quantile = " + str(round_to_decimals(self.b5, dec)))
-        text_b95 = str("$95^{th}$ quantile = " + str(round_to_decimals(self.b95, dec)))
+        text_mean = str("Mean = " + round_and_string(self.mean, dec))
+        text_median = str("Median = " + round_and_string(self.median, dec))
+        text_mode = str("Mode = " + round_and_string(self.mode, dec))
+        text_b5 = str("$5^{th}$ quantile = " + round_and_string(self.b5, dec))
+        text_b95 = str("$95^{th}$ quantile = " + round_and_string(self.b95, dec))
         text_std = str(
-            "Standard deviation = " + str(round_to_decimals(self.standard_deviation))
-        )
+            "Standard deviation = " + round_and_string(self.standard_deviation,dec))
         text_var = str(
-            "Variance = " + str(round_to_decimals(float(self.variance), dec))
+            "Variance = " + round_and_string(self.variance, dec)
         )
         text_skew = str(
-            "Skewness = " + str(round_to_decimals(float(self.skewness), dec))
+            "Skewness = " + round_and_string(self.skewness, dec)
         )
         text_ex_kurt = str(
             "Excess kurtosis = "
-            + str(round_to_decimals(float(self.excess_kurtosis), dec))
+            + round_and_string(self.excess_kurtosis, dec)
         )
         plt.text(0, 9, text_mean)
         plt.text(0, 8, text_median)

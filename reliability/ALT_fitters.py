@@ -15,7 +15,7 @@ from reliability.Distributions import (
 )
 from reliability.Utils import (
     colorprint,
-    round_to_decimals,
+    round_and_string,
     ALT_fitters_input_checking,
     ALT_least_squares,
     ALT_MLE_optimization,
@@ -1813,12 +1813,12 @@ class Fit_Everything_ALT:
 
             if use_level_stress is not None:
                 if type(use_level_stress) not in [list, np.ndarray]:
-                    use_level_stress_str = str(round_to_decimals(use_level_stress))
+                    use_level_stress_str = round_and_string(use_level_stress)
                 else:
                     use_level_stress_str = str(
-                        str(round_to_decimals(use_level_stress[0]))
+                        round_and_string(use_level_stress[0])
                         + ", "
-                        + str(round_to_decimals(use_level_stress[1]))
+                        + round_and_string(use_level_stress[1])
                     )
                 print(
                     str(
@@ -1827,7 +1827,7 @@ class Fit_Everything_ALT:
                         + ", the "
                         + self.best_model_name
                         + " model has a mean life of "
-                        + str(round_to_decimals(self.best_model_at_use_stress.mean))
+                        + round_and_string(self.best_model_at_use_stress.mean)
                     )
                 )
 
@@ -2818,9 +2818,10 @@ class Fit_Weibull_Exponential:
     show_probability_plot : bool, object, optional
         True/False. Default is True. Provides a probability plot of the fitted
         ALT model. If an axes object is passed it will be used.
-    show_life_stress_plot : bool, object, optional
-        True/False. Default is True. Provides a life stress plot of the fitted
-        ALT model. If an axes object is passed it will be used.
+    show_life_stress_plot : bool, str, object, optional
+        If True the life-stress plot will be shown. To hide the life-stress
+        plot use False. To swap the axes and show a stress-life plot use
+        'swap'. If an axes handle is passed it will be used. Default is True.
     CI : float, optional
         Confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
@@ -3144,7 +3145,7 @@ class Fit_Weibull_Exponential:
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            frac_censored = round_to_decimals(len(right_censored) / n * 100)
+            frac_censored = len(right_censored) / n * 100
             if frac_censored % 1 < 1e-10:
                 frac_censored = int(frac_censored)
             colorprint(
@@ -3162,7 +3163,7 @@ class Fit_Weibull_Exponential:
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
-                str("(" + str(frac_censored) + "% right censored)"),
+                str("(" + round_and_string(frac_censored) + "% right censored)"),
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
@@ -3186,7 +3187,7 @@ class Fit_Weibull_Exponential:
                 print(
                     str(
                         "At the use level stress of "
-                        + str(round_to_decimals(use_level_stress))
+                        + round_and_string(use_level_stress)
                         + ", the mean life is "
                         + str(round(self.mean_life, 5))
                         + "\n"
@@ -3276,9 +3277,10 @@ class Fit_Weibull_Eyring:
     show_probability_plot : bool, object, optional
         True/False. Default is True. Provides a probability plot of the fitted
         ALT model. If an axes object is passed it will be used.
-    show_life_stress_plot : bool, object, optional
-        True/False. Default is True. Provides a life stress plot of the fitted
-        ALT model. If an axes object is passed it will be used.
+    show_life_stress_plot : bool, str, object, optional
+        If True the life-stress plot will be shown. To hide the life-stress
+        plot use False. To swap the axes and show a stress-life plot use
+        'swap'. If an axes handle is passed it will be used. Default is True.
     CI : float, optional
         Confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
@@ -3602,7 +3604,7 @@ class Fit_Weibull_Eyring:
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            frac_censored = round_to_decimals(len(right_censored) / n * 100)
+            frac_censored = len(right_censored) / n * 100
             if frac_censored % 1 < 1e-10:
                 frac_censored = int(frac_censored)
             colorprint(
@@ -3616,7 +3618,7 @@ class Fit_Weibull_Eyring:
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
-                str("(" + str(frac_censored) + "% right censored)"),
+                str("(" + round_and_string(frac_censored) + "% right censored)"),
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
@@ -3635,7 +3637,7 @@ class Fit_Weibull_Eyring:
                 print(
                     str(
                         "At the use level stress of "
-                        + str(round_to_decimals(use_level_stress))
+                        + round_and_string(use_level_stress)
                         + ", the mean life is "
                         + str(round(self.mean_life, 5))
                         + "\n"
@@ -3722,9 +3724,10 @@ class Fit_Weibull_Power:
     show_probability_plot : bool, object, optional
         True/False. Default is True. Provides a probability plot of the fitted
         ALT model. If an axes object is passed it will be used.
-    show_life_stress_plot : bool, object, optional
-        True/False. Default is True. Provides a life stress plot of the fitted
-        ALT model. If an axes object is passed it will be used.
+    show_life_stress_plot : bool, str, object, optional
+        If True the life-stress plot will be shown. To hide the life-stress
+        plot use False. To swap the axes and show a stress-life plot use
+        'swap'. If an axes handle is passed it will be used. Default is True.
     CI : float, optional
         Confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
@@ -4048,7 +4051,7 @@ class Fit_Weibull_Power:
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            frac_censored = round_to_decimals(len(right_censored) / n * 100)
+            frac_censored = len(right_censored) / n * 100
             if frac_censored % 1 < 1e-10:
                 frac_censored = int(frac_censored)
             colorprint(
@@ -4062,7 +4065,7 @@ class Fit_Weibull_Power:
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
-                str("(" + str(frac_censored) + "% right censored)"),
+                str("(" + round_and_string(frac_censored) + "% right censored)"),
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
@@ -4081,7 +4084,7 @@ class Fit_Weibull_Power:
                 print(
                     str(
                         "At the use level stress of "
-                        + str(round_to_decimals(use_level_stress))
+                        + round_and_string(use_level_stress)
                         + ", the mean life is "
                         + str(round(self.mean_life, 5))
                         + "\n"
@@ -4181,9 +4184,10 @@ class Fit_Weibull_Dual_Exponential:
     show_probability_plot : bool, object, optional
         True/False. Default is True. Provides a probability plot of the fitted
         ALT model. If an axes object is passed it will be used.
-    show_life_stress_plot : bool, object, optional
-        True/False. Default is True. Provides a life stress plot of the fitted
-        ALT model. If an axes object is passed it will be used.
+    show_life_stress_plot : bool, str, object, optional
+        If True the life-stress plot will be shown. To hide the life-stress
+        plot use False. To swap the axes and show a stress-life plot use
+        'swap'. If an axes handle is passed it will be used. Default is True.
     CI : float, optional
         Confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
@@ -4499,9 +4503,9 @@ class Fit_Weibull_Dual_Exponential:
             new_alphas.append(life_func(S1=stress[0], S2=stress[1]))
             stresses_for_groups_str.append(
                 str(
-                    str(round_to_decimals(stress[0]))
+                    round_and_string(stress[0])
                     + ", "
-                    + str(round_to_decimals(stress[1]))
+                    + round_and_string(stress[1])
                 )
             )
             if use_level_stress is not None:
@@ -4560,7 +4564,7 @@ class Fit_Weibull_Dual_Exponential:
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            frac_censored = round_to_decimals(len(right_censored) / n * 100)
+            frac_censored = len(right_censored) / n * 100
             if frac_censored % 1 < 1e-10:
                 frac_censored = int(frac_censored)
             colorprint(
@@ -4578,7 +4582,7 @@ class Fit_Weibull_Dual_Exponential:
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
-                str("(" + str(frac_censored) + "% right censored)"),
+                str("(" + round_and_string(frac_censored) + "% right censored)"),
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
@@ -4597,9 +4601,9 @@ class Fit_Weibull_Dual_Exponential:
                 print(
                     str(
                         "At the use level stress of "
-                        + str(round_to_decimals(use_level_stress[0]))
+                        + round_and_string(use_level_stress[0])
                         + ", "
-                        + str(round_to_decimals(use_level_stress[1]))
+                        + round_and_string(use_level_stress[1])
                         + ", the mean life is "
                         + str(round(self.mean_life, 5))
                         + "\n"
@@ -4702,9 +4706,10 @@ class Fit_Weibull_Power_Exponential:
     show_probability_plot : bool, object, optional
         True/False. Default is True. Provides a probability plot of the fitted
         ALT model. If an axes object is passed it will be used.
-    show_life_stress_plot : bool, object, optional
-        True/False. Default is True. Provides a life stress plot of the fitted
-        ALT model. If an axes object is passed it will be used.
+    show_life_stress_plot : bool, str, object, optional
+        If True the life-stress plot will be shown. To hide the life-stress
+        plot use False. To swap the axes and show a stress-life plot use
+        'swap'. If an axes handle is passed it will be used. Default is True.
     CI : float, optional
         Confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
@@ -5020,9 +5025,9 @@ class Fit_Weibull_Power_Exponential:
             new_alphas.append(life_func(S1=stress[0], S2=stress[1]))
             stresses_for_groups_str.append(
                 str(
-                    str(round_to_decimals(stress[0]))
+                    round_and_string(stress[0])
                     + ", "
-                    + str(round_to_decimals(stress[1]))
+                    + round_and_string(stress[1])
                 )
             )
             if use_level_stress is not None:
@@ -5081,7 +5086,7 @@ class Fit_Weibull_Power_Exponential:
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            frac_censored = round_to_decimals(len(right_censored) / n * 100)
+            frac_censored = len(right_censored) / n * 100
             if frac_censored % 1 < 1e-10:
                 frac_censored = int(frac_censored)
             colorprint(
@@ -5099,7 +5104,7 @@ class Fit_Weibull_Power_Exponential:
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
-                str("(" + str(frac_censored) + "% right censored)"),
+                str("(" + round_and_string(frac_censored) + "% right censored)"),
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
@@ -5118,9 +5123,9 @@ class Fit_Weibull_Power_Exponential:
                 print(
                     str(
                         "At the use level stress of "
-                        + str(round_to_decimals(use_level_stress[0]))
+                        + round_and_string(use_level_stress[0])
                         + ", "
-                        + str(round_to_decimals(use_level_stress[1]))
+                        + round_and_string(use_level_stress[1])
                         + ", the mean life is "
                         + str(round(self.mean_life, 5))
                         + "\n"
@@ -5220,9 +5225,10 @@ class Fit_Weibull_Dual_Power:
     show_probability_plot : bool, object, optional
         True/False. Default is True. Provides a probability plot of the fitted
         ALT model. If an axes object is passed it will be used.
-    show_life_stress_plot : bool, object, optional
-        True/False. Default is True. Provides a life stress plot of the fitted
-        ALT model. If an axes object is passed it will be used.
+    show_life_stress_plot : bool, str, object, optional
+        If True the life-stress plot will be shown. To hide the life-stress
+        plot use False. To swap the axes and show a stress-life plot use
+        'swap'. If an axes handle is passed it will be used. Default is True.
     CI : float, optional
         Confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
@@ -5538,9 +5544,9 @@ class Fit_Weibull_Dual_Power:
             new_alphas.append(life_func(S1=stress[0], S2=stress[1]))
             stresses_for_groups_str.append(
                 str(
-                    str(round_to_decimals(stress[0]))
+                    round_and_string(stress[0])
                     + ", "
-                    + str(round_to_decimals(stress[1]))
+                    + round_and_string(stress[1])
                 )
             )
             if use_level_stress is not None:
@@ -5599,7 +5605,7 @@ class Fit_Weibull_Dual_Power:
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            frac_censored = round_to_decimals(len(right_censored) / n * 100)
+            frac_censored = len(right_censored) / n * 100
             if frac_censored % 1 < 1e-10:
                 frac_censored = int(frac_censored)
             colorprint(
@@ -5615,7 +5621,7 @@ class Fit_Weibull_Dual_Power:
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
-                str("(" + str(frac_censored) + "% right censored)"),
+                str("(" + round_and_string(frac_censored) + "% right censored)"),
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
@@ -5634,9 +5640,9 @@ class Fit_Weibull_Dual_Power:
                 print(
                     str(
                         "At the use level stress of "
-                        + str(round_to_decimals(use_level_stress[0]))
+                        + round_and_string(use_level_stress[0])
                         + ", "
-                        + str(round_to_decimals(use_level_stress[1]))
+                        + round_and_string(use_level_stress[1])
                         + ", the mean life is "
                         + str(round(self.mean_life, 5))
                         + "\n"
@@ -5729,9 +5735,10 @@ class Fit_Lognormal_Exponential:
     show_probability_plot : bool, object, optional
         True/False. Default is True. Provides a probability plot of the fitted
         ALT model. If an axes object is passed it will be used.
-    show_life_stress_plot : bool, object, optional
-        True/False. Default is True. Provides a life stress plot of the fitted
-        ALT model. If an axes object is passed it will be used.
+    show_life_stress_plot : bool, str, object, optional
+        If True the life-stress plot will be shown. To hide the life-stress
+        plot use False. To swap the axes and show a stress-life plot use
+        'swap'. If an axes handle is passed it will be used. Default is True.
     CI : float, optional
         Confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
@@ -6059,7 +6066,7 @@ class Fit_Lognormal_Exponential:
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            frac_censored = round_to_decimals(len(right_censored) / n * 100)
+            frac_censored = len(right_censored) / n * 100
             if frac_censored % 1 < 1e-10:
                 frac_censored = int(frac_censored)
             colorprint(
@@ -6077,7 +6084,7 @@ class Fit_Lognormal_Exponential:
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
-                str("(" + str(frac_censored) + "% right censored)"),
+                str("(" + round_and_string(frac_censored) + "% right censored)"),
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
@@ -6101,7 +6108,7 @@ class Fit_Lognormal_Exponential:
                 print(
                     str(
                         "At the use level stress of "
-                        + str(round_to_decimals(use_level_stress))
+                        + round_and_string(use_level_stress)
                         + ", the mean life is "
                         + str(round(self.mean_life, 5))
                         + "\n"
@@ -6194,9 +6201,10 @@ class Fit_Lognormal_Eyring:
     show_probability_plot : bool, object, optional
         True/False. Default is True. Provides a probability plot of the fitted
         ALT model. If an axes object is passed it will be used.
-    show_life_stress_plot : bool, object, optional
-        True/False. Default is True. Provides a life stress plot of the fitted
-        ALT model. If an axes object is passed it will be used.
+    show_life_stress_plot : bool, str, object, optional
+        If True the life-stress plot will be shown. To hide the life-stress
+        plot use False. To swap the axes and show a stress-life plot use
+        'swap'. If an axes handle is passed it will be used. Default is True.
     CI : float, optional
         Confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
@@ -6524,7 +6532,7 @@ class Fit_Lognormal_Eyring:
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            frac_censored = round_to_decimals(len(right_censored) / n * 100)
+            frac_censored = len(right_censored) / n * 100
             if frac_censored % 1 < 1e-10:
                 frac_censored = int(frac_censored)
             colorprint(
@@ -6538,7 +6546,7 @@ class Fit_Lognormal_Eyring:
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
-                str("(" + str(frac_censored) + "% right censored)"),
+                str("(" + round_and_string(frac_censored) + "% right censored)"),
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
@@ -6557,7 +6565,7 @@ class Fit_Lognormal_Eyring:
                 print(
                     str(
                         "At the use level stress of "
-                        + str(round_to_decimals(use_level_stress))
+                        + round_and_string(use_level_stress)
                         + ", the mean life is "
                         + str(round(self.mean_life, 5))
                         + "\n"
@@ -6649,9 +6657,10 @@ class Fit_Lognormal_Power:
     show_probability_plot : bool, object, optional
         True/False. Default is True. Provides a probability plot of the fitted
         ALT model. If an axes object is passed it will be used.
-    show_life_stress_plot : bool, object, optional
-        True/False. Default is True. Provides a life stress plot of the fitted
-        ALT model. If an axes object is passed it will be used.
+    show_life_stress_plot : bool, str, object, optional
+        If True the life-stress plot will be shown. To hide the life-stress
+        plot use False. To swap the axes and show a stress-life plot use
+        'swap'. If an axes handle is passed it will be used. Default is True.
     CI : float, optional
         Confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
@@ -6979,7 +6988,7 @@ class Fit_Lognormal_Power:
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            frac_censored = round_to_decimals(len(right_censored) / n * 100)
+            frac_censored = len(right_censored) / n * 100
             if frac_censored % 1 < 1e-10:
                 frac_censored = int(frac_censored)
             colorprint(
@@ -6993,7 +7002,7 @@ class Fit_Lognormal_Power:
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
-                str("(" + str(frac_censored) + "% right censored)"),
+                str("(" + round_and_string(frac_censored) + "% right censored)"),
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
@@ -7012,7 +7021,7 @@ class Fit_Lognormal_Power:
                 print(
                     str(
                         "At the use level stress of "
-                        + str(round_to_decimals(use_level_stress))
+                        + round_and_string(use_level_stress)
                         + ", the mean life is "
                         + str(round(self.mean_life, 5))
                         + "\n"
@@ -7115,9 +7124,10 @@ class Fit_Lognormal_Dual_Exponential:
     show_probability_plot : bool, object, optional
         True/False. Default is True. Provides a probability plot of the fitted
         ALT model. If an axes object is passed it will be used.
-    show_life_stress_plot : bool, object, optional
-        True/False. Default is True. Provides a life stress plot of the fitted
-        ALT model. If an axes object is passed it will be used.
+    show_life_stress_plot : bool, str, object, optional
+        If True the life-stress plot will be shown. To hide the life-stress
+        plot use False. To swap the axes and show a stress-life plot use
+        'swap'. If an axes handle is passed it will be used. Default is True.
     CI : float, optional
         Confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
@@ -7433,9 +7443,9 @@ class Fit_Lognormal_Dual_Exponential:
             new_mus.append(np.log(life_func(S1=stress[0], S2=stress[1])))
             stresses_for_groups_str.append(
                 str(
-                    str(round_to_decimals(stress[0]))
+                    round_and_string(stress[0])
                     + ", "
-                    + str(round_to_decimals(stress[1]))
+                    + round_and_string(stress[1])
                 )
             )
             if use_level_stress is not None:
@@ -7494,7 +7504,7 @@ class Fit_Lognormal_Dual_Exponential:
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            frac_censored = round_to_decimals(len(right_censored) / n * 100)
+            frac_censored = len(right_censored) / n * 100
             if frac_censored % 1 < 1e-10:
                 frac_censored = int(frac_censored)
             colorprint(
@@ -7512,7 +7522,7 @@ class Fit_Lognormal_Dual_Exponential:
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
-                str("(" + str(frac_censored) + "% right censored)"),
+                str("(" + round_and_string(frac_censored) + "% right censored)"),
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
@@ -7531,9 +7541,9 @@ class Fit_Lognormal_Dual_Exponential:
                 print(
                     str(
                         "At the use level stress of "
-                        + str(round_to_decimals(use_level_stress[0]))
+                        + round_and_string(use_level_stress[0])
                         + ", "
-                        + str(round_to_decimals(use_level_stress[1]))
+                        + round_and_string(use_level_stress[1])
                         + ", the mean life is "
                         + str(round(self.mean_life, 5))
                         + "\n"
@@ -7637,9 +7647,10 @@ class Fit_Lognormal_Power_Exponential:
     show_probability_plot : bool, object, optional
         True/False. Default is True. Provides a probability plot of the fitted
         ALT model. If an axes object is passed it will be used.
-    show_life_stress_plot : bool, object, optional
-        True/False. Default is True. Provides a life stress plot of the fitted
-        ALT model. If an axes object is passed it will be used.
+    show_life_stress_plot : bool, str, object, optional
+        If True the life-stress plot will be shown. To hide the life-stress
+        plot use False. To swap the axes and show a stress-life plot use
+        'swap'. If an axes handle is passed it will be used. Default is True.
     CI : float, optional
         Confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
@@ -7955,9 +7966,9 @@ class Fit_Lognormal_Power_Exponential:
             new_mus.append(np.log(life_func(S1=stress[0], S2=stress[1])))
             stresses_for_groups_str.append(
                 str(
-                    str(round_to_decimals(stress[0]))
+                    round_and_string(stress[0])
                     + ", "
-                    + str(round_to_decimals(stress[1]))
+                    + round_and_string(stress[1])
                 )
             )
             if use_level_stress is not None:
@@ -8016,7 +8027,7 @@ class Fit_Lognormal_Power_Exponential:
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            frac_censored = round_to_decimals(len(right_censored) / n * 100)
+            frac_censored = len(right_censored) / n * 100
             if frac_censored % 1 < 1e-10:
                 frac_censored = int(frac_censored)
             colorprint(
@@ -8034,7 +8045,7 @@ class Fit_Lognormal_Power_Exponential:
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
-                str("(" + str(frac_censored) + "% right censored)"),
+                str("(" + round_and_string(frac_censored) + "% right censored)"),
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
@@ -8053,9 +8064,9 @@ class Fit_Lognormal_Power_Exponential:
                 print(
                     str(
                         "At the use level stress of "
-                        + str(round_to_decimals(use_level_stress[0]))
+                        + round_and_string(use_level_stress[0])
                         + ", "
-                        + str(round_to_decimals(use_level_stress[1]))
+                        + round_and_string(use_level_stress[1])
                         + ", the mean life is "
                         + str(round(self.mean_life, 5))
                         + "\n"
@@ -8156,9 +8167,10 @@ class Fit_Lognormal_Dual_Power:
     show_probability_plot : bool, object, optional
         True/False. Default is True. Provides a probability plot of the fitted
         ALT model. If an axes object is passed it will be used.
-    show_life_stress_plot : bool, object, optional
-        True/False. Default is True. Provides a life stress plot of the fitted
-        ALT model. If an axes object is passed it will be used.
+    show_life_stress_plot : bool, str, object, optional
+        If True the life-stress plot will be shown. To hide the life-stress
+        plot use False. To swap the axes and show a stress-life plot use
+        'swap'. If an axes handle is passed it will be used. Default is True.
     CI : float, optional
         Confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
@@ -8474,9 +8486,9 @@ class Fit_Lognormal_Dual_Power:
             new_mus.append(np.log(life_func(S1=stress[0], S2=stress[1])))
             stresses_for_groups_str.append(
                 str(
-                    str(round_to_decimals(stress[0]))
+                    round_and_string(stress[0])
                     + ", "
-                    + str(round_to_decimals(stress[1]))
+                    + round_and_string(stress[1])
                 )
             )
             if use_level_stress is not None:
@@ -8535,7 +8547,7 @@ class Fit_Lognormal_Dual_Power:
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            frac_censored = round_to_decimals(len(right_censored) / n * 100)
+            frac_censored = len(right_censored) / n * 100
             if frac_censored % 1 < 1e-10:
                 frac_censored = int(frac_censored)
             colorprint(
@@ -8553,7 +8565,7 @@ class Fit_Lognormal_Dual_Power:
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
-                str("(" + str(frac_censored) + "% right censored)"),
+                str("(" + round_and_string(frac_censored) + "% right censored)"),
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
@@ -8572,9 +8584,9 @@ class Fit_Lognormal_Dual_Power:
                 print(
                     str(
                         "At the use level stress of "
-                        + str(round_to_decimals(use_level_stress[0]))
+                        + round_and_string(use_level_stress[0])
                         + ", "
-                        + str(round_to_decimals(use_level_stress[1]))
+                        + round_and_string(use_level_stress[1])
                         + ", the mean life is "
                         + str(round(self.mean_life, 5))
                         + "\n"
@@ -8670,9 +8682,10 @@ class Fit_Normal_Exponential:
     show_probability_plot : bool, object, optional
         True/False. Default is True. Provides a probability plot of the fitted
         ALT model. If an axes object is passed it will be used.
-    show_life_stress_plot : bool, object, optional
-        True/False. Default is True. Provides a life stress plot of the fitted
-        ALT model. If an axes object is passed it will be used.
+    show_life_stress_plot : bool, str, object, optional
+        If True the life-stress plot will be shown. To hide the life-stress
+        plot use False. To swap the axes and show a stress-life plot use
+        'swap'. If an axes handle is passed it will be used. Default is True.
     CI : float, optional
         Confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
@@ -9000,7 +9013,7 @@ class Fit_Normal_Exponential:
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            frac_censored = round_to_decimals(len(right_censored) / n * 100)
+            frac_censored = len(right_censored) / n * 100
             if frac_censored % 1 < 1e-10:
                 frac_censored = int(frac_censored)
             colorprint(
@@ -9016,7 +9029,7 @@ class Fit_Normal_Exponential:
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
-                str("(" + str(frac_censored) + "% right censored)"),
+                str("(" + round_and_string(frac_censored) + "% right censored)"),
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
@@ -9040,7 +9053,7 @@ class Fit_Normal_Exponential:
                 print(
                     str(
                         "At the use level stress of "
-                        + str(round_to_decimals(use_level_stress))
+                        + round_and_string(use_level_stress)
                         + ", the mean life is "
                         + str(round(self.mean_life, 5))
                         + "\n"
@@ -9130,9 +9143,10 @@ class Fit_Normal_Eyring:
     show_probability_plot : bool, object, optional
         True/False. Default is True. Provides a probability plot of the fitted
         ALT model. If an axes object is passed it will be used.
-    show_life_stress_plot : bool, object, optional
-        True/False. Default is True. Provides a life stress plot of the fitted
-        ALT model. If an axes object is passed it will be used.
+    show_life_stress_plot : bool, str, object, optional
+        If True the life-stress plot will be shown. To hide the life-stress
+        plot use False. To swap the axes and show a stress-life plot use
+        'swap'. If an axes handle is passed it will be used. Default is True.
     CI : float, optional
         Confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
@@ -9460,7 +9474,7 @@ class Fit_Normal_Eyring:
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            frac_censored = round_to_decimals(len(right_censored) / n * 100)
+            frac_censored = len(right_censored) / n * 100
             if frac_censored % 1 < 1e-10:
                 frac_censored = int(frac_censored)
             colorprint(
@@ -9474,7 +9488,7 @@ class Fit_Normal_Eyring:
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
-                str("(" + str(frac_censored) + "% right censored)"),
+                str("(" + round_and_string(frac_censored) + "% right censored)"),
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
@@ -9493,7 +9507,7 @@ class Fit_Normal_Eyring:
                 print(
                     str(
                         "At the use level stress of "
-                        + str(round_to_decimals(use_level_stress))
+                        + round_and_string(use_level_stress)
                         + ", the mean life is "
                         + str(round(self.mean_life, 5))
                         + "\n"
@@ -9580,9 +9594,10 @@ class Fit_Normal_Power:
     show_probability_plot : bool, object, optional
         True/False. Default is True. Provides a probability plot of the fitted
         ALT model. If an axes object is passed it will be used.
-    show_life_stress_plot : bool, object, optional
-        True/False. Default is True. Provides a life stress plot of the fitted
-        ALT model. If an axes object is passed it will be used.
+    show_life_stress_plot : bool, str, object, optional
+        If True the life-stress plot will be shown. To hide the life-stress
+        plot use False. To swap the axes and show a stress-life plot use
+        'swap'. If an axes handle is passed it will be used. Default is True.
     CI : float, optional
         Confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
@@ -9910,7 +9925,7 @@ class Fit_Normal_Power:
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            frac_censored = round_to_decimals(len(right_censored) / n * 100)
+            frac_censored = len(right_censored) / n * 100
             if frac_censored % 1 < 1e-10:
                 frac_censored = int(frac_censored)
             colorprint(
@@ -9924,7 +9939,7 @@ class Fit_Normal_Power:
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
-                str("(" + str(frac_censored) + "% right censored)"),
+                str("(" + round_and_string(frac_censored) + "% right censored)"),
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
@@ -9943,7 +9958,7 @@ class Fit_Normal_Power:
                 print(
                     str(
                         "At the use level stress of "
-                        + str(round_to_decimals(use_level_stress))
+                        + round_and_string(use_level_stress)
                         + ", the mean life is "
                         + str(round(self.mean_life, 5))
                         + "\n"
@@ -10041,9 +10056,10 @@ class Fit_Normal_Dual_Exponential:
     show_probability_plot : bool, object, optional
         True/False. Default is True. Provides a probability plot of the fitted
         ALT model. If an axes object is passed it will be used.
-    show_life_stress_plot : bool, object, optional
-        True/False. Default is True. Provides a life stress plot of the fitted
-        ALT model. If an axes object is passed it will be used.
+    show_life_stress_plot : bool, str, object, optional
+        If True the life-stress plot will be shown. To hide the life-stress
+        plot use False. To swap the axes and show a stress-life plot use
+        'swap'. If an axes handle is passed it will be used. Default is True.
     CI : float, optional
         Confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
@@ -10359,9 +10375,9 @@ class Fit_Normal_Dual_Exponential:
             new_mus.append(life_func(S1=stress[0], S2=stress[1]))
             stresses_for_groups_str.append(
                 str(
-                    str(round_to_decimals(stress[0]))
+                    round_and_string(stress[0])
                     + ", "
-                    + str(round_to_decimals(stress[1]))
+                    + round_and_string(stress[1])
                 )
             )
             if use_level_stress is not None:
@@ -10420,7 +10436,7 @@ class Fit_Normal_Dual_Exponential:
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            frac_censored = round_to_decimals(len(right_censored) / n * 100)
+            frac_censored = len(right_censored) / n * 100
             if frac_censored % 1 < 1e-10:
                 frac_censored = int(frac_censored)
             colorprint(
@@ -10438,7 +10454,7 @@ class Fit_Normal_Dual_Exponential:
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
-                str("(" + str(frac_censored) + "% right censored)"),
+                str("(" + round_and_string(frac_censored) + "% right censored)"),
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
@@ -10457,9 +10473,9 @@ class Fit_Normal_Dual_Exponential:
                 print(
                     str(
                         "At the use level stress of "
-                        + str(round_to_decimals(use_level_stress[0]))
+                        + round_and_string(use_level_stress[0])
                         + ", "
-                        + str(round_to_decimals(use_level_stress[1]))
+                        + round_and_string(use_level_stress[1])
                         + ", the mean life is "
                         + str(round(self.mean_life, 5))
                         + "\n"
@@ -10562,9 +10578,10 @@ class Fit_Normal_Power_Exponential:
     show_probability_plot : bool, object, optional
         True/False. Default is True. Provides a probability plot of the fitted
         ALT model. If an axes object is passed it will be used.
-    show_life_stress_plot : bool, object, optional
-        True/False. Default is True. Provides a life stress plot of the fitted
-        ALT model. If an axes object is passed it will be used.
+    show_life_stress_plot : bool, str, object, optional
+        If True the life-stress plot will be shown. To hide the life-stress
+        plot use False. To swap the axes and show a stress-life plot use
+        'swap'. If an axes handle is passed it will be used. Default is True.
     CI : float, optional
         Confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
@@ -10880,9 +10897,9 @@ class Fit_Normal_Power_Exponential:
             new_mus.append(life_func(S1=stress[0], S2=stress[1]))
             stresses_for_groups_str.append(
                 str(
-                    str(round_to_decimals(stress[0]))
+                    round_and_string(stress[0])
                     + ", "
-                    + str(round_to_decimals(stress[1]))
+                    + round_and_string(stress[1])
                 )
             )
             if use_level_stress is not None:
@@ -10941,7 +10958,7 @@ class Fit_Normal_Power_Exponential:
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            frac_censored = round_to_decimals(len(right_censored) / n * 100)
+            frac_censored = len(right_censored) / n * 100
             if frac_censored % 1 < 1e-10:
                 frac_censored = int(frac_censored)
             colorprint(
@@ -10959,7 +10976,7 @@ class Fit_Normal_Power_Exponential:
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
-                str("(" + str(frac_censored) + "% right censored)"),
+                str("(" + round_and_string(frac_censored) + "% right censored)"),
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
@@ -10978,9 +10995,9 @@ class Fit_Normal_Power_Exponential:
                 print(
                     str(
                         "At the use level stress of "
-                        + str(round_to_decimals(use_level_stress[0]))
+                        + round_and_string(use_level_stress[0])
                         + ", "
-                        + str(round_to_decimals(use_level_stress[1]))
+                        + round_and_string(use_level_stress[1])
                         + ", the mean life is "
                         + str(round(self.mean_life, 5))
                         + "\n"
@@ -11080,9 +11097,10 @@ class Fit_Normal_Dual_Power:
     show_probability_plot : bool, object, optional
         True/False. Default is True. Provides a probability plot of the fitted
         ALT model. If an axes object is passed it will be used.
-    show_life_stress_plot : bool, object, optional
-        True/False. Default is True. Provides a life stress plot of the fitted
-        ALT model. If an axes object is passed it will be used.
+    show_life_stress_plot : bool, str, object, optional
+        If True the life-stress plot will be shown. To hide the life-stress
+        plot use False. To swap the axes and show a stress-life plot use
+        'swap'. If an axes handle is passed it will be used. Default is True.
     CI : float, optional
         Confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
@@ -11398,9 +11416,9 @@ class Fit_Normal_Dual_Power:
             new_mus.append(life_func(S1=stress[0], S2=stress[1]))
             stresses_for_groups_str.append(
                 str(
-                    str(round_to_decimals(stress[0]))
+                    round_and_string(stress[0])
                     + ", "
-                    + str(round_to_decimals(stress[1]))
+                    + round_and_string(stress[1])
                 )
             )
             if use_level_stress is not None:
@@ -11459,7 +11477,7 @@ class Fit_Normal_Dual_Power:
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            frac_censored = round_to_decimals(len(right_censored) / n * 100)
+            frac_censored = len(right_censored) / n * 100
             if frac_censored % 1 < 1e-10:
                 frac_censored = int(frac_censored)
             colorprint(
@@ -11475,7 +11493,7 @@ class Fit_Normal_Dual_Power:
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
-                str("(" + str(frac_censored) + "% right censored)"),
+                str("(" + round_and_string(frac_censored) + "% right censored)"),
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
@@ -11494,9 +11512,9 @@ class Fit_Normal_Dual_Power:
                 print(
                     str(
                         "At the use level stress of "
-                        + str(round_to_decimals(use_level_stress[0]))
+                        + round_and_string(use_level_stress[0])
                         + ", "
-                        + str(round_to_decimals(use_level_stress[1]))
+                        + round_and_string(use_level_stress[1])
                         + ", the mean life is "
                         + str(round(self.mean_life, 5))
                         + "\n"
@@ -11587,9 +11605,10 @@ class Fit_Exponential_Exponential:
     show_probability_plot : bool, object, optional
         True/False. Default is True. Provides a probability plot of the fitted
         ALT model. If an axes object is passed it will be used.
-    show_life_stress_plot : bool, object, optional
-        True/False. Default is True. Provides a life stress plot of the fitted
-        ALT model. If an axes object is passed it will be used.
+    show_life_stress_plot : bool, str, object, optional
+        If True the life-stress plot will be shown. To hide the life-stress
+        plot use False. To swap the axes and show a stress-life plot use
+        'swap'. If an axes handle is passed it will be used. Default is True.
     CI : float, optional
         Confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
@@ -11893,7 +11912,7 @@ class Fit_Exponential_Exponential:
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            frac_censored = round_to_decimals(len(right_censored) / n * 100)
+            frac_censored = len(right_censored) / n * 100
             if frac_censored % 1 < 1e-10:
                 frac_censored = int(frac_censored)
             colorprint(
@@ -11911,7 +11930,7 @@ class Fit_Exponential_Exponential:
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
-                str("(" + str(frac_censored) + "% right censored)"),
+                str("(" + round_and_string(frac_censored) + "% right censored)"),
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
@@ -11935,7 +11954,7 @@ class Fit_Exponential_Exponential:
                 print(
                     str(
                         "At the use level stress of "
-                        + str(round_to_decimals(use_level_stress))
+                        + round_and_string(use_level_stress)
                         + ", the mean life is "
                         + str(round(self.mean_life, 5))
                         + "\n"
@@ -12019,9 +12038,10 @@ class Fit_Exponential_Eyring:
     show_probability_plot : bool, object, optional
         True/False. Default is True. Provides a probability plot of the fitted
         ALT model. If an axes object is passed it will be used.
-    show_life_stress_plot : bool, object, optional
-        True/False. Default is True. Provides a life stress plot of the fitted
-        ALT model. If an axes object is passed it will be used.
+    show_life_stress_plot : bool, str, object, optional
+        If True the life-stress plot will be shown. To hide the life-stress
+        plot use False. To swap the axes and show a stress-life plot use
+        'swap'. If an axes handle is passed it will be used. Default is True.
     CI : float, optional
         Confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
@@ -12325,7 +12345,7 @@ class Fit_Exponential_Eyring:
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            frac_censored = round_to_decimals(len(right_censored) / n * 100)
+            frac_censored = len(right_censored) / n * 100
             if frac_censored % 1 < 1e-10:
                 frac_censored = int(frac_censored)
             colorprint(
@@ -12341,7 +12361,7 @@ class Fit_Exponential_Eyring:
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
-                str("(" + str(frac_censored) + "% right censored)"),
+                str("(" + round_and_string(frac_censored) + "% right censored)"),
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
@@ -12360,7 +12380,7 @@ class Fit_Exponential_Eyring:
                 print(
                     str(
                         "At the use level stress of "
-                        + str(round_to_decimals(use_level_stress))
+                        + round_and_string(use_level_stress)
                         + ", the mean life is "
                         + str(round(self.mean_life, 5))
                         + "\n"
@@ -12443,9 +12463,10 @@ class Fit_Exponential_Power:
     show_probability_plot : bool, object, optional
         True/False. Default is True. Provides a probability plot of the fitted
         ALT model. If an axes object is passed it will be used.
-    show_life_stress_plot : bool, object, optional
-        True/False. Default is True. Provides a life stress plot of the fitted
-        ALT model. If an axes object is passed it will be used.
+    show_life_stress_plot : bool, str, object, optional
+        If True the life-stress plot will be shown. To hide the life-stress
+        plot use False. To swap the axes and show a stress-life plot use
+        'swap'. If an axes handle is passed it will be used. Default is True.
     CI : float, optional
         Confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
@@ -12749,7 +12770,7 @@ class Fit_Exponential_Power:
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            frac_censored = round_to_decimals(len(right_censored) / n * 100)
+            frac_censored = len(right_censored) / n * 100
             if frac_censored % 1 < 1e-10:
                 frac_censored = int(frac_censored)
             colorprint(
@@ -12765,7 +12786,7 @@ class Fit_Exponential_Power:
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
-                str("(" + str(frac_censored) + "% right censored)"),
+                str("(" + round_and_string(frac_censored) + "% right censored)"),
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
@@ -12784,7 +12805,7 @@ class Fit_Exponential_Power:
                 print(
                     str(
                         "At the use level stress of "
-                        + str(round_to_decimals(use_level_stress))
+                        + round_and_string(use_level_stress)
                         + ", the mean life is "
                         + str(round(self.mean_life, 5))
                         + "\n"
@@ -12880,9 +12901,10 @@ class Fit_Exponential_Dual_Exponential:
     show_probability_plot : bool, object, optional
         True/False. Default is True. Provides a probability plot of the fitted
         ALT model. If an axes object is passed it will be used.
-    show_life_stress_plot : bool, object, optional
-        True/False. Default is True. Provides a life stress plot of the fitted
-        ALT model. If an axes object is passed it will be used.
+    show_life_stress_plot : bool, str, object, optional
+        If True the life-stress plot will be shown. To hide the life-stress
+        plot use False. To swap the axes and show a stress-life plot use
+        'swap'. If an axes handle is passed it will be used. Default is True.
     CI : float, optional
         Confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
@@ -13177,9 +13199,9 @@ class Fit_Exponential_Dual_Exponential:
             new_alphas.append(life_func(S1=stress[0], S2=stress[1]))
             stresses_for_groups_str.append(
                 str(
-                    str(round_to_decimals(stress[0]))
+                    round_and_string(stress[0])
                     + ", "
-                    + str(round_to_decimals(stress[1]))
+                    + round_and_string(stress[1])
                 )
             )
             if use_level_stress is not None:
@@ -13238,7 +13260,7 @@ class Fit_Exponential_Dual_Exponential:
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            frac_censored = round_to_decimals(len(right_censored) / n * 100)
+            frac_censored = len(right_censored) / n * 100
             if frac_censored % 1 < 1e-10:
                 frac_censored = int(frac_censored)
             colorprint(
@@ -13256,7 +13278,7 @@ class Fit_Exponential_Dual_Exponential:
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
-                str("(" + str(frac_censored) + "% right censored)"),
+                str("(" + round_and_string(frac_censored) + "% right censored)"),
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
@@ -13275,9 +13297,9 @@ class Fit_Exponential_Dual_Exponential:
                 print(
                     str(
                         "At the use level stress of "
-                        + str(round_to_decimals(use_level_stress[0]))
+                        + round_and_string(use_level_stress[0])
                         + ", "
-                        + str(round_to_decimals(use_level_stress[1]))
+                        + round_and_string(use_level_stress[1])
                         + ", the mean life is "
                         + str(round(self.mean_life, 5))
                         + "\n"
@@ -13378,9 +13400,10 @@ class Fit_Exponential_Power_Exponential:
     show_probability_plot : bool, object, optional
         True/False. Default is True. Provides a probability plot of the fitted
         ALT model. If an axes object is passed it will be used.
-    show_life_stress_plot : bool, object, optional
-        True/False. Default is True. Provides a life stress plot of the fitted
-        ALT model. If an axes object is passed it will be used.
+    show_life_stress_plot : bool, str, object, optional
+        If True the life-stress plot will be shown. To hide the life-stress
+        plot use False. To swap the axes and show a stress-life plot use
+        'swap'. If an axes handle is passed it will be used. Default is True.
     CI : float, optional
         Confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
@@ -13675,9 +13698,9 @@ class Fit_Exponential_Power_Exponential:
             new_alphas.append(life_func(S1=stress[0], S2=stress[1]))
             stresses_for_groups_str.append(
                 str(
-                    str(round_to_decimals(stress[0]))
+                    round_and_string(stress[0])
                     + ", "
-                    + str(round_to_decimals(stress[1]))
+                    + round_and_string(stress[1])
                 )
             )
             if use_level_stress is not None:
@@ -13736,7 +13759,7 @@ class Fit_Exponential_Power_Exponential:
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            frac_censored = round_to_decimals(len(right_censored) / n * 100)
+            frac_censored = len(right_censored) / n * 100
             if frac_censored % 1 < 1e-10:
                 frac_censored = int(frac_censored)
             colorprint(
@@ -13754,7 +13777,7 @@ class Fit_Exponential_Power_Exponential:
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
-                str("(" + str(frac_censored) + "% right censored)"),
+                str("(" + round_and_string(frac_censored) + "% right censored)"),
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
@@ -13773,9 +13796,9 @@ class Fit_Exponential_Power_Exponential:
                 print(
                     str(
                         "At the use level stress of "
-                        + str(round_to_decimals(use_level_stress[0]))
+                        + round_and_string(use_level_stress[0])
                         + ", "
-                        + str(round_to_decimals(use_level_stress[1]))
+                        + round_and_string(use_level_stress[1])
                         + ", the mean life is "
                         + str(round(self.mean_life, 5))
                         + "\n"
@@ -13873,9 +13896,10 @@ class Fit_Exponential_Dual_Power:
     show_probability_plot : bool, object, optional
         True/False. Default is True. Provides a probability plot of the fitted
         ALT model. If an axes object is passed it will be used.
-    show_life_stress_plot : bool, object, optional
-        True/False. Default is True. Provides a life stress plot of the fitted
-        ALT model. If an axes object is passed it will be used.
+    show_life_stress_plot : bool, str, object, optional
+        If True the life-stress plot will be shown. To hide the life-stress
+        plot use False. To swap the axes and show a stress-life plot use
+        'swap'. If an axes handle is passed it will be used. Default is True.
     CI : float, optional
         Confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
@@ -14170,9 +14194,9 @@ class Fit_Exponential_Dual_Power:
             new_alphas.append(life_func(S1=stress[0], S2=stress[1]))
             stresses_for_groups_str.append(
                 str(
-                    str(round_to_decimals(stress[0]))
+                    round_and_string(stress[0])
                     + ", "
-                    + str(round_to_decimals(stress[1]))
+                    + round_and_string(stress[1])
                 )
             )
             if use_level_stress is not None:
@@ -14231,7 +14255,7 @@ class Fit_Exponential_Dual_Power:
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            frac_censored = round_to_decimals(len(right_censored) / n * 100)
+            frac_censored = len(right_censored) / n * 100
             if frac_censored % 1 < 1e-10:
                 frac_censored = int(frac_censored)
             colorprint(
@@ -14249,7 +14273,7 @@ class Fit_Exponential_Dual_Power:
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
-                str("(" + str(frac_censored) + "% right censored)"),
+                str("(" + round_and_string(frac_censored) + "% right censored)"),
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
@@ -14268,9 +14292,9 @@ class Fit_Exponential_Dual_Power:
                 print(
                     str(
                         "At the use level stress of "
-                        + str(round_to_decimals(use_level_stress[0]))
+                        + round_and_string(use_level_stress[0])
                         + ", "
-                        + str(round_to_decimals(use_level_stress[1]))
+                        + round_and_string(use_level_stress[1])
                         + ", the mean life is "
                         + str(round(self.mean_life, 5))
                         + "\n"

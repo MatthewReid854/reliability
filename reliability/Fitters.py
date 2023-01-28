@@ -62,9 +62,8 @@ from reliability.Distributions import (
 from reliability.Nonparametric import KaplanMeier
 from reliability.Probability_plotting import plotting_positions
 from reliability.Utils import (
-    round_to_decimals,
+    round_and_string,
     anderson_darling,
-    fitters_input_checking,
     fitters_input_checking,
     colorprint,
     least_squares,
@@ -1321,13 +1320,13 @@ class Fit_Everything:
 
         # print the results
         if print_results is True:  # printing occurs by default
-            frac_cens = round_to_decimals(self._frac_cens * 100)
+            frac_censored = self._frac_cens * 100
             colorprint("Results from Fit_Everything:", bold=True, underline=True)
             print("Analysis method:", method)
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
-                str("(" + str(frac_cens) + "% right censored)"),
+                str("(" + round_and_string(frac_censored) + "% right censored)"),
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
@@ -1970,10 +1969,10 @@ class Fit_Weibull_2P:
     CI : float, optional
         confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
-    CI_type : str, None, optional
+    CI_type : str, optional
         This is the confidence bounds on time or reliability shown on the plot.
-        Use None to turn off the confidence intervals. Must be either 'time',
-        'reliability', or None. Default is 'time'. Some flexibility in names is
+        Use 'none' to turn off the confidence intervals. Must be either 'time',
+        'reliability', or 'none'. Default is 'time'. Some flexibility in names is
         allowed (eg. 't', 'time', 'r', 'rel', 'reliability' are all valid).
     force_beta : float, int, optional
         Used to specify the beta value if you need to force beta to be a certain
@@ -2294,7 +2293,7 @@ class Fit_Weibull_2P:
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            frac_censored = round_to_decimals(len(right_censored) / n * 100)
+            frac_censored = len(right_censored) / n * 100
             if frac_censored % 1 < 1e-10:
                 frac_censored = int(frac_censored)
             colorprint(
@@ -2308,7 +2307,7 @@ class Fit_Weibull_2P:
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
-                str("(" + str(frac_censored) + "% right censored)"),
+                str("(" + round_and_string(frac_censored) + "% right censored)"),
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
@@ -2394,10 +2393,10 @@ class Fit_Weibull_2P_grouped:
     CI : float, optional
         confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
-    CI_type : str, None, optional
+    CI_type : str, optional
         This is the confidence bounds on time or reliability shown on the plot.
-        Use None to turn off the confidence intervals. Must be either 'time',
-        'reliability', or None. Default is 'time'. Some flexibility in names is
+        Use 'none' to turn off the confidence intervals. Must be either 'time',
+        'reliability', or 'none'. Default is 'time'. Some flexibility in names is
         allowed (eg. 't', 'time', 'r', 'rel', 'reliability' are all valid).
     force_beta : float, int, optional
         Used to specify the beta value if you need to force beta to be a certain
@@ -2972,7 +2971,7 @@ class Fit_Weibull_2P_grouped:
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            frac_censored = round_to_decimals(sum(right_censored_qty) / n * 100)
+            frac_censored = sum(right_censored_qty) / n * 100
             if frac_censored % 1 < 1e-10:
                 frac_censored = int(frac_censored)
             colorprint(
@@ -2988,7 +2987,7 @@ class Fit_Weibull_2P_grouped:
             print(
                 "Failures / Right censored:",
                 str(str(sum(failure_qty)) + "/" + str(sum(right_censored_qty))),
-                str("(" + str(frac_censored) + "% right censored)"),
+                str("(" + round_and_string(frac_censored) + "% right censored)"),
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
@@ -3078,10 +3077,10 @@ class Fit_Weibull_3P:
     CI : float, optional
         confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
-    CI_type : str, None, optional
+    CI_type : str, optional
         This is the confidence bounds on time or reliability shown on the plot.
-        Use None to turn off the confidence intervals. Must be either 'time',
-        'reliability', or None. Default is 'time'. Some flexibility in names is
+        Use 'none' to turn off the confidence intervals. Must be either 'time',
+        'reliability', or 'none'. Default is 'time'. Some flexibility in names is
         allowed (eg. 't', 'time', 'r', 'rel', 'reliability' are all valid).
     quantiles : bool, str, list, array, None, optional
         quantiles (y-values) to produce a table of quantiles failed with
@@ -3409,7 +3408,7 @@ class Fit_Weibull_3P:
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            frac_censored = round_to_decimals(len(right_censored) / n * 100)
+            frac_censored = len(right_censored) / n * 100
             if frac_censored % 1 < 1e-10:
                 frac_censored = int(frac_censored)
             colorprint(
@@ -3423,7 +3422,7 @@ class Fit_Weibull_3P:
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
-                str("(" + str(frac_censored) + "% right censored)"),
+                str("(" + round_and_string(frac_censored) + "% right censored)"),
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
@@ -3460,11 +3459,11 @@ class Fit_Weibull_3P:
                 fig.axes[0].legend_.get_texts()[0].set_text(
                     str(
                         "Fitted Weibull_3P\n(α="
-                        + str(round_to_decimals(self.alpha, dec))
+                        + round_and_string(self.alpha, dec)
                         + ", β="
-                        + str(round_to_decimals(self.beta, dec))
+                        + round_and_string(self.beta, dec)
                         + ", γ="
-                        + str(round_to_decimals(self.gamma, dec))
+                        + round_and_string(self.gamma, dec)
                         + ")"
                     )
                 )
@@ -3920,7 +3919,7 @@ class Fit_Weibull_Mixture:
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            frac_censored = round_to_decimals(len(right_censored) / n * 100)
+            frac_censored = len(right_censored) / n * 100
             if frac_censored % 1 < 1e-10:
                 frac_censored = int(frac_censored)
             colorprint(
@@ -3934,7 +3933,7 @@ class Fit_Weibull_Mixture:
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
-                str("(" + str(frac_censored) + "% right censored)"),
+                str("(" + round_and_string(frac_censored) + "% right censored)"),
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
@@ -3959,17 +3958,17 @@ class Fit_Weibull_Mixture:
             else:
                 label_str = str(
                     r"Fitted Weibull MM "
-                    + str(round_to_decimals(self.proportion_1, dec))
+                    + round_and_string(self.proportion_1, dec)
                     + r" ($\alpha_1=$"
-                    + str(round_to_decimals(self.alpha_1, dec))
+                    + round_and_string(self.alpha_1, dec)
                     + r", $\beta_1=$"
-                    + str(round_to_decimals(self.beta_1, dec))
+                    + round_and_string(self.beta_1, dec)
                     + ")+\n                             "
-                    + str(round_to_decimals(self.proportion_2, dec))
+                    + round_and_string(self.proportion_2, dec)
                     + r" ($\alpha_2=$"
-                    + str(round_to_decimals(self.alpha_2, dec))
+                    + round_and_string(self.alpha_2, dec)
                     + r", $\beta_2=$"
-                    + str(round_to_decimals(self.beta_2, dec))
+                    + round_and_string(self.beta_2, dec)
                     + ")"
                 )
             xvals = np.logspace(
@@ -4368,7 +4367,7 @@ class Fit_Weibull_CR:
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            frac_censored = round_to_decimals(len(right_censored) / n * 100)
+            frac_censored = len(right_censored) / n * 100
             if frac_censored % 1 < 1e-10:
                 frac_censored = int(frac_censored)
             colorprint(
@@ -4382,7 +4381,7 @@ class Fit_Weibull_CR:
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
-                str("(" + str(frac_censored) + "% right censored)"),
+                str("(" + round_and_string(frac_censored) + "% right censored)"),
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
@@ -4408,14 +4407,14 @@ class Fit_Weibull_CR:
                 label_str = str(
                     r"Fitted Weibull CR "
                     + r" ($\alpha_1=$"
-                    + str(round_to_decimals(self.alpha_1, dec))
+                    + round_and_string(self.alpha_1, dec)
                     + r", $\beta_1=$"
-                    + str(round_to_decimals(self.beta_1, dec))
+                    + round_and_string(self.beta_1, dec)
                     + ") ×\n                            "
                     + r" ($\alpha_2=$"
-                    + str(round_to_decimals(self.alpha_2, dec))
+                    + round_and_string(self.alpha_2, dec)
                     + r", $\beta_2=$"
-                    + str(round_to_decimals(self.beta_2, dec))
+                    + round_and_string(self.beta_2, dec)
                     + ")"
                 )
             xvals = np.logspace(
@@ -4738,7 +4737,7 @@ class Fit_Weibull_DSZI:
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            frac_censored = round_to_decimals(len(right_censored) / n * 100)
+            frac_censored = len(right_censored) / n * 100
             if frac_censored % 1 < 1e-10:
                 frac_censored = int(frac_censored)
             colorprint(
@@ -4752,7 +4751,7 @@ class Fit_Weibull_DSZI:
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
-                str("(" + str(frac_censored) + "% right censored)"),
+                str("(" + round_and_string(frac_censored) + "% right censored)"),
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
@@ -4782,13 +4781,13 @@ class Fit_Weibull_DSZI:
                 label_str = str(
                     r"Fitted Weibull_DSZI"
                     + r" ($\alpha=$"
-                    + str(round_to_decimals(self.alpha, dec))
+                    + round_and_string(self.alpha, dec)
                     + r", $\beta=$"
-                    + str(round_to_decimals(self.beta, dec))
+                    + round_and_string(self.beta, dec)
                     + r", $DS=$"
-                    + str(round_to_decimals(self.DS, dec))
+                    + round_and_string(self.DS, dec)
                     + r", $ZI=$"
-                    + str(round_to_decimals(self.ZI, dec))
+                    + round_and_string(self.ZI, dec)
                     + ")"
                 )
             plot_points(
@@ -5081,7 +5080,7 @@ class Fit_Weibull_DS:
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            frac_censored = round_to_decimals(len(right_censored) / n * 100)
+            frac_censored = len(right_censored) / n * 100
             if frac_censored % 1 < 1e-10:
                 frac_censored = int(frac_censored)
             colorprint(
@@ -5095,7 +5094,7 @@ class Fit_Weibull_DS:
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
-                str("(" + str(frac_censored) + "% right censored)"),
+                str("(" + round_and_string(frac_censored) + "% right censored)"),
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
@@ -5121,11 +5120,11 @@ class Fit_Weibull_DS:
                 label_str = str(
                     r"Fitted Weibull_DS"
                     + r" ($\alpha=$"
-                    + str(round_to_decimals(self.alpha, dec))
+                    + round_and_string(self.alpha, dec)
                     + r", $\beta=$"
-                    + str(round_to_decimals(self.beta, dec))
+                    + round_and_string(self.beta, dec)
                     + r", $DS=$"
-                    + str(round_to_decimals(self.DS, dec))
+                    + round_and_string(self.DS, dec)
                     + ")"
                 )
             xvals = np.logspace(
@@ -5408,7 +5407,7 @@ class Fit_Weibull_ZI:
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            frac_censored = round_to_decimals(len(right_censored) / n * 100)
+            frac_censored = len(right_censored) / n * 100
             if frac_censored % 1 < 1e-10:
                 frac_censored = int(frac_censored)
             colorprint(
@@ -5422,7 +5421,7 @@ class Fit_Weibull_ZI:
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
-                str("(" + str(frac_censored) + "% right censored)"),
+                str("(" + round_and_string(frac_censored) + "% right censored)"),
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
@@ -5451,11 +5450,11 @@ class Fit_Weibull_ZI:
                 label_str = str(
                     r"Fitted Weibull_ZI"
                     + r" ($\alpha=$"
-                    + str(round_to_decimals(self.alpha, dec))
+                    + round_and_string(self.alpha, dec)
                     + r", $\beta=$"
-                    + str(round_to_decimals(self.beta, dec))
+                    + round_and_string(self.beta, dec)
                     + r", $ZI=$"
-                    + str(round_to_decimals(self.ZI, dec))
+                    + round_and_string(self.ZI, dec)
                     + ")"
                 )
             plot_points(
@@ -5787,7 +5786,7 @@ class Fit_Exponential_1P:
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            frac_censored = round_to_decimals(len(right_censored) / n * 100)
+            frac_censored = len(right_censored) / n * 100
             if frac_censored % 1 < 1e-10:
                 frac_censored = int(frac_censored)
             colorprint(
@@ -5801,7 +5800,7 @@ class Fit_Exponential_1P:
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
-                str("(" + str(frac_censored) + "% right censored)"),
+                str("(" + round_and_string(frac_censored) + "% right censored)"),
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
@@ -6179,7 +6178,7 @@ class Fit_Exponential_2P:
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            frac_censored = round_to_decimals(len(right_censored) / n * 100)
+            frac_censored = len(right_censored) / n * 100
             if frac_censored % 1 < 1e-10:
                 frac_censored = int(frac_censored)
             colorprint(
@@ -6193,7 +6192,7 @@ class Fit_Exponential_2P:
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
-                str("(" + str(frac_censored) + "% right censored)"),
+                str("(" + round_and_string(frac_censored) + "% right censored)"),
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
@@ -6289,10 +6288,10 @@ class Fit_Normal_2P:
     CI : float, optional
         confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
-    CI_type : str, None, optional
+    CI_type : str, optional
         This is the confidence bounds on time or reliability shown on the plot.
-        Use None to turn off the confidence intervals. Must be either 'time',
-        'reliability', or None. Default is 'time'. Some flexibility in names is
+        Use 'none' to turn off the confidence intervals. Must be either 'time',
+        'reliability', or 'none'. Default is 'time'. Some flexibility in names is
         allowed (eg. 't', 'time', 'r', 'rel', 'reliability' are all valid).
     force_sigma : float, int, optional
         Used to specify the beta value if you need to force sigma to be a
@@ -6614,7 +6613,7 @@ class Fit_Normal_2P:
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            frac_censored = round_to_decimals(len(right_censored) / n * 100)
+            frac_censored = len(right_censored) / n * 100
             if frac_censored % 1 < 1e-10:
                 frac_censored = int(frac_censored)
             colorprint(
@@ -6628,7 +6627,7 @@ class Fit_Normal_2P:
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
-                str("(" + str(frac_censored) + "% right censored)"),
+                str("(" + round_and_string(frac_censored) + "% right censored)"),
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
@@ -6722,10 +6721,10 @@ class Fit_Gumbel_2P:
     CI : float, optional
         confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
-    CI_type : str, None, optional
+    CI_type : str, optional
         This is the confidence bounds on time or reliability shown on the plot.
-        Use None to turn off the confidence intervals. Must be either 'time',
-        'reliability', or None. Default is 'time'. Some flexibility in names is
+        Use 'none' to turn off the confidence intervals. Must be either 'time',
+        'reliability', or 'none'. Default is 'time'. Some flexibility in names is
         allowed (eg. 't', 'time', 'r', 'rel', 'reliability' are all valid).
     quantiles : bool, str, list, array, None, optional
         quantiles (y-values) to produce a table of quantiles failed with
@@ -6990,7 +6989,7 @@ class Fit_Gumbel_2P:
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            frac_censored = round_to_decimals(len(right_censored) / n * 100)
+            frac_censored = len(right_censored) / n * 100
             if frac_censored % 1 < 1e-10:
                 frac_censored = int(frac_censored)
             colorprint(
@@ -7004,7 +7003,7 @@ class Fit_Gumbel_2P:
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
-                str("(" + str(frac_censored) + "% right censored)"),
+                str("(" + round_and_string(frac_censored) + "% right censored)"),
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
@@ -7088,10 +7087,10 @@ class Fit_Lognormal_2P:
     CI : float, optional
         confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
-    CI_type : str, None, optional
+    CI_type : str, optional
         This is the confidence bounds on time or reliability shown on the plot.
-        Use None to turn off the confidence intervals. Must be either 'time',
-        'reliability', or None. Default is 'time'. Some flexibility in names is
+        Use 'none' to turn off the confidence intervals. Must be either 'time',
+        'reliability', or 'none'. Default is 'time'. Some flexibility in names is
         allowed (eg. 't', 'time', 'r', 'rel', 'reliability' are all valid).
     force_sigma : float, int, optional
         Used to specify the sigma value if you need to force sigma to be a
@@ -7409,7 +7408,7 @@ class Fit_Lognormal_2P:
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            frac_censored = round_to_decimals(len(right_censored) / n * 100)
+            frac_censored = len(right_censored) / n * 100
             if frac_censored % 1 < 1e-10:
                 frac_censored = int(frac_censored)
             colorprint(
@@ -7423,7 +7422,7 @@ class Fit_Lognormal_2P:
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
-                str("(" + str(frac_censored) + "% right censored)"),
+                str("(" + round_and_string(frac_censored) + "% right censored)"),
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
@@ -7516,10 +7515,10 @@ class Fit_Lognormal_3P:
     CI : float, optional
         confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
-    CI_type : str, None, optional
+    CI_type : str, optional
         This is the confidence bounds on time or reliability shown on the plot.
-        Use None to turn off the confidence intervals. Must be either 'time',
-        'reliability', or None. Default is 'time'. Some flexibility in names is
+        Use 'none' to turn off the confidence intervals. Must be either 'time',
+        'reliability', or 'none'. Default is 'time'. Some flexibility in names is
         allowed (eg. 't', 'time', 'r', 'rel', 'reliability' are all valid).
     quantiles : bool, str, list, array, None, optional
         quantiles (y-values) to produce a table of quantiles failed with
@@ -7849,7 +7848,7 @@ class Fit_Lognormal_3P:
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            frac_censored = round_to_decimals(len(right_censored) / n * 100)
+            frac_censored = len(right_censored) / n * 100
             if frac_censored % 1 < 1e-10:
                 frac_censored = int(frac_censored)
             colorprint(
@@ -7863,7 +7862,7 @@ class Fit_Lognormal_3P:
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
-                str("(" + str(frac_censored) + "% right censored)"),
+                str("(" + round_and_string(frac_censored) + "% right censored)"),
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
@@ -7900,11 +7899,11 @@ class Fit_Lognormal_3P:
                 fig.axes[0].legend_.get_texts()[0].set_text(
                     str(
                         "Fitted Lognormal_3P\n(μ="
-                        + str(round_to_decimals(self.mu, dec))
+                        + round_and_string(self.mu, dec)
                         + ", σ="
-                        + str(round_to_decimals(self.sigma, dec))
+                        + round_and_string(self.sigma, dec)
                         + ", γ="
-                        + str(round_to_decimals(self.gamma, dec))
+                        + round_and_string(self.gamma, dec)
                         + ")"
                     )
                 )
@@ -7962,10 +7961,10 @@ class Fit_Gamma_2P:
     CI : float, optional
         confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
-    CI_type : str, None, optional
+    CI_type : str, optional
         This is the confidence bounds on time or reliability shown on the plot.
-        Use None to turn off the confidence intervals. Must be either 'time',
-        'reliability', or None. Default is 'time'. Some flexibility in names is
+        Use 'none' to turn off the confidence intervals. Must be either 'time',
+        'reliability', or 'none'. Default is 'time'. Some flexibility in names is
         allowed (eg. 't', 'time', 'r', 'rel', 'reliability' are all valid).
     quantiles : bool, str, list, array, None, optional
         quantiles (y-values) to produce a table of quantiles failed with
@@ -8267,7 +8266,7 @@ class Fit_Gamma_2P:
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            frac_censored = round_to_decimals(len(right_censored) / n * 100)
+            frac_censored = len(right_censored) / n * 100
             if frac_censored % 1 < 1e-10:
                 frac_censored = int(frac_censored)
             colorprint(
@@ -8281,7 +8280,7 @@ class Fit_Gamma_2P:
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
-                str("(" + str(frac_censored) + "% right censored)"),
+                str("(" + round_and_string(frac_censored) + "% right censored)"),
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
@@ -8383,10 +8382,10 @@ class Fit_Gamma_3P:
     CI : float, optional
         confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
-    CI_type : str, None, optional
+    CI_type : str, optional
         This is the confidence bounds on time or reliability shown on the plot.
-        Use None to turn off the confidence intervals. Must be either 'time',
-        'reliability', or None. Default is 'time'. Some flexibility in names is
+        Use 'none' to turn off the confidence intervals. Must be either 'time',
+        'reliability', or 'none'. Default is 'time'. Some flexibility in names is
         allowed (eg. 't', 'time', 'r', 'rel', 'reliability' are all valid).
     quantiles : bool, str, list, array, None, optional
         quantiles (y-values) to produce a table of quantiles failed with
@@ -8763,7 +8762,7 @@ class Fit_Gamma_3P:
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            frac_censored = round_to_decimals(len(right_censored) / n * 100)
+            frac_censored = len(right_censored) / n * 100
             if frac_censored % 1 < 1e-10:
                 frac_censored = int(frac_censored)
             colorprint(
@@ -8777,7 +8776,7 @@ class Fit_Gamma_3P:
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
-                str("(" + str(frac_censored) + "% right censored)"),
+                str("(" + round_and_string(frac_censored) + "% right censored)"),
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
@@ -8814,11 +8813,11 @@ class Fit_Gamma_3P:
                 fig.axes[0].legend_.get_texts()[0].set_text(
                     str(
                         "Fitted Gamma_3P\n(α="
-                        + str(round_to_decimals(self.alpha, dec))
+                        + round_and_string(self.alpha, dec)
                         + ", β="
-                        + str(round_to_decimals(self.beta, dec))
+                        + round_and_string(self.beta, dec)
                         + ", γ="
-                        + str(round_to_decimals(self.gamma, dec))
+                        + round_and_string(self.gamma, dec)
                         + ")"
                     )
                 )
@@ -9136,7 +9135,7 @@ class Fit_Beta_2P:
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            frac_censored = round_to_decimals(len(right_censored) / n * 100)
+            frac_censored = len(right_censored) / n * 100
             if frac_censored % 1 < 1e-10:
                 frac_censored = int(frac_censored)
             colorprint(
@@ -9150,7 +9149,7 @@ class Fit_Beta_2P:
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
-                str("(" + str(frac_censored) + "% right censored)"),
+                str("(" + round_and_string(frac_censored) + "% right censored)"),
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
@@ -9232,10 +9231,10 @@ class Fit_Loglogistic_2P:
     CI : float, optional
         confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
-    CI_type : str, None, optional
+    CI_type : str, optional
         This is the confidence bounds on time or reliability shown on the plot.
-        Use None to turn off the confidence intervals. Must be either 'time',
-        'reliability', or None. Default is 'time'. Some flexibility in names is
+        Use 'none' to turn off the confidence intervals. Must be either 'time',
+        'reliability', or 'none'. Default is 'time'. Some flexibility in names is
         allowed (eg. 't', 'time', 'r', 'rel', 'reliability' are all valid).
     quantiles : bool, str, list, array, None, optional
         quantiles (y-values) to produce a table of quantiles failed with
@@ -9496,7 +9495,7 @@ class Fit_Loglogistic_2P:
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            frac_censored = round_to_decimals(len(right_censored) / n * 100)
+            frac_censored = len(right_censored) / n * 100
             if frac_censored % 1 < 1e-10:
                 frac_censored = int(frac_censored)
             colorprint(
@@ -9510,7 +9509,7 @@ class Fit_Loglogistic_2P:
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
-                str("(" + str(frac_censored) + "% right censored)"),
+                str("(" + round_and_string(frac_censored) + "% right censored)"),
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
@@ -9595,10 +9594,10 @@ class Fit_Loglogistic_3P:
     CI : float, optional
         confidence interval for estimating confidence limits on parameters. Must
         be between 0 and 1. Default is 0.95 for 95% CI.
-    CI_type : str, None, optional
+    CI_type : str, optional
         This is the confidence bounds on time or reliability shown on the plot.
-        Use None to turn off the confidence intervals. Must be either 'time',
-        'reliability', or None. Default is 'time'. Some flexibility in names is
+        Use 'none' to turn off the confidence intervals. Must be either 'time',
+        'reliability', or 'none'. Default is 'time'. Some flexibility in names is
         allowed (eg. 't', 'time', 'r', 'rel', 'reliability' are all valid).
     quantiles : bool, str, list, array, None, optional
         quantiles (y-values) to produce a table of quantiles failed with
@@ -9925,7 +9924,7 @@ class Fit_Loglogistic_3P:
             CI_rounded = CI * 100
             if CI_rounded % 1 == 0:
                 CI_rounded = int(CI * 100)
-            frac_censored = round_to_decimals(len(right_censored) / n * 100)
+            frac_censored = len(right_censored) / n * 100
             if frac_censored % 1 < 1e-10:
                 frac_censored = int(frac_censored)
             colorprint(
@@ -9939,7 +9938,7 @@ class Fit_Loglogistic_3P:
             print(
                 "Failures / Right censored:",
                 str(str(len(failures)) + "/" + str(len(right_censored))),
-                str("(" + str(frac_censored) + "% right censored)"),
+                str("(" + round_and_string(frac_censored) + "% right censored)"),
                 "\n",
             )
             print(self.results.to_string(index=False), "\n")
@@ -9976,11 +9975,11 @@ class Fit_Loglogistic_3P:
                 fig.axes[0].legend_.get_texts()[0].set_text(
                     str(
                         "Fitted Loglogistic_3P\n(α="
-                        + str(round_to_decimals(self.alpha, dec))
+                        + round_and_string(self.alpha, dec)
                         + ", β="
-                        + str(round_to_decimals(self.beta, dec))
+                        + round_and_string(self.beta, dec)
                         + ", γ="
-                        + str(round_to_decimals(self.gamma, dec))
+                        + round_and_string(self.gamma, dec)
                         + ")"
                     )
                 )

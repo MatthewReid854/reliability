@@ -39,8 +39,20 @@ from reliability.Distributions import (
     Beta_Distribution,
     Loglogistic_Distribution,
     Gumbel_Distribution,
+    Mixture_Model,
+    Competing_Risks_Model,
+    DSZI_Model,
 )
-from reliability.Utils import colorprint
+from reliability.Fitters import (
+    Fit_Weibull_2P,
+    Fit_Normal_2P,
+    Fit_Gamma_2P,
+    Fit_Loglogistic_2P,
+    Fit_Lognormal_2P,
+    Fit_Gumbel_2P,
+    Fit_Beta_2P,
+)
+from reliability.Utils import colorprint, get_axes_limits
 
 pd.set_option("display.max_rows", 200)  # prevents ... compression of rows
 
@@ -277,7 +289,7 @@ def sample_size_no_failures(
             "lifetimes must be >0. Default is 1. No more than 5 is recommended due to test feasibility."
         )
     n = int(
-        np.ceil((np.log(1 - CI)) / (lifetimes ** weibull_shape * np.log(reliability)))
+        np.ceil((np.log(1 - CI)) / (lifetimes**weibull_shape * np.log(reliability)))
     )  # rounds up to nearest integer
 
     CI_rounded = CI * 100
@@ -957,7 +969,7 @@ class chi2test:
     ):
 
         # ensure the input is a distribution object
-        if type(distribution) not in [
+        standard_distributions = [
             Weibull_Distribution,
             Normal_Distribution,
             Lognormal_Distribution,
@@ -966,9 +978,16 @@ class chi2test:
             Beta_Distribution,
             Loglogistic_Distribution,
             Gumbel_Distribution,
-        ]:
+        ]
+        special_distributions = [
+            Mixture_Model,
+            Competing_Risks_Model,
+            DSZI_Model,
+        ]
+
+        if type(distribution) not in standard_distributions and type(distribution) not in special_distributions:
             raise ValueError(
-                "distribution must be a probability distribution object from the reliability.Distributions module. First define the distribution using Reliability.Distributions.___"
+                "distribution must be a probability distribution object from the reliability.Distributions module. First define the distribution using reliability.Distributions.___"
             )
 
         # ensure data is a list or array
@@ -1035,13 +1054,20 @@ class chi2test:
         expected = len(data) * cdf_diff
 
         n = len(observed)
-        parameters = distribution.parameters
-        if (
-            parameters[-1] == 0
-        ):  # if the gamma parameter is 0 then adjust the number of parameters to ignore gamma
-            k = len(parameters) - 1
+        if type(distribution) in standard_distributions:
+            parameters = distribution.parameters
+            if (
+                parameters[-1] == 0
+            ):  # if the gamma parameter is 0 then adjust the number of parameters to ignore gamma
+                k = len(parameters) - 1
+            else:
+                k = len(parameters)
+        elif type(distribution) == Mixture_Model:
+            k = distribution._Mixture_Model__number_of_params
+        elif type(distribution) == Competing_Risks_Model:
+            k = distribution._Competing_Risks_Model__number_of_params
         else:
-            k = len(parameters)
+            k = distribution._DSZI_Model__number_of_params
         if n - k - 1 <= 0:
             raise ValueError(
                 str(
@@ -1066,13 +1092,18 @@ class chi2test:
             colorprint("Results from Chi-squared test:", bold=True, underline=True)
             print("Chi-squared statistic:", self.chisquared_statistic)
             print("Chi-squared critical value:", self.chisquared_critical_value)
+
+            if type(distribution) in special_distributions:
+                dist_title = distribution.name2
+            else:
+                dist_title = distribution.param_title_long
             print(
                 "At the",
                 significance,
                 "significance level, we can",
                 self.hypothesis,
                 "the hypothesis that the data comes from a",
-                distribution.param_title_long,
+                dist_title.lower(),
             )
 
         if show_plot is True:
@@ -1089,19 +1120,24 @@ class chi2test:
                 linewidth=0.5,
                 label="Cumulative Histogram",
             )
-            distribution.CDF(label=distribution.param_title_long)
+            distribution.CDF(label=dist_title)
             plt.title(
                 "Chi-squared test\nHypothesised distribution CDF vs cumulative histogram of data"
             )
-            xmax = max(distribution.quantile(0.9999), max(data))
-            xmin = min(distribution.quantile(0.0001), min(data))
+            if type(distribution) == DSZI_Model:
+                xmax = max(data)*1.1
+                xmin = min(data)
+            else:
+                xmax = max(distribution.quantile(0.9999), max(data))
+                xmin = min(distribution.quantile(0.0001), min(data))
+
             if (
                 xmin > 0 and xmin / (xmax - xmin) < 0.05
             ):  # if xmin is near zero then set it to zero
                 xmin = 0
             plt.xlim(xmin, xmax)
             plt.ylim(0, 1.1)
-            plt.legend()
+            plt.legend(loc='upper left')
             plt.subplots_adjust(top=0.9)
 
 
@@ -1147,7 +1183,7 @@ class KStest:
     ):
 
         # ensure the input is a distribution object
-        if type(distribution) not in [
+        standard_distributions = [
             Weibull_Distribution,
             Normal_Distribution,
             Lognormal_Distribution,
@@ -1156,9 +1192,16 @@ class KStest:
             Beta_Distribution,
             Loglogistic_Distribution,
             Gumbel_Distribution,
-        ]:
+        ]
+        special_distributions = [
+            Mixture_Model,
+            Competing_Risks_Model,
+            DSZI_Model,
+        ]
+
+        if type(distribution) not in standard_distributions and type(distribution) not in special_distributions:
             raise ValueError(
-                "distribution must be a probability distribution object from the reliability.Distributions module. First define the distribution using Reliability.Distributions.___"
+                "distribution must be a probability distribution object from the reliability.Distributions module. First define the distribution using reliability.Distributions.___"
             )
 
         if min(data) < 0 and type(distribution) not in [
@@ -1199,18 +1242,24 @@ class KStest:
             self.hypothesis = "REJECT"
 
         if print_results is True:
+            if type(distribution) in special_distributions:
+                dist_title = distribution.name2
+            else:
+                dist_title = distribution.param_title_long
+
             colorprint(
                 "Results from Kolmogorov-Smirnov test:", bold=True, underline=True
             )
             print("Kolmogorov-Smirnov statistic:", self.KS_statistic)
             print("Kolmogorov-Smirnov critical value:", self.KS_critical_value)
+
             print(
                 "At the",
                 significance,
                 "significance level, we can",
                 self.hypothesis,
                 "the hypothesis that the data comes from a",
-                distribution.param_title_long,
+                dist_title.lower(),
             )
 
         if show_plot is True:
@@ -1222,10 +1271,16 @@ class KStest:
                 SN_plot_y.extend((Sn_all[idx], Sn_all[idx + 1]))
             SN_plot_x.append(max(data) * 1000)
             SN_plot_y.append(1)
-            distribution.CDF(label=distribution.param_title_long)
+            distribution.CDF(label=dist_title)
             plt.plot(SN_plot_x, SN_plot_y, label="Empirical CDF")
-            xmax = max(distribution.quantile(0.9999), max(data))
-            xmin = min(distribution.quantile(0.0001), min(data))
+
+            if type(distribution) == DSZI_Model:
+                xmax = max(data)*1.2
+                xmin = min(data)
+            else:
+                xmax = max(distribution.quantile(0.9999), max(data))
+                xmin = min(distribution.quantile(0.0001), min(data))
+
             if (
                 xmin > 0 and xmin / (xmax - xmin) < 0.05
             ):  # if xmin is near zero then set it to zero
@@ -1235,5 +1290,254 @@ class KStest:
             plt.title(
                 "Kolmogorov-Smirnov test\nHypothesised distribution CDF vs empirical CDF of data"
             )
-            plt.legend()
+            plt.legend(loc='upper left')
             plt.subplots_adjust(top=0.9)
+
+
+def likelihood_plot(distribution, failures, right_censored=None, CI=0.95, method='MLE', color=None):
+    """
+    Generates a likelihood contour plot. This is used for comparing distributions for statistically significant
+    differences.
+
+    Parameters
+    ----------
+    distribution : str
+     The probability distribution to use for the likelihood plot. Must be one of Weibull, Normal, Gamma,
+     Loglogistic, Lognormal, Gumbel, Beta.
+    failures : array, list
+     The failure data. Must have at least 2 failures.
+    right_censored : array, list, optional
+     The right censored data. Optional input. Default = None.
+    CI : float, array, list, optional
+        The confidence interval or an array of confidence intervals. All CI must be between 0.5 and 1. If an array of CI
+        is specified there will be a controur at each CI. Default = 0.95 for 95% confidence intervals.
+    method : str, optional
+        The method used by the fitter. Must be either MLE, LS, RRX, RRY. Default is MLE.
+    color : str, optional
+        The color for the plot.
+
+    Returns
+    -------
+    figure : object
+     The figure handle of the likelihood plot is returned as an object.
+
+    Notes
+    -----
+    This plot is used to test for statistically significant differences between two or more distributions. If there is
+    no overlap in the contours then there is a statistically significant difference between the distributions.
+
+    If your plot does not appear automatically, use plt.show() to show it.
+
+    Example usage:
+        from reliability.Reliability_testing import likelihood_plot
+        import matplotlib.pyplot as plt
+
+        old_design = [2,9,23,38,67,2,11,28,40,76,3,17,33,45,90,4,17,34,55,115,6,19,34,56,126,9,21,37,57,197]
+        new_design = [15,116,32,148,61,178,67,181,75,183]
+        likelihood_plot(distribution="Weibull",failures=old_design,CI=[0.9,0.95])
+        likelihood_plot(distribution="Weibull",failures=new_design,CI=[0.9,0.95])
+        plt.show()
+    """
+
+    def LLfunction(x, y, failures, right_censored):
+        LL_f = 0
+        LL_rc = 0
+        for f in failures:
+            LL_f += logf(f, x, y)
+        if right_censored is not None:
+            for rc in right_censored:
+                LL_rc += logR(rc, x, y)
+        return LL_f + LL_rc
+
+    limits = get_axes_limits()  # get the previous axes limits
+    grid_lower_multiplier = 0.25
+    grid_upper_multiplier = 4
+    grid_resolution = 500
+
+    if type(CI) == float:
+        CI = [CI]
+    CI = np.asarray(CI)
+    CI = np.sort(CI)[::-1]
+
+    if distribution.upper() in ["WEIBULL", "WEIBULL_2P", "WEIBULL2P"]:
+        fit = Fit_Weibull_2P(
+            failures=failures,
+            right_censored=right_censored,
+            method=method,
+            show_probability_plot=False,
+            print_results=False,
+        )
+        X_array = np.linspace(fit.alpha_lower * grid_lower_multiplier, fit.alpha_upper * grid_upper_multiplier, grid_resolution)
+        Y_array = np.linspace(fit.beta_lower * grid_lower_multiplier, fit.beta_upper * grid_upper_multiplier, grid_resolution)
+        params = [fit.alpha, fit.beta]
+        logf = Fit_Weibull_2P.logf
+        logR = Fit_Weibull_2P.logR
+        xlabel = "Alpha"
+        ylabel = "Beta"
+    elif distribution.upper() in ["GAMMA", "GAMMA_2P", "GAMMA2P"]:
+        fit = Fit_Gamma_2P(
+            failures=failures,
+            right_censored=right_censored,
+            method=method,
+            show_probability_plot=False,
+            print_results=False,
+        )
+        X_array = np.linspace(fit.alpha_lower * grid_lower_multiplier, fit.alpha_upper * grid_upper_multiplier, grid_resolution)
+        Y_array = np.linspace(fit.beta_lower * grid_lower_multiplier, fit.beta_upper * grid_upper_multiplier, grid_resolution)
+        params = [fit.alpha, fit.beta]
+        logf = Fit_Gamma_2P.logf_ab
+        logR = Fit_Gamma_2P.logR_ab
+        xlabel = "Alpha"
+        ylabel = "Beta"
+    elif distribution.upper() in ["LOGLOGISTIC", "LOGLOGISTIC_2P", "LOGLOGISTIC2P"]:
+        fit = Fit_Loglogistic_2P(
+            failures=failures,
+            right_censored=right_censored,
+            method=method,
+            show_probability_plot=False,
+            print_results=False,
+        )
+        X_array = np.linspace(fit.alpha_lower * grid_lower_multiplier, fit.alpha_upper * grid_upper_multiplier, grid_resolution)
+        Y_array = np.linspace(fit.beta_lower * grid_lower_multiplier, fit.beta_upper * grid_upper_multiplier, grid_resolution)
+        params = [fit.alpha, fit.beta]
+        logf = Fit_Loglogistic_2P.logf
+        logR = Fit_Loglogistic_2P.logR
+        xlabel = "Alpha"
+        ylabel = "Beta"
+    elif distribution.upper() in ["BETA", "BETA_2P", "BETA2P"]:
+        fit = Fit_Beta_2P(
+            failures=failures,
+            right_censored=right_censored,
+            method=method,
+            show_probability_plot=False,
+            print_results=False,
+        )
+        X_array = np.linspace(fit.alpha_lower * grid_lower_multiplier, fit.alpha_upper * grid_upper_multiplier, grid_resolution)
+        Y_array = np.linspace(fit.beta_lower * grid_lower_multiplier, fit.beta_upper * grid_upper_multiplier, grid_resolution)
+        params = [fit.alpha, fit.beta]
+        logf = Fit_Beta_2P.logf
+        logR = Fit_Beta_2P.logR
+        xlabel = "Alpha"
+        ylabel = "Beta"
+    elif distribution.upper() in ["NORMAL", "NORMAL_2P", "NORMAL2P"]:
+        fit = Fit_Normal_2P(
+            failures=failures,
+            right_censored=right_censored,
+            method=method,
+            show_probability_plot=False,
+            print_results=False,
+        )
+        X_array = np.linspace(fit.mu_lower * grid_lower_multiplier, fit.mu_upper * grid_upper_multiplier, grid_resolution)
+        Y_array = np.linspace(fit.sigma_lower * grid_lower_multiplier, fit.sigma_upper * grid_upper_multiplier, grid_resolution)
+        params = [fit.mu, fit.sigma]
+        logf = Fit_Normal_2P.logf
+        logR = Fit_Normal_2P.logR
+        xlabel = "Mu"
+        ylabel = "Sigma"
+    elif distribution.upper() in ["LOGNORMAL", "LOGNORMAL_2P", "LOGNORMAL2P"]:
+        fit = Fit_Lognormal_2P(
+            failures=failures,
+            right_censored=right_censored,
+            method=method,
+            show_probability_plot=False,
+            print_results=False,
+        )
+        X_array = np.linspace(fit.mu_lower * grid_lower_multiplier, fit.mu_upper * grid_upper_multiplier, grid_resolution)
+        Y_array = np.linspace(fit.sigma_lower * grid_lower_multiplier, fit.sigma_upper * grid_upper_multiplier, grid_resolution)
+        params = [fit.mu, fit.sigma]
+        logf = Fit_Lognormal_2P.logf
+        logR = Fit_Lognormal_2P.logR
+        xlabel = "Mu"
+        ylabel = "Sigma"
+
+    elif distribution.upper() in ["GUMBEL", "GUMBEL_2P", "GUMBEL2P"]:
+        fit = Fit_Gumbel_2P(
+            failures=failures,
+            right_censored=right_censored,
+            method=method,
+            show_probability_plot=False,
+            print_results=False,
+        )
+        X_array = np.linspace(fit.mu_lower * grid_lower_multiplier, fit.mu_upper * grid_upper_multiplier, grid_resolution)
+        Y_array = np.linspace(fit.sigma_lower * grid_lower_multiplier, fit.sigma_upper * grid_upper_multiplier, grid_resolution)
+        params = [fit.mu, fit.sigma]
+        logf = Fit_Gumbel_2P.logf
+        logR = Fit_Gumbel_2P.logR
+        xlabel = "Mu"
+        ylabel = "Sigma"
+    else:
+        raise ValueError(
+            str(distribution)
+            + " cannot be used for likelihood plot as it does not have 2 parameters."
+        )
+
+    X, Y = np.meshgrid(X_array, Y_array)
+    LLmax = LLfunction(params[0], params[1], failures, right_censored)
+    LLmesh = LLfunction(X, Y, failures, right_censored)
+    sc = plt.scatter(
+        params[0],
+        params[1],
+        marker="o",
+        s=50,
+        c=color,
+        label=fit.distribution.param_title_long,
+    )
+    if color is None:
+        color = sc.get_facecolor()
+
+    xmin, xmax, ymin, ymax = (
+        np.inf,
+        -np.inf,
+        np.inf,
+        -np.inf,
+    )  # set initial values for plotting limits for comparison
+    for ci in CI:
+        LLcontour = LLmax - 0.5 * ss.chi2.ppf(ci, df=2)
+        contour = plt.contour(
+            X,
+            Y,
+            LLmesh,
+            [LLcontour],
+            linewidths=1,
+            colors=(color,),
+            linestyles=("solid",),
+        )
+        plt.contourf(
+            X, Y, LLmesh, [LLcontour, LLmax], colors=color, alpha=0.5 / len(CI)
+        )
+        # get the plotting limits
+        v = contour.collections[0].get_paths()[0].vertices
+        xmin = min(xmin, min(v[:, 0]))
+        xmax = max(xmax, max(v[:, 0]))
+        ymin = min(ymin, min(v[:, 1]))
+        ymax = max(ymax, max(v[:, 1]))
+    xdelta = xmax - xmin
+    ydelta = ymax - ymin
+    if limits[2] is False:  # there is nothing else in the plot
+        plt.xlim(xmin - xdelta * 0.2, xmax + xdelta * 0.2)
+        plt.ylim(ymin - ydelta * 0.2, ymax + ydelta * 0.2)
+    else:  # there is something else in the plot
+        plt.xlim(
+            min(limits[0][0], xmin - xdelta * 0.2),
+            max(limits[0][1], xmax + xdelta * 0.2),
+        )
+        plt.ylim(
+            min(limits[1][0], ymin - ydelta * 0.2),
+            max(limits[1][1], ymax + ydelta * 0.2),
+        )
+
+    if plt.gca().get_title() not in [
+        "Likelihood plot for " + distribution + " distribution",
+        "",
+    ]:
+        colorprint(
+            "WARNING: existing plot title detected that does not match the "
+            + distribution
+            + " distribution.\nA likelihood plot must only be used for the same type of distribution (eg. multiple Weibull distributions).\nA likelihood plot of different distributions is meaningless.",
+            text_color="red",
+        )
+    plt.title("Likelihood plot for " + distribution + " distribution")
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.legend()
+    return plt.gcf()

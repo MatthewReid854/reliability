@@ -92,6 +92,7 @@ Contents:
   Reliability test duration
   Chi-squared test
   Kolmogorov-Smirnov test
+  Likelihood plot
 
 .. toctree::
   :maxdepth: 1
