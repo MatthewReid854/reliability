@@ -14,12 +14,12 @@ This is primarily a bugfix release, with some minor API changes and new features
 
 **New features**
 
--    Reliability_testing.likelihood_plot is a new function to generate a likelihood plot. See the `documentation <https://reliability.readthedocs.io/en/latest/likelihood%20plot.html>`_ for more detail.
+-    Reliability_testing.likelihood_plot is a new function to generate a likelihood plot. See the `documentation <https://reliability.readthedocs.io/en/latest/Likelihood%20plot.html>`_ for more detail.
 
 **API Changes**
 
 -    Utils.round_to_decimals has been replaced by Utils.round_and_string. This function always returns a string and the rounding rules applied are better than before as they apply scientific notation for very large and very small numbers. This was an issue in plot titles and plot text where very large numbers weren't being displayed in scientific notation.
--    Within Fitters and Distributions that have been created by Fitters, the confidence intervals can be turned off using 'none'. Previously this was None which caused some issues with confidence interval inheritance between Fitters and Distributions and an inability to turn them off when called from Distributions.
+-    Within Fitters and Distributions that have been created by Fitters, the confidence intervals can be turned off using CI_type='none'. Previously this was CI_type=None which caused some issues with confidence interval inheritance between Fitters and Distributions and an inability to turn them off when called from Distributions.
 -    Utils.life_stress_plot will swap the x and y axes if ax='swap'. This is useful for making a stress-life plot which is similar to an SN_diagram.
 -    All of the ALT_Fitters will now accept show_life_stress_plot='swap' to return a stress-life plot by swapping the axes of the standard life-stress plot.
 
