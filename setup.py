@@ -82,7 +82,7 @@ setuptools.setup(
         "mplcursors>=0.3",
         "docutils<0.18"
     ],
-    python_requires=">=3.7",
+    python_requires=">=3.8",
     packages=setuptools.find_packages(
         exclude=["*.tests", "*.tests.*"]
     ),
