@@ -45,7 +45,7 @@ Included functions are:
 import numpy as np
 import scipy.stats as ss
 import matplotlib.pyplot as plt
-from matplotlib.axes import SubplotBase
+from matplotlib.axes import _axes
 from matplotlib.figure import Figure
 from matplotlib.collections import PolyCollection, LineCollection
 from matplotlib import ticker, colors
@@ -6482,8 +6482,8 @@ def ALT_prob_plot(
         will be the same handle.
     """
 
-    if ax is True or issubclass(type(ax), SubplotBase) is True:
-        if issubclass(type(ax), SubplotBase) is True:
+    if ax is True or type(ax) == _axes.Axes:
+        if type(ax) == _axes.Axes:
             plt.sca(ax=ax)  # use the axes passed
         else:
             plt.figure()  # if no axes is passed, make a new figure
@@ -6723,7 +6723,7 @@ def life_stress_plot(
     else:
         swap_xy = False
 
-    if ax is True or issubclass(type(ax), SubplotBase) is True:
+    if ax is True or type(ax) == _axes.Axes:
         if model in ["Dual_Exponential", "Power_Exponential", "Dual_Power"]:
             dual_stress = True
         elif model in ["Exponential", "Eyring", "Power"]:
@@ -6733,7 +6733,7 @@ def life_stress_plot(
                 "model must be one of Exponential, Eyring, Power, Dual_Exponential, Power_Exponential, Dual_Power"
             )
 
-        if issubclass(type(ax), SubplotBase) is True:
+        if type(ax) == _axes.Axes:
             if dual_stress is False:
                 if hasattr(ax, "get_zlim") is False:
                     plt.sca(ax=ax)  # use the axes passed if 2d
@@ -7498,17 +7498,18 @@ def reshow_figure(handle):
     Parameters
     ----------
     handle : object
-        The axes handle (type(SubplotBase)) or figure handle (type(Figure))
+        The axes handle (type(_axes.Axes)) or figure handle (type(Figure))
 
     Returns
     -------
     None
         The figure is automatically shown using plt.show().
     """
-    if type(handle) is not Figure and issubclass(type(handle), SubplotBase) is False:
+    type(ax) == _axes.Axes
+    if type(handle) is not Figure and type(handle) != _axes.Axes:
         # check that the handle is either an axes or a figure
         raise ValueError("handle must be an axes handle or a figure handle")
-    elif issubclass(type(handle), SubplotBase) is True:
+    elif type(handle) == _axes.Axes:
         # if the handle is an axes then extract the Figure
         handle = handle.figure
 

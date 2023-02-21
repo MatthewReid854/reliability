@@ -370,8 +370,8 @@ def Weibull_probability_plot(
         functions=(axes_transforms.weibull_forward, axes_transforms.weibull_inverse),
     )
     plt.xscale("log")
-    plt.grid(b=True, which="major", color="k", alpha=0.3, linestyle="-")
-    plt.grid(b=True, which="minor", color="k", alpha=0.08, linestyle="-")
+    plt.grid(visible=True, which="major", color="k", alpha=0.3, linestyle="-")
+    plt.grid(visible=True, which="minor", color="k", alpha=0.08, linestyle="-")
     # adjust the figsize. This is done outside of figure creation so that layering of multiple plots is possible
     plt.gcf().set_size_inches(9, 9)
     if show_fitted_distribution is True:
@@ -599,8 +599,8 @@ def Loglogistic_probability_plot(
         ),
     )
     plt.xscale("log")
-    plt.grid(b=True, which="major", color="k", alpha=0.3, linestyle="-")
-    plt.grid(b=True, which="minor", color="k", alpha=0.08, linestyle="-")
+    plt.grid(visible=True, which="major", color="k", alpha=0.3, linestyle="-")
+    plt.grid(visible=True, which="minor", color="k", alpha=0.08, linestyle="-")
     plt.gcf().set_size_inches(
         9, 9
     )  # adjust the figsize. This is done outside of figure creation so that layering of multiple plots is possible
@@ -812,8 +812,8 @@ def Exponential_probability_plot_Weibull_Scale(
         functions=(axes_transforms.weibull_forward, axes_transforms.weibull_inverse),
     )
     plt.xscale("log")
-    plt.grid(b=True, which="major", color="k", alpha=0.3, linestyle="-")
-    plt.grid(b=True, which="minor", color="k", alpha=0.08, linestyle="-")
+    plt.grid(visible=True, which="major", color="k", alpha=0.3, linestyle="-")
+    plt.grid(visible=True, which="minor", color="k", alpha=0.08, linestyle="-")
     plt.gcf().set_size_inches(
         9, 9
     )  # adjust the figsize. This is done outside of figure creation so that layering of multiple plots is possible
@@ -978,8 +978,8 @@ def Gumbel_probability_plot(
         "function",
         functions=(axes_transforms.gumbel_forward, axes_transforms.gumbel_inverse),
     )
-    plt.grid(b=True, which="major", color="k", alpha=0.3, linestyle="-")
-    plt.grid(b=True, which="minor", color="k", alpha=0.08, linestyle="-")
+    plt.grid(visible=True, which="major", color="k", alpha=0.3, linestyle="-")
+    plt.grid(visible=True, which="minor", color="k", alpha=0.08, linestyle="-")
     plt.gcf().set_size_inches(
         9, 9
     )  # adjust the figsize. This is done outside of figure creation so that layering of multiple plots is possible
@@ -1142,8 +1142,8 @@ def Normal_probability_plot(
         "function",
         functions=(axes_transforms.normal_forward, axes_transforms.normal_inverse),
     )
-    plt.grid(b=True, which="major", color="k", alpha=0.3, linestyle="-")
-    plt.grid(b=True, which="minor", color="k", alpha=0.08, linestyle="-")
+    plt.grid(visible=True, which="major", color="k", alpha=0.3, linestyle="-")
+    plt.grid(visible=True, which="minor", color="k", alpha=0.08, linestyle="-")
     plt.gcf().set_size_inches(
         9, 9
     )  # adjust the figsize. This is done outside of figure creation so that layering of multiple plots is possible
@@ -1364,8 +1364,8 @@ def Lognormal_probability_plot(
         functions=(axes_transforms.normal_forward, axes_transforms.normal_inverse),
     )
     plt.xscale("log")
-    plt.grid(b=True, which="major", color="k", alpha=0.3, linestyle="-")
-    plt.grid(b=True, which="minor", color="k", alpha=0.08, linestyle="-")
+    plt.grid(visible=True, which="major", color="k", alpha=0.3, linestyle="-")
+    plt.grid(visible=True, which="minor", color="k", alpha=0.08, linestyle="-")
     plt.gcf().set_size_inches(
         9, 9
     )  # adjust the figsize. This is done outside of figure creation so that layering of multiple plots is possible
@@ -1508,8 +1508,8 @@ def Beta_probability_plot(
     )
 
     x, y = plotting_positions(failures=failures, right_censored=right_censored, a=a)
-    plt.grid(b=True, which="major", color="k", alpha=0.3, linestyle="-")
-    plt.grid(b=True, which="minor", color="k", alpha=0.08, linestyle="-")
+    plt.grid(visible=True, which="major", color="k", alpha=0.3, linestyle="-")
+    plt.grid(visible=True, which="minor", color="k", alpha=0.08, linestyle="-")
     if show_scatter_points is True:
         x_scatter, y_scatter = xy_downsample(
             x, y, downsample_factor=downsample_scatterplot
@@ -1757,8 +1757,8 @@ def Gamma_probability_plot(
     f_gamma = lambda x: axes_transforms.gamma_forward(x, beta)
     fi_gamma = lambda x: axes_transforms.gamma_inverse(x, beta)
     plt.gca().set_yscale("function", functions=(f_gamma, fi_gamma))
-    plt.grid(b=True, which="major", color="k", alpha=0.3, linestyle="-")
-    plt.grid(b=True, which="minor", color="k", alpha=0.08, linestyle="-")
+    plt.grid(visible=True, which="major", color="k", alpha=0.3, linestyle="-")
+    plt.grid(visible=True, which="minor", color="k", alpha=0.08, linestyle="-")
     plt.gcf().set_size_inches(
         9, 9
     )  # adjust the figsize. This is done outside of figure creation so that layering of multiple plots is possible
@@ -1961,8 +1961,8 @@ def Exponential_probability_plot(
             axes_transforms.exponential_inverse,
         ),
     )
-    plt.grid(b=True, which="major", color="k", alpha=0.3, linestyle="-")
-    plt.grid(b=True, which="minor", color="k", alpha=0.08, linestyle="-")
+    plt.grid(visible=True, which="major", color="k", alpha=0.3, linestyle="-")
+    plt.grid(visible=True, which="minor", color="k", alpha=0.08, linestyle="-")
     plt.gcf().set_size_inches(
         9, 9
     )  # adjust the figsize. This is done outside of figure creation so that layering of multiple plots is possible

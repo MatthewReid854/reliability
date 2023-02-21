@@ -5,6 +5,17 @@
 Changelog
 ---------
 
+**Version: 0.8.8 --- Released: 21 Feb 2023**
+''''''''''''''''''''''''''''''''''''''''''''
+
+**Summary of changes**
+
+This is a bugfix release. 
+
+**Bug Fixes**
+
+-    API changes in matplotlib which deprecated some keywords and axes classes resulted in two serious bugs being introduced into reliability. This has been fixed and the requirements for matplotlib have been updated to >=3.7.0.
+
 **Version: 0.8.7 --- Released: 28 Jan 2023**
 ''''''''''''''''''''''''''''''''''''''''''''
 

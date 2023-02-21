@@ -2114,6 +2114,7 @@ class Fit_Everything_ALT:
                 right_censored_groups = (
                     self._Fit_Everything_ALT__Normal_Exponential_params._Fit_Normal_Exponential__right_censored_groups
                 )
+
                 ALT_prob_plot(
                     dist="Normal",
                     model="Exponential",
