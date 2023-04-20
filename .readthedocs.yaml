@@ -5,9 +5,13 @@ build:
   tools:
     python: "3.8"
 
+formats:
+  - pdf
+  - epub
+
 python:
   install:
     - requirements: requirements.txt
     - method: pip
       path: .
-  system_packages: true
+  system_packages: true  

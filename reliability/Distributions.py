@@ -7882,6 +7882,7 @@ class Competing_Risks_Model:
         plt.suptitle(text_title, fontsize=15)
 
         plt.subplot(231)
+        self.__pdf[self.__pdf > 1e100] = 1e100
         plt.plot(self.__xvals, self.__pdf)
         restore_axes_limits(
             [(0, 1), (0, 1), False],
@@ -7924,6 +7925,7 @@ class Competing_Risks_Model:
         plt.title("Survival Function")
 
         plt.subplot(234)
+        self.__hf[self.__hf > 1e100] = 1e100
         plt.plot(self.__xvals, self.__hf)
         restore_axes_limits(
             [(0, 1), (0, 1), False],
@@ -8050,6 +8052,7 @@ class Competing_Risks_Model:
             else:
                 textlabel = "Competing risks model"
             limits = get_axes_limits()
+            self.__pdf[self.__pdf > 1e100] = 1e100
             plt.plot(self.__xvals, self.__pdf, label=textlabel, **kwargs)
             plt.xlabel("x values")
             plt.ylabel("Probability density")
@@ -8304,6 +8307,7 @@ class Competing_Risks_Model:
             else:
                 textlabel = "Competing risks model"
             limits = get_axes_limits()
+            self.__hf[self.__hf > 1e100] = 1e100
             plt.plot(self.__xvals, self.__hf, label=textlabel, **kwargs)
             plt.xlabel("x values")
             plt.ylabel("Hazard")
@@ -8869,6 +8873,7 @@ class Mixture_Model:
         plt.suptitle(text_title, fontsize=15)
 
         plt.subplot(231)
+        self.__pdf[self.__pdf > 1e100] = 1e100
         plt.plot(self.__xvals, self.__pdf)
         restore_axes_limits(
             [(0, 1), (0, 1), False],
@@ -8911,6 +8916,7 @@ class Mixture_Model:
         plt.title("Survival Function")
 
         plt.subplot(234)
+        self.__hf[self.__hf > 1e100] = 1e100
         plt.plot(self.__xvals, self.__hf)
         restore_axes_limits(
             [(0, 1), (0, 1), False],
@@ -9037,6 +9043,7 @@ class Mixture_Model:
                 textlabel = "Mixture model"
 
             limits = get_axes_limits()
+            self.__pdf[self.__pdf > 1e100] = 1e100
             plt.plot(self.__xvals, self.__pdf, label=textlabel, **kwargs)
             plt.xlabel("x values")
             plt.ylabel("Probability density")
@@ -9286,6 +9293,7 @@ class Mixture_Model:
                 textlabel = kwargs.pop("label")
             else:
                 textlabel = "Mixture model"
+            self.__hf[self.__hf > 1e100] = 1e100
             plt.plot(self.__xvals, self.__hf, label=textlabel, **kwargs)
             plt.xlabel("x values")
             plt.ylabel("Hazard")
