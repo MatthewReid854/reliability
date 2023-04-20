@@ -14,7 +14,7 @@ This is a bugfix release.
 
 **Bug Fixes**
 
--    Compatability bugs in python 3.8 have resulted in support being dropped. From reliability 0.8.9 the python version must be >=3.9
+-    TBA. Currently being fixed.
 
 **Other**
 
