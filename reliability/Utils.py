@@ -2178,6 +2178,7 @@ class ALT_fitters_input_checking:
             failure_groups = []
             unique_failure_stresses = []
             for key, items in failure_df_ungrouped.groupby(["failure_stress_1"]):
+                key = key[0]
                 values = list(items.iloc[:, 0].values)
                 failure_groups.append(values)
                 unique_failure_stresses.append(key)
@@ -2222,6 +2223,7 @@ class ALT_fitters_input_checking:
                 for key, items in right_censored_df_ungrouped.groupby(
                     ["right_censored_stress_1"]
                 ):
+                    key = key[0]
                     values = list(items.iloc[:, 0].values)
                     right_censored_groups.append(values)
                     unique_right_censored_stresses.append(key)
@@ -2259,6 +2261,7 @@ class ALT_fitters_input_checking:
             failure_groups = []
             unique_failure_stresses_str = []
             for key, items in failure_df_ungrouped.groupby(["failure_stress_pairs"]):
+                key = key[0]
                 values = list(items.iloc[:, 0].values)
                 failure_groups.append(values)
                 unique_failure_stresses_str.append(key)
@@ -2318,6 +2321,7 @@ class ALT_fitters_input_checking:
                 for key, items in right_censored_df_ungrouped.groupby(
                     ["right_censored_stress_pairs"]
                 ):
+                    key = key[0]
                     values = list(items.iloc[:, 0].values)
                     right_censored_groups.append(values)
                     unique_right_censored_stresses_str.append(key)

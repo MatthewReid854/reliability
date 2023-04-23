@@ -14,7 +14,8 @@ This is a bugfix release.
 
 **Bug Fixes**
 
--    TBA. Currently being fixed.
+-    There was a bug in Competing Risks and Mixture Models which occurred when the PDF or HF had an asymptote, resulting in an error from matplotlib. Values that are almost inf have been capped to 1e100 to prevent overflow in matplotlib.
+-    A change to the python core across mutliple versions resulted in key value pairs from iterators returning the key as a tuple rather than an int. This only affected ALT Fitters and caused all of them to fail. The int key is now extracted from the key tuple to resolve this bug.
 
 **Other**
 
