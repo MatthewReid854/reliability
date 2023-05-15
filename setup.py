@@ -7,7 +7,7 @@ with open("README.md", "r") as file:
 
 setuptools.setup(
     name="reliability",
-    version="0.8.9",
+    version="0.8.10",
     description="Reliability Engineering toolkit for Python",
     author="Matthew Reid",
     author_email="alpha.reliability@gmail.com",
@@ -73,13 +73,13 @@ setuptools.setup(
         "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
     ],
     install_requires=[
-        "autograd>=1.4",
-        "scipy>=1.10.0",
+        "autograd>=1.5",
+        "scipy>=1.10.1",
         "numpy>=1.24.2",
-        "matplotlib>=3.7.0",
-        "pandas>=1.4.2",
+        "matplotlib>=3.7.1",
+        "pandas>=2.0.1",
         "autograd-gamma>=0.5.0",
-        "mplcursors>=0.3",
+        "mplcursors>=0.5.2",
         "docutils<0.18"
     ],
     python_requires=">=3.8",

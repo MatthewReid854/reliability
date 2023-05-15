@@ -5,6 +5,17 @@
 Changelog
 ---------
 
+**Version: 0.8.10 --- Released: 15 May 2023**
+'''''''''''''''''''''''''''''''''''''''''''''
+
+**Summary of changes**
+
+This is a bugfix release. 
+
+**Bug Fixes**
+
+-    Requirements needed to be updated. Specifically some changes in pandas 2.0.0 needed to be promulgated to reliability so it is no longer compatible with earlier versions of pandas.
+
 **Version: 0.8.9 --- Released: 23 Apr 2023**
 ''''''''''''''''''''''''''''''''''''''''''''
 
