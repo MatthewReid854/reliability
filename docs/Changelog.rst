@@ -5,6 +5,13 @@
 Changelog
 ---------
 
+**Version: 0.8.11 --- Released: 07 Jul 2023**
+'''''''''''''''''''''''''''''''''''''''''''''
+
+**Summary of changes**
+
+This is a minor release to remove the docutils requirement. There was a `bugfix in docutils and an update to sphinx <https://github.com/sphinx-doc/sphinx/issues/9777>`_ so we no longer need to specify docutils<0.18.
+
 **Version: 0.8.10 --- Released: 15 May 2023**
 '''''''''''''''''''''''''''''''''''''''''''''
 
