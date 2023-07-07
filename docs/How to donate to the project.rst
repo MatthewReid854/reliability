@@ -18,3 +18,4 @@ Thank you to the following `reliability` donors for their generous support of op
 - Juergen Leib
 - Felix Nakovic
 - Pedro Sa
+- Augusto Mura
