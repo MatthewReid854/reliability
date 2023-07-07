@@ -79,8 +79,7 @@ setuptools.setup(
         "matplotlib>=3.7.1",
         "pandas>=2.0.1",
         "autograd-gamma>=0.5.0",
-        "mplcursors>=0.5.2",
-        "docutils<0.18"
+        "mplcursors>=0.5.2"
     ],
     python_requires=">=3.8",
     packages=setuptools.find_packages(
