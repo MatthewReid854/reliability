@@ -810,7 +810,7 @@ class RankAdjustment:
             plotting_positions,
         )  # can't have this at the start of the function because of circular import
 
-        x, y = plotting_positions(failures=failures, right_censored=right_censored, a=a)
+        x, y = plotting_positions(failures=failures, right_censored=right_censored, a=a, sort=True)
         # create the stepwise plot using the plotting positions
         x_array = [0]
         y_array = [0]

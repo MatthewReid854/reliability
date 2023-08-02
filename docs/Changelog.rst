@@ -5,6 +5,13 @@
 Changelog
 ---------
 
+**Version: 0.8.12 --- Released: 02 Aug 2023**
+'''''''''''''''''''''''''''''''''''''''''''''
+
+**Summary of changes**
+
+This is a minor release to fix a bug in the plot of Nonparametric.RankAdjustment identified in `this issue <https://github.com/MatthewReid854/reliability/issues/40>`_. The values weren't being sorted. This has been fixed by adding an optional 'sort' argument to Probability_plotting.plotting_positions.
+
 **Version: 0.8.11 --- Released: 07 Jul 2023**
 '''''''''''''''''''''''''''''''''''''''''''''
 

@@ -64,7 +64,7 @@ np.seterr("ignore")
 dec = 3  # number of decimals to use when rounding fitted parameters in labels
 
 
-def plotting_positions(failures=None, right_censored=None, a=None):
+def plotting_positions(failures=None, right_censored=None, a=None, sort=False):
     """
     Calculates the plotting positions for plotting on probability paper.
 
@@ -81,6 +81,8 @@ def plotting_positions(failures=None, right_censored=None, a=None):
         (same as the default in Minitab and Reliasoft). Must be in the range 0
         to 1. For more heuristics, see:
         https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics
+    sort : bool, optional
+        Whether the output should be sorted. Default is False.
 
     Returns
     -------
@@ -91,8 +93,7 @@ def plotting_positions(failures=None, right_censored=None, a=None):
 
     Notes
     -----
-    This function is primarily used by the probability plotting functions. The
-    order of the input data is preserved (not sorted).
+    This function is primarily used by the probability plotting functions.
     """
 
     # error checking the input
@@ -114,6 +115,9 @@ def plotting_positions(failures=None, right_censored=None, a=None):
         raise ValueError(
             "a must be in the range 0 to 1. Default is 0.3 which gives the median rank. For more information see https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot#Heuristics"
         )
+
+    if sort not in [True,False]:
+        raise ValueError('sort must be True or False. Default is False to keep the same order as the input.')
 
     # construct the dataframe for the rank adjustment method
     f_codes = np.ones_like(f)
@@ -150,14 +154,18 @@ def plotting_positions(failures=None, right_censored=None, a=None):
     for i in adjusted_rank:
         F.append((i - a) / (n + 1 - 2 * a))
 
-    # restore the original order of the points using the index from the sorted dataframe
-    idx = failure_rows.index.values
-    df2 = pd.DataFrame(
-        data={"x": failure_rows.times.values, "y": F, "idx": idx},
-        columns=["x", "y", "idx"],
-    ).sort_values(by="idx")
-    x = df2.x.values
-    y = df2.y.values
+    if sort is False:
+        # restore the original order of the points using the index from the sorted dataframe
+        idx = failure_rows.index.values
+        df2 = pd.DataFrame(
+            data={"x": failure_rows.times.values, "y": F, "idx": idx},
+            columns=["x", "y", "idx"],
+        ).sort_values(by="idx")
+        x = df2.x.values
+        y = df2.y.values
+    else:
+        x = failure_rows.times.values
+        y = F
     return x, y
 
 
