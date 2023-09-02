@@ -1014,7 +1014,7 @@ class chi2test:
             )
 
         observed, bin_edges = np.histogram(
-            data, bins=bins, normed=False
+            data, bins=bins, density=False
         )  # get a histogram of the data to find the observed values
 
         if sum(observed) != len(data):
@@ -1031,7 +1031,7 @@ class chi2test:
                 ),
                 text_color="red",
             )
-            observed, bin_edges = np.histogram(data, bins="auto", normed=False)
+            observed, bin_edges = np.histogram(data, bins="auto", density=False)
             colorprint('bins has been reset to "auto".', text_color="red")
             colorprint(
                 str("The new bins are: " + str(bin_edges) + "\n"), text_color="red"
@@ -1042,7 +1042,7 @@ class chi2test:
             Gumbel_Distribution,
         ]:
             observed, bin_edges = np.histogram(
-                data, bins="auto", normed=False
+                data, bins="auto", density=False
             )  # error will result if bins contains values below 0 for anything but the Normal or Gumbel Distributions
             colorprint(
                 'WARNING: The specified bins contained values below 0. This is not appropriate when the distribution is not a Normal or Gumbel Distribution. bins has been reset to "auto".'

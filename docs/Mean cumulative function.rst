@@ -25,7 +25,7 @@ The non-parametric estimate of the MCF provides both the estimate of the MCF and
 Example 1
 ---------
 
-The following example is taken from an `example <http://reliawiki.org/index.php/Recurrent_Event_Data_Analysis>`_ provided by Reliasoft. The failure times and retirement times (retirement time is indicated by +) of 5 systems are:
+The following example is taken from an `example <https://www.reliawiki.com/index.php/Recurrent_Event_Data_Analysis#Example:_Mean_Cumulative_Function>`_ provided by Reliasoft. The failure times and retirement times (retirement time is indicated by +) of 5 systems are:
 
 .. image:: images/MCF_data.png
 

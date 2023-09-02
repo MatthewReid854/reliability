@@ -5,6 +5,13 @@
 Changelog
 ---------
 
+**Version: 0.8.13 --- Released: 02 Sep 2023**
+'''''''''''''''''''''''''''''''''''''''''''''
+
+**Summary of changes**
+
+This is a minor release to fix a bug in the plot of Reliability_testing.chi2test identified in `this issue <https://github.com/MatthewReid854/reliability/issues/41>`_. The normed parameter in numpy.histogram is deprecated and had been replaced by the density parameter.
+
 **Version: 0.8.12 --- Released: 02 Aug 2023**
 '''''''''''''''''''''''''''''''''''''''''''''
 
