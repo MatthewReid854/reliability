@@ -2569,17 +2569,9 @@ class Fit_Weibull_2P_grouped:
         right_censored_qty = right_censored_df.quantity.values
 
         # recompile the data to get the plotting positions for the initial guess
-        failures = np.array([])
-        right_censored = np.array([])
-        for i in range(len(failure_times)):
-            failures = np.append(
-                failures, failure_times[i] * np.ones(int(failure_qty[i]))
-            )
-        for i in range(len(right_censored_times)):
-            right_censored = np.append(
-                right_censored,
-                right_censored_times[i] * np.ones(int(right_censored_qty[i])),
-            )
+        # Create failures and right_censored arrays
+        failures = np.repeat(failure_times, failure_qty)
+        right_censored = np.repeat(right_censored_times, right_censored_qty)
 
         # perform input error checking for the rest of the inputs
         inputs = fitters_input_checking(
