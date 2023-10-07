@@ -11,5 +11,4 @@ formats:
   - epub
 python:
   install:
-    - requirements: requirements.txt
-    - requirements: "sphinx_rtd_theme"
+    - requirements: [requirements.txt, docs/requirements.txt]
