@@ -121,10 +121,11 @@ def stress_strength(stress, strength, show_plot=True, print_results=True, warn=T
             text_color="red",
         )
 
+    trapezoids = 1000000 # the number of trapezoids used in the integration
     x = np.linspace(
         min(stress.quantile(1e-8), strength.quantile(1e-8)),
         max(strength.quantile(1 - 1e-8), stress.quantile(1 - 1e-8)),
-        1000,
+        trapezoids,
     )  # we take the min and max here since there may be cases when stress > strength
     prob_of_failure = np.trapz(
         strength.PDF(x, show_plot=False) * stress.SF(x, show_plot=False), x
@@ -132,50 +133,56 @@ def stress_strength(stress, strength, show_plot=True, print_results=True, warn=T
 
     if show_plot is True:
         xlims = plt.xlim(auto=None)
-        xmin = stress.quantile(0.00001)
-        xmax = strength.quantile(0.99999)
+        # the plotting range is 5 times the difference of the means from each mean. Needed to limit extreme quantiles.
+        diff = abs(strength.mean-stress.mean)
+        xmin = min(strength.mean,stress.mean)-5*diff
+        xmax = max(strength.mean,stress.mean)+5*diff
+        if xmin < 0 and type(strength) not in [Normal_Distribution,Gumbel_Distribution]:
+            xmin = 0 # fix xmin if we're not dealing with normal and gumbel
+
         if abs(xmin) < (xmax - xmin) / 4:
             xmin = 0  # if the lower bound on xmin is near zero (relative to the entire range) then just make it zero
-        if type(stress) == Beta_Distribution:
+        if type(stress) == Beta_Distribution and stress.mean < strength.mean:
             xmin = 0
-        if type(strength) == Beta_Distribution:
+        if type(strength) == Beta_Distribution and stress.mean < strength.mean:
             xmax = 1
         xvals = np.linspace(xmin, xmax, 10000)
         stress_PDF = stress.PDF(xvals=xvals, show_plot=False)
         strength_PDF = strength.PDF(xvals=xvals, show_plot=False)
-        Y = [
-            (min(strength_PDF[i], stress_PDF[i])) for i in range(len(xvals))
-        ]  # finds the lower of the two lines which is used as the upper boundary for fill_between
         plt.plot(xvals, stress_PDF, label="Stress")
         plt.plot(xvals, strength_PDF, label="Strength")
-        intercept_idx = Y.index(max(Y))
+        mask = stress_PDF > strength_PDF
+
         plt.fill_between(
             xvals,
-            np.zeros_like(xvals),
-            Y,
+            np.minimum(stress_PDF, strength_PDF),
+            0,
             color="salmon",
             alpha=1,
             linewidth=0,
             linestyle="--",
         )
         plt.fill_between(
-            xvals[0:intercept_idx],
-            strength_PDF[0:intercept_idx],
-            stress_PDF[0:intercept_idx],
+            xvals,
+            stress_PDF,
+            strength_PDF,
+            where=mask,
             color="steelblue",
             alpha=0.3,
             linewidth=0,
             linestyle="--",
         )
         plt.fill_between(
-            xvals[intercept_idx::],
-            stress_PDF[intercept_idx::],
-            strength_PDF[intercept_idx::],
+            xvals,
+            stress_PDF,
+            strength_PDF,
+            where=~mask,
             color="darkorange",
             alpha=0.3,
             linewidth=0,
             linestyle="--",
         )
+
         failure_text = str(
             "Probability of\nfailure = " + round_and_string(prob_of_failure, 4))
 
@@ -185,9 +192,9 @@ def stress_strength(stress, strength, show_plot=True, print_results=True, warn=T
         plt.xlabel("Stress and Strength Units")
         plt.subplots_adjust(left=0.16)
         if xlims != (0, 1):
-            plt.xlim(min(stress.b5, xlims[0]), max(strength.b95, xlims[1]), auto=None)
+            plt.xlim(min(stress.b5,strength.b5, xlims[0]), max(stress.b95, strength.b95, xlims[1]), auto=None)
         else:
-            plt.xlim(stress.b5, strength.b95, auto=None)
+            plt.xlim(min(stress.b5,strength.b5), max(stress.b95,strength.b95), auto=None)
         plt.ylim(bottom=0, auto=None)
 
     if print_results is True:
@@ -258,44 +265,45 @@ def stress_strength_normal(
 
     if show_plot is True:
         xlims = plt.xlim(auto=None)
-        xmin = stress.quantile(0.00001)
-        xmax = strength.quantile(0.99999)
+        xmin = min(stress.quantile(0.00001),strength.quantile(0.00001))
+        xmax = max(stress.quantile(0.99999),strength.quantile(0.99999))
         xvals = np.linspace(xmin, xmax, 1000)
         stress_PDF = stress.PDF(xvals=xvals, show_plot=False)
         strength_PDF = strength.PDF(xvals=xvals, show_plot=False)
         plt.plot(xvals, stress_PDF, label="Stress")
         plt.plot(xvals, strength_PDF, label="Strength")
-        Y = [
-            (min(strength_PDF[i], stress_PDF[i])) for i in range(len(xvals))
-        ]  # finds the lower of the two lines which is used as the upper boundary for fill_between
-        intercept_idx = Y.index(max(Y))
+        mask = stress_PDF > strength_PDF
+
         plt.fill_between(
             xvals,
-            np.zeros_like(xvals),
-            Y,
+            np.minimum(stress_PDF, strength_PDF),
+            0,
             color="salmon",
             alpha=1,
             linewidth=0,
             linestyle="--",
         )
         plt.fill_between(
-            xvals[0:intercept_idx],
-            strength_PDF[0:intercept_idx],
-            stress_PDF[0:intercept_idx],
+            xvals,
+            stress_PDF,
+            strength_PDF,
+            where=mask,
             color="steelblue",
             alpha=0.3,
             linewidth=0,
             linestyle="--",
         )
         plt.fill_between(
-            xvals[intercept_idx::],
-            stress_PDF[intercept_idx::],
-            strength_PDF[intercept_idx::],
+            xvals,
+            stress_PDF,
+            strength_PDF,
+            where=~mask,
             color="darkorange",
             alpha=0.3,
             linewidth=0,
             linestyle="--",
         )
+
         failure_text = str(
             "Probability of\nfailure = " + round_and_string(prob_of_failure, 4))
         plt.legend(title=failure_text)
@@ -304,9 +312,9 @@ def stress_strength_normal(
         plt.xlabel("Stress and Strength Units")
         plt.subplots_adjust(left=0.15, right=0.93)
         if xlims != (0, 1):
-            plt.xlim(min(stress.b5, xlims[0]), max(strength.b95, xlims[1]), auto=None)
+            plt.xlim(min(stress.b5,strength.b5, xlims[0]), max(stress.b95, strength.b95, xlims[1]), auto=None)
         else:
-            plt.xlim(stress.b5, strength.b95, auto=None)
+            plt.xlim(min(stress.b5,strength.b5), max(stress.b95,strength.b95), auto=None)
         plt.ylim(bottom=0, auto=None)
 
     if print_results is True:

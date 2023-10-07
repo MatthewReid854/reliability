@@ -5,6 +5,15 @@
 Changelog
 ---------
 
+
+**Version: 0.8.14 --- Released: 07 Oct 2023**
+'''''''''''''''''''''''''''''''''''''''''''''
+
+**Summary of changes**
+
+This is a minor release to fix a bug in Other_functions.stress_strength and Other_functions.stress_strength_normal. The bug occurred when stress was greater than strength causing the integration to fail and return incorrect values for the probability of failure. This has been fixed and the plots are also improved. Thanks to github user ctenold for identifying `this issue <https://github.com/MatthewReid854/reliability/issues/43>`_ and providing a working solution.
+There is also a speed improvement for Fitters.Fit_Weibull_2P_grouped which takes advantage of the np.repeat function to optimize the process of generating the arrays for large datasets of repeating values. Thanks to Tomas Santos for identifying this improvement.
+
 **Version: 0.8.13 --- Released: 02 Sep 2023**
 '''''''''''''''''''''''''''''''''''''''''''''
 
