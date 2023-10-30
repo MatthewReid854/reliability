@@ -16,7 +16,7 @@ from reliability import Convert_data
 from datetime import date
 
 __title__ = 'reliability'
-__version__ = "0.8.14"
+__version__ = "0.8.15"
 __description__ = 'A Python library for reliability engineering'
 __url__ = 'https://reliability.readthedocs.io/en/latest/index.html'
 __author__ = 'Matthew Reid'
