@@ -12,7 +12,7 @@ Changelog
 
 This is a minor release to add the ability to use Mixture_Model and Competing_Risks_Model as distributions in Other_functions.stress_strength.
 There is also a minor bugfix to allow Loglogistic distributions with beta<1 to be used. The bug occurred because a text string was created for the mean of a Loglogistic distribution with beta<1 (since there is no mean for such distributions) and the mean was used for a calculation causing an error. The calculation works equally well using the median which does exist for these distributions.
-Thanks to COle Tenold for raising this `issue <https://github.com/MatthewReid854/reliability/issues/45>`_.
+Thanks to Cole Tenold for raising this `issue <https://github.com/MatthewReid854/reliability/issues/45>`_.
 
 **Version: 0.8.14 --- Released: 07 Oct 2023**
 '''''''''''''''''''''''''''''''''''''''''''''
