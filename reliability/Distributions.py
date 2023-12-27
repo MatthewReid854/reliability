@@ -2468,9 +2468,7 @@ class Lognormal_Distribution:
             if CI_type == "time":
                 return lower_CI, self.quantile(CI_y), upper_CI
             elif CI_type == "reliability":
-                cdf_point = (
-                    ss.lognorm.cdf(CI_x, self.sigma, self.gamma, np.exp(self.mu)),
-                )
+                cdf_point = ss.lognorm.cdf(CI_x, self.sigma, self.gamma, np.exp(self.mu))
                 return lower_CI, unpack_single_arrays(cdf_point), upper_CI
         else:
             return cdf

@@ -297,8 +297,8 @@ A demo of how this works is shown `here <https://reliability.readthedocs.io/en/l
 Further reading
 ---------------
 
-More information and formulas are available in the following references from reliawiki:
+More information and formulas are available in the following references from weibull.com, reliawiki and reliasoft:
 
-- `Differences Between Type I (Time) and Type II (Reliability) Confidence Bounds <https://www.weibull.com/hotwire/issue17/relbasics17.htm>`_
-- `Confidence Bounds <http://reliawiki.org/index.php/Confidence_Bounds>`_
-- `The Weibull Distribution <http://reliawiki.org/index.php/The_Weibull_Distribution#Bounds_on_Reliability_2>`_
+- `Differences Between Type I (Time) and Type II (Reliability) Confidence Bounds <https://web.archive.org/web/20210516070558/https://www.weibull.com/hotwire/issue17/relbasics17.htm>`_
+- `Confidence Bounds <https://www.reliawiki.com/index.php/Confidence_Bounds>`_
+- `The Weibull Distribution <https://help.reliasoft.com/reference/life_data_analysis/lda/confidence_bounds.html#FisherMatrixConfidenceBounds>`_

@@ -5,6 +5,15 @@
 Changelog
 ---------
 
+**Version: 0.8.16 --- Released: 27 Dec 2023**
+'''''''''''''''''''''''''''''''''''''''''''''
+
+**Summary of changes**
+
+This is a minor release to fix two bugs. The first bug was in plot legend for PoF.SN_diagram which had the confidence intervals hardcoded to 95%. The legend now reflects the specified CI.
+The second bug was from `this issue <https://github.com/MatthewReid854/reliability/issues/46>`_ where the Lognormal Distribution CDF didn't return a tuple. This is now fixed and aligns with the remainder of the distributions.
+A few broken hyperlinks in the docs have also been fixed.
+
 **Version: 0.8.15 --- Released: 31 Oct 2023**
 '''''''''''''''''''''''''''''''''''''''''''''
 

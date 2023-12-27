@@ -20,7 +20,7 @@ import numpy as np
 import warnings
 import scipy.stats as ss
 from scipy.optimize import fsolve
-from reliability.Utils import colorprint
+from reliability.Utils import colorprint, round_and_string
 
 
 def SN_diagram(
@@ -312,7 +312,7 @@ def SN_diagram(
             color=color,
             linestyle="--",
             alpha=0.7,
-            label="Statistical bounds (95% CI)",
+            label="Statistical bounds ("+round_and_string(CI*100)+"% CI)",
         )
     plt.legend(loc="upper right")
     plt.subplots_adjust(
