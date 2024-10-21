@@ -970,7 +970,7 @@ class make_right_censored_data:
             if (
                 fraction_censored < 0
                 or fraction_censored >= 1
-                or type(fraction_censored) not in [int, float, np.float_, np.int_]
+                or type(fraction_censored) not in [int, float]
             ):
                 raise ValueError(
                     "fraction_censored must be >= 0 and < 1. The default is 0.5 which will right censor half the data"

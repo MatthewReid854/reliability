@@ -33,7 +33,12 @@ values = dist.random_samples(number_of_samples=10000)
 
 import scipy.stats as ss
 import numpy as np
-from scipy import integrate
+
+try:
+    from scipy.integrate import simpson, quad
+except ImportError:
+    from scipy.integrate import simps as simpson, quad
+    
 import matplotlib.pyplot as plt
 from reliability.Utils import (
     round_and_string,
@@ -974,7 +979,7 @@ class Weibull_Distribution:
             The mean residual life
         """
         R = lambda x: ss.weibull_min.sf(x, self.beta, scale=self.alpha, loc=self.gamma)
-        integral_R, error = integrate.quad(R, t, np.inf)
+        integral_R, error = quad(R, t, np.inf)
         MRL = integral_R / R(t)
         return MRL
 
@@ -1915,7 +1920,7 @@ class Normal_Distribution:
             The mean residual life
         """
         R = lambda x: ss.norm.sf(x, loc=self.mu, scale=self.sigma)
-        integral_R, error = integrate.quad(R, t, np.inf)
+        integral_R, error = quad(R, t, np.inf)
         MRL = integral_R / R(t)
         return MRL
 
@@ -2880,7 +2885,7 @@ class Lognormal_Distribution:
             The mean residual life
         """
         R = lambda x: ss.lognorm.sf(x, self.sigma, self.gamma, np.exp(self.mu))
-        integral_R, error = integrate.quad(R, t, np.inf)
+        integral_R, error = quad(R, t, np.inf)
         MRL = integral_R / R(t)
         return MRL
 
@@ -3836,7 +3841,7 @@ class Exponential_Distribution:
             The mean residual life
         """
         R = lambda x: ss.expon.sf(x, scale=1 / self.Lambda, loc=self.gamma)
-        integral_R, error = integrate.quad(R, t, np.inf)
+        integral_R, error = quad(R, t, np.inf)
         MRL = integral_R / R(t)
         return MRL
 
@@ -4822,7 +4827,7 @@ class Gamma_Distribution:
             The mean residual life
         """
         R = lambda x: ss.gamma.sf(x, self.beta, scale=self.alpha, loc=self.gamma)
-        integral_R, error = integrate.quad(R, t, np.inf)
+        integral_R, error = quad(R, t, np.inf)
         MRL = integral_R / R(t)
         return MRL
 
@@ -5543,7 +5548,7 @@ class Beta_Distribution:
             The mean residual life
         """
         R = lambda x: ss.beta.sf(x, self.alpha, self.beta, 0, 1)
-        integral_R, error = integrate.quad(R, t, np.inf)
+        integral_R, error = quad(R, t, np.inf)
         MRL = integral_R / R(t)
         return MRL
 
@@ -6598,7 +6603,7 @@ class Loglogistic_Distribution:
             The mean residual life
         """
         R = lambda x: ss.fisk.sf(x, self.beta, scale=self.alpha, loc=self.gamma)
-        integral_R, error = integrate.quad(R, t, np.inf)
+        integral_R, error = quad(R, t, np.inf)
         MRL = integral_R / R(t)
         return MRL
 
@@ -7541,7 +7546,7 @@ class Gumbel_Distribution:
             The mean residual life
         """
         R = lambda x: ss.gumbel_l.sf(x, loc=self.mu, scale=self.sigma)
-        integral_R, error = integrate.quad(R, t, np.inf)
+        integral_R, error = quad(R, t, np.inf)
         MRL = integral_R / R(t)
         return MRL
 
@@ -7755,15 +7760,15 @@ class Competing_Risks_Model:
         self.__xvals_init = X  # used by random_samples
         self.__pdf_init = pdf  # used by random_samples
         self.__sf_init = sf  # used by quantile and inverse_SF
-        self.mean = integrate.simps(pdf * X, x=X)
+        self.mean = simpson(pdf * X, x=X)
         self.standard_deviation = (
-            integrate.simps(pdf * (X - self.mean) ** 2, x=X)
+            simpson(pdf * (X - self.mean) ** 2, x=X)
         ) ** 0.5
         self.variance = self.standard_deviation ** 2
-        self.skewness = integrate.simps(
+        self.skewness = simpson(
             pdf * ((X - self.mean) / self.standard_deviation) ** 3, x=X
         )
-        self.kurtosis = integrate.simps(
+        self.kurtosis = simpson(
             pdf * ((X - self.mean) / self.standard_deviation) ** 4, x=X
         )
         self.mode = X[np.argmax(pdf)]
@@ -8543,7 +8548,7 @@ class Competing_Risks_Model:
         t_full = np.linspace(t, self.__xmax_inf, 1000000)
         sf_full = __subcombiner(t_full)
         sf_single = __subcombiner(t)
-        MRL = integrate.simps(sf_full, x=t_full) / sf_single
+        MRL = simpson(sf_full, x=t_full) / sf_single
         return MRL
 
     def random_samples(self, number_of_samples, seed=None):
@@ -8739,15 +8744,15 @@ class Mixture_Model:
         self.__pdf_init = pdf
         self.__cdf_init = cdf
         self.__xvals_init = X
-        self.mean = integrate.simps(pdf * X, x=X)
+        self.mean = simpson(pdf * X, x=X)
         self.standard_deviation = (
-            integrate.simps(pdf * (X - self.mean) ** 2, x=X)
+            simpson(pdf * (X - self.mean) ** 2, x=X)
         ) ** 0.5
         self.variance = self.standard_deviation ** 2
-        self.skewness = integrate.simps(
+        self.skewness = simpson(
             pdf * ((X - self.mean) / self.standard_deviation) ** 3, x=X
         )
-        self.kurtosis = integrate.simps(
+        self.kurtosis = simpson(
             pdf * ((X - self.mean) / self.standard_deviation) ** 4, x=X
         )
         self.mode = X[np.argmax(pdf)]
@@ -9538,7 +9543,7 @@ class Mixture_Model:
         t_full = np.linspace(t, self.__xmax_inf, 1000000)
         sf_full = __subcombiner(t_full)
         sf_single = __subcombiner(t)
-        MRL = integrate.simps(sf_full, x=t_full) / sf_single
+        MRL = simpson(sf_full, x=t_full) / sf_single
         return MRL
 
     def random_samples(self, number_of_samples, seed=None):
