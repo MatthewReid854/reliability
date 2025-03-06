@@ -81,7 +81,7 @@ setuptools.setup(
         "autograd-gamma>=0.5.0",
         "mplcursors>=0.6"
     ],
-    python_requires=">=3.8",
+    python_requires=">=3.10",
     packages=setuptools.find_packages(
         exclude=["*.tests", "*.tests.*"]
     ),
