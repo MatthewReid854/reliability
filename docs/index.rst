@@ -186,5 +186,5 @@ Contents:
     :target: https://reliability.readthedocs.io/en/latest/How%20to%20donate%20to%20the%20project.html
 
 .. |survey| image:: https://img.shields.io/badge/Provide%20feedback-gray.svg?logo=Verizon
-    :alt: donate
+    :alt: survey
     :target: https://form.jotform.com/203156856636058
