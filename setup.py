@@ -74,10 +74,10 @@ setuptools.setup(
     ],
     install_requires=[
         "autograd>=1.7.0",
-        "scipy>=1.15.2",
-        "numpy>=2.2.3",
-        "matplotlib>=3.10.1",
-        "pandas>=2.2.3",
+        "scipy>=1.15.0",
+        "numpy>=2.2.0",
+        "matplotlib>=3.10.0",
+        "pandas>=2.2.0",
         "autograd-gamma>=0.5.0",
         "mplcursors>=0.6"
     ],
