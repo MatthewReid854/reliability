@@ -151,50 +151,40 @@ Contents:
 
 .. |pypi| image:: https://img.shields.io/pypi/v/reliability?color=brightgreen&logo=Python&logoColor=white&label=PyPI%20package
     :alt: PyPI package
-    :scale: 100%
     :target: https://pypi.org/project/reliability/
 
 .. |docs| image:: https://img.shields.io/readthedocs/reliability/latest.svg?logo=read%20the%20docs&logoColor=white&label=Docs&version=latest
     :alt: docs
-    :scale: 100%
     :target: https://reliability.readthedocs.io/en/latest/
 
 .. |build and test| image:: https://github.com/MatthewReid854/reliability/workflows/Build%20and%20Test/badge.svg
     :alt: Build and Test
-    :scale: 100%
     :target: https://github.com/MatthewReid854/reliability/actions
 
 .. |code quality| image:: https://github.com/MatthewReid854/reliability/workflows/CodeQL/badge.svg
     :alt: CodeQL
-    :scale: 100%
     :target: https://github.com/MatthewReid854/reliability/actions
 
 .. |LOC| image:: https://sloc.xyz/github/MatthewReid854/reliability/?category=code
     :alt: lines of code
-    :scale: 100%
     :target: https://github.com/MatthewReid854/reliability
 
 .. |downloads| image:: https://static.pepy.tech/personalized-badge/reliability?period=month&units=international_system&left_color=grey&right_color=brightgreen&left_text=PyPI%20downloads/month
     :alt: downloads
-    :scale: 100%
     :target: https://pepy.tech/project/reliability
 
 .. |license| image:: https://img.shields.io/badge/License-LGPLv3-blue.svg?logo=GNU
     :alt: license
-    :scale: 100%
     :target: https://www.gnu.org/licenses/lgpl-3.0.txt
 
 .. |DOI| image:: https://img.shields.io/badge/DOI-10.5281/zenodo.3937999-blue.svg?logo=Buffer&logoColor=white
     :alt: DOI
-    :scale: 100%
     :target: https://doi.org/10.5281/zenodo.3937999
 
 .. |donate| image:: https://img.shields.io/badge/Support%20this%20project-grey.svg?logo=github%20sponsors
     :alt: donate
-    :scale: 100%
     :target: https://reliability.readthedocs.io/en/latest/How%20to%20donate%20to%20the%20project.html
 
 .. |survey| image:: https://img.shields.io/badge/Provide%20feedback-gray.svg?logo=Verizon
     :alt: donate
-    :scale: 100%
     :target: https://form.jotform.com/203156856636058
