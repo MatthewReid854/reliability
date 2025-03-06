@@ -1214,13 +1214,16 @@ def probability_plot_xyticks(yticks=None):
             The edge distances
         """
         xtick_locations = get_tick_locations("major", axis="x")
-        left_tick_distance = xy_transform(
-            xtick_locations[0], direction="forward", axis="x"
-        ) - xy_transform(xlower, direction="forward", axis="x")
-        right_tick_distance = xy_transform(
-            xupper, direction="forward", axis="x"
-        ) - xy_transform(xtick_locations[-1], direction="forward", axis="x")
-        return left_tick_distance + right_tick_distance
+        if len(xtick_locations)<2:
+            return 1 # this deals with very small numbers which cause one or no major ticks. It will trigger the get_edge_distances() > 0.5 on line 1249. This resolves issue #55 on github
+        else:
+            left_tick_distance = xy_transform(
+                xtick_locations[0], direction="forward", axis="x"
+            ) - xy_transform(xlower, direction="forward", axis="x")
+            right_tick_distance = xy_transform(
+                xupper, direction="forward", axis="x"
+            ) - xy_transform(xtick_locations[-1], direction="forward", axis="x")
+            return left_tick_distance + right_tick_distance
 
     ################# xticks
     MaxNLocator = ticker.MaxNLocator(nbins=10, min_n_ticks=2, steps=[1, 2, 5, 10])
@@ -2227,14 +2230,14 @@ class ALT_fitters_input_checking:
                     values = list(items.iloc[:, 0].values)
                     right_censored_groups.append(values)
                     unique_right_censored_stresses.append(key)
-                    if key not in unique_failure_stresses:
-                        raise ValueError(
-                            str(
-                                "The right censored stress "
-                                + str(key)
-                                + " does not appear in failure stresses."
-                            )
-                        )
+                    # if key not in unique_failure_stresses:
+                    #     raise ValueError(
+                    #         str(
+                    #             "The right censored stress "
+                    #             + str(key)
+                    #             + " does not appear in failure stresses."
+                    #         )
+                    #     )
 
                 # add in empty lists for stresses which appear in failure_stress_1 but not in right_censored_stress_1
                 for i, stress in enumerate(unique_failure_stresses):

@@ -166,15 +166,15 @@ def test_Competing_Risks_Model():
     assert_allclose(dist.skewness, -0.20597940178753704, rtol=rtol, atol=atol)
     assert_allclose(dist.kurtosis, 2.1824677678598667, rtol=rtol, atol=atol)
     assert dist.name2 == 'Competing risks using 2 distributions'
-    assert_allclose(dist.quantile(0.2), 14.170859470541174, rtol=rtol, atol=atol)
-    assert_allclose(dist.inverse_SF(q=0.7), 17.908811127053173, rtol=rtol, atol=atol)
+    assert_allclose(dist.quantile(0.2), 14.170929225710184, rtol=rtol, atol=atol)
+    assert_allclose(dist.inverse_SF(q=0.7), 17.908762905680206, rtol=rtol, atol=atol)
     assert_allclose(dist.mean_residual_life(20), 9.862745898092886, rtol=rtol, atol=atol)
     xvals = [dist.quantile(0.001), dist.quantile(0.01), dist.quantile(0.1), dist.quantile(0.9), dist.quantile(0.99), dist.quantile(0.999)]
-    assert_allclose(dist.PDF(xvals=xvals, show_plot=False), [0.00210671, 0.00661657, 0.01947571, 0.02655321, 0.00474024, 0.00062978], rtol=rtol, atol=atol)
-    assert_allclose(dist.CDF(xvals=xvals, show_plot=False), [0.0010001,  0.00999995, 0.09999943, 0.90000184, 0.99000021, 0.99900003], rtol=rtol, atol=atol)
-    assert_allclose(dist.SF(xvals=xvals, show_plot=False), [0.9989999,  0.99000005, 0.90000057, 0.09999816, 0.00999979, 0.00099997], rtol=rtol, atol=atol)
-    assert_allclose(dist.HF(xvals=xvals, show_plot=False), [0.00210882, 0.00668341, 0.02163966, 0.265537, 0.47403341, 0.62980068], rtol=rtol, atol=atol)
-    assert_allclose(dist.CHF(xvals=xvals, show_plot=False), [1.00059934e-03, 1.00502826e-02, 1.05359884e-01, 2.30260350e+00, 4.60519097e+00, 6.90778668e+00], rtol=rtol, atol=atol)
+    assert_allclose(dist.PDF(xvals=xvals, show_plot=False), [0.0021066, 0.00661659, 0.01947576, 0.0265535, 0.00474032, 0.0006298], rtol=rtol, atol=atol)
+    assert_allclose(dist.CDF(xvals=xvals, show_plot=False), [0.001, 0.01, 0.1, 0.9, 0.99, 0.999], rtol=rtol, atol=atol)
+    assert_allclose(dist.SF(xvals=xvals, show_plot=False), [0.999, 0.99, 0.9, 0.1, 0.01, 0.001], rtol=rtol, atol=atol)
+    assert_allclose(dist.HF(xvals=xvals, show_plot=False), [0.00210871, 0.00668342, 0.02163973, 0.26553497, 0.47403183, 0.62979878], rtol=rtol, atol=atol)
+    assert_allclose(dist.CHF(xvals=xvals, show_plot=False), [1.00050033e-03, 1.00503359e-02, 1.05360516e-01, 2.30258509e+00, 4.60517019e+00, 6.90775528e+00], rtol=rtol, atol=atol)
 
 
 def test_Mixture_Model():
@@ -186,13 +186,13 @@ def test_Mixture_Model():
     assert_allclose(dist.skewness, 0.015505959874527537, rtol=rtol, atol=atol)
     assert_allclose(dist.kurtosis, 3.4018343377801674, rtol=rtol, atol=atol)
     assert dist.name2 == 'Mixture using 2 distributions'
-    assert_allclose(dist.quantile(0.2), 19.085648329240094, rtol=rtol, atol=atol)
-    assert_allclose(dist.inverse_SF(q=0.7), 24.540270766923847, rtol=rtol, atol=atol)
+    assert_allclose(dist.quantile(0.2), 19.08566544798376, rtol=rtol, atol=atol)
+    assert_allclose(dist.inverse_SF(q=0.7), 24.540320384561657, rtol=rtol, atol=atol)
     assert_allclose(dist.mean_residual_life(20), 14.686456940211107, rtol=rtol, atol=atol)
     xvals = [dist.quantile(0.001), dist.quantile(0.01), dist.quantile(0.1), dist.quantile(0.9), dist.quantile(0.99), dist.quantile(0.999)]
-    assert_allclose(dist.PDF(xvals=xvals, show_plot=False), [0.0016309, 0.00509925, 0.01423464, 0.01646686, 0.00134902, 0.00016862], rtol=rtol, atol=atol)
-    assert_allclose(dist.CDF(xvals=xvals, show_plot=False), [0.00099994, 0.00999996, 0.10000006, 0.90000056, 0.99000001, 0.999], rtol=rtol, atol=atol)
-    assert_allclose(dist.SF(xvals=xvals, show_plot=False), [0.99900006, 0.99000004, 0.89999994, 0.09999944, 0.00999999, 0.001], rtol=rtol, atol=atol)
-    assert_allclose(dist.HF(xvals=xvals, show_plot=False), [0.00163253, 0.00515076, 0.01581627, 0.16466956, 0.13490177, 0.16861429], rtol=rtol, atol=atol)
-    assert_allclose(dist.CHF(xvals=xvals, show_plot=False), [1.00043950e-03, 1.00502998e-02, 1.05360581e-01, 2.30259070e+00, 4.60517090e+00, 6.90775056e+00], rtol=rtol, atol=atol)
+    assert_allclose(dist.PDF(xvals=xvals, show_plot=False), [0.00163095, 0.00509926, 0.01423464, 0.01646698, 0.00134902, 0.00016861], rtol=rtol, atol=atol)
+    assert_allclose(dist.CDF(xvals=xvals, show_plot=False), [0.001, 0.01, 0.1, 0.9, 0.99, 0.999], rtol=rtol, atol=atol)
+    assert_allclose(dist.SF(xvals=xvals, show_plot=False), [0.999, 0.99, 0.9, 0.1, 0.01, 0.001], rtol=rtol, atol=atol)
+    assert_allclose(dist.HF(xvals=xvals, show_plot=False), [0.00163258, 0.00515077, 0.01581627, 0.1646698, 0.13490176, 0.16861435], rtol=rtol, atol=atol)
+    assert_allclose(dist.CHF(xvals=xvals, show_plot=False), [1.00050033e-03, 1.00503359e-02, 1.05360516e-01, 2.30258509e+00, 4.60517019e+00, 6.90775528e+00], rtol=rtol, atol=atol)
 

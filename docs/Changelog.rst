@@ -5,6 +5,24 @@
 Changelog
 ---------
 
+**Version: 0.9.0 --- Released: 7 Mar 2025**
+'''''''''''''''''''''''''''''''''''''''''''
+
+**Summary of changes**
+
+This is a major release. After 14 months of no updates, this release is essential to fix issues with dependency compatability, mainly with scipy. More frequent updates are planned in the near future.
+
+**Bug Fixes**
+
+-    Issues `51 <https://github.com/MatthewReid854/reliability/issues/51>`_ and `54 <https://github.com/MatthewReid854/reliability/issues/54>`_ have been resolved by updating "simps" to "simpson" from scipy.
+-    Issue `55 <https://github.com/MatthewReid854/reliability/issues/55>`_ has been resolved. There was a bug that occurred in the plots for Fitters.Fit_Everything when all the failure times were small numbers (~0.01).
+-    Issue `49 <https://github.com/MatthewReid854/reliability/issues/49>`_ has been resolved. There was a bug with Mixture, Competing Risks, and DSZI models for the quantile and inverse_SF methods that did not accept array like inputs. This was resolved by changing the method used to find these values to interp.
+
+**Other**
+
+-    Requirements for all the dependencies have been updated to the most recent releases.
+-    Tests have been updated to reflect the slightly more accurate results when issue 49 was fixed.
+
 **Version: 0.8.16 --- Released: 27 Dec 2023**
 '''''''''''''''''''''''''''''''''''''''''''''
 

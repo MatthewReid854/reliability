@@ -45,7 +45,7 @@ from reliability.Utils import (
     colorprint,
     extract_CI,
     distributions_input_checking,
-    unpack_single_arrays,
+    unpack_single_arrays
 )
 
 dec = 4  # number of decimals to use when rounding descriptive statistics and parameter titles
@@ -1860,7 +1860,7 @@ class Normal_Distribution:
 
         Returns
         -------
-        x : float
+        x : float, array
             The inverse of the CDF at q. This is the probability that a random
             variable from the distribution is < q
         """
@@ -1886,7 +1886,7 @@ class Normal_Distribution:
 
         Returns
         -------
-        x : float
+        x : float, array
             The inverse of the SF at q.
         """
         if type(q) in [int, float, np.float64]:
@@ -2825,7 +2825,7 @@ class Lognormal_Distribution:
 
         Returns
         -------
-        x : float
+        x : float, array
             The inverse of the CDF at q. This is the probability that a random
             variable from the distribution is < q
         """
@@ -2851,7 +2851,7 @@ class Lognormal_Distribution:
 
         Returns
         -------
-        x : float
+        x : float, array
             The inverse of the SF at q.
         """
         if type(q) in [int, float, np.float64]:
@@ -3781,7 +3781,7 @@ class Exponential_Distribution:
 
         Returns
         -------
-        x : float
+        x : float, array
             The inverse of the CDF at q. This is the probability that a random
             variable from the distribution is < q
         """
@@ -3807,7 +3807,7 @@ class Exponential_Distribution:
 
         Returns
         -------
-        x : float
+        x : float, array
             The inverse of the SF at q.
         """
         if type(q) in [int, float, np.float64]:
@@ -4767,7 +4767,7 @@ class Gamma_Distribution:
 
         Returns
         -------
-        x : float
+        x : float, array
             The inverse of the CDF at q. This is the probability that a random
             variable from the distribution is < q
         """
@@ -4793,7 +4793,7 @@ class Gamma_Distribution:
 
         Returns
         -------
-        x : float
+        x : float, array
             The inverse of the SF at q.
         """
         if type(q) in [int, float, np.float64]:
@@ -5488,7 +5488,7 @@ class Beta_Distribution:
 
         Returns
         -------
-        x : float
+        x : float, array
             The inverse of the CDF at q. This is the probability that a random
             variable from the distribution is < q
         """
@@ -5514,7 +5514,7 @@ class Beta_Distribution:
 
         Returns
         -------
-        x : float
+        x : float, array
             The inverse of the SF at q.
         """
         if type(q) in [int, float, np.float64]:
@@ -6543,7 +6543,7 @@ class Loglogistic_Distribution:
 
         Returns
         -------
-        x : float
+        x : float, array
             The inverse of the CDF at q. This is the probability that a random
             variable from the distribution is < q
         """
@@ -6569,7 +6569,7 @@ class Loglogistic_Distribution:
 
         Returns
         -------
-        x : float
+        x : float, array
             The inverse of the SF at q.
         """
         if type(q) in [int, float, np.float64]:
@@ -7486,7 +7486,7 @@ class Gumbel_Distribution:
 
         Returns
         -------
-        x : float
+        x : float, array
             The inverse of the CDF at q. This is the probability that a random
             variable from the distribution is < q
         """
@@ -7512,7 +7512,7 @@ class Gumbel_Distribution:
 
         Returns
         -------
-        x : float
+        x : float, array
             The inverse of the SF at q.
         """
         if type(q) in [int, float, np.float64]:
@@ -7754,16 +7754,16 @@ class Competing_Risks_Model:
 
         self.__xvals_init = X  # used by random_samples
         self.__pdf_init = pdf  # used by random_samples
-        self.__sf_init = sf  # used by quantile and inverse_SF
-        self.mean = integrate.simps(pdf * X, x=X)
+        self.__cdf_init = 1-sf  # used by quantile and inverse_SF
+        self.mean = integrate.simpson(pdf * X, x=X)
         self.standard_deviation = (
-            integrate.simps(pdf * (X - self.mean) ** 2, x=X)
+            integrate.simpson(pdf * (X - self.mean) ** 2, x=X)
         ) ** 0.5
         self.variance = self.standard_deviation ** 2
-        self.skewness = integrate.simps(
+        self.skewness = integrate.simpson(
             pdf * ((X - self.mean) / self.standard_deviation) ** 3, x=X
         )
-        self.kurtosis = integrate.simps(
+        self.kurtosis = integrate.simpson(
             pdf * ((X - self.mean) / self.standard_deviation) ** 4, x=X
         )
         self.mode = X[np.argmax(pdf)]
@@ -8409,7 +8409,7 @@ class Competing_Risks_Model:
 
         return unpack_single_arrays(self.__chf)
 
-    def quantile(self, q):
+    def quantile(self,q):
         """
         Quantile calculator
 
@@ -8420,7 +8420,7 @@ class Competing_Risks_Model:
 
         Returns
         -------
-        x : float
+        x : float, array
             The inverse of the CDF at q. This is the probability that a random
             variable from the distribution is < q
         """
@@ -8428,11 +8428,12 @@ class Competing_Risks_Model:
             if q < 0 or q > 1:
                 raise ValueError("Quantile must be between 0 and 1")
         elif type(q) in [list, np.ndarray]:
+            q = np.asarray(q)
             if min(q) < 0 or max(q) > 1:
                 raise ValueError("Quantile must be between 0 and 1")
         else:
             raise ValueError("Quantile must be of type float, list, array")
-        ppf = self.__xvals_init[np.argmin(abs((1 - self.__sf_init) - q))]
+        ppf=np.interp(q, self.__cdf_init, self.__xvals_init)
         return unpack_single_arrays(ppf)
 
     def inverse_SF(self, q):
@@ -8446,18 +8447,20 @@ class Competing_Risks_Model:
 
         Returns
         -------
-        x : float
+        x : float, array
             The inverse of the SF at q.
         """
+
         if type(q) in [int, float, np.float64]:
             if q < 0 or q > 1:
                 raise ValueError("Quantile must be between 0 and 1")
         elif type(q) in [list, np.ndarray]:
+            q = np.asarray(q)
             if min(q) < 0 or max(q) > 1:
                 raise ValueError("Quantile must be between 0 and 1")
         else:
             raise ValueError("Quantile must be of type float, list, array")
-        isf = self.__xvals_init[np.argmin(abs(self.__sf_init - q))]
+        isf = np.interp(1 - q, self.__cdf_init, self.__xvals_init)
         return unpack_single_arrays(isf)
 
     def stats(self):
@@ -8543,7 +8546,7 @@ class Competing_Risks_Model:
         t_full = np.linspace(t, self.__xmax_inf, 1000000)
         sf_full = __subcombiner(t_full)
         sf_single = __subcombiner(t)
-        MRL = integrate.simps(sf_full, x=t_full) / sf_single
+        MRL = integrate.simpson(sf_full, x=t_full) / sf_single
         return MRL
 
     def random_samples(self, number_of_samples, seed=None):
@@ -8739,15 +8742,15 @@ class Mixture_Model:
         self.__pdf_init = pdf
         self.__cdf_init = cdf
         self.__xvals_init = X
-        self.mean = integrate.simps(pdf * X, x=X)
+        self.mean = integrate.simpson(pdf * X, x=X)
         self.standard_deviation = (
-            integrate.simps(pdf * (X - self.mean) ** 2, x=X)
+            integrate.simpson(pdf * (X - self.mean) ** 2, x=X)
         ) ** 0.5
         self.variance = self.standard_deviation ** 2
-        self.skewness = integrate.simps(
+        self.skewness = integrate.simpson(
             pdf * ((X - self.mean) / self.standard_deviation) ** 3, x=X
         )
-        self.kurtosis = integrate.simps(
+        self.kurtosis = integrate.simpson(
             pdf * ((X - self.mean) / self.standard_deviation) ** 4, x=X
         )
         self.mode = X[np.argmax(pdf)]
@@ -9407,19 +9410,21 @@ class Mixture_Model:
 
         Returns
         -------
-        x : float
+        x : float, array
             The inverse of the CDF at q. This is the probability that a random
             variable from the distribution is < q
         """
+
         if type(q) in [int, float, np.float64]:
             if q < 0 or q > 1:
                 raise ValueError("Quantile must be between 0 and 1")
         elif type(q) in [list, np.ndarray]:
+            q = np.asarray(q)
             if min(q) < 0 or max(q) > 1:
                 raise ValueError("Quantile must be between 0 and 1")
         else:
             raise ValueError("Quantile must be of type float, list, array")
-        ppf = self.__xvals_init[np.argmin(abs(self.__cdf_init - q))]
+        ppf=np.interp(q, self.__cdf_init, self.__xvals_init)
         return unpack_single_arrays(ppf)
 
     def inverse_SF(self, q):
@@ -9433,18 +9438,19 @@ class Mixture_Model:
 
         Returns
         -------
-        x : float
+        x : float, array
             The inverse of the SF at q.
         """
         if type(q) in [int, float, np.float64]:
             if q < 0 or q > 1:
                 raise ValueError("Quantile must be between 0 and 1")
         elif type(q) in [list, np.ndarray]:
+            q = np.asarray(q)
             if min(q) < 0 or max(q) > 1:
                 raise ValueError("Quantile must be between 0 and 1")
         else:
             raise ValueError("Quantile must be of type float, list, array")
-        isf = self.__xvals_init[np.argmin(abs((1 - self.__cdf_init) - q))]
+        isf = np.interp(1-q, self.__cdf_init,self.__xvals_init)
         return unpack_single_arrays(isf)
 
     def stats(self):
@@ -9538,7 +9544,7 @@ class Mixture_Model:
         t_full = np.linspace(t, self.__xmax_inf, 1000000)
         sf_full = __subcombiner(t_full)
         sf_single = __subcombiner(t)
-        MRL = integrate.simps(sf_full, x=t_full) / sf_single
+        MRL = integrate.simpson(sf_full, x=t_full) / sf_single
         return MRL
 
     def random_samples(self, number_of_samples, seed=None):
@@ -10233,7 +10239,7 @@ class DSZI_Model:
 
         Returns
         -------
-        x : float
+        x : float, array
             The inverse of the CDF at q. This is the probability that a random
             variable from the distribution is < q
         """
@@ -10247,6 +10253,7 @@ class DSZI_Model:
                     + "."
                 )
         elif type(q) in [list, np.ndarray]:
+            q = np.asarray(q)
             if min(q) < 0 or max(q) > 1:
                 raise ValueError(
                     "Quantile must be between ZI and DS. ZI = "
@@ -10257,7 +10264,7 @@ class DSZI_Model:
                 )
         else:
             raise ValueError("Quantile must be of type float, list, array")
-        ppf = self.__xvals_init[np.argmin(abs(self.__cdf_init - q))]
+        ppf=np.interp(q, self.__cdf_init, self.__xvals_init)
         return unpack_single_arrays(ppf)
 
     def inverse_SF(self, q):
@@ -10271,18 +10278,19 @@ class DSZI_Model:
 
         Returns
         -------
-        x : float
+        x : float, array
             The inverse of the SF at q.
         """
         if type(q) in [int, float, np.float64]:
             if q < 0 or q > 1:
                 raise ValueError("Quantile must be between 0 and 1")
         elif type(q) in [list, np.ndarray]:
+            q = np.asarray(q)
             if min(q) < 0 or max(q) > 1:
                 raise ValueError("Quantile must be between 0 and 1")
         else:
             raise ValueError("Quantile must be of type float, list, array")
-        isf = self.__xvals_init[np.argmin(abs((1 - self.__cdf_init) - q))]
+        isf = np.interp(1-q, self.__cdf_init,self.__xvals_init)
         return unpack_single_arrays(isf)
 
     def mean_residual_life(self, t):

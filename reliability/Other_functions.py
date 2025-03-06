@@ -137,7 +137,7 @@ def stress_strength(stress, strength, show_plot=True, print_results=True, warn=T
         trapezoids,
     )  # we take the min and max here since there may be cases when stress > strength
 
-    prob_of_failure = np.trapz(
+    prob_of_failure = np.trapezoid(
         strength.PDF(x, show_plot=False) * stress.SF(x, show_plot=False), x
     )
     if prob_of_failure > 1:
@@ -970,7 +970,7 @@ class make_right_censored_data:
             if (
                 fraction_censored < 0
                 or fraction_censored >= 1
-                or type(fraction_censored) not in [int, float, np.float_, np.int_]
+                or type(fraction_censored) not in [int, float, np.float64, np.int_, np.int64]
             ):
                 raise ValueError(
                     "fraction_censored must be >= 0 and < 1. The default is 0.5 which will right censor half the data"
