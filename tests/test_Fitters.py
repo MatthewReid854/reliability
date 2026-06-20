@@ -610,3 +610,43 @@ def test_Fit_Everything():
     assert_allclose(LS.Exponential_1P_BIC, 197.06920107995282, rtol=rtol, atol=atol)
     assert_allclose(LS.Exponential_1P_loglik, -95.88544185670239, rtol=rtol, atol=atol)
     assert_allclose(LS.Exponential_1P_AD, 549.85986679373, rtol=rtol, atol=atol)
+
+
+def test_Fit_Weibull_mixture_cr_robust_grouping():
+    """Regression test: the grouping heuristic for Mixture/CR now uses distinct
+    failure times when adjusting the divider. Data with >=4 distinct failure
+    times (even one outlier + heavy clustering + heavy right-censoring at the
+    cluster) must produce valid (>=2 distinct per group) initial guesses and
+    not raise the "two distinct failure modes" error from the old heuristic.
+    """
+    warnings.filterwarnings(action="ignore", category=RuntimeWarning)
+
+    failed = [2] + [8] * 5 + [9] * 8 + [10] * 10
+    passed = [10] * 75
+
+    # Direct calls should succeed (no distinct-group crash)
+    m = Fit_Weibull_Mixture(
+        failures=failed, right_censored=passed,
+        print_results=False, show_probability_plot=False
+    )
+    assert m.alpha_1 > 0 and m.beta_1 > 0
+    assert m.alpha_2 > 0 and m.beta_2 > 0
+    assert m.proportion_1 > 0
+
+    c = Fit_Weibull_CR(
+        failures=failed, right_censored=passed,
+        print_results=False, show_probability_plot=False
+    )
+    assert c.alpha_1 > 0 and c.beta_1 > 0
+    assert c.alpha_2 > 0 and c.beta_2 > 0
+
+    # Fit_Everything should also succeed in fitting them (no exclusion)
+    fe = Fit_Everything(
+        failures=failed, right_censored=passed,
+        print_results=False, show_probability_plot=False,
+        show_histogram_plot=False, show_PP_plot=False,
+        show_best_distribution_probability_plot=False
+    )
+    # Attributes exist (they were fitted)
+    assert fe.Weibull_Mixture_alpha_1 is not None
+    assert fe.Weibull_CR_alpha_1 is not None

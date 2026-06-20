@@ -5,6 +5,14 @@
 Changelog
 ---------
 
+**Unreleased / next version**
+'''''''''''''''''''''''''''''
+**Bug Fixes**
+
+- Fixed a crash in ``Fit_Everything`` (and direct calls to ``Fit_Weibull_Mixture`` / ``Fit_Weibull_CR``) when the automatic two-group separation heuristic produced a subpopulation with fewer than two distinct failure times. Such data now produces a clear actionable ``ValueError`` (or is omitted from ``Fit_Everything`` results with a red warning). The original confusing inner "Weibull_2P needs 2 distinct failures" error is never seen by users. Addresses the repro case of one early outlier + heavy clustering at later times + heavy right censoring at the cluster value. A private helper ``_ensure_two_distinct_groups`` and try/except guards in ``Fit_Everything`` were added. Debug scaffolding left in the source during investigation was removed.
+
+- Root cause improvement to the grouping heuristic used by ``Fit_Weibull_Mixture`` and ``Fit_Weibull_CR`` for their initial guesses. The dividing line logic now operates on distinct failure times (instead of only raw item counts) and snaps to a split that guarantees at least two distinct failures per group whenever four or more distinct failure times are present in the data. This prevents the heuristic from unnecessarily producing degenerate subgroups. A shared helper ``_get_group_dividing_line`` was added (also reducing code duplication). The safety-net ``_ensure_two_distinct_groups`` remains in place.
+
 **Version: 0.9.0 --- Released: 7 Mar 2025**
 '''''''''''''''''''''''''''''''''''''''''''
 

@@ -92,6 +92,105 @@ pd.options.display.max_columns = 9  # shows the dataframe without ... truncation
 pd.options.display.width = 200  # prevents wrapping after default 80 characters
 
 
+def _ensure_two_distinct_groups(group1, group2, model_name):
+    """
+    Internal helper used by Fit_Weibull_Mixture and Fit_Weibull_CR.
+
+    Final safety net: raises a clear ValueError (instead of a confusing inner
+    Weibull_2P error) if a group ends up with fewer than two distinct failure
+    times. The primary grouping logic (_get_group_dividing_line) now actively
+    tries to prevent this when the input data has sufficient distinct times.
+    """
+    u1 = len(np.unique(group1))
+    u2 = len(np.unique(group2))
+    if u1 < 2 or u2 < 2:
+        raise ValueError(
+            f"The data provided does not appear to contain two distinct failure modes "
+            f"based on the automatic grouping algorithm used for the initial guess of the "
+            f"{model_name} model. This model could not be fitted. "
+            f"This commonly occurs with heavily right-censored data or when failures are "
+            f"heavily clustered. Consider the simpler distributions or exclude "
+            f"'{model_name}' when using Fit_Everything."
+        )
+
+
+def _get_group_dividing_line(failures):
+    """
+    Internal helper used by Fit_Weibull_Mixture and Fit_Weibull_CR.
+
+    Estimates the dividing line between the two groups for generating
+    initial parameter guesses.
+
+    The base method fits a Gaussian KDE and draws chords from the peak
+    to the data range; the dividing line is chosen where the vertical
+    distance to the KDE is maximized.
+
+    The result is then adjusted (when there are >=4 distinct failure times)
+    so that the split always produces at least two distinct failure times
+    in each group. This fixes the root cause of the old heuristic producing
+    degenerate subgroups even when a valid split existed among the unique
+    times.
+    """
+    failures = np.asarray(failures)
+    if len(failures) == 0:
+        return 0.0
+
+    max_failures = np.max(failures)
+    min_failures = np.min(failures)
+    gkde = ss.gaussian_kde(failures)
+    delta = max_failures - min_failures
+    x_kde = np.linspace(min_failures - delta / 5, max_failures + delta / 5, 100)
+    y_kde = gkde.evaluate(x_kde)
+    peak_y = max(y_kde)
+    peak_x = x_kde[np.where(y_kde == peak_y)][0]
+
+    left_x = min_failures
+    left_y = gkde.evaluate(left_x)
+    left_m = (peak_y - left_y) / (peak_x - left_x)
+    left_c = -left_m * left_x + left_y
+    left_line_x = np.linspace(left_x, peak_x, 100)
+    left_line_y = left_m * left_line_x + left_c  # y=mx+c
+    left_kde = gkde.evaluate(left_line_x)
+    left_diff = abs(left_line_y - left_kde)
+    left_diff_max = max(left_diff)
+    left_div_line = left_line_x[np.where(left_diff == left_diff_max)][0]
+
+    right_x = max_failures
+    right_y = gkde.evaluate(right_x)
+    right_m = (right_y - peak_y) / (right_x - peak_x)
+    right_c = -right_m * right_x + right_y
+    right_line_x = np.linspace(peak_x, right_x, 100)
+    right_line_y = right_m * right_line_x + right_c  # y=mx+c
+    right_kde = gkde.evaluate(right_line_x)
+    right_diff = abs(right_line_y - right_kde)
+    right_diff_max = max(right_diff)
+    right_div_line = right_line_x[np.where(right_diff == right_diff_max)][0]
+
+    if left_diff_max > right_diff_max:
+        dividing_line = left_div_line
+    else:
+        dividing_line = right_div_line
+
+    # Adjust using distinct failure times (not just item counts) so that
+    # each side gets >= 2 distinct values whenever possible.
+    unique = np.unique(np.sort(failures))
+    n_u = len(unique)
+    if n_u >= 4:
+        best_div = dividing_line
+        min_dist = float("inf")
+        # Possible splits that guarantee >=2 uniques on each side:
+        # split after index i (i >=1 and i <= n_u-3)
+        for i in range(1, n_u - 2):
+            cand = (unique[i] + unique[i + 1]) / 2.0
+            dist = abs(cand - dividing_line)
+            if dist < min_dist:
+                min_dist = dist
+                best_div = cand
+        dividing_line = best_div
+
+    return dividing_line
+
+
 class Fit_Everything:
     """
     This function will fit all available distributions to the data provided.
@@ -800,105 +899,119 @@ class Fit_Everything:
             )
 
         if "Weibull_Mixture" not in self.excluded_distributions:
-            self.__Weibull_Mixture_params = Fit_Weibull_Mixture(
-                failures=failures,
-                right_censored=right_censored,
-                method=method,
-                optimizer=optimizer,
-                show_probability_plot=False,
-                print_results=False,
-            )
-            self.Weibull_Mixture_alpha_1 = self.__Weibull_Mixture_params.alpha_1
-            self.Weibull_Mixture_beta_1 = self.__Weibull_Mixture_params.beta_1
-            self.Weibull_Mixture_alpha_2 = self.__Weibull_Mixture_params.alpha_2
-            self.Weibull_Mixture_beta_2 = self.__Weibull_Mixture_params.beta_2
-            self.Weibull_Mixture_proportion_1 = (
-                self.__Weibull_Mixture_params.proportion_1
-            )
-            self.Weibull_Mixture_loglik = self.__Weibull_Mixture_params.loglik
-            self.Weibull_Mixture_BIC = self.__Weibull_Mixture_params.BIC
-            self.Weibull_Mixture_AICc = self.__Weibull_Mixture_params.AICc
-            self.Weibull_Mixture_AD = self.__Weibull_Mixture_params.AD
-            self.Weibull_Mixture_optimizer = self.__Weibull_Mixture_params.optimizer
-            self._parametric_CDF_Weibull_Mixture = (
-                self.__Weibull_Mixture_params.distribution.CDF(xvals=d, show_plot=False)
-            )
-            df = pd.concat(
-                [
-                    df,
-                    pd.DataFrame(
-                        data={
-                            "Distribution": ["Weibull_Mixture"],
-                            "Alpha": [""],
-                            "Beta": [""],
-                            "Gamma": [""],
-                            "Alpha 1": [self.Weibull_Mixture_alpha_1],
-                            "Beta 1": [self.Weibull_Mixture_beta_1],
-                            "Alpha 2": [self.Weibull_Mixture_alpha_2],
-                            "Beta 2": [self.Weibull_Mixture_beta_2],
-                            "Proportion 1": [self.Weibull_Mixture_proportion_1],
-                            "DS": [""],
-                            "Mu": [""],
-                            "Sigma": [""],
-                            "Lambda": [""],
-                            "Log-likelihood": [self.Weibull_Mixture_loglik],
-                            "AICc": [self.Weibull_Mixture_AICc],
-                            "BIC": [self.Weibull_Mixture_BIC],
-                            "AD": [self.Weibull_Mixture_AD],
-                            "optimizer": [self.Weibull_Mixture_optimizer],
-                        }
-                    ),
-                ]
-            )
+            try:
+                self.__Weibull_Mixture_params = Fit_Weibull_Mixture(
+                    failures=failures,
+                    right_censored=right_censored,
+                    method=method,
+                    optimizer=optimizer,
+                    show_probability_plot=False,
+                    print_results=False,
+                )
+                self.Weibull_Mixture_alpha_1 = self.__Weibull_Mixture_params.alpha_1
+                self.Weibull_Mixture_beta_1 = self.__Weibull_Mixture_params.beta_1
+                self.Weibull_Mixture_alpha_2 = self.__Weibull_Mixture_params.alpha_2
+                self.Weibull_Mixture_beta_2 = self.__Weibull_Mixture_params.beta_2
+                self.Weibull_Mixture_proportion_1 = (
+                    self.__Weibull_Mixture_params.proportion_1
+                )
+                self.Weibull_Mixture_loglik = self.__Weibull_Mixture_params.loglik
+                self.Weibull_Mixture_BIC = self.__Weibull_Mixture_params.BIC
+                self.Weibull_Mixture_AICc = self.__Weibull_Mixture_params.AICc
+                self.Weibull_Mixture_AD = self.__Weibull_Mixture_params.AD
+                self.Weibull_Mixture_optimizer = self.__Weibull_Mixture_params.optimizer
+                self._parametric_CDF_Weibull_Mixture = (
+                    self.__Weibull_Mixture_params.distribution.CDF(xvals=d, show_plot=False)
+                )
+                df = pd.concat(
+                    [
+                        df,
+                        pd.DataFrame(
+                            data={
+                                "Distribution": ["Weibull_Mixture"],
+                                "Alpha": [""],
+                                "Beta": [""],
+                                "Gamma": [""],
+                                "Alpha 1": [self.Weibull_Mixture_alpha_1],
+                                "Beta 1": [self.Weibull_Mixture_beta_1],
+                                "Alpha 2": [self.Weibull_Mixture_alpha_2],
+                                "Beta 2": [self.Weibull_Mixture_beta_2],
+                                "Proportion 1": [self.Weibull_Mixture_proportion_1],
+                                "DS": [""],
+                                "Mu": [""],
+                                "Sigma": [""],
+                                "Lambda": [""],
+                                "Log-likelihood": [self.Weibull_Mixture_loglik],
+                                "AICc": [self.Weibull_Mixture_AICc],
+                                "BIC": [self.Weibull_Mixture_BIC],
+                                "AD": [self.Weibull_Mixture_AD],
+                                "optimizer": [self.Weibull_Mixture_optimizer],
+                            }
+                        ),
+                    ]
+                )
+            except Exception as e:
+                colorprint(
+                    f"WARNING: Weibull_Mixture was excluded from the results because it could not be fitted to the data.\n"
+                    f"The error was: {str(e)[:200]}",
+                    text_color="red",
+                )
 
         if "Weibull_CR" not in self.excluded_distributions:
-            self.__Weibull_CR_params = Fit_Weibull_CR(
-                failures=failures,
-                right_censored=right_censored,
-                method=method,
-                optimizer=optimizer,
-                show_probability_plot=False,
-                print_results=False,
-            )
-            self.Weibull_CR_alpha_1 = self.__Weibull_CR_params.alpha_1
-            self.Weibull_CR_beta_1 = self.__Weibull_CR_params.beta_1
-            self.Weibull_CR_alpha_2 = self.__Weibull_CR_params.alpha_2
-            self.Weibull_CR_beta_2 = self.__Weibull_CR_params.beta_2
-            self.Weibull_CR_loglik = self.__Weibull_CR_params.loglik
-            self.Weibull_CR_BIC = self.__Weibull_CR_params.BIC
-            self.Weibull_CR_AICc = self.__Weibull_CR_params.AICc
-            self.Weibull_CR_AD = self.__Weibull_CR_params.AD
-            self.Weibull_CR_optimizer = self.__Weibull_CR_params.optimizer
-            self._parametric_CDF_Weibull_CR = self.__Weibull_CR_params.distribution.CDF(
-                xvals=d, show_plot=False
-            )
-            df = pd.concat(
-                [
-                    df,
-                    pd.DataFrame(
-                        data={
-                            "Distribution": ["Weibull_CR"],
-                            "Alpha": [""],
-                            "Beta": [""],
-                            "Gamma": [""],
-                            "Alpha 1": [self.Weibull_CR_alpha_1],
-                            "Beta 1": [self.Weibull_CR_beta_1],
-                            "Alpha 2": [self.Weibull_CR_alpha_2],
-                            "Beta 2": [self.Weibull_CR_beta_2],
-                            "Proportion 1": [""],
-                            "DS": [""],
-                            "Mu": [""],
-                            "Sigma": [""],
-                            "Lambda": [""],
-                            "Log-likelihood": [self.Weibull_CR_loglik],
-                            "AICc": [self.Weibull_CR_AICc],
-                            "BIC": [self.Weibull_CR_BIC],
-                            "AD": [self.Weibull_CR_AD],
-                            "optimizer": [self.Weibull_CR_optimizer],
-                        }
-                    ),
-                ]
-            )
+            try:
+                self.__Weibull_CR_params = Fit_Weibull_CR(
+                    failures=failures,
+                    right_censored=right_censored,
+                    method=method,
+                    optimizer=optimizer,
+                    show_probability_plot=False,
+                    print_results=False,
+                )
+                self.Weibull_CR_alpha_1 = self.__Weibull_CR_params.alpha_1
+                self.Weibull_CR_beta_1 = self.__Weibull_CR_params.beta_1
+                self.Weibull_CR_alpha_2 = self.__Weibull_CR_params.alpha_2
+                self.Weibull_CR_beta_2 = self.__Weibull_CR_params.beta_2
+                self.Weibull_CR_loglik = self.__Weibull_CR_params.loglik
+                self.Weibull_CR_BIC = self.__Weibull_CR_params.BIC
+                self.Weibull_CR_AICc = self.__Weibull_CR_params.AICc
+                self.Weibull_CR_AD = self.__Weibull_CR_params.AD
+                self.Weibull_CR_optimizer = self.__Weibull_CR_params.optimizer
+                self._parametric_CDF_Weibull_CR = self.__Weibull_CR_params.distribution.CDF(
+                    xvals=d, show_plot=False
+                )
+                df = pd.concat(
+                    [
+                        df,
+                        pd.DataFrame(
+                            data={
+                                "Distribution": ["Weibull_CR"],
+                                "Alpha": [""],
+                                "Beta": [""],
+                                "Gamma": [""],
+                                "Alpha 1": [self.Weibull_CR_alpha_1],
+                                "Beta 1": [self.Weibull_CR_beta_1],
+                                "Alpha 2": [self.Weibull_CR_alpha_2],
+                                "Beta 2": [self.Weibull_CR_beta_2],
+                                "Proportion 1": [""],
+                                "DS": [""],
+                                "Mu": [""],
+                                "Sigma": [""],
+                                "Lambda": [""],
+                                "Log-likelihood": [self.Weibull_CR_loglik],
+                                "AICc": [self.Weibull_CR_AICc],
+                                "BIC": [self.Weibull_CR_BIC],
+                                "AD": [self.Weibull_CR_AD],
+                                "optimizer": [self.Weibull_CR_optimizer],
+                            }
+                        ),
+                    ]
+                )
+            except Exception as e:
+                colorprint(
+                    f"WARNING: Weibull_CR was excluded from the results because it could not be fitted to the data.\n"
+                    f"The error was: {str(e)[:200]}",
+                    text_color="red",
+                )
 
         if "Weibull_DS" not in self.excluded_distributions:
             self.__Weibull_DS_params = Fit_Weibull_DS(
@@ -3611,10 +3724,15 @@ class Fit_Weibull_Mixture:
     than would be achieved by a Weibull mixture. For this reason, other types
     of mixtures are not implemented.
 
-    If the fitting process encounters a problem a warning will be printed. This
-    may be caused by the chosen distribution being a very poor fit to the data
-    or the data being heavily censored. If a warning is printed, consider trying
-    a different optimizer.
+    If the fitting process encounters a problem a warning will be printed (when
+    using Fit_Everything) or a clear ValueError will be raised (when calling the
+    fitter directly). Common causes include the data not containing two
+    distinguishable failure modes or the data being heavily censored. The
+    grouping heuristic used for the initial guess now chooses splits that
+    guarantee at least two distinct failures per subpopulation whenever the
+    overall data has four or more distinct failure times. A clear message is
+    produced that suggests excluding the model from Fit_Everything or trying the
+    simpler distributions.
     """
 
     def __init__(
@@ -3646,58 +3764,9 @@ class Fit_Weibull_Mixture:
             failures=failures, right_censored=right_censored
         )  # this is only used to find AD
 
-        # this algorithm is used to estimate the dividing line between the two groups
-        # firstly it fits a gaussian kde to the histogram
-        # then it draws two straight lines from the highest peak of the kde down to the lower and upper bounds of the failures
-        # the dividing line is the point where the difference between the kde and the straight lines is greatest
-        max_failures = max(failures)
-        min_failures = min(failures)
-        gkde = ss.gaussian_kde(failures)
-        delta = max_failures - min_failures
-        x_kde = np.linspace(min_failures - delta / 5, max_failures + delta / 5, 100)
-        y_kde = gkde.evaluate(x_kde)
-        peak_y = max(y_kde)
-        peak_x = x_kde[np.where(y_kde == peak_y)][0]
-
-        left_x = min_failures
-        left_y = gkde.evaluate(left_x)
-        left_m = (peak_y - left_y) / (peak_x - left_x)
-        left_c = -left_m * left_x + left_y
-        left_line_x = np.linspace(left_x, peak_x, 100)
-        left_line_y = left_m * left_line_x + left_c  # y=mx+c
-        left_kde = gkde.evaluate(left_line_x)
-        left_diff = abs(left_line_y - left_kde)
-        left_diff_max = max(left_diff)
-        left_div_line = left_line_x[np.where(left_diff == left_diff_max)][0]
-
-        right_x = max_failures
-        right_y = gkde.evaluate(right_x)
-        right_m = (right_y - peak_y) / (right_x - peak_x)
-        right_c = -right_m * right_x + right_y
-        right_line_x = np.linspace(peak_x, right_x, 100)
-        right_line_y = right_m * right_line_x + right_c  # y=mx+c
-        right_kde = gkde.evaluate(right_line_x)
-        right_diff = abs(right_line_y - right_kde)
-        right_diff_max = max(right_diff)
-        right_div_line = right_line_x[np.where(right_diff == right_diff_max)][0]
-
-        if left_diff_max > right_diff_max:
-            dividing_line = left_div_line
-        else:
-            dividing_line = right_div_line
-
-        number_of_items_in_group_1 = len(np.where(failures < dividing_line)[0])
-        number_of_items_in_group_2 = len(failures) - number_of_items_in_group_1
-        if number_of_items_in_group_1 < 2:
-            failures_sorted = np.sort(failures)
-            dividing_line = (
-                failures_sorted[1] + failures_sorted[2]
-            ) / 2  # adjusts the dividing line in case there aren't enough failures in the first group
-        if number_of_items_in_group_2 < 2:
-            failures_sorted = np.sort(failures)
-            dividing_line = (
-                failures_sorted[-2] + failures_sorted[-3]
-            ) / 2  # adjusts the dividing line in case there aren't enough failures in the second group
+        # Estimate dividing line (KDE heuristic + distinct-aware adjustment to
+        # guarantee >=2 distinct failures per group when the data supports it).
+        dividing_line = _get_group_dividing_line(failures)
 
         # this is the point at which data is assigned to one group or another for the purpose of generating the initial guess
         GROUP_1_failures = []
@@ -3714,6 +3783,8 @@ class Fit_Weibull_Mixture:
                 GROUP_1_right_cens.append(item)
             else:
                 GROUP_2_right_cens.append(item)
+
+        _ensure_two_distinct_groups(GROUP_1_failures, GROUP_2_failures, "Weibull_Mixture")
 
         # get inputs for the guess by fitting a weibull to each of the groups with their respective censored data
         group_1_estimates = Fit_Weibull_2P(
@@ -4144,58 +4215,9 @@ class Fit_Weibull_CR:
             failures=failures, right_censored=right_censored
         )  # this is only used to find AD
 
-        # this algorithm is used to estimate the dividing line between the two groups
-        # firstly it fits a gaussian kde to the histogram
-        # then it draws two straight lines from the highest peak of the kde down to the lower and upper bounds of the failures
-        # the dividing line is the point where the difference between the kde and the straight lines is greatest
-        max_failures = max(failures)
-        min_failures = min(failures)
-        gkde = ss.gaussian_kde(failures)
-        delta = max_failures - min_failures
-        x_kde = np.linspace(min_failures - delta / 5, max_failures + delta / 5, 100)
-        y_kde = gkde.evaluate(x_kde)
-        peak_y = max(y_kde)
-        peak_x = x_kde[np.where(y_kde == peak_y)][0]
-
-        left_x = min_failures
-        left_y = gkde.evaluate(left_x)
-        left_m = (peak_y - left_y) / (peak_x - left_x)
-        left_c = -left_m * left_x + left_y
-        left_line_x = np.linspace(left_x, peak_x, 100)
-        left_line_y = left_m * left_line_x + left_c  # y=mx+c
-        left_kde = gkde.evaluate(left_line_x)
-        left_diff = abs(left_line_y - left_kde)
-        left_diff_max = max(left_diff)
-        left_div_line = left_line_x[np.where(left_diff == left_diff_max)][0]
-
-        right_x = max_failures
-        right_y = gkde.evaluate(right_x)
-        right_m = (right_y - peak_y) / (right_x - peak_x)
-        right_c = -right_m * right_x + right_y
-        right_line_x = np.linspace(peak_x, right_x, 100)
-        right_line_y = right_m * right_line_x + right_c  # y=mx+c
-        right_kde = gkde.evaluate(right_line_x)
-        right_diff = abs(right_line_y - right_kde)
-        right_diff_max = max(right_diff)
-        right_div_line = right_line_x[np.where(right_diff == right_diff_max)][0]
-
-        if left_diff_max > right_diff_max:
-            dividing_line = left_div_line
-        else:
-            dividing_line = right_div_line
-
-        number_of_items_in_group_1 = len(np.where(failures < dividing_line)[0])
-        number_of_items_in_group_2 = len(failures) - number_of_items_in_group_1
-        if number_of_items_in_group_1 < 2:
-            failures_sorted = np.sort(failures)
-            dividing_line = (
-                failures_sorted[1] + failures_sorted[2]
-            ) / 2  # adjusts the dividing line in case there aren't enough failures in the first group
-        if number_of_items_in_group_2 < 2:
-            failures_sorted = np.sort(failures)
-            dividing_line = (
-                failures_sorted[-2] + failures_sorted[-3]
-            ) / 2  # adjusts the dividing line in case there aren't enough failures in the second group
+        # Estimate dividing line (KDE heuristic + distinct-aware adjustment to
+        # guarantee >=2 distinct failures per group when the data supports it).
+        dividing_line = _get_group_dividing_line(failures)
 
         # this is the point at which data is assigned to one group or another for the purpose of generating the initial guess
         GROUP_1_failures = []
@@ -4212,6 +4234,8 @@ class Fit_Weibull_CR:
                 GROUP_1_right_cens.append(item)
             else:
                 GROUP_2_right_cens.append(item)
+
+        _ensure_two_distinct_groups(GROUP_1_failures, GROUP_2_failures, "Weibull_CR")
 
         # get inputs for the guess by fitting a weibull to each of the groups with their respective censored data
         group_1_estimates = Fit_Weibull_2P(
